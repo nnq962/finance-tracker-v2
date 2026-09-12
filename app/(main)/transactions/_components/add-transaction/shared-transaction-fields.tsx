@@ -1,8 +1,9 @@
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { DateTimeFields } from "@/components/forms/date-time-fields"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
-import { CurrencyInput } from "./currency-input"
+import { CurrencyInput } from "@/components/forms/currency-input"
 
 export function SharedTransactionFields() {
   return (
@@ -23,16 +24,7 @@ export function SharedTransactionFields() {
         </Field>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field>
-          <FieldLabel htmlFor="transaction-date">Ngày</FieldLabel>
-          <Input id="transaction-date" name="date" type="date" required />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="transaction-time">Thời gian</FieldLabel>
-          <Input id="transaction-time" name="time" type="time" required />
-        </Field>
-      </div>
+      <DateTimeFields idPrefix="transaction" required />
 
       <Field>
         <FieldLabel htmlFor="transaction-note">Ghi chú</FieldLabel>

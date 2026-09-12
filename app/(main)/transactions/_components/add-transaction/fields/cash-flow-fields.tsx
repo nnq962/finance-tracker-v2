@@ -4,13 +4,14 @@ import * as React from "react"
 import { ChevronRightIcon, PlusIcon, type LucideIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { CurrencyInput } from "@/components/forms/currency-input"
+import { DateTimeFields } from "@/components/forms/date-time-fields"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
 import {
   Select,
   SelectContent,
@@ -23,7 +24,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 import { accountOptions } from "../../../_data/transaction-form-options"
-import { CurrencyInput } from "../currency-input"
 
 type CashFlowCategory = {
   label: string
@@ -104,13 +104,7 @@ export function CashFlowFields({
         </ToggleGroup>
       </Field>
 
-      <Field>
-        <FieldLabel>Thời điểm</FieldLabel>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Input aria-label="Ngày" name="date" type="date" required />
-          <Input aria-label="Thời gian" name="time" type="time" required />
-        </div>
-      </Field>
+      <DateTimeFields idPrefix={idPrefix} required />
 
       <Collapsible>
         <CollapsibleTrigger asChild>

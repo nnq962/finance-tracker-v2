@@ -1,9 +1,15 @@
+import type { AccountType } from "./account-form"
+
 export type AccountGroupType = "spending" | "saving"
 
 export type Account = {
   id: string
   name: string
   balance: number
+  type: AccountType
+  provider?: string
+  note?: string
+  excludeFromReports?: boolean
   logoUrl?: string
   logoFallback: string
   group: AccountGroupType

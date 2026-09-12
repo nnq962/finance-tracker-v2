@@ -10,6 +10,8 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { CurrencyInput } from "@/components/forms/currency-input"
+import { DateTimeFields } from "@/components/forms/date-time-fields"
 import {
   Collapsible,
   CollapsibleContent,
@@ -38,7 +40,6 @@ import {
   accountOptions,
   counterpartyOptions,
 } from "../../../_data/transaction-form-options"
-import { CurrencyInput } from "../currency-input"
 
 const loanTypeOptions = [
   { value: "lend", label: "Cho vay", icon: ArrowUpRightIcon },
@@ -128,13 +129,7 @@ export function LoanFields() {
         </Select>
       </Field>
 
-      <Field>
-        <FieldLabel>Thời điểm</FieldLabel>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Input aria-label="Ngày" name="date" type="date" required />
-          <Input aria-label="Thời gian" name="time" type="time" required />
-        </div>
-      </Field>
+      <DateTimeFields idPrefix="loan" required />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field>
@@ -151,10 +146,10 @@ export function LoanFields() {
             <InputGroupInput
               id="loan-interest-rate"
               name="interestRate"
-              type="number"
+              type="text"
               inputMode="decimal"
-              min="0"
-              step="0.01"
+              autoComplete="off"
+              pattern="[0-9]+([.,][0-9]+)?"
               placeholder="0"
             />
             <InputGroupAddon align="inline-end">

@@ -1,6 +1,6 @@
 import { SaveIcon } from "lucide-react"
 
-import { Button } from "@/components/animate-ui/components/buttons/button"
+import { Button } from "@/components/ui/button"
 import { SheetFooter } from "@/components/ui/sheet"
 
 import type { TransactionKind } from "../../_types/transaction"

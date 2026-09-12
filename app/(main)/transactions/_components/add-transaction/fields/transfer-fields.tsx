@@ -3,13 +3,14 @@
 import { PlusIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { CurrencyInput } from "@/components/forms/currency-input"
+import { DateTimeFields } from "@/components/forms/date-time-fields"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
 import {
   Select,
   SelectContent,
@@ -21,7 +22,6 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 
 import { accountOptions } from "../../../_data/transaction-form-options"
-import { CurrencyInput } from "../currency-input"
 
 function AccountSelect({ id, name }: { id: string; name: string }) {
   return (
@@ -69,13 +69,7 @@ export function TransferFields() {
         </Field>
       </div>
 
-      <Field>
-        <FieldLabel>Thời điểm</FieldLabel>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Input aria-label="Ngày" name="date" type="date" required />
-          <Input aria-label="Thời gian" name="time" type="time" required />
-        </div>
-      </Field>
+      <DateTimeFields idPrefix="transfer" required />
 
       <Collapsible>
         <CollapsibleTrigger asChild>

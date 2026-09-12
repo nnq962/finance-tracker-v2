@@ -2,6 +2,7 @@ import {
   ArrowDownRightIcon,
   ArrowUpRightIcon,
   CarIcon,
+  EllipsisIcon,
   LandmarkIcon,
   PiggyBankIcon,
   ShoppingBagIcon,
@@ -9,6 +10,13 @@ import {
   WalletCardsIcon,
 } from "lucide-react"
 
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { formatCurrency } from "@/lib/format-currency"
 
 const overviewCards = [
@@ -70,7 +78,25 @@ export default function OverviewPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Tổng quan tài chính</h1>
           <p className="text-sm text-muted-foreground">Tình hình thu chi và tài sản của bạn trong tháng này.</p>
         </div>
-        <p className="text-sm font-medium text-muted-foreground">Tháng 9, 2026</p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-medium text-muted-foreground">Tháng 9, 2026</p>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Mở dropdown shadcn mặc định"
+              >
+                <EllipsisIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>Chỉnh sửa</DropdownMenuItem>
+              <DropdownMenuItem>Nhân bản</DropdownMenuItem>
+              <DropdownMenuItem variant="destructive">Xoá</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

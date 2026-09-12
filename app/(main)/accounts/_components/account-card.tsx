@@ -1,15 +1,6 @@
 "use client"
 
-import {
-  CircleDollarSignIcon,
-  CirclePauseIcon,
-  EllipsisIcon,
-  PencilIcon,
-  Trash2Icon,
-} from "lucide-react"
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
 import {
   Card,
   CardAction,
@@ -18,16 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { formatCurrency } from "@/lib/format-currency"
 
 import type { Account } from "../_types/account"
+import { AccountActionsMenu } from "./account-actions/account-actions-menu"
 
 type AccountCardProps = {
   account: Account
@@ -48,37 +33,7 @@ export function AccountCard({ account }: AccountCardProps) {
           </div>
         </div>
         <CardAction>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={`Mở menu tài khoản ${account.name}`}
-              >
-                <EllipsisIcon />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
-              <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  <PencilIcon />
-                  Chỉnh sửa
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <CircleDollarSignIcon />
-                  Điều chỉnh số dư
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <CirclePauseIcon />
-                  Ngừng sử dụng
-                </DropdownMenuItem>
-                <DropdownMenuItem variant="destructive">
-                  <Trash2Icon />
-                  Xoá
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <AccountActionsMenu account={account} />
         </CardAction>
       </CardHeader>
       <CardContent>
