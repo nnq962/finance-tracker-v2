@@ -1,14 +1,9 @@
-import { PlusIcon } from "lucide-react"
-
-import { Button } from "@/components/animate-ui/components/buttons/button"
+import { AddTransactionSheet } from "./add-transaction/add-transaction-sheet"
 
 export function AddTransactionButton() {
   return (
     <div className="fixed right-6 bottom-6 z-20">
-      <Button size="lg">
-        <PlusIcon />
-        Thêm giao dịch
-      </Button>
+      <AddTransactionSheet />
     </div>
   )
 }
