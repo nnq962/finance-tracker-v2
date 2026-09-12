@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion, isMotionComponent, type HTMLMotionProps } from 'motion/react';
+import { motion, type HTMLMotionProps } from 'motion/react';
 import { cn } from '@/lib/utils';
 
 type AnyProps = Record<string, unknown>;
@@ -58,32 +58,35 @@ function mergeProps<T extends HTMLElement>(
   return merged;
 }
 
+type SlotBaseProps = Omit<DOMMotionProps<HTMLElement>, 'children'> & {
+  children: React.ReactElement<AnyProps>;
+};
+
+const SlotBase = React.forwardRef<HTMLElement, SlotBaseProps>(
+  function SlotBase({ children, ...props }, ref) {
+    const { ref: childRef, ...childProps } = children.props;
+    const mergedProps = mergeProps(childProps, props);
+
+    return React.cloneElement(children, {
+      ...mergedProps,
+      ref: mergeRefs(childRef as React.Ref<HTMLElement>, ref),
+    });
+  },
+);
+
+const MotionSlot = motion.create(SlotBase);
+
 function Slot<T extends HTMLElement = HTMLElement>({
   children,
   ref,
   ...props
 }: SlotProps<T>) {
-  const isAlreadyMotion =
-    typeof children.type === 'object' &&
-    children.type !== null &&
-    isMotionComponent(children.type);
-
-  const Base = React.useMemo(
-    () =>
-      isAlreadyMotion
-        ? (children.type as React.ElementType)
-        : motion.create(children.type as React.ElementType),
-    [isAlreadyMotion, children.type],
-  );
-
   if (!React.isValidElement(children)) return null;
 
-  const { ref: childRef, ...childProps } = children.props as AnyProps;
-
-  const mergedProps = mergeProps(childProps, props);
-
   return (
-    <Base {...mergedProps} ref={mergeRefs(childRef as React.Ref<T>, ref)} />
+    <MotionSlot {...props} ref={ref as React.Ref<HTMLElement>}>
+      {children}
+    </MotionSlot>
   );
 }
 
