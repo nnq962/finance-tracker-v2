@@ -4,6 +4,7 @@ import * as React from "react"
 import {
   CircleDollarSignIcon,
   CirclePauseIcon,
+  CirclePlayIcon,
   EllipsisIcon,
   PencilIcon,
   Trash2Icon,
@@ -16,7 +17,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/animate-ui/components/radix/dropdown-menu"
+} from "@/components/ui/dropdown-menu"
 
 import type { Account } from "../../_types/account"
 import { AdjustBalanceSheet } from "./adjust-balance-sheet"
@@ -25,9 +26,15 @@ import { EditAccountSheet } from "./edit-account-sheet"
 
 type AccountActionsMenuProps = {
   account: Account
+  isLocked: boolean
+  onLockedChange: (isLocked: boolean) => void
 }
 
-export function AccountActionsMenu({ account }: AccountActionsMenuProps) {
+export function AccountActionsMenu({
+  account,
+  isLocked,
+  onLockedChange,
+}: AccountActionsMenuProps) {
   const [editOpen, setEditOpen] = React.useState(false)
   const [adjustBalanceOpen, setAdjustBalanceOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
@@ -54,9 +61,9 @@ export function AccountActionsMenu({ account }: AccountActionsMenuProps) {
               <CircleDollarSignIcon />
               Điều chỉnh số dư
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <CirclePauseIcon />
-              Ngừng sử dụng
+            <DropdownMenuItem onSelect={() => onLockedChange(!isLocked)}>
+              {isLocked ? <CirclePlayIcon /> : <CirclePauseIcon />}
+              {isLocked ? "Tiếp tục sử dụng" : "Ngừng sử dụng"}
             </DropdownMenuItem>
             <DropdownMenuItem
               variant="destructive"

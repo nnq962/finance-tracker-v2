@@ -131,14 +131,21 @@ export function LoanFields() {
 
       <DateTimeFields idPrefix="loan" required />
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field>
+      <div className="grid min-w-0 w-full gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <Field className="min-w-0">
           <FieldLabel htmlFor="loan-due-date">
             Ngày đến hạn (tuỳ chọn)
           </FieldLabel>
-          <Input id="loan-due-date" name="dueDate" type="date" />
+          <div className="flex min-w-0">
+            <Input
+              id="loan-due-date"
+              name="dueDate"
+              type="date"
+              className="w-auto min-w-0 max-w-full flex-1"
+            />
+          </div>
         </Field>
-        <Field>
+        <Field className="min-w-0">
           <FieldLabel htmlFor="loan-interest-rate">
             Lãi suất (tuỳ chọn)
           </FieldLabel>

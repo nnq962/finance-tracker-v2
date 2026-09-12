@@ -1,6 +1,10 @@
 "use client"
 
+import * as React from "react"
+import { LockKeyholeIcon } from "lucide-react"
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardAction,
@@ -19,8 +23,16 @@ type AccountCardProps = {
 }
 
 export function AccountCard({ account }: AccountCardProps) {
+  const [isLocked, setIsLocked] = React.useState(false)
+
   return (
-    <Card>
+    <Card className="relative">
+      {isLocked ? (
+        <div
+          className="absolute inset-x-0 top-0 h-1 bg-destructive"
+          aria-hidden="true"
+        />
+      ) : null}
       <CardHeader>
         <div className="flex items-center gap-3">
           <Avatar>
@@ -28,18 +40,38 @@ export function AccountCard({ account }: AccountCardProps) {
             <AvatarFallback>{account.logoFallback}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 space-y-1">
-            <CardTitle>{account.name}</CardTitle>
-            <CardDescription>Tài khoản chi tiêu</CardDescription>
+            <div className="flex flex-wrap items-center gap-2">
+              <CardTitle>{account.name}</CardTitle>
+              {isLocked ? (
+                <Badge variant="destructive">
+                  <LockKeyholeIcon data-icon="inline-start" />
+                  Đã khóa
+                </Badge>
+              ) : null}
+            </div>
+            <CardDescription>
+              {isLocked ? "Tài khoản đã ngừng sử dụng" : "Tài khoản chi tiêu"}
+            </CardDescription>
           </div>
         </div>
         <CardAction>
-          <AccountActionsMenu account={account} />
+          <AccountActionsMenu
+            account={account}
+            isLocked={isLocked}
+            onLockedChange={setIsLocked}
+          />
         </CardAction>
       </CardHeader>
       <CardContent>
         <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">Số dư hiện tại</p>
-          <p className="text-xl font-semibold tabular-nums">
+          <p className="text-sm text-muted-foreground">
+            {isLocked ? "Số dư khi khóa" : "Số dư hiện tại"}
+          </p>
+          <p
+            className={`text-xl font-semibold tabular-nums ${
+              isLocked ? "text-muted-foreground line-through" : ""
+            }`}
+          >
             {formatCurrency(account.balance)}
           </p>
         </div>

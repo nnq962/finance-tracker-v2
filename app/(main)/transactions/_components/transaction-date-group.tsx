@@ -7,9 +7,13 @@ import type { TransactionDateGroup as TransactionDateGroupModel } from "../_type
 
 type TransactionDateGroupProps = {
   group: TransactionDateGroupModel
+  onDelete: (transactionId: string) => void
 }
 
-export function TransactionDateGroup({ group }: TransactionDateGroupProps) {
+export function TransactionDateGroup({
+  group,
+  onDelete,
+}: TransactionDateGroupProps) {
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-4">
@@ -23,7 +27,10 @@ export function TransactionDateGroup({ group }: TransactionDateGroupProps) {
           {group.transactions.map((transaction, index) => (
             <div key={transaction.id}>
               {index > 0 ? <Separator /> : null}
-              <TransactionItem transaction={transaction} />
+              <TransactionItem
+                transaction={transaction}
+                onDelete={onDelete}
+              />
             </div>
           ))}
         </CardContent>

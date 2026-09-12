@@ -17,7 +17,7 @@ type DateTimeFieldsProps = {
 export function DateTimeFields({
   dateName = "date",
   idPrefix,
-  label = "Thời điểm",
+  label = "Thời gian",
   required = false,
   timeName = "time",
 }: DateTimeFieldsProps) {
@@ -26,23 +26,29 @@ export function DateTimeFields({
   return (
     <Field>
       <FieldLabel>{label}</FieldLabel>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Input
-          id={`${idPrefix}-date`}
-          aria-label="Ngày"
-          name={dateName}
-          type="date"
-          defaultValue={currentDateTime.date}
-          required={required}
-        />
-        <Input
-          id={`${idPrefix}-time`}
-          aria-label="Thời gian"
-          name={timeName}
-          type="time"
-          defaultValue={currentDateTime.time}
-          required={required}
-        />
+      <div className="grid min-w-0 w-full gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="flex min-w-0">
+          <Input
+            id={`${idPrefix}-date`}
+            aria-label="Ngày"
+            name={dateName}
+            type="date"
+            defaultValue={currentDateTime.date}
+            required={required}
+            className="w-auto min-w-0 max-w-full flex-1"
+          />
+        </div>
+        <div className="flex min-w-0">
+          <Input
+            id={`${idPrefix}-time`}
+            aria-label="Thời gian"
+            name={timeName}
+            type="time"
+            defaultValue={currentDateTime.time}
+            required={required}
+            className="w-auto min-w-0 max-w-full flex-1"
+          />
+        </div>
       </div>
     </Field>
   )

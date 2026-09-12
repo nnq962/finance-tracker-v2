@@ -24,21 +24,22 @@ type TransactionsDashboardProps = {
 export function TransactionsDashboard({
   transactions,
 }: TransactionsDashboardProps) {
+  const [transactionItems, setTransactionItems] = React.useState(transactions)
   const latestDateKey = React.useMemo(
-    () => getLatestTransactionDateKey(transactions),
-    [transactions],
+    () => getLatestTransactionDateKey(transactionItems),
+    [transactionItems],
   )
   const [period, setPeriod] = React.useState<TransactionPeriod>("month")
   const [anchorDateKey, setAnchorDateKey] = React.useState(latestDateKey)
   const periodData = React.useMemo(
     () =>
       getTransactionPeriod(
-        transactions,
+        transactionItems,
         period,
         anchorDateKey,
         latestDateKey,
       ),
-    [anchorDateKey, latestDateKey, period, transactions],
+    [anchorDateKey, latestDateKey, period, transactionItems],
   )
   const summary = React.useMemo(
     () => getTransactionSummary(periodData.transactions),
@@ -72,7 +73,14 @@ export function TransactionsDashboard({
         />
       </TransactionsHeader>
       <TransactionSummary summary={summary} />
-      <TransactionsView transactions={periodData.transactions} />
+      <TransactionsView
+        transactions={periodData.transactions}
+        onDelete={(transactionId) =>
+          setTransactionItems((current) =>
+            current.filter((transaction) => transaction.id !== transactionId),
+          )
+        }
+      />
     </>
   )
 }

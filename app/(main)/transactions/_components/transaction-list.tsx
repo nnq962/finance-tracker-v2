@@ -6,9 +6,13 @@ import { TransactionDateGroup } from "./transaction-date-group"
 
 type TransactionListProps = {
   transactions: Transaction[]
+  onDelete: (transactionId: string) => void
 }
 
-export function TransactionList({ transactions }: TransactionListProps) {
+export function TransactionList({
+  transactions,
+  onDelete,
+}: TransactionListProps) {
   const groups = groupTransactionsByDate(transactions)
 
   if (groups.length === 0) {
@@ -28,7 +32,11 @@ export function TransactionList({ transactions }: TransactionListProps) {
   return (
     <div className="space-y-7">
       {groups.map((group) => (
-        <TransactionDateGroup key={group.dateKey} group={group} />
+        <TransactionDateGroup
+          key={group.dateKey}
+          group={group}
+          onDelete={onDelete}
+        />
       ))}
     </div>
   )

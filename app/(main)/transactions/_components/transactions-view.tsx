@@ -12,9 +12,13 @@ import { TransactionToolbar } from "./transaction-toolbar"
 
 type TransactionsViewProps = {
   transactions: Transaction[]
+  onDelete: (transactionId: string) => void
 }
 
-export function TransactionsView({ transactions }: TransactionsViewProps) {
+export function TransactionsView({
+  transactions,
+  onDelete,
+}: TransactionsViewProps) {
   const [filter, setFilter] = React.useState<TransactionFilter>("all")
   const [query, setQuery] = React.useState("")
   const visibleTransactions = React.useMemo(
@@ -30,7 +34,10 @@ export function TransactionsView({ transactions }: TransactionsViewProps) {
         onFilterChange={setFilter}
         onQueryChange={setQuery}
       />
-      <TransactionList transactions={visibleTransactions} />
+      <TransactionList
+        transactions={visibleTransactions}
+        onDelete={onDelete}
+      />
     </section>
   )
 }
