@@ -16,6 +16,7 @@ import {
 import {
   ArrowLeftRightIcon,
   LayoutDashboardIcon,
+  TagsIcon,
   TerminalIcon,
   WalletCardsIcon,
 } from "lucide-react"
@@ -41,6 +42,11 @@ const data = {
       title: "Tài khoản",
       url: "/accounts",
       icon: <WalletCardsIcon />,
+    },
+    {
+      title: "Hạng mục",
+      url: "/categories",
+      icon: <TagsIcon />,
     },
   ],
 }

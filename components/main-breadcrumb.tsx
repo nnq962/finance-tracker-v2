@@ -13,6 +13,7 @@ const routeLabels: Record<string, string> = {
   "/overview": "Tổng quan",
   "/transactions": "Giao dịch",
   "/accounts": "Tài khoản",
+  "/categories": "Hạng mục",
 }
 
 export function MainBreadcrumb() {
