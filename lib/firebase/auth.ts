@@ -23,7 +23,16 @@ export async function syncServerSession(user: User) {
   })
 
   if (!response.ok) {
-    throw new Error("Unable to create a secure session.")
+    const body: unknown = await response.json().catch(() => null)
+    const message =
+      typeof body === "object" &&
+      body !== null &&
+      "error" in body &&
+      typeof body.error === "string"
+        ? body.error
+        : "Unable to create a secure session."
+
+    throw new Error(message)
   }
 }
 
@@ -44,6 +53,10 @@ export async function signOutCurrentUser() {
 }
 
 export function getAuthErrorMessage(error: unknown) {
+  if (error instanceof Error && !(error instanceof FirebaseError)) {
+    return error.message
+  }
+
   if (!(error instanceof FirebaseError)) {
     return "Unable to sign in. Please try again."
   }

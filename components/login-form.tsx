@@ -3,12 +3,12 @@
 import { useState } from "react"
 import { cn } from "cn"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
   Field,
   FieldDescription,
-  FieldError,
   FieldGroup,
 } from "@/components/ui/field"
 import {
@@ -29,20 +29,19 @@ export function LoginForm({
 }: React.ComponentProps<"div"> & { redirectTo?: string }) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setErrorMessage(null)
     setIsLoading(true)
 
     try {
       const credential = await signInWithGoogle()
       await syncServerSession(credential.user)
+      toast.success("Signed in successfully.")
       router.replace(redirectTo)
       router.refresh()
     } catch (error) {
-      setErrorMessage(getAuthErrorMessage(error))
+      toast.error(getAuthErrorMessage(error))
     } finally {
       setIsLoading(false)
     }
@@ -83,9 +82,6 @@ export function LoginForm({
               )}
               {isLoading ? "Signing in..." : "Login with Google"}
             </Button>
-            {errorMessage && (
-              <FieldError className="text-center">{errorMessage}</FieldError>
-            )}
             <FieldDescription className="flex items-center justify-center gap-2 text-center text-white/70">
               <ShieldCheckIcon className="size-4" />
               Secure sign-in with Google

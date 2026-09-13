@@ -24,7 +24,7 @@ export function AddTransactionSheet() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button type="button" size="lg">
+        <Button type="button">
           <PlusIcon />
           Thêm giao dịch
         </Button>

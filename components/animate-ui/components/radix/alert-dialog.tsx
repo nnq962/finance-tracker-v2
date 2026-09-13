@@ -43,7 +43,10 @@ type AlertDialogOverlayProps = AlertDialogOverlayPrimitiveProps;
 function AlertDialogOverlay({ className, ...props }: AlertDialogOverlayProps) {
   return (
     <AlertDialogOverlayPrimitive
-      className={cn('fixed inset-0 z-50 bg-black/50', className)}
+      className={cn(
+        'fixed inset-0 isolate z-50 bg-black/10 supports-backdrop-filter:backdrop-blur-xs',
+        className,
+      )}
       {...props}
     />
   );

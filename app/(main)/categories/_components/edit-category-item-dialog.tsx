@@ -2,28 +2,23 @@
 
 import { Button } from "@/components/ui/button"
 import { getCategoryColor } from "@/lib/categories/category-colors"
+import type { CategoryGroup, CategoryItem } from "@/lib/categories/types"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 
-import type { CategoryGroup, CategoryItem } from "../_types/category"
+import {
+  deleteCategoryItemAction,
+  updateCategoryItemAction,
+} from "../actions"
 import { CategoryFormDialog } from "./category-form-dialog"
-
-type CategoryItemUpdate = Pick<
-  CategoryItem,
-  "name" | "colorName" | "iconName"
->
 
 type EditCategoryItemDialogProps = {
   group: CategoryGroup
   item: CategoryItem
-  onDeleteItem: () => void
-  onUpdateItem: (updates: CategoryItemUpdate) => void
 }
 
 export function EditCategoryItemDialog({
   group,
   item,
-  onDeleteItem,
-  onUpdateItem,
 }: EditCategoryItemDialogProps) {
   const ItemIcon = categoryIconRegistry[item.iconName]
   const itemColor = getCategoryColor(item.colorName)
@@ -47,6 +42,7 @@ export function EditCategoryItemDialog({
       }
       nameLabel="Tên hạng mục"
       submitLabel="Lưu thay đổi"
+      submitSuccessMessage="Đã cập nhật hạng mục."
       initialValues={{
         name: item.name,
         colorName: item.colorName,
@@ -58,8 +54,9 @@ export function EditCategoryItemDialog({
           động này không thể hoàn tác.
         </>
       }
-      onDelete={onDeleteItem}
-      onSubmit={onUpdateItem}
+      deleteSuccessMessage="Đã xoá hạng mục."
+      onDelete={() => deleteCategoryItemAction(item.id)}
+      onSubmit={(values) => updateCategoryItemAction(item.id, values)}
     />
   )
 }

@@ -44,10 +44,10 @@ export function TransactionPeriodFilter({
 }: TransactionPeriodFilterProps) {
   return (
     <section
-      className="flex w-full flex-col items-start gap-2 xl:w-auto xl:items-end"
+      className="flex w-full flex-col items-start gap-2 lg:w-auto lg:items-end"
       aria-label="Kỳ giao dịch"
     >
-      <div className="flex w-full items-center gap-2 xl:w-auto">
+      <div className="flex w-full items-center gap-2 lg:w-auto">
         <Tabs
           className="shrink-0"
           value={period}

@@ -12,6 +12,7 @@ import type {
   Transaction,
   TransactionPeriod,
 } from "../_types/transaction"
+import { AddTransactionButton } from "./add-transaction-button"
 import { TransactionSummary } from "./transaction-summary"
 import { TransactionsHeader } from "./transactions-header"
 import { TransactionsView } from "./transactions-view"
@@ -49,30 +50,31 @@ export function TransactionsDashboard({
   return (
     <>
       <TransactionsHeader>
-        <TransactionPeriodFilter
-          period={period}
-          rangeLabel={periodData.rangeLabel}
-          contextLabel={periodData.contextLabel}
-          transactionCount={periodData.transactions.length}
-          canGoNext={!periodData.isCurrent}
-          onPeriodChange={(nextPeriod) => {
-            setPeriod(nextPeriod)
-            setAnchorDateKey(latestDateKey)
-          }}
-          onPrevious={() =>
-            setAnchorDateKey((current) =>
-              shiftPeriodAnchor(current, period, -1),
-            )
-          }
-          onNext={() =>
-            setAnchorDateKey((current) =>
-              shiftPeriodAnchor(current, period, 1),
-            )
-          }
-          onReset={() => setAnchorDateKey(latestDateKey)}
-        />
+        <AddTransactionButton />
       </TransactionsHeader>
       <TransactionSummary summary={summary} />
+      <TransactionPeriodFilter
+        period={period}
+        rangeLabel={periodData.rangeLabel}
+        contextLabel={periodData.contextLabel}
+        transactionCount={periodData.transactions.length}
+        canGoNext={!periodData.isCurrent}
+        onPeriodChange={(nextPeriod) => {
+          setPeriod(nextPeriod)
+          setAnchorDateKey(latestDateKey)
+        }}
+        onPrevious={() =>
+          setAnchorDateKey((current) =>
+            shiftPeriodAnchor(current, period, -1),
+          )
+        }
+        onNext={() =>
+          setAnchorDateKey((current) =>
+            shiftPeriodAnchor(current, period, 1),
+          )
+        }
+        onReset={() => setAnchorDateKey(latestDateKey)}
+      />
       <TransactionsView
         transactions={periodData.transactions}
         onDelete={(transactionId) =>

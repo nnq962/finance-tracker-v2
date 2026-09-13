@@ -3,19 +3,16 @@
 import { PlusIcon } from "lucide-react"
 
 import { Button } from "@/components/animate-ui/components/buttons/button"
+import type { CategoryType } from "@/lib/categories/types"
 
-import type { CategoryGroup, CategoryType } from "../_types/category"
+import { createCategoryGroupAction } from "../actions"
 import { CategoryFormDialog } from "./category-form-dialog"
 
 type AddCategoryGroupDialogProps = {
   type: CategoryType
-  onAddGroup: (group: CategoryGroup) => void
 }
 
-export function AddCategoryGroupDialog({
-  type,
-  onAddGroup,
-}: AddCategoryGroupDialogProps) {
+export function AddCategoryGroupDialog({ type }: AddCategoryGroupDialogProps) {
   const isExpense = type === "expense"
   const typeLabel = isExpense ? "chi" : "thu"
 
@@ -32,19 +29,13 @@ export function AddCategoryGroupDialog({
       nameLabel="Tên nhóm"
       namePlaceholder={isExpense ? "Ví dụ: Ăn uống" : "Ví dụ: Thu nhập"}
       submitLabel="Thêm nhóm"
+      submitSuccessMessage="Đã thêm nhóm hạng mục."
       initialValues={{
         name: "",
         colorName: isExpense ? "orange" : "emerald",
         iconName: isExpense ? "utensils" : "hand-coins",
       }}
-      onSubmit={(values) =>
-        onAddGroup({
-          id: crypto.randomUUID(),
-          type,
-          items: [],
-          ...values,
-        })
-      }
+      onSubmit={(values) => createCategoryGroupAction(type, values)}
     />
   )
 }

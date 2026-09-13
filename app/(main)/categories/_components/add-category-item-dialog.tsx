@@ -3,18 +3,19 @@
 import { PlusIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import type { CategoryGroup } from "@/lib/categories/types"
 
-import type { CategoryGroup, CategoryItem } from "../_types/category"
+import { createCategoryItemAction } from "../actions"
 import { CategoryFormDialog } from "./category-form-dialog"
 
 type AddCategoryItemDialogProps = {
   group: CategoryGroup
-  onAddItem: (item: CategoryItem) => void
+  onSuccess?: () => void
 }
 
 export function AddCategoryItemDialog({
   group,
-  onAddItem,
+  onSuccess,
 }: AddCategoryItemDialogProps) {
   return (
     <CategoryFormDialog
@@ -33,17 +34,14 @@ export function AddCategoryItemDialog({
       nameLabel="Tên hạng mục"
       namePlaceholder="Ví dụ: Mua đồ ăn sáng"
       submitLabel="Lưu hạng mục"
+      submitSuccessMessage="Đã thêm hạng mục."
       initialValues={{
         name: "",
         colorName: group.colorName,
         iconName: "shopping-bag",
       }}
-      onSubmit={(values) =>
-        onAddItem({
-          id: crypto.randomUUID(),
-          ...values,
-        })
-      }
+      onSubmit={(values) => createCategoryItemAction(group.id, values)}
+      onSuccess={onSuccess}
     />
   )
 }

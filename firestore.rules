@@ -7,7 +7,8 @@ rules_version = '2';
 // users/{uid}/accounts/{accountId}
 //   name: string (required, <= 80 chars)
 //   type: "cash" | "bank" | "e-wallet"
-//   provider: string (optional, <= 80 chars)
+//   institutionId: string (required for bank/e-wallet, omitted for cash,
+//                          catalog ID <= 64 chars)
 //   balance: integer (0..999999999999999 VND)
 //   note: string (optional, <= 500 chars)
 //   excludeFromReports: bool
@@ -22,7 +23,28 @@ rules_version = '2';
 //   note: string (<= 500 chars)
 //   occurredAt, createdAt: timestamps
 //
-// All account access currently runs on the trusted Next.js server after it
+// users/{uid}/categoryGroups/{groupId}
+//   name: string (required, 1..80 chars)
+//   type: "expense" | "income" (immutable)
+//   iconName, colorName: strings from the server-side catalogs
+//   order: integer
+//   status: "active" | "archived"
+//   createdAt, updatedAt: timestamps
+//
+// users/{uid}/categoryItems/{itemId}
+//   groupId: string (required, immutable reference to categoryGroups)
+//   type: "expense" | "income" (immutable, derived from its group)
+//   name: string (required, 1..80 chars)
+//   iconName, colorName: strings from the server-side catalogs
+//   order: integer
+//   status: "active" | "archived"
+//   createdAt, updatedAt: timestamps
+//
+// users/{uid}/categorySettings/default
+//   schemaVersion: integer
+//   initializedAt, updatedAt: timestamps
+//
+// All account and category access runs on the trusted Next.js server after it
 // verifies a Firebase session cookie. Firebase Admin scopes every operation to
 // users/{requestingUid}; it bypasses these client rules by design. Direct web,
 // mobile, and REST client access therefore remains denied for every path.

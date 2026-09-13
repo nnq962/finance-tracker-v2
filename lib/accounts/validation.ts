@@ -1,6 +1,7 @@
 import "server-only"
 
 import type { AccountFormValues, AccountType } from "@/lib/accounts/types"
+import { getInstitution } from "@/lib/institutions"
 
 const accountTypes = new Set<AccountType>(["cash", "bank", "e-wallet"])
 
@@ -66,15 +67,18 @@ export function parseAccountFormData(
   options: { includeBalance: boolean },
 ) {
   const type = getText(formData, "type") as AccountType
-  const provider = getBoundedText(formData, "provider", "Nhà cung cấp", 80)
+  const institutionId = getText(formData, "institutionId")
 
   if (!accountTypes.has(type)) {
     throw new AccountValidationError("Loại tài khoản không hợp lệ.")
   }
 
-  if (type !== "cash" && !provider) {
+  if (
+    type !== "cash" &&
+    (!institutionId || !getInstitution(type, institutionId))
+  ) {
     throw new AccountValidationError(
-      "Vui lòng chọn ngân hàng hoặc ví điện tử.",
+      "Ngân hàng hoặc ví điện tử không hợp lệ.",
     )
   }
 
@@ -88,7 +92,7 @@ export function parseAccountFormData(
   }
   const note = getBoundedText(formData, "note", "Ghi chú", 500)
 
-  if (type !== "cash") values.provider = provider
+  if (type !== "cash") values.institutionId = institutionId
   if (note) values.note = note
 
   return values

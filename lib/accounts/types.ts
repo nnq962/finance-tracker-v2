@@ -5,7 +5,7 @@ export type AccountStatus = "active" | "archived"
 export type AccountFormValues = {
   name: string
   type: AccountType
-  provider?: string
+  institutionId?: string
   balance: number
   note?: string
   excludeFromReports: boolean
@@ -16,7 +16,8 @@ export type Account = {
   name: string
   balance: number
   type: AccountType
-  provider?: string
+  institutionId?: string
+  institutionName?: string
   note?: string
   excludeFromReports?: boolean
   logoUrl?: string

@@ -10,12 +10,9 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { getCategoryColor } from "@/lib/categories/category-colors"
+import type { CategoryGroup as CategoryGroupType } from "@/lib/categories/types"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 
-import type {
-  CategoryGroup as CategoryGroupType,
-  CategoryItem,
-} from "../_types/category"
 import { AddCategoryItemDialog } from "./add-category-item-dialog"
 import { DeleteCategoryGroupAlert } from "./delete-category-group-alert"
 import { EditCategoryGroupDialog } from "./edit-category-group-dialog"
@@ -23,24 +20,9 @@ import { EditCategoryItemDialog } from "./edit-category-item-dialog"
 
 type CategoryGroupProps = {
   group: CategoryGroupType
-  onAddItem: (item: CategoryItem) => void
-  onDeleteItem: (itemId: string) => void
-  onUpdateGroup: (
-    updates: Pick<CategoryGroupType, "name" | "colorName" | "iconName">
-  ) => void
-  onUpdateItem: (
-    itemId: string,
-    updates: Pick<CategoryItem, "name" | "colorName" | "iconName">
-  ) => void
 }
 
-export function CategoryGroup({
-  group,
-  onAddItem,
-  onDeleteItem,
-  onUpdateGroup,
-  onUpdateItem,
-}: CategoryGroupProps) {
+export function CategoryGroup({ group }: CategoryGroupProps) {
   const [isOpen, setIsOpen] = React.useState(false)
   const GroupIcon = categoryIconRegistry[group.iconName]
   const groupColor = getCategoryColor(group.colorName)
@@ -86,15 +68,9 @@ export function CategoryGroup({
         >
           <AddCategoryItemDialog
             group={group}
-            onAddItem={(item) => {
-              onAddItem(item)
-              setIsOpen(true)
-            }}
+            onSuccess={() => setIsOpen(true)}
           />
-          <EditCategoryGroupDialog
-            group={group}
-            onUpdateGroup={onUpdateGroup}
-          />
+          <EditCategoryGroupDialog group={group} />
           <DeleteCategoryGroupAlert group={group} />
         </div>
       </div>
@@ -106,8 +82,6 @@ export function CategoryGroup({
               key={item.id}
               group={group}
               item={item}
-              onDeleteItem={() => onDeleteItem(item.id)}
-              onUpdateItem={(updates) => onUpdateItem(item.id, updates)}
             />
           ))}
         </div>

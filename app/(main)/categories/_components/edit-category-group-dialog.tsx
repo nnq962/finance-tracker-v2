@@ -3,23 +3,17 @@
 import { PencilIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import type { CategoryGroup } from "@/lib/categories/types"
 
-import type { CategoryGroup } from "../_types/category"
+import { updateCategoryGroupAction } from "../actions"
 import { CategoryFormDialog } from "./category-form-dialog"
-
-type CategoryGroupUpdate = Pick<
-  CategoryGroup,
-  "name" | "colorName" | "iconName"
->
 
 type EditCategoryGroupDialogProps = {
   group: CategoryGroup
-  onUpdateGroup: (updates: CategoryGroupUpdate) => void
 }
 
 export function EditCategoryGroupDialog({
   group,
-  onUpdateGroup,
 }: EditCategoryGroupDialogProps) {
   const groupTypeLabel = group.type === "expense" ? "chi" : "thu"
 
@@ -39,12 +33,13 @@ export function EditCategoryGroupDialog({
       description={<>Cập nhật thông tin cho nhóm “{group.name}”.</>}
       nameLabel="Tên nhóm"
       submitLabel="Lưu thay đổi"
+      submitSuccessMessage="Đã cập nhật nhóm hạng mục."
       initialValues={{
         name: group.name,
         colorName: group.colorName,
         iconName: group.iconName,
       }}
-      onSubmit={onUpdateGroup}
+      onSubmit={(values) => updateCategoryGroupAction(group.id, values)}
     />
   )
 }

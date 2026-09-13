@@ -35,7 +35,7 @@ export function EditAccountSheet({ account, onOpenChange, open }: EditAccountShe
           defaultValues={{
             name: account.name,
             type: account.type,
-            provider: account.provider,
+            institutionId: account.institutionId,
             balance: account.balance,
             note: account.note,
             excludeFromReports: account.excludeFromReports,

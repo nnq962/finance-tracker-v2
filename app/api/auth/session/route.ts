@@ -6,6 +6,7 @@ import {
   SESSION_DURATION_MS,
 } from "@/lib/auth/constants"
 import { getFirebaseAdminAuth } from "@/lib/firebase/admin"
+import { initializeUserWorkspace } from "@/lib/onboarding/bootstrap"
 
 export const runtime = "nodejs"
 
@@ -61,6 +62,19 @@ export async function POST(request: NextRequest) {
           error: "Please sign in again to create a new session.",
         },
         { status: 401 },
+      )
+    }
+
+    try {
+      await initializeUserWorkspace(decodedIdToken.uid)
+    } catch (error) {
+      console.error("Unable to initialize user workspace", error)
+      return NextResponse.json(
+        {
+          code: "onboarding/initialization-failed",
+          error: "Unable to prepare your workspace. Please try again.",
+        },
+        { status: 503 },
       )
     }
 

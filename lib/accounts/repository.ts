@@ -7,6 +7,7 @@ import type {
   AccountFormValues,
 } from "@/lib/accounts/types"
 import { getFirebaseAdminFirestore } from "@/lib/firebase/admin"
+import { getInstitution } from "@/lib/institutions"
 
 type AccountDocument = AccountFormValues & {
   status: "active" | "archived"
@@ -21,8 +22,8 @@ function getAccountsCollection(userId: string) {
     .collection("accounts")
 }
 
-function getLogoFallback(name: string, provider?: string) {
-  return (provider ?? name)
+function getLogoFallback(name: string, institutionName?: string) {
+  return (institutionName ?? name)
     .trim()
     .split(/\s+/)
     .slice(0, 2)
@@ -38,16 +39,23 @@ export async function getAccounts(userId: string): Promise<Account[]> {
 
   return snapshot.docs.map((document) => {
     const data = document.data() as AccountDocument
+    const institution =
+      data.type !== "cash" && data.institutionId
+        ? getInstitution(data.type, data.institutionId)
+        : undefined
+    const institutionName = institution?.shortName ?? institution?.name
 
     return {
       id: document.id,
       name: data.name,
       type: data.type,
       balance: data.balance,
-      provider: data.provider,
+      institutionId: data.institutionId,
+      institutionName,
       note: data.note,
       excludeFromReports: data.excludeFromReports,
-      logoFallback: getLogoFallback(data.name, data.provider),
+      logoUrl: institution?.logoPath,
+      logoFallback: getLogoFallback(data.name, institutionName),
       status: data.status,
       updatedAt: data.updatedAt.toDate().toISOString(),
     }
@@ -67,7 +75,9 @@ export async function createAccount(
     status: "active",
     createdAt: now,
     updatedAt: now,
-    ...(values.provider ? { provider: values.provider } : {}),
+    ...(values.institutionId
+      ? { institutionId: values.institutionId }
+      : {}),
     ...(values.note ? { note: values.note } : {}),
   }
 
@@ -84,7 +94,7 @@ export async function updateAccount(
     .update({
       name: values.name,
       type: values.type,
-      provider: values.provider ?? FieldValue.delete(),
+      institutionId: values.institutionId ?? FieldValue.delete(),
       note: values.note ?? FieldValue.delete(),
       excludeFromReports: values.excludeFromReports,
       updatedAt: FieldValue.serverTimestamp(),

@@ -1,6 +1,9 @@
 "use client"
 
 import * as React from "react"
+import { LoaderCircleIcon } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 import {
   Dialog,
@@ -20,7 +23,12 @@ import {
 } from "@/components/animate-ui/components/radix/popover"
 import { IconPicker } from "@/components/forms/icon-picker"
 import { Button } from "@/components/ui/button"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import {
@@ -28,16 +36,14 @@ import {
   getCategoryColor,
   type CategoryColorName,
 } from "@/lib/categories/category-colors"
+import type {
+  CategoryActionResult,
+  CategoryFormValues,
+} from "@/lib/categories/types"
 import {
   categoryIconRegistry,
   type CategoryIconName,
 } from "@/lib/icons/category-icon-registry"
-
-export type CategoryFormValues = {
-  name: string
-  colorName: CategoryColorName
-  iconName: CategoryIconName
-}
 
 type CategoryFormDialogProps = {
   deleteDescription?: React.ReactNode
@@ -46,9 +52,12 @@ type CategoryFormDialogProps = {
   initialValues: CategoryFormValues
   nameLabel: string
   namePlaceholder?: string
-  onDelete?: () => void
-  onSubmit: (values: CategoryFormValues) => void
+  onDelete?: () => Promise<CategoryActionResult>
+  onSubmit: (values: CategoryFormValues) => Promise<CategoryActionResult>
+  onSuccess?: () => void
+  deleteSuccessMessage?: string
   submitLabel: string
+  submitSuccessMessage: string
   title: React.ReactNode
   trigger: React.ReactNode
 }
@@ -62,18 +71,24 @@ export function CategoryFormDialog({
   namePlaceholder,
   onDelete,
   onSubmit,
+  onSuccess,
+  deleteSuccessMessage = "Đã xoá hạng mục.",
   submitLabel,
+  submitSuccessMessage,
   title,
   trigger,
 }: CategoryFormDialogProps) {
+  const router = useRouter()
   const inputId = React.useId()
   const [open, setOpen] = React.useState(false)
+  const [isPending, startTransition] = React.useTransition()
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   const [name, setName] = React.useState(initialValues.name)
   const [color, setColor] = React.useState<CategoryColorName>(
-    initialValues.colorName
+    initialValues.colorName,
   )
   const [iconName, setIconName] = React.useState<CategoryIconName>(
-    initialValues.iconName
+    initialValues.iconName,
   )
   const SelectedIcon = categoryIconRegistry[iconName]
   const selectedColor = getCategoryColor(color)
@@ -82,30 +97,69 @@ export function CategoryFormDialog({
     setName(initialValues.name)
     setColor(initialValues.colorName)
     setIconName(initialValues.iconName)
+    setErrorMessage(null)
   }
 
   const handleOpenChange = (nextOpen: boolean) => {
+    if (isPending) return
     if (nextOpen) resetForm()
     setOpen(nextOpen)
   }
 
+  const finishAction = (
+    result: CategoryActionResult,
+    successMessage: string,
+  ) => {
+    if (!result.success) {
+      setErrorMessage(result.error)
+      toast.error(result.error)
+      return
+    }
+
+    setOpen(false)
+    toast.success(successMessage)
+    onSuccess?.()
+    router.refresh()
+  }
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-
     const trimmedName = name.trim()
+
     if (!trimmedName) return
 
-    onSubmit({
-      name: trimmedName,
-      colorName: color,
-      iconName,
+    setErrorMessage(null)
+    startTransition(async () => {
+      try {
+        finishAction(
+          await onSubmit({
+            name: trimmedName,
+            colorName: color,
+            iconName,
+          }),
+          submitSuccessMessage,
+        )
+      } catch {
+        const message = "Không thể lưu thay đổi. Vui lòng thử lại."
+        setErrorMessage(message)
+        toast.error(message)
+      }
     })
-    setOpen(false)
   }
 
   const handleDelete = () => {
-    onDelete?.()
-    setOpen(false)
+    if (!onDelete) return
+
+    setErrorMessage(null)
+    startTransition(async () => {
+      try {
+        finishAction(await onDelete(), deleteSuccessMessage)
+      } catch {
+        const message = "Không thể xoá hạng mục. Vui lòng thử lại."
+        setErrorMessage(message)
+        toast.error(message)
+      }
+    })
   }
 
   return (
@@ -136,6 +190,8 @@ export function CategoryFormDialog({
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 placeholder={namePlaceholder}
+                maxLength={80}
+                disabled={isPending}
                 autoFocus
               />
             </Field>
@@ -150,6 +206,7 @@ export function CategoryFormDialog({
                   if (value) setColor(value as CategoryColorName)
                 }}
                 className="flex-wrap"
+                disabled={isPending}
               >
                 {categoryColorOptions.map((option) => (
                   <ToggleGroupItem
@@ -176,13 +233,21 @@ export function CategoryFormDialog({
             </Field>
           </FieldGroup>
 
+          {errorMessage ? (
+            <FieldError className="mt-4">{errorMessage}</FieldError>
+          ) : null}
+
           <DialogFooter
             className={onDelete ? "mt-6 sm:justify-between" : "mt-6"}
           >
             {onDelete && (
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button type="button" variant="destructive">
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    disabled={isPending}
+                  >
                     {deleteLabel}
                   </Button>
                 </PopoverTrigger>
@@ -196,7 +261,12 @@ export function CategoryFormDialog({
                     </div>
                     <div className="flex justify-end gap-2">
                       <PopoverClose asChild>
-                        <Button type="button" variant="outline" size="sm">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={isPending}
+                        >
                           Huỷ
                         </Button>
                       </PopoverClose>
@@ -205,7 +275,11 @@ export function CategoryFormDialog({
                         variant="destructive"
                         size="sm"
                         onClick={handleDelete}
+                        disabled={isPending}
                       >
+                        {isPending ? (
+                          <LoaderCircleIcon className="animate-spin" />
+                        ) : null}
                         Xác nhận xoá
                       </Button>
                     </div>
@@ -216,12 +290,15 @@ export function CategoryFormDialog({
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row">
               <DialogClose asChild>
-                <Button type="button" variant="outline">
+                <Button type="button" variant="outline" disabled={isPending}>
                   Huỷ
                 </Button>
               </DialogClose>
-              <Button type="submit" disabled={!name.trim()}>
-                {submitLabel}
+              <Button type="submit" disabled={!name.trim() || isPending}>
+                {isPending ? (
+                  <LoaderCircleIcon className="animate-spin" />
+                ) : null}
+                {isPending ? "Đang lưu..." : submitLabel}
               </Button>
             </div>
           </DialogFooter>

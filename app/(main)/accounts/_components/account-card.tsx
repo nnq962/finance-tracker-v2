@@ -1,6 +1,6 @@
 import { LockKeyholeIcon } from "lucide-react"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { AccountLogo } from "@/components/account-logo"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -24,7 +24,7 @@ export function AccountCard({ account }: AccountCardProps) {
   const accountKind =
     account.type === "cash"
       ? "Tiền mặt"
-      : account.provider ??
+      : account.institutionName ??
         (account.type === "bank" ? "Ngân hàng" : "Ví điện tử")
 
   return (
@@ -37,10 +37,7 @@ export function AccountCard({ account }: AccountCardProps) {
       ) : null}
       <CardHeader>
         <div className="flex items-center gap-3">
-          <Avatar>
-            <AvatarImage src={account.logoUrl} alt={account.name} />
-            <AvatarFallback>{account.logoFallback}</AvatarFallback>
-          </Avatar>
+          <AccountLogo account={account} />
           <div className="min-w-0 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <CardTitle>{account.name}</CardTitle>
