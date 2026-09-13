@@ -2,6 +2,9 @@
 
 import * as React from "react"
 
+import type { Account } from "@/lib/accounts/types"
+import type { CategoryGroup } from "@/lib/categories/types"
+
 import {
   getLatestTransactionDateKey,
   getTransactionPeriod,
@@ -19,28 +22,33 @@ import { TransactionsView } from "./transactions-view"
 import { TransactionPeriodFilter } from "./transaction-period-filter"
 
 type TransactionsDashboardProps = {
+  accounts: Account[]
+  categoryGroups: CategoryGroup[]
   transactions: Transaction[]
 }
 
 export function TransactionsDashboard({
+  accounts,
+  categoryGroups,
   transactions,
 }: TransactionsDashboardProps) {
-  const [transactionItems, setTransactionItems] = React.useState(transactions)
   const latestDateKey = React.useMemo(
-    () => getLatestTransactionDateKey(transactionItems),
-    [transactionItems],
+    () => getLatestTransactionDateKey(transactions),
+    [transactions],
   )
   const [period, setPeriod] = React.useState<TransactionPeriod>("month")
   const [anchorDateKey, setAnchorDateKey] = React.useState(latestDateKey)
+  const effectiveAnchorDateKey =
+    anchorDateKey === "0000-00-00" ? latestDateKey : anchorDateKey
   const periodData = React.useMemo(
     () =>
       getTransactionPeriod(
-        transactionItems,
+        transactions,
         period,
-        anchorDateKey,
+        effectiveAnchorDateKey,
         latestDateKey,
       ),
-    [anchorDateKey, latestDateKey, period, transactionItems],
+    [effectiveAnchorDateKey, latestDateKey, period, transactions],
   )
   const summary = React.useMemo(
     () => getTransactionSummary(periodData.transactions),
@@ -50,7 +58,10 @@ export function TransactionsDashboard({
   return (
     <>
       <TransactionsHeader>
-        <AddTransactionButton />
+        <AddTransactionButton
+          accounts={accounts}
+          categoryGroups={categoryGroups}
+        />
       </TransactionsHeader>
       <TransactionSummary summary={summary} />
       <TransactionPeriodFilter
@@ -76,12 +87,9 @@ export function TransactionsDashboard({
         onReset={() => setAnchorDateKey(latestDateKey)}
       />
       <TransactionsView
+        accounts={accounts}
+        categoryGroups={categoryGroups}
         transactions={periodData.transactions}
-        onDelete={(transactionId) =>
-          setTransactionItems((current) =>
-            current.filter((transaction) => transaction.id !== transactionId),
-          )
-        }
       />
     </>
   )

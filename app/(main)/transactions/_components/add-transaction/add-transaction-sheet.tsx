@@ -12,14 +12,25 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import type { Account } from "@/lib/accounts/types"
+import type { CategoryGroup } from "@/lib/categories/types"
+import type { SupportedTransactionKind } from "@/lib/transactions/types"
 
-import type { TransactionKind } from "../../_types/transaction"
+import { createTransactionAction } from "../../actions"
 import { TransactionForm } from "./transaction-form"
 import { TransactionKindSelector } from "./transaction-kind-selector"
 
-export function AddTransactionSheet() {
+type AddTransactionSheetProps = {
+  accounts: Account[]
+  categoryGroups: CategoryGroup[]
+}
+
+export function AddTransactionSheet({
+  accounts,
+  categoryGroups,
+}: AddTransactionSheetProps) {
   const [open, setOpen] = React.useState(false)
-  const [kind, setKind] = React.useState<TransactionKind>("expense")
+  const [kind, setKind] = React.useState<SupportedTransactionKind>("expense")
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -39,7 +50,15 @@ export function AddTransactionSheet() {
         <div className="px-4">
           <TransactionKindSelector value={kind} onValueChange={setKind} />
         </div>
-        <TransactionForm kind={kind} onSubmit={() => setOpen(false)} />
+        <TransactionForm
+          key={kind}
+          accounts={accounts}
+          action={createTransactionAction}
+          categoryGroups={categoryGroups}
+          kind={kind}
+          onSuccess={() => setOpen(false)}
+          successMessage="Đã thêm giao dịch."
+        />
       </SheetContent>
     </Sheet>
   )

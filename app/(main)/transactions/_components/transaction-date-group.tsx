@@ -1,18 +1,22 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import type { Account } from "@/lib/accounts/types"
+import type { CategoryGroup } from "@/lib/categories/types"
 
 import { TransactionItem } from "./transaction-item"
 
 import type { TransactionDateGroup as TransactionDateGroupModel } from "../_types/transaction"
 
 type TransactionDateGroupProps = {
+  accounts: Account[]
+  categoryGroups: CategoryGroup[]
   group: TransactionDateGroupModel
-  onDelete: (transactionId: string) => void
 }
 
 export function TransactionDateGroup({
+  accounts,
+  categoryGroups,
   group,
-  onDelete,
 }: TransactionDateGroupProps) {
   return (
     <section className="space-y-3">
@@ -28,8 +32,9 @@ export function TransactionDateGroup({
             <div key={transaction.id}>
               {index > 0 ? <Separator /> : null}
               <TransactionItem
+                accounts={accounts}
+                categoryGroups={categoryGroups}
                 transaction={transaction}
-                onDelete={onDelete}
               />
             </div>
           ))}

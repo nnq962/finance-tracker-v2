@@ -1,32 +1,11 @@
-import {
-  CarFrontIcon,
-  FilmIcon,
-  HouseIcon,
-  ReceiptTextIcon,
-  ShoppingBagIcon,
-  UtensilsIcon,
-} from "lucide-react"
-
-import { expenseCategoryOptions } from "../../../_data/transaction-form-options"
 import { CashFlowFields } from "./cash-flow-fields"
+import type { TransactionFieldProps } from "../form-types"
 
-const categoryIcons = [
-  UtensilsIcon,
-  ShoppingBagIcon,
-  ReceiptTextIcon,
-  CarFrontIcon,
-  FilmIcon,
-  HouseIcon,
-]
-
-export function ExpenseFields() {
+export function ExpenseFields(props: TransactionFieldProps) {
   return (
     <CashFlowFields
+      {...props}
       idPrefix="expense"
-      categories={expenseCategoryOptions.map((label, index) => ({
-        label,
-        icon: categoryIcons[index],
-      }))}
       notePlaceholder="Thêm ghi chú cho khoản chi..."
     />
   )

@@ -12,8 +12,12 @@ export function getTransactionSummary(
         totals.income += Math.abs(transaction.amount)
       }
 
-      if (transaction.kind === "expense" || transaction.kind === "loan") {
+      if (transaction.kind === "expense") {
         totals.expense += Math.abs(transaction.amount)
+      }
+
+      if (transaction.kind === "transfer") {
+        totals.expense += transaction.fee ?? 0
       }
 
       return totals

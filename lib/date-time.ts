@@ -13,3 +13,23 @@ export function getCurrentLocalDateTime(): LocalDateTime {
     time: localDate.slice(11, 16),
   }
 }
+
+export function getLocalDateTime(isoDate: string): LocalDateTime {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Ho_Chi_Minh",
+  }).formatToParts(new Date(isoDate))
+  const values = Object.fromEntries(
+    parts.map((part) => [part.type, part.value]),
+  )
+
+  return {
+    date: `${values.year}-${values.month}-${values.day}`,
+    time: `${values.hour}:${values.minute}`,
+  }
+}

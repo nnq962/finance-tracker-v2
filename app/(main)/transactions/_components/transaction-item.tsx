@@ -5,15 +5,23 @@ import {
   ArrowDownLeftIcon,
   ArrowUpRightIcon,
   HandshakeIcon,
+  LoaderCircleIcon,
+  PencilIcon,
   Repeat2Icon,
   Trash2Icon,
 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { ButtonGroup } from "@/components/ui/button-group"
+import type { Account } from "@/lib/accounts/types"
+import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
 
+import { deleteTransactionAction } from "../actions"
 import type { Transaction, TransactionKind } from "../_types/transaction"
+import { EditTransactionSheet } from "./edit-transaction-sheet"
 
 const kindPresentation: Record<
   TransactionKind,
@@ -53,21 +61,46 @@ const timeFormatter = new Intl.DateTimeFormat("vi-VN", {
 })
 
 type TransactionItemProps = {
+  accounts: Account[]
+  categoryGroups: CategoryGroup[]
   transaction: Transaction
-  onDelete: (transactionId: string) => void
 }
 
 export function TransactionItem({
+  accounts,
+  categoryGroups,
   transaction,
-  onDelete,
 }: TransactionItemProps) {
+  const router = useRouter()
+  const [isPending, startTransition] = React.useTransition()
   const [isConfirmingDelete, setIsConfirmingDelete] = React.useState(false)
   const [isDeleteRevealed, setIsDeleteRevealed] = React.useState(false)
+  const [editOpen, setEditOpen] = React.useState(false)
   const itemRef = React.useRef<HTMLElement>(null)
   const swipeStartRef = React.useRef<{ x: number; y: number } | null>(null)
   const presentation = kindPresentation[transaction.kind]
   const Icon = presentation.icon
   const signDisplay = transaction.kind === "transfer" ? "never" : "always"
+
+  const handleDelete = () => {
+    startTransition(async () => {
+      try {
+        const result = await deleteTransactionAction(transaction.id)
+
+        if (result.success) {
+          toast.success("Đã xoá giao dịch.")
+          router.refresh()
+          return
+        }
+
+        setIsConfirmingDelete(false)
+        toast.error(result.error)
+      } catch {
+        setIsConfirmingDelete(false)
+        toast.error("Không thể xoá giao dịch. Vui lòng thử lại.")
+      }
+    })
+  }
 
   React.useEffect(() => {
     if (!isDeleteRevealed) return
@@ -105,6 +138,7 @@ export function TransactionItem({
   }
 
   return (
+    <>
     <article
       ref={itemRef}
       className="group/transaction flex touch-pan-y items-center gap-3 py-3 sm:gap-4"
@@ -132,6 +166,7 @@ export function TransactionItem({
               type="button"
               variant="outline"
               size="sm"
+              disabled={isPending}
               onClick={() => setIsConfirmingDelete(false)}
             >
               Huỷ
@@ -140,18 +175,20 @@ export function TransactionItem({
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => onDelete(transaction.id)}
+              disabled={isPending}
+              onClick={handleDelete}
             >
-              Xoá
+              {isPending ? <LoaderCircleIcon className="animate-spin" /> : null}
+              {isPending ? "Đang xoá..." : "Xoá"}
             </Button>
           </ButtonGroup>
         </div>
       ) : (
         <div className="relative flex shrink-0 items-center justify-end">
           <div
-            className={`text-right transition-transform duration-200 ease-out motion-reduce:transition-none group-hover/transaction:-translate-x-10 group-focus-within/transaction:-translate-x-10 ${
+            className={`text-right transition-transform duration-200 ease-out motion-reduce:transition-none group-hover/transaction:-translate-x-20 group-focus-within/transaction:-translate-x-20 ${
               isDeleteRevealed
-                ? "[@media(hover:none)]:-translate-x-10"
+                ? "[@media(hover:none)]:-translate-x-20"
                 : "[@media(hover:none)]:translate-x-0"
             }`}
           >
@@ -174,21 +211,43 @@ export function TransactionItem({
                 : "[@media(hover:none)]:pointer-events-none [@media(hover:none)]:translate-x-2 [@media(hover:none)]:opacity-0"
             }`}
           >
-            <Button
-              type="button"
-              variant="destructive"
-              size="icon"
-              aria-label={`Xóa giao dịch ${transaction.title}`}
-              onClick={() => {
-                setIsDeleteRevealed(false)
-                setIsConfirmingDelete(true)
-              }}
-            >
-              <Trash2Icon />
-            </Button>
+            <ButtonGroup>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                aria-label={`Chỉnh sửa giao dịch ${transaction.title}`}
+                onClick={() => {
+                  setIsDeleteRevealed(false)
+                  setEditOpen(true)
+                }}
+              >
+                <PencilIcon />
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                aria-label={`Xóa giao dịch ${transaction.title}`}
+                onClick={() => {
+                  setIsDeleteRevealed(false)
+                  setIsConfirmingDelete(true)
+                }}
+              >
+                <Trash2Icon />
+              </Button>
+            </ButtonGroup>
           </div>
         </div>
       )}
     </article>
+      <EditTransactionSheet
+        accounts={accounts}
+        categoryGroups={categoryGroups}
+        transaction={transaction}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
+    </>
   )
 }

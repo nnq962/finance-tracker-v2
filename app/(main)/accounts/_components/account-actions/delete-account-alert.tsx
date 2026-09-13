@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { LoaderCircleIcon, Trash2Icon } from "lucide-react"
+import { toast } from "sonner"
 
 import {
   AlertDialog,
@@ -38,15 +39,23 @@ export function DeleteAccountAlert({
     setErrorMessage(null)
 
     startTransition(async () => {
-      const result = await deleteAccountAction(account.id)
+      try {
+        const result = await deleteAccountAction(account.id)
 
-      if (result.success) {
-        onOpenChange(false)
-        router.refresh()
-        return
+        if (result.success) {
+          toast.success("Đã xoá tài khoản.")
+          onOpenChange(false)
+          router.refresh()
+          return
+        }
+
+        setErrorMessage(result.error)
+        toast.error(result.error)
+      } catch {
+        const message = "Không thể xoá tài khoản. Vui lòng thử lại."
+        setErrorMessage(message)
+        toast.error(message)
       }
-
-      setErrorMessage(result.error)
     })
   }
 

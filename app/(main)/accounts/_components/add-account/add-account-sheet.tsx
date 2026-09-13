@@ -37,6 +37,7 @@ export function AddAccountSheet({ trigger }: AddAccountSheetProps) {
         <AccountForm
           action={createAccountAction}
           onSuccess={() => setOpen(false)}
+          successMessage="Đã thêm tài khoản."
         />
       </SheetContent>
     </Sheet>

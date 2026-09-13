@@ -10,6 +10,7 @@ import {
   PencilIcon,
   Trash2Icon,
 } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -40,10 +41,22 @@ export function AccountActionsMenu({ account }: AccountActionsMenuProps) {
 
   const handleArchivedChange = () => {
     startTransition(async () => {
-      const result = await setAccountArchivedAction(account.id, !isLocked)
+      try {
+        const result = await setAccountArchivedAction(account.id, !isLocked)
 
-      if (result.success) {
-        router.refresh()
+        if (result.success) {
+          toast.success(
+            isLocked
+              ? "Đã kích hoạt lại tài khoản."
+              : "Đã ngừng sử dụng tài khoản.",
+          )
+          router.refresh()
+          return
+        }
+
+        toast.error(result.error)
+      } catch {
+        toast.error("Không thể cập nhật trạng thái tài khoản. Vui lòng thử lại.")
       }
     })
   }

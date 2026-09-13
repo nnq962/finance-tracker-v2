@@ -36,7 +36,7 @@ export function EditAccountSheet({ account, onOpenChange, open }: EditAccountShe
             name: account.name,
             type: account.type,
             institutionId: account.institutionId,
-            balance: account.balance,
+            balance: account.openingBalance,
             note: account.note,
             excludeFromReports: account.excludeFromReports,
           }}
@@ -44,6 +44,7 @@ export function EditAccountSheet({ account, onOpenChange, open }: EditAccountShe
           submitLabel="Lưu thay đổi"
           action={updateAccountAction.bind(null, account.id)}
           onSuccess={() => onOpenChange(false)}
+          successMessage="Đã cập nhật tài khoản."
         />
       </SheetContent>
     </Sheet>

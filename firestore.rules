@@ -9,7 +9,8 @@ rules_version = '2';
 //   type: "cash" | "bank" | "e-wallet"
 //   institutionId: string (required for bank/e-wallet, omitted for cash,
 //                          catalog ID <= 64 chars)
-//   balance: integer (0..999999999999999 VND)
+//   openingBalance: immutable integer (0..999999999999999 VND)
+//   balance: current integer balance (0..999999999999999 VND)
 //   note: string (optional, <= 500 chars)
 //   excludeFromReports: bool
 //   status: "active" | "archived"
@@ -44,7 +45,16 @@ rules_version = '2';
 //   schemaVersion: integer
 //   initializedAt, updatedAt: timestamps
 //
-// All account and category access runs on the trusted Next.js server after it
+// users/{uid}/transactions/{transactionId}
+//   kind: "expense" | "income" | "transfer"
+//   amount: positive integer VND
+//   fee: non-negative integer VND (transfer only)
+//   accountIds: account document IDs affected by the transaction
+//   account/category IDs plus display-name snapshots for history
+//   note: string (optional, <= 500 chars)
+//   occurredAt, createdAt, updatedAt: timestamps
+//
+// All account, category, and transaction access runs on the trusted Next.js server after it
 // verifies a Firebase session cookie. Firebase Admin scopes every operation to
 // users/{requestingUid}; it bypasses these client rules by design. Direct web,
 // mobile, and REST client access therefore remains denied for every path.

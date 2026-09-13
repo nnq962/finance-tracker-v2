@@ -10,6 +10,7 @@ import {
   SaveIcon,
   WalletCardsIcon,
 } from "lucide-react"
+import { toast } from "sonner"
 
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { Button } from "@/components/ui/button"
@@ -78,6 +79,7 @@ type AccountFormProps = {
   onSuccess: () => void
   showBalance?: boolean
   submitLabel?: string
+  successMessage: string
 }
 
 export function AccountForm({
@@ -86,6 +88,7 @@ export function AccountForm({
   onSuccess,
   showBalance = true,
   submitLabel = "Lưu tài khoản",
+  successMessage,
 }: AccountFormProps) {
   const router = useRouter()
   const formRef = React.useRef<HTMLFormElement>(null)
@@ -115,15 +118,23 @@ export function AccountForm({
         setErrorMessage(null)
 
         startTransition(async () => {
-          const result = await action(formData)
+          try {
+            const result = await action(formData)
 
-          if (result.success) {
-            onSuccess()
-            router.refresh()
-            return
+            if (result.success) {
+              toast.success(successMessage)
+              onSuccess()
+              router.refresh()
+              return
+            }
+
+            setErrorMessage(result.error)
+            toast.error(result.error)
+          } catch {
+            const message = "Không thể lưu tài khoản. Vui lòng thử lại."
+            setErrorMessage(message)
+            toast.error(message)
           }
-
-          setErrorMessage(result.error)
         })
       }}
     >

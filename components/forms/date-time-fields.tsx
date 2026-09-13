@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input"
 import { getCurrentLocalDateTime } from "@/lib/date-time"
 
 type DateTimeFieldsProps = {
+  defaultDate?: string
+  defaultTime?: string
   dateName?: string
   idPrefix: string
   label?: string
@@ -15,6 +17,8 @@ type DateTimeFieldsProps = {
 }
 
 export function DateTimeFields({
+  defaultDate,
+  defaultTime,
   dateName = "date",
   idPrefix,
   label = "Thời gian",
@@ -33,7 +37,7 @@ export function DateTimeFields({
             aria-label="Ngày"
             name={dateName}
             type="date"
-            defaultValue={currentDateTime.date}
+            defaultValue={defaultDate ?? currentDateTime.date}
             required={required}
             className="w-auto min-w-0 max-w-full flex-1"
           />
@@ -44,7 +48,7 @@ export function DateTimeFields({
             aria-label="Thời gian"
             name={timeName}
             type="time"
-            defaultValue={currentDateTime.time}
+            defaultValue={defaultTime ?? currentDateTime.time}
             required={required}
             className="w-auto min-w-0 max-w-full flex-1"
           />

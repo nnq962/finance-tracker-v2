@@ -12,6 +12,7 @@ import {
 } from "@/components/animate-ui/components/radix/tabs"
 
 import type { TransactionKind } from "../../_types/transaction"
+import type { SupportedTransactionKind } from "@/lib/transactions/types"
 
 const transactionKinds: Array<{
   value: TransactionKind
@@ -25,8 +26,8 @@ const transactionKinds: Array<{
 ]
 
 type TransactionKindSelectorProps = {
-  value: TransactionKind
-  onValueChange: (value: TransactionKind) => void
+  value: SupportedTransactionKind
+  onValueChange: (value: SupportedTransactionKind) => void
 }
 
 export function TransactionKindSelector({
@@ -36,9 +37,11 @@ export function TransactionKindSelector({
   return (
     <Tabs
       value={value}
-      onValueChange={(nextValue) =>
-        onValueChange(nextValue as TransactionKind)
-      }
+      onValueChange={(nextValue) => {
+        if (nextValue !== "loan") {
+          onValueChange(nextValue as SupportedTransactionKind)
+        }
+      }}
       className="w-full"
     >
       <TabsList
@@ -46,7 +49,12 @@ export function TransactionKindSelector({
         aria-label="Loại giao dịch"
       >
         {transactionKinds.map(({ value: kind, label, icon: Icon }) => (
-          <TabsTrigger key={kind} value={kind}>
+          <TabsTrigger
+            key={kind}
+            value={kind}
+            disabled={kind === "loan"}
+            title={kind === "loan" ? "Sẽ khả dụng khi hoàn thiện Vay nợ" : undefined}
+          >
             <Icon />
             {label}
           </TabsTrigger>

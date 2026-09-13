@@ -14,6 +14,7 @@ export type AccountFormValues = {
 export type Account = {
   id: string
   name: string
+  openingBalance: number
   balance: number
   type: AccountType
   institutionId?: string

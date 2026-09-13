@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { LoaderCircleIcon, SaveIcon } from "lucide-react"
+import { toast } from "sonner"
 
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
@@ -57,15 +58,23 @@ export function AdjustBalanceForm({
         setErrorMessage(null)
 
         startTransition(async () => {
-          const result = await action(formData)
+          try {
+            const result = await action(formData)
 
-          if (result.success) {
-            onSuccess()
-            router.refresh()
-            return
+            if (result.success) {
+              toast.success("Đã điều chỉnh số dư.")
+              onSuccess()
+              router.refresh()
+              return
+            }
+
+            setErrorMessage(result.error)
+            toast.error(result.error)
+          } catch {
+            const message = "Không thể điều chỉnh số dư. Vui lòng thử lại."
+            setErrorMessage(message)
+            toast.error(message)
           }
-
-          setErrorMessage(result.error)
         })
       }}
     >

@@ -20,7 +20,7 @@ export function filterTransactions(
   return transactions.filter((transaction) => {
     const matchesFilter = filter === "all" || transaction.kind === filter
     const searchableContent = normalizeSearchValue(
-      `${transaction.title} ${transaction.description} ${transaction.id}`,
+      `${transaction.title} ${transaction.description} ${transaction.note ?? ""} ${transaction.id}`,
     )
 
     return (

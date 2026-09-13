@@ -2,9 +2,9 @@
 
 import { PlusIcon } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
+import { Button } from "@/components/ui/button"
 import {
   Collapsible,
   CollapsibleContent,
@@ -20,20 +20,35 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { getLocalDateTime } from "@/lib/date-time"
 
-import { accountOptions } from "../../../_data/transaction-form-options"
+import type { TransactionFieldProps } from "../form-types"
 
-function AccountSelect({ id, name }: { id: string; name: string }) {
+function AccountSelect({
+  accounts,
+  defaultValue,
+  id,
+  name,
+}: {
+  accounts: TransactionFieldProps["accounts"]
+  defaultValue?: string
+  id: string
+  name: string
+}) {
+  const availableAccounts = accounts.filter(
+    (account) => account.status === "active" || account.id === defaultValue,
+  )
+
   return (
-    <Select name={name} required>
+    <Select name={name} defaultValue={defaultValue} required>
       <SelectTrigger id={id} className="w-full">
         <SelectValue placeholder="Chọn tài khoản" />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          {accountOptions.map((account) => (
-            <SelectItem key={account} value={account}>
-              {account}
+          {availableAccounts.map((account) => (
+            <SelectItem key={account.id} value={account.id}>
+              {account.name}
             </SelectItem>
           ))}
         </SelectGroup>
@@ -42,17 +57,35 @@ function AccountSelect({ id, name }: { id: string; name: string }) {
   )
 }
 
-export function TransferFields() {
+export function TransferFields({
+  accounts,
+  defaultValues,
+}: TransactionFieldProps) {
+  const defaultDateTime = defaultValues
+    ? getLocalDateTime(defaultValues.occurredAt)
+    : undefined
+
   return (
     <FieldGroup>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field>
           <FieldLabel htmlFor="transfer-amount">Số tiền</FieldLabel>
-          <CurrencyInput id="transfer-amount" name="amount" required />
+          <CurrencyInput
+            key={`${defaultValues?.id ?? "new"}-transfer-amount`}
+            id="transfer-amount"
+            name="amount"
+            defaultValue={defaultValues?.amount}
+            required
+          />
         </Field>
         <Field>
           <FieldLabel htmlFor="transfer-fee">Phí chuyển (nếu có)</FieldLabel>
-          <CurrencyInput id="transfer-fee" name="fee" />
+          <CurrencyInput
+            key={`${defaultValues?.id ?? "new"}-transfer-fee`}
+            id="transfer-fee"
+            name="fee"
+            defaultValue={defaultValues?.fee}
+          />
         </Field>
       </div>
 
@@ -61,17 +94,32 @@ export function TransferFields() {
           <FieldLabel htmlFor="transfer-from-account">
             Từ tài khoản
           </FieldLabel>
-          <AccountSelect id="transfer-from-account" name="fromAccount" />
+          <AccountSelect
+            accounts={accounts}
+            defaultValue={defaultValues?.fromAccountId}
+            id="transfer-from-account"
+            name="fromAccountId"
+          />
         </Field>
         <Field>
           <FieldLabel htmlFor="transfer-to-account">Đến tài khoản</FieldLabel>
-          <AccountSelect id="transfer-to-account" name="toAccount" />
+          <AccountSelect
+            accounts={accounts}
+            defaultValue={defaultValues?.toAccountId}
+            id="transfer-to-account"
+            name="toAccountId"
+          />
         </Field>
       </div>
 
-      <DateTimeFields idPrefix="transfer" required />
+      <DateTimeFields
+        idPrefix="transfer"
+        defaultDate={defaultDateTime?.date}
+        defaultTime={defaultDateTime?.time}
+        required
+      />
 
-      <Collapsible>
+      <Collapsible defaultOpen={Boolean(defaultValues?.note)}>
         <CollapsibleTrigger asChild>
           <Button type="button" variant="ghost" size="sm">
             <PlusIcon />
@@ -86,6 +134,7 @@ export function TransferFields() {
             <Textarea
               id="transfer-note"
               name="note"
+              defaultValue={defaultValues?.note}
               placeholder="Thêm ghi chú cho giao dịch chuyển khoản..."
             />
           </Field>
