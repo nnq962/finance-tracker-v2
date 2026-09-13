@@ -15,6 +15,7 @@ import {
 } from "@/components/animate-ui/components/radix/sidebar"
 import {
   ArrowLeftRightIcon,
+  HandCoinsIcon,
   LayoutDashboardIcon,
   TagsIcon,
   TerminalIcon,
@@ -47,6 +48,11 @@ const data = {
       title: "Hạng mục",
       url: "/categories",
       icon: <TagsIcon />,
+    },
+    {
+      title: "Nợ & Cho vay",
+      url: "/debts",
+      icon: <HandCoinsIcon />,
     },
   ],
 }
