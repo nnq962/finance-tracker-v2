@@ -1,0 +1,73 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// users/{uid}/accounts/{accountId}
+//   name: string (required, <= 80 chars)
+//   type: "cash" | "bank" | "e-wallet"
+//   provider: string (optional, <= 80 chars)
+//   balance: integer (0..999999999999999 VND)
+//   note: string (optional, <= 500 chars)
+//   excludeFromReports: bool
+//   status: "active" | "archived"
+//   createdAt: timestamp
+//   updatedAt: timestamp
+//
+// users/{uid}/accounts/{accountId}/balanceAdjustments/{adjustmentId}
+//   previousBalance, actualBalance, difference: integers
+//   category: "Đối soát số dư" | "Lãi tài khoản" |
+//             "Phí dịch vụ" | "Khác"
+//   note: string (<= 500 chars)
+//   occurredAt, createdAt: timestamps
+//
+// All account access currently runs on the trusted Next.js server after it
+// verifies a Firebase session cookie. Firebase Admin scopes every operation to
+// users/{requestingUid}; it bypasses these client rules by design. Direct web,
+// mobile, and REST client access therefore remains denied for every path.
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // =============================================================
+    // Helper Functions
+    // =============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function uidUnchanged() {
+      return isAuthenticated() &&
+        (!('uid' in request.resource.data) ||
+          request.resource.data.uid == request.auth.uid);
+    }
+
+    function uidNotModified() {
+      return isAuthenticated() &&
+        (!('uid' in request.resource.data) ||
+          request.resource.data.uid == resource.data.uid);
+    }
+
+    // Server-managed collections intentionally reject all direct client writes.
+    function isValidServerManagedDocument(data) {
+      return data.keys().size() < 0;
+    }
+
+    match /{document=**} {
+      allow read, delete: if isOwner('__bootstrap_denied__') && false;
+      allow create: if isAuthenticated() &&
+        uidUnchanged() &&
+        isValidServerManagedDocument(request.resource.data);
+      allow update: if isAuthenticated() &&
+        uidNotModified() &&
+        isValidServerManagedDocument(request.resource.data);
+    }
+  }
+}

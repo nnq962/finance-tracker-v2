@@ -1,6 +1,8 @@
 "use client"
 
-import { Trash2Icon } from "lucide-react"
+import * as React from "react"
+import { useRouter } from "next/navigation"
+import { LoaderCircleIcon, Trash2Icon } from "lucide-react"
 
 import {
   AlertDialog,
@@ -12,8 +14,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/animate-ui/components/radix/alert-dialog"
+import type { Account } from "@/lib/accounts/types"
 
-import type { Account } from "../../_types/account"
+import { deleteAccountAction } from "../../actions"
 
 type DeleteAccountAlertProps = {
   account: Account
@@ -26,6 +29,27 @@ export function DeleteAccountAlert({
   onOpenChange,
   open,
 }: DeleteAccountAlertProps) {
+  const router = useRouter()
+  const [isPending, startTransition] = React.useTransition()
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
+
+  const handleDelete = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    setErrorMessage(null)
+
+    startTransition(async () => {
+      const result = await deleteAccountAction(account.id)
+
+      if (result.success) {
+        onOpenChange(false)
+        router.refresh()
+        return
+      }
+
+      setErrorMessage(result.error)
+    })
+  }
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -36,11 +60,20 @@ export function DeleteAccountAlert({
             thể hoàn tác.
           </AlertDialogDescription>
         </AlertDialogHeader>
+        {errorMessage ? (
+          <p role="alert" className="text-sm text-destructive">
+            {errorMessage}
+          </p>
+        ) : null}
         <AlertDialogFooter>
-          <AlertDialogCancel>Huỷ</AlertDialogCancel>
-          <AlertDialogAction onClick={() => onOpenChange(false)}>
-            <Trash2Icon />
-            Xoá tài khoản
+          <AlertDialogCancel disabled={isPending}>Huỷ</AlertDialogCancel>
+          <AlertDialogAction disabled={isPending} onClick={handleDelete}>
+            {isPending ? (
+              <LoaderCircleIcon className="animate-spin" />
+            ) : (
+              <Trash2Icon />
+            )}
+            {isPending ? "Đang xoá..." : "Xoá tài khoản"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

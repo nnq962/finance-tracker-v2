@@ -1,6 +1,3 @@
-"use client"
-
-import * as React from "react"
 import { LockKeyholeIcon } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -14,8 +11,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/format-currency"
+import type { Account } from "@/lib/accounts/types"
 
-import type { Account } from "../_types/account"
 import { AccountActionsMenu } from "./account-actions/account-actions-menu"
 
 type AccountCardProps = {
@@ -23,7 +20,12 @@ type AccountCardProps = {
 }
 
 export function AccountCard({ account }: AccountCardProps) {
-  const [isLocked, setIsLocked] = React.useState(false)
+  const isLocked = account.status === "archived"
+  const accountKind =
+    account.type === "cash"
+      ? "Tiền mặt"
+      : account.provider ??
+        (account.type === "bank" ? "Ngân hàng" : "Ví điện tử")
 
   return (
     <Card className="relative">
@@ -45,21 +47,17 @@ export function AccountCard({ account }: AccountCardProps) {
               {isLocked ? (
                 <Badge variant="destructive">
                   <LockKeyholeIcon data-icon="inline-start" />
-                  Đã khóa
+                  Ngừng sử dụng
                 </Badge>
               ) : null}
             </div>
             <CardDescription>
-              {isLocked ? "Tài khoản đã ngừng sử dụng" : "Tài khoản chi tiêu"}
+              {accountKind}
             </CardDescription>
           </div>
         </div>
         <CardAction>
-          <AccountActionsMenu
-            account={account}
-            isLocked={isLocked}
-            onLockedChange={setIsLocked}
-          />
+          <AccountActionsMenu account={account} />
         </CardAction>
       </CardHeader>
       <CardContent>

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import {
   CircleDollarSignIcon,
   CirclePauseIcon,
@@ -18,26 +19,34 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import type { Account } from "@/lib/accounts/types"
 
-import type { Account } from "../../_types/account"
+import { setAccountArchivedAction } from "../../actions"
 import { AdjustBalanceSheet } from "./adjust-balance-sheet"
 import { DeleteAccountAlert } from "./delete-account-alert"
 import { EditAccountSheet } from "./edit-account-sheet"
 
 type AccountActionsMenuProps = {
   account: Account
-  isLocked: boolean
-  onLockedChange: (isLocked: boolean) => void
 }
 
-export function AccountActionsMenu({
-  account,
-  isLocked,
-  onLockedChange,
-}: AccountActionsMenuProps) {
+export function AccountActionsMenu({ account }: AccountActionsMenuProps) {
+  const router = useRouter()
+  const [isPending, startTransition] = React.useTransition()
   const [editOpen, setEditOpen] = React.useState(false)
   const [adjustBalanceOpen, setAdjustBalanceOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
+  const isLocked = account.status === "archived"
+
+  const handleArchivedChange = () => {
+    startTransition(async () => {
+      const result = await setAccountArchivedAction(account.id, !isLocked)
+
+      if (result.success) {
+        router.refresh()
+      }
+    })
+  }
 
   return (
     <>
@@ -46,6 +55,7 @@ export function AccountActionsMenu({
           <Button
             variant="ghost"
             size="icon"
+            disabled={isPending}
             aria-label={`Mở menu tài khoản ${account.name}`}
           >
             <EllipsisIcon />
@@ -61,7 +71,7 @@ export function AccountActionsMenu({
               <CircleDollarSignIcon />
               Điều chỉnh số dư
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => onLockedChange(!isLocked)}>
+            <DropdownMenuItem onSelect={handleArchivedChange}>
               {isLocked ? <CirclePlayIcon /> : <CirclePauseIcon />}
               {isLocked ? "Tiếp tục sử dụng" : "Ngừng sử dụng"}
             </DropdownMenuItem>

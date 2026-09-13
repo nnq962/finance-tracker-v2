@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sheet"
 
 import { AccountForm } from "../account-form/account-form"
+import { createAccountAction } from "../../actions"
 
 type AddAccountSheetProps = {
   trigger: React.ReactNode
@@ -33,7 +34,10 @@ export function AddAccountSheet({ trigger }: AddAccountSheetProps) {
             Nhập thông tin và số dư ban đầu của tài khoản mới.
           </SheetDescription>
         </SheetHeader>
-        <AccountForm onSubmit={() => setOpen(false)} />
+        <AccountForm
+          action={createAccountAction}
+          onSuccess={() => setOpen(false)}
+        />
       </SheetContent>
     </Sheet>
   )

@@ -1,13 +1,14 @@
 "use client"
 
 import * as React from "react"
-import { SaveIcon } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { LoaderCircleIcon, SaveIcon } from "lucide-react"
 
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
   Select,
   SelectContent,
@@ -18,19 +19,25 @@ import {
 } from "@/components/ui/select"
 import { SheetFooter } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
+import type { AccountActionResult } from "@/lib/accounts/types"
 import { formatCurrency } from "@/lib/format-currency"
 
 import { balanceAdjustmentCategoryOptions } from "../../_data/account-form-options"
 
 type AdjustBalanceFormProps = {
+  action: (formData: FormData) => Promise<AccountActionResult>
   currentBalance: number
-  onSubmit: () => void
+  onSuccess: () => void
 }
 
 export function AdjustBalanceForm({
+  action,
   currentBalance,
-  onSubmit,
+  onSuccess,
 }: AdjustBalanceFormProps) {
+  const router = useRouter()
+  const [isPending, startTransition] = React.useTransition()
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   const [actualBalance, setActualBalance] = React.useState<number | null>(null)
   const difference =
     actualBalance === null ? null : actualBalance - currentBalance
@@ -46,7 +53,20 @@ export function AdjustBalanceForm({
       className="flex min-h-0 flex-1 flex-col"
       onSubmit={(event) => {
         event.preventDefault()
-        onSubmit()
+        const formData = new FormData(event.currentTarget)
+        setErrorMessage(null)
+
+        startTransition(async () => {
+          const result = await action(formData)
+
+          if (result.success) {
+            onSuccess()
+            router.refresh()
+            return
+          }
+
+          setErrorMessage(result.error)
+        })
       }}
     >
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
@@ -121,9 +141,10 @@ export function AdjustBalanceForm({
       </div>
 
       <SheetFooter>
-        <Button type="submit">
-          <SaveIcon />
-          Lưu điều chỉnh
+        {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
+        <Button type="submit" disabled={isPending}>
+          {isPending ? <LoaderCircleIcon className="animate-spin" /> : <SaveIcon />}
+          {isPending ? "Đang lưu..." : "Lưu điều chỉnh"}
         </Button>
       </SheetFooter>
     </form>

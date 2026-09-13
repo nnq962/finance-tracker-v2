@@ -7,7 +7,9 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
-import type { Account } from "../../_types/account"
+import type { Account } from "@/lib/accounts/types"
+
+import { adjustAccountBalanceAction } from "../../actions"
 import { AdjustBalanceForm } from "./adjust-balance-form"
 
 type AdjustBalanceSheetProps = {
@@ -30,8 +32,9 @@ export function AdjustBalanceSheet({ account, onOpenChange, open }: AdjustBalanc
           </SheetDescription>
         </SheetHeader>
         <AdjustBalanceForm
+          action={adjustAccountBalanceAction.bind(null, account.id)}
           currentBalance={account.balance}
-          onSubmit={() => onOpenChange(false)}
+          onSuccess={() => onOpenChange(false)}
         />
       </SheetContent>
     </Sheet>

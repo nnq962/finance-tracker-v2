@@ -1,9 +1,11 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import {
   BanknoteIcon,
   LandmarkIcon,
+  LoaderCircleIcon,
   SaveIcon,
   WalletCardsIcon,
 } from "lucide-react"
@@ -14,6 +16,7 @@ import {
   Field,
   FieldContent,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
@@ -30,15 +33,16 @@ import { SheetFooter } from "@/components/ui/sheet"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import type {
+  AccountActionResult,
+  AccountFormValues,
+  AccountType,
+} from "@/lib/accounts/types"
 
 import {
   bankOptions,
   eWalletOptions,
 } from "../../_data/account-form-options"
-import type {
-  AccountFormValues,
-  AccountType,
-} from "../../_types/account-form"
 
 const accountTypeOptions = [
   { value: "cash", label: "Tiền mặt", icon: BanknoteIcon },
@@ -47,18 +51,23 @@ const accountTypeOptions = [
 ] as const
 
 type AccountFormProps = {
+  action: (formData: FormData) => Promise<AccountActionResult>
   defaultValues?: Partial<AccountFormValues>
-  onSubmit: () => void
+  onSuccess: () => void
   showBalance?: boolean
   submitLabel?: string
 }
 
 export function AccountForm({
+  action,
   defaultValues,
-  onSubmit,
+  onSuccess,
   showBalance = true,
   submitLabel = "Lưu tài khoản",
 }: AccountFormProps) {
+  const router = useRouter()
+  const [isPending, startTransition] = React.useTransition()
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   const [accountType, setAccountType] = React.useState<AccountType>(
     defaultValues?.type ?? "cash",
   )
@@ -78,7 +87,20 @@ export function AccountForm({
       className="flex min-h-0 flex-1 flex-col"
       onSubmit={(event) => {
         event.preventDefault()
-        onSubmit()
+        const formData = new FormData(event.currentTarget)
+        setErrorMessage(null)
+
+        startTransition(async () => {
+          const result = await action(formData)
+
+          if (result.success) {
+            onSuccess()
+            router.refresh()
+            return
+          }
+
+          setErrorMessage(result.error)
+        })
       }}
     >
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
@@ -89,7 +111,7 @@ export function AccountForm({
               id="account-name"
               name="name"
               defaultValue={defaultValues?.name}
-              placeholder="Ví dụ: Tài khoản chi tiêu"
+              placeholder="Tiền mặt, Ngân hàng A, Ví điện tử B..."
               autoComplete="off"
               required
             />
@@ -185,9 +207,10 @@ export function AccountForm({
       </div>
 
       <SheetFooter>
-        <Button type="submit">
-          <SaveIcon />
-          {submitLabel}
+        {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
+        <Button type="submit" disabled={isPending}>
+          {isPending ? <LoaderCircleIcon className="animate-spin" /> : <SaveIcon />}
+          {isPending ? "Đang lưu..." : submitLabel}
         </Button>
       </SheetFooter>
     </form>

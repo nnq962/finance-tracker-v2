@@ -7,9 +7,10 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import type { Account } from "@/lib/accounts/types"
 
-import type { Account } from "../../_types/account"
 import { AccountForm } from "../account-form/account-form"
+import { updateAccountAction } from "../../actions"
 
 type EditAccountSheetProps = {
   account: Account
@@ -41,7 +42,8 @@ export function EditAccountSheet({ account, onOpenChange, open }: EditAccountShe
           }}
           showBalance={false}
           submitLabel="Lưu thay đổi"
-          onSubmit={() => onOpenChange(false)}
+          action={updateAccountAction.bind(null, account.id)}
+          onSuccess={() => onOpenChange(false)}
         />
       </SheetContent>
     </Sheet>

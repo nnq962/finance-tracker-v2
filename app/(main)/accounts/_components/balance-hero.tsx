@@ -26,9 +26,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { formatCurrency } from "@/lib/format-currency"
-
-import type { BalanceSummary } from "../_types/account"
-import type { Account } from "../_types/account"
+import type { Account, BalanceSummary } from "@/lib/accounts/types"
 
 type BalanceHeroProps = {
   summary: BalanceSummary
@@ -49,17 +47,21 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export function BalanceHero({ summary, accounts }: BalanceHeroProps) {
+  const reportableAccounts = accounts.filter(
+    (account) => account.status === "active" && !account.excludeFromReports,
+  )
+  const hasHistory = summary.trend.length > 1
   const change = summary.changePercent.toLocaleString("vi-VN", {
     signDisplay: "always",
   })
   const latestBalance = summary.trend.at(-1)?.balance ?? summary.totalBalance
   const previousBalance = summary.trend.at(-2)?.balance ?? latestBalance
   const changeAmount = latestBalance - previousBalance
-  const accountsTotal = accounts.reduce(
+  const accountsTotal = reportableAccounts.reduce(
     (total, account) => total + Math.max(account.balance, 0),
     0,
   )
-  const distribution = accounts.map((account, index) => ({
+  const distribution = reportableAccounts.map((account, index) => ({
     ...account,
     percentage:
       accountsTotal > 0 ? (Math.max(account.balance, 0) / accountsTotal) * 100 : 0,
@@ -80,12 +82,14 @@ export function BalanceHero({ summary, accounts }: BalanceHeroProps) {
             <CardDescription>Tài sản khả dụng</CardDescription>
           </div>
         </div>
-        <CardAction>
-          <Badge variant="secondary">
-            <TrendingUpIcon data-icon="inline-start" />
-            {change}%
-          </Badge>
-        </CardAction>
+        {hasHistory ? (
+          <CardAction>
+            <Badge variant="secondary">
+              <TrendingUpIcon data-icon="inline-start" />
+              {change}%
+            </Badge>
+          </CardAction>
+        ) : null}
       </CardHeader>
       <CardContent>
         <div className="grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center">
@@ -94,12 +98,14 @@ export function BalanceHero({ summary, accounts }: BalanceHeroProps) {
               <p className="text-3xl font-semibold tracking-tight tabular-nums sm:text-4xl lg:text-5xl">
                 {formatCurrency(summary.totalBalance)}
               </p>
-              <div className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
-                <ArrowUpRightIcon className="size-4" />
-                <span>
-                  {formatCurrency(changeAmount, { signDisplay: "always" })} tháng này
-                </span>
-              </div>
+              {hasHistory ? (
+                <div className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
+                  <ArrowUpRightIcon className="size-4" />
+                  <span>
+                    {formatCurrency(changeAmount, { signDisplay: "always" })} tháng này
+                  </span>
+                </div>
+              ) : null}
             </div>
 
             <div className="space-y-4">

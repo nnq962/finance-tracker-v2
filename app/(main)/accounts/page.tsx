@@ -1,18 +1,23 @@
-import { AccountGroup } from "./_components/account-group"
+import { requireSession } from "@/lib/auth/session"
+import { getAccounts } from "@/lib/accounts/repository"
+import { getBalanceSummary } from "@/lib/accounts/summary"
+
+import { AccountList } from "./_components/account-list"
 import { AccountsHeader } from "./_components/accounts-header"
 import { BalanceHero } from "./_components/balance-hero"
-import { accountGroups, balanceSummary } from "./_data/accounts"
 
-const accounts = accountGroups.flatMap((group) => group.accounts)
+export default async function AccountsPage() {
+  const user = await requireSession()
+  const accounts = await getAccounts(user.uid)
+  const balanceSummary = getBalanceSummary(accounts)
 
-export default function AccountsPage() {
   return (
     <div className="space-y-8">
       <AccountsHeader />
-      <BalanceHero summary={balanceSummary} accounts={accounts} />
-      {accountGroups.map((group) => (
-        <AccountGroup key={group.type} group={group} />
-      ))}
+      {accounts.length > 0 ? (
+        <BalanceHero summary={balanceSummary} accounts={accounts} />
+      ) : null}
+      <AccountList accounts={accounts} />
     </div>
   )
 }
