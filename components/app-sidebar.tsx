@@ -18,14 +18,14 @@ import {
   HandCoinsIcon,
   LayoutDashboardIcon,
   TagsIcon,
-  TerminalIcon,
+  GalleryVerticalEndIcon,
   WalletCardsIcon,
 } from "lucide-react"
 
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
+    name: "Quyết Nguyễn",
+    email: "quyet.nguyen.official@gmail.com",
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
@@ -66,7 +66,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <TerminalIcon className="size-4" />
+                  <GalleryVerticalEndIcon className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">Finance Tracker</span>

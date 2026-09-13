@@ -1,5 +1,7 @@
 "use client"
 
+import * as React from "react"
+
 import {
   Avatar,
   AvatarFallback,
@@ -20,7 +22,22 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/animate-ui/components/radix/sidebar"
-import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
+import {
+  UserMenuDialog,
+  type UserMenuDialogType,
+} from "@/components/user-menu/user-menu-dialog"
+import {
+  defaultNotificationSettings,
+  type NotificationSettings,
+} from "@/components/user-menu/notification-dialog-content"
+import {
+  BadgeCheckIcon,
+  BellIcon,
+  ChevronsUpDownIcon,
+  CreditCardIcon,
+  LogOutIcon,
+  SparklesIcon,
+} from "lucide-react"
 
 export function NavUser({
   user,
@@ -32,80 +49,103 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const [displayName, setDisplayName] = React.useState(user.name)
+  const [activeDialog, setActiveDialog] =
+    React.useState<UserMenuDialogType>(null)
+  const [notificationSettings, setNotificationSettings] =
+    React.useState<NotificationSettings>(defaultNotificationSettings)
+  const initials = displayName
+    .trim()
+    .split(/\s+/)
+    .slice(-2)
+    .map((part) => part[0])
+    .join("")
+    .toLocaleUpperCase("vi-VN")
 
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
-              </div>
-              <ChevronsUpDownIcon className="ml-auto size-4" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
-            align="end"
-            sideOffset={4}
-          >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+    <>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <SidebarMenuButton
+                size="lg"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              >
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarImage src={user.avatar} alt={displayName} />
+                  <AvatarFallback className="rounded-lg">
+                    {initials}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
+                  <span className="truncate font-medium">{displayName}</span>
                   <span className="truncate text-xs">{user.email}</span>
                 </div>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
+                <ChevronsUpDownIcon className="ml-auto size-4" />
+              </SidebarMenuButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+              side={isMobile ? "bottom" : "right"}
+              align="end"
+              sideOffset={4}
+            >
+              <DropdownMenuLabel className="p-0 font-normal">
+                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                  <Avatar className="h-8 w-8 rounded-lg">
+                    <AvatarImage src={user.avatar} alt={displayName} />
+                    <AvatarFallback className="rounded-lg">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-medium">{displayName}</span>
+                    <span className="truncate text-xs">{user.email}</span>
+                  </div>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem onSelect={() => setActiveDialog("upgrade")}>
+                  <SparklesIcon />
+                  Nâng cấp lên Pro
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem onSelect={() => setActiveDialog("account")}>
+                  <BadgeCheckIcon />
+                  Tài khoản
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setActiveDialog("billing")}>
+                  <CreditCardIcon />
+                  Thanh toán
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => setActiveDialog("notifications")}
+                >
+                  <BellIcon />
+                  Thông báo
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <SparklesIcon
-                />
-                Upgrade to Pro
+                <LogOutIcon />
+                Đăng xuất
               </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheckIcon
-                />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCardIcon
-                />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <BellIcon
-                />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOutIcon
-              />
-              Log out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
-    </SidebarMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarMenuItem>
+      </SidebarMenu>
+      <UserMenuDialog
+        activeDialog={activeDialog}
+        onActiveDialogChange={setActiveDialog}
+        name={displayName}
+        onNameChange={setDisplayName}
+        notificationSettings={notificationSettings}
+        onNotificationSettingsChange={setNotificationSettings}
+      />
+    </>
   )
 }
