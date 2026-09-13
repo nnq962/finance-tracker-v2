@@ -2,6 +2,30 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+Copy `.env.example` to `.env.local` and provide both the Firebase Web app
+configuration and Firebase Admin credentials. The Admin credentials are used
+only on the server to verify ID tokens and create HTTP-only session cookies.
+On Google-managed hosting, Application Default Credentials may be used instead.
+
+For local development, keep the downloaded service-account JSON outside the
+repository and point Application Default Credentials to its absolute path:
+
+```bash
+GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/firebase-admin.json
+```
+
+Alternatively, provide the three service-account fields directly and keep the
+private key on one line with escaped newlines:
+
+```bash
+FIREBASE_ADMIN_PROJECT_ID=your-project-id
+FIREBASE_ADMIN_CLIENT_EMAIL=firebase-adminsdk-...@your-project-id.iam.gserviceaccount.com
+FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+```
+
+Enable Google as a sign-in provider and add `localhost` to Firebase
+Authentication's authorized domains before testing locally.
+
 First, run the development server:
 
 ```bash

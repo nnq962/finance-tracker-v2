@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 
 import {
   Avatar,
@@ -38,6 +39,7 @@ import {
   LogOutIcon,
   SparklesIcon,
 } from "lucide-react"
+import { signOutCurrentUser } from "@/lib/firebase/auth"
 
 export function NavUser({
   user,
@@ -49,6 +51,8 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const router = useRouter()
+  const [isSigningOut, setIsSigningOut] = React.useState(false)
   const [displayName, setDisplayName] = React.useState(user.name)
   const [activeDialog, setActiveDialog] =
     React.useState<UserMenuDialogType>(null)
@@ -61,6 +65,21 @@ export function NavUser({
     .map((part) => part[0])
     .join("")
     .toLocaleUpperCase("vi-VN")
+
+  const handleSignOut = async () => {
+    if (isSigningOut) {
+      return
+    }
+
+    setIsSigningOut(true)
+
+    try {
+      await signOutCurrentUser()
+    } finally {
+      router.replace("/login")
+      router.refresh()
+    }
+  }
 
   return (
     <>
@@ -130,9 +149,12 @@ export function NavUser({
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={isSigningOut}
+                onSelect={() => void handleSignOut()}
+              >
                 <LogOutIcon />
-                Đăng xuất
+                {isSigningOut ? "Đang đăng xuất..." : "Đăng xuất"}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
