@@ -21,9 +21,9 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
       <TooltipProvider>
         <SidebarProvider>
           <AppSidebar user={user} />
-          <SidebarInset className="min-w-0">
+          <SidebarInset className="min-w-0 bg-[#FAFBFC] [--main-content-px:--spacing(4)] dark:bg-background md:[--main-content-px:--spacing(6)] md:peer-data-[state=collapsed]:[--main-content-px:--spacing(24)]">
             <header className="flex h-16 shrink-0 items-center">
-              <div className="flex w-full items-center justify-between px-4">
+              <div className="flex w-full items-center justify-between px-(--main-content-px) transition-[padding] duration-200 ease-linear">
                 <div className="flex items-center gap-2">
                   <SidebarTrigger className="-ml-1" />
                   <Separator
@@ -35,7 +35,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
                 <ThemeToggle />
               </div>
             </header>
-            <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+            <div className="flex flex-1 flex-col gap-4 px-(--main-content-px) pb-4 pt-0 transition-[padding] duration-200 ease-linear [&>*]:mx-0 [&>*]:max-w-none">
               {children}
             </div>
           </SidebarInset>

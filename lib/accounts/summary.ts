@@ -1,5 +1,22 @@
 import type { Account, BalanceSummary } from "@/lib/accounts/types"
 
+function formatUpdatedAt(value: Date) {
+  const time = value.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Ho_Chi_Minh",
+  })
+  const date = value.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "Asia/Ho_Chi_Minh",
+  })
+
+  return `${time} ${date}`
+}
+
 export function getBalanceSummary(accounts: Account[]): BalanceSummary {
   const reportableAccounts = accounts.filter(
     (account) => account.status === "active" && !account.excludeFromReports,
@@ -18,11 +35,7 @@ export function getBalanceSummary(accounts: Account[]): BalanceSummary {
     changePercent: 0,
     accountCount: accounts.length,
     updatedAt: latestUpdatedAt
-      ? latestUpdatedAt.toLocaleString("vi-VN", {
-          dateStyle: "short",
-          timeStyle: "short",
-          timeZone: "Asia/Ho_Chi_Minh",
-        })
+      ? formatUpdatedAt(latestUpdatedAt)
       : "Chưa có dữ liệu",
     trend: [{ month: "Hiện tại", balance: totalBalance }],
   }
