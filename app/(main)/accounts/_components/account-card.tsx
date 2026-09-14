@@ -59,7 +59,7 @@ export function AccountCard({ account }: AccountCardProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
             {isLocked ? "Số dư khi khóa" : "Số dư hiện tại"}
           </p>
           <p
