@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { Account } from "@/lib/accounts/types"
+import type { CategoryGroup } from "@/lib/categories/types"
 
 import { setAccountArchivedAction } from "../../actions"
 import { AdjustBalanceSheet } from "./adjust-balance-sheet"
@@ -29,9 +30,13 @@ import { EditAccountSheet } from "./edit-account-sheet"
 
 type AccountActionsMenuProps = {
   account: Account
+  categoryGroups: CategoryGroup[]
 }
 
-export function AccountActionsMenu({ account }: AccountActionsMenuProps) {
+export function AccountActionsMenu({
+  account,
+  categoryGroups,
+}: AccountActionsMenuProps) {
   const router = useRouter()
   const [isPending, startTransition] = React.useTransition()
   const [editOpen, setEditOpen] = React.useState(false)
@@ -106,6 +111,7 @@ export function AccountActionsMenu({ account }: AccountActionsMenuProps) {
       />
       <AdjustBalanceSheet
         account={account}
+        categoryGroups={categoryGroups}
         open={adjustBalanceOpen}
         onOpenChange={setAdjustBalanceOpen}
       />

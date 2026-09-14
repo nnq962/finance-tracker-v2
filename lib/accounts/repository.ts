@@ -17,11 +17,33 @@ type AccountDocument = AccountFormValues & {
   updatedAt: Timestamp
 }
 
+type CategoryItemDocument = {
+  groupId: string
+  name: string
+  status: "active" | "archived"
+  type: "expense" | "income"
+}
+
+type CategoryGroupDocument = {
+  name: string
+  status: "active" | "archived"
+  type: "expense" | "income"
+}
+
+function getUserReference(userId: string) {
+  return getFirebaseAdminFirestore().collection("users").doc(userId)
+}
+
 function getAccountsCollection(userId: string) {
-  return getFirebaseAdminFirestore()
-    .collection("users")
-    .doc(userId)
-    .collection("accounts")
+  return getUserReference(userId).collection("accounts")
+}
+
+function getCategoryItemsCollection(userId: string) {
+  return getUserReference(userId).collection("categoryItems")
+}
+
+function getCategoryGroupsCollection(userId: string) {
+  return getUserReference(userId).collection("categoryGroups")
 }
 
 function addTransactionImpact(
@@ -226,19 +248,25 @@ export async function adjustAccountBalance(
   accountId: string,
   adjustment: {
     actualBalance: number
-    category: string
+    categoryId: string
     note: string
     occurredAt: Date
   },
 ) {
   const firestore = getFirebaseAdminFirestore()
   const accountReference = getAccountsCollection(userId).doc(accountId)
+  const categoryReference = getCategoryItemsCollection(userId).doc(
+    adjustment.categoryId,
+  )
   const adjustmentReference = accountReference
     .collection("balanceAdjustments")
     .doc()
 
   await firestore.runTransaction(async (transaction) => {
-    const accountSnapshot = await transaction.get(accountReference)
+    const [accountSnapshot, categorySnapshot] = await transaction.getAll(
+      accountReference,
+      categoryReference,
+    )
 
     if (!accountSnapshot.exists) {
       throw new Error("Tài khoản không tồn tại.")
@@ -250,6 +278,45 @@ export async function adjustAccountBalance(
       throw new Error("Số dư tài khoản hiện tại không hợp lệ.")
     }
 
+    const difference = adjustment.actualBalance - previousBalance
+
+    if (difference === 0) {
+      throw new AccountValidationError(
+        "Số dư thực tế không có thay đổi.",
+      )
+    }
+
+    const expectedCategoryType = difference > 0 ? "income" : "expense"
+    const expectedCategoryLabel = difference > 0 ? "thu" : "chi"
+
+    if (
+      !categorySnapshot.exists ||
+      categorySnapshot.get("status") !== "active" ||
+      categorySnapshot.get("type") !== expectedCategoryType
+    ) {
+      throw new AccountValidationError(
+        `Hạng mục ${expectedCategoryLabel} không tồn tại, đã ngừng sử dụng hoặc không phù hợp với chênh lệch số dư.`,
+      )
+    }
+
+    const category = categorySnapshot.data() as CategoryItemDocument
+    const categoryGroupSnapshot = await transaction.get(
+      getCategoryGroupsCollection(userId).doc(category.groupId),
+    )
+
+    if (
+      !categoryGroupSnapshot.exists ||
+      categoryGroupSnapshot.get("status") !== "active" ||
+      categoryGroupSnapshot.get("type") !== expectedCategoryType
+    ) {
+      throw new AccountValidationError(
+        `Nhóm hạng mục ${expectedCategoryLabel} không tồn tại, đã ngừng sử dụng hoặc không phù hợp với chênh lệch số dư.`,
+      )
+    }
+
+    const categoryGroup =
+      categoryGroupSnapshot.data() as CategoryGroupDocument
+
     transaction.update(accountReference, {
       balance: adjustment.actualBalance,
       updatedAt: FieldValue.serverTimestamp(),
@@ -257,8 +324,12 @@ export async function adjustAccountBalance(
     transaction.set(adjustmentReference, {
       previousBalance,
       actualBalance: adjustment.actualBalance,
-      difference: adjustment.actualBalance - previousBalance,
-      category: adjustment.category,
+      difference,
+      category: category.name,
+      categoryId: categorySnapshot.id,
+      categoryName: category.name,
+      categoryGroupId: category.groupId,
+      categoryGroupName: categoryGroup.name,
       note: adjustment.note,
       occurredAt: Timestamp.fromDate(adjustment.occurredAt),
       createdAt: FieldValue.serverTimestamp(),

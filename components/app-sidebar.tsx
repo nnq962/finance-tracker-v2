@@ -13,6 +13,7 @@ import {
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
+import { Badge } from "@/components/ui/badge"
 import {
   Sidebar,
   SidebarContent,
@@ -67,8 +68,13 @@ export function AppSidebar({
                   <GalleryVerticalEndIcon className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Finance Tracker</span>
-                  <span className="truncate text-xs">Personal Finance</span>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="truncate font-medium">Finance Tracker</span>
+                    <Badge variant="secondary">Beta</Badge>
+                  </div>
+                  <span className="truncate text-xs">
+                    Personal Finance · v{process.env.NEXT_PUBLIC_APP_VERSION}
+                  </span>
                 </div>
               </Link>
             </SidebarMenuButton>

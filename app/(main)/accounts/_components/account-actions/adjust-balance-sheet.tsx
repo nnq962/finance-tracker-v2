@@ -8,17 +8,24 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import type { Account } from "@/lib/accounts/types"
+import type { CategoryGroup } from "@/lib/categories/types"
 
 import { adjustAccountBalanceAction } from "../../actions"
 import { AdjustBalanceForm } from "./adjust-balance-form"
 
 type AdjustBalanceSheetProps = {
   account: Account
+  categoryGroups: CategoryGroup[]
   onOpenChange: (open: boolean) => void
   open: boolean
 }
 
-export function AdjustBalanceSheet({ account, onOpenChange, open }: AdjustBalanceSheetProps) {
+export function AdjustBalanceSheet({
+  account,
+  categoryGroups,
+  onOpenChange,
+  open,
+}: AdjustBalanceSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -34,6 +41,7 @@ export function AdjustBalanceSheet({ account, onOpenChange, open }: AdjustBalanc
         <AdjustBalanceForm
           action={adjustAccountBalanceAction.bind(null, account.id)}
           currentBalance={account.balance}
+          categoryGroups={categoryGroups}
           onSuccess={() => onOpenChange(false)}
         />
       </SheetContent>

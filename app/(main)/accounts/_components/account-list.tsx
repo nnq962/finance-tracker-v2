@@ -9,14 +9,19 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty"
 import type { Account } from "@/lib/accounts/types"
+import type { CategoryGroup } from "@/lib/categories/types"
 
 import { AccountCard } from "./account-card"
 
 type AccountListProps = {
   accounts: Account[]
+  categoryGroups: CategoryGroup[]
 }
 
-export function AccountList({ accounts }: AccountListProps) {
+export function AccountList({
+  accounts,
+  categoryGroups,
+}: AccountListProps) {
   return (
     <section className="space-y-4">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
@@ -49,7 +54,11 @@ export function AccountList({ accounts }: AccountListProps) {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {accounts.map((account) => (
-            <AccountCard key={account.id} account={account} />
+            <AccountCard
+              key={account.id}
+              account={account}
+              categoryGroups={categoryGroups}
+            />
           ))}
         </div>
       )}

@@ -15,33 +15,46 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
 import { SheetFooter } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 import type { AccountActionResult } from "@/lib/accounts/types"
+import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
-
-import { balanceAdjustmentCategoryOptions } from "../../_data/account-form-options"
+import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 
 type AdjustBalanceFormProps = {
   action: (formData: FormData) => Promise<AccountActionResult>
   currentBalance: number
+  categoryGroups: CategoryGroup[]
   onSuccess: () => void
 }
 
 export function AdjustBalanceForm({
   action,
   currentBalance,
+  categoryGroups,
   onSuccess,
 }: AdjustBalanceFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = React.useTransition()
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   const [actualBalance, setActualBalance] = React.useState<number | null>(null)
+  const [categoryId, setCategoryId] = React.useState("")
   const difference =
     actualBalance === null ? null : actualBalance - currentBalance
+  const adjustmentType =
+    difference === null || difference === 0
+      ? null
+      : difference > 0
+        ? "income"
+        : "expense"
+  const availableCategoryGroups = categoryGroups.filter(
+    (group) => group.type === adjustmentType && group.items.length > 0,
+  )
   const differenceClassName =
     difference === null || difference === 0
       ? "text-muted-foreground"
@@ -85,7 +98,19 @@ export function AdjustBalanceForm({
             <CurrencyInput
               id="actual-balance"
               name="actualBalance"
-              onValueChange={setActualBalance}
+              onValueChange={(value) => {
+                const nextDifference =
+                  value === null ? null : value - currentBalance
+                const nextAdjustmentType =
+                  nextDifference === null || nextDifference === 0
+                    ? null
+                    : nextDifference > 0
+                      ? "income"
+                      : "expense"
+
+                if (nextAdjustmentType !== adjustmentType) setCategoryId("")
+                setActualBalance(value)
+              }}
               required
             />
           </Field>
@@ -111,23 +136,49 @@ export function AdjustBalanceForm({
 
           <Field>
             <FieldLabel htmlFor="balance-adjustment-category">
-              Hạng mục
+              {adjustmentType === "income"
+                ? "Hạng mục thu"
+                : adjustmentType === "expense"
+                  ? "Hạng mục chi"
+                  : "Hạng mục"}
             </FieldLabel>
-            <Select name="category" required>
+            <Select
+              name="categoryId"
+              value={categoryId}
+              onValueChange={setCategoryId}
+              disabled={!adjustmentType}
+              required
+            >
               <SelectTrigger
                 id="balance-adjustment-category"
                 className="w-full"
               >
-                <SelectValue placeholder="Chọn hạng mục" />
+                <SelectValue
+                  placeholder={
+                    adjustmentType === "income"
+                      ? "Chọn hạng mục thu"
+                      : adjustmentType === "expense"
+                        ? "Chọn hạng mục chi"
+                        : "Nhập số dư thực tế trước"
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
-                <SelectGroup>
-                  {balanceAdjustmentCategoryOptions.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
+                {availableCategoryGroups.map((group) => (
+                  <SelectGroup key={group.id}>
+                    <SelectLabel>{group.name}</SelectLabel>
+                    {group.items.map((item) => {
+                      const ItemIcon = categoryIconRegistry[item.iconName]
+
+                      return (
+                        <SelectItem key={item.id} value={item.id}>
+                          <ItemIcon />
+                          {item.name}
+                        </SelectItem>
+                      )
+                    })}
+                  </SelectGroup>
+                ))}
               </SelectContent>
             </Select>
           </Field>
@@ -151,7 +202,10 @@ export function AdjustBalanceForm({
 
       <SheetFooter>
         {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
-        <Button type="submit" disabled={isPending}>
+        <Button
+          type="submit"
+          disabled={isPending || !adjustmentType || !categoryId}
+        >
           {isPending ? <LoaderCircleIcon className="animate-spin" /> : <SaveIcon />}
           {isPending ? "Đang lưu..." : "Lưu điều chỉnh"}
         </Button>

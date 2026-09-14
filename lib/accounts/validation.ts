@@ -5,13 +5,6 @@ import { getInstitution } from "@/lib/institutions"
 
 const accountTypes = new Set<AccountType>(["cash", "bank", "e-wallet"])
 
-export const balanceAdjustmentCategories = new Set([
-  "Đối soát số dư",
-  "Lãi tài khoản",
-  "Phí dịch vụ",
-  "Khác",
-])
-
 export class AccountValidationError extends Error {
   constructor(message: string) {
     super(message)
@@ -99,12 +92,12 @@ export function parseAccountFormData(
 }
 
 export function parseBalanceAdjustment(formData: FormData) {
-  const category = getText(formData, "category")
+  const categoryId = getText(formData, "categoryId")
   const date = getText(formData, "date")
   const time = getText(formData, "time")
   const occurredAt = new Date(`${date}T${time}:00+07:00`)
 
-  if (!balanceAdjustmentCategories.has(category)) {
+  if (!/^[A-Za-z0-9_-]{1,1500}$/.test(categoryId)) {
     throw new AccountValidationError("Hạng mục điều chỉnh không hợp lệ.")
   }
 
@@ -121,7 +114,7 @@ export function parseBalanceAdjustment(formData: FormData) {
 
   return {
     actualBalance: getMoney(formData, "actualBalance", "Số dư thực tế"),
-    category,
+    categoryId,
     occurredAt,
     note: getBoundedText(formData, "note", "Ghi chú", 500),
   }

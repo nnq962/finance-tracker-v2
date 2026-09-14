@@ -21,6 +21,7 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
+  useComboboxAnchor,
 } from "@/components/ui/combobox"
 import {
   Field,
@@ -31,6 +32,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { InputGroupAddon } from "@/components/ui/input-group"
 import { SheetFooter } from "@/components/ui/sheet"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
@@ -92,6 +94,7 @@ export function AccountForm({
 }: AccountFormProps) {
   const router = useRouter()
   const formRef = React.useRef<HTMLFormElement>(null)
+  const institutionAnchor = useComboboxAnchor()
   const [isPending, startTransition] = React.useTransition()
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   const [accountType, setAccountType] = React.useState<AccountType>(
@@ -201,13 +204,32 @@ export function AccountForm({
                 autoHighlight
                 required
               >
-                <ComboboxInput
-                  id="account-institution"
-                  className="w-full"
-                  placeholder={`Tìm và chọn ${institutionLabel.toLowerCase()}`}
-                  autoComplete="off"
-                />
-                <ComboboxContent portalContainer={formRef}>
+                <div ref={institutionAnchor} className="w-full">
+                  <ComboboxInput
+                    id="account-institution"
+                    className="w-full"
+                    placeholder={`Tìm và chọn ${institutionLabel.toLowerCase()}`}
+                    autoComplete="off"
+                  >
+                    {selectedInstitution ? (
+                      <InputGroupAddon align="inline-start">
+                        <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-white p-0.5">
+                          <Image
+                            src={selectedInstitution.logoPath}
+                            alt=""
+                            width={16}
+                            height={16}
+                            className="size-full object-contain"
+                          />
+                        </span>
+                      </InputGroupAddon>
+                    ) : null}
+                  </ComboboxInput>
+                </div>
+                <ComboboxContent
+                  anchor={institutionAnchor}
+                  portalContainer={formRef}
+                >
                   <ComboboxEmpty>
                     Không tìm thấy {institutionLabel.toLowerCase()}.
                   </ComboboxEmpty>
