@@ -46,7 +46,7 @@ export default function AccountsLoading() {
           </div>
 
           <div className="grid items-center gap-8 lg:grid-cols-[minmax(220px,0.7fr)_minmax(0,1.8fr)] lg:gap-12">
-            <div className="relative mx-auto size-64 max-w-full">
+            <div className="relative mx-auto aspect-square w-full max-w-64">
               <Skeleton className="size-full rounded-full" />
               <div className="absolute inset-12 flex flex-col items-center justify-center gap-2 rounded-full bg-card">
                 <Skeleton className="h-3 w-16" />

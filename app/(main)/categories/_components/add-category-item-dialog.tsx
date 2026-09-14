@@ -42,7 +42,7 @@ export function AddCategoryItemDialog({
       initialValues={{
         name: "",
         colorName: group.colorName,
-        iconName: "shopping-bag",
+        iconName: group.iconName,
       }}
       onSubmit={(values) =>
         createCategoryItemAction(group.id, {

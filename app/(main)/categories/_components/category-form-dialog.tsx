@@ -168,7 +168,7 @@ export function CategoryFormDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
 
-      <DialogContent>
+      <DialogContent onOpenAutoFocus={(event) => event.preventDefault()}>
         <DialogHeader>
           <div className="flex items-center gap-3 text-left">
             <div
@@ -194,7 +194,6 @@ export function CategoryFormDialog({
                 placeholder={namePlaceholder}
                 maxLength={80}
                 disabled={isPending}
-                autoFocus
               />
             </Field>
 
