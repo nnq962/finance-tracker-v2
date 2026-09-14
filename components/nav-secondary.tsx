@@ -8,7 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/animate-ui/components/radix/sidebar"
+} from "@/components/ui/sidebar"
 
 export function NavSecondary({
   items,

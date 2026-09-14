@@ -2,6 +2,14 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
+import {
+  BadgeCheckIcon,
+  BellIcon,
+  ChevronsUpDownIcon,
+  CreditCardIcon,
+  LogOutIcon,
+  SparklesIcon,
+} from "lucide-react"
 
 import {
   Avatar,
@@ -22,23 +30,15 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/animate-ui/components/radix/sidebar"
-import {
-  UserMenuDialog,
-  type UserMenuDialogType,
-} from "@/components/user-menu/user-menu-dialog"
+} from "@/components/ui/sidebar"
 import {
   defaultNotificationSettings,
   type NotificationSettings,
 } from "@/components/user-menu/notification-dialog-content"
 import {
-  BadgeCheckIcon,
-  BellIcon,
-  ChevronsUpDownIcon,
-  CreditCardIcon,
-  LogOutIcon,
-  SparklesIcon,
-} from "lucide-react"
+  UserMenuDialog,
+  type UserMenuDialogType,
+} from "@/components/user-menu/user-menu-dialog"
 import { signOutCurrentUser } from "@/lib/firebase/auth"
 
 export function NavUser({
@@ -67,9 +67,7 @@ export function NavUser({
     .toLocaleUpperCase("vi-VN")
 
   const handleSignOut = async () => {
-    if (isSigningOut) {
-      return
-    }
+    if (isSigningOut) return
 
     setIsSigningOut(true)
 
