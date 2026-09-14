@@ -14,11 +14,13 @@ import {
 import type {
   CategoryActionResult,
   CategoryFormValues,
+  CategoryItemFormValues,
 } from "@/lib/categories/types"
 import {
   assertCategoryId,
   CategoryValidationError,
   parseCategoryFormValues,
+  parseCategoryItemFormValues,
   parseCategoryType,
 } from "@/lib/categories/validation"
 
@@ -92,7 +94,7 @@ export async function deleteCategoryGroupAction(
 
 export async function createCategoryItemAction(
   groupId: unknown,
-  values: CategoryFormValues,
+  values: CategoryItemFormValues,
 ): Promise<CategoryActionResult> {
   const user = await requireSession()
 
@@ -101,7 +103,7 @@ export async function createCategoryItemAction(
     await createCategoryItem(
       user.uid,
       groupId as string,
-      parseCategoryFormValues(values),
+      parseCategoryItemFormValues(values),
     )
     revalidatePath("/categories")
     return { success: true }
@@ -112,7 +114,7 @@ export async function createCategoryItemAction(
 
 export async function updateCategoryItemAction(
   itemId: unknown,
-  values: CategoryFormValues,
+  values: CategoryItemFormValues,
 ): Promise<CategoryActionResult> {
   const user = await requireSession()
 
@@ -121,7 +123,7 @@ export async function updateCategoryItemAction(
     await updateCategoryItem(
       user.uid,
       itemId as string,
-      parseCategoryFormValues(values),
+      parseCategoryItemFormValues(values),
     )
     revalidatePath("/categories")
     return { success: true }

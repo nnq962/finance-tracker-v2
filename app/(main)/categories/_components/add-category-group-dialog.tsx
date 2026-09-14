@@ -19,7 +19,7 @@ export function AddCategoryGroupDialog({ type }: AddCategoryGroupDialogProps) {
   return (
     <CategoryFormDialog
       trigger={
-        <Button type="button" variant="outline">
+        <Button type="button">
           <PlusIcon />
           Thêm nhóm {typeLabel} mới
         </Button>

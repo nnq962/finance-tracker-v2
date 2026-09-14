@@ -52,6 +52,7 @@ type CategoryFormDialogProps = {
   initialValues: CategoryFormValues
   nameLabel: string
   namePlaceholder?: string
+  showColorPicker?: boolean
   onDelete?: () => Promise<CategoryActionResult>
   onSubmit: (values: CategoryFormValues) => Promise<CategoryActionResult>
   onSuccess?: () => void
@@ -69,6 +70,7 @@ export function CategoryFormDialog({
   initialValues,
   nameLabel,
   namePlaceholder,
+  showColorPicker = true,
   onDelete,
   onSubmit,
   onSuccess,
@@ -196,32 +198,34 @@ export function CategoryFormDialog({
               />
             </Field>
 
-            <Field>
-              <FieldLabel>Màu sắc</FieldLabel>
-              <ToggleGroup
-                type="single"
-                variant="outline"
-                value={color}
-                onValueChange={(value) => {
-                  if (value) setColor(value as CategoryColorName)
-                }}
-                className="flex-wrap"
-                disabled={isPending}
-              >
-                {categoryColorOptions.map((option) => (
-                  <ToggleGroupItem
-                    key={option.name}
-                    value={option.name}
-                    aria-label={option.label}
-                    className="aspect-square px-0"
-                  >
-                    <span
-                      className={`size-3 rounded-full ${option.dotClassName}`}
-                    />
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-            </Field>
+            {showColorPicker ? (
+              <Field>
+                <FieldLabel>Màu sắc</FieldLabel>
+                <ToggleGroup
+                  type="single"
+                  variant="outline"
+                  value={color}
+                  onValueChange={(value) => {
+                    if (value) setColor(value as CategoryColorName)
+                  }}
+                  className="flex-wrap"
+                  disabled={isPending}
+                >
+                  {categoryColorOptions.map((option) => (
+                    <ToggleGroupItem
+                      key={option.name}
+                      value={option.name}
+                      aria-label={option.label}
+                      className="aspect-square px-0"
+                    >
+                      <span
+                        className={`size-3 rounded-full ${option.dotClassName}`}
+                      />
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              </Field>
+            ) : null}
 
             <Field>
               <FieldLabel>Biểu tượng</FieldLabel>

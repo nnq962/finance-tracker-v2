@@ -21,7 +21,7 @@ export function EditCategoryItemDialog({
   item,
 }: EditCategoryItemDialogProps) {
   const ItemIcon = categoryIconRegistry[item.iconName]
-  const itemColor = getCategoryColor(item.colorName)
+  const itemColor = getCategoryColor(group.colorName)
 
   return (
     <CategoryFormDialog
@@ -41,11 +41,12 @@ export function EditCategoryItemDialog({
         </>
       }
       nameLabel="Tên hạng mục"
+      showColorPicker={false}
       submitLabel="Lưu thay đổi"
       submitSuccessMessage="Đã cập nhật hạng mục."
       initialValues={{
         name: item.name,
-        colorName: item.colorName,
+        colorName: group.colorName,
         iconName: item.iconName,
       }}
       deleteDescription={
@@ -56,7 +57,12 @@ export function EditCategoryItemDialog({
       }
       deleteSuccessMessage="Đã xoá hạng mục."
       onDelete={() => deleteCategoryItemAction(item.id)}
-      onSubmit={(values) => updateCategoryItemAction(item.id, values)}
+      onSubmit={(values) =>
+        updateCategoryItemAction(item.id, {
+          name: values.name,
+          iconName: values.iconName,
+        })
+      }
     />
   )
 }

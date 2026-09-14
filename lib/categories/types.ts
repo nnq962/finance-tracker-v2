@@ -11,6 +11,11 @@ export type CategoryFormValues = {
   iconName: CategoryIconName
 }
 
+export type CategoryItemFormValues = Pick<
+  CategoryFormValues,
+  "name" | "iconName"
+>
+
 export type CategoryItem = CategoryFormValues & {
   id: string
   groupId: string

@@ -10,11 +10,13 @@ import { CategoryFormDialog } from "./category-form-dialog"
 
 type AddCategoryItemDialogProps = {
   group: CategoryGroup
+  label?: string
   onSuccess?: () => void
 }
 
 export function AddCategoryItemDialog({
   group,
+  label,
   onSuccess,
 }: AddCategoryItemDialogProps) {
   return (
@@ -22,17 +24,19 @@ export function AddCategoryItemDialog({
       trigger={
         <Button
           type="button"
-          variant="ghost"
-          size="icon"
+          variant={label ? "outline" : "ghost"}
+          size={label ? "default" : "icon"}
           aria-label={`Thêm hạng mục vào nhóm ${group.name}`}
         >
           <PlusIcon />
+          {label}
         </Button>
       }
       title={<>Thêm vào “{group.name}”</>}
       description="Tạo một hạng mục chi tiết mới trong nhóm này."
       nameLabel="Tên hạng mục"
       namePlaceholder="Ví dụ: Mua đồ ăn sáng"
+      showColorPicker={false}
       submitLabel="Lưu hạng mục"
       submitSuccessMessage="Đã thêm hạng mục."
       initialValues={{
@@ -40,7 +44,12 @@ export function AddCategoryItemDialog({
         colorName: group.colorName,
         iconName: "shopping-bag",
       }}
-      onSubmit={(values) => createCategoryItemAction(group.id, values)}
+      onSubmit={(values) =>
+        createCategoryItemAction(group.id, {
+          name: values.name,
+          iconName: values.iconName,
+        })
+      }
       onSuccess={onSuccess}
     />
   )

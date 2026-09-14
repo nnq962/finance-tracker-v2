@@ -7,6 +7,7 @@ import type {
   CategoryFormValues,
   CategoryGroup,
   CategoryItem,
+  CategoryItemFormValues,
   CategoryStatus,
   CategoryType,
 } from "@/lib/categories/types"
@@ -24,7 +25,7 @@ type CategoryGroupDocument = CategoryFormValues & {
   status: CategoryStatus
 }
 
-type CategoryItemDocument = CategoryFormValues & {
+type CategoryItemDocument = CategoryItemFormValues & {
   groupId: string
   type: CategoryType
   order: number
@@ -84,7 +85,6 @@ export async function ensureDefaultCategories(userId: string) {
           type: group.type,
           name: item.name,
           iconName: item.iconName,
-          colorName: item.colorName,
           order: itemIndex,
           status: "active",
           createdAt: now,
@@ -104,13 +104,23 @@ export async function ensureDefaultCategories(userId: string) {
 export async function getCategoryGroups(
   userId: string,
 ): Promise<CategoryGroup[]> {
-  await ensureDefaultCategories(userId)
-
-  const [groupSnapshot, itemSnapshot] = await Promise.all([
+  let [groupSnapshot, itemSnapshot] = await Promise.all([
     getGroupsCollection(userId).get(),
     getItemsCollection(userId).get(),
   ])
-  const itemsByGroup = new Map<string, Array<CategoryItem & { order: number }>>()
+
+  if (groupSnapshot.empty && itemSnapshot.empty) {
+    await ensureDefaultCategories(userId)
+    ;[groupSnapshot, itemSnapshot] = await Promise.all([
+      getGroupsCollection(userId).get(),
+      getItemsCollection(userId).get(),
+    ])
+  }
+
+  const itemsByGroup = new Map<
+    string,
+    Array<Omit<CategoryItem, "colorName"> & { order: number }>
+  >()
 
   itemSnapshot.docs.forEach((document) => {
     const data = document.data() as CategoryItemDocument
@@ -124,7 +134,6 @@ export async function getCategoryGroups(
       type: data.type,
       name: data.name,
       iconName: data.iconName,
-      colorName: data.colorName,
       order: data.order,
     })
     itemsByGroup.set(data.groupId, items)
@@ -144,7 +153,7 @@ export async function getCategoryGroups(
           type: item.type,
           name: item.name,
           iconName: item.iconName,
-          colorName: item.colorName,
+          colorName: data.colorName,
         }))
 
       return {
@@ -248,7 +257,7 @@ export async function archiveCategoryGroup(userId: string, groupId: string) {
 export async function createCategoryItem(
   userId: string,
   groupId: string,
-  values: CategoryFormValues,
+  values: CategoryItemFormValues,
 ) {
   const groupReference = getGroupsCollection(userId).doc(groupId)
   const [groupSnapshot, itemSnapshot] = await Promise.all([
@@ -290,18 +299,36 @@ export async function createCategoryItem(
 export async function updateCategoryItem(
   userId: string,
   itemId: string,
-  values: CategoryFormValues,
+  values: CategoryItemFormValues,
 ) {
+  const firestore = getFirebaseAdminFirestore()
   const reference = getItemsCollection(userId).doc(itemId)
-  const snapshot = await reference.get()
+  await firestore.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(reference)
 
-  if (!snapshot.exists || snapshot.get("status") !== "active") {
-    throw new CategoryValidationError("Hạng mục không tồn tại.")
-  }
+    if (!snapshot.exists || snapshot.get("status") !== "active") {
+      throw new CategoryValidationError("Hạng mục không tồn tại.")
+    }
 
-  await reference.update({
-    ...values,
-    updatedAt: FieldValue.serverTimestamp(),
+    const groupId = snapshot.get("groupId")
+
+    if (typeof groupId !== "string") {
+      throw new CategoryValidationError("Nhóm hạng mục không hợp lệ.")
+    }
+
+    const groupSnapshot = await transaction.get(
+      getGroupsCollection(userId).doc(groupId),
+    )
+
+    if (!groupSnapshot.exists || groupSnapshot.get("status") !== "active") {
+      throw new CategoryValidationError("Nhóm hạng mục không tồn tại.")
+    }
+
+    transaction.update(reference, {
+      ...values,
+      colorName: FieldValue.delete(),
+      updatedAt: FieldValue.serverTimestamp(),
+    })
   })
 }
 

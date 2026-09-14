@@ -1,7 +1,6 @@
 import { requireSession } from "@/lib/auth/session"
 import { getCategoryGroups } from "@/lib/categories/repository"
 
-import { CategoriesHeader } from "./_components/categories-header"
 import { CategoriesManager } from "./_components/categories-manager"
 
 export default async function CategoriesPage() {
@@ -10,7 +9,6 @@ export default async function CategoriesPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 pb-12">
-      <CategoriesHeader />
       <CategoriesManager groups={groups} />
     </div>
   )

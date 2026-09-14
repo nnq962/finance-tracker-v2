@@ -36,7 +36,8 @@ rules_version = '2';
 //   groupId: string (required, immutable reference to categoryGroups)
 //   type: "expense" | "income" (immutable, derived from its group)
 //   name: string (required, 1..80 chars)
-//   iconName, colorName: strings from the server-side catalogs
+//   iconName: string from the server-side catalog
+//   colorName is not stored; the UI inherits it from the parent group
 //   order: integer
 //   status: "active" | "archived"
 //   createdAt, updatedAt: timestamps

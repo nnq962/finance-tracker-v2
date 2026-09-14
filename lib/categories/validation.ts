@@ -3,6 +3,7 @@ import "server-only"
 import { categoryColorOptions } from "@/lib/categories/category-colors"
 import type {
   CategoryFormValues,
+  CategoryItemFormValues,
   CategoryType,
 } from "@/lib/categories/types"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
@@ -65,6 +66,39 @@ export function parseCategoryFormValues(
     name,
     colorName: candidate.colorName as CategoryFormValues["colorName"],
     iconName: candidate.iconName as CategoryFormValues["iconName"],
+  }
+}
+
+export function parseCategoryItemFormValues(
+  values: unknown,
+): CategoryItemFormValues {
+  if (!values || typeof values !== "object") {
+    throw new CategoryValidationError("Thông tin hạng mục không hợp lệ.")
+  }
+
+  const candidate = values as Record<string, unknown>
+  const name = typeof candidate.name === "string" ? candidate.name.trim() : ""
+
+  if (!name) {
+    throw new CategoryValidationError("Tên hạng mục là bắt buộc.")
+  }
+
+  if (name.length > 80) {
+    throw new CategoryValidationError(
+      "Tên hạng mục không được vượt quá 80 ký tự.",
+    )
+  }
+
+  if (
+    typeof candidate.iconName !== "string" ||
+    !(candidate.iconName in categoryIconRegistry)
+  ) {
+    throw new CategoryValidationError("Biểu tượng không hợp lệ.")
+  }
+
+  return {
+    name,
+    iconName: candidate.iconName as CategoryItemFormValues["iconName"],
   }
 }
 
