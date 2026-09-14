@@ -18,7 +18,7 @@ function isCrossOrigin(request: Request) {
 
 export async function POST(request: NextRequest) {
   if (isCrossOrigin(request)) {
-    return NextResponse.json({ error: "Invalid request origin." }, { status: 403 })
+    return NextResponse.json({ error: "Nguồn yêu cầu không hợp lệ." }, { status: 403 })
   }
 
   try {
@@ -32,7 +32,10 @@ export async function POST(request: NextRequest) {
         : null
 
     if (!idToken) {
-      return NextResponse.json({ error: "An ID token is required." }, { status: 400 })
+      return NextResponse.json(
+        { error: "Không tìm thấy thông tin đăng nhập Google." },
+        { status: 400 },
+      )
     }
 
     const adminAuth = getFirebaseAdminAuth()
@@ -59,7 +62,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           code: "auth/recent-sign-in-required",
-          error: "Please sign in again to create a new session.",
+          error: "Vui lòng đăng nhập lại để tạo phiên đăng nhập mới.",
         },
         { status: 401 },
       )
@@ -72,7 +75,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           code: "onboarding/initialization-failed",
-          error: "Unable to prepare your workspace. Please try again.",
+          error: "Không thể chuẩn bị không gian làm việc. Vui lòng thử lại.",
         },
         { status: 503 },
       )
@@ -96,7 +99,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Unable to create Firebase session cookie", error)
     return NextResponse.json(
-      { error: "Unable to create a secure session." },
+      { error: "Không thể tạo phiên đăng nhập an toàn." },
       { status: 401 },
     )
   }
@@ -104,7 +107,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   if (isCrossOrigin(request)) {
-    return NextResponse.json({ error: "Invalid request origin." }, { status: 403 })
+    return NextResponse.json({ error: "Nguồn yêu cầu không hợp lệ." }, { status: 403 })
   }
 
   const response = NextResponse.json({ ok: true })

@@ -37,7 +37,7 @@ export function LoginForm({
     try {
       const credential = await signInWithGoogle()
       await syncServerSession(credential.user)
-      toast.success("Signed in successfully.")
+      toast.success("Đăng nhập thành công.")
       router.replace(redirectTo)
       router.refresh()
     } catch (error) {
@@ -61,7 +61,9 @@ export function LoginForm({
               </div>
               <span className="sr-only">Finance Tracker.</span>
             </a>
-            <h1 className="text-xl font-bold">Welcome to Finance Tracker.</h1>
+            <h1 className="text-xl font-bold">
+              Chào mừng đến với Finance Tracker.
+            </h1>
           </div>
           <Field className="grid gap-4">
             <Button
@@ -80,11 +82,11 @@ export function LoginForm({
                   />
                 </svg>
               )}
-              {isLoading ? "Signing in..." : "Login with Google"}
+              {isLoading ? "Đang đăng nhập..." : "Đăng nhập bằng Google"}
             </Button>
             <FieldDescription className="flex items-center justify-center gap-2 text-center text-white/70">
               <ShieldCheckIcon className="size-4" />
-              Secure sign-in with Google
+              Đăng nhập an toàn với Google
             </FieldDescription>
           </Field>
         </FieldGroup>

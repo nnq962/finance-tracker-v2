@@ -213,7 +213,7 @@ export function AccountForm({
                   >
                     {selectedInstitution ? (
                       <InputGroupAddon align="inline-start">
-                        <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-white p-0.5">
+                        <span className="flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-0.5">
                           <Image
                             src={selectedInstitution.logoPath}
                             alt=""

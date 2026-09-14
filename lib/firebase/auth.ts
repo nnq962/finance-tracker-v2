@@ -30,7 +30,7 @@ export async function syncServerSession(user: User) {
       "error" in body &&
       typeof body.error === "string"
         ? body.error
-        : "Unable to create a secure session."
+        : "Không thể tạo phiên đăng nhập an toàn."
 
     throw new Error(message)
   }
@@ -40,7 +40,7 @@ export async function clearServerSession() {
   const response = await fetch("/api/auth/session", { method: "DELETE" })
 
   if (!response.ok) {
-    throw new Error("Unable to clear the secure session.")
+    throw new Error("Không thể xoá phiên đăng nhập an toàn.")
   }
 }
 
@@ -58,20 +58,20 @@ export function getAuthErrorMessage(error: unknown) {
   }
 
   if (!(error instanceof FirebaseError)) {
-    return "Unable to sign in. Please try again."
+    return "Không thể đăng nhập. Vui lòng thử lại."
   }
 
   switch (error.code) {
     case "auth/popup-closed-by-user":
     case "auth/cancelled-popup-request":
-      return "Google sign-in was cancelled."
+      return "Đăng nhập bằng Google đã bị huỷ."
     case "auth/popup-blocked":
-      return "Your browser blocked the sign-in popup. Please allow popups and try again."
+      return "Trình duyệt đã chặn cửa sổ đăng nhập. Vui lòng cho phép cửa sổ bật lên và thử lại."
     case "auth/unauthorized-domain":
-      return "This domain is not authorized in Firebase Authentication."
+      return "Tên miền này chưa được cấp quyền trong Firebase Authentication."
     case "auth/network-request-failed":
-      return "Unable to connect. Please check your network and try again."
+      return "Không thể kết nối. Vui lòng kiểm tra mạng và thử lại."
     default:
-      return "Unable to sign in with Google. Please try again."
+      return "Không thể đăng nhập bằng Google. Vui lòng thử lại."
   }
 }
