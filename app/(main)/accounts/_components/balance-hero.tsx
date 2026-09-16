@@ -72,7 +72,7 @@ export function BalanceHero({ summary, accounts }: BalanceHeroProps) {
             <p className="text-3xl font-semibold tracking-[-0.04em] tabular-nums sm:text-4xl xl:text-5xl">
               {formatCurrency(summary.totalBalance)}
             </p>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
               <span>{reportableAccounts.length} tài khoản</span>
               <span className="size-1 rounded-full bg-border" aria-hidden="true" />
               <span>Cập nhật {summary.updatedAt}</span>

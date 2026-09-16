@@ -21,7 +21,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
       <TooltipProvider>
         <SidebarProvider>
           <AppSidebar user={user} />
-          <SidebarInset className="min-w-0 bg-[#FAFBFC] [--main-content-px:--spacing(4)] dark:bg-background md:[--main-content-px:--spacing(6)] md:peer-data-[state=collapsed]:[--main-content-px:--spacing(24)]">
+          <SidebarInset className="min-w-0 bg-[#FCFCFB] [--main-content-px:--spacing(4)] dark:bg-background md:[--main-content-px:--spacing(6)] md:peer-data-[state=collapsed]:[--main-content-px:--spacing(24)]">
             <header className="flex h-16 shrink-0 items-center">
               <div className="flex w-full items-center justify-between px-(--main-content-px) transition-[padding] duration-200 ease-linear">
                 <div className="flex items-center gap-2">

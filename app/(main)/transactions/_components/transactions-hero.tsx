@@ -124,12 +124,12 @@ function CashFlowCard({
       <CardContent>
         <div className="space-y-5">
           <p
-            className={`text-3xl font-semibold tracking-tight tabular-nums sm:text-4xl ${content.valueClassName}`}
+            className={`text-[2rem] font-semibold tracking-tight tabular-nums ${content.valueClassName}`}
           >
             {formatCurrency(amount)}
           </p>
           <Separator />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {count} giao dịch
           </p>
         </div>
@@ -160,7 +160,7 @@ export function TransactionsHero({
 
   return (
     <section
-      className="grid gap-4 lg:grid-cols-3"
+      className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
       aria-label="Tổng quan giao dịch"
     >
       <CashFlowCard
@@ -177,7 +177,7 @@ export function TransactionsHero({
         period={period}
         trend={stats.expenseTrend}
       />
-      <Card className="h-44">
+      <Card className="h-44 md:col-span-2 lg:col-span-1">
         <CardHeader>
           <CardTitle className="text-sm font-medium text-muted-foreground">
             Chi nhiều nhất {periodLabel}
@@ -203,10 +203,11 @@ export function TransactionsHero({
                 </p>
               </div>
               <Progress
+                className="[&_[data-slot=progress-indicator]]:bg-gradient-to-r [&_[data-slot=progress-indicator]]:from-rose-600 [&_[data-slot=progress-indicator]]:to-rose-300"
                 value={topExpense.percentage}
                 aria-label={`${topExpense.name} chiếm ${topExpense.percentage}% tổng chi`}
               />
-              <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
                 <p>{topExpense.count} giao dịch</p>
                 <p className="text-right">
                   Trung bình{" "}
