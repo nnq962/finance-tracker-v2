@@ -15,7 +15,7 @@ type AccountLogoProps = {
 export function AccountLogo({ account, className }: AccountLogoProps) {
   if (account.type === "cash") {
     return (
-      <div
+      <span
         role="img"
         aria-label="Tiền mặt"
         className={cn(
@@ -24,12 +24,12 @@ export function AccountLogo({ account, className }: AccountLogoProps) {
         )}
       >
         <BanknoteIcon className="size-5" aria-hidden="true" />
-      </div>
+      </span>
     )
   }
 
   return (
-    <div
+    <span
       className={cn(
         "flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-white p-1.5",
         className,
@@ -48,6 +48,6 @@ export function AccountLogo({ account, className }: AccountLogoProps) {
           {account.logoFallback}
         </span>
       )}
-    </div>
+    </span>
   )
 }

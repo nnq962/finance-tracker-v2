@@ -1,5 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import type { Account } from "@/lib/accounts/types"
+import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
 
 import { TransactionItem } from "./transaction-item"
@@ -7,10 +9,14 @@ import { TransactionItem } from "./transaction-item"
 import type { TransactionDateGroup as TransactionDateGroupModel } from "../_types/transaction"
 
 type TransactionDateGroupProps = {
+  accounts: Account[]
+  categoryGroups: CategoryGroup[]
   group: TransactionDateGroupModel
 }
 
 export function TransactionDateGroup({
+  accounts,
+  categoryGroups,
   group,
 }: TransactionDateGroupProps) {
   const income = group.transactions.reduce(
@@ -73,6 +79,8 @@ export function TransactionDateGroup({
             <div key={transaction.id}>
               {index > 0 ? <Separator /> : null}
               <TransactionItem
+                accounts={accounts}
+                categoryGroups={categoryGroups}
                 transaction={transaction}
               />
             </div>

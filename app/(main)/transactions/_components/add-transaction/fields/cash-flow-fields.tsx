@@ -1,9 +1,10 @@
 "use client"
 
-import { PlusIcon } from "lucide-react"
+import { PlusIcon, ReceiptTextIcon } from "lucide-react"
 
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
+import { AccountLogo } from "@/components/account-logo"
 import { Button } from "@/components/ui/button"
 import {
   Collapsible,
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { getLocalDateTime } from "@/lib/date-time"
+import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 
 import type { TransactionFieldProps } from "../form-types"
 
@@ -82,6 +84,10 @@ export function CashFlowFields({
               <SelectGroup>
                 {availableAccounts.map((account) => (
                   <SelectItem key={account.id} value={account.id}>
+                    <AccountLogo
+                      account={account}
+                      className="size-5! p-0.5! [&>svg]:size-3!"
+                    />
                     {account.name}
                   </SelectItem>
                 ))}
@@ -108,6 +114,7 @@ export function CashFlowFields({
                   {defaultValues.categoryGroupName ?? "Hạng mục đã ngừng sử dụng"}
                 </SelectLabel>
                 <SelectItem value={defaultValues.categoryId}>
+                  <ReceiptTextIcon />
                   {defaultValues.categoryName ?? "Hạng mục cũ"}
                 </SelectItem>
               </SelectGroup>
@@ -115,11 +122,16 @@ export function CashFlowFields({
             {availableGroups.map((group) => (
               <SelectGroup key={group.id}>
                 <SelectLabel>{group.name}</SelectLabel>
-                {group.items.map((item) => (
-                  <SelectItem key={item.id} value={item.id}>
-                    {item.name}
-                  </SelectItem>
-                ))}
+                {group.items.map((item) => {
+                  const ItemIcon = categoryIconRegistry[item.iconName]
+
+                  return (
+                    <SelectItem key={item.id} value={item.id}>
+                      <ItemIcon />
+                      {item.name}
+                    </SelectItem>
+                  )
+                })}
               </SelectGroup>
             ))}
           </SelectContent>

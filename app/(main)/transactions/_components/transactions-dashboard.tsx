@@ -125,6 +125,8 @@ export function TransactionsDashboard({
         }}
       />
       <TransactionsView
+        accounts={accounts}
+        categoryGroups={categoryGroups}
         transactions={visibleTransactions}
       />
     </>

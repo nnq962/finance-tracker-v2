@@ -1,9 +1,11 @@
 "use client"
 
+import * as React from "react"
 import { PlusIcon } from "lucide-react"
 
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
+import { AccountLogo } from "@/components/account-logo"
 import { Button } from "@/components/ui/button"
 import {
   Collapsible,
@@ -26,21 +28,30 @@ import type { TransactionFieldProps } from "../form-types"
 
 function AccountSelect({
   accounts,
-  defaultValue,
+  excludedAccountId,
   id,
   name,
+  onValueChange,
+  value,
 }: {
   accounts: TransactionFieldProps["accounts"]
-  defaultValue?: string
+  excludedAccountId?: string
   id: string
   name: string
+  onValueChange: (value: string) => void
+  value: string
 }) {
   const availableAccounts = accounts.filter(
-    (account) => account.status === "active" || account.id === defaultValue,
-  )
+    (account) => account.status === "active" || account.id === value,
+  ).filter((account) => account.id !== excludedAccountId)
 
   return (
-    <Select name={name} defaultValue={defaultValue} required>
+    <Select
+      name={name}
+      value={value}
+      onValueChange={onValueChange}
+      required
+    >
       <SelectTrigger id={id} className="w-full">
         <SelectValue placeholder="Chọn tài khoản" />
       </SelectTrigger>
@@ -48,6 +59,10 @@ function AccountSelect({
         <SelectGroup>
           {availableAccounts.map((account) => (
             <SelectItem key={account.id} value={account.id}>
+              <AccountLogo
+                account={account}
+                className="size-5! p-0.5! [&>svg]:size-3!"
+              />
               {account.name}
             </SelectItem>
           ))}
@@ -61,6 +76,14 @@ export function TransferFields({
   accounts,
   defaultValues,
 }: TransactionFieldProps) {
+  const [fromAccountId, setFromAccountId] = React.useState(
+    defaultValues?.fromAccountId ?? "",
+  )
+  const [toAccountId, setToAccountId] = React.useState(
+    defaultValues?.toAccountId === defaultValues?.fromAccountId
+      ? ""
+      : (defaultValues?.toAccountId ?? ""),
+  )
   const defaultDateTime = defaultValues
     ? getLocalDateTime(defaultValues.occurredAt)
     : undefined
@@ -96,18 +119,22 @@ export function TransferFields({
           </FieldLabel>
           <AccountSelect
             accounts={accounts}
-            defaultValue={defaultValues?.fromAccountId}
+            excludedAccountId={toAccountId}
             id="transfer-from-account"
             name="fromAccountId"
+            onValueChange={setFromAccountId}
+            value={fromAccountId}
           />
         </Field>
         <Field>
           <FieldLabel htmlFor="transfer-to-account">Đến tài khoản</FieldLabel>
           <AccountSelect
             accounts={accounts}
-            defaultValue={defaultValues?.toAccountId}
+            excludedAccountId={fromAccountId}
             id="transfer-to-account"
             name="toAccountId"
+            onValueChange={setToAccountId}
+            value={toAccountId}
           />
         </Field>
       </div>
