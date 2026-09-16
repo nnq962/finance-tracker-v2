@@ -5,5 +5,6 @@ export type {
   TransactionFilter,
   TransactionKind,
   TransactionPeriod,
+  TransactionSearchFilters,
   TransactionSummaryData,
 } from "@/lib/transactions/types"

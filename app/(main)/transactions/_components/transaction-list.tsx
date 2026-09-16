@@ -35,7 +35,7 @@ export function TransactionList({
   }
 
   return (
-    <div className="space-y-7">
+    <div className="relative space-y-8 before:absolute before:inset-y-2 before:left-[7px] before:w-px before:bg-border">
       {groups.map((group) => (
         <TransactionDateGroup
           accounts={accounts}

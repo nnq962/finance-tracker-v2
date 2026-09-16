@@ -3,8 +3,12 @@ import type {
   TransactionDateGroup,
 } from "../_types/transaction"
 
-const dayFormatter = new Intl.DateTimeFormat("vi-VN", {
+const weekdayFormatter = new Intl.DateTimeFormat("vi-VN", {
   weekday: "long",
+  timeZone: "Asia/Ho_Chi_Minh",
+})
+
+const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
   day: "2-digit",
   month: "2-digit",
   timeZone: "Asia/Ho_Chi_Minh",
@@ -25,9 +29,14 @@ export function groupTransactionsByDate(
     groups.set(dateKey, group)
   }
 
-  return Array.from(groups, ([dateKey, groupedTransactions]) => ({
-    dateKey,
-    label: dayFormatter.format(new Date(`${dateKey}T00:00:00+07:00`)),
-    transactions: groupedTransactions,
-  }))
+  return Array.from(groups, ([dateKey, groupedTransactions]) => {
+    const date = new Date(`${dateKey}T00:00:00+07:00`)
+
+    return {
+      dateKey,
+      weekdayLabel: weekdayFormatter.format(date),
+      dateLabel: dateFormatter.format(date).replaceAll("-", "/"),
+      transactions: groupedTransactions,
+    }
+  })
 }

@@ -6,6 +6,14 @@ export type TransactionFilter = "all" | TransactionKind
 
 export type TransactionPeriod = "week" | "month"
 
+export type TransactionSearchFilters = {
+  query: string
+  minAmount: number | null
+  maxAmount: number | null
+  accountIds: string[]
+  categoryGroupIds: string[]
+}
+
 export type CashFlowTransactionValues = {
   kind: "expense" | "income"
   amount: number
@@ -58,7 +66,8 @@ export type TransactionSummaryData = {
 
 export type TransactionDateGroup = {
   dateKey: string
-  label: string
+  weekdayLabel: string
+  dateLabel: string
   transactions: Transaction[]
 }
 

@@ -17,10 +17,18 @@ function formatDateKey(date: Date) {
   ].join("-")
 }
 
-function formatShortDate(date: Date) {
-  return `${String(date.getUTCDate()).padStart(2, "0")}-${String(
-    date.getUTCMonth() + 1,
-  ).padStart(2, "0")}`
+function formatWeekRange(startDate: Date, endDate: Date) {
+  const startDay = String(startDate.getUTCDate()).padStart(2, "0")
+  const endDay = String(endDate.getUTCDate()).padStart(2, "0")
+  const startMonth = String(startDate.getUTCMonth() + 1).padStart(2, "0")
+  const endMonth = String(endDate.getUTCMonth() + 1).padStart(2, "0")
+  const isSameMonth =
+    startDate.getUTCFullYear() === endDate.getUTCFullYear() &&
+    startDate.getUTCMonth() === endDate.getUTCMonth()
+
+  return isSameMonth
+    ? `${startDay}-${endDay}/${endMonth}`
+    : `${startDay}/${startMonth}-${endDay}/${endMonth}`
 }
 
 function getWeekStart(date: Date) {
@@ -118,7 +126,7 @@ export function getTransactionPeriod(
   const endDateKey = formatDateKey(endDate)
 
   return {
-    rangeLabel: `${formatShortDate(startDate)} - ${formatShortDate(endDate)}`,
+    rangeLabel: formatWeekRange(startDate, endDate),
     contextLabel: formatRelativePeriod(period, weekOffset),
     isCurrent: latestDateKey >= startDateKey && latestDateKey <= endDateKey,
     transactions: transactions.filter((transaction) => {

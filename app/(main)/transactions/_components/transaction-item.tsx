@@ -141,7 +141,7 @@ export function TransactionItem({
     <>
     <article
       ref={itemRef}
-      className="group/transaction flex touch-pan-y items-center gap-3 py-3 sm:gap-4"
+      className="group/transaction flex touch-pan-y items-center gap-3 py-3.5 sm:gap-4"
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       onPointerCancel={() => {
@@ -149,12 +149,14 @@ export function TransactionItem({
       }}
     >
       <div
-        className={`flex size-11 shrink-0 items-center justify-center rounded-lg ${presentation.iconClassName}`}
+        className={`flex size-11 shrink-0 items-center justify-center rounded-lg sm:size-12 ${presentation.iconClassName}`}
       >
         <Icon className="size-5" />
       </div>
       <div className="min-w-0 flex-1">
-        <h3 className="truncate font-medium">{transaction.title}</h3>
+        <h3 className="truncate text-sm font-medium sm:text-base">
+          {transaction.title}
+        </h3>
         <p className="truncate text-sm text-muted-foreground">
           {transaction.description}
         </p>
@@ -193,7 +195,7 @@ export function TransactionItem({
             }`}
           >
             <p
-              className={`font-semibold tabular-nums ${presentation.amountClassName}`}
+              className={`text-sm font-semibold tabular-nums sm:text-base ${presentation.amountClassName}`}
             >
               {formatCurrency(transaction.amount, { signDisplay })}
             </p>
