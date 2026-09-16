@@ -9,7 +9,12 @@ import {
   Tabs,
   TabsList,
   TabsTrigger,
-} from "@/components/animate-ui/components/radix/tabs"
+} from "@/components/ui/tabs"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 import type { TransactionKind } from "../../_types/transaction"
 import type { SupportedTransactionKind } from "@/lib/transactions/types"
@@ -45,20 +50,34 @@ export function TransactionKindSelector({
       className="w-full"
     >
       <TabsList
-        className="grid h-auto w-full grid-cols-2 sm:grid-cols-4"
+        variant="default"
+        className="grid w-full grid-cols-4"
         aria-label="Loại giao dịch"
       >
-        {transactionKinds.map(({ value: kind, label, icon: Icon }) => (
-          <TabsTrigger
-            key={kind}
-            value={kind}
-            disabled={kind === "loan"}
-            title={kind === "loan" ? "Sẽ khả dụng khi hoàn thiện Vay nợ" : undefined}
-          >
-            <Icon />
-            {label}
-          </TabsTrigger>
-        ))}
+        {transactionKinds.map(({ value: kind, label, icon: Icon }) => {
+          const isDisabled = kind === "loan"
+
+          return (
+            <Tooltip key={kind}>
+              <TooltipTrigger asChild>
+                <span className="flex">
+                  <TabsTrigger
+                    value={kind}
+                    disabled={isDisabled}
+                    aria-label={label}
+                    className="w-full"
+                  >
+                    <Icon />
+                    <span className="sr-only">{label}</span>
+                  </TabsTrigger>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                {label}{isDisabled ? " · Sắp có" : ""}
+              </TooltipContent>
+            </Tooltip>
+          )
+        })}
       </TabsList>
     </Tabs>
   )

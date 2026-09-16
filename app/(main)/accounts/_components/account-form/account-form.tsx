@@ -13,7 +13,16 @@ import {
 import { toast } from "sonner"
 
 import { CurrencyInput } from "@/components/forms/currency-input"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import {
   Combobox,
   ComboboxContent,
@@ -141,176 +150,231 @@ export function AccountForm({
         })
       }}
     >
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
         <FieldGroup>
-          <Field>
-            <FieldLabel htmlFor="account-name">Tên tài khoản</FieldLabel>
-            <Input
-              id="account-name"
-              name="name"
-              defaultValue={defaultValues?.name}
-              placeholder="Tiền mặt, Ngân hàng A, Ví điện tử B..."
-              autoComplete="off"
-              required
-            />
-          </Field>
-
-          <Field>
-            <FieldLabel>Loại tài khoản</FieldLabel>
-            <input type="hidden" name="type" value={accountType} />
-            <ToggleGroup
-              type="single"
-              variant="outline"
-              value={accountType}
-              onValueChange={(value) => {
-                if (value) {
-                  setAccountType(value as AccountType)
-                  setInstitutionId("")
-                }
-              }}
-              className="grid w-full grid-cols-3"
-              aria-label="Chọn loại tài khoản"
-            >
-              {accountTypeOptions.map(({ value, label, icon: Icon }) => (
-                <ToggleGroupItem key={value} value={value} className="w-full">
-                  <Icon />
-                  {label}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          </Field>
-
-          {institutionOptions && (
-            <Field>
-              <FieldLabel htmlFor="account-institution">
-                Chọn {institutionLabel.toLowerCase()}
-              </FieldLabel>
-              <Combobox
-                key={accountType}
-                items={institutionOptions}
-                name="institutionId"
-                value={selectedInstitution ?? null}
-                onValueChange={(institution) =>
-                  setInstitutionId(institution?.id ?? "")
-                }
-                itemToStringLabel={(institution) =>
-                  institution.shortName ?? institution.name
-                }
-                itemToStringValue={(institution) => institution.id}
-                isItemEqualToValue={(institution, value) =>
-                  institution.id === value.id
-                }
-                filter={matchesInstitution}
-                autoHighlight
-                required
-              >
-                <div ref={institutionAnchor} className="w-full">
-                  <ComboboxInput
-                    id="account-institution"
-                    className="w-full"
-                    placeholder={`Tìm và chọn ${institutionLabel.toLowerCase()}`}
+          <Card>
+            <CardHeader>
+              <CardTitle>Thông tin tài khoản</CardTitle>
+              <CardDescription>
+                Đặt tên và chọn loại tài khoản bạn muốn theo dõi.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="account-name">Tên tài khoản</FieldLabel>
+                  <Input
+                    id="account-name"
+                    name="name"
+                    defaultValue={defaultValues?.name}
+                    placeholder="Tiền mặt, Ngân hàng A, Ví điện tử B..."
                     autoComplete="off"
+                    required
+                  />
+                </Field>
+
+                <Field>
+                  <FieldLabel>Loại tài khoản</FieldLabel>
+                  <input type="hidden" name="type" value={accountType} />
+                  <ToggleGroup
+                    type="single"
+                    variant="outline"
+                    value={accountType}
+                    onValueChange={(value) => {
+                      if (value) {
+                        setAccountType(value as AccountType)
+                        setInstitutionId("")
+                      }
+                    }}
+                    className="grid w-full grid-cols-3"
+                    aria-label="Chọn loại tài khoản"
                   >
-                    {selectedInstitution ? (
-                      <InputGroupAddon align="inline-start">
-                        <span className="flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-0.5">
-                          <Image
-                            src={selectedInstitution.logoPath}
-                            alt=""
-                            width={16}
-                            height={16}
-                            className="size-full object-contain"
-                          />
-                        </span>
-                      </InputGroupAddon>
-                    ) : null}
-                  </ComboboxInput>
-                </div>
-                <ComboboxContent
-                  anchor={institutionAnchor}
-                  portalContainer={formRef}
-                >
-                  <ComboboxEmpty>
-                    Không tìm thấy {institutionLabel.toLowerCase()}.
-                  </ComboboxEmpty>
-                  <ComboboxList>
-                    {(institution) => (
-                      <ComboboxItem
-                        key={institution.id}
-                        value={institution}
+                    {accountTypeOptions.map(({ value, label, icon: Icon }) => (
+                      <ToggleGroupItem
+                        key={value}
+                        value={value}
+                        className="w-full"
                       >
-                        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-white p-1">
-                          <Image
-                            src={institution.logoPath}
-                            alt=""
-                            width={20}
-                            height={20}
-                            className="size-full object-contain"
-                          />
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block truncate font-medium">
-                            {institution.shortName ?? institution.name}
-                          </span>
-                          {institution.shortName &&
-                          institution.shortName !== institution.name ? (
-                            <span className="block truncate text-xs text-muted-foreground">
-                              {institution.name}
-                            </span>
+                        <Icon />
+                        {label}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                </Field>
+
+                {institutionOptions && (
+                  <Field>
+                    <FieldLabel htmlFor="account-institution">
+                      Chọn {institutionLabel.toLowerCase()}
+                    </FieldLabel>
+                    <Combobox
+                      key={accountType}
+                      items={institutionOptions}
+                      name="institutionId"
+                      value={selectedInstitution ?? null}
+                      onValueChange={(institution) =>
+                        setInstitutionId(institution?.id ?? "")
+                      }
+                      itemToStringLabel={(institution) =>
+                        institution.shortName ?? institution.name
+                      }
+                      itemToStringValue={(institution) => institution.id}
+                      isItemEqualToValue={(institution, value) =>
+                        institution.id === value.id
+                      }
+                      filter={matchesInstitution}
+                      autoHighlight
+                      required
+                    >
+                      <div ref={institutionAnchor} className="w-full">
+                        <ComboboxInput
+                          id="account-institution"
+                          className="w-full"
+                          placeholder={`Tìm và chọn ${institutionLabel.toLowerCase()}`}
+                          autoComplete="off"
+                        >
+                          {selectedInstitution ? (
+                            <InputGroupAddon align="inline-start">
+                              <span className="flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-0.5">
+                                <Image
+                                  src={selectedInstitution.logoPath}
+                                  alt=""
+                                  width={16}
+                                  height={16}
+                                  className="size-full object-contain"
+                                />
+                              </span>
+                            </InputGroupAddon>
                           ) : null}
-                        </span>
-                      </ComboboxItem>
-                    )}
-                  </ComboboxList>
-                </ComboboxContent>
-              </Combobox>
-            </Field>
-          )}
+                        </ComboboxInput>
+                      </div>
+                      <ComboboxContent
+                        anchor={institutionAnchor}
+                        portalContainer={formRef}
+                      >
+                        <ComboboxEmpty>
+                          Không tìm thấy {institutionLabel.toLowerCase()}.
+                        </ComboboxEmpty>
+                        <ComboboxList>
+                          {(institution) => (
+                            <ComboboxItem
+                              key={institution.id}
+                              value={institution}
+                            >
+                              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-white p-1">
+                                <Image
+                                  src={institution.logoPath}
+                                  alt=""
+                                  width={20}
+                                  height={20}
+                                  className="size-full object-contain"
+                                />
+                              </span>
+                              <span className="min-w-0">
+                                <span className="block truncate font-medium">
+                                  {institution.shortName ?? institution.name}
+                                </span>
+                                {institution.shortName &&
+                                institution.shortName !== institution.name ? (
+                                  <span className="block truncate text-xs text-muted-foreground">
+                                    {institution.name}
+                                  </span>
+                                ) : null}
+                              </span>
+                            </ComboboxItem>
+                          )}
+                        </ComboboxList>
+                      </ComboboxContent>
+                    </Combobox>
+                  </Field>
+                )}
+              </FieldGroup>
+            </CardContent>
+          </Card>
 
-          {showBalance && (
-            <Field>
-              <FieldLabel htmlFor="account-balance">Số dư ban đầu</FieldLabel>
-              <CurrencyInput
-                id="account-balance"
-                name="balance"
-                defaultValue={defaultValues?.balance}
-                required
-              />
-            </Field>
-          )}
+          {showBalance ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Số dư ban đầu</CardTitle>
+                <CardDescription>
+                  Nhập số tiền hiện có trong tài khoản.
+                </CardDescription>
+                <CardAction>
+                  <Badge variant="secondary">VND</Badge>
+                </CardAction>
+              </CardHeader>
+              <CardContent>
+                <Field>
+                  <FieldLabel htmlFor="account-balance" className="sr-only">
+                    Số dư ban đầu
+                  </FieldLabel>
+                  <CurrencyInput
+                    id="account-balance"
+                    name="balance"
+                    defaultValue={defaultValues?.balance}
+                    required
+                  />
+                </Field>
+              </CardContent>
+            </Card>
+          ) : null}
 
-          <Field>
-            <FieldLabel htmlFor="account-note">Ghi chú</FieldLabel>
-            <Textarea
-              id="account-note"
-              name="note"
-              defaultValue={defaultValues?.note}
-              placeholder="Thêm ghi chú cho tài khoản..."
-            />
-          </Field>
+          <Card>
+            <CardHeader>
+              <CardTitle>Thiết lập</CardTitle>
+              <CardDescription>
+                Thêm ghi chú và chọn cách tài khoản xuất hiện trong báo cáo.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="account-note">
+                    Ghi chú <Badge variant="outline">Tùy chọn</Badge>
+                  </FieldLabel>
+                  <Textarea
+                    id="account-note"
+                    name="note"
+                    defaultValue={defaultValues?.note}
+                    placeholder="Thêm ghi chú cho tài khoản..."
+                  />
+                </Field>
 
-          <Field orientation="horizontal">
-            <FieldContent>
-              <FieldLabel htmlFor="account-exclude-from-reports">
-                Không tính vào báo cáo
-              </FieldLabel>
-              <FieldDescription>
-                Số dư và giao dịch của tài khoản này sẽ không ảnh hưởng đến báo cáo.
-              </FieldDescription>
-            </FieldContent>
-            <Switch
-              id="account-exclude-from-reports"
-              name="excludeFromReports"
-              defaultChecked={defaultValues?.excludeFromReports}
-            />
-          </Field>
+                <Field orientation="horizontal">
+                  <FieldContent>
+                    <FieldLabel htmlFor="account-exclude-from-reports">
+                      Không tính vào báo cáo
+                    </FieldLabel>
+                    <FieldDescription>
+                      Số dư và giao dịch của tài khoản này sẽ không ảnh hưởng
+                      đến báo cáo.
+                    </FieldDescription>
+                  </FieldContent>
+                  <Switch
+                    id="account-exclude-from-reports"
+                    name="excludeFromReports"
+                    defaultChecked={defaultValues?.excludeFromReports}
+                  />
+                </Field>
+              </FieldGroup>
+            </CardContent>
+          </Card>
         </FieldGroup>
       </div>
 
       <SheetFooter>
         {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
-        <Button type="submit" disabled={isPending}>
-          {isPending ? <LoaderCircleIcon className="animate-spin" /> : <SaveIcon />}
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full"
+          disabled={isPending}
+        >
+          {isPending ? (
+            <LoaderCircleIcon className="animate-spin" />
+          ) : (
+            <SaveIcon />
+          )}
           {isPending ? "Đang lưu..." : submitLabel}
         </Button>
       </SheetFooter>

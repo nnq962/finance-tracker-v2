@@ -40,11 +40,11 @@ export function AddTransactionSheet({
           Thêm giao dịch
         </Button>
       </SheetTrigger>
-      <SheetContent className="data-[side=right]:w-full sm:max-w-xl!">
+      <SheetContent className="data-[side=right]:w-full sm:max-w-md!">
         <SheetHeader>
-          <SheetTitle>Thêm giao dịch</SheetTitle>
+          <SheetTitle>Giao dịch mới</SheetTitle>
           <SheetDescription>
-            Chọn loại và nhập thông tin cho giao dịch mới.
+            Ghi lại dòng tiền mới vào sổ tài chính của bạn.
           </SheetDescription>
         </SheetHeader>
         <div className="px-4">

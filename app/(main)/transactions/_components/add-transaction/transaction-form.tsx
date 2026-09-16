@@ -86,7 +86,7 @@ export function TransactionForm({
       }}
     >
       <input type="hidden" name="kind" value={kind} />
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
         <SpecificFields
           accounts={accounts}
           categoryGroups={categoryGroups}
@@ -95,7 +95,7 @@ export function TransactionForm({
       </div>
       <SheetFooter>
         {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
-        <Button type="submit" disabled={isPending}>
+        <Button type="submit" size="lg" className="w-full" disabled={isPending}>
           {isPending ? (
             <LoaderCircleIcon className="animate-spin" />
           ) : (

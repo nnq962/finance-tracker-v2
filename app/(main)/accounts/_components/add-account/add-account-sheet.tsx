@@ -25,7 +25,7 @@ export function AddAccountSheet({ trigger }: AddAccountSheetProps) {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>{trigger}</SheetTrigger>
       <SheetContent
-        className="data-[side=right]:w-full sm:max-w-xl!"
+        className="data-[side=right]:w-full sm:max-w-md!"
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
         <SheetHeader>

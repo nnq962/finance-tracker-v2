@@ -22,7 +22,7 @@ export function EditAccountSheet({ account, onOpenChange, open }: EditAccountShe
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
-        className="data-[side=right]:w-full sm:max-w-xl!"
+        className="data-[side=right]:w-full sm:max-w-md!"
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
         <SheetHeader>
