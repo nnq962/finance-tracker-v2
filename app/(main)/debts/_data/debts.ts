@@ -30,6 +30,24 @@ export const contacts: Contact[] = [
 
 export const debts: Debt[] = [
   {
+    id: "DEBT-1004",
+    contactId: "pham-gia-huy",
+    direction: "lent",
+    amount: 3_500_000,
+    paidAmount: 500_000,
+    note: "Ứng tiền đặt cọc nhà",
+    recordedAt: "2026-06-10",
+    dueAt: "2026-09-13",
+    status: "overdue",
+    payments: [
+      {
+        id: "PAYMENT-1001",
+        amount: 500_000,
+        paidAt: "2026-08-01",
+      },
+    ],
+  },
+  {
     id: "DEBT-1001",
     contactId: "tran-quoc-bao",
     direction: "borrowed",

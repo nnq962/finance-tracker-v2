@@ -1,7 +1,6 @@
 import {
   ArrowDownLeftIcon,
   ArrowUpRightIcon,
-  HandshakeIcon,
   Repeat2Icon,
 } from "lucide-react"
 
@@ -25,12 +24,6 @@ export const transactionPresentation = {
     icon: Repeat2Icon,
     iconClassName: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
     amountClassName: "text-blue-600 dark:text-blue-400",
-  },
-  loan: {
-    label: "Vay nợ",
-    icon: HandshakeIcon,
-    iconClassName: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-    amountClassName: "text-amber-600 dark:text-amber-400",
   },
 } satisfies Record<
   TransactionKind,

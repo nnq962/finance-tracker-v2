@@ -1,6 +1,6 @@
-export type TransactionKind = "expense" | "income" | "transfer" | "loan"
+export type TransactionKind = "expense" | "income" | "transfer"
 
-export type SupportedTransactionKind = Exclude<TransactionKind, "loan">
+export type SupportedTransactionKind = TransactionKind
 
 export type TransactionFilter = "all" | TransactionKind
 

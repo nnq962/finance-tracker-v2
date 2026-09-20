@@ -1,7 +1,6 @@
 import {
   ArrowDownLeftIcon,
   ArrowUpRightIcon,
-  HandshakeIcon,
   Repeat2Icon,
 } from "lucide-react"
 
@@ -27,7 +26,6 @@ const transactionKinds: Array<{
   { value: "expense", label: "Chi tiền", icon: ArrowUpRightIcon },
   { value: "income", label: "Thu tiền", icon: ArrowDownLeftIcon },
   { value: "transfer", label: "Chuyển khoản", icon: Repeat2Icon },
-  { value: "loan", label: "Vay nợ", icon: HandshakeIcon },
 ]
 
 type TransactionKindSelectorProps = {
@@ -42,42 +40,33 @@ export function TransactionKindSelector({
   return (
     <Tabs
       value={value}
-      onValueChange={(nextValue) => {
-        if (nextValue !== "loan") {
-          onValueChange(nextValue as SupportedTransactionKind)
-        }
-      }}
+      onValueChange={(nextValue) =>
+        onValueChange(nextValue as SupportedTransactionKind)
+      }
       className="w-full"
     >
       <TabsList
         variant="default"
-        className="grid w-full grid-cols-4"
+        className="grid w-full grid-cols-3"
         aria-label="Loại giao dịch"
       >
-        {transactionKinds.map(({ value: kind, label, icon: Icon }) => {
-          const isDisabled = kind === "loan"
-
-          return (
-            <Tooltip key={kind}>
-              <TooltipTrigger asChild>
-                <span className="flex">
-                  <TabsTrigger
-                    value={kind}
-                    disabled={isDisabled}
-                    aria-label={label}
-                    className="w-full"
-                  >
-                    <Icon />
-                    <span className="sr-only">{label}</span>
-                  </TabsTrigger>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                {label}{isDisabled ? " · Sắp có" : ""}
-              </TooltipContent>
-            </Tooltip>
-          )
-        })}
+        {transactionKinds.map(({ value: kind, label, icon: Icon }) => (
+          <Tooltip key={kind}>
+            <TooltipTrigger asChild>
+              <span className="flex h-full">
+                <TabsTrigger
+                  value={kind}
+                  aria-label={label}
+                  className="h-full w-full"
+                >
+                  <Icon />
+                  <span className="sr-only">{label}</span>
+                </TabsTrigger>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{label}</TooltipContent>
+          </Tooltip>
+        ))}
       </TabsList>
     </Tabs>
   )

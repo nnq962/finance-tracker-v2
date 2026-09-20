@@ -10,6 +10,16 @@ export type Contact = {
   note?: string
 }
 
+export type DebtPayment = {
+  id: string
+  amount: number
+  paidAt: string
+  paidTime?: string
+  note?: string
+}
+
+export type NewDebtPayment = Omit<DebtPayment, "id">
+
 export type Debt = {
   id: string
   contactId: string
@@ -20,6 +30,7 @@ export type Debt = {
   recordedAt: string
   dueAt?: string
   status: DebtStatus
+  payments?: DebtPayment[]
 }
 
 export type DebtSummaryData = {

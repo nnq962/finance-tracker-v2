@@ -34,7 +34,6 @@ const filters: { label: string; value: TransactionFilter }[] = [
   { label: "Chi tiền", value: "expense" },
   { label: "Thu tiền", value: "income" },
   { label: "Chuyển khoản", value: "transfer" },
-  { label: "Vay nợ", value: "loan" },
 ]
 
 type SearchFilterDraft = {
