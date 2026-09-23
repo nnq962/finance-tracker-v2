@@ -2,6 +2,8 @@ export type DebtDirection = "lent" | "borrowed"
 
 export type DebtStatus = "active" | "overdue" | "settled"
 
+export type InterestPeriod = "month" | "year"
+
 export type Contact = {
   id: string
   name: string
@@ -23,9 +25,13 @@ export type NewDebtPayment = Omit<DebtPayment, "id">
 export type Debt = {
   id: string
   contactId: string
+  accountId?: string
   direction: DebtDirection
   amount: number
   paidAmount: number
+  hasInterest?: boolean
+  interestRate?: number
+  interestPeriod?: InterestPeriod
   note: string
   recordedAt: string
   dueAt?: string
@@ -41,4 +47,10 @@ export type DebtSummaryData = {
 
 export type NewContact = Omit<Contact, "id" | "initials">
 
-export type NewDebt = Omit<Debt, "id" | "status">
+export type NewDebt = Omit<
+  Debt,
+  "accountId" | "hasInterest" | "id" | "status"
+> & {
+  accountId: string
+  hasInterest: boolean
+}
