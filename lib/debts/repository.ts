@@ -65,8 +65,16 @@ export async function getDebts(userId: string): Promise<Debt[]> {
   return getFirebaseAdminFirestore().runTransaction(async (transaction) => {
     const debts = await transaction.get(userRef(userId).collection("debts").orderBy("recordedAt", "desc"))
     const results: Debt[] = []
-    for (const debt of debts.docs) {
-      results.push(debtFrom(debt, await transaction.get(debt.ref.collection("payments"))))
+    // Read histories concurrently in bounded batches, retaining the transaction
+    // snapshot and query order without queuing a request for every debt at once.
+    const batchSize = 10
+    for (let offset = 0; offset < debts.docs.length; offset += batchSize) {
+      const batch = await Promise.all(
+        debts.docs.slice(offset, offset + batchSize).map(async (debt) =>
+          debtFrom(debt, await transaction.get(debt.ref.collection("payments"))),
+        ),
+      )
+      results.push(...batch)
     }
     return results
   }, { readOnly: true })

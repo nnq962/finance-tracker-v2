@@ -22,6 +22,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import type { SessionUser } from "@/lib/auth/session"
 
@@ -57,13 +58,21 @@ export function AppSidebar({
   user,
   ...props
 }: React.ComponentProps<typeof Sidebar> & { user: SessionUser }) {
+  const { isMobile, setOpenMobile } = useSidebar()
+
   return (
     <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/overview" prefetch>
+              <Link
+                href="/overview"
+                prefetch={isMobile ? null : true}
+                onNavigate={() => {
+                  if (isMobile) setOpenMobile(false)
+                }}
+              >
                 <Image src="/icon.svg" alt="" width={32} height={32} className="size-8 shrink-0" />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <div className="flex min-w-0 items-center gap-2">

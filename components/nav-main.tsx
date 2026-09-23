@@ -19,6 +19,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 
 type NavItem = {
@@ -34,6 +35,11 @@ type NavItem = {
 
 export function NavMain({ items }: { items: NavItem[] }) {
   const pathname = usePathname()
+  const { isMobile, setOpenMobile } = useSidebar()
+
+  function handleNavigate() {
+    if (isMobile) setOpenMobile(false)
+  }
 
   return (
     <SidebarGroup>
@@ -51,9 +57,13 @@ export function NavMain({ items }: { items: NavItem[] }) {
                 <SidebarMenuButton
                   asChild
                   isActive={isActive}
-                  tooltip={item.title}
+                  tooltip={isMobile ? undefined : item.title}
                 >
-                  <Link href={item.url} prefetch>
+                  <Link
+                    href={item.url}
+                    prefetch={isMobile ? null : true}
+                    onNavigate={handleNavigate}
+                  >
                     {item.icon}
                     <span>{item.title}</span>
                   </Link>
@@ -72,9 +82,13 @@ export function NavMain({ items }: { items: NavItem[] }) {
                 <SidebarMenuButton
                   asChild
                   isActive={isActive}
-                  tooltip={item.title}
+                  tooltip={isMobile ? undefined : item.title}
                 >
-                  <Link href={item.url} prefetch>
+                  <Link
+                    href={item.url}
+                    prefetch={isMobile ? null : true}
+                    onNavigate={handleNavigate}
+                  >
                     {item.icon}
                     <span>{item.title}</span>
                   </Link>
@@ -93,7 +107,11 @@ export function NavMain({ items }: { items: NavItem[] }) {
                           asChild
                           isActive={pathname === subItem.url}
                         >
-                          <Link href={subItem.url} prefetch>
+                          <Link
+                            href={subItem.url}
+                            prefetch={isMobile ? null : true}
+                            onNavigate={handleNavigate}
+                          >
                             {subItem.icon}
                             <span>{subItem.title}</span>
                           </Link>

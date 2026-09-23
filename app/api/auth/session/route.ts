@@ -12,8 +12,19 @@ export const runtime = "nodejs"
 
 function isCrossOrigin(request: Request) {
   const origin = request.headers.get("origin")
+  if (origin === null) return false
 
-  return origin !== null && origin !== new URL(request.url).origin
+  const requestUrl = new URL(request.url)
+
+  // Next dev may construct request.url with its bind address (e.g. 0.0.0.0).
+  // The browser's Host header retains the address actually used on the LAN.
+  if (process.env.NODE_ENV === "development") {
+    const host = request.headers.get("host")
+    if (!host) return true
+    return origin !== `${requestUrl.protocol}//${host}`
+  }
+
+  return origin !== requestUrl.origin
 }
 
 export async function POST(request: NextRequest) {
