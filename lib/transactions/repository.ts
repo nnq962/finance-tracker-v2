@@ -13,6 +13,9 @@ import { TransactionValidationError } from "@/lib/transactions/validation"
 const MAX_MONEY = 999_999_999_999_999
 
 type TransactionDocument = {
+  source?: "debt" | "balance_adjustment"
+  debtId?: string
+  debtPaymentId?: string
   kind: SupportedTransactionKind
   amount: number
   fee?: number
@@ -161,8 +164,13 @@ function toTransaction(id: string, data: TransactionDocument): Transaction {
 
   return {
     id,
+    source: data.source,
+    debtId: data.debtId,
+    debtPaymentId: data.debtPaymentId,
     kind: data.kind,
-    title: data.categoryName ?? "Giao dịch",
+    title: data.source === "balance_adjustment"
+      ? `Điều chỉnh số dư · ${data.categoryName ?? "Giao dịch"}`
+      : data.categoryName ?? "Giao dịch",
     description: `${data.categoryGroupName ?? "Hạng mục"} · ${data.accountName ?? "Tài khoản"}`,
     amount: data.kind === "expense" ? -data.amount : data.amount,
     accountId: data.accountId,
@@ -181,9 +189,12 @@ export async function getTransactions(userId: string): Promise<Transaction[]> {
     .orderBy("occurredAt", "desc")
     .get()
 
-  return snapshot.docs.map((document) =>
-    toTransaction(document.id, document.data() as TransactionDocument),
-  )
+  // Older payment ledgers remain hidden too; balances are managed by debts.
+  return snapshot.docs
+    .filter((document) => !(document.get("source") === "debt" && document.get("debtPaymentId")))
+    .map((document) =>
+      toTransaction(document.id, document.data() as TransactionDocument),
+    )
 }
 
 async function getTransactionDetails(
@@ -370,6 +381,7 @@ export async function updateTransaction(
       throw new TransactionValidationError("Giao dịch không tồn tại.")
     }
 
+    if (existingSnapshot.get("source") === "debt") throw new TransactionValidationError("Hãy sửa giao dịch này tại trang Nợ & Cho vay để giữ đồng bộ khoản nợ.")
     const existing = existingSnapshot.data() as TransactionDocument
     const existingAccountIds = new Set(getDocumentAccountIds(existing))
     const details = await getTransactionDetails(
@@ -425,7 +437,10 @@ export async function updateTransaction(
         updatedAt: FieldValue.serverTimestamp(),
       })
     })
-    firestoreTransaction.set(transactionReference, updatedDocument)
+    firestoreTransaction.set(transactionReference, {
+      ...updatedDocument,
+      ...(existing.source === "balance_adjustment" ? { source: existing.source } : {}),
+    })
   })
 }
 
@@ -440,6 +455,7 @@ export async function deleteTransaction(userId: string, transactionId: string) {
       throw new TransactionValidationError("Giao dịch không tồn tại.")
     }
 
+    if (snapshot.get("source") === "debt") throw new TransactionValidationError("Hãy xoá giao dịch này tại trang Nợ & Cho vay để giữ đồng bộ khoản nợ.")
     const document = snapshot.data() as TransactionDocument
     const accountIds = getDocumentAccountIds(document)
     const accountSnapshots = await firestoreTransaction.getAll(

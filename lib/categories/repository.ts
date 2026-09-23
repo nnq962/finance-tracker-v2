@@ -65,33 +65,39 @@ export async function ensureDefaultCategories(userId: string) {
 
     if (settingsSnapshot.exists) return
 
+    const [existingGroups, existingItems] = await Promise.all([
+      transaction.get(getGroupsCollection(userId).limit(1)),
+      transaction.get(getItemsCollection(userId).limit(1)),
+    ])
     const now = FieldValue.serverTimestamp()
 
-    defaultCategoryGroups.forEach((group, groupIndex) => {
-      transaction.set(getGroupsCollection(userId).doc(group.id), {
-        name: group.name,
-        type: group.type,
-        iconName: group.iconName,
-        colorName: group.colorName,
-        order: groupIndex,
-        status: "active",
-        createdAt: now,
-        updatedAt: now,
-      })
-
-      group.items.forEach((item, itemIndex) => {
-        transaction.set(getItemsCollection(userId).doc(item.id), {
-          groupId: group.id,
+    if (existingGroups.empty && existingItems.empty) {
+      defaultCategoryGroups.forEach((group, groupIndex) => {
+        transaction.set(getGroupsCollection(userId).doc(group.id), {
+          name: group.name,
           type: group.type,
-          name: item.name,
-          iconName: item.iconName,
-          order: itemIndex,
+          iconName: group.iconName,
+          colorName: group.colorName,
+          order: groupIndex,
           status: "active",
           createdAt: now,
           updatedAt: now,
         })
+
+        group.items.forEach((item, itemIndex) => {
+          transaction.set(getItemsCollection(userId).doc(item.id), {
+            groupId: group.id,
+            type: group.type,
+            name: item.name,
+            iconName: item.iconName,
+            order: itemIndex,
+            status: "active",
+            createdAt: now,
+            updatedAt: now,
+          })
+        })
       })
-    })
+    }
 
     transaction.set(settingsReference, {
       schemaVersion: CATEGORY_SCHEMA_VERSION,
@@ -227,31 +233,33 @@ export async function updateCategoryGroup(
 }
 
 export async function archiveCategoryGroup(userId: string, groupId: string) {
+  const firestore = getFirebaseAdminFirestore()
   const groupReference = getGroupsCollection(userId).doc(groupId)
-  const [groupSnapshot, itemSnapshot] = await Promise.all([
-    groupReference.get(),
-    getItemsCollection(userId).where("groupId", "==", groupId).get(),
-  ])
+  await firestore.runTransaction(async (transaction) => {
+    const [groupSnapshot, itemSnapshot] = await Promise.all([
+      transaction.get(groupReference),
+      transaction.get(getItemsCollection(userId).where("groupId", "==", groupId)),
+    ])
 
-  if (!groupSnapshot.exists || groupSnapshot.get("status") !== "active") {
-    throw new CategoryValidationError("Nhóm hạng mục không tồn tại.")
-  }
-
-  if (itemSnapshot.size > MAX_BATCHED_ITEMS) {
-    throw new CategoryValidationError(
-      "Nhóm có quá nhiều hạng mục để xoá an toàn.",
-    )
-  }
-
-  const batch = getFirebaseAdminFirestore().batch()
-  const now = FieldValue.serverTimestamp()
-  batch.update(groupReference, { status: "archived", updatedAt: now })
-  itemSnapshot.docs.forEach((document) => {
-    if (document.get("status") === "active") {
-      batch.update(document.ref, { status: "archived", updatedAt: now })
+    if (!groupSnapshot.exists || groupSnapshot.get("status") !== "active") {
+      throw new CategoryValidationError("Nhóm hạng mục không tồn tại.")
     }
+
+    const activeItems = itemSnapshot.docs.filter(
+      (document) => document.get("status") === "active",
+    )
+    if (activeItems.length > MAX_BATCHED_ITEMS) {
+      throw new CategoryValidationError(
+        "Nhóm có quá nhiều hạng mục để xoá an toàn.",
+      )
+    }
+
+    const now = FieldValue.serverTimestamp()
+    transaction.update(groupReference, { status: "archived", updatedAt: now })
+    activeItems.forEach((document) => {
+      transaction.update(document.ref, { status: "archived", updatedAt: now })
+    })
   })
-  await batch.commit()
 }
 
 export async function createCategoryItem(
@@ -259,40 +267,45 @@ export async function createCategoryItem(
   groupId: string,
   values: CategoryItemFormValues,
 ) {
+  const firestore = getFirebaseAdminFirestore()
   const groupReference = getGroupsCollection(userId).doc(groupId)
-  const [groupSnapshot, itemSnapshot] = await Promise.all([
-    groupReference.get(),
-    getItemsCollection(userId).where("groupId", "==", groupId).get(),
-  ])
+  const itemReference = getItemsCollection(userId).doc()
+  await firestore.runTransaction(async (transaction) => {
+    const [groupSnapshot, itemSnapshot] = await Promise.all([
+      transaction.get(groupReference),
+      transaction.get(getItemsCollection(userId).where("groupId", "==", groupId)),
+    ])
 
-  if (!groupSnapshot.exists || groupSnapshot.get("status") !== "active") {
-    throw new CategoryValidationError("Nhóm hạng mục không tồn tại.")
-  }
+    if (!groupSnapshot.exists || groupSnapshot.get("status") !== "active") {
+      throw new CategoryValidationError("Nhóm hạng mục không tồn tại.")
+    }
 
-  const activeItemCount = itemSnapshot.docs.filter(
-    (document) => document.get("status") === "active",
-  ).length
+    const activeItemCount = itemSnapshot.docs.filter(
+      (document) => document.get("status") === "active",
+    ).length
 
-  if (activeItemCount >= MAX_ITEMS_PER_GROUP) {
-    throw new CategoryValidationError(
-      `Mỗi nhóm chỉ được có tối đa ${MAX_ITEMS_PER_GROUP} hạng mục.`,
-    )
-  }
+    if (activeItemCount >= MAX_ITEMS_PER_GROUP) {
+      throw new CategoryValidationError(
+        `Mỗi nhóm chỉ được có tối đa ${MAX_ITEMS_PER_GROUP} hạng mục.`,
+      )
+    }
 
-  const type = groupSnapshot.get("type")
-  if (type !== "expense" && type !== "income") {
-    throw new CategoryValidationError("Loại nhóm hạng mục không hợp lệ.")
-  }
+    const type = groupSnapshot.get("type")
+    if (type !== "expense" && type !== "income") {
+      throw new CategoryValidationError("Loại nhóm hạng mục không hợp lệ.")
+    }
 
-  const now = FieldValue.serverTimestamp()
-  await getItemsCollection(userId).add({
-    ...values,
-    groupId,
-    type,
-    order: Date.now(),
-    status: "active",
-    createdAt: now,
-    updatedAt: now,
+    const now = FieldValue.serverTimestamp()
+    transaction.update(groupReference, { updatedAt: now })
+    transaction.create(itemReference, {
+      ...values,
+      groupId,
+      type,
+      order: Date.now(),
+      status: "active",
+      createdAt: now,
+      updatedAt: now,
+    })
   })
 }
 

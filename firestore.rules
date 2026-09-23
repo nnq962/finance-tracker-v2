@@ -12,7 +12,6 @@ rules_version = '2';
 //   openingBalance: immutable integer (0..999999999999999 VND)
 //   balance: current integer balance (0..999999999999999 VND)
 //   note: string (optional, <= 500 chars)
-//   excludeFromReports: bool
 //   status: "active" | "archived"
 //   createdAt: timestamp
 //   updatedAt: timestamp

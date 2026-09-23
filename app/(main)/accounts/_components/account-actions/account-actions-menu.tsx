@@ -81,11 +81,17 @@ export function AccountActionsMenu({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44">
           <DropdownMenuGroup>
-            <DropdownMenuItem onSelect={() => setEditOpen(true)}>
+            <DropdownMenuItem
+              disabled={isLocked}
+              onSelect={() => setEditOpen(true)}
+            >
               <PencilIcon />
               Chỉnh sửa
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setAdjustBalanceOpen(true)}>
+            <DropdownMenuItem
+              disabled={isLocked}
+              onSelect={() => setAdjustBalanceOpen(true)}
+            >
               <CircleDollarSignIcon />
               Điều chỉnh số dư
             </DropdownMenuItem>

@@ -7,7 +7,7 @@ import type { CategoryGroup } from "@/lib/categories/types"
 
 import { filterTransactions } from "../_lib/filter-transactions"
 import {
-  getLatestTransactionDateKey,
+  getLastNavigableDateKey,
   getTransactionPeriod,
   shiftPeriodAnchor,
 } from "../_lib/get-transaction-period"
@@ -26,6 +26,7 @@ import { TransactionToolbar } from "./transaction-toolbar"
 type TransactionsDashboardProps = {
   accounts: Account[]
   categoryGroups: CategoryGroup[]
+  todayDateKey: string
   transactions: Transaction[]
 }
 
@@ -40,28 +41,29 @@ const initialSearchFilters: TransactionSearchFilters = {
 export function TransactionsDashboard({
   accounts,
   categoryGroups,
+  todayDateKey,
   transactions,
 }: TransactionsDashboardProps) {
-  const latestDateKey = React.useMemo(
-    () => getLatestTransactionDateKey(transactions),
-    [transactions],
+  const lastNavigableDateKey = React.useMemo(
+    () => getLastNavigableDateKey(transactions, todayDateKey),
+    [transactions, todayDateKey],
   )
   const [period, setPeriod] = React.useState<TransactionPeriod>("month")
   const [filter, setFilter] = React.useState<TransactionFilter>("all")
   const [searchFilters, setSearchFilters] =
     React.useState<TransactionSearchFilters>(initialSearchFilters)
-  const [anchorDateKey, setAnchorDateKey] = React.useState(latestDateKey)
-  const effectiveAnchorDateKey =
-    anchorDateKey === "0000-00-00" ? latestDateKey : anchorDateKey
+  const [anchorDateKey, setAnchorDateKey] = React.useState<string | null>(null)
+  const effectiveAnchorDateKey = anchorDateKey ?? todayDateKey
   const periodData = React.useMemo(
     () =>
       getTransactionPeriod(
         transactions,
         period,
         effectiveAnchorDateKey,
-        latestDateKey,
+        todayDateKey,
+        lastNavigableDateKey,
       ),
-    [effectiveAnchorDateKey, latestDateKey, period, transactions],
+    [effectiveAnchorDateKey, lastNavigableDateKey, period, todayDateKey, transactions],
   )
   const previousPeriodTransactions = React.useMemo(
     () =>
@@ -69,9 +71,10 @@ export function TransactionsDashboard({
         transactions,
         period,
         shiftPeriodAnchor(effectiveAnchorDateKey, period, -1),
-        latestDateKey,
+        todayDateKey,
+        lastNavigableDateKey,
       ).transactions,
-    [effectiveAnchorDateKey, latestDateKey, period, transactions],
+    [effectiveAnchorDateKey, lastNavigableDateKey, period, todayDateKey, transactions],
   )
   const visibleTransactions = React.useMemo(
     () => filterTransactions(periodData.transactions, filter, searchFilters),
@@ -101,25 +104,29 @@ export function TransactionsDashboard({
         rangeLabel={periodData.rangeLabel}
         contextLabel={periodData.contextLabel}
         transactionCount={visibleTransactions.length}
-        canGoNext={!periodData.isCurrent}
+        canGoNext={!periodData.isLatest}
         onFilterChange={setFilter}
         onSearchFiltersChange={setSearchFilters}
         onPeriodChange={(nextPeriod) => {
           setPeriod(nextPeriod)
-          setAnchorDateKey(latestDateKey)
+          setAnchorDateKey(null)
         }}
         onPrevious={() =>
-          setAnchorDateKey((current) =>
-            shiftPeriodAnchor(current, period, -1),
-          )
+          setAnchorDateKey(shiftPeriodAnchor(effectiveAnchorDateKey, period, -1))
         }
-        onNext={() =>
-          setAnchorDateKey((current) =>
-            shiftPeriodAnchor(current, period, 1),
+        onNext={() => {
+          const nextDateKey = shiftPeriodAnchor(effectiveAnchorDateKey, period, 1)
+          const nextPeriod = getTransactionPeriod(
+            transactions,
+            period,
+            nextDateKey,
+            todayDateKey,
+            lastNavigableDateKey,
           )
-        }
+          setAnchorDateKey(nextPeriod.isCurrent ? null : nextDateKey)
+        }}
         onReset={() => {
-          setAnchorDateKey(latestDateKey)
+          setAnchorDateKey(null)
           setFilter("all")
           setSearchFilters(initialSearchFilters)
         }}

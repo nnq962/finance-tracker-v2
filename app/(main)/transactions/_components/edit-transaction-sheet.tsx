@@ -47,7 +47,7 @@ export function EditTransactionSheet({
         onOpenChange(nextOpen)
       }}
     >
-      <SheetContent className="data-[side=right]:w-full sm:max-w-md!">
+      <SheetContent onOpenAutoFocus={(event) => event.preventDefault()} className="data-[side=right]:w-full sm:max-w-md!">
         <SheetHeader>
           <SheetTitle>Chỉnh sửa giao dịch</SheetTitle>
           <SheetDescription>

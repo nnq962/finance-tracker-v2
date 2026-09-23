@@ -36,7 +36,7 @@ export function DebtSummary({ summary }: DebtSummaryProps) {
     },
     {
       label: "Cân đối ròng",
-      helper: summary.netBalance >= 0 ? "Bạn được nợ nhiều hơn" : "Bạn nợ nhiều hơn",
+      helper: summary.netBalance === 0 ? "Các khoản vay đang cân bằng" : summary.netBalance > 0 ? "Bạn được nợ nhiều hơn" : "Bạn nợ nhiều hơn",
       value: summary.netBalance,
       icon: ScaleIcon,
       surfaceClassName:
@@ -74,7 +74,7 @@ export function DebtSummary({ summary }: DebtSummaryProps) {
           </CardHeader>
           <CardContent>
             <p className={`text-2xl font-semibold tabular-nums ${valueClassName}`}>
-              {formatCurrency(value, { signDisplay: label === "Cân đối ròng" ? "always" : "auto" })}
+              {formatCurrency(value, { signDisplay: label === "Cân đối ròng" && value !== 0 ? "always" : "auto" })}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">{helper}</p>
           </CardContent>

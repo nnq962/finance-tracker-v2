@@ -19,7 +19,7 @@ function formatUpdatedAt(value: Date) {
 
 export function getBalanceSummary(accounts: Account[]): BalanceSummary {
   const reportableAccounts = accounts.filter(
-    (account) => account.status === "active" && !account.excludeFromReports,
+    (account) => account.status === "active",
   )
   const totalBalance = reportableAccounts.reduce(
     (total, account) => total + account.balance,

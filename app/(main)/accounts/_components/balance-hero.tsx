@@ -38,7 +38,7 @@ const chartConfig = {
 
 export function BalanceHero({ summary, accounts }: BalanceHeroProps) {
   const reportableAccounts = accounts.filter(
-    (account) => account.status === "active" && !account.excludeFromReports,
+    (account) => account.status === "active",
   )
   const accountsTotal = reportableAccounts.reduce(
     (total, account) => total + Math.max(account.balance, 0),

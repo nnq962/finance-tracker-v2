@@ -24,6 +24,7 @@ import {
   Field,
   FieldContent,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
@@ -56,11 +57,12 @@ import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { Account } from "@/lib/accounts/types"
-import { getCurrentLocalDateTime } from "@/lib/date-time"
 import { formatCurrency } from "@/lib/format-currency"
+import { todayDate } from "../_lib/debt-payments"
 
 import type {
   Contact,
+  Debt,
   DebtDirection,
   InterestPeriod,
   NewDebt,
@@ -90,100 +92,126 @@ const accountTypeOptions = [
 ] satisfies Array<{ value: Account["type"]; label: string }>
 
 type AddDebtSheetProps = {
+  debt?: Debt
+  trigger?: React.ReactNode
   accounts: Account[]
   contacts: Contact[]
-  onAddDebt: (debt: NewDebt) => void
+  onAddDebt: (debt: NewDebt) => Promise<void>
 }
 
 export function AddDebtSheet({
+  debt,
+  trigger,
   accounts,
   contacts,
   onAddDebt,
 }: AddDebtSheetProps) {
   const [open, setOpen] = React.useState(false)
-  const [direction, setDirection] = React.useState<DebtDirection>("lent")
-  const [hasInterest, setHasInterest] = React.useState(false)
-  const today = React.useMemo(() => getCurrentLocalDateTime().date, [])
+  const [direction, setDirection] = React.useState<DebtDirection>(debt?.direction ?? "lent")
+  const [hasInterest, setHasInterest] = React.useState(debt?.hasInterest ?? false)
+  const [pending, setPending] = React.useState(false)
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
+  const submitting = React.useRef(false)
+  const today = React.useMemo(() => todayDate(), [])
   const accountLabel =
     direction === "lent" ? "Nguồn tiền" : "Tài khoản nhận tiền"
   const accountDescription =
     direction === "lent"
       ? "Khoản cho vay sẽ được lấy ra từ tài khoản này."
       : "Khoản tiền đi vay sẽ được nhận vào tài khoản này."
+  const activeAccounts = accounts.filter((account) => account.status === "active" || account.id === debt?.accountId)
   const accountGroups = accountTypeOptions.map((option) => ({
     ...option,
-    accounts: accounts.filter((account) => account.type === option.value),
+    accounts: activeAccounts.filter((account) => account.type === option.value),
   }))
-  const isDisabled = contacts.length === 0 || accounts.length === 0
+  const isDisabled = contacts.length === 0 || activeAccounts.length === 0
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={(nextOpen) => {
+      if (submitting.current) return
+      if (nextOpen) { setErrorMessage(null); setDirection(debt?.direction ?? "lent"); setHasInterest(debt?.hasInterest ?? false) }
+      setOpen(nextOpen)
+    }}>
       <SheetTrigger asChild>
-        <AnimatedButton
+        {trigger ?? <AnimatedButton
           type="button"
           disabled={isDisabled}
           title={
             contacts.length === 0
               ? "Thêm người liên quan trước khi tạo khoản nợ"
-              : accounts.length === 0
+              : activeAccounts.length === 0
                 ? "Thêm tài khoản trước khi tạo khoản nợ"
                 : undefined
           }
         >
           <PlusIcon />
           Thêm khoản nợ
-        </AnimatedButton>
+        </AnimatedButton>}
       </SheetTrigger>
       <SheetContent
         className="data-[side=right]:w-full sm:max-w-md!"
+        showCloseButton={!pending}
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
         <SheetHeader>
-          <SheetTitle>Thêm khoản nợ</SheetTitle>
+          <SheetTitle>{debt ? "Sửa khoản nợ" : "Thêm khoản nợ"}</SheetTitle>
           <SheetDescription>
-            Ghi lại khoản đang cho vay hoặc đi vay và các điều khoản liên quan.
+            {debt ? "Thay đổi thông tin và điều khoản. Số dư được điều chỉnh theo khoản nợ mới; lịch sử thanh toán được giữ lại." : "Ghi lại khoản đang cho vay hoặc đi vay và các điều khoản liên quan."}
           </SheetDescription>
         </SheetHeader>
 
         <form
           className="flex min-h-0 flex-1 flex-col"
-          onSubmit={(event) => {
+          aria-busy={pending}
+          onSubmit={async (event) => {
             event.preventDefault()
+            if (submitting.current) return
             const form = event.currentTarget
             const formData = new FormData(form)
-
-            onAddDebt({
-              accountId: String(formData.get("accountId")),
-              contactId: String(formData.get("contactId")),
-              direction,
-              amount: Number(formData.get("amount")),
-              paidAmount: 0,
-              hasInterest,
-              interestRate: hasInterest
-                ? Number(formData.get("interestRate"))
-                : undefined,
-              interestPeriod: hasInterest
-                ? (String(
-                    formData.get("interestPeriod"),
-                  ) as InterestPeriod)
-                : undefined,
-              note: String(formData.get("note")),
-              recordedAt: String(formData.get("recordedAt")),
-              dueAt: String(formData.get("dueAt") || "") || undefined,
-            })
-            form.reset()
-            setDirection("lent")
-            setHasInterest(false)
-            setOpen(false)
+            submitting.current = true
+            setPending(true)
+            setErrorMessage(null)
+            try {
+              await onAddDebt({
+                accountId: String(formData.get("accountId")),
+                contactId: String(formData.get("contactId")),
+                direction,
+                amount: Number(formData.get("amount")),
+                paidAmount: 0,
+                hasInterest,
+                interestRate: hasInterest
+                  ? Number(
+                      String(formData.get("interestRate")).replace(",", "."),
+                    )
+                  : undefined,
+                interestPeriod: hasInterest
+                  ? (String(
+                      formData.get("interestPeriod"),
+                    ) as InterestPeriod)
+                  : undefined,
+                note: String(formData.get("note")),
+                recordedAt: String(formData.get("recordedAt")),
+                dueAt: String(formData.get("dueAt") || "") || undefined,
+              })
+              form.reset()
+              setDirection("lent")
+              setHasInterest(false)
+              setOpen(false)
+            } catch (error) {
+              setErrorMessage(error instanceof Error ? error.message : "Không thể lưu khoản nợ.")
+            } finally {
+              submitting.current = false
+              setPending(false)
+            }
           }}
         >
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
+          <fieldset disabled={pending} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
             <FieldGroup>
               <Card>
                 <CardHeader>
                   <CardTitle>Loại giao dịch</CardTitle>
                   <CardDescription>
-                    Chọn chiều tiền phù hợp với khoản nợ.
+                    {debt?.payments?.length ? "Khoản đã có thanh toán không thể đổi chiều vay." : "Chọn chiều tiền phù hợp với khoản nợ."}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -192,6 +220,7 @@ export function AddDebtSheet({
                       Loại khoản nợ
                     </FieldLabel>
                     <ToggleGroup
+                      disabled={pending || Boolean(debt?.payments?.length)}
                       type="single"
                       variant="outline"
                       value={direction}
@@ -231,7 +260,7 @@ export function AddDebtSheet({
                       <FieldLabel htmlFor="debt-contact">
                         Người liên quan
                       </FieldLabel>
-                      <Select name="contactId" required>
+                      <Select defaultValue={debt?.contactId} name="contactId" required disabled={pending}>
                         <SelectTrigger id="debt-contact" className="w-full">
                           <SelectValue placeholder="Chọn từ danh bạ" />
                         </SelectTrigger>
@@ -253,6 +282,7 @@ export function AddDebtSheet({
                       <CurrencyInput
                         id="debt-amount"
                         name="amount"
+                        defaultValue={debt?.amount}
                         required
                       />
                     </Field>
@@ -261,7 +291,7 @@ export function AddDebtSheet({
                       <FieldLabel htmlFor="debt-account">
                         {accountLabel}
                       </FieldLabel>
-                      <Select name="accountId" required>
+                      <Select defaultValue={debt?.accountId} name="accountId" required disabled={pending}>
                         <SelectTrigger id="debt-account" className="w-full">
                           <SelectValue placeholder="Chọn tài khoản" />
                         </SelectTrigger>
@@ -301,6 +331,7 @@ export function AddDebtSheet({
                       <Textarea
                         id="debt-note"
                         name="note"
+                        defaultValue={debt?.note}
                         required
                         placeholder="Ví dụ: Cho mượn đóng học phí"
                       />
@@ -327,7 +358,7 @@ export function AddDebtSheet({
                           id="debt-recorded-at"
                           name="recordedAt"
                           type="date"
-                          defaultValue={today}
+                          defaultValue={debt?.recordedAt ?? today}
                           required
                         />
                       </Field>
@@ -339,7 +370,7 @@ export function AddDebtSheet({
                           id="debt-due-at"
                           name="dueAt"
                           type="date"
-                          min={today}
+                          defaultValue={debt?.dueAt}
                         />
                       </Field>
                     </div>
@@ -354,6 +385,7 @@ export function AddDebtSheet({
                         </FieldDescription>
                       </FieldContent>
                       <Switch
+                        disabled={pending}
                         id="debt-has-interest"
                         checked={hasInterest}
                         onCheckedChange={setHasInterest}
@@ -370,10 +402,10 @@ export function AddDebtSheet({
                             <InputGroupInput
                               id="debt-interest-rate"
                               name="interestRate"
-                              type="number"
+                              defaultValue={debt?.interestRate}
+                              type="text"
                               inputMode="decimal"
-                              min="0.01"
-                              step="0.01"
+                              pattern="[0-9]+([.,][0-9]{1,2})?"
                               placeholder="0"
                               required
                             />
@@ -387,8 +419,9 @@ export function AddDebtSheet({
                             Chu kỳ
                           </FieldLabel>
                           <Select
+                            disabled={pending}
                             name="interestPeriod"
-                            defaultValue="month"
+                            defaultValue={debt?.interestPeriod ?? "month"}
                             required
                           >
                             <SelectTrigger
@@ -412,12 +445,13 @@ export function AddDebtSheet({
                 </CardContent>
               </Card>
             </FieldGroup>
-          </div>
+          </fieldset>
 
           <SheetFooter>
-            <Button type="submit" size="lg" className="w-full">
+            {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
+            <Button type="submit" size="lg" className="w-full" disabled={pending}>
               <SaveIcon />
-              Lưu khoản nợ
+              {pending ? "Đang lưu…" : "Lưu khoản nợ"}
             </Button>
           </SheetFooter>
         </form>

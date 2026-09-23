@@ -40,7 +40,7 @@ export function AddTransactionSheet({
           Thêm giao dịch
         </Button>
       </SheetTrigger>
-      <SheetContent className="data-[side=right]:w-full sm:max-w-md!">
+      <SheetContent onOpenAutoFocus={(event) => event.preventDefault()} className="data-[side=right]:w-full sm:max-w-md!">
         <SheetHeader>
           <SheetTitle>Giao dịch mới</SheetTitle>
           <SheetDescription>

@@ -89,7 +89,7 @@ export function DebtTable({
 
           if (!contact) return null
 
-          const { remainingAmount, paymentProgress } = getDebtMetrics(debt)
+          const { remainingAmount, paymentProgress, totalAmount } = getDebtMetrics(debt)
           const deadline = getDebtDeadline(debt)
 
           return (
@@ -134,7 +134,7 @@ export function DebtTable({
                   {formatCurrency(remainingAmount, { signDisplay: "never" })}
                 </p>
                 <p className="text-xs text-muted-foreground tabular-nums">
-                  / {formatCurrency(debt.amount, { signDisplay: "never" })}
+                  / {formatCurrency(totalAmount, { signDisplay: "never" })}
                 </p>
               </TableCell>
               <TableCell>

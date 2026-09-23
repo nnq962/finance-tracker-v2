@@ -12,17 +12,10 @@ import {
 import { Progress } from "@/components/ui/progress"
 import { formatCurrency } from "@/lib/format-currency"
 
+import { getDaysUntilDue, getDebtMetrics } from "../_lib/debt-presentation"
 import type { Contact, Debt } from "../_types/debt"
 
 const dateFormatter = new Intl.DateTimeFormat("vi-VN")
-
-function getDaysUntilDue(dueAt: string) {
-  const now = new Date()
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const dueDate = new Date(`${dueAt}T00:00:00`)
-
-  return Math.round((dueDate.getTime() - today.getTime()) / 86_400_000)
-}
 
 function getDeadlineStatus(debt: Debt, remainingAmount: number) {
   if (debt.status === "settled" || remainingAmount === 0) {
@@ -89,9 +82,7 @@ type DebtCardProps = {
 }
 
 export function DebtCard({ contact, debt }: DebtCardProps) {
-  const paidAmount = Math.min(Math.max(debt.paidAmount, 0), debt.amount)
-  const remainingAmount = Math.max(debt.amount - paidAmount, 0)
-  const paymentProgress = debt.amount > 0 ? (paidAmount / debt.amount) * 100 : 0
+  const { paidAmount, remainingAmount, paymentProgress, totalAmount } = getDebtMetrics(debt)
   const paymentLabel = debt.direction === "lent" ? "Đã thu" : "Đã trả"
   const deadlineStatus = getDeadlineStatus(debt, remainingAmount)
   const directionTone =
@@ -133,7 +124,7 @@ export function DebtCard({ contact, debt }: DebtCardProps) {
         </div>
         <div className="w-full pl-14 sm:w-auto sm:pl-0 sm:text-right">
           <p className={`font-semibold tabular-nums ${directionTone.amountClassName}`}>
-            {formatCurrency(debt.amount, { signDisplay: "never" })}
+            {formatCurrency(totalAmount, { signDisplay: "never" })}
           </p>
           <p className="text-xs text-muted-foreground">Tổng khoản nợ</p>
         </div>
@@ -146,7 +137,7 @@ export function DebtCard({ contact, debt }: DebtCardProps) {
               <strong className="font-medium text-foreground tabular-nums">
                 {formatCurrency(paidAmount, { signDisplay: "never" })}
               </strong>{" "}
-              / {formatCurrency(debt.amount, { signDisplay: "never" })}
+              / {formatCurrency(totalAmount, { signDisplay: "never" })}
             </span>
             <span className="font-medium tabular-nums">
               Còn lại {formatCurrency(remainingAmount, { signDisplay: "never" })}

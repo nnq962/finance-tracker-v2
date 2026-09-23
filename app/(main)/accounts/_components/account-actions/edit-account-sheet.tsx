@@ -38,7 +38,6 @@ export function EditAccountSheet({ account, onOpenChange, open }: EditAccountShe
             institutionId: account.institutionId,
             balance: account.openingBalance,
             note: account.note,
-            excludeFromReports: account.excludeFromReports,
           }}
           showBalance={false}
           submitLabel="Lưu thay đổi"

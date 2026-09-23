@@ -11,6 +11,7 @@ import {
 import { formatCurrency } from "@/lib/format-currency"
 
 type CurrencyInputProps = {
+  value?: number | null
   defaultValue?: number
   id: string
   name: string
@@ -26,6 +27,7 @@ function formatInputValue(value: string) {
 }
 
 export function CurrencyInput({
+  value: controlledValue,
   defaultValue,
   id,
   name,
@@ -33,9 +35,11 @@ export function CurrencyInput({
   placeholder = "0",
   required = false,
 }: CurrencyInputProps) {
-  const [value, setValue] = React.useState(
+  const [internalValue, setValue] = React.useState(
     defaultValue === undefined ? "" : String(defaultValue),
   )
+
+  const value = controlledValue === undefined ? internalValue : controlledValue === null ? "" : String(controlledValue)
 
   return (
     <>

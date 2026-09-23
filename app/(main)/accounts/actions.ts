@@ -33,6 +33,13 @@ function failure(error: unknown): AccountActionResult {
   }
 }
 
+function revalidateAccountPaths() {
+  revalidatePath("/accounts")
+  revalidatePath("/transactions")
+  revalidatePath("/debts")
+  revalidatePath("/overview")
+}
+
 export async function createAccountAction(
   formData: FormData,
 ): Promise<AccountActionResult> {
@@ -43,7 +50,7 @@ export async function createAccountAction(
       user.uid,
       parseAccountFormData(formData, { includeBalance: true }),
     )
-    revalidatePath("/accounts")
+    revalidateAccountPaths()
     return { success: true }
   } catch (error) {
     return failure(error)
@@ -63,7 +70,7 @@ export async function updateAccountAction(
       accountId,
       parseAccountFormData(formData, { includeBalance: false }),
     )
-    revalidatePath("/accounts")
+    revalidateAccountPaths()
     return { success: true }
   } catch (error) {
     return failure(error)
@@ -83,7 +90,7 @@ export async function adjustAccountBalanceAction(
       accountId,
       parseBalanceAdjustment(formData),
     )
-    revalidatePath("/accounts")
+    revalidateAccountPaths()
     return { success: true }
   } catch (error) {
     return failure(error)
@@ -100,7 +107,7 @@ export async function setAccountArchivedAction(
     assertAccountId(accountId)
     assertBoolean(archived, "Trạng thái tài khoản")
     await setAccountArchived(user.uid, accountId, archived)
-    revalidatePath("/accounts")
+    revalidateAccountPaths()
     return { success: true }
   } catch (error) {
     return failure(error)
@@ -115,7 +122,7 @@ export async function deleteAccountAction(
   try {
     assertAccountId(accountId)
     await deleteAccount(user.uid, accountId)
-    revalidatePath("/accounts")
+    revalidateAccountPaths()
     return { success: true }
   } catch (error) {
     return failure(error)

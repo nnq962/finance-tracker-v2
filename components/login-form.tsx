@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { cn } from "cn"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
@@ -17,7 +18,6 @@ import {
   syncServerSession,
 } from "@/lib/firebase/auth"
 import {
-  GalleryVerticalEndIcon,
   LoaderCircleIcon,
   ShieldCheckIcon,
 } from "lucide-react"
@@ -52,15 +52,10 @@ export function LoginForm({
       <form onSubmit={handleSubmit}>
         <FieldGroup>
           <div className="flex flex-col items-center gap-2 text-center text-white">
-            <a
-              href="#"
-              className="flex flex-col items-center gap-2 font-medium"
-            >
-              <div className="flex size-8 items-center justify-center rounded-md">
-                <GalleryVerticalEndIcon className="size-6" />
-              </div>
+            <div className="flex flex-col items-center gap-2 font-medium">
+              <Image src="/icon.svg" alt="" width={40} height={40} className="size-10" />
               <span className="sr-only">Finance Tracker.</span>
-            </a>
+            </div>
             <h1 className="text-xl font-bold">
               Chào mừng đến với Finance Tracker.
             </h1>

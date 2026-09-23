@@ -95,8 +95,11 @@ export function NavUser({
                     {initials}
                   </AvatarFallback>
                 </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{displayName}</span>
+                <div className="grid min-w-0 flex-1 text-left text-sm leading-tight">
+                  <div className="flex min-w-0 items-center gap-1">
+                    <span className="truncate font-medium">{displayName}</span>
+                    <BadgeCheckIcon className="size-4 shrink-0 fill-blue-500 text-white" role="img" aria-label="Đã đăng nhập" />
+                  </div>
                   <span className="truncate text-xs">{user.email}</span>
                 </div>
                 <ChevronsUpDownIcon className="ml-auto size-4" />
@@ -116,8 +119,11 @@ export function NavUser({
                       {initials}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">{displayName}</span>
+                  <div className="grid min-w-0 flex-1 text-left text-sm leading-tight">
+                    <div className="flex min-w-0 items-center gap-1">
+                      <span className="truncate font-medium">{displayName}</span>
+                      <BadgeCheckIcon className="size-4 shrink-0 fill-blue-500 text-white" role="img" aria-label="Đã đăng nhập" />
+                    </div>
                     <span className="truncate text-xs">{user.email}</span>
                   </div>
                 </div>

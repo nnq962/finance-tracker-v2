@@ -57,7 +57,7 @@ export function parseCategoryFormValues(
 
   if (
     typeof candidate.iconName !== "string" ||
-    !(candidate.iconName in categoryIconRegistry)
+    !Object.hasOwn(categoryIconRegistry, candidate.iconName)
   ) {
     throw new CategoryValidationError("Biểu tượng không hợp lệ.")
   }
@@ -91,7 +91,7 @@ export function parseCategoryItemFormValues(
 
   if (
     typeof candidate.iconName !== "string" ||
-    !(candidate.iconName in categoryIconRegistry)
+    !Object.hasOwn(categoryIconRegistry, candidate.iconName)
   ) {
     throw new CategoryValidationError("Biểu tượng không hợp lệ.")
   }

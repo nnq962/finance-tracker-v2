@@ -4,6 +4,7 @@ import { getCategoryGroups } from "@/lib/categories/repository"
 import { getTransactions } from "@/lib/transactions/repository"
 
 import { TransactionsDashboard } from "./_components/transactions-dashboard"
+import { getTransactionDateKey } from "./_lib/get-transaction-period"
 
 export default async function TransactionsPage() {
   const user = await requireSession()
@@ -18,6 +19,7 @@ export default async function TransactionsPage() {
       <TransactionsDashboard
         accounts={accounts}
         categoryGroups={categoryGroups}
+        todayDateKey={getTransactionDateKey(new Date())}
         transactions={transactions}
       />
     </div>

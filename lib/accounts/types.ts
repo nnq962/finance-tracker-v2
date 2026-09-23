@@ -8,7 +8,6 @@ export type AccountFormValues = {
   institutionId?: string
   balance: number
   note?: string
-  excludeFromReports: boolean
 }
 
 export type Account = {
@@ -20,7 +19,6 @@ export type Account = {
   institutionId?: string
   institutionName?: string
   note?: string
-  excludeFromReports?: boolean
   logoUrl?: string
   logoFallback: string
   status: AccountStatus

@@ -1,83 +1,103 @@
 "use client"
 
 import * as React from "react"
-import { PlusIcon, SaveIcon } from "lucide-react"
-
+import { PencilIcon, PlusIcon, SaveIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+  Sheet, SheetContent, SheetDescription, SheetFooter,
+  SheetHeader, SheetTitle, SheetTrigger,
 } from "@/components/ui/sheet"
-import { Textarea } from "@/components/ui/textarea"
-
-import type { NewContact } from "../_types/debt"
+import type { Contact, NewContact } from "../_types/debt"
 
 type AddContactSheetProps = {
-  onAddContact: (contact: NewContact) => void
+  contact?: Contact
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  returnFocusRef?: React.RefObject<HTMLButtonElement | null>
+  onAddContact: (contact: NewContact) => Promise<void>
 }
 
-export function AddContactSheet({ onAddContact }: AddContactSheetProps) {
-  const [open, setOpen] = React.useState(false)
+export function AddContactSheet({ contact, onAddContact, open: controlledOpen, onOpenChange, returnFocusRef }: AddContactSheetProps) {
+  const [internalOpen, setInternalOpen] = React.useState(false)
+  const [pending, setPending] = React.useState(false)
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
+  const submitting = React.useRef(false)
+  const open = controlledOpen ?? internalOpen
+  const setOpen = onOpenChange ?? setInternalOpen
+  const id = React.useId()
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button type="button" variant="outline">
-          <PlusIcon />
-          Thêm người
+    <Sheet open={open} onOpenChange={(nextOpen) => {
+      if (submitting.current) return
+      if (nextOpen) setErrorMessage(null)
+      setOpen(nextOpen)
+    }}>
+      {controlledOpen === undefined ? <SheetTrigger asChild>
+        <Button type="button" variant={contact ? "ghost" : "outline"} size={contact ? "icon-sm" : "sm"} aria-label={contact ? `Sửa ${contact.name}` : undefined}>
+          {contact ? <PencilIcon /> : <><PlusIcon />Thêm người</>}
         </Button>
-      </SheetTrigger>
-      <SheetContent>
+      </SheetTrigger> : null}
+      <SheetContent showCloseButton={!pending} onOpenAutoFocus={(event) => event.preventDefault()} className="data-[side=right]:w-full sm:max-w-md!" onCloseAutoFocus={(event) => {
+        if (returnFocusRef?.current) {
+          event.preventDefault()
+          returnFocusRef.current.focus()
+        }
+      }}>
         <SheetHeader>
-          <SheetTitle>Thêm người vào danh bạ</SheetTitle>
-          <SheetDescription>
-            Lưu thông tin người liên quan để ghi khoản vay hoặc cho vay.
-          </SheetDescription>
+          <SheetTitle>{contact ? "Sửa người liên hệ" : "Thêm người vào danh bạ"}</SheetTitle>
+          <SheetDescription>Lưu tên và mối quan hệ để dễ theo dõi các khoản nợ.</SheetDescription>
         </SheetHeader>
-        <form
-          className="flex min-h-0 flex-1 flex-col"
-          onSubmit={(event) => {
-            event.preventDefault()
-            const form = event.currentTarget
-            const formData = new FormData(form)
-
-            onAddContact({
-              name: String(formData.get("name")),
-              phone: String(formData.get("phone") || "") || undefined,
-              note: String(formData.get("note") || "") || undefined,
+        <form className="flex min-h-0 flex-1 flex-col" aria-busy={pending} onSubmit={async (event) => {
+          event.preventDefault()
+          if (submitting.current) return
+          const form = event.currentTarget
+          const data = new FormData(form)
+          const name = String(data.get("name") || "").trim()
+          if (!name) {
+            const input = form.elements.namedItem("name") as HTMLInputElement
+            input.setCustomValidity("Vui lòng nhập tên người liên hệ.")
+            input.reportValidity()
+            return
+          }
+          submitting.current = true
+          setPending(true)
+          setErrorMessage(null)
+          try {
+            await onAddContact({
+              name,
+              relationship: String(data.get("relationship") || "").trim() || undefined,
             })
-            form.reset()
             setOpen(false)
-          }}
-        >
-          <div className="min-h-0 flex-1 overflow-y-auto px-4">
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="contact-name">Họ và tên</FieldLabel>
-                <Input id="contact-name" name="name" required autoComplete="name" />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="contact-phone">Số điện thoại</FieldLabel>
-                <Input id="contact-phone" name="phone" type="tel" autoComplete="tel" />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="contact-note">Ghi chú</FieldLabel>
-                <Textarea id="contact-note" name="note" placeholder="Mối quan hệ hoặc thông tin cần nhớ" />
-              </Field>
-            </FieldGroup>
-          </div>
+          } catch (error) {
+            setErrorMessage(error instanceof Error ? error.message : "Không thể lưu người liên hệ.")
+          } finally {
+            submitting.current = false
+            setPending(false)
+          }
+        }}>
+          <fieldset disabled={pending} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
+            <Card>
+              <CardHeader><CardTitle>Thông tin người liên hệ</CardTitle></CardHeader>
+              <CardContent>
+                <FieldGroup>
+                  <Field>
+                    <FieldLabel htmlFor={`${id}-name`}>Họ và tên</FieldLabel>
+                    <Input id={`${id}-name`} name="name" defaultValue={contact?.name} required maxLength={80} autoComplete="name" placeholder="Nhập họ và tên" onInput={(event) => event.currentTarget.setCustomValidity("")} />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor={`${id}-relationship`}>Mối quan hệ</FieldLabel>
+                    <Input id={`${id}-relationship`} name="relationship" defaultValue={contact?.relationship} maxLength={80} placeholder="Ví dụ: Đồng nghiệp, người yêu, anh trai" />
+                  </Field>
+                </FieldGroup>
+              </CardContent>
+            </Card>
+          </fieldset>
           <SheetFooter>
-            <Button type="submit">
-              <SaveIcon />
-              Lưu người liên hệ
-            </Button>
+            {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
+            <Button type="submit" disabled={pending}><SaveIcon />{pending ? "Đang lưu…" : contact ? "Lưu thay đổi" : "Lưu người liên hệ"}</Button>
           </SheetFooter>
         </form>
       </SheetContent>

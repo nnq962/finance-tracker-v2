@@ -81,7 +81,6 @@ export function parseAccountFormData(
     balance: options.includeBalance
       ? getMoney(formData, "balance", "Số dư")
       : 0,
-    excludeFromReports: formData.get("excludeFromReports") === "on",
   }
   const note = getBoundedText(formData, "note", "Ghi chú", 500)
 

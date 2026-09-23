@@ -1,190 +1,279 @@
+import Link from "next/link"
+import type { ReactNode } from "react"
 import {
-  ArrowDownRightIcon,
+  ArrowDownLeftIcon,
+  ArrowRightIcon,
   ArrowUpRightIcon,
-  CarIcon,
-  EllipsisIcon,
-  LandmarkIcon,
-  PiggyBankIcon,
-  ShoppingBagIcon,
-  UtensilsIcon,
+  CalendarClockIcon,
+  CircleDollarSignIcon,
+  ReceiptTextIcon,
   WalletCardsIcon,
 } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { getAccounts } from "@/lib/accounts/repository"
+import { requireSession } from "@/lib/auth/session"
+import { todayDate } from "@/lib/debts/calculations"
+import { getContacts, getDebts } from "@/lib/debts/repository"
 import { formatCurrency } from "@/lib/format-currency"
+import { getOverviewSummary, type OverviewSummary } from "@/lib/overview/summary"
+import { getTransactions } from "@/lib/transactions/repository"
 
-const overviewCards = [
-  {
-    label: "Tổng số dư",
-    value: 128_450_000,
-    change: "+4,2%",
-    icon: WalletCardsIcon,
-    tone: "text-blue-600 bg-blue-500/10 dark:text-blue-400",
-  },
-  {
-    label: "Thu nhập tháng này",
-    value: 42_800_000,
-    change: "+8,1%",
-    icon: ArrowUpRightIcon,
-    tone: "text-emerald-600 bg-emerald-500/10 dark:text-emerald-400",
-  },
-  {
-    label: "Chi tiêu tháng này",
-    value: 24_350_000,
-    change: "-2,4%",
-    icon: ArrowDownRightIcon,
-    tone: "text-rose-600 bg-rose-500/10 dark:text-rose-400",
-  },
-  {
-    label: "Tiết kiệm",
-    value: 18_450_000,
-    change: "43,1% thu nhập",
-    icon: PiggyBankIcon,
-    tone: "text-violet-600 bg-violet-500/10 dark:text-violet-400",
-  },
-]
+import { CashFlowChart, SpendingChart } from "./_components/overview-charts"
 
-const cashFlow = [42, 58, 46, 72, 64, 82, 68, 92, 76, 88, 70, 84]
+const dueDateFormatter = new Intl.DateTimeFormat("vi-VN", {
+  day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Asia/Ho_Chi_Minh",
+})
+const transactionDateFormatter = new Intl.DateTimeFormat("vi-VN", {
+  day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Ho_Chi_Minh",
+})
 
-const recentTransactions = [
-  { name: "Lương tháng 9", category: "Thu nhập", amount: 35_000_000, date: "Hôm nay, 09:15", icon: LandmarkIcon },
-  { name: "WinMart", category: "Mua sắm", amount: -1_248_000, date: "Hôm qua, 19:42", icon: ShoppingBagIcon },
-  { name: "Pizza 4P’s", category: "Ăn uống", amount: -865_000, date: "09/09, 20:10", icon: UtensilsIcon },
-  { name: "Grab", category: "Di chuyển", amount: -128_000, date: "09/09, 08:24", icon: CarIcon },
-]
-
-const monthlyBudget = {
-  spent: 24_350_000,
-  total: 35_000_000,
+function SectionLink({ href, children }: { href: string; children: ReactNode }) {
+  return <Button variant="ghost" size="sm" asChild><Link href={href}>{children}<ArrowRightIcon /></Link></Button>
 }
 
-const budgetCategories = [
-  { label: "Ăn uống", amount: 6_240_000, width: "78%" },
-  { label: "Mua sắm", amount: 4_850_000, width: "61%" },
-  { label: "Di chuyển", amount: 2_180_000, width: "44%" },
-]
-
-export default function OverviewPage() {
+function NetWorth({ data }: { data: OverviewSummary["netWorth"] }) {
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Tổng quan tài chính</h1>
-          <p className="text-sm text-muted-foreground">Tình hình thu chi và tài sản của bạn trong tháng này.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-muted-foreground">Tháng 9, 2026</p>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Mở dropdown shadcn mặc định"
-              >
-                <EllipsisIcon />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Chỉnh sửa</DropdownMenuItem>
-              <DropdownMenuItem>Nhân bản</DropdownMenuItem>
-              <DropdownMenuItem variant="destructive">Xoá</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {overviewCards.map((card) => (
-          <article key={card.label} className="rounded-xl border bg-card p-5 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
-              <div className={`flex size-9 items-center justify-center rounded-lg ${card.tone}`}>
-                <card.icon className="size-4" />
-              </div>
-              <span className="rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">{card.change}</span>
-            </div>
-            <p className="mt-5 text-sm text-muted-foreground">{card.label}</p>
-            <p className="mt-1 text-xl font-semibold tracking-tight">{formatCurrency(card.value)}</p>
-          </article>
-        ))}
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
-        <article className="rounded-xl border bg-card p-5 shadow-sm">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="font-semibold">Dòng tiền</h2>
-              <p className="text-sm text-muted-foreground">Thu nhập và chi tiêu 12 tháng gần nhất</p>
-            </div>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-foreground" />Thu</span>
-              <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-muted-foreground/30" />Chi</span>
-            </div>
-          </div>
-          <div className="mt-8 flex h-56 items-end gap-2 sm:gap-3">
-            {cashFlow.map((height, index) => (
-              <div key={index} className="flex h-full flex-1 items-end gap-1">
-                <div className="w-1/2 rounded-t-sm bg-foreground" style={{ height: `${height}%` }} />
-                <div className="w-1/2 rounded-t-sm bg-muted-foreground/25" style={{ height: `${Math.max(height - 24, 18)}%` }} />
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 grid grid-cols-6 text-center text-xs text-muted-foreground sm:grid-cols-12">
-            {cashFlow.map((_, index) => <span key={index}>T{index + 1}</span>)}
-          </div>
-        </article>
-
-        <article className="rounded-xl border bg-card p-5 shadow-sm">
-          <h2 className="font-semibold">Ngân sách tháng</h2>
-          <p className="text-sm text-muted-foreground">
-            Đã dùng {formatCurrency(monthlyBudget.spent)} trên {formatCurrency(monthlyBudget.total)}
-          </p>
-          <div className="mt-6 h-2 overflow-hidden rounded-full bg-muted">
-            <div className="h-full w-[70%] rounded-full bg-foreground" />
-          </div>
-          <div className="mt-6 space-y-5">
-            {budgetCategories.map((category) => (
-              <div key={category.label}>
-                <div className="mb-2 flex items-center justify-between text-sm">
-                  <span>{category.label}</span>
-                  <span className="text-muted-foreground">{formatCurrency(category.amount)}</span>
-                </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                  <div className="h-full rounded-full bg-primary" style={{ width: category.width }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </article>
-      </section>
-
-      <section className="rounded-xl border bg-card shadow-sm">
-        <div className="border-b px-5 py-4">
-          <h2 className="font-semibold">Giao dịch gần đây</h2>
-          <p className="text-sm text-muted-foreground">Các biến động mới nhất trong tài khoản</p>
-        </div>
-        <div className="divide-y">
-          {recentTransactions.map((transaction) => (
-            <div key={transaction.name} className="flex items-center gap-3 px-5 py-4">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                <transaction.icon className="size-4" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{transaction.name}</p>
-                <p className="text-xs text-muted-foreground">{transaction.category} · {transaction.date}</p>
-              </div>
-              <p className={`text-sm font-semibold tabular-nums ${transaction.amount > 0 ? "text-emerald-600 dark:text-emerald-400" : ""}`}>
-                {formatCurrency(transaction.amount, { signDisplay: "always" })}
+    <section aria-labelledby="net-worth-title">
+      <Card>
+        <CardHeader>
+          <CardTitle id="net-worth-title" className="flex items-center gap-2">
+            <CircleDollarSignIcon className="size-5" aria-hidden="true" />Tài sản ròng hiện tại
+          </CardTitle>
+          <CardDescription>Số dư tài khoản + còn được trả − còn phải trả</CardDescription>
+          <CardAction><SectionLink href="/accounts">Tài khoản</SectionLink></CardAction>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+            <div className={`flex min-h-64 flex-col justify-between rounded-xl bg-gradient-to-br p-6 text-white sm:p-8 ${data.total < 0 ? "from-rose-950 via-rose-800 to-orange-700" : "from-slate-900 via-teal-800 to-emerald-700"}`}>
+              <p className="flex items-center gap-2 text-sm font-medium text-white/80">
+                <CircleDollarSignIcon className="size-4" aria-hidden="true" />Giá trị tài sản thực
               </p>
+              <div className="space-y-3">
+                <p className="[overflow-wrap:anywhere] text-4xl font-semibold tracking-tight tabular-nums sm:text-5xl xl:text-6xl">
+                  {formatCurrency(data.total)}
+                </p>
+                <p className="text-sm text-white/80">Tiền hiện có + tiền sẽ nhận − tiền cần trả</p>
+              </div>
             </div>
-          ))}
+            <dl className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              <div className="flex min-w-0 items-center gap-4 rounded-lg bg-blue-50 px-4 py-3 dark:bg-blue-950/40">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                  <WalletCardsIcon className="size-5" aria-hidden="true" />
+                </div>
+                <div className="min-w-0">
+                  <dt className="text-sm text-blue-800/80 dark:text-blue-200/80">Số dư tài khoản</dt>
+                  <dd className="[overflow-wrap:anywhere] text-lg font-semibold tabular-nums text-blue-950 dark:text-blue-50">{formatCurrency(data.cash)}</dd>
+                </div>
+              </div>
+              <div className="flex min-w-0 items-center gap-4 rounded-lg bg-emerald-50 px-4 py-3 dark:bg-emerald-950/40">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-200">
+                  <ArrowDownLeftIcon className="size-5" aria-hidden="true" />
+                </div>
+                <div className="min-w-0">
+                  <dt className="text-sm text-emerald-800/80 dark:text-emerald-200/80">Còn được trả</dt>
+                  <dd className="[overflow-wrap:anywhere] text-lg font-semibold tabular-nums text-emerald-950 dark:text-emerald-50">{formatCurrency(data.receivable, { signDisplay: "always" })}</dd>
+                </div>
+              </div>
+              <div className="flex min-w-0 items-center gap-4 rounded-lg bg-rose-50 px-4 py-3 dark:bg-rose-950/40">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-200">
+                  <ArrowUpRightIcon className="size-5" aria-hidden="true" />
+                </div>
+                <div className="min-w-0">
+                  <dt className="text-sm text-rose-800/80 dark:text-rose-200/80">Còn phải trả</dt>
+                  <dd className="[overflow-wrap:anywhere] text-lg font-semibold tabular-nums text-rose-950 dark:text-rose-50">{formatCurrency(-data.payable)}</dd>
+                </div>
+              </div>
+            </dl>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Các khoản vay nợ bao gồm lãi tạm tính đến hôm nay.
+            {data.archivedCash !== 0 ? ` Số dư tài khoản bao gồm ${formatCurrency(data.archivedCash)} trong tài khoản đã ngừng sử dụng.` : ""}
+          </p>
+        </CardContent>
+      </Card>
+    </section>
+  )
+}
+
+function CashFlow({ summary }: { summary: OverviewSummary }) {
+  const { cashFlow } = summary
+  return (
+    <section aria-labelledby="cash-flow-title">
+      <Card className="h-full">
+        <CardHeader>
+          <CardTitle id="cash-flow-title">Thu và chi</CardTitle>
+          <CardDescription>Giao dịch thường trong 6 tháng gần nhất</CardDescription>
+          <CardAction><Badge variant="secondary">{summary.monthLabel}</Badge></CardAction>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="grid grid-cols-2 gap-4 border-b pb-5">
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Thu tháng này</p>
+              <p className="break-words text-xl font-semibold tabular-nums text-teal-700 dark:text-teal-400">{formatCurrency(cashFlow.current.income)}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Chi tháng này</p>
+              <p className="break-words text-xl font-semibold tabular-nums text-rose-700 dark:text-rose-400">{formatCurrency(cashFlow.current.expense)}</p>
+            </div>
+          </div>
+          <CashFlowChart data={cashFlow} />
+          <p className="text-sm text-muted-foreground">
+            Chênh lệch tháng này: <span className="font-medium text-foreground tabular-nums">{formatCurrency(cashFlow.current.income - cashFlow.current.expense, { signDisplay: "always" })}</span>.
+            {" "}Không gồm chuyển khoản, vay nợ và điều chỉnh số dư.
+          </p>
+        </CardContent>
+      </Card>
+    </section>
+  )
+}
+
+function Spending({ summary }: { summary: OverviewSummary }) {
+  return (
+    <section aria-labelledby="spending-title">
+      <Card className="h-full">
+        <CardHeader>
+          <CardTitle id="spending-title">Chi tiêu theo nhóm</CardTitle>
+          <CardDescription>Nhóm chi nhiều nhất trong {summary.monthLabel.toLowerCase()}</CardDescription>
+          <CardAction><SectionLink href="/transactions">Giao dịch</SectionLink></CardAction>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="border-b pb-5">
+            <p className="text-sm text-muted-foreground">Tổng chi tháng này</p>
+            <p className="mt-1 text-2xl font-semibold tabular-nums">{formatCurrency(summary.cashFlow.current.expense)}</p>
+          </div>
+          <SpendingChart data={summary.spending} />
+          <p className="text-sm text-muted-foreground">
+            {summary.spending.length > 5 ? `Hiển thị 5/${summary.spending.length} nhóm chi nhiều nhất.` : "Tính theo nhóm hạng mục của giao dịch chi."}
+          </p>
+        </CardContent>
+      </Card>
+    </section>
+  )
+}
+
+function DueDebts({ debts }: { debts: OverviewSummary["dueDebts"] }) {
+  return (
+    <section aria-labelledby="due-debts-title">
+      <Card className="h-full">
+        <CardHeader>
+          <CardTitle id="due-debts-title">Vay nợ cần chú ý</CardTitle>
+          <CardDescription>Đã quá hạn hoặc đến hạn trong 14 ngày tới</CardDescription>
+          <CardAction><SectionLink href="/debts">Xem tất cả</SectionLink></CardAction>
+        </CardHeader>
+        <CardContent>
+          {debts.length ? (
+            <ul className="divide-y">
+              {debts.map((debt) => (
+                <li key={debt.id}>
+                  <Link href={`/debts?debt=${encodeURIComponent(debt.id)}`} className="flex flex-wrap items-center justify-between gap-3 py-4 first:pt-0 last:pb-0 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+                    <div className="min-w-0 space-y-1">
+                      <p className="truncate font-medium">{debt.contactName}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {debt.direction === "lent" ? "Cho vay" : "Đi vay"} · Hẹn {dueDateFormatter.format(new Date(`${debt.dueAt}T00:00:00+07:00`))}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="space-y-1 text-right">
+                        <p className="font-semibold tabular-nums">{formatCurrency(debt.remainingAmount)}</p>
+                        <Badge variant={debt.daysUntilDue < 0 ? "destructive" : "outline"}>
+                          {debt.daysUntilDue < 0 ? `Quá ${Math.abs(debt.daysUntilDue)} ngày` : debt.daysUntilDue === 0 ? "Đến hạn hôm nay" : `Còn ${debt.daysUntilDue} ngày`}
+                        </Badge>
+                      </div>
+                      <ArrowRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <Empty className="min-h-56">
+              <EmptyHeader>
+                <EmptyMedia variant="icon"><CalendarClockIcon /></EmptyMedia>
+                <EmptyTitle>Không có khoản sắp đến hạn</EmptyTitle>
+                <EmptyDescription>Các khoản vay nợ có hạn trả gần sẽ xuất hiện ở đây.</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          )}
+        </CardContent>
+      </Card>
+    </section>
+  )
+}
+
+function RecentTransactions({ transactions }: { transactions: OverviewSummary["recentTransactions"] }) {
+  return (
+    <section aria-labelledby="recent-transactions-title">
+      <Card className="h-full">
+        <CardHeader>
+          <CardTitle id="recent-transactions-title">Giao dịch gần đây</CardTitle>
+          <CardDescription>5 giao dịch mới nhất trong tài khoản</CardDescription>
+          <CardAction><SectionLink href="/transactions">Xem tất cả</SectionLink></CardAction>
+        </CardHeader>
+        <CardContent>
+          {transactions.length ? (
+            <ul className="divide-y">
+              {transactions.map((transaction) => (
+                <li key={transaction.id} className="flex items-center gap-3 py-4 first:pt-0 last:pb-0">
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted" aria-hidden="true">
+                    {transaction.kind === "income" ? <ArrowDownLeftIcon className="size-4" /> : transaction.kind === "expense" ? <ArrowUpRightIcon className="size-4" /> : <ReceiptTextIcon className="size-4" />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium">{transaction.title}</p>
+                    <p className="truncate text-sm text-muted-foreground">{transactionDateFormatter.format(new Date(transaction.occurredAt))} · {transaction.description}</p>
+                  </div>
+                  <span className={`shrink-0 text-right font-semibold tabular-nums ${transaction.kind === "income" ? "text-emerald-700 dark:text-emerald-400" : ""}`}>
+                    {formatCurrency(transaction.amount, { signDisplay: transaction.kind === "transfer" ? "never" : "always" })}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <Empty className="min-h-56">
+              <EmptyHeader>
+                <EmptyMedia variant="icon"><ReceiptTextIcon /></EmptyMedia>
+                <EmptyTitle>Chưa có giao dịch</EmptyTitle>
+                <EmptyDescription>Các khoản thu, chi và chuyển tiền sẽ xuất hiện ở đây.</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          )}
+        </CardContent>
+      </Card>
+    </section>
+  )
+}
+
+export default async function OverviewPage() {
+  const user = await requireSession()
+  const [accounts, debts, contacts, transactions] = await Promise.all([
+    getAccounts(user.uid),
+    getDebts(user.uid),
+    getContacts(user.uid),
+    getTransactions(user.uid),
+  ])
+  const summary = getOverviewSummary(accounts, debts, contacts, transactions, todayDate())
+
+  return (
+    <main className="mx-auto w-full max-w-7xl space-y-6 pb-12 md:space-y-8">
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Tổng quan tài chính</h1>
+          <p className="text-sm text-muted-foreground">Tài sản, thu chi và các khoản cần theo dõi.</p>
         </div>
-      </section>
-    </div>
+        <Badge variant="outline">{summary.monthLabel}</Badge>
+      </header>
+      <NetWorth data={summary.netWorth} />
+      <div className="grid gap-6 xl:grid-cols-2">
+        <CashFlow summary={summary} />
+        <Spending summary={summary} />
+      </div>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <DueDebts debts={summary.dueDebts} />
+        <RecentTransactions transactions={summary.recentTransactions} />
+      </div>
+    </main>
   )
 }

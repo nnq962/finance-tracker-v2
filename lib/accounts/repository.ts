@@ -30,6 +30,9 @@ type CategoryGroupDocument = {
   type: "expense" | "income"
 }
 
+const MAX_MONEY = 999_999_999_999_999
+const MAX_DELETION_WRITES = 450
+
 function getUserReference(userId: string) {
   return getFirebaseAdminFirestore().collection("users").doc(userId)
 }
@@ -181,7 +184,6 @@ export async function getAccounts(userId: string): Promise<Account[]> {
       institutionId: data.institutionId,
       institutionName,
       note: data.note,
-      excludeFromReports: data.excludeFromReports,
       logoUrl: institution?.logoPath,
       logoFallback: getLogoFallback(data.name, institutionName),
       status: data.status,
@@ -200,7 +202,6 @@ export async function createAccount(
     type: values.type,
     openingBalance: values.balance,
     balance: values.balance,
-    excludeFromReports: values.excludeFromReports,
     status: "active",
     createdAt: now,
     updatedAt: now,
@@ -218,16 +219,21 @@ export async function updateAccount(
   accountId: string,
   values: AccountFormValues,
 ) {
-  await getAccountsCollection(userId)
-    .doc(accountId)
-    .update({
+  const reference = getAccountsCollection(userId).doc(accountId)
+  await getFirebaseAdminFirestore().runTransaction(async (transaction) => {
+    const account = await transaction.get(reference)
+    if (!account.exists || account.get("status") !== "active") {
+      throw new AccountValidationError("Tài khoản đã ngừng sử dụng. Hãy kích hoạt lại trước khi chỉnh sửa.")
+    }
+    transaction.update(reference, {
       name: values.name,
       type: values.type,
       institutionId: values.institutionId ?? FieldValue.delete(),
       note: values.note ?? FieldValue.delete(),
-      excludeFromReports: values.excludeFromReports,
+      excludeFromReports: FieldValue.delete(),
       updatedAt: FieldValue.serverTimestamp(),
     })
+  })
 }
 
 export async function setAccountArchived(
@@ -258,8 +264,8 @@ export async function adjustAccountBalance(
   const categoryReference = getCategoryItemsCollection(userId).doc(
     adjustment.categoryId,
   )
-  const adjustmentReference = accountReference
-    .collection("balanceAdjustments")
+  const transactionReference = getUserReference(userId)
+    .collection("transactions")
     .doc()
 
   await firestore.runTransaction(async (transaction) => {
@@ -269,7 +275,11 @@ export async function adjustAccountBalance(
     )
 
     if (!accountSnapshot.exists) {
-      throw new Error("Tài khoản không tồn tại.")
+      throw new AccountValidationError("Tài khoản không tồn tại.")
+    }
+
+    if (accountSnapshot.get("status") !== "active") {
+      throw new AccountValidationError("Tài khoản đã ngừng sử dụng. Hãy kích hoạt lại trước khi điều chỉnh số dư.")
     }
 
     const previousBalance = accountSnapshot.get("balance")
@@ -321,11 +331,13 @@ export async function adjustAccountBalance(
       balance: adjustment.actualBalance,
       updatedAt: FieldValue.serverTimestamp(),
     })
-    transaction.set(adjustmentReference, {
-      previousBalance,
-      actualBalance: adjustment.actualBalance,
-      difference,
-      category: category.name,
+    transaction.create(transactionReference, {
+      source: "balance_adjustment",
+      kind: expectedCategoryType,
+      amount: Math.abs(difference),
+      accountId,
+      accountIds: [accountId],
+      accountName: accountSnapshot.get("name"),
       categoryId: categorySnapshot.id,
       categoryName: category.name,
       categoryGroupId: category.groupId,
@@ -333,25 +345,127 @@ export async function adjustAccountBalance(
       note: adjustment.note,
       occurredAt: Timestamp.fromDate(adjustment.occurredAt),
       createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     })
   })
 }
 
 export async function deleteAccount(userId: string, accountId: string) {
   const firestore = getFirebaseAdminFirestore()
-  const transactionSnapshot = await firestore
-    .collection("users")
-    .doc(userId)
-    .collection("transactions")
-    .where("accountIds", "array-contains", accountId)
-    .limit(1)
-    .get()
+  const userReference = getUserReference(userId)
+  const accountReference = getAccountsCollection(userId).doc(accountId)
 
-  if (!transactionSnapshot.empty) {
-    throw new AccountValidationError(
-      "Tài khoản đã có giao dịch. Hãy ngừng sử dụng thay vì xoá.",
+  await firestore.runTransaction(async (transaction) => {
+    const accountSnapshot = await transaction.get(accountReference)
+    if (!accountSnapshot.exists) return
+
+    const [transactionSnapshot, debtSnapshot, adjustmentSnapshot] = await Promise.all([
+      transaction.get(
+        userReference
+          .collection("transactions")
+          .where("accountIds", "array-contains", accountId)
+      ),
+      transaction.get(
+        userReference
+          .collection("debts")
+          .where("accountIds", "array-contains", accountId)
+      ),
+      transaction.get(accountReference.collection("balanceAdjustments")),
+    ])
+
+    const transactionDocuments = new Map(
+      transactionSnapshot.docs.map((document) => [document.ref.path, document]),
     )
-  }
+    const paymentDocuments: FirebaseFirestore.QueryDocumentSnapshot[] = []
 
-  await firestore.recursiveDelete(getAccountsCollection(userId).doc(accountId))
+    for (const debt of debtSnapshot.docs) {
+      const [payments, ledgers] = await Promise.all([
+        transaction.get(debt.ref.collection("payments")),
+        transaction.get(
+          userReference.collection("transactions").where("debtId", "==", debt.id),
+        ),
+      ])
+      paymentDocuments.push(...payments.docs)
+      for (const ledger of ledgers.docs) {
+        transactionDocuments.set(ledger.ref.path, ledger)
+      }
+    }
+
+    const deltas = new Map<string, number>()
+    const addDelta = (id: unknown, value: number) => {
+      if (typeof id !== "string" || !Number.isSafeInteger(value)) {
+        throw new AccountValidationError("Dữ liệu liên kết với tài khoản không hợp lệ.")
+      }
+      if (id !== accountId) deltas.set(id, (deltas.get(id) ?? 0) + value)
+    }
+
+    for (const document of transactionDocuments.values()) {
+      if (document.get("source") === "debt") continue
+      const kind = document.get("kind")
+      const amount = document.get("amount")
+      const fee = document.get("fee") ?? 0
+      if (!Number.isSafeInteger(amount) || amount < 0 || !Number.isSafeInteger(fee) || fee < 0) {
+        throw new AccountValidationError("Giao dịch liên quan có số tiền không hợp lệ.")
+      }
+      if (kind === "transfer") {
+        addDelta(document.get("fromAccountId"), amount + fee)
+        addDelta(document.get("toAccountId"), -amount)
+      } else if (kind === "income" || kind === "expense") {
+        addDelta(document.get("accountId"), kind === "income" ? -amount : amount)
+      } else {
+        throw new AccountValidationError("Giao dịch liên quan có loại không hợp lệ.")
+      }
+    }
+
+    for (const debt of debtSnapshot.docs) {
+      const amount = debt.get("amount")
+      const direction = debt.get("direction")
+      if (!Number.isSafeInteger(amount) || amount < 0 || (direction !== "borrowed" && direction !== "lent")) {
+        throw new AccountValidationError("Khoản nợ liên quan không hợp lệ.")
+      }
+      const principalSign = direction === "borrowed" ? 1 : -1
+      addDelta(debt.get("accountId"), -principalSign * amount)
+      for (const payment of paymentDocuments.filter((item) => item.ref.parent.parent?.id === debt.id)) {
+        const paymentAmount = payment.get("amount")
+        if (!Number.isSafeInteger(paymentAmount) || paymentAmount < 0) {
+          throw new AccountValidationError("Lịch sử thanh toán không hợp lệ.")
+        }
+        addDelta(payment.get("accountId"), principalSign * paymentAmount)
+      }
+    }
+
+    const relatedAccounts = deltas.size
+      ? await transaction.getAll(
+          ...[...deltas.keys()].map((id) => getAccountsCollection(userId).doc(id)),
+        )
+      : []
+    const writeCount = 1 + transactionDocuments.size + debtSnapshot.size +
+      paymentDocuments.length + adjustmentSnapshot.size + relatedAccounts.length
+    if (writeCount > MAX_DELETION_WRITES) {
+      throw new AccountValidationError(
+        "Tài khoản có quá nhiều dữ liệu liên quan để xoá trong một lần. Vui lòng liên hệ hỗ trợ.",
+      )
+    }
+
+    for (const relatedAccount of relatedAccounts) {
+      const balance = relatedAccount.get("balance")
+      const nextBalance = balance + deltas.get(relatedAccount.id)!
+      if (!relatedAccount.exists || !Number.isSafeInteger(balance) ||
+        !Number.isSafeInteger(nextBalance) || nextBalance < 0 || nextBalance > MAX_MONEY) {
+        throw new AccountValidationError(
+          "Không thể xoá vì số dư của tài khoản liên quan sẽ không hợp lệ.",
+        )
+      }
+      transaction.update(relatedAccount.ref, {
+        balance: nextBalance,
+        updatedAt: FieldValue.serverTimestamp(),
+      })
+    }
+
+    for (const document of transactionDocuments.values()) transaction.delete(document.ref)
+    for (const document of paymentDocuments) transaction.delete(document.ref)
+    for (const document of debtSnapshot.docs) transaction.delete(document.ref)
+    for (const document of adjustmentSnapshot.docs) transaction.delete(document.ref)
+    transaction.delete(accountReference)
+  })
 }

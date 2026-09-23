@@ -2,6 +2,7 @@ import type {
   Transaction,
   TransactionDateGroup,
 } from "../_types/transaction"
+import { getTransactionDateKey } from "./get-transaction-period"
 
 const weekdayFormatter = new Intl.DateTimeFormat("vi-VN", {
   weekday: "long",
@@ -23,7 +24,7 @@ export function groupTransactionsByDate(
   const groups = new Map<string, Transaction[]>()
 
   for (const transaction of sortedTransactions) {
-    const dateKey = transaction.occurredAt.slice(0, 10)
+    const dateKey = getTransactionDateKey(transaction.occurredAt)
     const group = groups.get(dateKey) ?? []
     group.push(transaction)
     groups.set(dateKey, group)

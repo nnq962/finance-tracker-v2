@@ -65,8 +65,10 @@ export function DeleteAccountAlert({
         <AlertDialogHeader>
           <AlertDialogTitle>Xoá tài khoản?</AlertDialogTitle>
           <AlertDialogDescription>
-            Bạn có chắc muốn xoá tài khoản {account.name}? Hành động này không
-            thể hoàn tác.
+            Xoá tài khoản {account.name} sẽ xoá vĩnh viễn mọi giao dịch, lần
+            điều chỉnh số dư và khoản vay nợ có liên quan, kể cả lịch sử thanh
+            toán. Số dư của các tài khoản khác trong giao dịch hoặc khoản nợ
+            liên quan sẽ được đối soát lại. Hành động này không thể hoàn tác.
           </AlertDialogDescription>
         </AlertDialogHeader>
         {errorMessage ? (

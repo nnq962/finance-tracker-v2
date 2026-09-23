@@ -3,6 +3,19 @@ import type {
   TransactionPeriod,
 } from "../_types/transaction"
 
+const vietnamDateFormatter = new Intl.DateTimeFormat("en-CA", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  timeZone: "Asia/Ho_Chi_Minh",
+})
+
+export function getTransactionDateKey(occurredAt: string | Date) {
+  const parts = vietnamDateFormatter.formatToParts(new Date(occurredAt))
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]))
+  return `${values.year}-${values.month}-${values.day}`
+}
+
 function parseDateKey(dateKey: string) {
   const [year, month, day] = dateKey.split("-").map(Number)
 
@@ -45,17 +58,21 @@ function formatRelativePeriod(period: TransactionPeriod, offset: number) {
 
   if (offset === 0) return `${periodLabel} này`
   if (offset === 1) return `${periodLabel} trước`
+  if (offset < 0) return `${Math.abs(offset)} ${periodLabel} sau`
 
   return `${offset} ${periodLabel} trước`
 }
 
-export function getLatestTransactionDateKey(transactions: Transaction[]) {
+export function getLastNavigableDateKey(
+  transactions: Transaction[],
+  todayDateKey: string,
+) {
   return transactions.reduce(
-    (latest, transaction) =>
-      transaction.occurredAt.slice(0, 10) > latest
-        ? transaction.occurredAt.slice(0, 10)
-        : latest,
-    "0000-00-00",
+    (latest, transaction) => {
+      const dateKey = getTransactionDateKey(transaction.occurredAt)
+      return dateKey > latest ? dateKey : latest
+    },
+    todayDateKey,
   )
 }
 
@@ -69,7 +86,9 @@ export function shiftPeriodAnchor(
   if (period === "week") {
     date.setUTCDate(date.getUTCDate() + amount * 7)
   } else {
-    date.setUTCMonth(date.getUTCMonth() + amount)
+    return formatDateKey(
+      new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + amount, 1)),
+    )
   }
 
   return formatDateKey(date)
@@ -79,43 +98,36 @@ export function getTransactionPeriod(
   transactions: Transaction[],
   period: TransactionPeriod,
   anchorDateKey: string,
-  latestDateKey: string,
+  todayDateKey: string,
+  lastNavigableDateKey: string,
 ) {
-  if (anchorDateKey === "0000-00-00") {
-    return {
-      rangeLabel: "Chưa có dữ liệu",
-      contextLabel: "kỳ hiện tại",
-      isCurrent: true,
-      transactions: [],
-    }
-  }
-
   const anchorDate = parseDateKey(anchorDateKey)
   const year = anchorDate.getUTCFullYear()
   const month = anchorDate.getUTCMonth() + 1
 
   if (period === "month") {
     const monthKey = anchorDateKey.slice(0, 7)
-    const latestDate = parseDateKey(latestDateKey)
+    const todayDate = parseDateKey(todayDateKey)
     const monthOffset =
-      (latestDate.getUTCFullYear() - year) * 12 +
-      latestDate.getUTCMonth() -
+      (todayDate.getUTCFullYear() - year) * 12 +
+      todayDate.getUTCMonth() -
       anchorDate.getUTCMonth()
 
     return {
       rangeLabel: `Tháng ${String(month).padStart(2, "0")}, ${year}`,
       contextLabel: formatRelativePeriod(period, monthOffset),
-      isCurrent: anchorDateKey.slice(0, 7) === latestDateKey.slice(0, 7),
+      isCurrent: anchorDateKey.slice(0, 7) === todayDateKey.slice(0, 7),
+      isLatest: anchorDateKey.slice(0, 7) >= lastNavigableDateKey.slice(0, 7),
       transactions: transactions.filter((transaction) =>
-        transaction.occurredAt.startsWith(monthKey),
+        getTransactionDateKey(transaction.occurredAt).startsWith(monthKey),
       ),
     }
   }
 
   const startDate = getWeekStart(anchorDate)
-  const latestWeekStart = getWeekStart(parseDateKey(latestDateKey))
+  const todayWeekStart = getWeekStart(parseDateKey(todayDateKey))
   const weekOffset = Math.round(
-    (latestWeekStart.getTime() - startDate.getTime()) /
+    (todayWeekStart.getTime() - startDate.getTime()) /
       (7 * 24 * 60 * 60 * 1000),
   )
 
@@ -128,9 +140,12 @@ export function getTransactionPeriod(
   return {
     rangeLabel: formatWeekRange(startDate, endDate),
     contextLabel: formatRelativePeriod(period, weekOffset),
-    isCurrent: latestDateKey >= startDateKey && latestDateKey <= endDateKey,
+    isCurrent: todayDateKey >= startDateKey && todayDateKey <= endDateKey,
+    isLatest: startDateKey >= formatDateKey(
+      getWeekStart(parseDateKey(lastNavigableDateKey)),
+    ),
     transactions: transactions.filter((transaction) => {
-      const dateKey = transaction.occurredAt.slice(0, 10)
+      const dateKey = getTransactionDateKey(transaction.occurredAt)
 
       return dateKey >= startDateKey && dateKey <= endDateKey
     }),

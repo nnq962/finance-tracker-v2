@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { LoaderCircleIcon, PencilIcon, Trash2Icon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -136,7 +137,7 @@ export function TransactionDetailsSheet({
   }
 
   return (
-    <SheetContent className="data-[side=right]:w-full sm:max-w-md!">
+    <SheetContent onOpenAutoFocus={(event) => event.preventDefault()} className="data-[side=right]:w-full sm:max-w-md!">
       <SheetHeader>
         <SheetTitle>Chi tiết giao dịch</SheetTitle>
         <SheetDescription>
@@ -194,7 +195,9 @@ export function TransactionDetailsSheet({
       </div>
 
       <SheetFooter>
-        <div className="grid grid-cols-2 gap-2">
+        {transaction.source === "debt" ? (
+          <Button asChild><Link href={`/debts?debt=${encodeURIComponent(transaction.debtId ?? "")}`}>Quản lý tại Nợ & Cho vay</Link></Button>
+        ) : <div className="grid grid-cols-2 gap-2">
           <Popover
             open={deleteOpen}
             onOpenChange={(open) => {
@@ -243,7 +246,7 @@ export function TransactionDetailsSheet({
             <PencilIcon />
             Sửa giao dịch
           </Button>
-        </div>
+        </div>}
       </SheetFooter>
     </SheetContent>
   )

@@ -34,8 +34,6 @@ import {
 } from "@/components/ui/combobox"
 import {
   Field,
-  FieldContent,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -43,7 +41,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { InputGroupAddon } from "@/components/ui/input-group"
 import { SheetFooter } from "@/components/ui/sheet"
-import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type {
@@ -323,40 +320,21 @@ export function AccountForm({
             <CardHeader>
               <CardTitle>Thiết lập</CardTitle>
               <CardDescription>
-                Thêm ghi chú và chọn cách tài khoản xuất hiện trong báo cáo.
+                Thêm ghi chú cho tài khoản.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <FieldGroup>
-                <Field>
-                  <FieldLabel htmlFor="account-note">
-                    Ghi chú <Badge variant="outline">Tùy chọn</Badge>
-                  </FieldLabel>
-                  <Textarea
-                    id="account-note"
-                    name="note"
-                    defaultValue={defaultValues?.note}
-                    placeholder="Thêm ghi chú cho tài khoản..."
-                  />
-                </Field>
-
-                <Field orientation="horizontal">
-                  <FieldContent>
-                    <FieldLabel htmlFor="account-exclude-from-reports">
-                      Không tính vào báo cáo
-                    </FieldLabel>
-                    <FieldDescription>
-                      Số dư và giao dịch của tài khoản này sẽ không ảnh hưởng
-                      đến báo cáo.
-                    </FieldDescription>
-                  </FieldContent>
-                  <Switch
-                    id="account-exclude-from-reports"
-                    name="excludeFromReports"
-                    defaultChecked={defaultValues?.excludeFromReports}
-                  />
-                </Field>
-              </FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="account-note">
+                  Ghi chú <Badge variant="outline">Tùy chọn</Badge>
+                </FieldLabel>
+                <Textarea
+                  id="account-note"
+                  name="note"
+                  defaultValue={defaultValues?.note}
+                  placeholder="Thêm ghi chú cho tài khoản..."
+                />
+              </Field>
             </CardContent>
           </Card>
         </FieldGroup>

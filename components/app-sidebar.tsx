@@ -2,9 +2,9 @@
 
 import * as React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import {
   ArrowLeftRightIcon,
-  GalleryVerticalEndIcon,
   HandCoinsIcon,
   LayoutDashboardIcon,
   TagsIcon,
@@ -64,16 +64,14 @@ export function AppSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/overview" prefetch>
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <GalleryVerticalEndIcon className="size-4" />
-                </div>
+                <Image src="/icon.svg" alt="" width={32} height={32} className="size-8 shrink-0" />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="truncate font-medium">Finance Tracker</span>
                     <Badge variant="secondary">Beta</Badge>
                   </div>
                   <span className="truncate text-xs">
-                    Personal Finance · v{process.env.NEXT_PUBLIC_APP_VERSION}
+                    Tài chính cá nhân · v{process.env.NEXT_PUBLIC_APP_VERSION}
                   </span>
                 </div>
               </Link>

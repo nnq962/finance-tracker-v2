@@ -58,3 +58,51 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Debt tracking
+
+`/debts` reads the authenticated user's Firestore data. It does not seed the
+sample contacts or debts. The Firebase Admin SDK uses the existing `(default)`
+Standard database; direct client access remains denied by `firestore.rules`.
+
+- `users/{uid}/contacts`: contact details and fixed avatar initials.
+- `users/{uid}/debts`: loan principal, interest terms, paid total, and referenced
+  `accountIds`; `payments/{paymentId}` stores individual collections/repayments.
+- `users/{uid}/transactions/debt_{debtId}`: the original loan cash movement.
+- `users/{uid}/debtOperations`: request fingerprints for retry deduplication.
+
+Server Actions validate the session and input. Firestore transactions atomically
+update the debt/payment and account balances. Only the initial loan creates a linked cash movement. Lending and
+repaying decrease the selected account balance; borrowing and collecting increase
+it. Editing a payment reverses its previous account impact and applies the new
+one; deleting reverses the impact. Payments are stored only in debt history; legacy payment transactions are hidden and removed when that payment is edited/deleted. Negative
+account balances are rejected. Existing archived accounts can be used to correct
+old payments, but cannot be selected for new payments or loans.
+
+Initial loan transactions appear as incoming/outgoing cash movements on the
+Transactions page, with the `Vay & nợ` group and a link back to `/debts`. They cannot
+be edited/deleted through the generic transaction actions. Current transaction
+summaries include initial loan cash movements, but exclude repayments/collections; they are not profit/loss accounting.
+
+Loans can be edited or deleted from the detail panel. Editing revalidates existing payments and adjusts the original cash movement and account balances atomically. Direction cannot change once payments exist. Deleting reverses the original movement and every repayment, removes payment history and linked ledgers, and rejects the entire operation if an account would become negative. Both operations are retry-safe.
+
+Interest uses the original principal and elapsed calendar days: 30 days/month or
+365 days/year, rounded to whole VND. It stops at full settlement. Payment changes
+are replayed chronologically and rejected if any payment would exceed the amount
+owed on its date. Contacts with debt history cannot be deleted. Deleting an
+account also deletes its related transactions, debts, and payment histories,
+and reverses their effects on other accounts in one Firestore transaction.
+Deletion is rejected if a related balance would become invalid or the
+operation exceeds the safe Firestore transaction size.
+
+To run integration checks against configured Firebase credentials:
+
+```bash
+DEBT_TEST_LIVE=1 node scripts/test-debts-integration.cjs
+```
+
+The script creates a unique `codex_debt_test_*` namespace, tests persistence,
+account balances, linked transactions, validation, retries, concurrent requests,
+and ownership isolation, then removes its test records in `finally`. It does not
+use or change a real user's records. An interrupted process may require cleaning
+up its isolated test namespace.
