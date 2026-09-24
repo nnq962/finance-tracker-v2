@@ -424,7 +424,7 @@ export async function deleteAccount(userId: string, accountId: string) {
         throw new AccountValidationError("Khoản nợ liên quan không hợp lệ.")
       }
       const principalSign = direction === "borrowed" ? 1 : -1
-      addDelta(debt.get("accountId"), -principalSign * amount)
+      if (debt.get("recordingMode") !== "opening") addDelta(debt.get("accountId"), -principalSign * amount)
       for (const payment of paymentDocuments.filter((item) => item.ref.parent.parent?.id === debt.id)) {
         const paymentAmount = payment.get("amount")
         if (!Number.isSafeInteger(paymentAmount) || paymentAmount < 0) {

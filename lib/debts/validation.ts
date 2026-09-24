@@ -65,6 +65,8 @@ export function parseDebt(value: unknown): NewDebt {
   if (input.direction !== "lent" && input.direction !== "borrowed") throw new DebtValidationError("Loại khoản nợ không hợp lệ.")
   if (typeof input.hasInterest !== "boolean") throw new DebtValidationError("Thiết lập lãi suất không hợp lệ.")
   if (input.paidAmount !== undefined && input.paidAmount !== 0) throw new DebtValidationError("Hãy ghi nhận thanh toán sau khi tạo khoản nợ.")
+  const recordingMode = input.recordingMode ?? "cash-flow"
+  if (recordingMode !== "cash-flow" && recordingMode !== "opening") throw new DebtValidationError("Cách ghi nhận khoản nợ không hợp lệ.")
   const recordedAt = date(input.recordedAt, "Ngày ghi")
   if (recordedAt > todayDate()) throw new DebtValidationError("Ngày ghi không được sau hôm nay.")
   const dueAt = input.dueAt ? date(input.dueAt, "Hẹn trả") : undefined
@@ -78,7 +80,7 @@ export function parseDebt(value: unknown): NewDebt {
     interestPeriod = input.interestPeriod
   }
   return {
-    contactId: id(input.contactId), accountId: id(input.accountId), direction: input.direction,
+    contactId: id(input.contactId), recordingMode, accountId: recordingMode === "cash-flow" ? id(input.accountId) : undefined, direction: input.direction,
     amount: money(input.amount), paidAmount: 0, hasInterest: input.hasInterest,
     interestRate, interestPeriod, recordedAt, dueAt, note: text(input.note, "Nội dung", 500, true),
   }

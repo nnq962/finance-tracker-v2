@@ -1,5 +1,7 @@
 export type DebtDirection = "lent" | "borrowed"
 
+export type DebtRecordingMode = "cash-flow" | "opening"
+
 export type DebtStatus = "active" | "overdue" | "settled"
 
 export type InterestPeriod = "month" | "year"
@@ -28,6 +30,7 @@ export type NewDebtPayment = Omit<DebtPayment, "id"> & { accountId: string }
 export type Debt = {
   id: string
   contactId: string
+  recordingMode?: DebtRecordingMode
   accountId?: string
   direction: DebtDirection
   amount: number
@@ -54,6 +57,6 @@ export type NewDebt = Omit<
   Debt,
   "accountId" | "hasInterest" | "id" | "status"
 > & {
-  accountId: string
+  accountId?: string
   hasInterest: boolean
 }

@@ -63,7 +63,7 @@ export function DebtsDashboard({
   }
   const addDebt = async (values: NewDebt) => {
     await execute(JSON.stringify(["debt", values]), (id) => createDebtAction(values, id))
-    toast.success("Đã tạo khoản nợ và cập nhật số dư.")
+    toast.success(values.recordingMode === "opening" ? "Đã ghi nhận nợ có sẵn. Số dư tài khoản giữ nguyên." : "Đã tạo khoản nợ và cập nhật số dư.")
   }
   const changePayment = async (debtId: string, paymentId: string | undefined, values: NewDebtPayment | null) => {
     await execute(JSON.stringify(["payment", debtId, paymentId, values]), (id) => saveDebtPaymentAction(debtId, paymentId, values, id))
@@ -86,7 +86,7 @@ export function DebtsDashboard({
         accounts={accounts}
         onChangeDebt={async (debtId, values) => {
           await execute(JSON.stringify(["change-debt", debtId, values]), (operationId) => changeDebtAction(debtId, values, operationId))
-          toast.success(values ? "Đã cập nhật khoản nợ và số dư." : "Đã xoá khoản nợ và hoàn lại ảnh hưởng lên số dư.")
+          toast.success(values ? values.recordingMode === "opening" ? "Đã cập nhật khoản nợ có sẵn. Số dư tài khoản giữ nguyên." : "Đã cập nhật khoản nợ và số dư." : "Đã xoá khoản nợ và hoàn lại ảnh hưởng lên số dư.")
         }}
         onRecordPayment={(id, values) => changePayment(id, undefined, values)}
         onEditPayment={(id, paymentId, values) => changePayment(id, paymentId, values)}

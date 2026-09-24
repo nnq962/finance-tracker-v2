@@ -45,7 +45,7 @@ function debtFrom(snapshot: FirebaseFirestore.DocumentSnapshot, payments: Fireba
   if (!snapshot.exists) throw new DebtValidationError("Khoản nợ không tồn tại.")
   const data = snapshot.data()!
   const debt: Debt = {
-    id: snapshot.id, contactId: data.contactId, accountId: data.accountId,
+    id: snapshot.id, contactId: data.contactId, accountId: data.accountId, recordingMode: data.recordingMode ?? "cash-flow",
     direction: data.direction, amount: data.amount, paidAmount: data.paidAmount,
     hasInterest: data.hasInterest, interestRate: data.interestRate, interestPeriod: data.interestPeriod,
     recordedAt: data.recordedAt, dueAt: data.dueAt, status: data.status, note: data.note,
@@ -168,17 +168,18 @@ export async function createDebt(userId: string, input: unknown, operationId: st
   return getFirebaseAdminFirestore().runTransaction(async (transaction) => {
     const op = await transaction.get(operation)
     if (verifyOperation(op, hash)) return debtFrom(await transaction.get(reference), await transaction.get(reference.collection("payments")))
-    const accountReference = user.collection("accounts").doc(values.accountId)
-    const [contact, account] = await transaction.getAll(user.collection("contacts").doc(values.contactId), accountReference)
-    const person = contactFrom(contact)
-    const balance = assertAccount(account)
+    const person = contactFrom(await transaction.get(user.collection("contacts").doc(values.contactId)))
+    const account = values.accountId ? await transaction.get(user.collection("accounts").doc(values.accountId)) : null
+    const balance = account ? assertAccount(account) : 0
     const debt: Debt = { ...values, id: reference.id, status: values.dueAt && values.dueAt < todayDate() ? "overdue" : "active", payments: [] }
     if (getPaymentMetrics(debt).totalAmount > MAX_MONEY) throw new DebtValidationError("Tổng gốc và lãi vượt giới hạn cho phép.")
-    transaction.create(reference, { ...clean(values), status: debt.status, accountIds: [values.accountId], createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() })
-    transaction.update(accountReference, { balance: nextBalance(balance, values.direction === "lent" ? -values.amount : values.amount), updatedAt: FieldValue.serverTimestamp() })
-    transaction.create(user.collection("transactions").doc(`debt_${reference.id}`), {
-      ...ledgerDocument(debt, person.name, account.get("name")), createdAt: FieldValue.serverTimestamp(),
-    })
+    transaction.create(reference, { ...clean(values), status: debt.status, accountIds: values.accountId ? [values.accountId] : [], createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() })
+    if (account) {
+      transaction.update(account.ref, { balance: nextBalance(balance, values.direction === "lent" ? -values.amount : values.amount), updatedAt: FieldValue.serverTimestamp() })
+      transaction.create(user.collection("transactions").doc(`debt_${reference.id}`), {
+        ...ledgerDocument(debt, person.name, account.get("name")), createdAt: FieldValue.serverTimestamp(),
+      })
+    }
     transaction.create(operation, operationDoc(hash))
     return debt
   })
@@ -263,6 +264,7 @@ export async function changeDebt(userId: string, debtId: string, input: unknown 
     const payments = debt.payments ?? []
     let updated: Debt | null = null
     if (values) {
+      if (values.recordingMode !== debt.recordingMode) throw new DebtValidationError("Không thể đổi cách ghi nhận của khoản nợ đã tạo.")
       if (payments.length && values.direction !== debt.direction) throw new DebtValidationError("Khoản nợ đã có thanh toán nên không thể đổi giữa đi vay và cho vay.")
       if (payments.some((payment) => payment.paidAt < values.recordedAt)) throw new DebtValidationError("Ngày ghi không được sau ngày thanh toán đầu tiên.")
       try {
@@ -278,10 +280,11 @@ export async function changeDebt(userId: string, debtId: string, input: unknown 
       deltas.set(id, (deltas.get(id) ?? 0) + delta)
     }
     const sign = debt.direction === "borrowed" ? 1 : -1
-    add(debt.accountId, -sign * debt.amount)
-    if (values) add(values.accountId, (values.direction === "borrowed" ? 1 : -1) * values.amount)
-    else for (const payment of payments) add(payment.accountId, sign * payment.amount)
-    const accounts = await transaction.getAll(...[...deltas.keys()].map((id) => user.collection("accounts").doc(id)))
+    if (debt.recordingMode !== "opening") add(debt.accountId, -sign * debt.amount)
+    if (values) {
+      if (values.recordingMode !== "opening") add(values.accountId, (values.direction === "borrowed" ? 1 : -1) * values.amount)
+    } else for (const payment of payments) add(payment.accountId, sign * payment.amount)
+    const accounts = deltas.size ? await transaction.getAll(...[...deltas.keys()].map((id) => user.collection("accounts").doc(id))) : []
     const person = values ? contactFrom(await transaction.get(user.collection("contacts").doc(values.contactId))) : null
     const ledger = user.collection("transactions").doc(`debt_${debtId}`)
     const oldLedger = await transaction.get(ledger)
@@ -300,13 +303,15 @@ export async function changeDebt(userId: string, debtId: string, input: unknown 
     if (updated && values && person) {
       transaction.set(reference, {
         ...clean(values), paidAmount: updated.paidAmount, status: updated.status,
-        accountIds: [...new Set([values.accountId, ...payments.map((payment) => payment.accountId)])],
+        accountIds: [...new Set([values.accountId, ...payments.map((payment) => payment.accountId)].filter((id): id is string => Boolean(id)))],
         createdAt: parent.get("createdAt"), updatedAt: FieldValue.serverTimestamp(),
       })
-      transaction.set(ledger, {
-        ...ledgerDocument(updated, person.name, accounts.find((account) => account.id === values.accountId)!.get("name")),
-        createdAt: oldLedger.get("createdAt") ?? FieldValue.serverTimestamp(),
-      })
+      if (values.recordingMode !== "opening") {
+        transaction.set(ledger, {
+          ...ledgerDocument(updated, person.name, accounts.find((account) => account.id === values.accountId)!.get("name")),
+          createdAt: oldLedger.get("createdAt") ?? FieldValue.serverTimestamp(),
+        })
+      }
     } else {
       for (const payment of history.docs) {
         transaction.delete(payment.ref)

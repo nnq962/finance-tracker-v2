@@ -72,7 +72,17 @@ Standard database; direct client access remains denied by `firestore.rules`.
 - `users/{uid}/debtOperations`: request fingerprints for retry deduplication.
 
 Server Actions validate the session and input. Firestore transactions atomically
-update the debt/payment and account balances. Only the initial loan creates a linked cash movement. Lending and
+update the debt/payment and account balances. The recording mode is stored as `recordingMode`: `cash-flow` (also the default for
+older records) or `opening`. Only cash-flow loans require an account and create
+an initial linked cash movement. Opening debts record outstanding principal at
+the tracking start date, without changing account balances or creating a
+transaction; they can be created without any accounts. Their interest accrues
+from that date; importing pre-existing unpaid interest separately is not yet
+supported. Do not re-enter payments made before the tracking start date.
+The mode cannot be changed after creation, including through Server Actions.
+Payments for either mode still affect their selected accounts. Editing/deleting
+opening debt principal never affects balances; deleting its payments (including
+through account deletion) reverses only their actual account impacts. Lending and
 repaying decrease the selected account balance; borrowing and collecting increase
 it. Editing a payment reverses its previous account impact and applies the new
 one; deleting reverses the impact. Payments are stored only in debt history; legacy payment transactions are hidden and removed when that payment is edited/deleted. Negative

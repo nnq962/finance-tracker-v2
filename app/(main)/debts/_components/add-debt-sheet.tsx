@@ -64,6 +64,7 @@ import type {
   Contact,
   Debt,
   DebtDirection,
+  DebtRecordingMode,
   InterestPeriod,
   NewDebt,
 } from "../_types/debt"
@@ -108,6 +109,8 @@ export function AddDebtSheet({
 }: AddDebtSheetProps) {
   const [open, setOpen] = React.useState(false)
   const [direction, setDirection] = React.useState<DebtDirection>(debt?.direction ?? "lent")
+  const [recordingMode, setRecordingMode] = React.useState<DebtRecordingMode>(debt?.recordingMode ?? "cash-flow")
+  const isOpening = recordingMode === "opening"
   const [hasInterest, setHasInterest] = React.useState(debt?.hasInterest ?? false)
   const [pending, setPending] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
@@ -124,12 +127,12 @@ export function AddDebtSheet({
     ...option,
     accounts: activeAccounts.filter((account) => account.type === option.value),
   }))
-  const isDisabled = contacts.length === 0 || activeAccounts.length === 0
+  const isDisabled = contacts.length === 0
 
   return (
     <Sheet open={open} onOpenChange={(nextOpen) => {
       if (submitting.current) return
-      if (nextOpen) { setErrorMessage(null); setDirection(debt?.direction ?? "lent"); setHasInterest(debt?.hasInterest ?? false) }
+      if (nextOpen) { setErrorMessage(null); setDirection(debt?.direction ?? "lent"); setRecordingMode(debt?.recordingMode ?? "cash-flow"); setHasInterest(debt?.hasInterest ?? false) }
       setOpen(nextOpen)
     }}>
       <SheetTrigger asChild>
@@ -139,9 +142,7 @@ export function AddDebtSheet({
           title={
             contacts.length === 0
               ? "Thêm người liên quan trước khi tạo khoản nợ"
-              : activeAccounts.length === 0
-                ? "Thêm tài khoản trước khi tạo khoản nợ"
-                : undefined
+              : undefined
           }
         >
           <PlusIcon />
@@ -156,7 +157,7 @@ export function AddDebtSheet({
         <SheetHeader>
           <SheetTitle>{debt ? "Sửa khoản nợ" : "Thêm khoản nợ"}</SheetTitle>
           <SheetDescription>
-            {debt ? "Thay đổi thông tin và điều khoản. Số dư được điều chỉnh theo khoản nợ mới; lịch sử thanh toán được giữ lại." : "Ghi lại khoản đang cho vay hoặc đi vay và các điều khoản liên quan."}
+            {debt ? isOpening ? "Thay đổi thông tin khoản nợ có sẵn, không điều chỉnh số dư tiền gốc. Lịch sử thanh toán được giữ lại." : "Thay đổi thông tin và điều khoản. Số dư được điều chỉnh theo khoản nợ mới; lịch sử thanh toán được giữ lại." : "Ghi lại khoản đang cho vay hoặc đi vay và các điều khoản liên quan."}
           </SheetDescription>
         </SheetHeader>
 
@@ -173,7 +174,8 @@ export function AddDebtSheet({
             setErrorMessage(null)
             try {
               await onAddDebt({
-                accountId: String(formData.get("accountId")),
+                recordingMode,
+                accountId: isOpening ? undefined : String(formData.get("accountId")),
                 contactId: String(formData.get("contactId")),
                 direction,
                 amount: Number(formData.get("amount")),
@@ -207,6 +209,31 @@ export function AddDebtSheet({
         >
           <fieldset disabled={pending} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
             <FieldGroup>
+              <Card>
+                <CardHeader>
+                  <CardTitle id="debt-recording-mode-title">Cách ghi nhận</CardTitle>
+                  <CardDescription id="debt-recording-mode-description">
+                    {isOpening ? "Chỉ ghi nhận nợ, không thay đổi số dư tài khoản và không tạo giao dịch tiền. Các lần thu/trả sau này vẫn cập nhật số dư." : "Đi vay cộng tiền vào tài khoản; cho vay trừ tiền từ tài khoản và tạo giao dịch tương ứng."}
+                    {debt ? " Cách ghi nhận không thể thay đổi sau khi tạo." : ""}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Field>
+                    <Select value={recordingMode} onValueChange={(value) => setRecordingMode(value as DebtRecordingMode)} disabled={pending || Boolean(debt)}>
+                      <SelectTrigger id="debt-recording-mode" aria-labelledby="debt-recording-mode-title" aria-describedby="debt-recording-mode-description" className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="cash-flow">Phát sinh khoản vay mới</SelectItem>
+                          <SelectItem value="opening">Ghi nhận nợ có sẵn</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  {!isOpening && activeAccounts.length === 0 ? <FieldError>Thêm tài khoản để ghi nhận khoản vay mới, hoặc chọn ghi nhận nợ có sẵn.</FieldError> : null}
+                </CardContent>
+              </Card>
               <Card>
                 <CardHeader>
                   <CardTitle>Loại giao dịch</CardTitle>
@@ -251,7 +278,7 @@ export function AddDebtSheet({
                 <CardHeader>
                   <CardTitle>Thông tin khoản nợ</CardTitle>
                   <CardDescription>
-                    Chọn người liên quan, tài khoản và nhập số tiền.
+                    {isOpening ? "Chọn người liên quan và nhập số nợ còn lại tại ngày bắt đầu theo dõi." : "Chọn người liên quan, tài khoản và nhập số tiền."}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -278,7 +305,7 @@ export function AddDebtSheet({
                     </Field>
 
                     <Field>
-                      <FieldLabel htmlFor="debt-amount">Số tiền</FieldLabel>
+                      <FieldLabel htmlFor="debt-amount">{isOpening ? "Tiền gốc còn nợ" : "Số tiền"}</FieldLabel>
                       <CurrencyInput
                         id="debt-amount"
                         name="amount"
@@ -287,7 +314,7 @@ export function AddDebtSheet({
                       />
                     </Field>
 
-                    <Field>
+                    {!isOpening && <Field>
                       <FieldLabel htmlFor="debt-account">
                         {accountLabel}
                       </FieldLabel>
@@ -324,7 +351,7 @@ export function AddDebtSheet({
                         </SelectContent>
                       </Select>
                       <FieldDescription>{accountDescription}</FieldDescription>
-                    </Field>
+                    </Field>}
 
                     <Field>
                       <FieldLabel htmlFor="debt-note">Nội dung</FieldLabel>
@@ -352,7 +379,7 @@ export function AddDebtSheet({
                     <div className="grid gap-4 sm:grid-cols-2">
                       <Field>
                         <FieldLabel htmlFor="debt-recorded-at">
-                          Ngày ghi
+                          {isOpening ? "Ngày bắt đầu theo dõi" : "Ngày ghi"}
                         </FieldLabel>
                         <Input
                           id="debt-recorded-at"
@@ -381,7 +408,7 @@ export function AddDebtSheet({
                           Có tính lãi
                         </FieldLabel>
                         <FieldDescription>
-                          Bật để lưu mức lãi suất của khoản nợ.
+                          {isOpening ? "Lãi được tính từ ngày bắt đầu theo dõi trên tiền gốc còn nợ. Chưa hỗ trợ nhập riêng lãi còn nợ trước ngày này; không nhập các lần đã trả trước đó thành thanh toán mới." : "Bật để lưu mức lãi suất của khoản nợ."}
                         </FieldDescription>
                       </FieldContent>
                       <Switch
@@ -449,7 +476,7 @@ export function AddDebtSheet({
 
           <SheetFooter>
             {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
-            <Button type="submit" size="lg" className="w-full" disabled={pending}>
+            <Button type="submit" size="lg" className="w-full" disabled={pending || (!isOpening && activeAccounts.length === 0)}>
               <SaveIcon />
               {pending ? "Đang lưu…" : "Lưu khoản nợ"}
             </Button>

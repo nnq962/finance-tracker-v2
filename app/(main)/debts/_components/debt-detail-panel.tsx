@@ -89,6 +89,7 @@ export function DebtDetailPanel({
           >
             {debt.direction === "lent" ? "Cho vay" : "Đi vay"}
           </Badge>
+          {debt.recordingMode === "opening" ? <Badge variant="outline">Nợ có sẵn</Badge> : null}
           <Badge variant={deadline.isOverdue ? "destructive" : "outline"}>
             {deadline.label}
           </Badge>
@@ -134,7 +135,7 @@ export function DebtDetailPanel({
 
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <p className="text-muted-foreground">Ngày ghi</p>
+            <p className="text-muted-foreground">{debt.recordingMode === "opening" ? "Ngày bắt đầu theo dõi" : "Ngày ghi"}</p>
             <p className="font-medium">{formatDebtDate(debt.recordedAt)}</p>
           </div>
           <div>
@@ -170,8 +171,9 @@ export function DebtDetailPanel({
             <AlertDialogHeader>
               <AlertDialogTitle>Xoá khoản {debt.direction === "lent" ? "cho vay" : "đi vay"}?</AlertDialogTitle>
               <AlertDialogDescription>
-                Xoá “{debt.note}” cùng toàn bộ {debt.payments?.length ?? 0} lần thu/trả và giao dịch ban đầu.
-                Số dư các tài khoản sẽ được điều chỉnh như chưa từng có khoản nợ này. Hành động không thể hoàn tác.
+                Xoá “{debt.note}” cùng toàn bộ {debt.payments?.length ?? 0} lần thu/trả.
+                {debt.recordingMode === "opening" ? " Chỉ hoàn tác tác động số dư của các lần thu/trả đã ghi nhận; tiền gốc không ảnh hưởng số dư." : " Xoá giao dịch ban đầu và điều chỉnh số dư các tài khoản như chưa từng có khoản nợ này."}
+                {" "}Hành động không thể hoàn tác.
               </AlertDialogDescription>
             </AlertDialogHeader>
             {error ? <FieldError role="alert">{error}</FieldError> : null}
