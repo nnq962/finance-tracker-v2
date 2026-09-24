@@ -55,9 +55,24 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The app is served from `finance.nnqlab.dev`. The rewrite in `vercel.json`
+proxies Firebase's OAuth helper at `/__/auth/*` to the project's Firebase
+Hosting domain while keeping `finance.nnqlab.dev` visible to Google Sign-In.
+Before setting the production auth domain, configure all of the following:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Add `finance.nnqlab.dev` to Firebase Authentication's authorized domains.
+2. Add `https://finance.nnqlab.dev/__/auth/handler` to the authorized redirect
+   URIs of the Google OAuth web client for this Firebase project.
+3. Set `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=finance.nnqlab.dev` in Vercel's
+   **Production** environment and redeploy. Next.js embeds `NEXT_PUBLIC_*`
+   values at build time, so updating the variable alone does not change an
+   existing deployment.
+4. Verify that `https://finance.nnqlab.dev/__/auth/handler` loads through the
+   rewrite, then test Google Sign-In on the deployed app.
+
+Keep the Firebase-provided `<project-id>.firebaseapp.com` auth domain in
+`.env.local` for local development. Changing only `authDomain` without the
+rewrite and OAuth redirect URI will break Google Sign-In.
 
 ## Debt tracking
 

@@ -1,4 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "regions": ["sin1"]
+  "regions": ["sin1"],
+  "rewrites": [
+    {
+      "source": "/__/auth/:path*",
+      "destination": "https://finance-tracker-6329d.firebaseapp.com/__/auth/:path*"
+    }
+  ]
 }
