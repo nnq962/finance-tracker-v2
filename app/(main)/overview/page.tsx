@@ -157,7 +157,7 @@ function Spending({ summary }: { summary: OverviewSummary }) {
 
 function DueDebts({ debts }: { debts: OverviewSummary["dueDebts"] }) {
   return (
-    <section aria-labelledby="due-debts-title">
+    <section aria-labelledby="due-debts-title" className="min-w-0">
       <Card className="h-full">
         <CardHeader>
           <CardTitle id="due-debts-title">Vay nợ cần chú ý</CardTitle>
@@ -176,9 +176,9 @@ function DueDebts({ debts }: { debts: OverviewSummary["dueDebts"] }) {
                         {debt.direction === "lent" ? "Cho vay" : "Đi vay"} · Hẹn {dueDateFormatter.format(new Date(`${debt.dueAt}T00:00:00+07:00`))}
                       </p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="space-y-1 text-right">
-                        <p className="font-semibold tabular-nums">{formatCurrency(debt.remainingAmount)}</p>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="min-w-0 space-y-1 text-right">
+                        <p className="[overflow-wrap:anywhere] font-semibold tabular-nums">{formatCurrency(debt.remainingAmount)}</p>
                         <Badge variant={debt.daysUntilDue < 0 ? "destructive" : "outline"}>
                           {debt.daysUntilDue < 0 ? `Quá ${Math.abs(debt.daysUntilDue)} ngày` : debt.daysUntilDue === 0 ? "Đến hạn hôm nay" : `Còn ${debt.daysUntilDue} ngày`}
                         </Badge>
@@ -206,7 +206,7 @@ function DueDebts({ debts }: { debts: OverviewSummary["dueDebts"] }) {
 
 function RecentTransactions({ transactions }: { transactions: OverviewSummary["recentTransactions"] }) {
   return (
-    <section aria-labelledby="recent-transactions-title">
+    <section aria-labelledby="recent-transactions-title" className="min-w-0">
       <Card className="h-full">
         <CardHeader>
           <CardTitle id="recent-transactions-title">Giao dịch gần đây</CardTitle>
@@ -217,15 +217,15 @@ function RecentTransactions({ transactions }: { transactions: OverviewSummary["r
           {transactions.length ? (
             <ul className="divide-y">
               {transactions.map((transaction) => (
-                <li key={transaction.id} className="flex items-center gap-3 py-4 first:pt-0 last:pb-0">
+                <li key={transaction.id} className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-1 py-4 first:pt-0 last:pb-0 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
                   <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted" aria-hidden="true">
                     {transaction.kind === "income" ? <ArrowDownLeftIcon className="size-4" /> : transaction.kind === "expense" ? <ArrowUpRightIcon className="size-4" /> : <ReceiptTextIcon className="size-4" />}
                   </div>
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0">
                     <p className="truncate font-medium">{transaction.title}</p>
                     <p className="truncate text-sm text-muted-foreground">{transactionDateFormatter.format(new Date(transaction.occurredAt))} · {transaction.description}</p>
                   </div>
-                  <span className={`shrink-0 text-right font-semibold tabular-nums ${transaction.kind === "income" ? "text-emerald-700 dark:text-emerald-400" : ""}`}>
+                  <span className={`col-start-2 min-w-0 [overflow-wrap:anywhere] font-semibold tabular-nums sm:col-start-3 sm:row-start-1 sm:text-right ${transaction.kind === "income" ? "text-emerald-700 dark:text-emerald-400" : ""}`}>
                     {formatCurrency(transaction.amount, { signDisplay: transaction.kind === "transfer" ? "never" : "always" })}
                   </span>
                 </li>
@@ -257,7 +257,7 @@ export default async function OverviewPage() {
   const summary = getOverviewSummary(accounts, debts, contacts, transactions, todayDate())
 
   return (
-    <main className="mx-auto w-full max-w-7xl space-y-6 pb-12 md:space-y-8">
+    <main className="mx-auto w-full min-w-0 max-w-7xl space-y-6 pb-12 md:space-y-8">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Tổng quan tài chính</h1>
@@ -266,11 +266,11 @@ export default async function OverviewPage() {
         <Badge variant="outline">{summary.monthLabel}</Badge>
       </header>
       <NetWorth data={summary.netWorth} />
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-2">
         <CashFlow summary={summary} />
         <Spending summary={summary} />
       </div>
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+      <div className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <DueDebts debts={summary.dueDebts} />
         <RecentTransactions transactions={summary.recentTransactions} />
       </div>
