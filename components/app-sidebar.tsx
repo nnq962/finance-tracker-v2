@@ -61,7 +61,7 @@ export function AppSidebar({
   const { isMobile, setOpenMobile } = useSidebar()
 
   return (
-    <Sidebar collapsible="icon" variant="inset" {...props}>
+    <Sidebar variant="inset" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
