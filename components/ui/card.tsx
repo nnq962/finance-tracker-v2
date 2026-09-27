@@ -1,17 +1,28 @@
 import * as React from "react"
 import { cn } from "cn"
+import { Slot } from "radix-ui"
 
 function Card({
   className,
   size = "default",
+  pressable = false,
+  asChild = false,
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & {
+  size?: "default" | "sm"
+  pressable?: boolean
+  asChild?: boolean
+}) {
+  const Comp = asChild ? Slot.Root : "div"
+
   return (
-    <div
+    <Comp
       data-slot="card"
       data-size={size}
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl border border-[#E2E8F0] bg-card py-(--card-spacing) text-sm text-card-foreground shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.08)] [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 dark:border-0 dark:shadow-none dark:ring-1 dark:ring-foreground/10 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl border border-[#e7e4dd] bg-white py-(--card-spacing) text-sm text-card-foreground ring-1 ring-inset ring-[#e7e4dd] [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 dark:border-[#35323e] dark:bg-card dark:ring-[#35323e] *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        pressable &&
+          "cursor-pointer [--card-edge:#e7e4dd] shadow-[0_3px_0_var(--card-edge)] transition-[background-color,box-shadow,translate] duration-[80ms] hover:bg-[#fdfcfa] active:translate-y-[3px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38b8f6] dark:[--card-edge:#35323e] dark:hover:bg-[#303035]",
         className
       )}
       {...props}
@@ -37,7 +48,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-title"
       className={cn(
-        "font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm",
+        "font-heading text-base leading-snug font-extrabold group-data-[size=sm]/card:text-sm",
         className
       )}
       {...props}
@@ -83,7 +94,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-footer"
       className={cn(
-        "flex items-center rounded-b-xl border-t bg-muted/50 p-(--card-spacing)",
+        "flex items-center rounded-b-xl border-t border-[#e7e4dd] bg-[#f3f1ec] p-(--card-spacing) dark:border-[#35323e] dark:bg-muted/50",
         className
       )}
       {...props}

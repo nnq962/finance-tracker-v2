@@ -20,6 +20,7 @@ export function ThemeProvider({
         }}
       />
       <NextThemesProvider
+        disableTransitionOnChange
         {...props}
         scriptProps={{
           ...scriptProps,

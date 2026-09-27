@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input"
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -198,9 +199,11 @@ export function NotificationDialogContent({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">1 ngày</SelectItem>
-                  <SelectItem value="3">3 ngày</SelectItem>
-                  <SelectItem value="7">7 ngày</SelectItem>
+                  <SelectGroup>
+                    <SelectItem value="1">1 ngày</SelectItem>
+                    <SelectItem value="3">3 ngày</SelectItem>
+                    <SelectItem value="7">7 ngày</SelectItem>
+                  </SelectGroup>
                 </SelectContent>
               </Select>
             </Field>

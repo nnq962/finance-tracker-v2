@@ -5,6 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import {
   ArrowLeftRightIcon,
+  FlaskConicalIcon,
   HandCoinsIcon,
   LayoutDashboardIcon,
   TagsIcon,
@@ -52,6 +53,11 @@ const navMain = [
     url: "/debts",
     icon: <HandCoinsIcon />,
   },
+  {
+    title: "Thử giao diện",
+    url: "/ui-lab",
+    icon: <FlaskConicalIcon />,
+  },
 ]
 
 export function AppSidebar({
@@ -61,7 +67,7 @@ export function AppSidebar({
   const { isMobile, setOpenMobile } = useSidebar()
 
   return (
-    <Sidebar variant="inset" {...props}>
+    <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -77,7 +83,7 @@ export function AppSidebar({
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="truncate font-medium">Finance Tracker</span>
-                    <Badge variant="secondary">Beta</Badge>
+                    <Badge variant="secondary" className="px-1.5 tracking-normal">Beta</Badge>
                   </div>
                   <span className="truncate text-xs">
                     Tài chính cá nhân · v{process.env.NEXT_PUBLIC_APP_VERSION}

@@ -24,5 +24,6 @@ export const config = {
     "/transactions/:path*",
     "/categories/:path*",
     "/debts/:path*",
+    "/ui-lab/:path*",
   ],
 }

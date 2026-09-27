@@ -3,7 +3,7 @@ import type { ReactNode } from "react"
 import { AppSidebar } from "@/components/app-sidebar"
 import { AuthSessionGuard } from "@/components/auth-session-guard"
 import { MainBreadcrumb } from "@/components/main-breadcrumb"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { ThemeSelect } from "@/components/theme-select"
 import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
@@ -21,9 +21,9 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
       <TooltipProvider>
         <SidebarProvider>
           <AppSidebar user={user} />
-          <SidebarInset className="min-w-0 bg-[#FCFCFB] [--main-content-px:--spacing(4)] dark:bg-background md:[--main-content-px:--spacing(6)]">
-            <header className="flex h-16 shrink-0 items-center">
-              <div className="flex w-full items-center justify-between px-(--main-content-px) transition-[padding] duration-200 ease-linear">
+          <SidebarInset className="min-h-svh min-w-0 bg-[#fbfaf7] [--main-content-px:--spacing(4)] dark:bg-background md:border-l-2 md:border-l-[#e7e4dd] md:peer-data-[variant=inset]:m-0 md:peer-data-[variant=inset]:rounded-none md:peer-data-[variant=inset]:shadow-none md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0 md:[--main-content-px:--spacing(6)] dark:md:border-l-[#35323e]">
+            <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center bg-[#fbfaf7] dark:bg-background">
+              <div className="flex w-full items-center justify-between gap-3 px-(--main-content-px) transition-[padding] duration-200 ease-linear">
                 <div className="flex items-center gap-2">
                   <SidebarTrigger className="-ml-1" />
                   <Separator
@@ -32,7 +32,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
                   />
                   <MainBreadcrumb />
                 </div>
-                <ThemeToggle />
+                <ThemeSelect />
               </div>
             </header>
             <div className="flex flex-1 flex-col gap-4 px-(--main-content-px) pb-4 pt-0 transition-[padding] duration-200 ease-linear [&>*]:mx-0 [&>*]:max-w-none">

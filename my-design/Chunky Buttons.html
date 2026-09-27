@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chunky Buttons</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fbfaf7; --ink:#2b2a33; --muted:#8a8794; --line:#e7e4dd;
+  /* face / edge pairs */
+  --leaf:oklch(0.76 0.19 138);   --leaf-d:oklch(0.60 0.17 140);
+  --sky:oklch(0.74 0.14 235);    --sky-d:oklch(0.58 0.14 240);
+  --sun:oklch(0.85 0.16 85);     --sun-d:oklch(0.70 0.15 70);
+  --coral:oklch(0.70 0.19 25);   --coral-d:oklch(0.56 0.18 25);
+  --grape:oklch(0.66 0.17 300);  --grape-d:oklch(0.52 0.17 300);
+  --edge:6px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Baloo 2',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:56px 32px 96px}
+h2{font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 20px}
+section{padding:36px 0;border-top:2px solid var(--line)}
+section:first-child{border-top:0;padding-top:0}
+.row{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end}
+.cell{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+
+/* ---------- BUTTON ---------- */
+.btn{
+  --face:var(--leaf); --shade:var(--leaf-d); --text:#fff;
+  position:relative; border:0; cursor:pointer; user-select:none;
+  font:800 17px/1 'Baloo 2',sans-serif; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--text); background:var(--face);
+  padding:15px 28px 13px; min-height:52px; border-radius:16px;
+  box-shadow:0 var(--edge) 0 var(--shade);
+  transform:translateY(0);
+  transition:transform .08s ease, box-shadow .08s ease, filter .15s;
+  display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  margin-bottom:var(--edge);
+}
+.btn:hover{filter:brightness(1.06)}
+.btn:active,.btn.is-pressed{transform:translateY(var(--edge));box-shadow:0 0 0 var(--shade)}
+.btn:focus-visible{outline:3px solid var(--sky);outline-offset:4px}
+
+.btn.sky{--face:var(--sky);--shade:var(--sky-d)}
+.btn.sun{--face:var(--sun);--shade:var(--sun-d);--text:#5a3b00}
+.btn.coral{--face:var(--coral);--shade:var(--coral-d)}
+.btn.grape{--face:var(--grape);--shade:var(--grape-d)}
+
+/* outline / ghost style: white face, grey rim */
+.btn.outline{--face:#fff;--shade:var(--line);--text:var(--sky-d);border:2px solid var(--line);padding:13px 26px 11px}
+.btn.outline.neutral{--text:var(--muted)}
+.btn.ghost{--face:transparent;--shade:transparent;--text:var(--sky-d);box-shadow:none}
+.btn.ghost:hover{background:oklch(0.95 0.03 235);filter:none}
+.btn.ghost:active{transform:none}
+
+.btn[disabled]{--face:#e8e6e1;--shade:#d4d1ca;--text:#aaa6ae;cursor:not-allowed;filter:none}
+.btn[disabled]:active{transform:none;box-shadow:0 var(--edge) 0 var(--shade)}
+
+.btn.sm{font-size:14px;min-height:40px;padding:11px 18px 9px;border-radius:12px;--edge:4px}
+.btn.lg{font-size:20px;min-height:62px;padding:18px 40px 16px;border-radius:18px;--edge:7px}
+.btn.block{width:100%}
+
+/* icon buttons */
+.btn.icon{padding:0;width:56px;min-height:56px;border-radius:16px}
+.btn.round{padding:0;width:72px;min-height:72px;border-radius:50%;--edge:7px}
+.glyph{width:18px;height:18px;border-radius:4px;background:currentColor;opacity:.95}
+.glyph.dot{border-radius:50%}
+.glyph.diamond{transform:rotate(45deg);width:15px;height:15px;border-radius:3px}
+
+/* shine highlight */
+.btn.shine::after{content:"";position:absolute;left:14px;right:14px;top:6px;height:6px;border-radius:6px;background:rgba(255,255,255,.28)}
+
+/* choice tiles */
+.choice{
+  --face:#fff;--shade:var(--line);--text:var(--ink);
+  font:700 18px/1.2 'Baloo 2';text-transform:none;letter-spacing:0;
+  border:2px solid var(--line);justify-content:flex-start;padding:16px 20px 14px;width:260px;border-radius:16px;
+}
+.choice .key{width:30px;height:30px;border:2px solid var(--line);border-radius:9px;display:grid;place-items:center;font-size:14px;color:var(--muted)}
+.choice.selected{--face:oklch(0.95 0.04 235);--shade:oklch(0.80 0.09 235);border-color:oklch(0.80 0.09 235);--text:var(--sky-d)}
+.choice.selected .key{border-color:currentColor;color:currentColor}
+.choice.correct{--face:oklch(0.95 0.06 138);--shade:var(--leaf);border-color:var(--leaf);--text:var(--leaf-d)}
+.choice.correct .key{border-color:currentColor;color:currentColor}
+.choice.wrong{--face:oklch(0.95 0.04 25);--shade:var(--coral);border-color:var(--coral);--text:var(--coral-d)}
+.choice.wrong .key{border-color:currentColor;color:currentColor}
+
+/* feedback bar demo */
+.bar{border-radius:20px;padding:22px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.bar.ok{background:oklch(0.94 0.07 138)}
+.bar.no{background:oklch(0.94 0.05 25)}
+.bar b{font-size:24px;font-weight:800}
+.bar.ok b{color:var(--leaf-d)} .bar.no b{color:var(--coral-d)}
+.stack{display:grid;gap:16px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:760px){.split{grid-template-columns:1fr}}
+.hint{font-size:15px;color:var(--muted);margin:-8px 0 20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section data-screen-label="Colors">
+  <h2>Màu sắc</h2>
+  <p class="hint">Bấm thử — nút lún xuống đúng bằng độ dày cạnh.</p>
+  <div class="row">
+    <div class="cell"><button class="btn">Tiếp tục</button><span class="tag">leaf</span></div>
+    <div class="cell"><button class="btn sky">Bắt đầu</button><span class="tag">sky</span></div>
+    <div class="cell"><button class="btn sun">Nhận quà</button><span class="tag">sun</span></div>
+    <div class="cell"><button class="btn coral">Thử lại</button><span class="tag">coral</span></div>
+    <div class="cell"><button class="btn grape">Nâng cấp</button><span class="tag">grape</span></div>
+  </div>
+</section>
+
+<section data-screen-label="Variants">
+  <h2>Kiểu</h2>
+  <div class="row">
+    <div class="cell"><button class="btn shine">Kiểm tra</button><span class="tag">solid + shine</span></div>
+    <div class="cell"><button class="btn outline">Bỏ qua</button><span class="tag">outline</span></div>
+    <div class="cell"><button class="btn outline neutral">Để sau</button><span class="tag">outline neutral</span></div>
+    <div class="cell"><button class="btn ghost">Xem đáp án</button><span class="tag">ghost</span></div>
+    <div class="cell"><button class="btn" disabled>Kiểm tra</button><span class="tag">disabled</span></div>
+  </div>
+</section>
+
+<section data-screen-label="States">
+  <h2>Trạng thái</h2>
+  <div class="row">
+    <div class="cell"><button class="btn sky">Mặc định</button><span class="tag">default</span></div>
+    <div class="cell"><button class="btn sky" style="filter:brightness(1.06)">Hover</button><span class="tag">hover</span></div>
+    <div class="cell"><button class="btn sky is-pressed">Đang bấm</button><span class="tag">pressed</span></div>
+    <div class="cell"><button class="btn sky" style="outline:3px solid var(--sky);outline-offset:4px">Focus</button><span class="tag">focus</span></div>
+    <div class="cell"><button class="btn sky" disabled>Tắt</button><span class="tag">disabled</span></div>
+  </div>
+</section>
+
+<section data-screen-label="Sizes">
+  <h2>Kích thước</h2>
+  <div class="row">
+    <div class="cell"><button class="btn sm">Nhỏ</button><span class="tag">sm · 40</span></div>
+    <div class="cell"><button class="btn">Vừa</button><span class="tag">md · 52</span></div>
+    <div class="cell"><button class="btn lg">Lớn</button><span class="tag">lg · 62</span></div>
+  </div>
+</section>
+
+<section data-screen-label="Icon buttons">
+  <h2>Nút biểu tượng</h2>
+  <div class="row">
+    <div class="cell"><button class="btn icon" aria-label="play"><span class="glyph"></span></button><span class="tag">icon</span></div>
+    <div class="cell"><button class="btn icon sky" aria-label="audio"><span class="glyph dot"></span></button><span class="tag">icon sky</span></div>
+    <div class="cell"><button class="btn icon outline" aria-label="more"><span class="glyph diamond"></span></button><span class="tag">icon outline</span></div>
+    <div class="cell"><button class="btn round sun shine" aria-label="lesson"><span class="glyph diamond" style="width:22px;height:22px"></span></button><span class="tag">round · lesson</span></div>
+    <div class="cell"><button class="btn round grape shine" aria-label="lesson"><span class="glyph dot" style="width:24px;height:24px"></span></button><span class="tag">round</span></div>
+    <div class="cell"><button class="btn round" disabled aria-label="locked"><span class="glyph" style="width:20px;height:20px"></span></button><span class="tag">round locked</span></div>
+  </div>
+  <p class="hint" style="margin-top:16px">Biểu tượng hiện là hình khối giữ chỗ — thay bằng bộ icon của bạn.</p>
+</section>
+
+<section data-screen-label="Choices">
+  <h2>Ô lựa chọn</h2>
+  <p class="hint">Bấm để chọn.</p>
+  <div class="row" id="choices">
+    <button class="btn choice"><span class="key">1</span>Quả táo</button>
+    <button class="btn choice selected"><span class="key">2</span>Con mèo</button>
+    <button class="btn choice correct"><span class="key">3</span>Cái bàn</button>
+    <button class="btn choice wrong"><span class="key">4</span>Ngôi nhà</button>
+  </div>
+</section>
+
+<section data-screen-label="In context">
+  <h2>Trong ngữ cảnh</h2>
+  <div class="split">
+    <div class="bar ok"><b>Tuyệt vời!</b><button class="btn">Tiếp tục</button></div>
+    <div class="bar no"><b>Chưa đúng</b><button class="btn coral">Hiểu rồi</button></div>
+  </div>
+  <div class="stack" style="max-width:380px;margin-top:28px">
+    <button class="btn block sky lg">Bắt đầu học</button>
+    <button class="btn block outline">Tôi đã có tài khoản</button>
+  </div>
+</section>
+
+</div>
+<script>
+document.querySelectorAll('#choices .choice').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#choices .choice').forEach(x=>x.classList.remove('selected','correct','wrong'));
+  b.classList.add('selected');
+}));
+</script>
+</body>
+</html>

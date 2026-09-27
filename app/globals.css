@@ -18,9 +18,14 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-sans: var(--font-nunito);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-heading: var(--font-baloo);
+  --font-weight-normal: 600;
+  --font-weight-medium: 700;
+  --font-weight-semibold: 800;
+  --font-weight-bold: 800;
+  --font-weight-extrabold: 800;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -84,7 +89,7 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --chart-4: oklch(0.488 0.243 264.376);
   --chart-5: oklch(0.424 0.199 265.638);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
+  --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
@@ -139,11 +144,55 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   }
   body {
     @apply bg-background text-foreground;
+    font-weight: 700;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-extrabold;
   }
   button:not(:disabled), [role="button"]:not(:disabled) {
     cursor: pointer;
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer utilities {
+  .tabular-nums:not(.font-mono) {
+    font-family: var(--font-baloo);
+    font-weight: 800;
+  }
+}
+
+/* Keep the painted face separate from the press shadow, including while held. */
+@layer components {
+  .button-raised {
+    position: relative;
+    isolation: isolate;
+    --button-travel: var(--button-edge);
+    transition-property: filter;
+  }
+
+  .button-raised::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: inherit;
+    border: var(--button-face-border, 0px) solid var(--button-shade);
+    /* The shadow supplies the bottom edge while raised. */
+    border-bottom-width: 0;
+    background-color: var(--button-face);
+    box-shadow: 0 var(--button-travel) 0 var(--button-shade);
+  }
+
+  .button-raised:active:not(:disabled) {
+    translate: 0 var(--button-travel);
+  }
+
+  .button-raised:active:not(:disabled)::before {
+    box-shadow: none;
+    border-bottom-width: var(--button-face-border, 0px);
   }
 }

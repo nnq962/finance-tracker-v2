@@ -31,10 +31,10 @@ type TabsListProps = TabsListPrimitiveProps;
 
 function TabsList({ className, ...props }: TabsListProps) {
   return (
-    <TabsHighlightPrimitive className="absolute z-0 inset-0 border border-transparent rounded-md bg-background dark:border-input dark:bg-input/30 shadow-sm">
+    <TabsHighlightPrimitive className="absolute inset-0 z-0 rounded-[10px] bg-white shadow-[0_3px_0_#d6d2c8] dark:bg-[#36333d] dark:shadow-[0_3px_0_#25232b]">
       <TabsListPrimitive
         className={cn(
-          'bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px]',
+          'inline-flex w-fit items-center justify-center gap-1 rounded-[14px] bg-[#e7e4dd] p-1 dark:bg-[#44424a]',
           className,
         )}
         {...props}
@@ -50,7 +50,7 @@ function TabsTrigger({ className, ...props }: TabsTriggerProps) {
     <TabsHighlightItemPrimitive value={props.value} className="flex-1">
       <TabsTriggerPrimitive
         className={cn(
-          "data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring text-muted-foreground inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md w-full px-2 py-1 text-sm font-medium whitespace-nowrap transition-colors duration-500 ease-in-out focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+          "inline-flex w-full flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-[10px] border-0 px-4 pt-[11px] pb-[9px] font-heading text-xs leading-none font-extrabold tracking-[0.06em] uppercase text-[#8f8b98] transition-colors duration-150 hover:text-[#2b2a33] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[oklch(0.74_0.14_235)] data-[state=active]:text-[oklch(0.58_0.14_240)] disabled:pointer-events-none disabled:opacity-50 dark:text-[#a6a1af] dark:hover:text-white dark:data-[state=active]:text-[#71caff] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
           className,
         )}
         {...props}
