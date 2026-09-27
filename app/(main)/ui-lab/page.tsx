@@ -1,3 +1,4 @@
+import GradientWaves from "@/components/gradient-waves"
 import Link from "next/link"
 import {
   ArrowRightIcon,
@@ -117,6 +118,39 @@ export default function UiLabPage() {
             </div>
           </CardContent>
         </Card>
+      </section>
+
+      <section aria-labelledby="gradient-waves" className="space-y-4">
+        <div>
+          <h2 id="gradient-waves" className="text-xl font-semibold">Gradient Waves</h2>
+          <p className="text-sm text-muted-foreground">
+            Nền sóng chuyển động. Di chuyển chuột trên nền để thử hiệu ứng parallax.
+          </p>
+        </div>
+        <div className="relative h-[600px] w-full overflow-hidden rounded-xl bg-black">
+          <GradientWaves
+            horizonColor="#000000"
+            waveColor="#6366F1"
+            crestColor="#ffffff"
+            speed={0.4}
+            amplitude={4}
+            waveScale={0.6}
+            waveRatio={0.9}
+            swell={35}
+            turbulence={20}
+            tilt={1.11}
+            zoom={1}
+            height={5.5}
+            fogDepth={15}
+            detail="medium"
+            brightness={1}
+            opacity={1}
+            mouseInteraction
+            parallaxStrength={0.5}
+            grain
+            grainIntensity={0.05}
+          />
+        </div>
       </section>
 
       <section aria-labelledby="button-variants" className="space-y-4">
