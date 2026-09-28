@@ -480,12 +480,12 @@ export function AddDebtSheet({
             {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
             <div className="grid grid-cols-2 gap-2">
               <SheetClose asChild>
-                <Button type="button" variant="outline" size="lg" className="w-full" disabled={pending}>
+                <Button type="button" variant="outline" className="w-full" disabled={pending}>
                   <XIcon />
                   Huỷ
                 </Button>
               </SheetClose>
-              <Button type="submit" size="lg" className="w-full" disabled={pending || (!isOpening && activeAccounts.length === 0)}>
+              <Button type="submit" className="w-full" disabled={pending || (!isOpening && activeAccounts.length === 0)}>
                 <SaveIcon />
                 {pending ? "Đang lưu…" : "Lưu khoản nợ"}
               </Button>

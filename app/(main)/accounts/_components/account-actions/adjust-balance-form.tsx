@@ -246,7 +246,6 @@ export function AdjustBalanceForm({
             <Button
               type="button"
               variant="outline"
-              size="lg"
               className="w-full"
               disabled={isPending}
             >
@@ -256,7 +255,6 @@ export function AdjustBalanceForm({
           </SheetClose>
           <Button
             type="submit"
-            size="lg"
             className="w-full"
             disabled={isPending || !adjustmentType || !categoryId}
           >
