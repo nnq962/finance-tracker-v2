@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { LoaderCircleIcon, PencilIcon, Trash2Icon } from "lucide-react"
+import { LoaderCircleIcon, PencilIcon, Trash2Icon, XIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import {
   SheetContent,
+  SheetClose,
   SheetDescription,
   SheetFooter,
   SheetHeader,
@@ -137,7 +138,7 @@ export function TransactionDetailsSheet({
   }
 
   return (
-    <SheetContent onOpenAutoFocus={(event) => event.preventDefault()} className="data-[side=right]:w-full sm:max-w-md!">
+    <SheetContent onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
       <SheetHeader>
         <SheetTitle>Chi tiết giao dịch</SheetTitle>
         <SheetDescription>
@@ -196,7 +197,15 @@ export function TransactionDetailsSheet({
 
       <SheetFooter>
         {transaction.source === "debt" ? (
-          <Button asChild><Link href={`/debts?debt=${encodeURIComponent(transaction.debtId ?? "")}`}>Quản lý tại Nợ & Cho vay</Link></Button>
+          <div className="grid grid-cols-2 gap-2">
+            <SheetClose asChild>
+              <Button type="button" variant="outline">
+                <XIcon />
+                Đóng
+              </Button>
+            </SheetClose>
+            <Button asChild><Link href={`/debts?debt=${encodeURIComponent(transaction.debtId ?? "")}`}>Quản lý tại Nợ & Cho vay</Link></Button>
+          </div>
         ) : <div className="grid grid-cols-2 gap-2">
           <Popover
             open={deleteOpen}

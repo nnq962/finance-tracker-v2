@@ -9,6 +9,7 @@ import {
   LoaderCircleIcon,
   SaveIcon,
   WalletCardsIcon,
+  XIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -40,7 +41,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { InputGroupAddon } from "@/components/ui/input-group"
-import { SheetFooter } from "@/components/ui/sheet"
+import { SheetClose, SheetFooter } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type {
@@ -342,19 +343,32 @@ export function AccountForm({
 
       <SheetFooter>
         {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
-        <Button
-          type="submit"
-          size="default"
-          className="w-full"
-          disabled={isPending}
-        >
-          {isPending ? (
-            <LoaderCircleIcon className="animate-spin" />
-          ) : (
-            <SaveIcon />
-          )}
-          {isPending ? "Đang lưu..." : submitLabel}
-        </Button>
+        <div className="grid grid-cols-2 gap-2">
+          <SheetClose asChild>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              disabled={isPending}
+            >
+              <XIcon />
+              Huỷ
+            </Button>
+          </SheetClose>
+          <Button
+            type="submit"
+            size="default"
+            className="w-full"
+            disabled={isPending}
+          >
+            {isPending ? (
+              <LoaderCircleIcon className="animate-spin" />
+            ) : (
+              <SaveIcon />
+            )}
+            {isPending ? "Đang lưu..." : submitLabel}
+          </Button>
+        </div>
       </SheetFooter>
     </form>
   )

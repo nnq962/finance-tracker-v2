@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { LoaderCircleIcon, SaveIcon } from "lucide-react"
+import { LoaderCircleIcon, SaveIcon, XIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { CurrencyInput } from "@/components/forms/currency-input"
@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { SheetFooter } from "@/components/ui/sheet"
+import { SheetClose, SheetFooter } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 import type { AccountActionResult } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
@@ -241,19 +241,33 @@ export function AdjustBalanceForm({
 
       <SheetFooter>
         {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
-        <Button
-          type="submit"
-          size="lg"
-          className="w-full"
-          disabled={isPending || !adjustmentType || !categoryId}
-        >
-          {isPending ? (
-            <LoaderCircleIcon className="animate-spin" />
-          ) : (
-            <SaveIcon />
-          )}
-          {isPending ? "Đang lưu..." : "Lưu điều chỉnh"}
-        </Button>
+        <div className="grid grid-cols-2 gap-2">
+          <SheetClose asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="w-full"
+              disabled={isPending}
+            >
+              <XIcon />
+              Huỷ
+            </Button>
+          </SheetClose>
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full"
+            disabled={isPending || !adjustmentType || !categoryId}
+          >
+            {isPending ? (
+              <LoaderCircleIcon className="animate-spin" />
+            ) : (
+              <SaveIcon />
+            )}
+            {isPending ? "Đang lưu..." : "Lưu điều chỉnh"}
+          </Button>
+        </div>
       </SheetFooter>
     </form>
   )

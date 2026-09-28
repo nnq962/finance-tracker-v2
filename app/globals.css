@@ -143,7 +143,6 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
     width: 0;
   }
   body {
-    position: relative;
     @apply bg-background text-foreground;
     font-weight: 700;
   }

@@ -1,13 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { PencilIcon, PlusIcon, SaveIcon } from "lucide-react"
+import { PencilIcon, PlusIcon, SaveIcon, XIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import {
-  Sheet, SheetContent, SheetDescription, SheetFooter,
+  Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter,
   SheetHeader, SheetTitle, SheetTrigger,
 } from "@/components/ui/sheet"
 import type { Contact, NewContact } from "../_types/debt"
@@ -40,7 +40,7 @@ export function AddContactSheet({ contact, onAddContact, open: controlledOpen, o
           {contact ? <PencilIcon /> : <><PlusIcon />Thêm người</>}
         </Button>
       </SheetTrigger> : null}
-      <SheetContent showCloseButton={!pending} onOpenAutoFocus={(event) => event.preventDefault()} className="data-[side=right]:w-full sm:max-w-md!" onCloseAutoFocus={(event) => {
+      <SheetContent showCloseButton={!pending} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!" onCloseAutoFocus={(event) => {
         if (returnFocusRef?.current) {
           event.preventDefault()
           returnFocusRef.current.focus()
@@ -97,7 +97,15 @@ export function AddContactSheet({ contact, onAddContact, open: controlledOpen, o
           </fieldset>
           <SheetFooter>
             {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
-            <Button type="submit" disabled={pending}><SaveIcon />{pending ? "Đang lưu…" : contact ? "Lưu thay đổi" : "Lưu người liên hệ"}</Button>
+            <div className="grid grid-cols-2 gap-2">
+              <SheetClose asChild>
+                <Button type="button" variant="outline" disabled={pending}>
+                  <XIcon />
+                  Huỷ
+                </Button>
+              </SheetClose>
+              <Button type="submit" disabled={pending}><SaveIcon />{pending ? "Đang lưu…" : contact ? "Lưu thay đổi" : "Lưu người liên hệ"}</Button>
+            </div>
           </SheetFooter>
         </form>
       </SheetContent>

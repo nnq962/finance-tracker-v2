@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {
   Drawer,
+  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerHeader,
@@ -56,9 +57,8 @@ export function AccountActionsMenu({
   const [deleteOpen, setDeleteOpen] = React.useState(false)
   const [drawerOpen, setDrawerOpen] = React.useState(false)
   const pendingDrawerAction = React.useRef<(() => void) | null>(null)
-  const runAfterDrawerCloses = (action: () => void) => {
+  const queueDrawerAction = (action: () => void) => {
     pendingDrawerAction.current = action
-    setDrawerOpen(false)
   }
   const isLocked = account.status === "archived"
 
@@ -90,36 +90,81 @@ export function AccountActionsMenu({
         <Drawer
           open={drawerOpen}
           onOpenChange={setDrawerOpen}
-          onOpenChangeComplete={(open) => {
+          onAnimationEnd={(open) => {
             if (!open) {
               const action = pendingDrawerAction.current
               pendingDrawerAction.current = null
               action?.()
             }
           }}
-          swipeDirection="down"
-          showSwipeHandle
+          direction="bottom"
         >
-          <DrawerTrigger render={trigger} disabled={isPending} aria-label={`Mở menu tài khoản ${account.name}`} />
-          <DrawerContent finalFocus={() => pendingDrawerAction.current ? false : undefined}>
+          <DrawerTrigger
+            asChild
+            disabled={isPending}
+            aria-label={`Mở menu tài khoản ${account.name}`}
+          >
+            {trigger ?? (
+              <Button variant="ghost" size="icon">
+                <EllipsisIcon />
+              </Button>
+            )}
+          </DrawerTrigger>
+          <DrawerContent
+            onCloseAutoFocus={(event) => {
+              if (pendingDrawerAction.current) {
+                event.preventDefault()
+              }
+            }}
+          >
             <DrawerHeader>
               <DrawerTitle>{account.name}</DrawerTitle>
               <DrawerDescription>Chọn thao tác với tài khoản này.</DrawerDescription>
             </DrawerHeader>
             <div className="grid gap-3 overflow-y-auto p-4">
-              <Button variant="ghost" className="justify-start" disabled={isLocked || isPending} onClick={() => runAfterDrawerCloses(() => setEditOpen(true))}>
-                <PencilIcon />Chỉnh sửa
-              </Button>
-              <Button variant="ghost" className="justify-start" disabled={isLocked || isPending} onClick={() => runAfterDrawerCloses(() => setAdjustBalanceOpen(true))}>
-                <CircleDollarSignIcon />Điều chỉnh số dư
-              </Button>
-              <Button variant="ghost" className="justify-start" disabled={isPending} onClick={() => runAfterDrawerCloses(handleArchivedChange)}>
-                {isLocked ? <CirclePlayIcon /> : <CirclePauseIcon />}
-                {isLocked ? "Tiếp tục sử dụng" : "Ngừng sử dụng"}
-              </Button>
-              <Button variant="ghost" className="justify-start text-[#c8393a] dark:text-[#ff9b93]" disabled={isPending} onClick={() => runAfterDrawerCloses(() => setDeleteOpen(true))}>
-                <Trash2Icon />Xoá tài khoản
-              </Button>
+              <DrawerClose asChild>
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  disabled={isLocked || isPending}
+                  onClick={() => queueDrawerAction(() => setEditOpen(true))}
+                >
+                  <PencilIcon />Chỉnh sửa
+                </Button>
+              </DrawerClose>
+              <DrawerClose asChild>
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  disabled={isLocked || isPending}
+                  onClick={() =>
+                    queueDrawerAction(() => setAdjustBalanceOpen(true))
+                  }
+                >
+                  <CircleDollarSignIcon />Điều chỉnh số dư
+                </Button>
+              </DrawerClose>
+              <DrawerClose asChild>
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  disabled={isPending}
+                  onClick={() => queueDrawerAction(handleArchivedChange)}
+                >
+                  {isLocked ? <CirclePlayIcon /> : <CirclePauseIcon />}
+                  {isLocked ? "Tiếp tục sử dụng" : "Ngừng sử dụng"}
+                </Button>
+              </DrawerClose>
+              <DrawerClose asChild>
+                <Button
+                  variant="ghost"
+                  className="justify-start text-[#c8393a] dark:text-[#ff9b93]"
+                  disabled={isPending}
+                  onClick={() => queueDrawerAction(() => setDeleteOpen(true))}
+                >
+                  <Trash2Icon />Xoá tài khoản
+                </Button>
+              </DrawerClose>
             </div>
           </DrawerContent>
         </Drawer>

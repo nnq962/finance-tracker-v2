@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { CheckIcon } from "lucide-react"
+import { CheckIcon, XIcon } from "lucide-react"
 import { toast } from "sonner"
 import { AccountLogo } from "@/components/account-logo"
 import { CurrencyInput } from "@/components/forms/currency-input"
@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 import type { Account } from "@/lib/accounts/types"
 import { getLocalDateTime } from "@/lib/date-time"
@@ -63,7 +63,7 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
   return (
     <Sheet open={open} onOpenChange={changeOpen}>
       {typeof trigger === "function" ? trigger(() => changeOpen(true)) : <SheetTrigger asChild>{trigger}</SheetTrigger>}
-      <SheetContent showCloseButton={!pending} className="data-[side=right]:w-full sm:max-w-md!" onOpenAutoFocus={(event) => event.preventDefault()} onCloseAutoFocus={(event) => {
+      <SheetContent showCloseButton={!pending} className="gap-0 data-[side=right]:w-full sm:max-w-md!" onOpenAutoFocus={(event) => event.preventDefault()} onCloseAutoFocus={(event) => {
         if (returnFocusRef?.current) {
           event.preventDefault()
           returnFocusRef.current.focus()
@@ -151,7 +151,17 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
               {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
             </FieldGroup>
           </fieldset>
-          <SheetFooter><Button type="submit" disabled={pending || !amount || amount <= 0 || !accountId || !paidAt}><CheckIcon />{pending ? "Đang lưu…" : payment ? "Lưu thay đổi" : isCollection ? "Xác nhận đã thu" : "Xác nhận đã trả"}</Button></SheetFooter>
+          <SheetFooter>
+            <div className="grid grid-cols-2 gap-2">
+              <SheetClose asChild>
+                <Button type="button" variant="outline" disabled={pending}>
+                  <XIcon />
+                  Huỷ
+                </Button>
+              </SheetClose>
+              <Button type="submit" disabled={pending || !amount || amount <= 0 || !accountId || !paidAt}><CheckIcon />{pending ? "Đang lưu…" : payment ? "Lưu thay đổi" : isCollection ? "Xác nhận đã thu" : "Xác nhận đã trả"}</Button>
+            </div>
+          </SheetFooter>
         </form>
       </SheetContent>
     </Sheet>

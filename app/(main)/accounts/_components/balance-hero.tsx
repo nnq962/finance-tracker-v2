@@ -61,9 +61,6 @@ export function BalanceHero({ summary, accounts }: BalanceHeroProps) {
           <div className="@container/distribution min-w-0">
             <div className="mb-3 flex items-center justify-between gap-4 text-sm text-muted-foreground">
               <h2 className="text-sm font-semibold">Phân bổ theo tài khoản</h2>
-              <span className="shrink-0 text-xs @min-[48rem]/hero:hidden">
-                Cập nhật {summary.updatedAt}
-              </span>
             </div>
             {distribution.length > 0 ? (
               <>

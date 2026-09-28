@@ -40,14 +40,14 @@ export function AddTransactionSheet({
           Thêm giao dịch
         </Button>
       </SheetTrigger>
-      <SheetContent onOpenAutoFocus={(event) => event.preventDefault()} className="data-[side=right]:w-full sm:max-w-md!">
+      <SheetContent onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
         <SheetHeader>
           <SheetTitle>Giao dịch mới</SheetTitle>
           <SheetDescription>
             Ghi lại dòng tiền mới vào sổ tài chính của bạn.
           </SheetDescription>
         </SheetHeader>
-        <div className="px-4">
+        <div className="px-4 pb-4">
           <TransactionKindSelector value={kind} onValueChange={setKind} />
         </div>
         <TransactionForm

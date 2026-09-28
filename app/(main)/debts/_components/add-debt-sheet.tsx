@@ -6,6 +6,7 @@ import {
   ArrowUpRightIcon,
   PlusIcon,
   SaveIcon,
+  XIcon,
 } from "lucide-react"
 
 import { AccountLogo } from "@/components/account-logo"
@@ -46,6 +47,7 @@ import {
 } from "@/components/ui/select"
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
@@ -150,7 +152,7 @@ export function AddDebtSheet({
         </AnimatedButton>}
       </SheetTrigger>
       <SheetContent
-        className="data-[side=right]:w-full sm:max-w-md!"
+        className="gap-0 data-[side=right]:w-full sm:max-w-md!"
         showCloseButton={!pending}
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
@@ -476,10 +478,18 @@ export function AddDebtSheet({
 
           <SheetFooter>
             {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
-            <Button type="submit" size="lg" className="w-full" disabled={pending || (!isOpening && activeAccounts.length === 0)}>
-              <SaveIcon />
-              {pending ? "Đang lưu…" : "Lưu khoản nợ"}
-            </Button>
+            <div className="grid grid-cols-2 gap-2">
+              <SheetClose asChild>
+                <Button type="button" variant="outline" size="lg" className="w-full" disabled={pending}>
+                  <XIcon />
+                  Huỷ
+                </Button>
+              </SheetClose>
+              <Button type="submit" size="lg" className="w-full" disabled={pending || (!isOpening && activeAccounts.length === 0)}>
+                <SaveIcon />
+                {pending ? "Đang lưu…" : "Lưu khoản nợ"}
+              </Button>
+            </div>
           </SheetFooter>
         </form>
       </SheetContent>
