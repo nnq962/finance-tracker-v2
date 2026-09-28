@@ -170,6 +170,8 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
     position: relative;
     isolation: isolate;
     --button-travel: var(--button-edge);
+    /* Reserve the lower edge inside the layout slot. */
+    translate: 0 calc(-1 * var(--button-travel));
     transition-property: filter;
   }
 
@@ -187,11 +189,11 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
     box-shadow: 0 var(--button-travel) 0 var(--button-shade);
   }
 
-  .button-raised:active:not(:disabled) {
-    translate: 0 var(--button-travel);
+  .button-raised:is(:active, [aria-expanded="true"], [aria-pressed="true"], [data-state="open"], [data-state="on"]):not(:disabled) {
+    translate: 0 0;
   }
 
-  .button-raised:active:not(:disabled)::before {
+  .button-raised:is(:active, [aria-expanded="true"], [aria-pressed="true"], [data-state="open"], [data-state="on"]):not(:disabled)::before {
     box-shadow: none;
     border-bottom-width: var(--button-face-border, 0px);
   }

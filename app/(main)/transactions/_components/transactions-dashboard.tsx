@@ -14,7 +14,6 @@ import {
 import type {
   Transaction,
   TransactionFilter,
-  TransactionPeriod,
   TransactionSearchFilters,
 } from "../_types/transaction"
 import { AddTransactionButton } from "./add-transaction-button"
@@ -48,7 +47,7 @@ export function TransactionsDashboard({
     () => getLastNavigableDateKey(transactions, todayDateKey),
     [transactions, todayDateKey],
   )
-  const [period, setPeriod] = React.useState<TransactionPeriod>("month")
+  const period = "month" as const
   const [filter, setFilter] = React.useState<TransactionFilter>("all")
   const [searchFilters, setSearchFilters] =
     React.useState<TransactionSearchFilters>(initialSearchFilters)
@@ -100,17 +99,12 @@ export function TransactionsDashboard({
         categoryGroups={categoryGroups}
         filter={filter}
         searchFilters={searchFilters}
-        period={period}
         rangeLabel={periodData.rangeLabel}
         contextLabel={periodData.contextLabel}
         transactionCount={visibleTransactions.length}
         canGoNext={!periodData.isLatest}
         onFilterChange={setFilter}
         onSearchFiltersChange={setSearchFilters}
-        onPeriodChange={(nextPeriod) => {
-          setPeriod(nextPeriod)
-          setAnchorDateKey(null)
-        }}
         onPrevious={() =>
           setAnchorDateKey(shiftPeriodAnchor(effectiveAnchorDateKey, period, -1))
         }
@@ -134,6 +128,7 @@ export function TransactionsDashboard({
       <TransactionsView
         accounts={accounts}
         categoryGroups={categoryGroups}
+        todayDateKey={todayDateKey}
         transactions={visibleTransactions}
       />
     </>

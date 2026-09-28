@@ -7,13 +7,13 @@ const pressEffect =
   "button-raised bg-transparent text-[var(--button-text)] hover:brightness-105 disabled:[--button-face:#e8e6e1] disabled:[--button-text:#aaa6ae] disabled:[--button-shade:#d4d1ca] disabled:brightness-100"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-border font-heading text-sm leading-none font-extrabold tracking-[0.06em] uppercase whitespace-nowrap [--button-edge:4px] transition-[background-color,border-color,color,filter] duration-[80ms] outline-none select-none disabled:pointer-events-none aria-invalid:border-[#ff645f] aria-invalid:ring-3 aria-invalid:ring-[#ffe5e1] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-border font-heading text-sm leading-none font-extrabold tracking-[0.06em] uppercase whitespace-nowrap [--button-edge:3px] transition-[background-color,border-color,color,filter] duration-[80ms] outline-none select-none disabled:pointer-events-none aria-invalid:border-[#ff645f] aria-invalid:ring-3 aria-invalid:ring-[#ffe5e1] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
         default: `[--button-face:#6ecc49] [--button-shade:#3e9727] [--button-text:#fff] ${pressEffect}`,
         outline:
-          `[--button-face-border:2px] aria-expanded:[--button-face:#d6f4ff] [--button-face:#fff] [--button-shade:#e7e4dd] [--button-text:#0083c4] ${pressEffect}`,
+          `[--button-face-border:2px] aria-expanded:[--button-face:#d6f4ff] aria-pressed:[--button-face:#d6f4ff] [--button-face:#fff] [--button-shade:#e7e4dd] [--button-text:#0083c4] ${pressEffect}`,
         secondary:
           `[--button-face:#38b8f6] [--button-shade:#0083c4] [--button-text:#fff] ${pressEffect}`,
         ghost:

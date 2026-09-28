@@ -10,12 +10,14 @@ import { TransactionDateGroup } from "./transaction-date-group"
 type TransactionListProps = {
   accounts: Account[]
   categoryGroups: CategoryGroup[]
+  todayDateKey: string
   transactions: Transaction[]
 }
 
 export function TransactionList({
   accounts,
   categoryGroups,
+  todayDateKey,
   transactions,
 }: TransactionListProps) {
   const groups = groupTransactionsByDate(transactions)
@@ -35,13 +37,15 @@ export function TransactionList({
   }
 
   return (
-    <div className="relative space-y-6 before:absolute before:inset-y-2 before:left-[4.5px] before:w-px before:bg-muted-foreground/35">
-      {groups.map((group) => (
+    <div>
+      {groups.map((group, index) => (
         <TransactionDateGroup
           accounts={accounts}
           categoryGroups={categoryGroups}
           key={group.dateKey}
           group={group}
+          isToday={group.dateKey === todayDateKey}
+          showConnector={index < groups.length - 1}
         />
       ))}
     </div>

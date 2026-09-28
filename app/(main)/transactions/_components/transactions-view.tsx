@@ -7,12 +7,14 @@ import { TransactionList } from "./transaction-list"
 type TransactionsViewProps = {
   accounts: Account[]
   categoryGroups: CategoryGroup[]
+  todayDateKey: string
   transactions: Transaction[]
 }
 
 export function TransactionsView({
   accounts,
   categoryGroups,
+  todayDateKey,
   transactions,
 }: TransactionsViewProps) {
   return (
@@ -20,6 +22,7 @@ export function TransactionsView({
       <TransactionList
         accounts={accounts}
         categoryGroups={categoryGroups}
+        todayDateKey={todayDateKey}
         transactions={transactions}
       />
     </section>

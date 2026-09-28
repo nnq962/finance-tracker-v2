@@ -1,11 +1,18 @@
 "use client"
 
 import * as React from "react"
-import { RotateCcwIcon, SearchIcon, XIcon } from "lucide-react"
+import { ListFilterIcon, RotateCcwIcon, SearchIcon, XIcon } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group"
 import {
   Popover,
   PopoverContent,
@@ -24,20 +31,17 @@ import type { CategoryGroup } from "@/lib/categories/types"
 
 import type {
   TransactionFilter,
-  TransactionPeriod,
   TransactionSearchFilters,
 } from "../_types/transaction"
 import { TransactionPeriodFilter } from "./transaction-period-filter"
 
-const filters: { label: string; value: TransactionFilter }[] = [
-  { label: "Tất cả", value: "all" },
+const filters: { label: string; value: Exclude<TransactionFilter, "all"> }[] = [
   { label: "Chi tiền", value: "expense" },
   { label: "Thu tiền", value: "income" },
   { label: "Chuyển khoản", value: "transfer" },
 ]
 
 type SearchFilterDraft = {
-  query: string
   minAmount: string
   maxAmount: string
   accountIds: string[]
@@ -48,7 +52,6 @@ function createSearchFilterDraft(
   filters: TransactionSearchFilters,
 ): SearchFilterDraft {
   return {
-    query: filters.query,
     minAmount: filters.minAmount?.toString() ?? "",
     maxAmount: filters.maxAmount?.toString() ?? "",
     accountIds: [...filters.accountIds],
@@ -65,9 +68,10 @@ function parseAmount(value: string) {
 
 function createSearchFilters(
   draft: SearchFilterDraft,
+  current: TransactionSearchFilters,
 ): TransactionSearchFilters {
   return {
-    query: draft.query.trim(),
+    query: current.query,
     minAmount: parseAmount(draft.minAmount),
     maxAmount: parseAmount(draft.maxAmount),
     accountIds: [...draft.accountIds],
@@ -80,14 +84,12 @@ type TransactionToolbarProps = {
   categoryGroups: CategoryGroup[]
   filter: TransactionFilter
   searchFilters: TransactionSearchFilters
-  period: TransactionPeriod
   rangeLabel: string
   contextLabel: string
   transactionCount: number
   canGoNext: boolean
   onFilterChange: (filter: TransactionFilter) => void
   onSearchFiltersChange: (filters: TransactionSearchFilters) => void
-  onPeriodChange: (period: TransactionPeriod) => void
   onPrevious: () => void
   onNext: () => void
   onReset: () => void
@@ -98,19 +100,17 @@ export function TransactionToolbar({
   categoryGroups,
   filter,
   searchFilters,
-  period,
   rangeLabel,
   contextLabel,
   transactionCount,
   canGoNext,
   onFilterChange,
   onSearchFiltersChange,
-  onPeriodChange,
   onPrevious,
   onNext,
   onReset,
 }: TransactionToolbarProps) {
-  const [isSearchOpen, setIsSearchOpen] = React.useState(false)
+  const [isFilterOpen, setIsFilterOpen] = React.useState(false)
   const [draft, setDraft] = React.useState(() =>
     createSearchFilterDraft(searchFilters),
   )
@@ -121,14 +121,21 @@ export function TransactionToolbar({
     (group) => group.type === "income",
   )
 
-  function handleSearchOpenChange(open: boolean) {
+  const activeFilterCount =
+    Number(filter !== "all") +
+    Number(searchFilters.minAmount !== null) +
+    Number(searchFilters.maxAmount !== null) +
+    searchFilters.accountIds.length +
+    searchFilters.categoryGroupIds.length
+
+  function handleFilterOpenChange(open: boolean) {
     if (open) setDraft(createSearchFilterDraft(searchFilters))
-    setIsSearchOpen(open)
+    setIsFilterOpen(open)
   }
 
   function updateSearchFilterDraft(nextDraft: SearchFilterDraft) {
     setDraft(nextDraft)
-    onSearchFiltersChange(createSearchFilters(nextDraft))
+    onSearchFiltersChange(createSearchFilters(nextDraft, searchFilters))
   }
 
   function updateCategoryGroupSelection(
@@ -140,12 +147,11 @@ export function TransactionToolbar({
         .filter((group) => group.type === type)
         .map((group) => group.id),
     )
-
     updateSearchFilterDraft({
       ...draft,
       categoryGroupIds: [
         ...draft.categoryGroupIds.filter(
-          (groupId) => !groupIdsForType.has(groupId),
+          (selectedId) => !groupIdsForType.has(selectedId),
         ),
         ...selectedIds,
       ],
@@ -154,69 +160,63 @@ export function TransactionToolbar({
 
   return (
     <section
-      className="space-y-2 xl:space-y-4"
+      className="space-y-4"
       aria-label="Điều khiển giao dịch"
     >
-      <div className="flex flex-col gap-2 xl:flex-row xl:items-start xl:justify-between xl:gap-4">
-        <div className="min-w-0 space-y-2">
-          <div className="overflow-x-auto pb-1">
-            <ToggleGroup
-              type="single"
-              variant="outline"
-              size="lg"
-              value={filter}
-              onValueChange={(value) => {
-                if (value) onFilterChange(value as TransactionFilter)
-              }}
-              aria-label="Lọc loại giao dịch"
-            >
-              {filters.map((item) => (
-                <ToggleGroupItem
-                  key={item.value}
-                  value={item.value}
-                  aria-label={item.label}
-                  className="bg-white hover:bg-white data-[state=on]:bg-muted data-[state=on]:hover:bg-muted dark:bg-transparent dark:hover:bg-muted dark:data-[state=on]:bg-muted"
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <label htmlFor="transaction-quick-search" className="sr-only">
+            Tìm giao dịch
+          </label>
+          <InputGroup className="min-w-0 max-w-md flex-1">
+            <InputGroupAddon>
+              <SearchIcon aria-hidden="true" />
+            </InputGroupAddon>
+            <InputGroupInput
+              id="transaction-quick-search"
+              type="text"
+              inputMode="search"
+              value={searchFilters.query}
+              onChange={(event) =>
+                onSearchFiltersChange({
+                  ...searchFilters,
+                  query: event.target.value,
+                })
+              }
+              placeholder="Tìm giao dịch..."
+            />
+            {searchFilters.query ? (
+              <InputGroupAddon align="inline-end">
+                <InputGroupButton
+                  size="icon-xs"
+                  aria-label="Xóa tìm kiếm"
+                  onClick={() =>
+                    onSearchFiltersChange({ ...searchFilters, query: "" })
+                  }
                 >
-                  {item.label}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          </div>
+                  <XIcon />
+                </InputGroupButton>
+              </InputGroupAddon>
+            ) : null}
+          </InputGroup>
 
-          <p className="hidden items-center gap-1.5 text-sm text-muted-foreground xl:flex">
-            <span className="font-medium text-foreground">
-              {transactionCount} giao dịch
-            </span>
-            <span aria-hidden="true">·</span>
-            <span>{contextLabel}</span>
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 xl:justify-end xl:overflow-visible xl:pb-0">
-          <TransactionPeriodFilter
-            period={period}
-            rangeLabel={rangeLabel}
-            canGoNext={canGoNext}
-            onPeriodChange={onPeriodChange}
-            onPrevious={onPrevious}
-            onNext={onNext}
-          />
-
-          <Popover open={isSearchOpen} onOpenChange={handleSearchOpenChange}>
+          <Popover open={isFilterOpen} onOpenChange={handleFilterOpenChange}>
             <PopoverTrigger asChild>
               <Button
                 type="button"
                 variant="outline"
-                size="icon-lg"
                 className="shrink-0"
-                aria-label="Tìm kiếm và lọc giao dịch"
-                title="Tìm kiếm và lọc giao dịch"
+                aria-label={activeFilterCount ? `Bộ lọc, ${activeFilterCount} điều kiện đang áp dụng` : "Bộ lọc"}
               >
-                <SearchIcon />
+                <ListFilterIcon />
+                Bộ lọc
+                {activeFilterCount > 0 ? (
+                  <Badge variant="secondary">{activeFilterCount}</Badge>
+                ) : null}
               </Button>
             </PopoverTrigger>
             <PopoverContent
-              align="end"
+              align="start"
               sideOffset={8}
               collisionPadding={16}
               className="max-h-[var(--radix-popover-content-available-height)] w-[min(28rem,calc(100vw-2rem))] overflow-y-auto"
@@ -224,38 +224,44 @@ export function TransactionToolbar({
               <div className="space-y-5 p-1">
                 <div className="flex items-start justify-between gap-4">
                   <PopoverHeader>
-                    <PopoverTitle>Tìm kiếm & lọc</PopoverTitle>
+                    <PopoverTitle>Bộ lọc giao dịch</PopoverTitle>
                     <PopoverDescription>
-                      Lọc giao dịch trong kỳ đang chọn.
+                      Lọc giao dịch trong tháng đang xem.
                     </PopoverDescription>
                   </PopoverHeader>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    aria-label="Đóng tìm kiếm và lọc"
-                    onClick={() => setIsSearchOpen(false)}
+                    aria-label="Đóng bộ lọc"
+                    onClick={() => setIsFilterOpen(false)}
                   >
                     <XIcon />
                   </Button>
                 </div>
 
                 <FieldGroup>
-                  <Field>
-                    <FieldLabel htmlFor="transaction-search-query">
-                      Từ khóa
-                    </FieldLabel>
-                    <Input
-                      id="transaction-search-query"
-                      value={draft.query}
-                      onChange={(event) =>
-                        updateSearchFilterDraft({
-                          ...draft,
-                          query: event.target.value,
-                        })
+                  <Field aria-label="Lọc loại giao dịch">
+                    <FieldLabel>Loại giao dịch</FieldLabel>
+                    <ToggleGroup
+                      type="single"
+                      size="sm"
+                      value={filter === "all" ? "" : filter}
+                      onValueChange={(value) =>
+                        onFilterChange(value ? (value as TransactionFilter) : "all")
                       }
-                      placeholder="Ăn trưa, Netflix..."
-                    />
+                      className="flex-wrap"
+                      aria-label="Lọc loại giao dịch"
+                    >
+                      {filters.map((item) => (
+                        <ToggleGroupItem
+                          key={item.value}
+                          value={item.value}
+                        >
+                          {item.label}
+                        </ToggleGroupItem>
+                      ))}
+                    </ToggleGroup>
                   </Field>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -299,11 +305,10 @@ export function TransactionToolbar({
                     </Field>
                   </div>
 
-                  <Field>
+                  <Field aria-label="Lọc theo tài khoản">
                     <FieldLabel>Tài khoản</FieldLabel>
                     <ToggleGroup
                       type="multiple"
-                      variant="outline"
                       size="sm"
                       value={draft.accountIds}
                       onValueChange={(accountIds) =>
@@ -316,7 +321,6 @@ export function TransactionToolbar({
                         <ToggleGroupItem
                           key={account.id}
                           value={account.id}
-                          aria-label={account.name}
                         >
                           {account.name}
                         </ToggleGroupItem>
@@ -324,22 +328,16 @@ export function TransactionToolbar({
                     </ToggleGroup>
                   </Field>
 
-                  <Field>
+                  <Field aria-label="Lọc theo hạng mục chi">
                     <FieldLabel>Hạng mục chi</FieldLabel>
                     <ToggleGroup
                       type="multiple"
-                      variant="outline"
                       size="sm"
                       value={draft.categoryGroupIds.filter((groupId) =>
-                        expenseCategoryGroups.some(
-                          (group) => group.id === groupId,
-                        ),
+                        expenseCategoryGroups.some((group) => group.id === groupId),
                       )}
                       onValueChange={(categoryGroupIds) =>
-                        updateCategoryGroupSelection(
-                          "expense",
-                          categoryGroupIds,
-                        )
+                        updateCategoryGroupSelection("expense", categoryGroupIds)
                       }
                       className="flex-wrap"
                       aria-label="Lọc theo hạng mục chi"
@@ -348,7 +346,6 @@ export function TransactionToolbar({
                         <ToggleGroupItem
                           key={group.id}
                           value={group.id}
-                          aria-label={group.name}
                         >
                           {group.name}
                         </ToggleGroupItem>
@@ -356,22 +353,16 @@ export function TransactionToolbar({
                     </ToggleGroup>
                   </Field>
 
-                  <Field>
+                  <Field aria-label="Lọc theo hạng mục thu">
                     <FieldLabel>Hạng mục thu</FieldLabel>
                     <ToggleGroup
                       type="multiple"
-                      variant="outline"
                       size="sm"
                       value={draft.categoryGroupIds.filter((groupId) =>
-                        incomeCategoryGroups.some(
-                          (group) => group.id === groupId,
-                        ),
+                        incomeCategoryGroups.some((group) => group.id === groupId),
                       )}
                       onValueChange={(categoryGroupIds) =>
-                        updateCategoryGroupSelection(
-                          "income",
-                          categoryGroupIds,
-                        )
+                        updateCategoryGroupSelection("income", categoryGroupIds)
                       }
                       className="flex-wrap"
                       aria-label="Lọc theo hạng mục thu"
@@ -380,7 +371,6 @@ export function TransactionToolbar({
                         <ToggleGroupItem
                           key={group.id}
                           value={group.id}
-                          aria-label={group.name}
                         >
                           {group.name}
                         </ToggleGroupItem>
@@ -391,22 +381,30 @@ export function TransactionToolbar({
               </div>
             </PopoverContent>
           </Popover>
+        </div>
 
+        <div className="flex items-center gap-2">
+          <TransactionPeriodFilter
+            rangeLabel={rangeLabel}
+            canGoNext={canGoNext}
+            onPrevious={onPrevious}
+            onNext={onNext}
+          />
           <Button
             type="button"
             variant="outline"
-            size="icon-lg"
+            size="icon"
             className="shrink-0"
             onClick={onReset}
-            aria-label="Đặt lại kỳ và bộ lọc"
-            title="Đặt lại kỳ và bộ lọc"
+            aria-label="Đặt lại tháng, tìm kiếm và bộ lọc"
+            title="Đặt lại tháng, tìm kiếm và bộ lọc"
           >
             <RotateCcwIcon />
           </Button>
         </div>
       </div>
 
-      <p className="flex items-center gap-1.5 text-sm text-muted-foreground xl:hidden">
+      <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
         <span className="font-medium text-foreground">
           {transactionCount} giao dịch
         </span>

@@ -69,7 +69,7 @@ export function TransactionItem({
               })}
             </p>
             <time
-              className="text-sm text-muted-foreground"
+              className="text-xs text-muted-foreground"
               dateTime={transaction.occurredAt}
             >
               {timeFormatter.format(new Date(transaction.occurredAt))}

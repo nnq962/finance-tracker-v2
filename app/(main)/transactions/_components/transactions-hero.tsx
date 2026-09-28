@@ -23,6 +23,7 @@ import {
   getTransactionHeroStats,
   type TransactionTrend,
 } from "../_lib/get-transaction-hero-stats"
+import { cashFlowColors } from "../_lib/transaction-presentation"
 import type {
   Transaction,
   TransactionPeriod,
@@ -45,14 +46,10 @@ type CashFlowCardProps = {
 
 const cashFlowContent = {
   income: {
-    dotClassName: "bg-emerald-500",
     label: "Đã thu",
-    valueClassName: "text-emerald-600 dark:text-emerald-400",
   },
   expense: {
-    dotClassName: "bg-rose-500",
     label: "Đã chi",
-    valueClassName: "text-rose-600 dark:text-rose-400",
   },
 } as const
 
@@ -82,8 +79,8 @@ function CashFlowTrend({
           <span
             className={
               isFavorable
-                ? "flex items-center text-emerald-600 dark:text-emerald-400"
-                : "flex items-center text-rose-600 dark:text-rose-400"
+                ? `flex items-center ${cashFlowColors.income.text}`
+                : `flex items-center ${cashFlowColors.expense.text}`
             }
           >
             <TrendIcon className="size-4" aria-hidden="true" />
@@ -104,6 +101,7 @@ function CashFlowCard({
   trend,
 }: CashFlowCardProps) {
   const content = cashFlowContent[kind]
+  const colors = cashFlowColors[kind]
 
   return (
     <Card className="h-44">
@@ -111,7 +109,7 @@ function CashFlowCard({
         <CardTitle className="text-sm font-medium text-muted-foreground">
           <span className="flex items-center gap-2">
             <span
-              className={`size-2.5 rounded-full ${content.dotClassName}`}
+              className={`size-2.5 rounded-full ${colors.dot}`}
               aria-hidden="true"
             />
             {content.label}
@@ -124,7 +122,7 @@ function CashFlowCard({
       <CardContent>
         <div className="space-y-5">
           <p
-            className={`text-[2rem] font-semibold tracking-tight tabular-nums ${content.valueClassName}`}
+            className={`text-[2rem] font-semibold tracking-tight tabular-nums ${colors.text}`}
           >
             {formatCurrency(amount)}
           </p>
@@ -156,7 +154,7 @@ export function TransactionsHero({
   const topExpenseColor = topExpense?.group
     ? getCategoryColor(topExpense.group.colorName)
     : null
-  const periodLabel = period === "week" ? "tuần này" : "tháng này"
+  const periodLabel = period === "week" ? "tuần đang xem" : "tháng đang xem"
 
   return (
     <section
@@ -194,7 +192,7 @@ export function TransactionsHero({
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{topExpense.name}</p>
-                  <p className="font-medium text-rose-600 dark:text-rose-400">
+                  <p className={`font-medium ${cashFlowColors.expense.text}`}>
                     {formatCurrency(topExpense.amount)}
                   </p>
                 </div>
@@ -203,7 +201,7 @@ export function TransactionsHero({
                 </p>
               </div>
               <Progress
-                className="[&_[data-slot=progress-indicator]]:bg-gradient-to-r [&_[data-slot=progress-indicator]]:from-rose-600 [&_[data-slot=progress-indicator]]:to-rose-300"
+                tone="coral"
                 value={topExpense.percentage}
                 aria-label={`${topExpense.name} chiếm ${topExpense.percentage}% tổng chi`}
               />
