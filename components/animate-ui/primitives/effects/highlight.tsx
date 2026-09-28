@@ -39,6 +39,7 @@ type HighlightContextType<T extends string> = {
   disabled?: boolean;
   enabled?: boolean;
   exitDelay?: number;
+  animatePresence?: boolean;
   forceUpdateBounds?: boolean;
 };
 
@@ -70,6 +71,7 @@ type BaseHighlightProps<T extends React.ElementType = 'div'> = {
   disabled?: boolean;
   enabled?: boolean;
   exitDelay?: number;
+  animatePresence?: boolean;
 };
 
 type ParentModeHighlightProps = {
@@ -136,6 +138,7 @@ function Highlight<T extends React.ElementType = 'div'>({
     controlledItems,
     disabled = false,
     exitDelay = 200,
+    animatePresence = true,
     mode = 'children',
   } = props;
 
@@ -317,6 +320,7 @@ function Highlight<T extends React.ElementType = 'div'>({
         disabled,
         enabled,
         exitDelay,
+        animatePresence,
         setBounds: safeSetBounds,
         clearBounds,
         activeClassName: activeClassNameState,
@@ -413,9 +417,13 @@ function HighlightItem<T extends React.ElementType>({
     id: contextId,
     disabled: contextDisabled,
     exitDelay: contextExitDelay,
+    animatePresence,
     forceUpdateBounds: contextForceUpdateBounds,
     setActiveClassName,
   } = useHighlight();
+
+  const Presence = animatePresence ? AnimatePresence : React.Fragment;
+  const presenceProps = animatePresence ? { initial: false as const, mode: 'wait' as const } : {};
 
   const Component = as ?? 'div';
   const element = children as React.ReactElement<ExtendedChildProps>;
@@ -527,7 +535,7 @@ function HighlightItem<T extends React.ElementType>({
           ...props,
         },
         <>
-          <AnimatePresence initial={false} mode="wait">
+          <Presence {...presenceProps}>
             {isActive && !isDisabled && (
               <motion.div
                 layoutId={`transition-background-${contextId}`}
@@ -540,7 +548,7 @@ function HighlightItem<T extends React.ElementType>({
                 }}
                 className={cn(contextClassName, activeClassName)}
                 transition={itemTransition}
-                initial={{ opacity: 0 }}
+                initial={animatePresence ? { opacity: 0 } : false}
                 animate={{ opacity: 1 }}
                 exit={{
                   opacity: 0,
@@ -554,7 +562,7 @@ function HighlightItem<T extends React.ElementType>({
                 {...dataAttributes}
               />
             )}
-          </AnimatePresence>
+          </Presence>
 
           <Component
             data-slot="motion-highlight-item"
@@ -589,7 +597,7 @@ function HighlightItem<T extends React.ElementType>({
       {...commonHandlers}
     >
       {mode === 'children' && (
-        <AnimatePresence initial={false} mode="wait">
+        <Presence {...presenceProps}>
           {isActive && !isDisabled && (
             <motion.div
               layoutId={`transition-background-${contextId}`}
@@ -602,7 +610,7 @@ function HighlightItem<T extends React.ElementType>({
               }}
               className={cn(contextClassName, activeClassName)}
               transition={itemTransition}
-              initial={{ opacity: 0 }}
+              initial={animatePresence ? { opacity: 0 } : false}
               animate={{ opacity: 1 }}
               exit={{
                 opacity: 0,
@@ -616,7 +624,7 @@ function HighlightItem<T extends React.ElementType>({
               {...dataAttributes}
             />
           )}
-        </AnimatePresence>
+        </Presence>
       )}
 
       {React.cloneElement(element, {

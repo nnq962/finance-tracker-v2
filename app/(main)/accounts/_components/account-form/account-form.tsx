@@ -344,7 +344,7 @@ export function AccountForm({
         {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
         <Button
           type="submit"
-          size="lg"
+          size="default"
           className="w-full"
           disabled={isPending}
         >

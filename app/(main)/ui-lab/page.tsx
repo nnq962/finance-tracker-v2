@@ -1,3 +1,4 @@
+import { CurrencyInputExample } from "./_components/currency-input-example"
 import GradientWaves from "@/components/gradient-waves"
 import Link from "next/link"
 import {
@@ -23,6 +24,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Progress } from "@/components/ui/progress"
 import {
   Select,
@@ -362,6 +364,46 @@ export default function UiLabPage() {
             </CardContent>
           </Card>
         </div>
+      </section>
+
+      <section aria-labelledby="textarea-examples">
+        <Card>
+          <CardHeader>
+            <CardTitle id="textarea-examples">Textarea</CardTitle>
+            <CardDescription>Thử nhập nhiều dòng, focus và kéo góc ô để thay đổi kích thước.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6 sm:grid-cols-2">
+            <div className="grid content-start gap-1.5">
+              <label htmlFor="lab-textarea-default" className="text-sm font-semibold">Mặc định</label>
+              <Textarea id="lab-textarea-default" placeholder="Nhập ghi chú giao dịch..." />
+            </div>
+            <div className="grid content-start gap-1.5">
+              <label htmlFor="lab-textarea-filled" className="text-sm font-semibold">Có nội dung</label>
+              <Textarea id="lab-textarea-filled" defaultValue={"Chi phí đi chợ cuối tuần.\nGồm rau củ, trái cây và đồ dùng gia đình."} />
+            </div>
+            <div className="grid content-start gap-1.5">
+              <label htmlFor="lab-textarea-error" className="text-sm font-semibold">Lỗi</label>
+              <Textarea id="lab-textarea-error" placeholder="Nhập nội dung ghi chú" aria-invalid="true" aria-describedby="lab-textarea-error-help" />
+              <p id="lab-textarea-error-help" className="text-xs text-destructive">Vui lòng nhập nội dung ghi chú.</p>
+            </div>
+            <div className="grid content-start gap-1.5">
+              <label htmlFor="lab-textarea-disabled" className="text-sm font-semibold">Disabled</label>
+              <Textarea id="lab-textarea-disabled" defaultValue="Ghi chú này không thể chỉnh sửa." disabled />
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section aria-labelledby="currency-input-examples">
+        <Card>
+          <CardHeader>
+            <CardTitle id="currency-input-examples">Nhập tiền</CardTitle>
+            <CardDescription>Tự phân cách hàng nghìn, đơn vị đồng; dùng CurrencyInput của ứng dụng.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CurrencyInputExample />
+          </CardContent>
+        </Card>
       </section>
 
       <section aria-labelledby="card-examples" className="space-y-4">

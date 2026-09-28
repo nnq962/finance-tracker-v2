@@ -1,6 +1,6 @@
 import { PlusIcon } from "lucide-react"
 
-import { Button } from "@/components/animate-ui/components/buttons/button"
+import { Button } from "@/components/ui/button"
 
 import { AddAccountSheet } from "./add-account/add-account-sheet"
 

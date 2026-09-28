@@ -22,7 +22,7 @@ function Card({
       className={cn(
         "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl border border-[#e7e4dd] bg-white py-(--card-spacing) text-sm text-card-foreground ring-1 ring-inset ring-[#e7e4dd] [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 dark:border-[#35323e] dark:bg-card dark:ring-[#35323e] *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
         pressable &&
-          "cursor-pointer [--card-edge:#e7e4dd] shadow-[0_3px_0_var(--card-edge)] transition-[background-color,box-shadow,translate] duration-[80ms] hover:bg-[#fdfcfa] active:translate-y-[3px] active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38b8f6] dark:[--card-edge:#35323e] dark:hover:bg-[#303035]",
+          "button-raised cursor-pointer overflow-visible border-transparent bg-transparent ring-0 [--button-edge:4px] [--button-face-border:2px] [--button-face:#fff] [--button-shade:#e7e4dd] hover:[--button-face:#fdfcfa] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38b8f6] dark:border-transparent dark:bg-transparent dark:[--button-face:var(--card)] dark:[--button-shade:#35323e] dark:hover:[--button-face:#303035]",
         className
       )}
       {...props}

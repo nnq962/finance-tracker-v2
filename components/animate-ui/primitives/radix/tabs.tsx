@@ -62,6 +62,7 @@ function TabsHighlight({
     <Highlight
       data-slot="tabs-highlight"
       controlledItems
+      animatePresence={false}
       value={value}
       transition={transition}
       click={false}
