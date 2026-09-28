@@ -15,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/animate-ui/components/radix/alert-dialog"
+import { FieldError } from "@/components/ui/field"
 import type { Account } from "@/lib/accounts/types"
 
 import { deleteAccountAction } from "../../actions"
@@ -72,9 +73,9 @@ export function DeleteAccountAlert({
           </AlertDialogDescription>
         </AlertDialogHeader>
         {errorMessage ? (
-          <p role="alert" className="text-sm text-destructive">
+          <FieldError>
             {errorMessage}
-          </p>
+          </FieldError>
         ) : null}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Huỷ</AlertDialogCancel>

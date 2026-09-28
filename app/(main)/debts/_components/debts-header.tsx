@@ -1,14 +1,12 @@
 import type { ReactNode } from "react"
 
-import { Separator } from "@/components/ui/separator"
-
 type DebtsHeaderProps = {
   actions: ReactNode
 }
 
 export function DebtsHeader({ actions }: DebtsHeaderProps) {
   return (
-    <header className="space-y-6 pt-1">
+    <header className="pt-1">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1.5">
           <h1 className="text-3xl font-semibold tracking-tight">
@@ -23,7 +21,6 @@ export function DebtsHeader({ actions }: DebtsHeaderProps) {
           {actions}
         </div>
       </div>
-      <Separator />
     </header>
   )
 }
