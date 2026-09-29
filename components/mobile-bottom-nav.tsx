@@ -1,8 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { useEffect, useRef } from "react"
+import { usePathname, useRouter } from "next/navigation"
+import { useEffect, useOptimistic, useRef, useTransition } from "react"
 import { cn } from "cn"
 
 import { appNavigationItems } from "@/lib/app-navigation"
@@ -24,6 +24,9 @@ function isIOSStandalone() {
 
 export function MobileBottomNav() {
   const pathname = usePathname()
+  const router = useRouter()
+  const [activePathname, setActivePathname] = useOptimistic(pathname)
+  const [, startNavigation] = useTransition()
   const navRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
@@ -133,15 +136,21 @@ export function MobileBottomNav() {
     >
       <ul className="mx-auto grid max-w-md grid-cols-4 gap-0.5">
         {appNavigationItems.map((item) => {
-          const isActive = pathname === item.url
+          const isActive = activePathname === item.url
           const Icon = item.icon
 
           return (
             <li key={item.url} className="min-w-0">
               <Link
                 href={item.url}
-                prefetch={false}
-                aria-current={isActive ? "page" : undefined}
+                onNavigate={(event) => {
+                  event.preventDefault()
+                  startNavigation(() => {
+                    setActivePathname(item.url)
+                    router.push(item.url)
+                  })
+                }}
+                aria-current={pathname === item.url ? "page" : undefined}
                 className={cn(
                   "flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 text-muted-foreground transition-[background-color,color] outline-none select-none focus-visible:ring-2 focus-visible:ring-[#38b8f6] focus-visible:ring-offset-2 focus-visible:ring-offset-white active:bg-[#e9f8ff] dark:focus-visible:ring-offset-[#201e26] dark:active:bg-[#113950]",
                   isActive &&
