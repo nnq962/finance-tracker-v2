@@ -88,7 +88,7 @@ export function CategoriesManager({ groups }: CategoriesManagerProps) {
           <TabsList className="w-full sm:w-fit">
             {categorySections.map(({ type, label, icon: Icon }) => (
               <TabsTrigger key={type} value={type}>
-                <Icon />
+                <Icon className="size-3" />
                 {label}
               </TabsTrigger>
             ))}

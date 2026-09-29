@@ -198,3 +198,27 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
     border-bottom-width: var(--button-face-border, 0px);
   }
 }
+
+/*
+ * iOS may paint after touchend clears :active but before the synthesized click
+ * commits aria/data state. Keep the pressed face in place across that gap so a
+ * toggle or disclosure does not briefly rise before settling back down.
+ */
+@media (hover: none) and (pointer: coarse) {
+  .button-raised {
+    transition-property: filter, translate;
+    transition-duration: 0s;
+    transition-delay: 80ms;
+  }
+
+  .button-raised::before {
+    transition-property: box-shadow, border-bottom-width;
+    transition-duration: 0s;
+    transition-delay: 80ms;
+  }
+
+  .button-raised:is(:active, [aria-expanded="true"], [aria-pressed="true"], [data-state="open"], [data-state="on"]):not(:disabled),
+  .button-raised:is(:active, [aria-expanded="true"], [aria-pressed="true"], [data-state="open"], [data-state="on"]):not(:disabled)::before {
+    transition-delay: 0s;
+  }
+}

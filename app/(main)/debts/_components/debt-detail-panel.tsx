@@ -173,7 +173,7 @@ export function DebtDetailPanel({
               <AlertDialogDescription>
                 Xoá “{debt.note}” cùng toàn bộ {debt.payments?.length ?? 0} lần thu/trả.
                 {debt.recordingMode === "opening" ? " Chỉ hoàn tác tác động số dư của các lần thu/trả đã ghi nhận; tiền gốc không ảnh hưởng số dư." : " Xoá giao dịch ban đầu và điều chỉnh số dư các tài khoản như chưa từng có khoản nợ này."}
-                {" "}Hành động không thể hoàn tác.
+                {" "}Sau khi xác nhận, bạn có 6 giây để hoàn tác.
               </AlertDialogDescription>
             </AlertDialogHeader>
             {error ? <FieldError role="alert">{error}</FieldError> : null}

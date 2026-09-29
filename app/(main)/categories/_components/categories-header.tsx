@@ -18,7 +18,7 @@ export function CategoriesHeader({ type }: CategoriesHeaderProps) {
             Tạo, sắp xếp và quản lý các hạng mục cho từng dòng tiền.
           </p>
         </div>
-        <div className="shrink-0 self-start sm:self-auto">
+        <div className="w-full shrink-0 self-start sm:w-auto sm:self-auto">
           <AddCategoryGroupDialog type={type} />
         </div>
       </div>

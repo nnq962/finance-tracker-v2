@@ -65,7 +65,7 @@ export function ContactCard({ contact, hasDebts, onEdit, onDelete }: ContactCard
             <AlertDialogDescription>
               {hasDebts
                 ? `${contact.name} đang có lịch sử khoản nợ. Giữ người liên hệ để không mất thông tin của các khoản này.`
-                : `Xoá ${contact.name} khỏi danh bạ? Hành động này không thể hoàn tác.`}
+                : `Xoá ${contact.name} khỏi danh bạ? Sau khi xác nhận, bạn có 6 giây để hoàn tác.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}

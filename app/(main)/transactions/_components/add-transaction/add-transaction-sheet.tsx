@@ -3,7 +3,7 @@
 import * as React from "react"
 import { PlusIcon } from "lucide-react"
 
-import { Button } from "@/components/animate-ui/components/buttons/button"
+import { Button } from "@/components/ui/button"
 import {
   Sheet,
   SheetContent,
@@ -35,7 +35,7 @@ export function AddTransactionSheet({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button type="button">
+        <Button type="button" className="w-full sm:w-auto">
           <PlusIcon />
           Thêm giao dịch
         </Button>

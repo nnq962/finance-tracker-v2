@@ -1,19 +1,8 @@
 import {
-  ArrowDownLeftIcon,
-  ArrowUpRightIcon,
-  Repeat2Icon,
-} from "lucide-react"
-
-import {
   Tabs,
   TabsList,
   TabsTrigger,
-} from "@/components/ui/tabs"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from "@/components/animate-ui/components/radix/tabs"
 
 import type { TransactionKind } from "../../_types/transaction"
 import type { SupportedTransactionKind } from "@/lib/transactions/types"
@@ -21,11 +10,10 @@ import type { SupportedTransactionKind } from "@/lib/transactions/types"
 const transactionKinds: Array<{
   value: TransactionKind
   label: string
-  icon: typeof ArrowUpRightIcon
 }> = [
-  { value: "expense", label: "Chi tiền", icon: ArrowUpRightIcon },
-  { value: "income", label: "Thu tiền", icon: ArrowDownLeftIcon },
-  { value: "transfer", label: "Chuyển khoản", icon: Repeat2Icon },
+  { value: "expense", label: "Chi tiền" },
+  { value: "income", label: "Thu tiền" },
+  { value: "transfer", label: "Chuyển khoản" },
 ]
 
 type TransactionKindSelectorProps = {
@@ -45,27 +33,11 @@ export function TransactionKindSelector({
       }
       className="w-full"
     >
-      <TabsList
-        variant="default"
-        className="grid w-full grid-cols-3"
-        aria-label="Loại giao dịch"
-      >
-        {transactionKinds.map(({ value: kind, label, icon: Icon }) => (
-          <Tooltip key={kind}>
-            <TooltipTrigger asChild>
-              <span className="flex h-full">
-                <TabsTrigger
-                  value={kind}
-                  aria-label={label}
-                  className="h-full w-full"
-                >
-                  <Icon />
-                  <span className="sr-only">{label}</span>
-                </TabsTrigger>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">{label}</TooltipContent>
-          </Tooltip>
+      <TabsList className="w-full" aria-label="Loại giao dịch">
+        {transactionKinds.map(({ value: kind, label }) => (
+          <TabsTrigger key={kind} value={kind}>
+            {label}
+          </TabsTrigger>
         ))}
       </TabsList>
     </Tabs>

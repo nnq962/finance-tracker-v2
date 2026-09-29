@@ -4,7 +4,7 @@ import * as React from "react"
 import { ImagePlusIcon, PaperclipIcon } from "lucide-react"
 import { toast } from "sonner"
 
-import { AccountLogo } from "@/components/account-logo"
+import { AccountSelectGroups } from "@/components/account-select-groups"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
 import { Badge } from "@/components/ui/badge"
@@ -21,8 +21,6 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
   Select,
   SelectContent,
-  SelectGroup,
-  SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
@@ -56,17 +54,7 @@ function AccountSelect({
         <SelectValue placeholder="Chọn tài khoản" />
       </SelectTrigger>
       <SelectContent>
-        <SelectGroup>
-          {availableAccounts.map((account) => (
-            <SelectItem key={account.id} value={account.id}>
-              <AccountLogo
-                account={account}
-                className="size-5! p-0.5! [&>svg]:size-3!"
-              />
-              {account.name}
-            </SelectItem>
-          ))}
-        </SelectGroup>
+        <AccountSelectGroups accounts={availableAccounts} />
       </SelectContent>
     </Select>
   )

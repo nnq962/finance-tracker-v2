@@ -2,7 +2,7 @@
 
 import { PlusIcon } from "lucide-react"
 
-import { Button } from "@/components/animate-ui/components/buttons/button"
+import { Button } from "@/components/ui/button"
 import type { CategoryType } from "@/lib/categories/types"
 
 import { createCategoryGroupAction } from "../actions"
@@ -19,7 +19,7 @@ export function AddCategoryGroupDialog({ type }: AddCategoryGroupDialogProps) {
   return (
     <CategoryFormDialog
       trigger={
-        <Button type="button">
+        <Button type="button" className="w-full sm:w-auto">
           <PlusIcon />
           Thêm nhóm {typeLabel} mới
         </Button>

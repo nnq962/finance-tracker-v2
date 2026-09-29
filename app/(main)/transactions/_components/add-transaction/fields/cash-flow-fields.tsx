@@ -10,7 +10,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
-import { AccountLogo } from "@/components/account-logo"
+import { AccountSelectGroups } from "@/components/account-select-groups"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
 import { Badge } from "@/components/ui/badge"
@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { getLocalDateTime } from "@/lib/date-time"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 
@@ -127,17 +128,7 @@ export function CashFlowFields({
                     <SelectValue placeholder="Chọn tài khoản" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectGroup>
-                      {availableAccounts.map((account) => (
-                        <SelectItem key={account.id} value={account.id}>
-                          <AccountLogo
-                            account={account}
-                            className="size-5! p-0.5! [&>svg]:size-3!"
-                          />
-                          {account.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
+                    <AccountSelectGroups accounts={availableAccounts} />
                   </SelectContent>
                 </Select>
               </Field>
@@ -194,24 +185,35 @@ export function CashFlowFields({
                   <SparklesIcon className="size-4" />
                   Chọn nhanh
                 </FieldLabel>
-                <div className="flex flex-wrap gap-2">
+                <ToggleGroup
+                  type="single"
+                  size="sm"
+                  value={
+                    suggestedCategories.some((item) => item.id === categoryId)
+                      ? categoryId
+                      : ""
+                  }
+                  onValueChange={(value) => {
+                    if (value) setCategoryId(value)
+                  }}
+                  className="flex-wrap"
+                  aria-label="Chọn nhanh hạng mục"
+                >
                   {suggestedCategories.map((item) => {
                     const ItemIcon = categoryIconRegistry[item.iconName]
 
                     return (
-                      <Button
+                      <ToggleGroupItem
                         key={item.id}
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCategoryId(item.id)}
+                        value={item.id}
+                        aria-label={`Chọn hạng mục ${item.name}`}
                       >
                         <ItemIcon />
                         {item.name}
-                      </Button>
+                      </ToggleGroupItem>
                     )
                   })}
-                </div>
+                </ToggleGroup>
               </Field>
             ) : null}
 

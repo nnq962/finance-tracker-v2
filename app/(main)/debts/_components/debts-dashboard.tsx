@@ -6,6 +6,7 @@ import type { Account } from "@/lib/accounts/types"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { createContactAction, updateContactAction, deleteContactAction, createDebtAction, saveDebtPaymentAction, changeDebtAction } from "../actions"
+import { scheduleUndoableDelete } from "@/lib/undoable-delete"
 import { getDebtSummary } from "../_lib/get-debt-summary"
 import type {
   Contact,
@@ -58,14 +59,43 @@ export function DebtsDashboard({
     toast.success("Đã cập nhật người liên hệ.")
   }
   const deleteContact = async (id: string) => {
-    await execute(`delete-contact-${id}`, () => deleteContactAction(id))
-    toast.success("Đã xoá người liên hệ.")
+    const contact = contacts.find((item) => item.id === id)
+    scheduleUndoableDelete({
+      key: `contact:${id}`,
+      title: `Sắp xoá ${contact?.name ?? "người liên hệ"}`,
+      description: "Người liên hệ sẽ bị xoá khỏi danh bạ sau 6 giây.",
+      pendingMessage: "Đang xoá người liên hệ…",
+      successMessage: "Đã xoá người liên hệ.",
+      undoMessage: "Đã giữ lại người liên hệ.",
+      errorMessage: "Không thể xoá người liên hệ.",
+      onCommit: () =>
+        execute(`delete-contact-${id}`, () => deleteContactAction(id)),
+    })
   }
   const addDebt = async (values: NewDebt) => {
     await execute(JSON.stringify(["debt", values]), (id) => createDebtAction(values, id))
     toast.success(values.recordingMode === "opening" ? "Đã ghi nhận nợ có sẵn. Số dư tài khoản giữ nguyên." : "Đã tạo khoản nợ và cập nhật số dư.")
   }
   const changePayment = async (debtId: string, paymentId: string | undefined, values: NewDebtPayment | null) => {
+    if (values === null && paymentId) {
+      scheduleUndoableDelete({
+        key: `debt-payment:${debtId}:${paymentId}`,
+        title: "Sắp xoá lần thanh toán",
+        description:
+          "Lần thanh toán và tác động số dư sẽ bị xoá sau 6 giây.",
+        pendingMessage: "Đang xoá lần thanh toán…",
+        successMessage: "Đã xoá lần thanh toán.",
+        undoMessage: "Đã giữ lại lần thanh toán.",
+        errorMessage: "Không thể xoá lần thanh toán.",
+        onCommit: () =>
+          execute(
+            JSON.stringify(["payment", debtId, paymentId, null]),
+            (id) => saveDebtPaymentAction(debtId, paymentId, null, id),
+          ),
+      })
+      return
+    }
+
     await execute(JSON.stringify(["payment", debtId, paymentId, values]), (id) => saveDebtPaymentAction(debtId, paymentId, values, id))
   }
 
@@ -85,8 +115,29 @@ export function DebtsDashboard({
         debts={debts}
         accounts={accounts}
         onChangeDebt={async (debtId, values) => {
+          if (values === null) {
+            const debt = debts.find((item) => item.id === debtId)
+            scheduleUndoableDelete({
+              key: `debt:${debtId}`,
+              title: `Sắp xoá khoản nợ${debt?.note ? ` “${debt.note}”` : ""}`,
+              description:
+                "Khoản nợ, lịch sử thanh toán và tác động số dư sẽ bị xoá sau 6 giây.",
+              pendingMessage: "Đang xoá khoản nợ…",
+              successMessage: "Đã xoá khoản nợ và hoàn lại ảnh hưởng lên số dư.",
+              undoMessage: "Đã giữ lại khoản nợ.",
+              errorMessage: "Không thể xoá khoản nợ.",
+              onCommit: () =>
+                execute(
+                  JSON.stringify(["change-debt", debtId, null]),
+                  (operationId) =>
+                    changeDebtAction(debtId, null, operationId),
+                ),
+            })
+            return
+          }
+
           await execute(JSON.stringify(["change-debt", debtId, values]), (operationId) => changeDebtAction(debtId, values, operationId))
-          toast.success(values ? values.recordingMode === "opening" ? "Đã cập nhật khoản nợ có sẵn. Số dư tài khoản giữ nguyên." : "Đã cập nhật khoản nợ và số dư." : "Đã xoá khoản nợ và hoàn lại ảnh hưởng lên số dư.")
+          toast.success(values.recordingMode === "opening" ? "Đã cập nhật khoản nợ có sẵn. Số dư tài khoản giữ nguyên." : "Đã cập nhật khoản nợ và số dư.")
         }}
         onRecordPayment={(id, values) => changePayment(id, undefined, values)}
         onEditPayment={(id, paymentId, values) => changePayment(id, paymentId, values)}

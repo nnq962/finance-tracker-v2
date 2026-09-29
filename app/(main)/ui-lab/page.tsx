@@ -1,4 +1,5 @@
 import { CurrencyInputExample } from "./_components/currency-input-example"
+import { SonnerExamples } from "./_components/sonner-examples"
 import GradientWaves from "@/components/gradient-waves"
 import Link from "next/link"
 import {
@@ -245,6 +246,20 @@ export default function UiLabPage() {
               <Input aria-label="Tên khoản tiết kiệm" placeholder="Tên khoản tiết kiệm" className="min-w-44 flex-1" />
               <Button type="button"><CheckIcon /> Lưu lại</Button>
             </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section aria-labelledby="sonner-examples">
+        <Card>
+          <CardHeader>
+            <CardTitle id="sonner-examples">Sonner</CardTitle>
+            <CardDescription>
+              Thử các trạng thái toast, tiến trình và thao tác hoàn tác.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SonnerExamples />
           </CardContent>
         </Card>
       </section>

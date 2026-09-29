@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { EllipsisIcon, PencilIcon, Trash2Icon } from "lucide-react"
-import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
@@ -76,7 +75,7 @@ function PaymentEntry({ payment, debt, contact, accounts, onEdit, onDelete }: Pr
         <AlertDialogContent onCloseAutoFocus={(event) => { event.preventDefault(); menuButton.current?.focus() }}>
           <AlertDialogHeader>
             <AlertDialogTitle>Xoá giao dịch {collecting ? "thu nợ" : "trả nợ"}?</AlertDialogTitle>
-            <AlertDialogDescription>Xoá lần thanh toán {formatCurrency(payment.amount)}. Số tiền còn lại và trạng thái khoản nợ sẽ được tính lại.</AlertDialogDescription>
+            <AlertDialogDescription>Xoá lần thanh toán {formatCurrency(payment.amount)}. Số tiền còn lại và trạng thái khoản nợ sẽ được tính lại. Sau khi xác nhận, bạn có 6 giây để hoàn tác.</AlertDialogDescription>
           </AlertDialogHeader>
           {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
           <AlertDialogFooter>
@@ -90,7 +89,6 @@ function PaymentEntry({ payment, debt, contact, accounts, onEdit, onDelete }: Pr
               try {
                 await onDelete(payment.id)
                 setDeleting(false)
-                toast.success("Đã xoá thanh toán.")
               } catch (error) {
                 setErrorMessage(error instanceof Error ? error.message : "Không thể xoá thanh toán.")
               } finally {

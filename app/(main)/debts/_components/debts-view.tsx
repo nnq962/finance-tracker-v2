@@ -5,7 +5,6 @@ import { HandCoinsIcon, SearchIcon, FileTextIcon } from "lucide-react"
 
 import type { Account } from "@/lib/accounts/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import {
   Empty,
   EmptyDescription,
@@ -14,6 +13,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 import { filterDebts, type DebtFilter } from "../_lib/filter-debts"
 import type { Contact, Debt, NewDebt, NewDebtPayment } from "../_types/debt"
@@ -90,19 +90,25 @@ export function DebtsView({
                   className="pl-9"
                 />
               </div>
-              <div className="flex flex-wrap gap-2">
+              <ToggleGroup
+                type="single"
+                value={filter}
+                onValueChange={(value) => {
+                  if (value) setFilter(value as DebtFilter)
+                }}
+                className="flex-wrap"
+                aria-label="Lọc khoản nợ"
+              >
                 {filters.map((item) => (
-                  <Button
+                  <ToggleGroupItem
                     key={item.value}
-                    type="button"
-                    variant={filter === item.value ? "default" : "outline"}
-                    onClick={() => setFilter(item.value)}
+                    value={item.value}
                   >
                     {item.label}
                     <span className="opacity-60">{item.count}</span>
-                  </Button>
+                  </ToggleGroupItem>
                 ))}
-              </div>
+              </ToggleGroup>
             </div>
             {visibleDebts.length === 0 ? (
               <Empty>

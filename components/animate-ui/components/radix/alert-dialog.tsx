@@ -23,7 +23,7 @@ import {
   type AlertDialogActionProps as AlertDialogActionPrimitiveProps,
   type AlertDialogCancelProps as AlertDialogCancelPrimitiveProps,
 } from '@/components/animate-ui/primitives/radix/alert-dialog';
-import { buttonVariants } from '@/components/animate-ui/components/buttons/button';
+import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 type AlertDialogProps = AlertDialogPrimitiveProps;
@@ -127,7 +127,7 @@ function AlertDialogAction({
 }: AlertDialogActionPrimitiveProps) {
   return (
     <AlertDialogActionPrimitive
-      className={cn(buttonVariants(), className)}
+      className={cn(buttonVariants({ variant: 'destructive' }), className)}
       {...props}
     />
   );

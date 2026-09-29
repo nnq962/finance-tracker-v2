@@ -9,9 +9,13 @@ import { getCurrentLocalDateTime } from "@/lib/date-time"
 type DateTimeFieldsProps = {
   defaultDate?: string
   defaultTime?: string
+  dateValue?: string
   dateName?: string
   idPrefix: string
   label?: string
+  maxDate?: string
+  minDate?: string
+  onDateChange?: React.ChangeEventHandler<HTMLInputElement>
   required?: boolean
   timeName?: string
 }
@@ -19,9 +23,13 @@ type DateTimeFieldsProps = {
 export function DateTimeFields({
   defaultDate,
   defaultTime,
+  dateValue,
   dateName = "date",
   idPrefix,
   label = "Thời gian",
+  maxDate,
+  minDate,
+  onDateChange,
   required = false,
   timeName = "time",
 }: DateTimeFieldsProps) {
@@ -37,7 +45,15 @@ export function DateTimeFields({
             aria-label="Ngày"
             name={dateName}
             type="date"
-            defaultValue={defaultDate ?? currentDateTime.date}
+            defaultValue={
+              dateValue === undefined
+                ? (defaultDate ?? currentDateTime.date)
+                : undefined
+            }
+            value={dateValue}
+            min={minDate}
+            max={maxDate}
+            onChange={onDateChange}
             required={required}
             className="w-auto min-w-0 max-w-full flex-1"
           />

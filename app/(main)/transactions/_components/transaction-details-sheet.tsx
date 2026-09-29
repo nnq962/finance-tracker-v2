@@ -2,9 +2,8 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { LoaderCircleIcon, PencilIcon, Trash2Icon, XIcon } from "lucide-react"
+import { PencilIcon, Trash2Icon, XIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { toast } from "sonner"
 
 import {
   Popover,
@@ -26,6 +25,7 @@ import { getCategoryColor } from "@/lib/categories/category-colors"
 import type { CategoryItem } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
+import { scheduleUndoableDelete } from "@/lib/undoable-delete"
 
 import { deleteTransactionAction } from "../actions"
 import { transactionPresentation } from "../_lib/transaction-presentation"
@@ -75,7 +75,6 @@ export function TransactionDetailsSheet({
 }: TransactionDetailsSheetProps) {
   const router = useRouter()
   const [deleteOpen, setDeleteOpen] = React.useState(false)
-  const [isDeleting, startDeleteTransition] = React.useTransition()
   const presentation = transactionPresentation[transaction.kind]
   const Icon = category
     ? categoryIconRegistry[category.iconName]
@@ -118,22 +117,22 @@ export function TransactionDetailsSheet({
         ]
 
   const handleDelete = () => {
-    startDeleteTransition(async () => {
-      try {
+    setDeleteOpen(false)
+    onDeleted()
+    scheduleUndoableDelete({
+      key: `transaction:${transaction.id}`,
+      title: `Sắp xoá giao dịch ${transaction.title}`,
+      description: "Giao dịch và tác động số dư sẽ bị xoá sau 6 giây.",
+      pendingMessage: "Đang xoá giao dịch…",
+      successMessage: "Đã xoá giao dịch.",
+      undoMessage: "Đã giữ lại giao dịch.",
+      errorMessage: "Không thể xoá giao dịch. Vui lòng thử lại.",
+      onCommit: async () => {
         const result = await deleteTransactionAction(transaction.id)
 
-        if (result.success) {
-          setDeleteOpen(false)
-          onDeleted()
-          toast.success("Đã xoá giao dịch.")
-          router.refresh()
-          return
-        }
-
-        toast.error(result.error)
-      } catch {
-        toast.error("Không thể xoá giao dịch. Vui lòng thử lại.")
-      }
+        if (!result.success) throw new Error(result.error)
+        router.refresh()
+      },
     })
   }
 
@@ -204,14 +203,12 @@ export function TransactionDetailsSheet({
                 Đóng
               </Button>
             </SheetClose>
-            <Button asChild><Link href={`/debts?debt=${encodeURIComponent(transaction.debtId ?? "")}`}>Quản lý tại Nợ & Cho vay</Link></Button>
+            <Button asChild><Link href={`/debts?debt=${encodeURIComponent(transaction.debtId ?? "")}`}>Quản lý tại vay nợ</Link></Button>
           </div>
         ) : <div className="grid grid-cols-2 gap-2">
           <Popover
             open={deleteOpen}
-            onOpenChange={(open) => {
-              if (!isDeleting) setDeleteOpen(open)
-            }}
+            onOpenChange={setDeleteOpen}
           >
             <PopoverTrigger asChild>
               <Button type="button" variant="destructive">
@@ -224,7 +221,8 @@ export function TransactionDetailsSheet({
                 <p className="text-sm font-medium">Xoá giao dịch?</p>
                 <p className="text-xs text-muted-foreground">
                   Giao dịch “{transaction.title}” sẽ bị xoá và số dư liên quan
-                  được đối soát lại. Thao tác này không thể hoàn tác.
+                  được đối soát lại. Sau khi xác nhận, bạn có 6 giây để hoàn
+                  tác.
                 </p>
               </div>
               <div className="flex justify-end gap-2">
@@ -237,15 +235,10 @@ export function TransactionDetailsSheet({
                   type="button"
                   variant="destructive"
                   size="sm"
-                  disabled={isDeleting}
                   onClick={handleDelete}
                 >
-                  {isDeleting ? (
-                    <LoaderCircleIcon className="animate-spin" />
-                  ) : (
-                    <Trash2Icon />
-                  )}
-                  {isDeleting ? "Đang xoá..." : "Xoá giao dịch"}
+                  <Trash2Icon />
+                  Xoá giao dịch
                 </Button>
               </div>
             </PopoverContent>

@@ -3,14 +3,14 @@
 import * as React from "react"
 import { CheckIcon, XIcon } from "lucide-react"
 import { toast } from "sonner"
-import { AccountLogo } from "@/components/account-logo"
+import { AccountSelectGroups } from "@/components/account-select-groups"
 import { CurrencyInput } from "@/components/forms/currency-input"
+import { DateTimeFields } from "@/components/forms/date-time-fields"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 import type { Account } from "@/lib/accounts/types"
@@ -43,11 +43,6 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
   const isCollection = debt.direction === "lent"
   const actionLabel = payment ? (isCollection ? "Sửa khoản thu nợ" : "Sửa khoản trả nợ") : (isCollection ? "Ghi nhận thu nợ" : "Ghi nhận trả nợ")
   const eligibleAccounts = accounts.filter((account) => account.status === "active" || account.id === payment?.accountId)
-  const accountGroups = [
-    { type: "cash", label: "Tiền mặt" },
-    { type: "bank", label: "Ngân hàng" },
-    { type: "e-wallet", label: "Ví điện tử" },
-  ] as const
 
   const changeOpen = (nextOpen: boolean) => {
       if (pending) return
@@ -125,25 +120,26 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
                       <Select value={accountId} onValueChange={setAccountId} required disabled={pending}>
                         <SelectTrigger id={`${id}-account`} className="w-full"><SelectValue placeholder="Chọn tài khoản" /></SelectTrigger>
                         <SelectContent>
-                          {accountGroups.map((group) => {
-                            const items = eligibleAccounts.filter((account) => account.type === group.type)
-                            return items.length ? <SelectGroup key={group.type}>
-                              <SelectLabel>{group.label}</SelectLabel>
-                              {items.map((account) => <SelectItem key={account.id} value={account.id} textValue={account.name}>
-                                <AccountLogo account={account} className="size-5! p-0.5! [&>svg]:size-3!" />
-                                <span className="min-w-0 truncate">{account.name}</span>
-                                <span className="ml-auto text-xs text-muted-foreground tabular-nums">{formatCurrency(account.balance)}</span>
-                              </SelectItem>)}
-                            </SelectGroup> : null
-                          })}
+                          <AccountSelectGroups accounts={eligibleAccounts} />
                         </SelectContent>
                       </Select>
                       {eligibleAccounts.length === 0 ? <FieldError>Hãy thêm tài khoản trước khi ghi nhận thanh toán.</FieldError> : null}
                     </Field>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Field><FieldLabel htmlFor={`${id}-date`}>Ngày thanh toán</FieldLabel><Input id={`${id}-date`} type="date" value={paidAt} min={debt.recordedAt} max={todayDate()} required onChange={(event) => { setPaidAt(event.target.value); setErrorMessage(null) }} /></Field>
-                      <Field><FieldLabel htmlFor={`${id}-time`}>Giờ</FieldLabel><Input id={`${id}-time`} name="paidTime" type="time" defaultValue={payment?.paidTime ?? getLocalDateTime(new Date().toISOString()).time} required /></Field>
-                    </div>
+                    <DateTimeFields
+                      idPrefix={id}
+                      label="Thời gian thanh toán"
+                      dateName="paidAt"
+                      timeName="paidTime"
+                      dateValue={paidAt}
+                      defaultTime={payment?.paidTime ?? getLocalDateTime(new Date().toISOString()).time}
+                      minDate={debt.recordedAt}
+                      maxDate={todayDate()}
+                      onDateChange={(event) => {
+                        setPaidAt(event.target.value)
+                        setErrorMessage(null)
+                      }}
+                      required
+                    />
                     <Field><FieldLabel htmlFor={`${id}-note`}>Ghi chú</FieldLabel><Textarea id={`${id}-note`} name="note" defaultValue={payment?.note} maxLength={500} placeholder={isCollection ? "Ví dụ: Nhận tiền chuyển khoản" : "Ví dụ: Trả một phần khoản vay"} /></Field>
                   </FieldGroup>
                 </CardContent>

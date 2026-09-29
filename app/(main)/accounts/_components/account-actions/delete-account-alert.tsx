@@ -2,8 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { LoaderCircleIcon, Trash2Icon } from "lucide-react"
-import { toast } from "sonner"
+import { Trash2Icon } from "lucide-react"
 
 import {
   AlertDialog,
@@ -15,8 +14,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/animate-ui/components/radix/alert-dialog"
-import { FieldError } from "@/components/ui/field"
 import type { Account } from "@/lib/accounts/types"
+import { scheduleUndoableDelete } from "@/lib/undoable-delete"
 
 import { deleteAccountAction } from "../../actions"
 
@@ -32,31 +31,25 @@ export function DeleteAccountAlert({
   open,
 }: DeleteAccountAlertProps) {
   const router = useRouter()
-  const [isPending, startTransition] = React.useTransition()
-  const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
 
   const handleDelete = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
-    setErrorMessage(null)
-
-    startTransition(async () => {
-      try {
+    onOpenChange(false)
+    scheduleUndoableDelete({
+      key: `account:${account.id}`,
+      title: `Sắp xoá tài khoản ${account.name}`,
+      description:
+        "Tài khoản và toàn bộ dữ liệu liên quan sẽ bị xoá sau 6 giây.",
+      pendingMessage: "Đang xoá tài khoản…",
+      successMessage: "Đã xoá tài khoản.",
+      undoMessage: "Đã giữ lại tài khoản.",
+      errorMessage: "Không thể xoá tài khoản. Vui lòng thử lại.",
+      onCommit: async () => {
         const result = await deleteAccountAction(account.id)
 
-        if (result.success) {
-          toast.success("Đã xoá tài khoản.")
-          onOpenChange(false)
-          router.refresh()
-          return
-        }
-
-        setErrorMessage(result.error)
-        toast.error(result.error)
-      } catch {
-        const message = "Không thể xoá tài khoản. Vui lòng thử lại."
-        setErrorMessage(message)
-        toast.error(message)
-      }
+        if (!result.success) throw new Error(result.error)
+        router.refresh()
+      },
     })
   }
 
@@ -69,23 +62,15 @@ export function DeleteAccountAlert({
             Xoá tài khoản {account.name} sẽ xoá vĩnh viễn mọi giao dịch, lần
             điều chỉnh số dư và khoản vay nợ có liên quan, kể cả lịch sử thanh
             toán. Số dư của các tài khoản khác trong giao dịch hoặc khoản nợ
-            liên quan sẽ được đối soát lại. Hành động này không thể hoàn tác.
+            liên quan sẽ được đối soát lại. Sau khi xác nhận, bạn có 6 giây để
+            hoàn tác.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {errorMessage ? (
-          <FieldError>
-            {errorMessage}
-          </FieldError>
-        ) : null}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Huỷ</AlertDialogCancel>
-          <AlertDialogAction disabled={isPending} onClick={handleDelete}>
-            {isPending ? (
-              <LoaderCircleIcon className="animate-spin" />
-            ) : (
-              <Trash2Icon />
-            )}
-            {isPending ? "Đang xoá..." : "Xoá tài khoản"}
+          <AlertDialogCancel>Huỷ</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDelete}>
+            <Trash2Icon />
+            Xoá tài khoản
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

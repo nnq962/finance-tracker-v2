@@ -17,7 +17,7 @@ export function DebtsHeader({ actions }: DebtsHeaderProps) {
             các khoản vay.
           </p>
         </div>
-        <div className="flex shrink-0 flex-wrap gap-2 self-start sm:self-auto">
+        <div className="flex w-full shrink-0 flex-wrap gap-2 self-start sm:w-auto sm:self-auto">
           {actions}
         </div>
       </div>

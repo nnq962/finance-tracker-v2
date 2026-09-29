@@ -9,8 +9,7 @@ import {
   XIcon,
 } from "lucide-react"
 
-import { AccountLogo } from "@/components/account-logo"
-import { Button as AnimatedButton } from "@/components/animate-ui/components/buttons/button"
+import { AccountSelectGroups } from "@/components/account-select-groups"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -59,7 +58,6 @@ import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { Account } from "@/lib/accounts/types"
-import { formatCurrency } from "@/lib/format-currency"
 import { todayDate } from "../_lib/debt-payments"
 
 import type {
@@ -87,12 +85,6 @@ const directionOptions = [
   label: string
   icon: typeof ArrowUpRightIcon
 }>
-
-const accountTypeOptions = [
-  { value: "cash", label: "Tiền mặt" },
-  { value: "bank", label: "Ngân hàng" },
-  { value: "e-wallet", label: "Ví điện tử" },
-] satisfies Array<{ value: Account["type"]; label: string }>
 
 type AddDebtSheetProps = {
   debt?: Debt
@@ -125,10 +117,6 @@ export function AddDebtSheet({
       ? "Khoản cho vay sẽ được lấy ra từ tài khoản này."
       : "Khoản tiền đi vay sẽ được nhận vào tài khoản này."
   const activeAccounts = accounts.filter((account) => account.status === "active" || account.id === debt?.accountId)
-  const accountGroups = accountTypeOptions.map((option) => ({
-    ...option,
-    accounts: activeAccounts.filter((account) => account.type === option.value),
-  }))
   const isDisabled = contacts.length === 0
 
   return (
@@ -138,8 +126,9 @@ export function AddDebtSheet({
       setOpen(nextOpen)
     }}>
       <SheetTrigger asChild>
-        {trigger ?? <AnimatedButton
+        {trigger ?? <Button
           type="button"
+          className="w-full sm:w-auto"
           disabled={isDisabled}
           title={
             contacts.length === 0
@@ -149,7 +138,7 @@ export function AddDebtSheet({
         >
           <PlusIcon />
           Thêm khoản nợ
-        </AnimatedButton>}
+        </Button>}
       </SheetTrigger>
       <SheetContent
         className="gap-0 data-[side=right]:w-full sm:max-w-md!"
@@ -325,31 +314,7 @@ export function AddDebtSheet({
                           <SelectValue placeholder="Chọn tài khoản" />
                         </SelectTrigger>
                         <SelectContent>
-                          {accountGroups.map((group) =>
-                            group.accounts.length > 0 ? (
-                              <SelectGroup key={group.value}>
-                                <SelectLabel>{group.label}</SelectLabel>
-                                {group.accounts.map((account) => (
-                                  <SelectItem
-                                    key={account.id}
-                                    value={account.id}
-                                    textValue={account.name}
-                                  >
-                                    <AccountLogo
-                                      account={account}
-                                      className="size-5! p-0.5! [&>svg]:size-3!"
-                                    />
-                                    <span className="min-w-0 truncate">
-                                      {account.name}
-                                    </span>
-                                    <span className="ml-auto text-xs text-muted-foreground tabular-nums">
-                                      {formatCurrency(account.balance)}
-                                    </span>
-                                  </SelectItem>
-                                ))}
-                              </SelectGroup>
-                            ) : null,
-                          )}
+                          <AccountSelectGroups accounts={activeAccounts} />
                         </SelectContent>
                       </Select>
                       <FieldDescription>{accountDescription}</FieldDescription>
@@ -378,29 +343,35 @@ export function AddDebtSheet({
                 </CardHeader>
                 <CardContent>
                   <FieldGroup>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <Field>
+                    <div className="grid min-w-0 w-full gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                      <Field className="min-w-0">
                         <FieldLabel htmlFor="debt-recorded-at">
                           {isOpening ? "Ngày bắt đầu theo dõi" : "Ngày ghi"}
                         </FieldLabel>
-                        <Input
-                          id="debt-recorded-at"
-                          name="recordedAt"
-                          type="date"
-                          defaultValue={debt?.recordedAt ?? today}
-                          required
-                        />
+                        <div className="flex min-w-0">
+                          <Input
+                            id="debt-recorded-at"
+                            name="recordedAt"
+                            type="date"
+                            defaultValue={debt?.recordedAt ?? today}
+                            required
+                            className="w-auto min-w-0 max-w-full flex-1"
+                          />
+                        </div>
                       </Field>
-                      <Field>
+                      <Field className="min-w-0">
                         <FieldLabel htmlFor="debt-due-at">
                           Hẹn trả <Badge variant="outline">Tùy chọn</Badge>
                         </FieldLabel>
-                        <Input
-                          id="debt-due-at"
-                          name="dueAt"
-                          type="date"
-                          defaultValue={debt?.dueAt}
-                        />
+                        <div className="flex min-w-0">
+                          <Input
+                            id="debt-due-at"
+                            name="dueAt"
+                            type="date"
+                            defaultValue={debt?.dueAt}
+                            className="w-auto min-w-0 max-w-full flex-1"
+                          />
+                        </div>
                       </Field>
                     </div>
 

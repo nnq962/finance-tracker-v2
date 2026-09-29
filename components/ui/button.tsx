@@ -13,7 +13,7 @@ const buttonVariants = cva(
       variant: {
         default: `[--button-face:#6ecc49] [--button-shade:#3e9727] [--button-text:#fff] ${pressEffect}`,
         outline:
-          `[--button-face-border:2px] aria-expanded:[--button-face:#d6f4ff] aria-pressed:[--button-face:#d6f4ff] [--button-face:#fff] [--button-shade:#e7e4dd] [--button-text:#0083c4] ${pressEffect}`,
+          `[--button-face-border:2px] aria-expanded:[--button-face:#d6f4ff] aria-pressed:[--button-face:#d6f4ff] [--button-face:#fff] [--button-shade:#e7e4dd] [--button-text:#0083c4] dark:[--button-face:#201e26] dark:[--button-shade:#35323e] dark:[--button-text:#78d0ff] dark:aria-expanded:[--button-face:#113950] dark:aria-pressed:[--button-face:#113950] dark:disabled:[--button-face:#2c2a33] dark:disabled:[--button-shade:#211f27] dark:disabled:[--button-text:#66626f] ${pressEffect}`,
         secondary:
           `[--button-face:#38b8f6] [--button-shade:#0083c4] [--button-text:#fff] ${pressEffect}`,
         ghost:
@@ -24,7 +24,7 @@ const buttonVariants = cva(
       },
       size: {
         default:
-          "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
+          "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [--button-edge:4px]",
         xs: "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3 [--button-edge:2px]",
         sm: "h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5 [--button-edge:3px]",
         lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [--button-edge:6px]",

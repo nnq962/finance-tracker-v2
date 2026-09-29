@@ -5,6 +5,7 @@ import {
   ReceiptTextIcon,
 } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardAction,
@@ -106,14 +107,10 @@ function CashFlowCard({
   return (
     <Card className="h-44">
       <CardHeader>
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          <span className="flex items-center gap-2">
-            <span
-              className={`size-2.5 rounded-full ${colors.dot}`}
-              aria-hidden="true"
-            />
+        <CardTitle>
+          <Badge variant={kind === "income" ? "default" : "destructive"}>
             {content.label}
-          </span>
+          </Badge>
         </CardTitle>
         <CardAction>
           <CashFlowTrend kind={kind} period={period} trend={trend} />
@@ -126,10 +123,8 @@ function CashFlowCard({
           >
             {formatCurrency(amount)}
           </p>
-          <Separator />
-          <p className="text-xs text-muted-foreground">
-            {count} giao dịch
-          </p>
+          <Separator className="data-horizontal:h-0! border-t-2 border-dashed border-[#e7e4dd] bg-transparent dark:border-[#35323e]" />
+          <p className="text-xs text-muted-foreground">{count} giao dịch</p>
         </div>
       </CardContent>
     </Card>

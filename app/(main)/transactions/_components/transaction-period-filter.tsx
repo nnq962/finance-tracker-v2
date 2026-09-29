@@ -42,7 +42,7 @@ export function TransactionPeriodFilter({
         >
           <ChevronLeftIcon />
         </Button>
-        <ButtonGroupText className="min-w-0 flex-1 justify-center bg-background whitespace-nowrap dark:bg-input/30">
+        <ButtonGroupText className="min-w-0 flex-1 justify-center whitespace-nowrap border-2 border-[#e7e4dd] bg-[#f3f1ec] text-[#2b2a33] dark:border-[#35323e] dark:bg-[#1b1a21] dark:text-[#f2f0f6]">
           {rangeLabel}
         </ButtonGroupText>
         <Button
