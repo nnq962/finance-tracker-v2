@@ -2,17 +2,134 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useEffect, useRef } from "react"
 import { cn } from "cn"
 
 import { appNavigationItems } from "@/lib/app-navigation"
 
+function isIOSStandalone() {
+  const navigatorWithStandalone = navigator as Navigator & {
+    standalone?: boolean
+  }
+  const isIOS =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+
+  return (
+    isIOS &&
+    (navigatorWithStandalone.standalone === true ||
+      window.matchMedia("(display-mode: standalone)").matches)
+  )
+}
+
 export function MobileBottomNav() {
   const pathname = usePathname()
+  const navRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const nav = navRef.current
+
+    if (!nav || !isIOSStandalone()) {
+      return
+    }
+
+    let animationFrame = 0
+    let bottomOffset = false
+    let lastRepaint = 0
+    let restoreViewportTimeout = 0
+    let orientationTimeout = 0
+    let healthyViewportWidth = window.innerWidth
+
+    const repaintNav = () => {
+      if (animationFrame) {
+        return
+      }
+
+      animationFrame = window.requestAnimationFrame((timestamp) => {
+        animationFrame = 0
+
+        // iOS standalone PWAs can visually detach fixed elements while the page
+        // scrolls. A tiny position change makes WebKit re-anchor this layer.
+        if (timestamp - lastRepaint < 24) {
+          return
+        }
+
+        lastRepaint = timestamp
+        bottomOffset = !bottomOffset
+        nav.style.bottom = bottomOffset ? "0.01px" : "0px"
+        nav.getBoundingClientRect()
+      })
+    }
+
+    const recoverViewport = () => {
+      if (document.visibilityState !== "visible") {
+        return
+      }
+
+      const currentWidth = window.innerWidth
+
+      // Some iOS PWA resumes lose viewport-fit and report a wider viewport.
+      // Refresh the viewport declaration only when that anomaly is detected.
+      if (currentWidth > healthyViewportWidth + 10) {
+        const viewportMeta = document.querySelector<HTMLMetaElement>(
+          'meta[name="viewport"]'
+        )
+
+        if (viewportMeta) {
+          const viewportContent = viewportMeta.content
+
+          viewportMeta.content = "width=device-width, initial-scale=1"
+          window.clearTimeout(restoreViewportTimeout)
+          restoreViewportTimeout = window.setTimeout(() => {
+            viewportMeta.content = viewportContent
+            healthyViewportWidth = window.innerWidth
+            repaintNav()
+          }, 50)
+
+          return
+        }
+      }
+
+      healthyViewportWidth = currentWidth
+      repaintNav()
+    }
+
+    const handleOrientationChange = () => {
+      window.clearTimeout(orientationTimeout)
+      orientationTimeout = window.setTimeout(() => {
+        healthyViewportWidth = window.innerWidth
+        repaintNav()
+      }, 250)
+    }
+
+    window.addEventListener("scroll", repaintNav, { passive: true })
+    window.addEventListener("pageshow", recoverViewport)
+    window.addEventListener("orientationchange", handleOrientationChange)
+    document.addEventListener("visibilitychange", recoverViewport)
+    window.visualViewport?.addEventListener("scroll", repaintNav)
+    window.visualViewport?.addEventListener("resize", repaintNav)
+
+    repaintNav()
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame)
+      window.clearTimeout(restoreViewportTimeout)
+      window.clearTimeout(orientationTimeout)
+      window.removeEventListener("scroll", repaintNav)
+      window.removeEventListener("pageshow", recoverViewport)
+      window.removeEventListener("orientationchange", handleOrientationChange)
+      document.removeEventListener("visibilitychange", recoverViewport)
+      window.visualViewport?.removeEventListener("scroll", repaintNav)
+      window.visualViewport?.removeEventListener("resize", repaintNav)
+      nav.style.removeProperty("bottom")
+    }
+  }, [])
 
   return (
     <nav
+      ref={navRef}
       aria-label="Điều hướng chính trên di động"
-      className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-[#e7e4dd] bg-white/95 px-3 pt-1.5 [padding-bottom:env(safe-area-inset-bottom,0px)] backdrop-blur-xl dark:border-[#35323e] dark:bg-[#201e26]/95 md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-[#e7e4dd] bg-white px-3 pt-1.5 [padding-bottom:env(safe-area-inset-bottom,0px)] dark:border-[#35323e] dark:bg-[#201e26] md:hidden"
     >
       <ul className="mx-auto grid max-w-md grid-cols-5 gap-0.5">
         {appNavigationItems.map((item) => {
