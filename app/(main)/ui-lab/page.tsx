@@ -2,6 +2,7 @@ import { CurrencyInputExample } from "./_components/currency-input-example"
 import { SonnerExamples } from "./_components/sonner-examples"
 import GradientWaves from "@/components/gradient-waves"
 import Link from "next/link"
+import { notFound } from "next/navigation"
 import {
   ArrowRightIcon,
   CheckIcon,
@@ -85,6 +86,10 @@ const colors = [
 ] as const
 
 export default function UiLabPage() {
+  if (process.env.NODE_ENV !== "development") {
+    notFound()
+  }
+
   return (
     <main className="mx-auto w-full max-w-6xl space-y-8 pb-12">
       <div className="space-y-2">

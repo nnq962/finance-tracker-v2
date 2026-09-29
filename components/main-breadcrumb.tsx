@@ -15,7 +15,9 @@ const routeLabels: Record<string, string> = {
   "/accounts": "Tài khoản",
   "/categories": "Hạng mục",
   "/debts": "Nợ & Cho vay",
-  "/ui-lab": "Thử giao diện",
+  ...(process.env.NODE_ENV === "development"
+    ? { "/ui-lab": "Thử giao diện" }
+    : {}),
 }
 
 export function MainBreadcrumb() {

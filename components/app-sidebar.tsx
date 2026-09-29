@@ -53,11 +53,15 @@ const navMain = [
     url: "/debts",
     icon: <HandCoinsIcon />,
   },
-  {
-    title: "Thử giao diện",
-    url: "/ui-lab",
-    icon: <FlaskConicalIcon />,
-  },
+  ...(process.env.NODE_ENV === "development"
+    ? [
+        {
+          title: "Thử giao diện",
+          url: "/ui-lab",
+          icon: <FlaskConicalIcon />,
+        },
+      ]
+    : []),
 ]
 
 export function AppSidebar({
