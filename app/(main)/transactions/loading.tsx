@@ -65,25 +65,13 @@ function TopExpenseCardSkeleton() {
 function TransactionToolbarSkeleton() {
   return (
     <section className="space-y-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex min-w-0 flex-1 items-center gap-2">
-          <div className="flex h-8 min-w-0 max-w-md flex-1 items-center gap-2 rounded-lg border-2 border-[#e7e4dd] bg-[#f3f1ec] px-2 dark:border-[#35323e] dark:bg-[#1b1a21]">
-            <Skeleton className="size-4 shrink-0 rounded-full" />
-            <Skeleton className="h-4 w-28 max-w-full" />
-          </div>
-          <Skeleton className="h-8 w-24 shrink-0 rounded-lg" />
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="flex h-8 min-w-0 max-w-md flex-1 items-center gap-2 rounded-lg border-2 border-[#e7e4dd] bg-[#f3f1ec] px-2 dark:border-[#35323e] dark:bg-[#1b1a21]">
+          <Skeleton className="size-4 shrink-0 rounded-full" />
+          <Skeleton className="h-4 w-28 max-w-full" />
         </div>
-
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-48 shrink-0 items-stretch">
-            <Skeleton className="h-8 w-8 shrink-0 rounded-r-none rounded-l-lg" />
-            <div className="flex min-w-0 flex-1 items-center justify-center border-y-2 border-[#e7e4dd] bg-[#f3f1ec] px-2 dark:border-[#35323e] dark:bg-[#1b1a21]">
-              <Skeleton className="h-4 w-20 max-w-full" />
-            </div>
-            <Skeleton className="h-8 w-8 shrink-0 rounded-r-lg rounded-l-none" />
-          </div>
-          <Skeleton className="size-8 shrink-0 rounded-lg" />
-        </div>
+        <Skeleton className="h-8 w-24 shrink-0 rounded-lg" />
+        <Skeleton className="size-8 shrink-0 rounded-lg" />
       </div>
 
       <div className="flex items-center gap-1.5">

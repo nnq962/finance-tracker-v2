@@ -63,6 +63,7 @@ function AccountSelect({
 export function TransferFields({
   accounts,
   defaultValues,
+  isCreating,
 }: TransactionFieldProps) {
   const [fromAccountId, setFromAccountId] = React.useState(
     defaultValues?.fromAccountId ?? "",
@@ -81,10 +82,14 @@ export function TransferFields({
       <Card>
         <CardHeader>
           <CardTitle>Giá trị chuyển khoản</CardTitle>
-          <CardDescription>Nhập số tiền và phí phát sinh nếu có.</CardDescription>
-          <CardAction>
-            <Badge variant="secondary">VND</Badge>
-          </CardAction>
+          {!isCreating ? (
+            <>
+              <CardDescription>Nhập số tiền và phí phát sinh nếu có.</CardDescription>
+              <CardAction>
+                <Badge variant="secondary">VND</Badge>
+              </CardAction>
+            </>
+          ) : null}
         </CardHeader>
         <CardContent className="grid gap-4">
           <Field>
@@ -99,7 +104,7 @@ export function TransferFields({
           </Field>
           <Field>
             <FieldLabel htmlFor="transfer-fee">
-              Phí chuyển <Badge variant="outline">Tùy chọn</Badge>
+              Phí chuyển {!isCreating ? <Badge variant="outline">Tùy chọn</Badge> : null}
             </FieldLabel>
             <CurrencyInput
               key={`${defaultValues?.id ?? "new"}-transfer-fee`}
@@ -116,9 +121,11 @@ export function TransferFields({
           <CardTitle className="flex items-center gap-2">
             Luồng tiền
           </CardTitle>
-          <CardDescription>
-            Chọn tài khoản gửi, tài khoản nhận và thời gian chuyển.
-          </CardDescription>
+          {!isCreating ? (
+            <CardDescription>
+              Chọn tài khoản gửi, tài khoản nhận và thời gian chuyển.
+            </CardDescription>
+          ) : null}
         </CardHeader>
         <CardContent>
           <FieldGroup>
@@ -160,7 +167,7 @@ export function TransferFields({
 
             <Field>
               <FieldLabel htmlFor="transfer-note">
-                Ghi chú <Badge variant="outline">Tùy chọn</Badge>
+                Ghi chú {!isCreating ? <Badge variant="outline">Tùy chọn</Badge> : null}
               </FieldLabel>
               <Textarea
                 id="transfer-note"
@@ -173,30 +180,32 @@ export function TransferFields({
         </CardContent>
       </Card>
 
-      <Card size="sm">
-        <CardContent className="flex flex-col gap-3">
-          <div className="flex items-center gap-3">
-            <PaperclipIcon className="size-4 text-muted-foreground" />
-            <div>
-              <p className="text-sm font-medium">Biên lai chuyển khoản</p>
-              <p className="text-xs text-muted-foreground">
-                Đính kèm ảnh để tiện đối chiếu sau này.
-              </p>
+      {!isCreating ? (
+        <Card size="sm">
+          <CardContent className="flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <PaperclipIcon className="size-4 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium">Biên lai chuyển khoản</p>
+                <p className="text-xs text-muted-foreground">
+                  Đính kèm ảnh để tiện đối chiếu sau này.
+                </p>
+              </div>
             </div>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() =>
-              toast.info("Đính kèm biên lai sẽ được hỗ trợ trong bản cập nhật tới.")
-            }
-          >
-            <ImagePlusIcon />
-            Đính kèm
-            <Badge variant="secondary">Sắp có</Badge>
-          </Button>
-        </CardContent>
-      </Card>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() =>
+                toast.info("Đính kèm biên lai sẽ được hỗ trợ trong bản cập nhật tới.")
+              }
+            >
+              <ImagePlusIcon />
+              Đính kèm
+              <Badge variant="secondary">Sắp có</Badge>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
     </FieldGroup>
   )
 }

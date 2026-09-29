@@ -131,7 +131,7 @@ export function MobileBottomNav() {
       aria-label="Điều hướng chính trên di động"
       className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-[#e7e4dd] bg-white px-3 pt-1.5 [padding-bottom:env(safe-area-inset-bottom,0px)] dark:border-[#35323e] dark:bg-[#201e26] md:hidden"
     >
-      <ul className="mx-auto grid max-w-md grid-cols-5 gap-0.5">
+      <ul className="mx-auto grid max-w-md grid-cols-4 gap-0.5">
         {appNavigationItems.map((item) => {
           const isActive = pathname === item.url
           const Icon = item.icon

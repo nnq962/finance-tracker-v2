@@ -50,7 +50,9 @@ export function CashFlowFields({
   categoryGroups,
   defaultValues,
   idPrefix,
+  isCreating,
   notePlaceholder,
+  onManageCategories,
 }: CashFlowFieldsProps) {
   const availableAccounts = accounts.filter(
     (account) =>
@@ -79,10 +81,14 @@ export function CashFlowFields({
       <Card>
         <CardHeader>
           <CardTitle>Số tiền giao dịch</CardTitle>
-          <CardDescription>Nhập số tiền theo đơn vị Việt Nam đồng.</CardDescription>
-          <CardAction>
-            <Badge variant="secondary">VND</Badge>
-          </CardAction>
+          {!isCreating ? (
+            <>
+              <CardDescription>Nhập số tiền theo đơn vị Việt Nam đồng.</CardDescription>
+              <CardAction>
+                <Badge variant="secondary">VND</Badge>
+              </CardAction>
+            </>
+          ) : null}
         </CardHeader>
         <CardContent>
           <Field>
@@ -108,9 +114,11 @@ export function CashFlowFields({
             <LandmarkIcon className="size-4" />
             Thông tin giao dịch
           </CardTitle>
-          <CardDescription>
-            Chọn nguồn tiền, hạng mục và thời điểm phát sinh.
-          </CardDescription>
+          {!isCreating ? (
+            <CardDescription>
+              Chọn nguồn tiền, hạng mục và thời điểm phát sinh.
+            </CardDescription>
+          ) : null}
         </CardHeader>
         <CardContent>
           <FieldGroup>
@@ -134,9 +142,16 @@ export function CashFlowFields({
               </Field>
 
               <Field>
-                <FieldLabel htmlFor={`${idPrefix}-category`}>
-                  Hạng mục
-                </FieldLabel>
+                <div className="flex items-center justify-between gap-2">
+                  <FieldLabel htmlFor={`${idPrefix}-category`}>
+                    Hạng mục
+                  </FieldLabel>
+                  {onManageCategories ? (
+                    <Button type="button" variant="ghost" onClick={onManageCategories}>
+                      Quản lý hạng mục
+                    </Button>
+                  ) : null}
+                </div>
                 <Select
                   name="categoryId"
                   value={categoryId}
@@ -146,7 +161,10 @@ export function CashFlowFields({
                   <SelectTrigger id={`${idPrefix}-category`} className="w-full">
                     <SelectValue placeholder="Chọn hạng mục" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent
+                    position="popper"
+                    className="max-h-[min(16rem,var(--radix-select-content-available-height))]"
+                  >
                     {defaultCategoryIsMissing && defaultValues?.categoryId ? (
                       <SelectGroup>
                         <SelectLabel>
@@ -226,7 +244,7 @@ export function CashFlowFields({
 
             <Field>
               <FieldLabel htmlFor={`${idPrefix}-note`}>
-                Ghi chú <Badge variant="outline">Tùy chọn</Badge>
+                Ghi chú {!isCreating ? <Badge variant="outline">Tùy chọn</Badge> : null}
               </FieldLabel>
               <Textarea
                 id={`${idPrefix}-note`}
@@ -239,30 +257,32 @@ export function CashFlowFields({
         </CardContent>
       </Card>
 
-      <Card size="sm">
-        <CardContent className="flex flex-col gap-3">
-          <div className="flex items-center gap-3">
-            <PaperclipIcon className="size-4 text-muted-foreground" />
-            <div>
-              <p className="text-sm font-medium">Hóa đơn</p>
-              <p className="text-xs text-muted-foreground">
-                Lưu ảnh để đối chiếu giao dịch sau này.
-              </p>
+      {!isCreating ? (
+        <Card size="sm">
+          <CardContent className="flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <PaperclipIcon className="size-4 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium">Hóa đơn</p>
+                <p className="text-xs text-muted-foreground">
+                  Lưu ảnh để đối chiếu giao dịch sau này.
+                </p>
+              </div>
             </div>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() =>
-              toast.info("Đính kèm hóa đơn sẽ được hỗ trợ trong bản cập nhật tới.")
-            }
-          >
-            <ImagePlusIcon />
-            Đính kèm
-            <Badge variant="secondary">Sắp có</Badge>
-          </Button>
-        </CardContent>
-      </Card>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() =>
+                toast.info("Đính kèm hóa đơn sẽ được hỗ trợ trong bản cập nhật tới.")
+              }
+            >
+              <ImagePlusIcon />
+              Đính kèm
+              <Badge variant="secondary">Sắp có</Badge>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
     </FieldGroup>
   )
 }

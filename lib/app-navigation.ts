@@ -2,7 +2,6 @@ import {
   ArrowLeftRightIcon,
   HandCoinsIcon,
   LayoutDashboardIcon,
-  TagsIcon,
   WalletCardsIcon,
   type LucideIcon,
 } from "lucide-react"
@@ -32,12 +31,6 @@ export const appNavigationItems: AppNavigationItem[] = [
     mobileTitle: "Tài khoản",
     url: "/accounts",
     icon: WalletCardsIcon,
-  },
-  {
-    title: "Hạng mục",
-    mobileTitle: "Hạng mục",
-    url: "/categories",
-    icon: TagsIcon,
   },
   {
     title: "Nợ & Cho vay",

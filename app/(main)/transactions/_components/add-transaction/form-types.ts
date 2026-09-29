@@ -6,4 +6,6 @@ export type TransactionFieldProps = {
   accounts: Account[]
   categoryGroups: CategoryGroup[]
   defaultValues?: Transaction
+  isCreating?: boolean
+  onManageCategories?: () => void
 }

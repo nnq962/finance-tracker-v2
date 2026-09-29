@@ -35,7 +35,9 @@ type TransactionFormProps = {
   action: (formData: FormData) => Promise<TransactionActionResult>
   categoryGroups: CategoryGroup[]
   defaultValues?: Transaction
+  isCreating?: boolean
   kind: SupportedTransactionKind
+  onManageCategories?: () => void
   onSuccess: () => void
   submitLabel?: string
   successMessage: string
@@ -46,7 +48,9 @@ export function TransactionForm({
   action,
   categoryGroups,
   defaultValues,
+  isCreating,
   kind,
+  onManageCategories,
   onSuccess,
   submitLabel = "Lưu giao dịch",
   successMessage,
@@ -91,6 +95,8 @@ export function TransactionForm({
           accounts={accounts}
           categoryGroups={categoryGroups}
           defaultValues={defaultValues}
+          isCreating={isCreating}
+          onManageCategories={onManageCategories}
         />
       </div>
       <SheetFooter>

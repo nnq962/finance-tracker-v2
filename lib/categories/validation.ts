@@ -28,6 +28,20 @@ export function parseCategoryType(value: unknown): CategoryType {
   return value as CategoryType
 }
 
+export function parseCategoryName(value: unknown): string {
+  const name = typeof value === "string" ? value.trim() : ""
+
+  if (!name) {
+    throw new CategoryValidationError("Tên hạng mục là bắt buộc.")
+  }
+
+  if (name.length > 80) {
+    throw new CategoryValidationError("Tên hạng mục không được vượt quá 80 ký tự.")
+  }
+
+  return name
+}
+
 export function parseCategoryFormValues(
   values: unknown,
 ): CategoryFormValues {
@@ -36,17 +50,7 @@ export function parseCategoryFormValues(
   }
 
   const candidate = values as Record<string, unknown>
-  const name = typeof candidate.name === "string" ? candidate.name.trim() : ""
-
-  if (!name) {
-    throw new CategoryValidationError("Tên hạng mục là bắt buộc.")
-  }
-
-  if (name.length > 80) {
-    throw new CategoryValidationError(
-      "Tên hạng mục không được vượt quá 80 ký tự.",
-    )
-  }
+  const name = parseCategoryName(candidate.name)
 
   if (
     typeof candidate.colorName !== "string" ||
@@ -77,17 +81,7 @@ export function parseCategoryItemFormValues(
   }
 
   const candidate = values as Record<string, unknown>
-  const name = typeof candidate.name === "string" ? candidate.name.trim() : ""
-
-  if (!name) {
-    throw new CategoryValidationError("Tên hạng mục là bắt buộc.")
-  }
-
-  if (name.length > 80) {
-    throw new CategoryValidationError(
-      "Tên hạng mục không được vượt quá 80 ký tự.",
-    )
-  }
+  const name = parseCategoryName(candidate.name)
 
   if (
     typeof candidate.iconName !== "string" ||

@@ -98,38 +98,27 @@ export function TransactionsDashboard({
         categoryGroups={categoryGroups}
         filter={filter}
         searchFilters={searchFilters}
+        selectedMonth={selectedMonth}
+        maxMonth={todayDateKey.slice(0, 7)}
+        isMonthPending={isNavigating}
         rangeLabel={periodData.rangeLabel}
-        contextLabel={periodData.contextLabel}
         transactionCount={visibleTransactions.length}
-        canGoNext={!isNavigating && selectedMonth < todayDateKey.slice(0, 7)}
         onFilterChange={setFilter}
         onSearchFiltersChange={setSearchFilters}
-        onPrevious={() => {
-          const month = shiftPeriodAnchor(
-            effectiveAnchorDateKey,
-            period,
-            -1,
-          ).slice(0, 7)
-          startNavigation(() => router.push(`/transactions?month=${month}`))
-        }}
-        onNext={() => {
-          const month = shiftPeriodAnchor(
-            effectiveAnchorDateKey,
-            period,
-            1,
-          ).slice(0, 7)
+        onMonthChange={(month) => {
           startNavigation(() =>
             router.push(
               month === todayDateKey.slice(0, 7)
                 ? "/transactions"
                 : `/transactions?month=${month}`,
+              { scroll: false },
             ),
           )
         }}
         onReset={() => {
           setFilter("all")
           setSearchFilters(initialSearchFilters)
-          startNavigation(() => router.push("/transactions"))
+          startNavigation(() => router.push("/transactions", { scroll: false }))
         }}
       />
       <TransactionsView

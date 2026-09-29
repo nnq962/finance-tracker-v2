@@ -3,6 +3,7 @@
 import * as React from "react"
 import { ListFilterIcon, RotateCcwIcon, SearchIcon, XIcon } from "lucide-react"
 
+import { MonthField } from "@/components/forms/month-field"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -33,7 +34,6 @@ import type {
   TransactionFilter,
   TransactionSearchFilters,
 } from "../_types/transaction"
-import { TransactionPeriodFilter } from "./transaction-period-filter"
 
 const filters: { label: string; value: Exclude<TransactionFilter, "all"> }[] = [
   { label: "Chi tiền", value: "expense" },
@@ -84,14 +84,14 @@ type TransactionToolbarProps = {
   categoryGroups: CategoryGroup[]
   filter: TransactionFilter
   searchFilters: TransactionSearchFilters
+  selectedMonth: string
+  maxMonth: string
+  isMonthPending: boolean
   rangeLabel: string
-  contextLabel: string
   transactionCount: number
-  canGoNext: boolean
   onFilterChange: (filter: TransactionFilter) => void
   onSearchFiltersChange: (filters: TransactionSearchFilters) => void
-  onPrevious: () => void
-  onNext: () => void
+  onMonthChange: (month: string) => void
   onReset: () => void
 }
 
@@ -100,14 +100,14 @@ export function TransactionToolbar({
   categoryGroups,
   filter,
   searchFilters,
+  selectedMonth,
+  maxMonth,
+  isMonthPending,
   rangeLabel,
-  contextLabel,
   transactionCount,
-  canGoNext,
   onFilterChange,
   onSearchFiltersChange,
-  onPrevious,
-  onNext,
+  onMonthChange,
   onReset,
 }: TransactionToolbarProps) {
   const [isFilterOpen, setIsFilterOpen] = React.useState(false)
@@ -122,6 +122,7 @@ export function TransactionToolbar({
   )
 
   const activeFilterCount =
+    Number(selectedMonth !== maxMonth) +
     Number(filter !== "all") +
     Number(searchFilters.minAmount !== null) +
     Number(searchFilters.maxAmount !== null) +
@@ -163,245 +164,249 @@ export function TransactionToolbar({
       className="space-y-4"
       aria-label="Điều khiển giao dịch"
     >
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex min-w-0 flex-1 items-center gap-2">
-          <label htmlFor="transaction-quick-search" className="sr-only">
-            Tìm giao dịch
-          </label>
-          <InputGroup className="min-w-0 max-w-md flex-1">
-            <InputGroupAddon>
-              <SearchIcon aria-hidden="true" />
+      <div className="flex min-w-0 items-center gap-2">
+        <label htmlFor="transaction-quick-search" className="sr-only">
+          Tìm giao dịch
+        </label>
+        <InputGroup className="min-w-0 max-w-md flex-1">
+          <InputGroupAddon>
+            <SearchIcon aria-hidden="true" />
+          </InputGroupAddon>
+          <InputGroupInput
+            id="transaction-quick-search"
+            type="text"
+            inputMode="search"
+            value={searchFilters.query}
+            onChange={(event) =>
+              onSearchFiltersChange({
+                ...searchFilters,
+                query: event.target.value,
+              })
+            }
+            placeholder="Tìm giao dịch..."
+          />
+          {searchFilters.query ? (
+            <InputGroupAddon align="inline-end">
+              <InputGroupButton
+                size="icon-xs"
+                aria-label="Xóa tìm kiếm"
+                onClick={() =>
+                  onSearchFiltersChange({ ...searchFilters, query: "" })
+                }
+              >
+                <XIcon />
+              </InputGroupButton>
             </InputGroupAddon>
-            <InputGroupInput
-              id="transaction-quick-search"
-              type="text"
-              inputMode="search"
-              value={searchFilters.query}
-              onChange={(event) =>
-                onSearchFiltersChange({
-                  ...searchFilters,
-                  query: event.target.value,
-                })
-              }
-              placeholder="Tìm giao dịch..."
-            />
-            {searchFilters.query ? (
-              <InputGroupAddon align="inline-end">
-                <InputGroupButton
-                  size="icon-xs"
-                  aria-label="Xóa tìm kiếm"
-                  onClick={() =>
-                    onSearchFiltersChange({ ...searchFilters, query: "" })
-                  }
+          ) : null}
+        </InputGroup>
+
+        <Popover open={isFilterOpen} onOpenChange={handleFilterOpenChange}>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              className="shrink-0"
+              aria-label={activeFilterCount ? `Bộ lọc, ${activeFilterCount} điều kiện đang áp dụng` : "Bộ lọc"}
+            >
+              <ListFilterIcon />
+              Bộ lọc
+              {activeFilterCount > 0 ? (
+                <Badge variant="secondary">{activeFilterCount}</Badge>
+              ) : null}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            align="start"
+            sideOffset={8}
+            collisionPadding={16}
+            className="max-h-[var(--radix-popover-content-available-height)] w-[min(28rem,calc(100vw-2rem))] overflow-y-auto"
+          >
+            <div className="space-y-5 p-1">
+              <div className="flex items-start justify-between gap-4">
+                <PopoverHeader>
+                  <PopoverTitle>Bộ lọc giao dịch</PopoverTitle>
+                  <PopoverDescription>
+                    Chọn tháng và điều kiện lọc giao dịch.
+                  </PopoverDescription>
+                </PopoverHeader>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Đóng bộ lọc"
+                  onClick={() => setIsFilterOpen(false)}
                 >
                   <XIcon />
-                </InputGroupButton>
-              </InputGroupAddon>
-            ) : null}
-          </InputGroup>
+                </Button>
+              </div>
 
-          <Popover open={isFilterOpen} onOpenChange={handleFilterOpenChange}>
-            <PopoverTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                className="shrink-0"
-                aria-label={activeFilterCount ? `Bộ lọc, ${activeFilterCount} điều kiện đang áp dụng` : "Bộ lọc"}
-              >
-                <ListFilterIcon />
-                Bộ lọc
-                {activeFilterCount > 0 ? (
-                  <Badge variant="secondary">{activeFilterCount}</Badge>
-                ) : null}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent
-              align="start"
-              sideOffset={8}
-              collisionPadding={16}
-              className="max-h-[var(--radix-popover-content-available-height)] w-[min(28rem,calc(100vw-2rem))] overflow-y-auto"
-            >
-              <div className="space-y-5 p-1">
-                <div className="flex items-start justify-between gap-4">
-                  <PopoverHeader>
-                    <PopoverTitle>Bộ lọc giao dịch</PopoverTitle>
-                    <PopoverDescription>
-                      Lọc giao dịch trong tháng đang xem.
-                    </PopoverDescription>
-                  </PopoverHeader>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label="Đóng bộ lọc"
-                    onClick={() => setIsFilterOpen(false)}
+              <FieldGroup>
+                <MonthField
+                  key={selectedMonth}
+                  id="transaction-filter-month"
+                  label="Tháng giao dịch"
+                  defaultValue={selectedMonth}
+                  max={maxMonth}
+                  disabled={isMonthPending}
+                  onChange={(event) => {
+                    const month = event.target.value
+                    if (month && month <= maxMonth && month !== selectedMonth) {
+                      onMonthChange(month)
+                    }
+                  }}
+                />
+
+                <Field aria-label="Lọc loại giao dịch">
+                  <FieldLabel>Loại giao dịch</FieldLabel>
+                  <ToggleGroup
+                    type="single"
+                    size="sm"
+                    value={filter === "all" ? "" : filter}
+                    onValueChange={(value) =>
+                      onFilterChange(value ? (value as TransactionFilter) : "all")
+                    }
+                    className="flex-wrap"
+                    aria-label="Lọc loại giao dịch"
                   >
-                    <XIcon />
-                  </Button>
+                    {filters.map((item) => (
+                      <ToggleGroupItem
+                        key={item.value}
+                        value={item.value}
+                      >
+                        {item.label}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                </Field>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Field>
+                    <FieldLabel htmlFor="transaction-min-amount">
+                      Số tiền từ
+                    </FieldLabel>
+                    <Input
+                      id="transaction-min-amount"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={draft.minAmount}
+                      onChange={(event) =>
+                        updateSearchFilterDraft({
+                          ...draft,
+                          minAmount: event.target.value.replace(/\D/g, ""),
+                        })
+                      }
+                      placeholder="0"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="transaction-max-amount">
+                      Đến
+                    </FieldLabel>
+                    <Input
+                      id="transaction-max-amount"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={draft.maxAmount}
+                      onChange={(event) =>
+                        updateSearchFilterDraft({
+                          ...draft,
+                          maxAmount: event.target.value.replace(/\D/g, ""),
+                        })
+                      }
+                      placeholder="Không giới hạn"
+                    />
+                  </Field>
                 </div>
 
-                <FieldGroup>
-                  <Field aria-label="Lọc loại giao dịch">
-                    <FieldLabel>Loại giao dịch</FieldLabel>
-                    <ToggleGroup
-                      type="single"
-                      size="sm"
-                      value={filter === "all" ? "" : filter}
-                      onValueChange={(value) =>
-                        onFilterChange(value ? (value as TransactionFilter) : "all")
-                      }
-                      className="flex-wrap"
-                      aria-label="Lọc loại giao dịch"
-                    >
-                      {filters.map((item) => (
-                        <ToggleGroupItem
-                          key={item.value}
-                          value={item.value}
-                        >
-                          {item.label}
-                        </ToggleGroupItem>
-                      ))}
-                    </ToggleGroup>
-                  </Field>
+                <Field aria-label="Lọc theo tài khoản">
+                  <FieldLabel>Tài khoản</FieldLabel>
+                  <ToggleGroup
+                    type="multiple"
+                    size="sm"
+                    value={draft.accountIds}
+                    onValueChange={(accountIds) =>
+                      updateSearchFilterDraft({ ...draft, accountIds })
+                    }
+                    className="flex-wrap"
+                    aria-label="Lọc theo tài khoản"
+                  >
+                    {accounts.map((account) => (
+                      <ToggleGroupItem
+                        key={account.id}
+                        value={account.id}
+                      >
+                        {account.name}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                </Field>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field>
-                      <FieldLabel htmlFor="transaction-min-amount">
-                        Số tiền từ
-                      </FieldLabel>
-                      <Input
-                        id="transaction-min-amount"
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        value={draft.minAmount}
-                        onChange={(event) =>
-                          updateSearchFilterDraft({
-                            ...draft,
-                            minAmount: event.target.value.replace(/\D/g, ""),
-                          })
-                        }
-                        placeholder="0"
-                      />
-                    </Field>
-                    <Field>
-                      <FieldLabel htmlFor="transaction-max-amount">
-                        Đến
-                      </FieldLabel>
-                      <Input
-                        id="transaction-max-amount"
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        value={draft.maxAmount}
-                        onChange={(event) =>
-                          updateSearchFilterDraft({
-                            ...draft,
-                            maxAmount: event.target.value.replace(/\D/g, ""),
-                          })
-                        }
-                        placeholder="Không giới hạn"
-                      />
-                    </Field>
-                  </div>
+                <Field aria-label="Lọc theo hạng mục chi">
+                  <FieldLabel>Hạng mục chi</FieldLabel>
+                  <ToggleGroup
+                    type="multiple"
+                    size="sm"
+                    value={draft.categoryGroupIds.filter((groupId) =>
+                      expenseCategoryGroups.some((group) => group.id === groupId),
+                    )}
+                    onValueChange={(categoryGroupIds) =>
+                      updateCategoryGroupSelection("expense", categoryGroupIds)
+                    }
+                    className="flex-wrap"
+                    aria-label="Lọc theo hạng mục chi"
+                  >
+                    {expenseCategoryGroups.map((group) => (
+                      <ToggleGroupItem
+                        key={group.id}
+                        value={group.id}
+                      >
+                        {group.name}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                </Field>
 
-                  <Field aria-label="Lọc theo tài khoản">
-                    <FieldLabel>Tài khoản</FieldLabel>
-                    <ToggleGroup
-                      type="multiple"
-                      size="sm"
-                      value={draft.accountIds}
-                      onValueChange={(accountIds) =>
-                        updateSearchFilterDraft({ ...draft, accountIds })
-                      }
-                      className="flex-wrap"
-                      aria-label="Lọc theo tài khoản"
-                    >
-                      {accounts.map((account) => (
-                        <ToggleGroupItem
-                          key={account.id}
-                          value={account.id}
-                        >
-                          {account.name}
-                        </ToggleGroupItem>
-                      ))}
-                    </ToggleGroup>
-                  </Field>
-
-                  <Field aria-label="Lọc theo hạng mục chi">
-                    <FieldLabel>Hạng mục chi</FieldLabel>
-                    <ToggleGroup
-                      type="multiple"
-                      size="sm"
-                      value={draft.categoryGroupIds.filter((groupId) =>
-                        expenseCategoryGroups.some((group) => group.id === groupId),
-                      )}
-                      onValueChange={(categoryGroupIds) =>
-                        updateCategoryGroupSelection("expense", categoryGroupIds)
-                      }
-                      className="flex-wrap"
-                      aria-label="Lọc theo hạng mục chi"
-                    >
-                      {expenseCategoryGroups.map((group) => (
-                        <ToggleGroupItem
-                          key={group.id}
-                          value={group.id}
-                        >
-                          {group.name}
-                        </ToggleGroupItem>
-                      ))}
-                    </ToggleGroup>
-                  </Field>
-
-                  <Field aria-label="Lọc theo hạng mục thu">
-                    <FieldLabel>Hạng mục thu</FieldLabel>
-                    <ToggleGroup
-                      type="multiple"
-                      size="sm"
-                      value={draft.categoryGroupIds.filter((groupId) =>
-                        incomeCategoryGroups.some((group) => group.id === groupId),
-                      )}
-                      onValueChange={(categoryGroupIds) =>
-                        updateCategoryGroupSelection("income", categoryGroupIds)
-                      }
-                      className="flex-wrap"
-                      aria-label="Lọc theo hạng mục thu"
-                    >
-                      {incomeCategoryGroups.map((group) => (
-                        <ToggleGroupItem
-                          key={group.id}
-                          value={group.id}
-                        >
-                          {group.name}
-                        </ToggleGroupItem>
-                      ))}
-                    </ToggleGroup>
-                  </Field>
-                </FieldGroup>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <TransactionPeriodFilter
-            rangeLabel={rangeLabel}
-            canGoNext={canGoNext}
-            onPrevious={onPrevious}
-            onNext={onNext}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="shrink-0"
-            onClick={onReset}
-            aria-label="Đặt lại tháng, tìm kiếm và bộ lọc"
-            title="Đặt lại tháng, tìm kiếm và bộ lọc"
-          >
-            <RotateCcwIcon />
-          </Button>
-        </div>
+                <Field aria-label="Lọc theo hạng mục thu">
+                  <FieldLabel>Hạng mục thu</FieldLabel>
+                  <ToggleGroup
+                    type="multiple"
+                    size="sm"
+                    value={draft.categoryGroupIds.filter((groupId) =>
+                      incomeCategoryGroups.some((group) => group.id === groupId),
+                    )}
+                    onValueChange={(categoryGroupIds) =>
+                      updateCategoryGroupSelection("income", categoryGroupIds)
+                    }
+                    className="flex-wrap"
+                    aria-label="Lọc theo hạng mục thu"
+                  >
+                    {incomeCategoryGroups.map((group) => (
+                      <ToggleGroupItem
+                        key={group.id}
+                        value={group.id}
+                      >
+                        {group.name}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                </Field>
+              </FieldGroup>
+            </div>
+          </PopoverContent>
+        </Popover>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="shrink-0"
+          onClick={onReset}
+          aria-label="Đặt lại tháng, tìm kiếm và bộ lọc"
+          title="Đặt lại tháng, tìm kiếm và bộ lọc"
+        >
+          <RotateCcwIcon />
+        </Button>
       </div>
 
       <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -409,7 +414,7 @@ export function TransactionToolbar({
           {transactionCount} giao dịch
         </span>
         <span aria-hidden="true">·</span>
-        <span>{contextLabel}</span>
+        <span>{rangeLabel}</span>
       </p>
 
       <Separator />

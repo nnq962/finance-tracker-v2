@@ -25,7 +25,7 @@ export function IconPicker({
 
   return (
     <div className="rounded-lg border">
-      <ScrollArea className="h-48">
+      <ScrollArea className="h-52">
         <div
           role="radiogroup"
           aria-label="Biểu tượng"

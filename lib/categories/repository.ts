@@ -219,7 +219,7 @@ export async function createCategoryGroup(
   }
 
   const now = FieldValue.serverTimestamp()
-  await collection.add({
+  const reference = await collection.add({
     ...values,
     type,
     order: Date.now(),
@@ -227,6 +227,7 @@ export async function createCategoryGroup(
     createdAt: now,
     updatedAt: now,
   })
+  return reference.id
 }
 
 export async function updateCategoryGroup(
@@ -245,6 +246,21 @@ export async function updateCategoryGroup(
     ...values,
     updatedAt: FieldValue.serverTimestamp(),
   })
+}
+
+export async function updateCategoryGroupName(
+  userId: string,
+  groupId: string,
+  name: string,
+) {
+  const reference = getGroupsCollection(userId).doc(groupId)
+  const snapshot = await reference.get()
+
+  if (!snapshot.exists || snapshot.get("status") !== "active") {
+    throw new CategoryValidationError("Nhóm hạng mục không tồn tại.")
+  }
+
+  await reference.update({ name, updatedAt: FieldValue.serverTimestamp() })
 }
 
 export async function archiveCategoryGroup(userId: string, groupId: string) {

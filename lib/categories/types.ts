@@ -31,3 +31,7 @@ export type CategoryGroup = CategoryFormValues & {
 export type CategoryActionResult =
   | { success: true }
   | { success: false; error: string }
+
+export type CategoryCreateActionResult =
+  | { success: true; id: string }
+  | { success: false; error: string }

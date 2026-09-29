@@ -62,10 +62,8 @@ export function LoginForm({
           </div>
           <Field className="grid gap-4">
             <Button
-              variant="outline"
               type="submit"
               disabled={isLoading}
-              className="border-neutral-200 bg-white text-neutral-950 hover:bg-neutral-100 hover:text-neutral-950 focus-visible:border-neutral-400 focus-visible:ring-neutral-400/50 dark:border-neutral-200 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 dark:hover:text-neutral-950"
             >
               {isLoading ? (
                 <LoaderCircleIcon className="animate-spin" />

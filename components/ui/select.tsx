@@ -74,7 +74,7 @@ function SelectContent({
         data-slot="select-content"
         data-align-trigger={position === "item-aligned"}
         className={cn(
-          "relative z-50 max-h-(--radix-select-content-available-height) min-w-36 origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-lg bg-white text-[#2b2a33] shadow-none ring-2 ring-inset ring-[#e7e4dd] data-[align-trigger=true]:w-[calc(100%+2px)] data-[align-trigger=true]:-translate-x-0.5 dark:bg-[#201e26] dark:text-[#f2f0f6] dark:ring-[#35323e]",
+          "relative z-50 max-h-(--radix-select-content-available-height) min-w-36 origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-lg border-2 border-[#e7e4dd] bg-white text-[#2b2a33] shadow-none data-[align-trigger=true]:w-[calc(100%+2px)] data-[align-trigger=true]:-translate-x-0.5 dark:border-[#35323e] dark:bg-[#201e26] dark:text-[#f2f0f6]",
           "duration-100 data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           position === "popper" && "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
           className
