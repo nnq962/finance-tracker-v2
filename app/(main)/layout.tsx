@@ -34,7 +34,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
       <TooltipProvider>
         <SidebarProvider
           data-app-shell="main"
-          className="bg-[#fbfaf7] dark:bg-background"
+          className="bg-[#fbfaf7] dark:bg-background md:bg-sidebar dark:md:bg-sidebar"
         >
           <PwaThemeColor />
           <AppSidebar user={user} />
