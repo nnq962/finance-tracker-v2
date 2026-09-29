@@ -32,7 +32,10 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
   return (
     <AuthSessionGuard>
       <TooltipProvider>
-        <SidebarProvider className="bg-[#fbfaf7] dark:bg-background">
+        <SidebarProvider
+          data-app-shell="main"
+          className="bg-[#fbfaf7] dark:bg-background"
+        >
           <PwaThemeColor />
           <AppSidebar user={user} />
           <SidebarInset className="min-h-svh min-w-0 bg-[#fbfaf7] [--main-content-px:--spacing(4)] [padding-top:env(safe-area-inset-top,0px)] dark:bg-background md:border-l-2 md:border-l-[#e7e4dd] md:pt-0 md:peer-data-[variant=inset]:m-0 md:peer-data-[variant=inset]:rounded-none md:peer-data-[variant=inset]:shadow-none md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0 md:[--main-content-px:--spacing(6)] dark:md:border-l-[#35323e]">

@@ -155,6 +155,16 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   html {
     @apply font-sans;
   }
+
+  html:has([data-app-shell="main"]),
+  body:has([data-app-shell="main"]) {
+    background-color: #fbfaf7;
+  }
+
+  html.dark:has([data-app-shell="main"]),
+  html.dark body:has([data-app-shell="main"]) {
+    background-color: var(--background);
+  }
 }
 
 @layer utilities {
