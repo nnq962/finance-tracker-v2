@@ -12,7 +12,31 @@ export const socialPreviewContentType = "image/png"
 
 const featurePills = ["Tài khoản", "Giao dịch", "Vay nợ"]
 
-export function createSocialPreviewImage() {
+async function loadFont(url: string, name: string) {
+  const response = await fetch(url)
+
+  if (!response.ok) {
+    throw new Error(`Không thể tải font ${name}.`)
+  }
+
+  return response.arrayBuffer()
+}
+
+const balooFont = loadFont(
+  "https://raw.githubusercontent.com/google/fonts/ee334a51f/ofl/baloo2/Baloo2-ExtraBold.ttf",
+  "Baloo 2",
+)
+const nunitoFont = loadFont(
+  "https://raw.githubusercontent.com/google/fonts/57661967c8617c151bfbb804945cf64b21d5dad6/ofl/nunito/Nunito-Bold.ttf",
+  "Nunito",
+)
+
+export async function createSocialPreviewImage() {
+  const [balooFontData, nunitoFontData] = await Promise.all([
+    balooFont,
+    nunitoFont,
+  ])
+
   return new ImageResponse(
     (
       <div
@@ -25,7 +49,8 @@ export function createSocialPreviewImage() {
           background:
             "linear-gradient(135deg, #fbfaf7 0%, #f5fbf2 52%, #eaf7ff 100%)",
           color: "#2b2a33",
-          fontFamily: "sans-serif",
+          fontFamily: "Nunito",
+          fontWeight: 700,
         }}
       >
         <div
@@ -83,10 +108,9 @@ export function createSocialPreviewImage() {
                   height: 92,
                   alignItems: "center",
                   justifyContent: "center",
-                  border: "3px solid #e7e4dd",
+                  border: "2px solid #e7e4dd",
                   borderRadius: 24,
                   background: "#ffffff",
-                  boxShadow: "0 8px 0 #d6d2c8",
                 }}
               >
                 <svg
@@ -122,10 +146,12 @@ export function createSocialPreviewImage() {
                 <div
                   style={{
                     display: "flex",
+                    alignSelf: "flex-start",
                     width: "auto",
                     borderRadius: 999,
                     background: "#dff4d7",
                     color: "#3e9727",
+                    fontFamily: "Baloo 2",
                     fontSize: 20,
                     fontWeight: 800,
                     letterSpacing: 1.4,
@@ -138,6 +164,7 @@ export function createSocialPreviewImage() {
                   style={{
                     display: "flex",
                     marginTop: 10,
+                    fontFamily: "Baloo 2",
                     fontSize: 38,
                     fontWeight: 800,
                     lineHeight: 1,
@@ -153,6 +180,7 @@ export function createSocialPreviewImage() {
                 display: "flex",
                 marginTop: 50,
                 flexDirection: "column",
+                fontFamily: "Baloo 2",
                 fontSize: 54,
                 fontWeight: 800,
                 lineHeight: 1.08,
@@ -179,6 +207,7 @@ export function createSocialPreviewImage() {
                     borderRadius: 999,
                     background: "rgba(255, 255, 255, 0.86)",
                     color: "#686470",
+                    fontFamily: "Baloo 2",
                     fontSize: 19,
                     fontWeight: 700,
                     padding: "10px 18px",
@@ -194,12 +223,11 @@ export function createSocialPreviewImage() {
             style={{
               display: "flex",
               width: 350,
-              height: 430,
+              height: 450,
               flexDirection: "column",
-              border: "3px solid #e7e4dd",
+              border: "2px solid #e7e4dd",
               borderRadius: 30,
               background: "rgba(255, 255, 255, 0.94)",
-              boxShadow: "0 12px 0 #d6d2c8",
               padding: 28,
               transform: "rotate(2deg)",
             }}
@@ -211,13 +239,22 @@ export function createSocialPreviewImage() {
                 justifyContent: "space-between",
               }}
             >
-              <span style={{ fontSize: 20, fontWeight: 800 }}>Tổng quan</span>
+              <span
+                style={{
+                  fontFamily: "Baloo 2",
+                  fontSize: 20,
+                  fontWeight: 800,
+                }}
+              >
+                Tổng quan
+              </span>
               <span
                 style={{
                   display: "flex",
                   borderRadius: 999,
                   background: "#e7f7ff",
                   color: "#0083c4",
+                  fontFamily: "Baloo 2",
                   fontSize: 14,
                   fontWeight: 800,
                   padding: "7px 11px",
@@ -241,7 +278,14 @@ export function createSocialPreviewImage() {
               <span style={{ fontSize: 15, color: "rgba(255,255,255,0.72)" }}>
                 Tài sản ròng
               </span>
-              <span style={{ marginTop: 8, fontSize: 32, fontWeight: 800 }}>
+              <span
+                style={{
+                  marginTop: 8,
+                  fontFamily: "Baloo 2",
+                  fontSize: 32,
+                  fontWeight: 800,
+                }}
+              >
                 24.680.000đ
               </span>
               <div
@@ -287,11 +331,12 @@ export function createSocialPreviewImage() {
                   style={{
                     marginTop: 7,
                     color: "#3e9727",
+                    fontFamily: "Baloo 2",
                     fontSize: 21,
                     fontWeight: 800,
                   }}
                 >
-                  +8,4tr
+                  +8.4tr
                 </span>
               </div>
               <div
@@ -309,11 +354,12 @@ export function createSocialPreviewImage() {
                   style={{
                     marginTop: 7,
                     color: "#c8393a",
+                    fontFamily: "Baloo 2",
                     fontSize: 21,
                     fontWeight: 800,
                   }}
                 >
-                  −3,2tr
+                  −3.2tr
                 </span>
               </div>
             </div>
@@ -360,6 +406,22 @@ export function createSocialPreviewImage() {
         </div>
       </div>
     ),
-    socialPreviewSize,
+    {
+      ...socialPreviewSize,
+      fonts: [
+        {
+          name: "Nunito",
+          data: nunitoFontData,
+          style: "normal",
+          weight: 700,
+        },
+        {
+          name: "Baloo 2",
+          data: balooFontData,
+          style: "normal",
+          weight: 800,
+        },
+      ],
+    },
   )
 }
