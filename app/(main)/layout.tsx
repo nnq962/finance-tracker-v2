@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import type { ReactNode } from "react"
 
 import { AppSidebar } from "@/components/app-sidebar"
@@ -12,6 +13,16 @@ import {
 } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { requireSession } from "@/lib/auth/session"
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+    noarchive: true,
+    nosnippet: true,
+    noimageindex: true,
+  },
+}
 
 export default async function MainLayout({ children }: { children: ReactNode }) {
   const user = await requireSession()

@@ -1,8 +1,19 @@
+import type { Metadata } from "next"
 import GradientWaves from "@/components/gradient-waves"
 import { LoginForm } from "@/components/login-form"
 import { getSafeRedirectPath } from "@/lib/auth/redirect"
 import { getSessionUser } from "@/lib/auth/session"
 import { redirect } from "next/navigation"
+
+export const metadata: Metadata = {
+  title: "Đăng nhập",
+  description: "Đăng nhập vào Finance Tracker để quản lý tài chính cá nhân.",
+  robots: {
+    index: false,
+    follow: false,
+    noarchive: true,
+  },
+}
 
 export default async function LoginPage({
   searchParams,
