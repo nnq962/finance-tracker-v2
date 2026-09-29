@@ -16,6 +16,7 @@ import {
   WalletCardsIcon,
 } from "lucide-react"
 
+import { PwaInstallButton } from "@/components/pwa-install-button"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -192,6 +193,7 @@ export default function HomePage() {
                 >
                   <Link href="#tinh-nang">Xem tính năng</Link>
                 </Button>
+                <PwaInstallButton />
               </div>
               <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
                 <ShieldCheckIcon className="size-4 text-[#3e9727]" aria-hidden="true" />
