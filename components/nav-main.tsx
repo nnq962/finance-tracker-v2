@@ -61,7 +61,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
                 >
                   <Link
                     href={item.url}
-                    prefetch={isMobile ? null : true}
+                    prefetch={false}
                     onNavigate={handleNavigate}
                   >
                     {item.icon}
@@ -86,7 +86,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
                 >
                   <Link
                     href={item.url}
-                    prefetch={isMobile ? null : true}
+                    prefetch={false}
                     onNavigate={handleNavigate}
                   >
                     {item.icon}
@@ -109,7 +109,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
                         >
                           <Link
                             href={subItem.url}
-                            prefetch={isMobile ? null : true}
+                            prefetch={false}
                             onNavigate={handleNavigate}
                           >
                             {subItem.icon}

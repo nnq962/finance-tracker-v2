@@ -17,6 +17,20 @@ export function getOpeningPaidAmount(debt: Debt) {
 }
 
 export function getPaymentMetrics(debt: Debt, date = todayDate()) {
+  if (debt.payments === undefined && debt.status === "settled") {
+    const totalAmount = Math.max(debt.amount, debt.paidAmount)
+
+    return {
+      ...getInterest(debt, date),
+      interestAmount: Math.max(0, totalAmount - debt.amount),
+      interestDate: date,
+      totalAmount,
+      paidAmount: debt.paidAmount,
+      remainingAmount: 0,
+      paymentProgress: 100,
+    }
+  }
+
   let paidAmount = getOpeningPaidAmount(debt)
   let interestDate = date
   const payments = [...(debt.payments ?? [])].sort((a, b) => `${a.paidAt}T${a.paidTime ?? "00:00"}`.localeCompare(`${b.paidAt}T${b.paidTime ?? "00:00"}`))

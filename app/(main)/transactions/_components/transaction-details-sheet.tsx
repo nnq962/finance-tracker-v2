@@ -203,7 +203,7 @@ export function TransactionDetailsSheet({
                 Đóng
               </Button>
             </SheetClose>
-            <Button asChild><Link href={`/debts?debt=${encodeURIComponent(transaction.debtId ?? "")}`}>Quản lý tại vay nợ</Link></Button>
+            <Button asChild><Link href={`/debts?debt=${encodeURIComponent(transaction.debtId ?? "")}`} prefetch={false}>Quản lý tại vay nợ</Link></Button>
           </div>
         ) : <div className="grid grid-cols-2 gap-2">
           <Popover

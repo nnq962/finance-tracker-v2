@@ -12,7 +12,7 @@ export function MobileBottomNav() {
   return (
     <nav
       aria-label="Điều hướng chính trên di động"
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 [padding-bottom:calc(0.75rem+env(safe-area-inset-bottom,0px))] md:hidden"
     >
       <ul className="pointer-events-auto mx-auto grid max-w-md grid-cols-5 gap-1 rounded-2xl border-2 border-[#e7e4dd] bg-white/95 p-1.5 backdrop-blur-xl dark:border-[#35323e] dark:bg-[#201e26]/95">
         {appNavigationItems.map((item) => {
@@ -23,7 +23,7 @@ export function MobileBottomNav() {
             <li key={item.url} className="min-w-0">
               <Link
                 href={item.url}
-                prefetch={null}
+                prefetch={false}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1.5 text-muted-foreground transition-[background-color,color] outline-none select-none focus-visible:ring-2 focus-visible:ring-[#38b8f6] focus-visible:ring-offset-2 focus-visible:ring-offset-white active:bg-[#e9f8ff] dark:focus-visible:ring-offset-[#201e26] dark:active:bg-[#113950]",

@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { HandCoinsIcon, SearchIcon, FileTextIcon } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 import type { Account } from "@/lib/accounts/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -41,9 +42,11 @@ export function DebtsView({
   onEditPayment,
   onDeletePayment,
 }: DebtsViewProps) {
+  const router = useRouter()
+  const [isNavigating, startNavigation] = React.useTransition()
   const [filter, setFilter] = React.useState<DebtFilter>("all")
   const [query, setQuery] = React.useState("")
-  const [selectedDebtId, setSelectedDebtId] = React.useState(initialSelectedDebtId ?? debts[0]?.id)
+  const selectedDebtId = initialSelectedDebtId ?? debts[0]?.id
   const contactById = new Map(contacts.map((contact) => [contact.id, contact]))
   const normalizedQuery = query.trim().toLocaleLowerCase("vi-VN")
   const visibleDebts = filterDebts(debts, filter).filter((debt) => {
@@ -53,8 +56,9 @@ export function DebtsView({
       contact?.name.toLocaleLowerCase("vi-VN").includes(normalizedQuery) ||
       debt.note.toLocaleLowerCase("vi-VN").includes(normalizedQuery)
   })
-  const selectedDebt =
-    visibleDebts.find((debt) => debt.id === selectedDebtId) ?? visibleDebts[0]
+  const selectedDebt = visibleDebts.find(
+    (debt) => debt.id === selectedDebtId,
+  )
   const selectedContact = selectedDebt
     ? contactById.get(selectedDebt.contactId)
     : undefined
@@ -127,7 +131,15 @@ export function DebtsView({
                 contacts={contactById}
                 debts={visibleDebts}
                 selectedDebtId={selectedDebt?.id}
-                onSelect={setSelectedDebtId}
+                onSelect={(debtId) => {
+                  if (isNavigating || debtId === selectedDebtId) return
+                  startNavigation(() =>
+                    router.replace(
+                      `/debts?debt=${encodeURIComponent(debtId)}`,
+                      { scroll: false },
+                    ),
+                  )
+                }}
               />
             )}
           </Card>

@@ -17,10 +17,10 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/
 import { getAccounts } from "@/lib/accounts/repository"
 import { requireSession } from "@/lib/auth/session"
 import { todayDate } from "@/lib/debts/calculations"
-import { getContacts, getDebts } from "@/lib/debts/repository"
+import { getContacts, getDebtSummaries } from "@/lib/debts/repository"
 import { formatCurrency } from "@/lib/format-currency"
 import { getOverviewSummary, type OverviewSummary } from "@/lib/overview/summary"
-import { getTransactions } from "@/lib/transactions/repository"
+import { getTransactionsInRange } from "@/lib/transactions/repository"
 
 import { CashFlowChart, SpendingChart } from "./_components/overview-charts"
 
@@ -31,8 +31,25 @@ const transactionDateFormatter = new Intl.DateTimeFormat("vi-VN", {
   day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Ho_Chi_Minh",
 })
 
+function monthKey(year: number, monthIndex: number) {
+  const date = new Date(Date.UTC(year, monthIndex, 1))
+
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`
+}
+
+function getOverviewTransactionRange(today: string) {
+  const [year, month] = today.split("-").map(Number)
+  const startMonth = monthKey(year, month - 6)
+  const endMonth = monthKey(year, month)
+
+  return {
+    start: new Date(`${startMonth}-01T00:00:00+07:00`),
+    end: new Date(`${endMonth}-01T00:00:00+07:00`),
+  }
+}
+
 function SectionLink({ href, children }: { href: string; children: ReactNode }) {
-  return <Button variant="ghost" size="sm" asChild><Link href={href}>{children}<ArrowRightIcon /></Link></Button>
+  return <Button variant="ghost" size="sm" asChild><Link href={href} prefetch={false}>{children}<ArrowRightIcon /></Link></Button>
 }
 
 function NetWorth({ data }: { data: OverviewSummary["netWorth"] }) {
@@ -169,7 +186,7 @@ function DueDebts({ debts }: { debts: OverviewSummary["dueDebts"] }) {
             <ul className="divide-y">
               {debts.map((debt) => (
                 <li key={debt.id}>
-                  <Link href={`/debts?debt=${encodeURIComponent(debt.id)}`} className="flex flex-wrap items-center justify-between gap-3 py-4 first:pt-0 last:pb-0 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+                  <Link href={`/debts?debt=${encodeURIComponent(debt.id)}`} prefetch={false} className="flex flex-wrap items-center justify-between gap-3 py-4 first:pt-0 last:pb-0 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
                     <div className="min-w-0 space-y-1">
                       <p className="truncate font-medium">{debt.contactName}</p>
                       <p className="text-sm text-muted-foreground">
@@ -248,13 +265,25 @@ function RecentTransactions({ transactions }: { transactions: OverviewSummary["r
 
 export default async function OverviewPage() {
   const user = await requireSession()
+  const today = todayDate()
+  const transactionRange = getOverviewTransactionRange(today)
   const [accounts, debts, contacts, transactions] = await Promise.all([
     getAccounts(user.uid),
-    getDebts(user.uid),
+    getDebtSummaries(user.uid),
     getContacts(user.uid),
-    getTransactions(user.uid),
+    getTransactionsInRange(
+      user.uid,
+      transactionRange.start,
+      transactionRange.end,
+    ),
   ])
-  const summary = getOverviewSummary(accounts, debts, contacts, transactions, todayDate())
+  const summary = getOverviewSummary(
+    accounts,
+    debts,
+    contacts,
+    transactions,
+    today,
+  )
 
   return (
     <main className="mx-auto w-full min-w-0 max-w-7xl space-y-6 pb-12 md:space-y-8">

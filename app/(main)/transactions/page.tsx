@@ -1,15 +1,29 @@
 import { getAccounts } from "@/lib/accounts/repository"
 import { requireSession } from "@/lib/auth/session"
 import { getCategoryGroups } from "@/lib/categories/repository"
-import { getTransactions } from "@/lib/transactions/repository"
+import { getTransactionsInRange } from "@/lib/transactions/repository"
 
 import { TransactionsDashboard } from "./_components/transactions-dashboard"
-import { getTransactionDateKey } from "./_lib/get-transaction-period"
+import {
+  getTransactionDateKey,
+  getTransactionMonthKey,
+  getTransactionMonthRange,
+} from "./_lib/get-transaction-period"
 
-export default async function TransactionsPage() {
+export default async function TransactionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ month?: string }>
+}) {
   const user = await requireSession()
+  const todayDateKey = getTransactionDateKey(new Date())
+  const selectedMonth = getTransactionMonthKey(
+    (await searchParams).month,
+    todayDateKey,
+  )
+  const range = getTransactionMonthRange(selectedMonth, 1)
   const [transactions, accounts, categoryGroups] = await Promise.all([
-    getTransactions(user.uid),
+    getTransactionsInRange(user.uid, range.start, range.end),
     getAccounts(user.uid),
     getCategoryGroups(user.uid),
   ])
@@ -19,7 +33,8 @@ export default async function TransactionsPage() {
       <TransactionsDashboard
         accounts={accounts}
         categoryGroups={categoryGroups}
-        todayDateKey={getTransactionDateKey(new Date())}
+        selectedMonth={selectedMonth}
+        todayDateKey={todayDateKey}
         transactions={transactions}
       />
     </div>

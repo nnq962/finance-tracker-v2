@@ -52,7 +52,7 @@ export function AppSidebar({
             <SidebarMenuButton size="lg" asChild>
               <Link
                 href="/overview"
-                prefetch={isMobile ? null : true}
+                prefetch={false}
                 onNavigate={() => {
                   if (isMobile) setOpenMobile(false)
                 }}

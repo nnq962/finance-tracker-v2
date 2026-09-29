@@ -41,15 +41,29 @@ function paymentFrom(snapshot: FirebaseFirestore.DocumentSnapshot): DebtPayment 
   return { id: snapshot.id, amount: data.amount, accountId: data.accountId, accountName: data.accountName, paidAt: data.paidAt, paidTime: data.paidTime, note: data.note }
 }
 
-function debtFrom(snapshot: FirebaseFirestore.DocumentSnapshot, payments: FirebaseFirestore.QuerySnapshot): Debt {
+function debtDocumentFrom(snapshot: FirebaseFirestore.DocumentSnapshot): Debt {
   if (!snapshot.exists) throw new DebtValidationError("Khoản nợ không tồn tại.")
   const data = snapshot.data()!
-  const debt: Debt = {
+  return {
     id: snapshot.id, contactId: data.contactId, accountId: data.accountId, recordingMode: data.recordingMode ?? "cash-flow",
     direction: data.direction, amount: data.amount, paidAmount: data.paidAmount,
     hasInterest: data.hasInterest, interestRate: data.interestRate, interestPeriod: data.interestPeriod,
     recordedAt: data.recordedAt, dueAt: data.dueAt, status: data.status, note: data.note,
-    payments: payments.docs.map(paymentFrom).sort((a, b) => `${a.paidAt}T${a.paidTime}`.localeCompare(`${b.paidAt}T${b.paidTime}`)),
+  }
+}
+
+function paymentsFrom(snapshot: FirebaseFirestore.QuerySnapshot) {
+  return snapshot.docs
+    .map(paymentFrom)
+    .sort((a, b) =>
+      `${a.paidAt}T${a.paidTime}`.localeCompare(`${b.paidAt}T${b.paidTime}`),
+    )
+}
+
+function debtFrom(snapshot: FirebaseFirestore.DocumentSnapshot, payments: FirebaseFirestore.QuerySnapshot): Debt {
+  const debt: Debt = {
+    ...debtDocumentFrom(snapshot),
+    payments: paymentsFrom(payments),
   }
   debt.status = getPaymentMetrics(debt).remainingAmount === 0 ? "settled" : debt.dueAt && debt.dueAt < todayDate() ? "overdue" : "active"
   return debt
@@ -78,6 +92,38 @@ export async function getDebts(userId: string): Promise<Debt[]> {
     }
     return results
   }, { readOnly: true })
+}
+
+export async function getDebtSummaries(userId: string): Promise<Debt[]> {
+  const snapshot = await userRef(userId)
+    .collection("debts")
+    .orderBy("recordedAt", "desc")
+    .get()
+  const today = todayDate()
+
+  return snapshot.docs.map((document) => {
+    const debt = debtDocumentFrom(document)
+
+    if (debt.status !== "settled") {
+      debt.status = debt.dueAt && debt.dueAt < today ? "overdue" : "active"
+    }
+
+    return debt
+  })
+}
+
+export async function getDebtPayments(
+  userId: string,
+  debtId: string,
+): Promise<DebtPayment[]> {
+  assertDebtId(debtId)
+  const snapshot = await userRef(userId)
+    .collection("debts")
+    .doc(debtId)
+    .collection("payments")
+    .get()
+
+  return paymentsFrom(snapshot)
 }
 
 export async function createContact(userId: string, input: unknown, operationId: string): Promise<Contact> {

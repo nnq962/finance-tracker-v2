@@ -1,13 +1,13 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 
 import { filterTransactions } from "../_lib/filter-transactions"
 import {
-  getLastNavigableDateKey,
   getTransactionPeriod,
   shiftPeriodAnchor,
 } from "../_lib/get-transaction-period"
@@ -25,6 +25,7 @@ import { TransactionToolbar } from "./transaction-toolbar"
 type TransactionsDashboardProps = {
   accounts: Account[]
   categoryGroups: CategoryGroup[]
+  selectedMonth: string
   todayDateKey: string
   transactions: Transaction[]
 }
@@ -40,19 +41,17 @@ const initialSearchFilters: TransactionSearchFilters = {
 export function TransactionsDashboard({
   accounts,
   categoryGroups,
+  selectedMonth,
   todayDateKey,
   transactions,
 }: TransactionsDashboardProps) {
-  const lastNavigableDateKey = React.useMemo(
-    () => getLastNavigableDateKey(transactions, todayDateKey),
-    [transactions, todayDateKey],
-  )
+  const router = useRouter()
+  const [isNavigating, startNavigation] = React.useTransition()
   const period = "month" as const
   const [filter, setFilter] = React.useState<TransactionFilter>("all")
   const [searchFilters, setSearchFilters] =
     React.useState<TransactionSearchFilters>(initialSearchFilters)
-  const [anchorDateKey, setAnchorDateKey] = React.useState<string | null>(null)
-  const effectiveAnchorDateKey = anchorDateKey ?? todayDateKey
+  const effectiveAnchorDateKey = `${selectedMonth}-01`
   const periodData = React.useMemo(
     () =>
       getTransactionPeriod(
@@ -60,9 +59,9 @@ export function TransactionsDashboard({
         period,
         effectiveAnchorDateKey,
         todayDateKey,
-        lastNavigableDateKey,
+        todayDateKey,
       ),
-    [effectiveAnchorDateKey, lastNavigableDateKey, period, todayDateKey, transactions],
+    [effectiveAnchorDateKey, period, todayDateKey, transactions],
   )
   const previousPeriodTransactions = React.useMemo(
     () =>
@@ -71,9 +70,9 @@ export function TransactionsDashboard({
         period,
         shiftPeriodAnchor(effectiveAnchorDateKey, period, -1),
         todayDateKey,
-        lastNavigableDateKey,
+        todayDateKey,
       ).transactions,
-    [effectiveAnchorDateKey, lastNavigableDateKey, period, todayDateKey, transactions],
+    [effectiveAnchorDateKey, period, todayDateKey, transactions],
   )
   const visibleTransactions = React.useMemo(
     () => filterTransactions(periodData.transactions, filter, searchFilters),
@@ -102,27 +101,35 @@ export function TransactionsDashboard({
         rangeLabel={periodData.rangeLabel}
         contextLabel={periodData.contextLabel}
         transactionCount={visibleTransactions.length}
-        canGoNext={!periodData.isLatest}
+        canGoNext={!isNavigating && selectedMonth < todayDateKey.slice(0, 7)}
         onFilterChange={setFilter}
         onSearchFiltersChange={setSearchFilters}
-        onPrevious={() =>
-          setAnchorDateKey(shiftPeriodAnchor(effectiveAnchorDateKey, period, -1))
-        }
-        onNext={() => {
-          const nextDateKey = shiftPeriodAnchor(effectiveAnchorDateKey, period, 1)
-          const nextPeriod = getTransactionPeriod(
-            transactions,
+        onPrevious={() => {
+          const month = shiftPeriodAnchor(
+            effectiveAnchorDateKey,
             period,
-            nextDateKey,
-            todayDateKey,
-            lastNavigableDateKey,
+            -1,
+          ).slice(0, 7)
+          startNavigation(() => router.push(`/transactions?month=${month}`))
+        }}
+        onNext={() => {
+          const month = shiftPeriodAnchor(
+            effectiveAnchorDateKey,
+            period,
+            1,
+          ).slice(0, 7)
+          startNavigation(() =>
+            router.push(
+              month === todayDateKey.slice(0, 7)
+                ? "/transactions"
+                : `/transactions?month=${month}`,
+            ),
           )
-          setAnchorDateKey(nextPeriod.isCurrent ? null : nextDateKey)
         }}
         onReset={() => {
-          setAnchorDateKey(null)
           setFilter("all")
           setSearchFilters(initialSearchFilters)
+          startNavigation(() => router.push("/transactions"))
         }}
       />
       <TransactionsView

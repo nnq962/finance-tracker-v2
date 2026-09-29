@@ -1,8 +1,9 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidatePath, updateTag } from "next/cache"
 
 import { requireSession } from "@/lib/auth/session"
+import { categoryGroupsCacheTag } from "@/lib/cache-tags"
 import {
   archiveCategoryGroup,
   archiveCategoryItem,
@@ -38,6 +39,13 @@ function failure(error: unknown): CategoryActionResult {
   }
 }
 
+function revalidateCategoryData(userId: string) {
+  updateTag(categoryGroupsCacheTag(userId))
+  revalidatePath("/categories")
+  revalidatePath("/accounts")
+  revalidatePath("/transactions")
+}
+
 export async function createCategoryGroupAction(
   type: unknown,
   values: CategoryFormValues,
@@ -50,7 +58,7 @@ export async function createCategoryGroupAction(
       parseCategoryType(type),
       parseCategoryFormValues(values),
     )
-    revalidatePath("/categories")
+    revalidateCategoryData(user.uid)
     return { success: true }
   } catch (error) {
     return failure(error)
@@ -70,7 +78,7 @@ export async function updateCategoryGroupAction(
       groupId as string,
       parseCategoryFormValues(values),
     )
-    revalidatePath("/categories")
+    revalidateCategoryData(user.uid)
     return { success: true }
   } catch (error) {
     return failure(error)
@@ -85,7 +93,7 @@ export async function deleteCategoryGroupAction(
   try {
     assertCategoryId(groupId, "Nhóm hạng mục")
     await archiveCategoryGroup(user.uid, groupId as string)
-    revalidatePath("/categories")
+    revalidateCategoryData(user.uid)
     return { success: true }
   } catch (error) {
     return failure(error)
@@ -105,7 +113,7 @@ export async function createCategoryItemAction(
       groupId as string,
       parseCategoryItemFormValues(values),
     )
-    revalidatePath("/categories")
+    revalidateCategoryData(user.uid)
     return { success: true }
   } catch (error) {
     return failure(error)
@@ -125,7 +133,7 @@ export async function updateCategoryItemAction(
       itemId as string,
       parseCategoryItemFormValues(values),
     )
-    revalidatePath("/categories")
+    revalidateCategoryData(user.uid)
     return { success: true }
   } catch (error) {
     return failure(error)
@@ -140,7 +148,7 @@ export async function deleteCategoryItemAction(
   try {
     assertCategoryId(itemId)
     await archiveCategoryItem(user.uid, itemId as string)
-    revalidatePath("/categories")
+    revalidateCategoryData(user.uid)
     return { success: true }
   } catch (error) {
     return failure(error)

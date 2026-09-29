@@ -184,17 +184,39 @@ function toTransaction(id: string, data: TransactionDocument): Transaction {
   }
 }
 
+function visibleTransactions(snapshot: FirebaseFirestore.QuerySnapshot) {
+  // Older debt-payment ledgers can still exist in production data. They are
+  // balance records, not rows that should appear in the transaction UI.
+  return snapshot.docs
+    .filter(
+      (document) =>
+        !(document.get("source") === "debt" && document.get("debtPaymentId")),
+    )
+    .map((document) =>
+      toTransaction(document.id, document.data() as TransactionDocument),
+    )
+}
+
 export async function getTransactions(userId: string): Promise<Transaction[]> {
   const snapshot = await getTransactionsCollection(userId)
     .orderBy("occurredAt", "desc")
     .get()
 
-  // Older payment ledgers remain hidden too; balances are managed by debts.
-  return snapshot.docs
-    .filter((document) => !(document.get("source") === "debt" && document.get("debtPaymentId")))
-    .map((document) =>
-      toTransaction(document.id, document.data() as TransactionDocument),
-    )
+  return visibleTransactions(snapshot)
+}
+
+export async function getTransactionsInRange(
+  userId: string,
+  start: Date,
+  end: Date,
+): Promise<Transaction[]> {
+  const snapshot = await getTransactionsCollection(userId)
+    .where("occurredAt", ">=", Timestamp.fromDate(start))
+    .where("occurredAt", "<", Timestamp.fromDate(end))
+    .orderBy("occurredAt", "desc")
+    .get()
+
+  return visibleTransactions(snapshot)
 }
 
 async function getTransactionDetails(

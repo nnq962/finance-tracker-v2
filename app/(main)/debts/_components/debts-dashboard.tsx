@@ -109,7 +109,6 @@ export function DebtsDashboard({
       <DebtSummary summary={summary} />
       <ContactsView contacts={contacts} debts={debts} onAdd={addContact} onEdit={editContact} onDelete={deleteContact} />
       <DebtsView
-        key={selectedDebtId}
         initialSelectedDebtId={selectedDebtId}
         contacts={contacts}
         debts={debts}

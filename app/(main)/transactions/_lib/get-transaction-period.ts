@@ -30,6 +30,37 @@ function formatDateKey(date: Date) {
   ].join("-")
 }
 
+export function getTransactionMonthKey(
+  value: string | undefined,
+  todayDateKey: string,
+) {
+  const currentMonth = todayDateKey.slice(0, 7)
+
+  if (!value || !/^[1-9]\d{3}-(0[1-9]|1[0-2])$/.test(value)) {
+    return currentMonth
+  }
+
+  return value <= currentMonth ? value : currentMonth
+}
+
+export function getTransactionMonthRange(
+  monthKey: string,
+  previousMonths = 0,
+) {
+  const anchorDateKey = `${monthKey}-01`
+  const startMonth = shiftPeriodAnchor(
+    anchorDateKey,
+    "month",
+    -previousMonths,
+  ).slice(0, 7)
+  const endMonth = shiftPeriodAnchor(anchorDateKey, "month", 1).slice(0, 7)
+
+  return {
+    start: new Date(`${startMonth}-01T00:00:00+07:00`),
+    end: new Date(`${endMonth}-01T00:00:00+07:00`),
+  }
+}
+
 function formatWeekRange(startDate: Date, endDate: Date) {
   const startDay = String(startDate.getUTCDate()).padStart(2, "0")
   const endDay = String(endDate.getUTCDate()).padStart(2, "0")

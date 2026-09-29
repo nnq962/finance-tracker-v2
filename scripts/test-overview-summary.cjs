@@ -25,6 +25,7 @@ const accounts = [
 const debts = [
   { id: 'borrowed', contactId: 'friend', direction: 'borrowed', amount: 5_000_000, paidAmount: 0, hasInterest: false, recordedAt: '2026-09-01', dueAt: '2026-09-25', status: 'active', payments: [] },
   { id: 'lent', contactId: 'coworker', direction: 'lent', amount: 3_000_000, paidAmount: 0, hasInterest: false, recordedAt: '2026-09-01', dueAt: '2026-11-01', status: 'active', payments: [] },
+  { id: 'settled-summary', contactId: 'friend', direction: 'lent', amount: 1_000_000, paidAmount: 1_100_000, hasInterest: true, interestRate: 1, interestPeriod: 'month', recordedAt: '2026-01-01', status: 'settled' },
 ]
 const contacts = [{ id: 'friend', name: 'Bạn' }, { id: 'coworker', name: 'Đồng nghiệp' }]
 const occurredAt = '2026-09-22T04:00:00.000Z'

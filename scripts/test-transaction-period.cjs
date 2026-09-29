@@ -17,6 +17,8 @@ require.extensions['.ts'] = (module, filename) => module._compile(
 const {
   getLastNavigableDateKey,
   getTransactionDateKey,
+  getTransactionMonthKey,
+  getTransactionMonthRange,
   getTransactionPeriod,
   shiftPeriodAnchor,
 } = require('../app/(main)/transactions/_lib/get-transaction-period.ts')
@@ -36,6 +38,14 @@ assert.equal(getTransactionPeriod([localSeptemberTransaction], 'month', '2026-08
 assert.equal(shiftPeriodAnchor('2026-03-31', 'month', -1), '2026-02-01')
 assert.equal(shiftPeriodAnchor('2026-01-31', 'month', 1), '2026-02-01')
 assert.equal(shiftPeriodAnchor('2026-02-01', 'month', 1), '2026-03-01')
+assert.equal(getTransactionMonthKey(undefined, today), '2026-09')
+assert.equal(getTransactionMonthKey('2026-08', today), '2026-08')
+assert.equal(getTransactionMonthKey('2026-10', today), '2026-09')
+assert.equal(getTransactionMonthKey('invalid', today), '2026-09')
+assert.equal(getTransactionMonthKey('0000-01', today), '2026-09')
+const septemberRange = getTransactionMonthRange('2026-09', 1)
+assert.equal(septemberRange.start.toISOString(), '2026-07-31T17:00:00.000Z')
+assert.equal(septemberRange.end.toISOString(), '2026-09-30T17:00:00.000Z')
 
 assert.equal(getLastNavigableDateKey([], today), today)
 const emptyCurrentPeriod = getTransactionPeriod([], 'month', today, today, today)

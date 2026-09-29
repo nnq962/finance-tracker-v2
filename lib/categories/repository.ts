@@ -1,7 +1,9 @@
 import "server-only"
 
 import { FieldValue } from "firebase-admin/firestore"
+import { unstable_cache } from "next/cache"
 
+import { categoryGroupsCacheTag } from "@/lib/cache-tags"
 import { defaultCategoryGroups } from "@/lib/categories/defaults"
 import type {
   CategoryFormValues,
@@ -107,19 +109,19 @@ export async function ensureDefaultCategories(userId: string) {
   })
 }
 
-export async function getCategoryGroups(
+async function getCategoryGroupsUncached(
   userId: string,
 ): Promise<CategoryGroup[]> {
   let [groupSnapshot, itemSnapshot] = await Promise.all([
-    getGroupsCollection(userId).get(),
-    getItemsCollection(userId).get(),
+    getGroupsCollection(userId).where("status", "==", "active").get(),
+    getItemsCollection(userId).where("status", "==", "active").get(),
   ])
 
   if (groupSnapshot.empty && itemSnapshot.empty) {
     await ensureDefaultCategories(userId)
     ;[groupSnapshot, itemSnapshot] = await Promise.all([
-      getGroupsCollection(userId).get(),
-      getItemsCollection(userId).get(),
+      getGroupsCollection(userId).where("status", "==", "active").get(),
+      getItemsCollection(userId).where("status", "==", "active").get(),
     ])
   }
 
@@ -182,6 +184,19 @@ export async function getCategoryGroups(
       colorName: group.colorName,
       items: group.items,
     }))
+}
+
+export async function getCategoryGroups(
+  userId: string,
+): Promise<CategoryGroup[]> {
+  return unstable_cache(
+    () => getCategoryGroupsUncached(userId),
+    ["category-groups", userId],
+    {
+      revalidate: 3600,
+      tags: [categoryGroupsCacheTag(userId)],
+    },
+  )()
 }
 
 export async function createCategoryGroup(
