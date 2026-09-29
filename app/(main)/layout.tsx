@@ -52,7 +52,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
                 <ThemeSelect />
               </div>
             </header>
-            <div className="flex flex-1 flex-col gap-4 px-(--main-content-px) pt-4 [padding-bottom:calc(7rem+env(safe-area-inset-bottom))] transition-[padding] duration-200 ease-linear md:pt-0 md:pb-4 [&>*]:mx-0 [&>*]:max-w-none">
+            <div className="flex flex-1 flex-col gap-4 px-(--main-content-px) pt-4 [padding-bottom:calc(4rem+env(safe-area-inset-bottom,0px))] transition-[padding] duration-200 ease-linear md:pt-0 md:pb-4 [&>*]:mx-0 [&>*]:max-w-none">
               {children}
             </div>
           </SidebarInset>

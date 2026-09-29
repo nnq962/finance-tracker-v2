@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import GradientWaves from "@/components/gradient-waves"
 import { LoginForm } from "@/components/login-form"
 import { getSafeRedirectPath } from "@/lib/auth/redirect"
@@ -15,6 +15,12 @@ export const metadata: Metadata = {
   },
 }
 
+export const viewport: Viewport = {
+  colorScheme: "dark",
+  themeColor: "#000000",
+  viewportFit: "cover",
+}
+
 export default async function LoginPage({
   searchParams,
 }: {
@@ -28,7 +34,10 @@ export default async function LoginPage({
   }
 
   return (
-    <div className="relative isolate min-h-svh overflow-hidden bg-black">
+    <div
+      data-login-shell
+      className="relative isolate min-h-svh overflow-hidden bg-black"
+    >
       <div className="absolute inset-0">
         <GradientWaves
           horizonColor="#000000"
