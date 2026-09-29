@@ -3,14 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
-import {
-  ArrowLeftRightIcon,
-  FlaskConicalIcon,
-  HandCoinsIcon,
-  LayoutDashboardIcon,
-  TagsIcon,
-  WalletCardsIcon,
-} from "lucide-react"
+import { FlaskConicalIcon } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -25,34 +18,15 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { appNavigationItems } from "@/lib/app-navigation"
 import type { SessionUser } from "@/lib/auth/session"
 
 const navMain = [
-  {
-    title: "Tổng quan",
-    url: "/overview",
-    icon: <LayoutDashboardIcon />,
-  },
-  {
-    title: "Giao dịch",
-    url: "/transactions",
-    icon: <ArrowLeftRightIcon />,
-  },
-  {
-    title: "Tài khoản",
-    url: "/accounts",
-    icon: <WalletCardsIcon />,
-  },
-  {
-    title: "Hạng mục",
-    url: "/categories",
-    icon: <TagsIcon />,
-  },
-  {
-    title: "Nợ & Cho vay",
-    url: "/debts",
-    icon: <HandCoinsIcon />,
-  },
+  ...appNavigationItems.map(({ title, url, icon: Icon }) => ({
+    title,
+    url,
+    icon: <Icon />,
+  })),
   ...(process.env.NODE_ENV === "development"
     ? [
         {
