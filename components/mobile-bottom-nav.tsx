@@ -205,13 +205,13 @@ export function MobileBottomNav() {
       <ul className="relative mx-auto grid max-w-md grid-cols-4">
         <motion.li
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 left-0 z-0 w-1/4 px-0.5 [will-change:transform]"
+          className="pointer-events-none absolute inset-y-0 left-0 z-0 w-1/4 px-0.5 [backface-visibility:hidden] [contain:paint] [will-change:transform]"
           initial={false}
           animate={{ x: `${activeIndex * 100}%` }}
           transition={{
             type: "tween",
-            duration: 0.3,
-            ease: [0.22, 1, 0.36, 1],
+            duration: 0.4,
+            ease: [0.4, 0, 0.2, 1],
           }}
         >
           <span className="block size-full rounded-xl bg-[#d6f4ff] dark:bg-[#113950]" />
@@ -251,8 +251,8 @@ export function MobileBottomNav() {
               >
                 <Icon
                   className={cn(
-                    "size-5 transition-transform duration-200 ease-out motion-reduce:transition-none",
-                    isActive && "-translate-y-0.5 scale-105 motion-reduce:transform-none",
+                    "size-5 shrink-0 transform-gpu origin-center transition-transform duration-200 ease-out [backface-visibility:hidden] [will-change:transform] motion-reduce:transition-none",
+                    isActive && "scale-105 motion-reduce:transform-none",
                   )}
                   aria-hidden="true"
                 />
