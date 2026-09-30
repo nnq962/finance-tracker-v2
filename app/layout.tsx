@@ -42,6 +42,16 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: SITE_NAME,
+    startupImage: [
+      {
+        url: "/splash/launch-light.png",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/splash/launch-dark.png",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
   },
   openGraph: {
     title: SITE_TITLE,
