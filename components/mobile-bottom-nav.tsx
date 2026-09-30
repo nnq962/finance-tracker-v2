@@ -10,7 +10,6 @@ import {
   useTransition,
 } from "react"
 import { cn } from "cn"
-import { motion } from "motion/react"
 
 import { appNavigationItems } from "@/lib/app-navigation"
 
@@ -203,19 +202,13 @@ export function MobileBottomNav() {
       className="fixed inset-x-0 bottom-0 z-40 isolate border-t-2 border-[#e7e4dd] bg-white px-3 pt-1.5 [backface-visibility:hidden] [padding-bottom:env(safe-area-inset-bottom,0px)] [transform:translateZ(0)] dark:border-[#35323e] dark:bg-[#201e26] md:hidden"
     >
       <ul className="relative mx-auto grid max-w-md grid-cols-4">
-        <motion.li
+        <li
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 left-0 z-0 w-1/4 px-0.5 [backface-visibility:hidden] [contain:paint] [will-change:transform]"
-          initial={false}
-          animate={{ x: `${activeIndex * 100}%` }}
-          transition={{
-            type: "tween",
-            duration: 0.4,
-            ease: [0.4, 0, 0.2, 1],
-          }}
+          className="pointer-events-none absolute inset-y-0 left-0 z-0 w-1/4 px-0.5 transition-transform duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] [backface-visibility:hidden] [contain:paint] [will-change:transform] motion-reduce:duration-0"
+          style={{ transform: `translate3d(${activeIndex * 100}%, 0, 0)` }}
         >
           <span className="block size-full rounded-xl bg-[#d6f4ff] dark:bg-[#113950]" />
-        </motion.li>
+        </li>
 
         {appNavigationItems.map((item) => {
           const isActive = activePathname === item.url
