@@ -34,11 +34,14 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
       <TooltipProvider>
         <SidebarProvider
           data-app-shell="main"
-          className="bg-[#fbfaf7] dark:bg-background md:bg-sidebar dark:md:bg-sidebar"
+          className="h-dvh min-h-0 flex-col overflow-hidden bg-[#fbfaf7] dark:bg-background md:h-auto md:min-h-svh md:flex-row md:overflow-visible md:bg-sidebar dark:md:bg-sidebar"
         >
           <PwaThemeColor />
           <AppSidebar user={user} />
-          <SidebarInset className="min-h-svh min-w-0 bg-[#fbfaf7] [--main-content-px:--spacing(4)] [padding-top:env(safe-area-inset-top,0px)] dark:bg-background md:border-l-2 md:border-l-[#e7e4dd] md:pt-0 md:peer-data-[variant=inset]:m-0 md:peer-data-[variant=inset]:rounded-none md:peer-data-[variant=inset]:shadow-none md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0 md:[--main-content-px:--spacing(6)] dark:md:border-l-[#35323e]">
+          <SidebarInset
+            data-main-scroll-viewport
+            className="min-h-0 min-w-0 overflow-y-auto overscroll-y-contain bg-[#fbfaf7] [--main-content-px:--spacing(4)] [-webkit-overflow-scrolling:touch] [padding-top:env(safe-area-inset-top,0px)] dark:bg-background md:min-h-svh md:overflow-visible md:border-l-2 md:border-l-[#e7e4dd] md:pt-0 md:peer-data-[variant=inset]:m-0 md:peer-data-[variant=inset]:rounded-none md:peer-data-[variant=inset]:shadow-none md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0 md:[--main-content-px:--spacing(6)] dark:md:border-l-[#35323e]"
+          >
             <header className="sticky top-0 z-20 hidden h-16 shrink-0 items-center bg-[#fbfaf7] dark:bg-background md:flex">
               <div className="flex w-full items-center justify-between gap-3 px-(--main-content-px) transition-[padding] duration-200 ease-linear">
                 <div className="flex items-center gap-2">
@@ -52,7 +55,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
                 <ThemeSelect />
               </div>
             </header>
-            <div className="flex flex-1 flex-col gap-4 px-(--main-content-px) pt-4 [padding-bottom:calc(4rem+env(safe-area-inset-bottom,0px))] transition-[padding] duration-200 ease-linear md:pt-0 md:pb-4 [&>*]:mx-0 [&>*]:max-w-none">
+            <div className="flex flex-1 flex-col gap-4 px-(--main-content-px) pt-4 pb-4 transition-[padding] duration-200 ease-linear md:pt-0 [&>*]:mx-0 [&>*]:max-w-none">
               {children}
             </div>
           </SidebarInset>

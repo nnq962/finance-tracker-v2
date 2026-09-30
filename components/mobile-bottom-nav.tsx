@@ -13,21 +13,6 @@ import { cn } from "cn"
 
 import { appNavigationItems } from "@/lib/app-navigation"
 
-function isIOSStandalone() {
-  const navigatorWithStandalone = navigator as Navigator & {
-    standalone?: boolean
-  }
-  const isIOS =
-    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
-
-  return (
-    isIOS &&
-    (navigatorWithStandalone.standalone === true ||
-      window.matchMedia("(display-mode: standalone)").matches)
-  )
-}
-
 export function MobileBottomNav() {
   const pathname = usePathname()
   const router = useRouter()
@@ -42,6 +27,16 @@ export function MobileBottomNav() {
     appNavigationItems.findIndex((item) => item.url === activePathname),
     0,
   )
+
+  useEffect(() => {
+    const scrollViewport = document.querySelector<HTMLElement>(
+      "[data-main-scroll-viewport]",
+    )
+
+    if (scrollViewport) {
+      scrollViewport.scrollTop = 0
+    }
+  }, [pathname])
 
   useEffect(() => {
     if (isNavigationPending) {
@@ -136,70 +131,10 @@ export function MobileBottomNav() {
     requestNavigation(requestedPathname)
   }
 
-  useEffect(() => {
-    if (!isIOSStandalone()) {
-      return
-    }
-
-    let restoreViewportTimeout = 0
-    let orientationTimeout = 0
-    let healthyViewportWidth = window.innerWidth
-
-    const recoverViewport = () => {
-      if (document.visibilityState !== "visible") {
-        return
-      }
-
-      const currentWidth = window.innerWidth
-
-      // Some iOS PWA resumes lose viewport-fit and report a wider viewport.
-      // Refresh the viewport declaration only when that anomaly is detected.
-      if (currentWidth > healthyViewportWidth + 10) {
-        const viewportMeta = document.querySelector<HTMLMetaElement>(
-          'meta[name="viewport"]'
-        )
-
-        if (viewportMeta) {
-          const viewportContent = viewportMeta.content
-
-          viewportMeta.content = "width=device-width, initial-scale=1"
-          window.clearTimeout(restoreViewportTimeout)
-          restoreViewportTimeout = window.setTimeout(() => {
-            viewportMeta.content = viewportContent
-            healthyViewportWidth = window.innerWidth
-          }, 50)
-
-          return
-        }
-      }
-
-      healthyViewportWidth = currentWidth
-    }
-
-    const handleOrientationChange = () => {
-      window.clearTimeout(orientationTimeout)
-      orientationTimeout = window.setTimeout(() => {
-        healthyViewportWidth = window.innerWidth
-      }, 250)
-    }
-
-    window.addEventListener("pageshow", recoverViewport)
-    window.addEventListener("orientationchange", handleOrientationChange)
-    document.addEventListener("visibilitychange", recoverViewport)
-
-    return () => {
-      window.clearTimeout(restoreViewportTimeout)
-      window.clearTimeout(orientationTimeout)
-      window.removeEventListener("pageshow", recoverViewport)
-      window.removeEventListener("orientationchange", handleOrientationChange)
-      document.removeEventListener("visibilitychange", recoverViewport)
-    }
-  }, [])
-
   return (
     <nav
       aria-label="Điều hướng chính trên di động"
-      className="fixed inset-x-0 bottom-0 z-40 isolate border-t-2 border-[#e7e4dd] bg-white px-3 pt-1.5 [backface-visibility:hidden] [padding-bottom:env(safe-area-inset-bottom,0px)] [transform:translateZ(0)] dark:border-[#35323e] dark:bg-[#201e26] md:hidden"
+      className="relative z-40 w-full shrink-0 isolate border-t-2 border-[#e7e4dd] bg-white px-3 pt-1.5 [padding-bottom:env(safe-area-inset-bottom,0px)] dark:border-[#35323e] dark:bg-[#201e26] md:hidden"
     >
       <ul className="relative mx-auto grid max-w-md grid-cols-4">
         <li
