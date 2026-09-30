@@ -30,6 +30,40 @@ const jetBrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const APPLE_STARTUP_SCREENS = [
+  [440, 956, 3],
+  [430, 932, 3],
+  [428, 926, 3],
+  [420, 912, 3],
+  [414, 896, 3],
+  [414, 896, 2],
+  [402, 874, 3],
+  [393, 852, 3],
+  [390, 844, 3],
+  [375, 812, 3],
+  [360, 780, 3],
+  [414, 736, 3],
+  [375, 667, 2],
+  [320, 568, 2],
+  [1032, 1376, 2],
+  [1024, 1366, 2],
+  [834, 1210, 2],
+  [834, 1194, 2],
+  [834, 1112, 2],
+  [820, 1180, 2],
+  [810, 1080, 2],
+  [768, 1024, 2],
+  [744, 1133, 2],
+] as const;
+
+const appleStartupImages = APPLE_STARTUP_SCREENS.flatMap(
+  ([width, height, pixelRatio]) =>
+    (["light", "dark"] as const).map((colorScheme) => ({
+      url: `/splash/apple-${width}x${height}-${pixelRatio}x-${colorScheme}.png`,
+      media: `screen and (device-width: ${width}px) and (device-height: ${height}px) and (-webkit-device-pixel-ratio: ${pixelRatio}) and (orientation: portrait) and (prefers-color-scheme: ${colorScheme})`,
+    })),
+);
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
@@ -43,6 +77,7 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: SITE_NAME,
     startupImage: [
+      ...appleStartupImages,
       {
         url: "/splash/launch-light.png",
         media: "(prefers-color-scheme: light)",
