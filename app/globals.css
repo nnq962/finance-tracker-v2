@@ -185,9 +185,18 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
  * can be anchored to the shell without using the affected fixed layer.
  */
 @media (display-mode: standalone) and (max-width: 767px) {
+  html:has([data-app-shell="main"]),
+  body:has([data-app-shell="main"]) {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
   body:has([data-app-shell="main"])
     [data-sonner-toaster][data-y-position="top"] {
     position: absolute;
+    --offset-top: calc(env(safe-area-inset-top, 0px) + 24px) !important;
+    --mobile-offset-top: calc(env(safe-area-inset-top, 0px) + 16px) !important;
   }
 }
 
