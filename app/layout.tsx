@@ -74,7 +74,7 @@ export const metadata: Metadata = {
   applicationName: SITE_NAME,
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: SITE_NAME,
     startupImage: [
       ...appleStartupImages,

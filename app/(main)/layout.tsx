@@ -40,7 +40,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
           <AppSidebar user={user} />
           <SidebarInset
             data-main-scroll-viewport
-            className="min-h-0 min-w-0 overflow-y-auto overscroll-y-none bg-[#fbfaf7] [--main-content-px:--spacing(4)] [-webkit-overflow-scrolling:touch] dark:bg-background md:min-h-svh md:overflow-visible md:overscroll-y-auto md:border-l-2 md:border-l-[#e7e4dd] md:peer-data-[variant=inset]:m-0 md:peer-data-[variant=inset]:rounded-none md:peer-data-[variant=inset]:shadow-none md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0 md:[--main-content-px:--spacing(6)] dark:md:border-l-[#35323e]"
+            className="min-h-0 min-w-0 overflow-y-auto overscroll-y-contain bg-[#fbfaf7] [--main-content-px:--spacing(4)] [-webkit-overflow-scrolling:touch] dark:bg-background md:min-h-svh md:overflow-visible md:border-l-2 md:border-l-[#e7e4dd] md:peer-data-[variant=inset]:m-0 md:peer-data-[variant=inset]:rounded-none md:peer-data-[variant=inset]:shadow-none md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0 md:[--main-content-px:--spacing(6)] dark:md:border-l-[#35323e]"
           >
             <div
               aria-hidden="true"
