@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { FlaskConicalIcon } from "lucide-react"
+import { FlaskConicalIcon, SettingsIcon } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -27,6 +27,11 @@ const navMain = [
     url,
     icon: <Icon />,
   })),
+  {
+    title: "Cài đặt",
+    url: "/settings",
+    icon: <SettingsIcon />,
+  },
   ...(process.env.NODE_ENV === "development"
     ? [
         {

@@ -104,7 +104,6 @@ export function UserMenuDialog({
           <NotificationDialogContent
             settings={notificationSettings}
             onSettingsChange={onNotificationSettingsChange}
-            onSave={() => onActiveDialogChange(null)}
           />
         )}
 
