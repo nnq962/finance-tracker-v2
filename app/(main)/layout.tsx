@@ -6,6 +6,7 @@ import { AuthSessionGuard } from "@/components/auth-session-guard"
 import { MainBreadcrumb } from "@/components/main-breadcrumb"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import { PwaThemeColor } from "@/components/pwa-theme-color"
+import { PushMessageListener } from "@/components/push-message-listener"
 import { ThemeSelect } from "@/components/theme-select"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -31,6 +32,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
 
   return (
     <AuthSessionGuard>
+      <PushMessageListener />
       <TooltipProvider>
         <SidebarProvider
           data-app-shell="main"

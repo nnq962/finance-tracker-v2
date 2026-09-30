@@ -20,6 +20,7 @@ import type { SessionUser } from "@/lib/auth/session"
 
 import { AccountSettings } from "./account-settings"
 import { AppearanceSettings } from "./appearance-settings"
+import { PushTestSettings } from "./push-test-settings"
 
 const settingsSections = [
   {
@@ -99,8 +100,9 @@ export function SettingsView({ user }: SettingsViewProps) {
         </section>
         <section
           aria-label="Thông báo"
-          className={cn(activeSection !== "notifications" && "md:hidden")}
+          className={cn("space-y-6", activeSection !== "notifications" && "md:hidden")}
         >
+          <PushTestSettings />
           {notificationContent}
         </section>
       </div>
