@@ -37,6 +37,7 @@ export function MobileBottomNav() {
   const latestRequestedPathnameRef = useRef(pathname)
   const navigationInFlightRef = useRef(false)
   const recoveryPathnameRef = useRef<string | null>(null)
+  const touchPreviewPathnameRef = useRef<string | null>(null)
   const activePathname = visualPathname
   const activeIndex = Math.max(
     appNavigationItems.findIndex((item) => item.url === activePathname),
@@ -50,6 +51,10 @@ export function MobileBottomNav() {
 
     if (!navigationInFlightRef.current) {
       latestRequestedPathnameRef.current = pathname
+
+      if (touchPreviewPathnameRef.current !== null) {
+        return
+      }
 
       if (visualPathname !== pathname) {
         // Sync browser back/forward and non-bottom-nav navigations.
@@ -87,23 +92,7 @@ export function MobileBottomNav() {
     setVisualPathname(pathname)
   }, [isNavigationPending, pathname, router, visualPathname])
 
-  const navigateTo = (
-    event: MouseEvent<HTMLAnchorElement>,
-    requestedPathname: string,
-  ) => {
-    if (
-      event.button !== 0 ||
-      event.metaKey ||
-      event.ctrlKey ||
-      event.shiftKey ||
-      event.altKey ||
-      event.currentTarget.target === "_blank"
-    ) {
-      return
-    }
-
-    event.preventDefault()
-
+  const requestNavigation = (requestedPathname: string) => {
     if (
       (!navigationInFlightRef.current && requestedPathname === pathname) ||
       (navigationInFlightRef.current &&
@@ -126,6 +115,26 @@ export function MobileBottomNav() {
         router.push(requestedPathname)
       }
     })
+  }
+
+  const navigateTo = (
+    event: MouseEvent<HTMLAnchorElement>,
+    requestedPathname: string,
+  ) => {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      event.currentTarget.target === "_blank"
+    ) {
+      return
+    }
+
+    event.preventDefault()
+    touchPreviewPathnameRef.current = null
+    requestNavigation(requestedPathname)
   }
 
   useEffect(() => {
@@ -216,8 +225,17 @@ export function MobileBottomNav() {
             <li key={item.url} className="min-w-0 px-0.5">
               <Link
                 href={item.url}
-                onTouchStart={() => setVisualPathname(item.url)}
+                onTouchStart={() => {
+                  touchPreviewPathnameRef.current = item.url
+                  setVisualPathname(item.url)
+                }}
+                onTouchEnd={(event) => {
+                  event.preventDefault()
+                  touchPreviewPathnameRef.current = null
+                  requestNavigation(item.url)
+                }}
                 onTouchCancel={() => {
+                  touchPreviewPathnameRef.current = null
                   setVisualPathname(
                     navigationInFlightRef.current
                       ? latestRequestedPathnameRef.current
