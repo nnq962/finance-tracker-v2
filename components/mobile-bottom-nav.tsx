@@ -5,11 +5,12 @@ import { usePathname, useRouter } from "next/navigation"
 import {
   type MouseEvent,
   useEffect,
-  useOptimistic,
   useRef,
+  useState,
   useTransition,
 } from "react"
 import { cn } from "cn"
+import { motion } from "motion/react"
 
 import { appNavigationItems } from "@/lib/app-navigation"
 
@@ -31,11 +32,12 @@ function isIOSStandalone() {
 export function MobileBottomNav() {
   const pathname = usePathname()
   const router = useRouter()
-  const [activePathname, setOptimisticPathname] = useOptimistic(pathname)
+  const [visualPathname, setVisualPathname] = useState(pathname)
   const [isNavigationPending, startNavigation] = useTransition()
   const latestRequestedPathnameRef = useRef(pathname)
   const navigationInFlightRef = useRef(false)
   const recoveryPathnameRef = useRef<string | null>(null)
+  const activePathname = visualPathname
   const activeIndex = Math.max(
     appNavigationItems.findIndex((item) => item.url === activePathname),
     0,
@@ -48,6 +50,13 @@ export function MobileBottomNav() {
 
     if (!navigationInFlightRef.current) {
       latestRequestedPathnameRef.current = pathname
+
+      if (visualPathname !== pathname) {
+        // Sync browser back/forward and non-bottom-nav navigations.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setVisualPathname(pathname)
+      }
+
       return
     }
 
@@ -65,7 +74,6 @@ export function MobileBottomNav() {
     if (recoveryPathnameRef.current !== requestedPathname) {
       recoveryPathnameRef.current = requestedPathname
       startNavigation(() => {
-        setOptimisticPathname(requestedPathname)
         router.replace(requestedPathname)
       })
       return
@@ -74,7 +82,10 @@ export function MobileBottomNav() {
     navigationInFlightRef.current = false
     recoveryPathnameRef.current = null
     latestRequestedPathnameRef.current = pathname
-  }, [isNavigationPending, pathname, router, setOptimisticPathname])
+    // Reconcile the visual state only after both the original navigation and
+    // its single recovery attempt have failed.
+    setVisualPathname(pathname)
+  }, [isNavigationPending, pathname, router, visualPathname])
 
   const navigateTo = (
     event: MouseEvent<HTMLAnchorElement>,
@@ -106,10 +117,9 @@ export function MobileBottomNav() {
     navigationInFlightRef.current = true
     latestRequestedPathnameRef.current = requestedPathname
     recoveryPathnameRef.current = null
+    setVisualPathname(requestedPathname)
 
     startNavigation(() => {
-      setOptimisticPathname(requestedPathname)
-
       if (shouldReplace) {
         router.replace(requestedPathname)
       } else {
@@ -184,13 +194,19 @@ export function MobileBottomNav() {
       className="fixed inset-x-0 bottom-0 z-40 isolate border-t-2 border-[#e7e4dd] bg-white px-3 pt-1.5 [backface-visibility:hidden] [padding-bottom:env(safe-area-inset-bottom,0px)] [transform:translateZ(0)] dark:border-[#35323e] dark:bg-[#201e26] md:hidden"
     >
       <ul className="relative mx-auto grid max-w-md grid-cols-4">
-        <li
+        <motion.li
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 left-0 z-0 w-1/4 px-0.5 transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] [will-change:transform] motion-reduce:duration-0"
-          style={{ transform: `translate3d(${activeIndex * 100}%, 0, 0)` }}
+          className="pointer-events-none absolute inset-y-0 left-0 z-0 w-1/4 px-0.5 [will-change:transform]"
+          initial={false}
+          animate={{ x: `${activeIndex * 100}%` }}
+          transition={{
+            type: "tween",
+            duration: 0.3,
+            ease: [0.22, 1, 0.36, 1],
+          }}
         >
           <span className="block size-full rounded-xl bg-[#d6f4ff] dark:bg-[#113950]" />
-        </li>
+        </motion.li>
 
         {appNavigationItems.map((item) => {
           const isActive = activePathname === item.url
@@ -200,6 +216,14 @@ export function MobileBottomNav() {
             <li key={item.url} className="min-w-0 px-0.5">
               <Link
                 href={item.url}
+                onTouchStart={() => setVisualPathname(item.url)}
+                onTouchCancel={() => {
+                  setVisualPathname(
+                    navigationInFlightRef.current
+                      ? latestRequestedPathnameRef.current
+                      : pathname,
+                  )
+                }}
                 onClick={(event) => navigateTo(event, item.url)}
                 aria-current={pathname === item.url ? "page" : undefined}
                 className={cn(
