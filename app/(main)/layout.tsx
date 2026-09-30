@@ -59,7 +59,8 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
                 <ThemeSelect />
               </div>
             </header>
-            <div className="flex flex-1 flex-col gap-4 px-(--main-content-px) pt-4 pb-4 transition-[padding] duration-200 ease-linear md:pt-0 [&>*]:mx-0 [&>*]:max-w-none">
+            {/* A 1px scroll range keeps iOS bounce inside this pane on short pages. */}
+            <div className="flex min-h-[calc(100%+1px)] flex-1 flex-col gap-4 px-(--main-content-px) pt-4 pb-4 transition-[padding] duration-200 ease-linear md:min-h-0 md:pt-0 [&>*]:mx-0 [&>*]:max-w-none">
               {children}
             </div>
           </SidebarInset>
