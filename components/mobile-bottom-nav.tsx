@@ -134,7 +134,7 @@ export function MobileBottomNav() {
   return (
     <nav
       aria-label="Điều hướng chính trên di động"
-      className="relative z-40 w-full shrink-0 isolate border-t-2 border-[#e7e4dd] bg-white px-3 pt-1.5 [padding-bottom:env(safe-area-inset-bottom,0px)] dark:border-[#35323e] dark:bg-[#201e26] md:hidden"
+      className="relative z-40 w-full shrink-0 isolate border-t-2 border-[#e7e4dd] bg-white px-3 pt-2 [padding-bottom:max(0.5rem,env(safe-area-inset-bottom,0px))] dark:border-[#35323e] dark:bg-[#201e26] md:hidden"
     >
       <ul className="relative mx-auto grid max-w-md grid-cols-4">
         <li

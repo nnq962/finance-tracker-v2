@@ -64,7 +64,7 @@ export function ThemeSelect() {
           <SelectValue />
         </span>
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent position="popper" align="end" showScrollButtons={false}>
         <SelectGroup>
           <SelectItem value="light">
             <span className="flex items-center gap-2">
