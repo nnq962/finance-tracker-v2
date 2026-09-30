@@ -2,16 +2,22 @@
 
 import { requireSession } from "@/lib/auth/session"
 import { getFirebaseAdminMessaging } from "@/lib/firebase/admin"
+import { getPushContext } from "@/lib/notifications/context"
+import { getCurrentPushFid, detachPushDevice } from "@/lib/notifications/repository"
+import { NotificationValidationError } from "@/lib/notifications/validation"
 
-export async function sendPushTestAction(fid: unknown, delayed: unknown = false) {
-  await requireSession()
-  if (typeof fid !== "string" || !/^[A-Za-z0-9_-]{22}$/.test(fid) || typeof delayed !== "boolean") {
+export async function sendPushTestAction(delayed: unknown = false) {
+  const user = await requireSession()
+  if (typeof delayed !== "boolean") {
     return { success: false as const, error: "Đăng ký thiết bị chưa hợp lệ. Bấm Đăng ký thiết bị rồi thử lại." }
   }
 
   try {
+    const context = await getPushContext()
     // A bounded delay for a manual background test, not a daily reminder scheduler.
     if (delayed) await new Promise((resolve) => setTimeout(resolve, 8_000))
+    // Recheck ownership after the delay: logout/account switches invalidate this target.
+    const fid = await getCurrentPushFid(user.uid, context)
     const messageId = await getFirebaseAdminMessaging().send({
       // Admin 13.10 uses `token`; FCM accepts registered FIDs here during migration.
       token: fid,
@@ -27,9 +33,14 @@ export async function sendPushTestAction(fid: unknown, delayed: unknown = false)
     })
     return { success: true as const, messageId }
   } catch (error) {
+    if (error instanceof NotificationValidationError) return { success: false as const, error: error.message }
     const code = typeof error === "object" && error !== null && "code" in error
       ? String(error.code) : ""
     console.error("Push test failed", { code })
+    if (code.includes("registration-token-not-registered") || code.includes("invalid-registration-token")) {
+      const context = await getPushContext().catch(() => null)
+      if (context) await detachPushDevice(user.uid, context).catch(() => undefined)
+    }
     const message = code.includes("registration-token-not-registered") || code.includes("invalid-registration-token")
       ? "Đăng ký thiết bị không còn hợp lệ. Bấm Đăng ký lại rồi gửi thử."
       : code.includes("mismatched-credential")

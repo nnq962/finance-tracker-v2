@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import {
   BadgeCheckIcon,
   ChevronsUpDownIcon,
@@ -56,9 +57,11 @@ export function NavUser({
 
     try {
       await signOutCurrentUser()
-    } finally {
       router.replace("/login")
       router.refresh()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không thể đăng xuất. Vui lòng thử lại.")
+      setIsSigningOut(false)
     }
   }
 

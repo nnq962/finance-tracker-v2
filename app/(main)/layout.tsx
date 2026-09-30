@@ -31,7 +31,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
   const user = await requireSession()
 
   return (
-    <AuthSessionGuard>
+    <AuthSessionGuard initialUid={user.uid}>
       <PushMessageListener />
       <TooltipProvider>
         <SidebarProvider

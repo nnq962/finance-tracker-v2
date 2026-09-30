@@ -10,8 +10,14 @@ import {
   useTransition,
 } from "react"
 import { cn } from "cn"
+import { SettingsIcon } from "lucide-react"
 
 import { appNavigationItems } from "@/lib/app-navigation"
+
+const mobileNavigationItems = [
+  ...appNavigationItems,
+  { title: "Cài đặt", mobileTitle: "Cài đặt", url: "/settings", icon: SettingsIcon },
+]
 
 export function MobileBottomNav() {
   const pathname = usePathname()
@@ -24,7 +30,7 @@ export function MobileBottomNav() {
   const touchPreviewPathnameRef = useRef<string | null>(null)
   const activePathname = visualPathname
   const activeIndex = Math.max(
-    appNavigationItems.findIndex((item) => item.url === activePathname),
+    mobileNavigationItems.findIndex((item) => item.url === activePathname),
     0,
   )
 
@@ -136,16 +142,16 @@ export function MobileBottomNav() {
       aria-label="Điều hướng chính trên di động"
       className="relative z-40 w-full shrink-0 isolate border-t-2 border-[#e7e4dd] bg-white px-3 pt-2 [padding-bottom:max(0.5rem,env(safe-area-inset-bottom,0px))] dark:border-[#35323e] dark:bg-[#201e26] md:hidden"
     >
-      <ul className="relative mx-auto grid max-w-md grid-cols-4">
+      <ul className="relative mx-auto grid max-w-md grid-cols-5">
         <li
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 left-0 z-0 w-1/4 px-0.5 transition-transform duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] [backface-visibility:hidden] [contain:paint] [will-change:transform] motion-reduce:duration-0"
+          className="pointer-events-none absolute inset-y-0 left-0 z-0 w-1/5 px-0.5 transition-transform duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] [backface-visibility:hidden] [contain:paint] [will-change:transform] motion-reduce:duration-0"
           style={{ transform: `translate3d(${activeIndex * 100}%, 0, 0)` }}
         >
           <span className="block size-full rounded-xl bg-[#d6f4ff] dark:bg-[#113950]" />
         </li>
 
-        {appNavigationItems.map((item) => {
+        {mobileNavigationItems.map((item) => {
           const isActive = activePathname === item.url
           const Icon = item.icon
 
@@ -153,6 +159,7 @@ export function MobileBottomNav() {
             <li key={item.url} className="min-w-0 px-0.5">
               <Link
                 href={item.url}
+                aria-label={item.mobileTitle}
                 onTouchStart={() => {
                   touchPreviewPathnameRef.current = item.url
                   setVisualPathname(item.url)
@@ -184,7 +191,7 @@ export function MobileBottomNav() {
                   )}
                   aria-hidden="true"
                 />
-                <span className="max-w-full truncate font-heading text-[0.65rem] leading-none font-extrabold">
+                <span className="max-w-full truncate font-heading text-[0.65rem] leading-none font-extrabold max-[359px]:hidden">
                   {item.mobileTitle}
                 </span>
               </Link>

@@ -12,14 +12,12 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
 import {
   Field,
   FieldContent,
-  FieldDescription,
   FieldLabel,
 } from "@/components/ui/field"
 import {
@@ -103,17 +101,11 @@ export function AppearanceSettings() {
           <PaletteIcon className="size-4" />
           Chủ đề
         </CardTitle>
-        <CardDescription>
-          Chọn cách Finance Tracker hiển thị trên thiết bị này.
-        </CardDescription>
       </CardHeader>
       <CardContent>
         <Field orientation="responsive">
           <FieldContent>
             <FieldLabel>Chế độ hiển thị</FieldLabel>
-            <FieldDescription>
-              Chế độ hệ thống sẽ tự đổi theo cài đặt sáng hoặc tối của thiết bị.
-            </FieldDescription>
           </FieldContent>
 
           <Tabs

@@ -23,7 +23,7 @@ async function waitForActiveWorker(registration: ServiceWorkerRegistration) {
   })
 }
 
-export async function registerPushTestDevice() {
+export async function registerPushTestDevice(requestPermission = true) {
   const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY
   if (!vapidKey) {
     throw new Error("Thiếu VAPID key. Thêm NEXT_PUBLIC_FIREBASE_VAPID_KEY rồi khởi động lại hoặc redeploy ứng dụng.")
@@ -36,7 +36,8 @@ export async function registerPushTestDevice() {
   }
 
   // Request before any asynchronous SDK loading to preserve the user gesture on iOS.
-  const permission = await Notification.requestPermission()
+  const permission = requestPermission && Notification.permission === "default"
+    ? await Notification.requestPermission() : Notification.permission
   if (permission !== "granted") {
     throw new Error(permission === "denied"
       ? "Thông báo đã bị chặn. Cho phép thông báo trong cài đặt trình duyệt rồi thử lại."

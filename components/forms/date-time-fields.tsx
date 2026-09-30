@@ -20,6 +20,7 @@ type DateTimeFieldsProps = {
   minDate?: string
   onDateChange?: React.ChangeEventHandler<HTMLInputElement>
   onTimeChange?: React.ChangeEventHandler<HTMLInputElement>
+  onTimeBlur?: React.FocusEventHandler<HTMLInputElement>
   required?: boolean
   showDate?: boolean
   timeName?: string
@@ -39,6 +40,7 @@ export function DateTimeFields({
   minDate,
   onDateChange,
   onTimeChange,
+  onTimeBlur,
   required = false,
   showDate = true,
   timeName = "time",
@@ -93,6 +95,7 @@ export function DateTimeFields({
             }
             value={timeValue}
             onChange={onTimeChange}
+            onBlur={onTimeBlur}
             required={required}
             disabled={disabled}
             className="w-auto min-w-0 max-w-full flex-1"

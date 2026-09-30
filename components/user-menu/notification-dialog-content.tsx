@@ -1,42 +1,43 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { BellRingIcon } from "lucide-react"
 
 import { DateTimeFields } from "@/components/forms/date-time-fields"
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
 import {
   Field,
-  FieldContent,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
 import { Switch } from "@/components/ui/switch"
+import { type NotificationSettings } from "@/lib/notifications/types"
 
-export type NotificationSettings = {
-  notificationsEnabled: boolean
-  dailyReminderTime: string
-}
-
-export const defaultNotificationSettings: NotificationSettings = {
-  notificationsEnabled: true,
-  dailyReminderTime: "20:00",
-}
+export { defaultNotificationSettings, type NotificationSettings } from "@/lib/notifications/types"
 
 type NotificationDialogContentProps = {
+  children?: ReactNode
+  onReminderTimeCommit?: (value: string) => void
   settings: NotificationSettings
   onSettingsChange: (settings: NotificationSettings) => void
+  disabled?: boolean
+  notificationsEnabled?: boolean
+  onNotificationsEnabledChange?: (enabled: boolean) => void
 }
 
 export function NotificationDialogContent({
   settings,
+  children,
+  onReminderTimeCommit,
   onSettingsChange,
+  disabled = false,
+  notificationsEnabled = settings.notificationsEnabled,
+  onNotificationsEnabledChange,
 }: NotificationDialogContentProps) {
   const updateSetting = <Key extends keyof NotificationSettings>(
     key: Key,
@@ -50,28 +51,21 @@ export function NotificationDialogContent({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BellRingIcon className="size-4" />
-          Nhắc nhở hằng ngày
+          Thông báo
         </CardTitle>
-        <CardDescription>
-          Nhắc bạn cập nhật các khoản thu chi vào thời gian phù hợp.
-        </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-6">
         <FieldGroup>
           <Field orientation="horizontal">
-            <FieldContent>
-              <FieldLabel htmlFor="notifications-enabled">
-                Bật thông báo
-              </FieldLabel>
-              <FieldDescription>
-                Nhận một lời nhắc ghi chép tài chính mỗi ngày.
-              </FieldDescription>
-            </FieldContent>
+            <FieldLabel htmlFor="notifications-enabled">
+              Bật thông báo
+            </FieldLabel>
             <Switch
               id="notifications-enabled"
-              checked={settings.notificationsEnabled}
+              checked={notificationsEnabled}
+              disabled={disabled}
               onCheckedChange={(checked) =>
-                updateSetting("notificationsEnabled", checked)
+                onNotificationsEnabledChange ? onNotificationsEnabledChange(checked) : updateSetting("notificationsEnabled", checked)
               }
             />
           </Field>
@@ -79,15 +73,16 @@ export function NotificationDialogContent({
           <DateTimeFields
             idPrefix="daily-reminder"
             label="Giờ nhắc hằng ngày"
-            description="Thời điểm gửi thông báo mỗi ngày."
             showDate={false}
             timeValue={settings.dailyReminderTime}
             onTimeChange={(event) =>
               updateSetting("dailyReminderTime", event.target.value)
             }
-            disabled={!settings.notificationsEnabled}
+            onTimeBlur={(event) => onReminderTimeCommit?.(event.currentTarget.value)}
+            disabled={disabled || !notificationsEnabled}
           />
         </FieldGroup>
+        {children}
       </CardContent>
     </Card>
   )

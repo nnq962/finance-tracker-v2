@@ -8,11 +8,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 
-import {
-  defaultNotificationSettings,
-  NotificationDialogContent,
-  type NotificationSettings,
-} from "@/components/user-menu/notification-dialog-content"
+import type { NotificationState } from "@/lib/notifications/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
@@ -20,7 +16,8 @@ import type { SessionUser } from "@/lib/auth/session"
 
 import { AccountSettings } from "./account-settings"
 import { AppearanceSettings } from "./appearance-settings"
-import { PushTestSettings } from "./push-test-settings"
+import { NotificationDevices } from "./notification-devices"
+import { NotificationPreferences } from "./notification-preferences"
 
 const settingsSections = [
   {
@@ -48,20 +45,12 @@ type SettingsSection = (typeof settingsSections)[number]["value"]
 
 type SettingsViewProps = {
   user: SessionUser
+  notifications: NotificationState
 }
 
-export function SettingsView({ user }: SettingsViewProps) {
+export function SettingsView({ user, notifications }: SettingsViewProps) {
   const [activeSection, setActiveSection] =
     React.useState<SettingsSection>("account")
-  const [notificationSettings, setNotificationSettings] =
-    React.useState<NotificationSettings>(defaultNotificationSettings)
-
-  const notificationContent = (
-    <NotificationDialogContent
-      settings={notificationSettings}
-      onSettingsChange={setNotificationSettings}
-    />
-  )
 
   return (
     <div className="grid items-start gap-6 md:grid-cols-[14rem_minmax(0,1fr)]">
@@ -102,8 +91,9 @@ export function SettingsView({ user }: SettingsViewProps) {
           aria-label="Thông báo"
           className={cn("space-y-6", activeSection !== "notifications" && "md:hidden")}
         >
-          <PushTestSettings />
-          {notificationContent}
+          <NotificationPreferences uid={user.uid} initialSettings={notifications.settings}>
+            <NotificationDevices uid={user.uid} initialState={notifications} />
+          </NotificationPreferences>
         </section>
       </div>
     </div>

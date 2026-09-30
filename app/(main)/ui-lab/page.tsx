@@ -1,5 +1,6 @@
 import { CurrencyInputExample } from "./_components/currency-input-example"
 import { SonnerExamples } from "./_components/sonner-examples"
+import { SwitchExamples } from "./_components/switch-examples"
 import GradientWaves from "@/components/gradient-waves"
 import Link from "next/link"
 import { notFound } from "next/navigation"
@@ -251,6 +252,20 @@ export default function UiLabPage() {
               <Input aria-label="Tên khoản tiết kiệm" placeholder="Tên khoản tiết kiệm" className="min-w-44 flex-1" />
               <Button type="button"><CheckIcon /> Lưu lại</Button>
             </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section aria-labelledby="switch-examples">
+        <Card>
+          <CardHeader>
+            <CardTitle id="switch-examples">Switch</CardTitle>
+            <CardDescription>
+              Gạt để xem trạng thái bật, tắt và chuyển động ở hai kích thước.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SwitchExamples />
           </CardContent>
         </Card>
       </section>

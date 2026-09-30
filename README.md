@@ -131,3 +131,55 @@ account balances, linked transactions, validation, retries, concurrent requests,
 and ownership isolation, then removes its test records in `finally`. It does not
 use or change a real user's records. An interrupted process may require cleaning
 up its isolated test namespace.
+
+
+## Cài đặt thông báo và thiết bị
+
+Trong Settings → Thông báo, gạt switch để tự lưu bật/tắt lời nhắc.
+Giờ nhắc tự lưu khi rời ô nhập. Múi giờ được cố định là Việt Nam (`Asia/Ho_Chi_Minh`),
+không cần người dùng chọn. Khi gạt switch bật,
+trình duyệt được yêu cầu cấp quyền và đăng ký thiết bị; switch chỉ bật sau khi
+hoàn tất. Nếu quyền đã bị chặn, switch giữ tắt và hướng dẫn bật quyền trong
+cài đặt trình duyệt/PWA. Quay lại app sẽ kiểm tra quyền lại. Có thể dùng **Kết nối
+thiết bị này** để đăng ký nhận thông báo ngay cả khi lời nhắc tắt. Trên iPhone/iPad, đăng ký từ PWA
+đã thêm vào Màn hình chính. Lịch gửi tự động chưa được triển khai.
+
+Dữ liệu nằm trong Firestore `(default)` và chỉ được đọc/ghi qua Firebase Admin:
+
+- `users/{uid}/notificationSettings/default`: `notificationsEnabled`,
+  `dailyReminderTime`, `timeZone`, `updatedAt`.
+- `users/{uid}/pushDevices/{sha256(fid)}`: FID đăng ký FCM, tên thiết bị,
+  browser ID và thời điểm tạo/cập nhật. Một tài khoản có nhiều thiết bị.
+- `notificationBrowsers/{browserId}`: liên kết thiết bị của trình duyệt với
+  tài khoản và nonce phiên. Cookie HttpOnly giữ browser ID và nonce.
+- `pushInstallations/{sha256(fid)}`: chủ sở hữu hiện tại của đăng ký FCM.
+
+Đăng ký được đồng bộ khi mở app, quay lại cửa sổ và khi FCM thay đổi đăng ký.
+Đăng ký tự động không hiện hộp xin quyền; chỉ tiếp tục nếu quyền đã được cấp
+và tài khoản bật lời nhắc hoặc thiết bị đã được lưu. Tắt lời nhắc giữ thiết bị
+để có thể bật lại/gửi thử; lịch gửi sau này phải kiểm tra `notificationsEnabled`.
+Logout gỡ thiết bị của trình duyệt hiện tại và huỷ đăng ký FCM tại máy, các máy
+khác vẫn được giữ. Đổi tài khoản chuyển liên kết bằng transaction. Nonce phiên
+ngăn callback cũ gắn lại thiết bị sau logout/đổi tài khoản.
+
+Không cần mở quyền ghi Firestore cho client hoặc thêm biến môi trường mới.
+
+Kiểm tra không gửi thông báo thật:
+
+```sh
+node scripts/test-push-notifications.cjs
+```
+
+Kiểm tra tích hợp Firestore với credentials trong `.env.local` (tạo dữ liệu
+người dùng/thiết bị giả trong namespace ngẫu nhiên rồi dọn trong `finally`):
+
+```sh
+NOTIFICATION_TEST_LIVE=1 node scripts/test-notifications-integration.cjs
+```
+
+Settings chỉ hiển thị cài đặt lời nhắc và thiết bị nhận thông báo; giao diện gửi
+thử đã được gỡ. Kết quả đăng ký, lưu cài đặt và lỗi hiển thị bằng toast.
+
+Kiểm tra trên thiết bị: đổi giờ nhắc rồi rời ô nhập và tải lại; đăng nhập cùng tài khoản
+trên hai máy và đăng ký cả hai; logout một máy để kiểm tra máy còn lại vẫn giữ
+đăng ký; đăng nhập tài khoản khác trên máy vừa logout để kiểm tra liên kết mới.

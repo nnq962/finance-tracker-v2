@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { LogOutIcon } from "lucide-react"
 
 import {
@@ -15,8 +16,6 @@ import {
   Card,
   CardAction,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -45,9 +44,11 @@ export function AccountSettings({ user }: AccountSettingsProps) {
 
     try {
       await signOutCurrentUser()
-    } finally {
       router.replace("/login")
       router.refresh()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không thể đăng xuất. Vui lòng thử lại.")
+      setIsSigningOut(false)
     }
   }
 
@@ -55,36 +56,35 @@ export function AccountSettings({ user }: AccountSettingsProps) {
     <Card>
       <CardHeader>
         <CardTitle>Thông tin tài khoản</CardTitle>
-        <CardDescription>
-          Thông tin đăng nhập đang được sử dụng trên Finance Tracker.
-        </CardDescription>
         <CardAction>
           <Badge variant="secondary">Đang hoạt động</Badge>
         </CardAction>
       </CardHeader>
-      <CardContent className="flex min-w-0 items-center gap-3">
-        <Avatar size="lg">
-          <AvatarImage src={user.avatar} alt={user.name} />
-          <AvatarFallback>{initials}</AvatarFallback>
-        </Avatar>
-        <div className="min-w-0 space-y-0.5">
-          <p className="truncate font-medium">{user.name}</p>
-          <p className="truncate text-sm text-muted-foreground">
-            {user.email || "Chưa cập nhật email"}
-          </p>
+      <CardContent className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar size="lg">
+            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 space-y-0.5">
+            <p className="truncate font-medium">{user.name}</p>
+            <p className="truncate text-sm text-muted-foreground">
+              {user.email || "Chưa cập nhật email"}
+            </p>
+          </div>
+        </div>
+        <div className="flex shrink-0 justify-end">
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={isSigningOut}
+            onClick={() => void handleSignOut()}
+          >
+            <LogOutIcon />
+            {isSigningOut ? "Đang đăng xuất..." : "Đăng xuất"}
+          </Button>
         </div>
       </CardContent>
-      <CardFooter className="justify-end">
-        <Button
-          type="button"
-          variant="destructive"
-          disabled={isSigningOut}
-          onClick={() => void handleSignOut()}
-        >
-          <LogOutIcon />
-          {isSigningOut ? "Đang đăng xuất..." : "Đăng xuất"}
-        </Button>
-      </CardFooter>
     </Card>
   )
 }

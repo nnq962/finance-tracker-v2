@@ -7,6 +7,8 @@ import {
 } from "@/lib/auth/constants"
 import { getFirebaseAdminAuth } from "@/lib/firebase/admin"
 import { initializeUserWorkspace } from "@/lib/onboarding/bootstrap"
+import { closePushSession, openPushSession } from "@/lib/notifications/repository"
+import { PUSH_BROWSER_COOKIE, PUSH_SESSION_COOKIE } from "@/lib/notifications/types"
 
 export const runtime = "nodejs"
 
@@ -95,7 +97,19 @@ export async function POST(request: NextRequest) {
     const sessionCookie = await adminAuth.createSessionCookie(idToken, {
       expiresIn: SESSION_DURATION_MS,
     })
+    const pushContext = await openPushSession(
+      decodedIdToken.uid,
+      request.cookies.get(PUSH_BROWSER_COOKIE)?.value,
+      request.cookies.get(PUSH_SESSION_COOKIE)?.value,
+    )
     const response = NextResponse.json({ ok: true })
+
+    const pushCookieOptions = {
+      httpOnly: true, secure: process.env.NODE_ENV === "production",
+      sameSite: "lax" as const, path: "/",
+    }
+    response.cookies.set(PUSH_BROWSER_COOKIE, pushContext.browserId, { ...pushCookieOptions, maxAge: 365 * 24 * 60 * 60 })
+    response.cookies.set(PUSH_SESSION_COOKIE, pushContext.sessionId, { ...pushCookieOptions, maxAge: SESSION_DURATION_MS / 1000 })
 
     response.cookies.set(SESSION_COOKIE_NAME, sessionCookie, {
       httpOnly: true,
@@ -121,7 +135,20 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Nguồn yêu cầu không hợp lệ." }, { status: 403 })
   }
 
+  try {
+    // Browser-scoped secret can detach its own device even if Firebase session expired.
+    await closePushSession(
+      request.cookies.get(PUSH_BROWSER_COOKIE)?.value,
+      request.cookies.get(PUSH_SESSION_COOKIE)?.value,
+    )
+  } catch (error) {
+    console.error("Unable to detach push device during logout", error)
+    return NextResponse.json({ error: "Chưa thể gỡ thiết bị thông báo. Kiểm tra mạng rồi đăng xuất lại." }, { status: 503 })
+  }
   const response = NextResponse.json({ ok: true })
+  response.cookies.set(PUSH_SESSION_COOKIE, "", {
+    httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", maxAge: 0, path: "/",
+  })
   response.cookies.set(SESSION_COOKIE_NAME, "", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

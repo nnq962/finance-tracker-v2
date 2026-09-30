@@ -7,6 +7,7 @@ import {
 } from "firebase/auth"
 
 import { firebaseAuth } from "@/lib/firebase/client"
+import { stopPushDeviceSync, unregisterLocalPushDevice } from "@/lib/firebase/push-device"
 
 const googleProvider = new GoogleAuthProvider()
 
@@ -14,42 +15,52 @@ export function signInWithGoogle() {
   return signInWithPopup(firebaseAuth, googleProvider)
 }
 
-export async function syncServerSession(user: User) {
-  const idToken = await user.getIdToken()
-  const response = await fetch("/api/auth/session", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ idToken }),
-  })
-
-  if (!response.ok) {
-    const body: unknown = await response.json().catch(() => null)
-    const message =
-      typeof body === "object" &&
-      body !== null &&
-      "error" in body &&
-      typeof body.error === "string"
-        ? body.error
-        : "Không thể tạo phiên đăng nhập an toàn."
-
-    throw new Error(message)
-  }
+// Serialize cookie mutations so late login/refresh requests cannot undo logout.
+let sessionQueue: Promise<unknown> = Promise.resolve()
+function queueSession<T>(operation: () => Promise<T>): Promise<T> {
+  const work = sessionQueue.then(operation, operation)
+  sessionQueue = work.catch(() => undefined)
+  return work
 }
 
-export async function clearServerSession() {
-  const response = await fetch("/api/auth/session", { method: "DELETE" })
+export function syncServerSession(user: User) {
+  return queueSession(async () => {
+    if (firebaseAuth.currentUser?.uid !== user.uid) return
+    const idToken = await user.getIdToken()
+    if (firebaseAuth.currentUser?.uid !== user.uid) return
+    const response = await fetch("/api/auth/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idToken }),
+    })
+    if (!response.ok) {
+      const body: unknown = await response.json().catch(() => null)
+      const message = typeof body === "object" && body !== null &&
+        "error" in body && typeof body.error === "string"
+        ? body.error : "Không thể tạo phiên đăng nhập an toàn."
+      throw new Error(message)
+    }
+  })
+}
 
-  if (!response.ok) {
-    throw new Error("Không thể xoá phiên đăng nhập an toàn.")
-  }
+export function clearServerSession(expectedUid?: string | null) {
+  return queueSession(async () => {
+    if (expectedUid !== undefined && (firebaseAuth.currentUser?.uid ?? null) !== expectedUid) return
+    stopPushDeviceSync()
+    try {
+      const response = await fetch("/api/auth/session", { method: "DELETE" })
+      if (!response.ok) throw new Error("Không thể xoá phiên đăng nhập an toàn.")
+    } finally {
+      await unregisterLocalPushDevice().catch(() => undefined)
+    }
+  })
 }
 
 export async function signOutCurrentUser() {
-  try {
-    await signOut(firebaseAuth)
-  } finally {
-    await clearServerSession()
-  }
+  const uid = firebaseAuth.currentUser?.uid
+  // Detach durably while the session is available; surface failures for retry.
+  await clearServerSession(uid)
+  if (firebaseAuth.currentUser?.uid === uid) await signOut(firebaseAuth)
 }
 
 export function getAuthErrorMessage(error: unknown) {
