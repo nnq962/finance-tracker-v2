@@ -179,6 +179,18 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   }
 }
 
+/*
+ * iOS Home Screen apps can sample the background of a top-fixed element for
+ * the status bar. The main mobile shell has its own scroll viewport, so Sonner
+ * can be anchored to the shell without using the affected fixed layer.
+ */
+@media (display-mode: standalone) and (max-width: 767px) {
+  body:has([data-app-shell="main"])
+    [data-sonner-toaster][data-y-position="top"] {
+    position: absolute;
+  }
+}
+
 /* Keep the painted face separate from the press shadow, including while held. */
 @layer components {
   .button-raised {
