@@ -163,6 +163,7 @@ export function CashFlowFields({
                   </SelectTrigger>
                   <SelectContent
                     position="popper"
+                    showScrollButtons={false}
                     className="max-h-[min(16rem,var(--radix-select-content-available-height))]"
                   >
                     {defaultCategoryIsMissing && defaultValues?.categoryId ? (

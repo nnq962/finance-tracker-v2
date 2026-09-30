@@ -1,8 +1,14 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
+import { usePathname, useRouter } from "next/navigation"
+import {
+  type MouseEvent,
+  useEffect,
+  useOptimistic,
+  useRef,
+  useTransition,
+} from "react"
 import { cn } from "cn"
 
 import { appNavigationItems } from "@/lib/app-navigation"
@@ -24,18 +30,93 @@ function isIOSStandalone() {
 
 export function MobileBottomNav() {
   const pathname = usePathname()
-  const [pendingPathname, setPendingPathname] = useState<string | null>(null)
-  const activePathname = pendingPathname ?? pathname
+  const router = useRouter()
+  const [activePathname, setOptimisticPathname] = useOptimistic(pathname)
+  const [isNavigationPending, startNavigation] = useTransition()
+  const latestRequestedPathnameRef = useRef(pathname)
+  const navigationInFlightRef = useRef(false)
+  const recoveryPathnameRef = useRef<string | null>(null)
   const activeIndex = Math.max(
     appNavigationItems.findIndex((item) => item.url === activePathname),
     0,
   )
 
   useEffect(() => {
-    // The optimistic highlight is only needed while the next route is loading.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPendingPathname(null)
-  }, [pathname])
+    if (isNavigationPending) {
+      return
+    }
+
+    if (!navigationInFlightRef.current) {
+      latestRequestedPathnameRef.current = pathname
+      return
+    }
+
+    const requestedPathname = latestRequestedPathnameRef.current
+
+    if (pathname === requestedPathname) {
+      navigationInFlightRef.current = false
+      recoveryPathnameRef.current = null
+      return
+    }
+
+    // A very fast second tap can target the route that was still committed
+    // when the first navigation began. Ensure the latest tap wins even if the
+    // earlier transition happens to settle first.
+    if (recoveryPathnameRef.current !== requestedPathname) {
+      recoveryPathnameRef.current = requestedPathname
+      startNavigation(() => {
+        setOptimisticPathname(requestedPathname)
+        router.replace(requestedPathname)
+      })
+      return
+    }
+
+    navigationInFlightRef.current = false
+    recoveryPathnameRef.current = null
+    latestRequestedPathnameRef.current = pathname
+  }, [isNavigationPending, pathname, router, setOptimisticPathname])
+
+  const navigateTo = (
+    event: MouseEvent<HTMLAnchorElement>,
+    requestedPathname: string,
+  ) => {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      event.currentTarget.target === "_blank"
+    ) {
+      return
+    }
+
+    event.preventDefault()
+
+    if (
+      (!navigationInFlightRef.current && requestedPathname === pathname) ||
+      (navigationInFlightRef.current &&
+        requestedPathname === latestRequestedPathnameRef.current)
+    ) {
+      return
+    }
+
+    const shouldReplace = navigationInFlightRef.current
+
+    navigationInFlightRef.current = true
+    latestRequestedPathnameRef.current = requestedPathname
+    recoveryPathnameRef.current = null
+
+    startNavigation(() => {
+      setOptimisticPathname(requestedPathname)
+
+      if (shouldReplace) {
+        router.replace(requestedPathname)
+      } else {
+        router.push(requestedPathname)
+      }
+    })
+  }
 
   useEffect(() => {
     if (!isIOSStandalone()) {
@@ -105,7 +186,7 @@ export function MobileBottomNav() {
       <ul className="relative mx-auto grid max-w-md grid-cols-4">
         <li
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 left-0 z-0 w-1/4 px-0.5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-0"
+          className="pointer-events-none absolute inset-y-0 left-0 z-0 w-1/4 px-0.5 transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] [will-change:transform] motion-reduce:duration-0"
           style={{ transform: `translate3d(${activeIndex * 100}%, 0, 0)` }}
         >
           <span className="block size-full rounded-xl bg-[#d6f4ff] dark:bg-[#113950]" />
@@ -119,9 +200,7 @@ export function MobileBottomNav() {
             <li key={item.url} className="min-w-0 px-0.5">
               <Link
                 href={item.url}
-                onNavigate={() => {
-                  setPendingPathname(item.url)
-                }}
+                onClick={(event) => navigateTo(event, item.url)}
                 aria-current={pathname === item.url ? "page" : undefined}
                 className={cn(
                   "relative z-10 flex min-h-12 min-w-0 touch-manipulation flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 text-muted-foreground outline-none select-none [-webkit-tap-highlight-color:transparent] transition-[color,transform] duration-150 ease-out active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:ring-2 focus-visible:ring-[#38b8f6] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#201e26]",
