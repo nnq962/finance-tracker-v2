@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import packageJson from "./package.json";
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["192.168.2.5"],
+  allowedDevOrigins: ["10.70.22.33"],
   experimental: {
     staleTimes: {
       dynamic: 300,

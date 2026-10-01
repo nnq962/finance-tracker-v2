@@ -28,11 +28,25 @@ export function MobileBottomNav() {
   const navigationInFlightRef = useRef(false)
   const recoveryPathnameRef = useRef<string | null>(null)
   const touchPreviewPathnameRef = useRef<string | null>(null)
+  const listRef = useRef<HTMLUListElement>(null)
+  const [slotWidth, setSlotWidth] = useState<number | null>(null)
   const activePathname = visualPathname
   const activeIndex = Math.max(
     mobileNavigationItems.findIndex((item) => item.url === activePathname),
     0,
   )
+
+  useEffect(() => {
+    const list = listRef.current
+    if (!list) return
+
+    const observer = new ResizeObserver(([entry]) => {
+      setSlotWidth(entry.contentRect.width / mobileNavigationItems.length)
+    })
+    observer.observe(list)
+
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     const scrollViewport = document.querySelector<HTMLElement>(
@@ -142,11 +156,19 @@ export function MobileBottomNav() {
       aria-label="Điều hướng chính trên di động"
       className="relative z-40 w-full shrink-0 isolate border-t-2 border-[#e7e4dd] bg-white px-3 pt-2 [padding-bottom:max(0.5rem,env(safe-area-inset-bottom,0px))] dark:border-[#35323e] dark:bg-[#201e26] md:hidden"
     >
-      <ul className="relative mx-auto grid max-w-md grid-cols-5">
+      <ul ref={listRef} className="relative mx-auto grid max-w-md grid-cols-5">
         <li
           aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 left-0 z-0 w-1/5 px-0.5 transition-transform duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] [backface-visibility:hidden] [contain:paint] [will-change:transform] motion-reduce:duration-0"
-          style={{ transform: `translate3d(${activeIndex * 100}%, 0, 0)` }}
+          style={{
+            // Whole-pixel offsets: a percentage of a fractional slot width
+            // ends between device pixels, and iOS snaps the composited layer
+            // back to that position after the transition (a visible jump).
+            transform:
+              slotWidth === null
+                ? `translate3d(${activeIndex * 100}%, 0, 0)`
+                : `translate3d(${Math.round(activeIndex * slotWidth)}px, 0, 0)`,
+          }}
         >
           <span className="block size-full rounded-xl bg-[#d6f4ff] dark:bg-[#113950]" />
         </li>
