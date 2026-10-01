@@ -13,14 +13,12 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
+import { AmountSuggestions, useAmountQuickPick } from "@/components/forms/amount-suggestions"
 import { CurrencyInput } from "@/components/forms/currency-input"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
-  CardAction,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -53,6 +51,8 @@ import {
   getInstitutionsByType,
   type FinancialInstitution,
 } from "@/lib/institutions"
+
+const NO_HISTORY: number[] = []
 
 const accountTypeOptions = [
   { value: "cash", label: "Tiền mặt", icon: BanknoteIcon },
@@ -110,6 +110,9 @@ export function AccountForm({
   const [institutionId, setInstitutionId] = React.useState(
     defaultValues?.institutionId ?? "",
   )
+  const [name, setName] = React.useState(defaultValues?.name ?? "")
+  const [nameEdited, setNameEdited] = React.useState(Boolean(defaultValues?.name))
+  const balancePick = useAmountQuickPick(defaultValues?.balance ?? null, NO_HISTORY)
   const institutionOptions =
     accountType === "cash" ? null : getInstitutionsByType(accountType)
   const institutionLabel =
@@ -152,25 +155,10 @@ export function AccountForm({
         <FieldGroup>
           <Card>
             <CardHeader>
-              <CardTitle>Thông tin tài khoản</CardTitle>
-              <CardDescription>
-                Đặt tên và chọn loại tài khoản bạn muốn theo dõi.
-              </CardDescription>
+              <CardTitle>Tài khoản</CardTitle>
             </CardHeader>
             <CardContent>
               <FieldGroup>
-                <Field>
-                  <FieldLabel htmlFor="account-name">Tên tài khoản</FieldLabel>
-                  <Input
-                    id="account-name"
-                    name="name"
-                    defaultValue={defaultValues?.name}
-                    placeholder="Tiền mặt, Ngân hàng A, Ví điện tử B..."
-                    autoComplete="off"
-                    required
-                  />
-                </Field>
-
                 <Field>
                   <FieldLabel>Loại tài khoản</FieldLabel>
                   <input type="hidden" name="type" value={accountType} />
@@ -182,6 +170,7 @@ export function AccountForm({
                       if (value) {
                         setAccountType(value as AccountType)
                         setInstitutionId("")
+                        if (!nameEdited) setName("")
                       }
                     }}
                     className="grid w-full grid-cols-3"
@@ -203,16 +192,21 @@ export function AccountForm({
                 {institutionOptions && (
                   <Field>
                     <FieldLabel htmlFor="account-institution">
-                      Chọn {institutionLabel.toLowerCase()}
+                      {institutionLabel}
                     </FieldLabel>
                     <Combobox
                       key={accountType}
                       items={institutionOptions}
                       name="institutionId"
                       value={selectedInstitution ?? null}
-                      onValueChange={(institution) =>
+                      onValueChange={(institution) => {
                         setInstitutionId(institution?.id ?? "")
-                      }
+                        // Name the account after its institution until the
+                        // user types a name of their own.
+                        if (institution && !nameEdited) {
+                          setName(institution.shortName ?? institution.name)
+                        }
+                      }}
                       itemToStringLabel={(institution) =>
                         institution.shortName ?? institution.name
                       }
@@ -228,7 +222,7 @@ export function AccountForm({
                         <ComboboxInput
                           id="account-institution"
                           className="w-full"
-                          placeholder={`Tìm và chọn ${institutionLabel.toLowerCase()}`}
+                          placeholder="Tìm kiếm"
                           autoComplete="off"
                         >
                           {selectedInstitution ? (
@@ -286,58 +280,52 @@ export function AccountForm({
                     </Combobox>
                   </Field>
                 )}
+                <Field>
+                  <FieldLabel htmlFor="account-name">Tên tài khoản</FieldLabel>
+                  <Input
+                    id="account-name"
+                    name="name"
+                    value={name}
+                    onChange={(event) => {
+                      setName(event.target.value)
+                      setNameEdited(event.target.value.trim().length > 0)
+                    }}
+                    placeholder="Ví dụ: Lương, Tiết kiệm"
+                    autoComplete="off"
+                    required
+                  />
+                </Field>
+
+                {showBalance ? (
+                  <Field>
+                    <FieldLabel htmlFor="account-balance">Số dư ban đầu</FieldLabel>
+                    <CurrencyInput
+                      id="account-balance"
+                      name="balance"
+                      value={balancePick.amount}
+                      onValueChange={balancePick.onType}
+                      required
+                    />
+                    <AmountSuggestions
+                      suggestions={balancePick.suggestions}
+                      value={balancePick.amount}
+                      onSelect={balancePick.onPick}
+                    />
+                  </Field>
+                ) : null}
+
+                <Field>
+                  <FieldLabel htmlFor="account-note">Ghi chú</FieldLabel>
+                  <Textarea
+                    id="account-note"
+                    name="note"
+                    defaultValue={defaultValues?.note}
+                  />
+                </Field>
               </FieldGroup>
             </CardContent>
           </Card>
 
-          {showBalance ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Số dư ban đầu</CardTitle>
-                <CardDescription>
-                  Nhập số tiền hiện có trong tài khoản.
-                </CardDescription>
-                <CardAction>
-                  <Badge variant="secondary">VND</Badge>
-                </CardAction>
-              </CardHeader>
-              <CardContent>
-                <Field>
-                  <FieldLabel htmlFor="account-balance" className="sr-only">
-                    Số dư ban đầu
-                  </FieldLabel>
-                  <CurrencyInput
-                    id="account-balance"
-                    name="balance"
-                    defaultValue={defaultValues?.balance}
-                    required
-                  />
-                </Field>
-              </CardContent>
-            </Card>
-          ) : null}
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Thiết lập</CardTitle>
-              <CardDescription>
-                Thêm ghi chú cho tài khoản.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Field>
-                <FieldLabel htmlFor="account-note">
-                  Ghi chú <Badge variant="outline">Tùy chọn</Badge>
-                </FieldLabel>
-                <Textarea
-                  id="account-note"
-                  name="note"
-                  defaultValue={defaultValues?.note}
-                  placeholder="Thêm ghi chú cho tài khoản..."
-                />
-              </Field>
-            </CardContent>
-          </Card>
         </FieldGroup>
       </div>
 

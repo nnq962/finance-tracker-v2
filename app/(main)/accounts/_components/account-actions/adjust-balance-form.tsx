@@ -7,13 +7,10 @@ import { toast } from "sonner"
 
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
-  CardAction,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -67,8 +64,8 @@ export function AdjustBalanceForm({
     difference === null || difference === 0
       ? "text-muted-foreground"
       : difference > 0
-        ? "text-emerald-600 dark:text-emerald-400"
-        : "text-rose-600 dark:text-rose-400"
+        ? "text-[#3e9727] dark:text-[#94e379]"
+        : "text-[#c8393a] dark:text-[#ff9b93]"
 
   return (
     <form
@@ -104,12 +101,6 @@ export function AdjustBalanceForm({
           <Card>
             <CardHeader>
               <CardTitle>Số dư thực tế</CardTitle>
-              <CardDescription>
-                Nhập số dư hiện tại để tính khoản chênh lệch.
-              </CardDescription>
-              <CardAction>
-                <Badge variant="secondary">VND</Badge>
-              </CardAction>
             </CardHeader>
             <CardContent className="space-y-4">
               <Field>
@@ -161,10 +152,7 @@ export function AdjustBalanceForm({
 
           <Card>
             <CardHeader>
-              <CardTitle>Thông tin điều chỉnh</CardTitle>
-              <CardDescription>
-                Chọn hạng mục, thời gian và ghi lại lý do đối soát.
-              </CardDescription>
+              <CardTitle>Chi tiết</CardTitle>
             </CardHeader>
             <CardContent>
               <FieldGroup>
@@ -225,12 +213,11 @@ export function AdjustBalanceForm({
 
                 <Field>
                   <FieldLabel htmlFor="balance-adjustment-note">
-                    Ghi chú <Badge variant="outline">Tùy chọn</Badge>
+                    Ghi chú
                   </FieldLabel>
                   <Textarea
                     id="balance-adjustment-note"
                     name="note"
-                    placeholder="Lý do điều chỉnh số dư..."
                   />
                 </Field>
               </FieldGroup>
