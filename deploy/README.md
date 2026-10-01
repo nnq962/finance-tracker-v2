@@ -96,6 +96,29 @@ cd ~/apps/finance-tracker && deploy/scripts/deploy.sh
 Script dừng lại nếu bản clone có thay đổi chưa commit. Migration mới được áp
 trước khi app khởi động lại.
 
+## Backup
+
+Mỗi đêm 02:30, cron chạy `deploy/scripts/backup.sh`:
+
+1. `pg_dump` vào `deploy/backups/` (giữ `BACKUP_KEEP` = 14 bản).
+2. Chép lên Google Drive qua rclone remote `gdrive-crypt:` — nội dung **đã mã
+   hoá**, nằm trong folder `finance-backups` (giữ `BACKUP_REMOTE_DAYS` = 90 ngày).
+   Log ở `deploy/backups/backup.log`.
+
+Cấu hình rclone nằm ở `~/.config/rclone/rclone.conf`:
+
+- `gdrive`: Google Drive, quyền `drive.file` (chỉ thấy file rclone tạo), dùng
+  OAuth client "Desktop app" riêng trong project Google Cloud.
+- `gdrive-crypt`: lớp mã hoá phía trên `gdrive:finance-backups`. Mật khẩu ở
+  `~/.config/finance-tracker/backup-encryption.txt` — **phải cất thêm một bản
+  ngoài máy này** (trình quản lý mật khẩu), mất là không mở được backup.
+
+```sh
+rclone ls gdrive-crypt:                         # liệt kê bản backup trên Drive
+rclone copy gdrive-crypt:finance-XXXX.dump .    # tải về (tự giải mã)
+deploy/scripts/restore.sh finance-XXXX.dump     # khôi phục (hỏi xác nhận)
+```
+
 ## Xem log, khởi động lại
 
 ```sh
