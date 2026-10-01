@@ -12,9 +12,12 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/../.." && pwd)"
-env_file="$root/deploy/.env"
+# Dev has its own project, volume and env file, apart from production.
+env_file="$root/deploy/.env.dev"
 compose=(docker compose
+  --project-name finance-dev
   --project-directory "$root/deploy"
+  --env-file "$env_file"
   -f "$root/deploy/compose.yaml"
   -f "$root/deploy/compose.dev.yaml")
 
@@ -32,7 +35,7 @@ ensure_env() {
       echo "APP_DB_PASSWORD=$(random_password)"
       echo "POSTGRES_PORT=5432"
     } >"$env_file"
-    echo "Created deploy/.env with random passwords."
+    echo "Created deploy/.env.dev with random passwords."
   fi
   set -a
   # shellcheck disable=SC1090

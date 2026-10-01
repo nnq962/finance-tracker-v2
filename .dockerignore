@@ -1,0 +1,20 @@
+# Only what `next build` needs goes into the image build context.
+.git
+.next
+node_modules
+.env*
+!.env.example
+*.tsbuildinfo
+next-env.d.ts
+
+# Not part of the web app
+backend
+deploy
+db
+scripts
+my-design
+.agents
+.claude
+Dockerfile
+.dockerignore
+*.md

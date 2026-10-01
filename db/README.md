@@ -26,7 +26,7 @@ npm run db:types             # Sinh lại lib/db/types.ts từ database
 
 Lần đầu `npm run db:up` sẽ:
 
-1. Tạo `deploy/.env` với mật khẩu ngẫu nhiên (không commit file này).
+1. Tạo `deploy/.env.dev` với mật khẩu ngẫu nhiên (không commit file này).
 2. Khởi động Postgres ở `127.0.0.1:5432`, tạo 2 database: `finance` (dev) và
    `finance_test` (integration test, xoá thoải mái).
 3. Thêm `DATABASE_URL` vào `.env.local` để Next.js kết nối.
@@ -69,9 +69,11 @@ ALTER TABLE accounts DROP COLUMN color;
 ## Xem dữ liệu bằng giao diện
 
 Dùng DBeaver hoặc Beekeeper Studio, kết nối `127.0.0.1:5432`, database
-`finance`, user `finance`, mật khẩu `POSTGRES_PASSWORD` trong `deploy/.env`.
+`finance`, user `finance`, mật khẩu `POSTGRES_PASSWORD` trong `deploy/.env.dev`.
 
-## Backup
+## Backup (production)
+
+Chạy trong bản clone production (xem `deploy/README.md`).
 
 ```sh
 deploy/scripts/backup.sh                     # → deploy/backups/finance-<thời gian>.dump

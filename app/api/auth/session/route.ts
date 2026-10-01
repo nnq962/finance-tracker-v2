@@ -16,17 +16,17 @@ function isCrossOrigin(request: Request) {
   const origin = request.headers.get("origin")
   if (origin === null) return false
 
-  const requestUrl = new URL(request.url)
+  // request.url carries the server's bind address (e.g. 0.0.0.0:3000) in dev,
+  // in Docker and behind the Cloudflare Tunnel. The Host header keeps the
+  // address the browser actually used, and browsers cannot forge it.
+  const host = request.headers.get("host")
+  if (!host) return true
 
-  // Next dev may construct request.url with its bind address (e.g. 0.0.0.0).
-  // The browser's Host header retains the address actually used on the LAN.
-  if (process.env.NODE_ENV === "development") {
-    const host = request.headers.get("host")
-    if (!host) return true
-    return origin !== `${requestUrl.protocol}//${host}`
+  try {
+    return new URL(origin).host !== host
+  } catch {
+    return true
   }
-
-  return origin !== requestUrl.origin
 }
 
 export async function POST(request: NextRequest) {

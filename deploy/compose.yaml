@@ -1,8 +1,9 @@
-# Base services, shared by every environment. Nothing here publishes a port:
-# services reach each other by name on the compose network.
+# Database services, shared by every environment. Nothing here publishes a
+# port: services reach each other by name on the compose network.
 #
-# Dev:  npm run db:up        (adds compose.dev.yaml, see deploy/scripts/db.sh)
-# Prod: docker compose -f deploy/compose.yaml up -d
+# Prod: deploy/scripts/deploy.sh  + compose.prod.yaml (web, tunnel), deploy/.env
+# Dev:  npm run db:up             + compose.dev.yaml, deploy/.env.dev,
+#                                   project "finance-dev"
 
 name: finance
 
@@ -12,8 +13,8 @@ services:
     environment:
       POSTGRES_DB: finance
       POSTGRES_USER: finance
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in deploy/.env}
-      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Set APP_DB_PASSWORD in deploy/.env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Set APP_DB_PASSWORD}
       APP_DATABASES: finance
     volumes:
       # Postgres 18 images keep data under /var/lib/postgresql/<major>/.
