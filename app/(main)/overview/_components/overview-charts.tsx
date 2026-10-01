@@ -8,17 +8,19 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { formatCurrency } from "@/lib/format-currency"
 import type { OverviewSummary } from "@/lib/overview/summary"
 
-const cashFlowConfig = {
-  income: { label: "Thu", theme: { light: "#0d9488", dark: "#2dd4bf" } },
-  expense: { label: "Chi", theme: { light: "#e11d48", dark: "#fb7185" } },
-} satisfies ChartConfig
+// Validated with the dataviz palette checker: light pair CVD ΔE 10.0; the
+// dark pair (7.4) relies on the legend dots and the 2px gap between bars.
+export const cashFlowChartColors = {
+  income: { light: "#3e9727", dark: "#3e9727" },
+  expense: { light: "#ff837e", dark: "#f2564f" },
+} as const
 
-const spendingConfig = {
-  amount: { label: "Đã chi", theme: { light: "#2563eb", dark: "#60a5fa" } },
+const cashFlowConfig = {
+  income: { label: "Thu", theme: cashFlowChartColors.income },
+  expense: { label: "Chi", theme: cashFlowChartColors.expense },
 } satisfies ChartConfig
 
 function compactMoney(value: number) {
@@ -28,98 +30,65 @@ function compactMoney(value: number) {
 }
 
 export function CashFlowChart({ data }: { data: OverviewSummary["cashFlow"] }) {
-  if (!data.hasActivity) {
-    return (
-      <Empty className="min-h-64">
-        <EmptyHeader>
-          <EmptyTitle>Chưa có giao dịch thu chi</EmptyTitle>
-          <EmptyDescription>Biểu đồ sẽ xuất hiện khi bạn ghi nhận thu nhập hoặc chi tiêu.</EmptyDescription>
-        </EmptyHeader>
-      </Empty>
-    )
-  }
-
-  const peak = Math.max(...data.months.flatMap((month) => [month.income, month.expense]))
-  const axisUnit = peak >= 1_000_000 ? 1_000_000 : peak >= 1_000 ? 1_000 : 1
-  const axisLabel = axisUnit === 1_000_000 ? "triệu đồng" : axisUnit === 1_000 ? "nghìn đồng" : "đồng"
-
   return (
     <>
-      <ChartContainer config={cashFlowConfig} className="aspect-auto h-64 w-full">
-        <BarChart data={data.months} accessibilityLayer barGap={4} margin={{ top: 8, right: 8, left: 16, bottom: 0 }}>
+      <ChartContainer config={cashFlowConfig} className="aspect-auto h-48 w-full sm:h-56">
+        <BarChart
+          data={data.months}
+          accessibilityLayer
+          barGap={2}
+          barCategoryGap="28%"
+          margin={{ top: 8, right: 0, left: 0, bottom: 0 }}
+        >
           <CartesianGrid vertical={false} />
-          <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={10} />
-          <YAxis tickFormatter={(value: number) => String(Number((value / axisUnit).toFixed(1)))} tickLine={false} axisLine={false} width={64} />
+          <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+          <YAxis
+            tickFormatter={compactMoney}
+            tickLine={false}
+            axisLine={false}
+            width={40}
+          />
           <ChartTooltip
             cursor={false}
             content={
               <ChartTooltipContent
                 formatter={(value, name) => (
-                  <div className="flex min-w-40 justify-between gap-4">
-                    <span>{name === "income" ? "Thu" : "Chi"}</span>
-                    <strong className="font-medium tabular-nums">{formatCurrency(Number(value))}</strong>
+                  <div className="flex min-w-36 items-center justify-between gap-4">
+                    <span className="flex items-center gap-1.5">
+                      <span
+                        className="size-2 rounded-full"
+                        style={{ backgroundColor: `var(--color-${name})` }}
+                        aria-hidden="true"
+                      />
+                      {name === "income" ? "Thu" : "Chi"}
+                    </span>
+                    <strong className="font-medium tabular-nums">
+                      {formatCurrency(Number(value))}
+                    </strong>
                   </div>
                 )}
               />
             }
           />
-          <Bar dataKey="income" fill="var(--color-income)" radius={[4, 4, 0, 0]} maxBarSize={26} />
-          <Bar dataKey="expense" fill="var(--color-expense)" radius={[4, 4, 0, 0]} maxBarSize={26} />
+          <Bar dataKey="income" fill="var(--color-income)" radius={[4, 4, 0, 0]} maxBarSize={18} />
+          <Bar dataKey="expense" fill="var(--color-expense)" radius={[4, 4, 0, 0]} maxBarSize={18} />
         </BarChart>
       </ChartContainer>
-      <p className="text-xs text-muted-foreground">Trục dọc: {axisLabel}</p>
-      <ul className="sr-only">
-        {data.months.map((month) => (
-          <li key={month.key}>{month.label}: thu {formatCurrency(month.income)}, chi {formatCurrency(month.expense)}</li>
-        ))}
-      </ul>
-    </>
-  )
-}
-
-export function SpendingChart({ data }: { data: OverviewSummary["spending"] }) {
-  if (data.length === 0) {
-    return (
-      <Empty className="min-h-64">
-        <EmptyHeader>
-          <EmptyTitle>Chưa có chi tiêu tháng này</EmptyTitle>
-          <EmptyDescription>Các nhóm chi tiêu sẽ được tổng hợp ở đây.</EmptyDescription>
-        </EmptyHeader>
-      </Empty>
-    )
-  }
-
-  const topGroups = data.slice(0, 5)
-
-  return (
-    <>
-      <ChartContainer config={spendingConfig} className="aspect-auto h-64 w-full">
-        <BarChart data={topGroups} layout="vertical" accessibilityLayer margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
-          <CartesianGrid horizontal={false} />
-          <XAxis type="number" tickFormatter={compactMoney} tickLine={false} axisLine={false} />
-          <YAxis
-            type="category"
-            dataKey="name"
-            tickFormatter={(name: string) => name.length > 15 ? `${name.slice(0, 14)}…` : name}
-            tickLine={false}
-            axisLine={false}
-            width={112}
-          />
-          <ChartTooltip
-            cursor={false}
-            content={<ChartTooltipContent hideLabel formatter={(value, _name, item) => (
-              <div className="flex min-w-48 justify-between gap-4">
-                <span className="truncate">{item.payload.name}</span>
-                <strong className="font-medium tabular-nums">{formatCurrency(Number(value))}</strong>
-              </div>
-            )} />}
-          />
-          <Bar dataKey="amount" fill="var(--color-amount)" radius={[0, 4, 4, 0]} maxBarSize={24} />
-        </BarChart>
-      </ChartContainer>
-      <ul className="sr-only">
-        {topGroups.map((group) => <li key={group.id}>{group.name}: {formatCurrency(group.amount)}</li>)}
-      </ul>
+      <table className="sr-only">
+        <caption>Thu và chi 6 tháng gần nhất</caption>
+        <thead>
+          <tr><th>Tháng</th><th>Thu</th><th>Chi</th></tr>
+        </thead>
+        <tbody>
+          {data.months.map((month) => (
+            <tr key={month.key}>
+              <td>{month.label}</td>
+              <td>{formatCurrency(month.income)}</td>
+              <td>{formatCurrency(month.expense)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </>
   )
 }
