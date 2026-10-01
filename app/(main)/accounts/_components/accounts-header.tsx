@@ -1,4 +1,10 @@
-export function AccountsHeader() {
+import type { ReactNode } from "react"
+
+type AccountsHeaderProps = {
+  children: ReactNode
+}
+
+export function AccountsHeader({ children }: AccountsHeaderProps) {
   return (
     <header className="pt-1">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
@@ -10,6 +16,8 @@ export function AccountsHeader() {
             Theo dõi số dư và quản lý các tài khoản của bạn.
           </p>
         </div>
+        {/* Below md the add action floats above the bottom nav instead. */}
+        <div className="hidden shrink-0 md:block">{children}</div>
       </div>
     </header>
   )

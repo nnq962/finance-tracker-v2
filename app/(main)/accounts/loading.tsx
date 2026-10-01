@@ -107,32 +107,28 @@ export default function AccountsLoading() {
       aria-label="Đang tải tài khoản"
       aria-busy="true"
     >
-      <header className="space-y-1.5 pt-1">
-        <Skeleton className="h-9 w-40" />
-        <Skeleton className="h-5 w-80 max-w-full" />
+      <header className="pt-1">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-1.5">
+            <Skeleton className="h-9 w-40" />
+            <Skeleton className="h-5 w-80 max-w-full" />
+          </div>
+          <Skeleton className="hidden h-8 w-36 shrink-0 rounded-lg md:block" />
+        </div>
       </header>
 
       <BalanceHeroSkeleton />
 
       <section className="space-y-4">
-        <div className="flex items-end justify-between gap-3">
-          <div className="min-w-0 space-y-1">
-            <Skeleton className="h-7 w-24" />
-            <Skeleton className="h-5 w-72 max-w-full" />
-          </div>
-          <Skeleton className="h-4 w-20 shrink-0" />
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-7 w-44" />
+          <Skeleton className="h-6 w-8 rounded-full" />
         </div>
 
         <div className="grid auto-rows-fr gap-4 sm:grid-cols-2">
           <AccountCardSkeleton />
           <AccountCardSkeleton />
-          <div className="hidden min-h-0 w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#d6d2c8] p-6 dark:border-[#4a4656] sm:flex">
-            <Skeleton className="size-5 shrink-0 rounded-full" />
-            <Skeleton className="h-5 w-28" />
-          </div>
         </div>
-
-        <Skeleton className="h-8 w-full rounded-lg sm:hidden" />
       </section>
 
       <span className="sr-only">Đang tải dữ liệu tài khoản...</span>

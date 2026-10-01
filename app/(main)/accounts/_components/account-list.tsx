@@ -1,9 +1,10 @@
-import { PlusIcon, WalletCardsIcon } from "lucide-react"
+import { LockIcon, WalletCardsIcon } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import {
   Empty,
+  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -14,7 +15,7 @@ import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 
 import { AccountCard } from "./account-card"
-import { AddAccountSheet } from "./add-account/add-account-sheet"
+import { AddAccountButton } from "./add-account-button"
 
 type AccountListProps = {
   accounts: Account[]
@@ -27,69 +28,79 @@ export function AccountList({
 }: AccountListProps) {
   const { distribution } = getAccountDistribution(accounts)
   const distributionById = new Map(distribution.map((account) => [account.id, account]))
+  const activeAccounts = accounts.filter((account) => account.status === "active")
+  const archivedAccounts = accounts.filter((account) => account.status === "archived")
+
+  if (accounts.length === 0) {
+    return (
+      <Card>
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <WalletCardsIcon />
+            </EmptyMedia>
+            <EmptyTitle>Bắt đầu với tài khoản đầu tiên</EmptyTitle>
+            <EmptyDescription>
+              Thêm tiền mặt, tài khoản ngân hàng hoặc ví điện tử để theo dõi
+              số dư của bạn.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <AddAccountButton />
+          </EmptyContent>
+        </Empty>
+      </Card>
+    )
+  }
 
   return (
-    <section className="space-y-4">
-      <div className="flex items-end justify-between gap-3">
-        <div className="space-y-1">
-          <h2 className="text-lg font-semibold">Tài khoản</h2>
-          <p className="text-sm text-muted-foreground">
-            Tiền mặt, ngân hàng và ví điện tử của bạn.
-          </p>
-        </div>
-        <p className="shrink-0 text-xs text-muted-foreground sm:text-sm">
-          {accounts.length} tài khoản
-        </p>
-      </div>
+    <div className="space-y-8">
+      {activeAccounts.length > 0 ? (
+        <section className="space-y-4" aria-labelledby="active-accounts-title">
+          <div className="flex items-center gap-2">
+            <h2 id="active-accounts-title" className="text-lg font-semibold">
+              Danh sách tài khoản
+            </h2>
+            <Badge variant="secondary">{activeAccounts.length}</Badge>
+          </div>
+          <div className="grid auto-rows-fr gap-4 sm:grid-cols-2">
+            {activeAccounts.map((account) => (
+              <AccountCard
+                key={account.id}
+                account={account}
+                distribution={distributionById.get(account.id)}
+                categoryGroups={categoryGroups}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
-      {accounts.length === 0 && (
-        <Card>
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <WalletCardsIcon />
-              </EmptyMedia>
-              <EmptyTitle>Bắt đầu với tài khoản đầu tiên</EmptyTitle>
-              <EmptyDescription>
-                Thêm tiền mặt, tài khoản ngân hàng hoặc ví điện tử để theo dõi
-                số dư của bạn.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        </Card>
-      )}
-
-      <div className="grid auto-rows-fr gap-4 sm:grid-cols-2">
-        {accounts.map((account) => (
-          <AccountCard
-            key={account.id}
-            account={account}
-            distribution={distributionById.get(account.id)}
-            categoryGroups={categoryGroups}
-          />
-        ))}
-        <AddAccountSheet
-          trigger={
-            <button
-              type="button"
-              className="hidden min-h-0 w-full sm:flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#d6d2c8] bg-transparent p-6 text-base font-bold text-muted-foreground transition-colors hover:border-primary hover:bg-muted/40 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring dark:border-[#4a4656] dark:hover:border-primary"
-            >
-              <PlusIcon className="size-5" aria-hidden="true" />
-              Thêm tài khoản
-            </button>
-          }
-        />
-      </div>
-      <div className="sm:hidden">
-        <AddAccountSheet
-          trigger={
-            <Button type="button" className="w-full">
-              <PlusIcon aria-hidden="true" />
-              Thêm tài khoản
-            </Button>
-          }
-        />
-      </div>
-    </section>
+      {archivedAccounts.length > 0 ? (
+        <section className="space-y-4" aria-labelledby="archived-accounts-title">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <h2 id="archived-accounts-title" className="flex items-center gap-2 text-lg font-semibold">
+                <LockIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+                Đã khóa
+              </h2>
+              <Badge variant="outline">{archivedAccounts.length}</Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Không dùng cho giao dịch mới và không tính vào tổng số dư.
+            </p>
+          </div>
+          <div className="grid auto-rows-fr gap-4 sm:grid-cols-2">
+            {archivedAccounts.map((account) => (
+              <AccountCard
+                key={account.id}
+                account={account}
+                categoryGroups={categoryGroups}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
+    </div>
   )
 }
