@@ -166,6 +166,27 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
     background-color: var(--background);
   }
 
+  html:has([data-landing-shell]),
+  body:has([data-landing-shell]) {
+    background-color: #fbfaf7;
+  }
+
+  html.dark:has([data-landing-shell]),
+  html.dark body:has([data-landing-shell]) {
+    background-color: var(--background);
+  }
+
+  /* Anchor targets start exactly below the sticky landing header (h-16 + 1px border). */
+  html:has([data-landing-shell]) {
+    scroll-padding-top: calc(4rem + 1px + env(safe-area-inset-top, 0px));
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html:has([data-landing-shell]) {
+      scroll-behavior: smooth;
+    }
+  }
+
   html:has([data-login-shell]),
   body:has([data-login-shell]) {
     background-color: #000;
