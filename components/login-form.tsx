@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { cn } from "cn"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -27,7 +26,6 @@ export function LoginForm({
   redirectTo = "/overview",
   ...props
 }: React.ComponentProps<"div"> & { redirectTo?: string }) {
-  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -37,12 +35,11 @@ export function LoginForm({
     try {
       const credential = await signInWithGoogle()
       await syncServerSession(credential.user)
-      toast.success("Đăng nhập thành công.")
-      router.replace(redirectTo)
-      router.refresh()
+      // Full navigation: the client router cache may still hold the
+      // pre-login redirect of `redirectTo` back to /login (staleTimes).
+      window.location.replace(redirectTo)
     } catch (error) {
       toast.error(getAuthErrorMessage(error))
-    } finally {
       setIsLoading(false)
     }
   }
