@@ -1,0 +1,10 @@
+# Dev-only overrides, layered on compose.yaml by deploy/scripts/db.sh.
+
+services:
+  postgres:
+    environment:
+      # Also create an isolated database for integration tests.
+      APP_DATABASES: finance finance_test
+    ports:
+      # Loopback only: reachable from this machine (Next.js, DBeaver), not the LAN.
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"

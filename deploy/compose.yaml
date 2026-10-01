@@ -1,0 +1,51 @@
+# Base services, shared by every environment. Nothing here publishes a port:
+# services reach each other by name on the compose network.
+#
+# Dev:  npm run db:up        (adds compose.dev.yaml, see deploy/scripts/db.sh)
+# Prod: docker compose -f deploy/compose.yaml up -d
+
+name: finance
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: finance
+      POSTGRES_USER: finance
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in deploy/.env}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Set APP_DB_PASSWORD in deploy/.env}
+      APP_DATABASES: finance
+    volumes:
+      # Postgres 18 images keep data under /var/lib/postgresql/<major>/.
+      - pgdata:/var/lib/postgresql
+      # Runs once, when the data volume is first initialised.
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finance -d finance"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    stop_grace_period: 30s
+
+  # One-shot: applies db/migrations, then exits. Run with
+  # `docker compose run --rm migrate up`.
+  migrate:
+    image: ghcr.io/amacneil/dbmate:2
+    profiles: [tools]
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    environment:
+      DATABASE_URL: postgres://finance:${POSTGRES_PASSWORD}@postgres:5432/${MIGRATE_DATABASE:-finance}?sslmode=disable
+      DBMATE_MIGRATIONS_DIR: /db/migrations
+      DBMATE_SCHEMA_FILE: /db/schema.sql
+      # Kept in its own schema, which the app role has no access to.
+      DBMATE_MIGRATIONS_TABLE: dbmate.schema_migrations
+      DBMATE_WAIT: "true"
+    volumes:
+      - ../db:/db
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
