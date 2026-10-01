@@ -120,12 +120,12 @@ export function DebtsDashboard({
       <Tabs defaultValue="debts" className="gap-5">
         <TabsList className="w-full sm:w-fit">
           <TabsTrigger value="debts">
-            <HandCoinsIcon aria-hidden="true" />
+            <HandCoinsIcon className="size-3" aria-hidden="true" />
             Khoản nợ
             <span className="opacity-60">{debts.length}</span>
           </TabsTrigger>
           <TabsTrigger value="contacts">
-            <BookUserIcon aria-hidden="true" />
+            <BookUserIcon className="size-3" aria-hidden="true" />
             Danh bạ
             <span className="opacity-60">{contacts.length}</span>
           </TabsTrigger>
