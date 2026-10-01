@@ -27,6 +27,7 @@ function subscribePermission(onChange: () => void) {
 export function NotificationPreferences({ uid, initialSettings, children }: { uid: string; initialSettings: NotificationSettings; children?: ReactNode }) {
   const [draft, setDraft] = useState({ ...initialSettings, timeZone: "Asia/Ho_Chi_Minh" })
   const saved = useRef(initialSettings)
+  const [savedTime, setSavedTime] = useState(initialSettings.dailyReminderTime)
   const pending = useRef(false)
   const [saving, setSaving] = useState(false)
   const permission = useSyncExternalStore(subscribePermission, notificationPermission, () => null)
@@ -36,6 +37,7 @@ export function NotificationPreferences({ uid, initialSettings, children }: { ui
     const result = await saveNotificationSettingsAction({ ...settings, timeZone: "Asia/Ho_Chi_Minh" }, uid)
     if (!result.success) throw new Error(result.error)
     saved.current = result.data
+    setSavedTime(result.data.dailyReminderTime)
     setDraft(result.data)
     notifyPushDeviceChanged()
   }
@@ -65,14 +67,14 @@ export function NotificationPreferences({ uid, initialSettings, children }: { ui
     }
   }
 
-  async function saveReminderTime(value: string) {
-    if (pending.current || value === saved.current.dailyReminderTime) return
+  async function saveReminderTime() {
+    if (pending.current || draft.dailyReminderTime === saved.current.dailyReminderTime) return
     pending.current = true
     setSaving(true)
     const toastId = toast.loading("Đang lưu giờ nhắc…")
     try {
-      await persist({ ...draft, dailyReminderTime: value })
-      toast.success("Đã lưu giờ nhắc.", { id: toastId })
+      await persist({ ...draft })
+      toast.success(`Đã lưu giờ nhắc ${draft.dailyReminderTime}.`, { id: toastId })
     } catch (error) {
       setDraft(saved.current)
       toast.error(pushTestError(error), { id: toastId })
@@ -89,7 +91,8 @@ export function NotificationPreferences({ uid, initialSettings, children }: { ui
         onSettingsChange={setDraft}
         notificationsEnabled={checked}
         onNotificationsEnabledChange={(enabled) => void toggleNotifications(enabled)}
-        onReminderTimeCommit={(value) => void saveReminderTime(value)}
+        onReminderTimeSave={() => void saveReminderTime()}
+        reminderTimeChanged={draft.dailyReminderTime !== savedTime}
         disabled={saving || permission === null}
       >
         {children && <>

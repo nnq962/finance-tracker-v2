@@ -142,7 +142,7 @@ Hiện có API health local và worker nhắc độc lập chạy mỗi 10 phút
 credentials, index, chạy xem trước và cài systemd service/timer trong README backend.
 
 Trong Settings → Thông báo, gạt switch để tự lưu bật/tắt lời nhắc.
-Giờ nhắc tự lưu khi chọn giờ/phút trong Select; danh sách phút cách nhau 10 phút.
+Chọn giờ và phút nhắc rồi bấm **Lưu** để lưu cả hai trong một lần; danh sách phút cách nhau 10 phút.
 Múi giờ được cố định là Việt Nam (`Asia/Ho_Chi_Minh`),
 không cần người dùng chọn. Khi gạt switch bật,
 trình duyệt được yêu cầu cấp quyền và đăng ký thiết bị; switch chỉ bật sau khi

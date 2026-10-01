@@ -1,8 +1,9 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { BellRingIcon } from "lucide-react"
+import { BellRingIcon, SaveIcon } from "lucide-react"
 
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -29,7 +30,9 @@ export { defaultNotificationSettings, type NotificationSettings } from "@/lib/no
 
 type NotificationDialogContentProps = {
   children?: ReactNode
-  onReminderTimeCommit?: (value: string) => void
+  /** Saves hour and minute together; without it no save button is shown. */
+  onReminderTimeSave?: () => void
+  reminderTimeChanged?: boolean
   settings: NotificationSettings
   onSettingsChange: (settings: NotificationSettings) => void
   disabled?: boolean
@@ -40,7 +43,8 @@ type NotificationDialogContentProps = {
 export function NotificationDialogContent({
   settings,
   children,
-  onReminderTimeCommit,
+  onReminderTimeSave,
+  reminderTimeChanged = false,
   onSettingsChange,
   disabled = false,
   notificationsEnabled = settings.notificationsEnabled,
@@ -53,10 +57,9 @@ export function NotificationDialogContent({
   const reminderMinutes = ["00", "10", "20", "30", "40", "50"]
 
   const updateReminderTime = (hour: string, minute: string) => {
-    const value = `${hour}:${minute}`
-    onSettingsChange({ ...settings, dailyReminderTime: value })
-    onReminderTimeCommit?.(value)
+    onSettingsChange({ ...settings, dailyReminderTime: `${hour}:${minute}` })
   }
+  const timeDisabled = disabled || !notificationsEnabled
 
   const updateSetting = <Key extends keyof NotificationSettings>(
     key: Key,
@@ -93,11 +96,17 @@ export function NotificationDialogContent({
             <FieldLabel htmlFor="daily-reminder-hour">
               Giờ nhắc hằng ngày
             </FieldLabel>
-            <div className="grid grid-cols-2 gap-4">
+            <div
+              className={
+                onReminderTimeSave
+                  ? "grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-3"
+                  : "grid grid-cols-2 gap-4"
+              }
+            >
               <Select
                 value={reminderHour}
                 onValueChange={(hour) => updateReminderTime(hour, reminderMinute)}
-                disabled={disabled || !notificationsEnabled}
+                disabled={timeDisabled}
               >
                 <SelectTrigger id="daily-reminder-hour" aria-label="Giờ nhắc" className="w-full">
                   <SelectValue />
@@ -113,7 +122,7 @@ export function NotificationDialogContent({
               <Select
                 value={reminderMinute}
                 onValueChange={(minute) => updateReminderTime(reminderHour, minute)}
-                disabled={disabled || !notificationsEnabled}
+                disabled={timeDisabled}
               >
                 <SelectTrigger id="daily-reminder-minute" aria-label="Phút nhắc" className="w-full">
                   <SelectValue>{reminderMinute}</SelectValue>
@@ -126,6 +135,16 @@ export function NotificationDialogContent({
                   </SelectGroup>
                 </SelectContent>
               </Select>
+              {onReminderTimeSave ? (
+                <Button
+                  type="button"
+                  onClick={onReminderTimeSave}
+                  disabled={timeDisabled || !reminderTimeChanged}
+                >
+                  <SaveIcon />
+                  Lưu
+                </Button>
+              ) : null}
             </div>
           </Field>
         </FieldGroup>
