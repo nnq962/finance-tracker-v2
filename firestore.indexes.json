@@ -1,4 +1,13 @@
 {
-  "indexes": [],
+  "indexes": [
+    {
+      "collectionGroup": "notificationSettings",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "notificationsEnabled", "order": "ASCENDING" },
+        { "fieldPath": "nextReminderAt", "order": "ASCENDING" }
+      ]
+    }
+  ],
   "fieldOverrides": []
 }

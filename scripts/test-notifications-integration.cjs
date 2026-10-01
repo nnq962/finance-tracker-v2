@@ -21,6 +21,8 @@ require.extensions['.ts'] = (mod, filename) => mod._compile(ts.transpileModule(f
 }).outputText, filename)
 const repository = require('../lib/notifications/repository.ts')
 const { getFirebaseAdminFirestore } = require('../lib/firebase/admin.ts')
+const { FieldValue, Timestamp } = require('firebase-admin/firestore')
+const { getNextReminderAt } = require('../lib/notifications/schedule.ts')
 const db = getFirebaseAdminFirestore()
 const namespace = 'codex_notification_test_' + randomUUID()
 const users = [namespace + '_a', namespace + '_b']
@@ -37,9 +39,24 @@ async function main() {
   try {
     const [a, b] = users
     assert.equal((await repository.getNotificationSettings(a)).notificationsEnabled, false)
-    const settings = { notificationsEnabled: true, dailyReminderTime: '21:45', timeZone: 'Asia/Tokyo' }
-    await repository.saveNotificationSettings(a, settings)
+    const settings = { notificationsEnabled: true, dailyReminderTime: '21:45', timeZone: 'Asia/Ho_Chi_Minh' }
+    const settingsRef = db.collection('users').doc(a).collection('notificationSettings').doc('default')
+    await repository.saveNotificationSettings(a, { ...settings, timeZone: 'Asia/Tokyo', nextReminderAt: Timestamp.fromMillis(0) })
     assert.deepEqual(await repository.getNotificationSettings(a), settings)
+    let stored = (await settingsRef.get()).data()
+    assert.ok(stored.nextReminderAt instanceof Timestamp)
+    assert.equal(stored.nextReminderAt.toMillis(), getNextReminderAt(settings.dailyReminderTime, stored.updatedAt.toDate()).getTime())
+    // Re-saving identical preferences must not discard an overdue reminder.
+    const overdue = Timestamp.fromMillis(1)
+    await settingsRef.update({ nextReminderAt: overdue })
+    await repository.saveNotificationSettings(a, settings)
+    assert.equal((await settingsRef.get()).get('nextReminderAt').toMillis(), overdue.toMillis())
+    await repository.saveNotificationSettings(a, { ...settings, dailyReminderTime: '00:10' })
+    stored = (await settingsRef.get()).data()
+    assert.equal(stored.nextReminderAt.toMillis(), getNextReminderAt('00:10', stored.updatedAt.toDate()).getTime())
+    await settingsRef.update({ nextReminderAt: FieldValue.delete() })
+    await repository.saveNotificationSettings(a, settings)
+    assert.ok((await settingsRef.get()).get('nextReminderAt') instanceof Timestamp)
     assert.equal((await repository.getNotificationSettings(b)).dailyReminderTime, '20:00')
     for (const bad of [null, { ...settings, dailyReminderTime: '24:00' }, { ...settings, timeZone: 'Invalid/Zone' }, { ...settings, notificationsEnabled: 'true' }]) {
       await assert.rejects(repository.saveNotificationSettings(a, bad))
@@ -87,6 +104,11 @@ async function main() {
     await assert.rejects(repository.getCurrentPushFid(a, relogin))
 
     await repository.saveNotificationSettings(a, { ...settings, notificationsEnabled: false })
+    assert.equal((await settingsRef.get()).get('nextReminderAt'), undefined)
+    await repository.saveNotificationSettings(a, settings)
+    assert.ok((await settingsRef.get()).get('nextReminderAt') instanceof Timestamp)
+    await repository.saveNotificationSettings(a, { ...settings, notificationsEnabled: false })
+    assert.equal((await settingsRef.get()).get('nextReminderAt'), undefined)
     assert.equal((await repository.getNotificationState(a, laptop)).devices.length, 1)
     assert.equal((await repository.getNotificationSettings(a)).notificationsEnabled, false)
     console.log('Notification integration checks passed: settings persistence, validation, multiple devices, retries, FID refresh, ownership transfer, logout, stale-session rejection and account isolation. No push messages sent.')

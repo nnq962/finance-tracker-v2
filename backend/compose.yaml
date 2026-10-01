@@ -1,0 +1,18 @@
+services:
+  api:
+    build: .
+    image: finance-backend:local
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      GOOGLE_CLOUD_PROJECT: ${GOOGLE_CLOUD_PROJECT:-finance-tracker-6329d}
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 20s

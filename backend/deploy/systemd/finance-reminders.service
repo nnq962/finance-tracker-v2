@@ -1,0 +1,24 @@
+[Unit]
+Description=Finance Tracker daily reminder pass
+StartLimitIntervalSec=600
+StartLimitBurst=3
+
+[Service]
+Type=oneshot
+# User unit: %h expands to the home directory of the account running systemd.
+# Adjust all three paths if the repository is installed elsewhere.
+WorkingDirectory=%h/nnq962/finance-tracker-v2/backend
+EnvironmentFile=%h/nnq962/finance-tracker-v2/backend/.env
+ExecStart=%h/nnq962/finance-tracker-v2/backend/.venv/bin/finance-backend reminders --once
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=TZ=Asia/Ho_Chi_Minh
+UMask=0077
+NoNewPrivileges=true
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=finance-reminders
+TimeoutStartSec=8min
+TimeoutStopSec=30s
+Restart=on-failure
+RestartSec=60s

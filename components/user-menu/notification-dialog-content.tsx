@@ -3,7 +3,6 @@
 import type { ReactNode } from "react"
 import { BellRingIcon } from "lucide-react"
 
-import { DateTimeFields } from "@/components/forms/date-time-fields"
 import {
   Card,
   CardContent,
@@ -16,6 +15,14 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Switch } from "@/components/ui/switch"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { type NotificationSettings } from "@/lib/notifications/types"
 
 export { defaultNotificationSettings, type NotificationSettings } from "@/lib/notifications/types"
@@ -39,6 +46,18 @@ export function NotificationDialogContent({
   notificationsEnabled = settings.notificationsEnabled,
   onNotificationsEnabledChange,
 }: NotificationDialogContentProps) {
+  const [reminderHour, reminderMinute] = settings.dailyReminderTime.split(":")
+  const reminderHours = Array.from({ length: 24 }, (_, hour) =>
+    String(hour).padStart(2, "0"),
+  )
+  const reminderMinutes = ["00", "10", "20", "30", "40", "50"]
+
+  const updateReminderTime = (hour: string, minute: string) => {
+    const value = `${hour}:${minute}`
+    onSettingsChange({ ...settings, dailyReminderTime: value })
+    onReminderTimeCommit?.(value)
+  }
+
   const updateSetting = <Key extends keyof NotificationSettings>(
     key: Key,
     value: NotificationSettings[Key],
@@ -70,17 +89,45 @@ export function NotificationDialogContent({
             />
           </Field>
 
-          <DateTimeFields
-            idPrefix="daily-reminder"
-            label="Giờ nhắc hằng ngày"
-            showDate={false}
-            timeValue={settings.dailyReminderTime}
-            onTimeChange={(event) =>
-              updateSetting("dailyReminderTime", event.target.value)
-            }
-            onTimeBlur={(event) => onReminderTimeCommit?.(event.currentTarget.value)}
-            disabled={disabled || !notificationsEnabled}
-          />
+          <Field>
+            <FieldLabel htmlFor="daily-reminder-hour">
+              Giờ nhắc hằng ngày
+            </FieldLabel>
+            <div className="grid grid-cols-2 gap-4">
+              <Select
+                value={reminderHour}
+                onValueChange={(hour) => updateReminderTime(hour, reminderMinute)}
+                disabled={disabled || !notificationsEnabled}
+              >
+                <SelectTrigger id="daily-reminder-hour" aria-label="Giờ nhắc" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent position="popper" showScrollButtons={false} className="max-h-[min(15rem,var(--radix-select-content-available-height))]">
+                  <SelectGroup>
+                    {reminderHours.map((hour) => (
+                      <SelectItem key={hour} value={hour}>{hour}</SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <Select
+                value={reminderMinute}
+                onValueChange={(minute) => updateReminderTime(reminderHour, minute)}
+                disabled={disabled || !notificationsEnabled}
+              >
+                <SelectTrigger id="daily-reminder-minute" aria-label="Phút nhắc" className="w-full">
+                  <SelectValue>{reminderMinute}</SelectValue>
+                </SelectTrigger>
+                <SelectContent position="popper" showScrollButtons={false} className="max-h-[min(15rem,var(--radix-select-content-available-height))]">
+                  <SelectGroup>
+                    {reminderMinutes.map((minute) => (
+                      <SelectItem key={minute} value={minute}>{minute}</SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+          </Field>
         </FieldGroup>
         {children}
       </CardContent>

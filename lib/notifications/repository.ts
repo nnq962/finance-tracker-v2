@@ -1,10 +1,11 @@
 import "server-only"
 
 import { createHash, randomUUID } from "node:crypto"
-import { Timestamp, type Transaction } from "firebase-admin/firestore"
+import { FieldValue, Timestamp, type Transaction } from "firebase-admin/firestore"
 import { getFirebaseAdminFirestore } from "@/lib/firebase/admin"
 import { defaultNotificationSettings, type NotificationSettings, type NotificationState } from "./types"
 import { assertFid, NotificationValidationError, parseNotificationSettings, validPushCookie } from "./validation"
+import { getNextReminderAt, REMINDER_TIME_ZONE } from "./schedule"
 
 type BrowserSession = { uid: string | null; sessionId: string; deviceId: string | null }
 export type PushContext = { browserId: string; sessionId: string }
@@ -65,8 +66,27 @@ export async function getNotificationSettings(uid: string): Promise<Notification
 }
 
 export async function saveNotificationSettings(uid: string, input: unknown) {
-  const settings = parseNotificationSettings(input)
-  await settingsRef(uid).set({ ...settings, updatedAt: Timestamp.now() }, { merge: true })
+  const settings = { ...parseNotificationSettings(input), timeZone: REMINDER_TIME_ZONE }
+  const ref = settingsRef(uid)
+  await db().runTransaction(async (tx) => {
+    const snapshot = await tx.get(ref)
+    const previous = snapshot.data()
+    const now = Timestamp.now()
+    const scheduleChanged = !previous?.notificationsEnabled ||
+      previous.dailyReminderTime !== settings.dailyReminderTime ||
+      previous.timeZone !== REMINDER_TIME_ZONE ||
+      !(previous.nextReminderAt instanceof Timestamp)
+
+    tx.set(ref, {
+      ...settings,
+      updatedAt: now,
+      ...(!settings.notificationsEnabled
+        ? { nextReminderAt: FieldValue.delete() }
+        : scheduleChanged
+          ? { nextReminderAt: Timestamp.fromDate(getNextReminderAt(settings.dailyReminderTime, now.toDate())) }
+          : {}),
+    }, { merge: true })
+  })
   return settings
 }
 

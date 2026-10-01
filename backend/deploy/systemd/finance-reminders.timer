@@ -1,0 +1,14 @@
+[Unit]
+Description=Run Finance Tracker reminders every ten minutes
+
+[Timer]
+OnCalendar=*-*-* *:0/10:00 Asia/Ho_Chi_Minh
+# Also check shortly after the user service manager starts.
+OnStartupSec=30s
+Persistent=true
+AccuracySec=1s
+RandomizedDelaySec=0
+Unit=finance-reminders.service
+
+[Install]
+WantedBy=timers.target
