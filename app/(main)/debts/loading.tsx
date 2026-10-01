@@ -1,133 +1,70 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 
-const debtRows = [
-  { nameWidth: "w-24", noteWidth: "w-36" },
-  { nameWidth: "w-32", noteWidth: "w-28" },
-  { nameWidth: "w-28", noteWidth: "w-40" },
-  { nameWidth: "w-20", noteWidth: "w-32" },
-]
+function DirectionStatSkeleton() {
+  return (
+    <div className="rounded-xl border-2 border-[#e7e4dd] p-3 sm:p-4 dark:border-[#35323e]">
+      <Skeleton className="size-8 rounded-lg" />
+      <Skeleton className="mt-3 h-4 w-28 max-w-full" />
+      <Skeleton className="mt-1.5 h-6 w-28 max-w-full" />
+      <Skeleton className="mt-1.5 h-3.5 w-20" />
+    </div>
+  )
+}
 
 function SummarySkeleton() {
   return (
-    <Card>
-      <CardHeader className="grid grid-cols-[1fr_auto] items-center">
-        <div className="flex items-center gap-2">
-          <Skeleton className="size-2 shrink-0 rounded-full" />
-          <Skeleton className="h-5 w-32 max-w-full" />
-        </div>
-        <Skeleton className="size-9 rounded-lg" />
-      </CardHeader>
-      <CardContent>
-        <Skeleton className="h-8 w-36 max-w-full" />
-        <Skeleton className="mt-1 h-4 w-28 max-w-full" />
-      </CardContent>
-    </Card>
-  )
-}
-
-function ContactSkeleton() {
-  return (
-    <Card size="sm">
-      <CardContent>
-        <div className="flex min-w-0 items-center gap-3">
-          <Skeleton className="size-10 shrink-0 rounded-full" />
-          <div className="min-w-0 flex-1 space-y-1">
-            <Skeleton className="h-5 w-28 max-w-full" />
-            <Skeleton className="h-5 w-24 max-w-full" />
+    <Card className="[--card-spacing:--spacing(5)] sm:[--card-spacing:--spacing(6)]">
+      <CardContent className="@container/debt-summary min-w-0">
+        <div className="grid min-w-0 gap-6 @min-[48rem]/debt-summary:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] @min-[48rem]/debt-summary:items-center @min-[48rem]/debt-summary:gap-8">
+          <div className="min-w-0">
+            <Skeleton className="h-5 w-28" />
+            <Skeleton className="mt-2 h-10 w-52 max-w-full" />
+            <Skeleton className="mt-1.5 h-4 w-44 max-w-full" />
+            <div className="mt-5 flex gap-1">
+              <Skeleton className="h-[18px] flex-[2] rounded-full" />
+              <Skeleton className="h-[18px] flex-[3] rounded-full" />
+            </div>
+            <div className="mt-2 flex justify-between">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-20" />
+            </div>
           </div>
-          <Skeleton className="size-7 shrink-0 rounded-lg" />
+          <div className="grid grid-cols-2 gap-3">
+            <DirectionStatSkeleton />
+            <DirectionStatSkeleton />
+          </div>
         </div>
       </CardContent>
     </Card>
   )
 }
 
-function DebtTableSkeleton() {
+function DebtRowSkeleton() {
   return (
-    <Card className="gap-0 py-0">
-      <div className="flex flex-col gap-3 border-b px-4 py-3 lg:h-16 lg:flex-row lg:items-center">
-        <div className="flex h-8 w-full items-center gap-2 rounded-lg border-2 border-[#e7e4dd] bg-[#f3f1ec] px-2.5 dark:border-[#35323e] dark:bg-[#1b1a21] lg:max-w-xs">
-          <Skeleton className="size-4 shrink-0 rounded-full" />
-          <Skeleton className="h-4 w-28 max-w-full" />
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Skeleton className="h-8 w-20 rounded-full" />
-          <Skeleton className="h-8 w-24 rounded-full" />
-          <Skeleton className="h-8 w-24 rounded-full" />
+    <Card className="gap-3 px-(--card-spacing)">
+      <div className="flex items-start gap-3">
+        <Skeleton className="size-10 shrink-0 rounded-full" />
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <div className="flex justify-between gap-3">
+            <Skeleton className="h-5 w-28 max-w-full" />
+            <Skeleton className="h-5 w-24 shrink-0" />
+          </div>
+          <div className="flex justify-between gap-3">
+            <Skeleton className="h-3.5 w-32 max-w-full" />
+            <Skeleton className="h-3.5 w-16 shrink-0" />
+          </div>
         </div>
       </div>
-
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="min-w-64">
-              <Skeleton className="h-4 w-24" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-4 w-12" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="ml-auto h-4 w-16" />
-            </TableHead>
-            <TableHead className="min-w-44">
-              <Skeleton className="h-4 w-16" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="ml-auto h-4 w-16" />
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {debtRows.map((row, index) => (
-            <TableRow key={index}>
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <Skeleton className="size-8 shrink-0 rounded-full" />
-                  <div className="min-w-0 space-y-1">
-                    <Skeleton
-                      className={`h-5 max-w-full ${row.nameWidth}`}
-                    />
-                    <Skeleton
-                      className={`h-4 max-w-full ${row.noteWidth}`}
-                    />
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-6 w-20 rounded-full" />
-              </TableCell>
-              <TableCell>
-                <div className="space-y-1">
-                  <Skeleton className="ml-auto h-5 w-24" />
-                  <Skeleton className="ml-auto h-4 w-28" />
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <Skeleton className="h-[18px] min-w-24 flex-1 rounded-full" />
-                  <Skeleton className="h-5 w-9 shrink-0" />
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="space-y-1">
-                  <Skeleton className="ml-auto h-5 w-20" />
-                  <Skeleton className="ml-auto h-4 w-16" />
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <div className="flex gap-1.5 pl-[3.25rem]">
+        <Skeleton className="h-6 w-20 rounded-full" />
+        <Skeleton className="h-6 w-24 rounded-full" />
+      </div>
+      <div className="flex items-center gap-3 pl-[3.25rem]">
+        <Skeleton className="h-[18px] flex-1 rounded-full" />
+        <Skeleton className="h-4 w-8 shrink-0" />
+      </div>
     </Card>
   )
 }
@@ -168,7 +105,7 @@ function DetailSkeleton() {
           </div>
         </div>
       </CardHeader>
-      <Separator />
+      <Separator variant="chunky" />
 
       <CardContent className="space-y-5 py-4">
         <div className="flex flex-wrap gap-2">
@@ -188,7 +125,7 @@ function DetailSkeleton() {
               <Skeleton className="h-5 w-28" />
             </div>
           ))}
-          <Separator />
+          <Separator variant="chunky" />
           <div className="flex items-end justify-between gap-4">
             <Skeleton className="h-5 w-16" />
             <Skeleton className="h-5 w-28" />
@@ -220,7 +157,7 @@ function DetailSkeleton() {
 export default function DebtsLoading() {
   return (
     <div
-      className="mx-auto w-full max-w-7xl space-y-8 pb-24"
+      className="mx-auto w-full max-w-7xl space-y-8 pb-12"
       role="status"
       aria-label="Đang tải vay nợ"
       aria-busy="true"
@@ -232,38 +169,35 @@ export default function DebtsLoading() {
               <Skeleton className="h-9 w-48 max-w-full" />
               <Skeleton className="h-5 w-96 max-w-full" />
             </div>
-            <Skeleton className="h-8 w-full shrink-0 rounded-lg sm:w-36" />
+            <Skeleton className="hidden h-8 w-36 shrink-0 rounded-lg md:block" />
           </div>
         </header>
 
-        <section className="grid gap-4 md:grid-cols-3">
-          <SummarySkeleton />
-          <SummarySkeleton />
-          <SummarySkeleton />
-        </section>
+        <SummarySkeleton />
 
-        <section className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-7 w-20" />
-              <Skeleton className="h-6 w-16 rounded-full" />
+        <div className="space-y-5">
+          <Skeleton className="h-11 w-full rounded-[14px] sm:w-64" />
+          <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+            <div className="min-w-0 space-y-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Skeleton className="h-8 w-full rounded-lg sm:max-w-xs" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-8 w-20 rounded-lg" />
+                  <Skeleton className="h-8 w-20 rounded-lg" />
+                  <Skeleton className="h-8 w-20 rounded-lg" />
+                </div>
+              </div>
+              <div className="grid gap-3">
+                <DebtRowSkeleton />
+                <DebtRowSkeleton />
+                <DebtRowSkeleton />
+              </div>
             </div>
-            <Skeleton className="h-7 w-28 rounded-lg" />
+            <div className="hidden xl:block">
+              <DetailSkeleton />
+            </div>
           </div>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            <ContactSkeleton />
-            <ContactSkeleton />
-            <ContactSkeleton />
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <Skeleton className="h-7 w-24" />
-          <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
-            <DebtTableSkeleton />
-            <DetailSkeleton />
-          </div>
-        </section>
+        </div>
       </div>
 
       <span className="sr-only">Đang tải danh bạ và các khoản vay nợ...</span>

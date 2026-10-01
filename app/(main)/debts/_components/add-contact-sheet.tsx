@@ -36,7 +36,7 @@ export function AddContactSheet({ contact, onAddContact, open: controlledOpen, o
       setOpen(nextOpen)
     }}>
       {controlledOpen === undefined ? <SheetTrigger asChild>
-        <Button type="button" variant={contact ? "ghost" : "outline"} size={contact ? "icon-sm" : "sm"} aria-label={contact ? `Sửa ${contact.name}` : undefined}>
+        <Button type="button" variant="ghost" size={contact ? "icon-sm" : "sm"} aria-label={contact ? `Sửa ${contact.name}` : undefined}>
           {contact ? <PencilIcon /> : <><PlusIcon />Thêm người</>}
         </Button>
       </SheetTrigger> : null}

@@ -15,6 +15,16 @@ import type {
   NewContact,
   NewDebtPayment,
 } from "../_types/debt"
+import { BookUserIcon, HandCoinsIcon } from "lucide-react"
+
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/animate-ui/components/radix/tabs"
+
+import { AddContactSheet } from "./add-contact-sheet"
 import { AddDebtSheet } from "./add-debt-sheet"
 import { ContactsView } from "./contacts-view"
 import { DebtSummary } from "./debt-summary"
@@ -100,48 +110,82 @@ export function DebtsDashboard({
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-8 pb-24">
+    <div className="mx-auto w-full max-w-7xl space-y-8 pb-12">
       <DebtsHeader
         actions={
           <AddDebtSheet accounts={accounts} contacts={contacts} onAddDebt={addDebt} />
         }
       />
-      <DebtSummary summary={summary} />
-      <ContactsView contacts={contacts} debts={debts} onAdd={addContact} onEdit={editContact} onDelete={deleteContact} />
-      <DebtsView
-        initialSelectedDebtId={selectedDebtId}
-        contacts={contacts}
-        debts={debts}
-        accounts={accounts}
-        onChangeDebt={async (debtId, values) => {
-          if (values === null) {
-            const debt = debts.find((item) => item.id === debtId)
-            scheduleUndoableDelete({
-              key: `debt:${debtId}`,
-              title: `Sắp xoá khoản nợ${debt?.note ? ` “${debt.note}”` : ""}`,
-              description:
-                "Khoản nợ, lịch sử thanh toán và tác động số dư sẽ bị xoá sau 6 giây.",
-              pendingMessage: "Đang xoá khoản nợ…",
-              successMessage: "Đã xoá khoản nợ và hoàn lại ảnh hưởng lên số dư.",
-              undoMessage: "Đã giữ lại khoản nợ.",
-              errorMessage: "Không thể xoá khoản nợ.",
-              onCommit: () =>
-                execute(
-                  JSON.stringify(["change-debt", debtId, null]),
-                  (operationId) =>
-                    changeDebtAction(debtId, null, operationId),
-                ),
-            })
-            return
-          }
+      <DebtSummary debts={debts} summary={summary} />
+      <Tabs defaultValue="debts" className="gap-5">
+        <TabsList className="w-full sm:w-fit">
+          <TabsTrigger value="debts">
+            <HandCoinsIcon aria-hidden="true" />
+            Khoản nợ
+            <span className="opacity-60">{debts.length}</span>
+          </TabsTrigger>
+          <TabsTrigger value="contacts">
+            <BookUserIcon aria-hidden="true" />
+            Danh bạ
+            <span className="opacity-60">{contacts.length}</span>
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="contacts">
+          <ContactsView contacts={contacts} debts={debts} onAdd={addContact} onEdit={editContact} onDelete={deleteContact} />
+        </TabsContent>
+        <TabsContent value="debts">
+          <DebtsView
+            initialSelectedDebtId={selectedDebtId}
+            contacts={contacts}
+            debts={debts}
+            accounts={accounts}
+            onChangeDebt={async (debtId, values) => {
+              if (values === null) {
+                const debt = debts.find((item) => item.id === debtId)
+                scheduleUndoableDelete({
+                  key: `debt:${debtId}`,
+                  title: `Sắp xoá khoản nợ${debt?.note ? ` “${debt.note}”` : ""}`,
+                  description:
+                    "Khoản nợ, lịch sử thanh toán và tác động số dư sẽ bị xoá sau 6 giây.",
+                  pendingMessage: "Đang xoá khoản nợ…",
+                  successMessage: "Đã xoá khoản nợ và hoàn lại ảnh hưởng lên số dư.",
+                  undoMessage: "Đã giữ lại khoản nợ.",
+                  errorMessage: "Không thể xoá khoản nợ.",
+                  onCommit: () =>
+                    execute(
+                      JSON.stringify(["change-debt", debtId, null]),
+                      (operationId) =>
+                        changeDebtAction(debtId, null, operationId),
+                    ),
+                })
+                return
+              }
 
-          await execute(JSON.stringify(["change-debt", debtId, values]), (operationId) => changeDebtAction(debtId, values, operationId))
-          toast.success(values.recordingMode === "opening" ? "Đã cập nhật khoản nợ có sẵn. Số dư tài khoản giữ nguyên." : "Đã cập nhật khoản nợ và số dư.")
-        }}
-        onRecordPayment={(id, values) => changePayment(id, undefined, values)}
-        onEditPayment={(id, paymentId, values) => changePayment(id, paymentId, values)}
-        onDeletePayment={(id, paymentId) => changePayment(id, paymentId, null)}
-      />
+              await execute(JSON.stringify(["change-debt", debtId, values]), (operationId) => changeDebtAction(debtId, values, operationId))
+              toast.success(values.recordingMode === "opening" ? "Đã cập nhật khoản nợ có sẵn. Số dư tài khoản giữ nguyên." : "Đã cập nhật khoản nợ và số dư.")
+            }}
+            onRecordPayment={(id, values) => changePayment(id, undefined, values)}
+            onEditPayment={(id, paymentId, values) => changePayment(id, paymentId, values)}
+            onDeletePayment={(id, paymentId) => changePayment(id, paymentId, null)}
+            emptyAction={
+              contacts.length > 0 ? (
+                <AddDebtSheet accounts={accounts} contacts={contacts} onAddDebt={addDebt} />
+              ) : (
+                <AddContactSheet onAddContact={addContact} />
+              )
+            }
+          />
+        </TabsContent>
+      </Tabs>
+      {/* On mobile the action floats above the bottom nav so it stays within
+          thumb reach. A debt needs a contact, so it hides until one exists. */}
+      {contacts.length > 0 ? (
+        <div className="pointer-events-none sticky bottom-4 z-20 flex justify-end md:hidden">
+          <div className="pointer-events-auto">
+            <AddDebtSheet accounts={accounts} contacts={contacts} onAddDebt={addDebt} />
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

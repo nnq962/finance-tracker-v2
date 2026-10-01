@@ -17,9 +17,8 @@ export function DebtsHeader({ actions }: DebtsHeaderProps) {
             các khoản vay.
           </p>
         </div>
-        <div className="flex w-full shrink-0 flex-wrap gap-2 self-start sm:w-auto sm:self-auto">
-          {actions}
-        </div>
+        {/* Below md the add action floats above the bottom nav instead. */}
+        <div className="hidden shrink-0 flex-wrap gap-2 md:flex">{actions}</div>
       </div>
     </header>
   )

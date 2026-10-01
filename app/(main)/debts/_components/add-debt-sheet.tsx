@@ -92,6 +92,10 @@ type AddDebtSheetProps = {
   accounts: Account[]
   contacts: Contact[]
   onAddDebt: (debt: NewDebt) => Promise<void>
+  /** Controlled mode (no trigger), e.g. opened from an actions menu. */
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  returnFocusRef?: React.RefObject<HTMLElement | null>
 }
 
 export function AddDebtSheet({
@@ -100,14 +104,32 @@ export function AddDebtSheet({
   accounts,
   contacts,
   onAddDebt,
+  open: controlledOpen,
+  onOpenChange,
+  returnFocusRef,
 }: AddDebtSheetProps) {
-  const [open, setOpen] = React.useState(false)
+  const [internalOpen, setInternalOpen] = React.useState(false)
+  const open = controlledOpen ?? internalOpen
+  const setOpen = onOpenChange ?? setInternalOpen
   const [direction, setDirection] = React.useState<DebtDirection>(debt?.direction ?? "lent")
   const [recordingMode, setRecordingMode] = React.useState<DebtRecordingMode>(debt?.recordingMode ?? "cash-flow")
   const isOpening = recordingMode === "opening"
   const [hasInterest, setHasInterest] = React.useState(debt?.hasInterest ?? false)
-  const [pending, setPending] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
+  const [wasOpen, setWasOpen] = React.useState(open)
+
+  // A controlled open never passes through onOpenChange, so reset the form
+  // fields here whenever the sheet opens.
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) {
+      setErrorMessage(null)
+      setDirection(debt?.direction ?? "lent")
+      setRecordingMode(debt?.recordingMode ?? "cash-flow")
+      setHasInterest(debt?.hasInterest ?? false)
+    }
+  }
+  const [pending, setPending] = React.useState(false)
   const submitting = React.useRef(false)
   const today = React.useMemo(() => todayDate(), [])
   const accountLabel =
@@ -122,10 +144,10 @@ export function AddDebtSheet({
   return (
     <Sheet open={open} onOpenChange={(nextOpen) => {
       if (submitting.current) return
-      if (nextOpen) { setErrorMessage(null); setDirection(debt?.direction ?? "lent"); setRecordingMode(debt?.recordingMode ?? "cash-flow"); setHasInterest(debt?.hasInterest ?? false) }
+      if (nextOpen) setErrorMessage(null)
       setOpen(nextOpen)
     }}>
-      <SheetTrigger asChild>
+      {controlledOpen === undefined ? <SheetTrigger asChild>
         {trigger ?? <Button
           type="button"
           className="w-full sm:w-auto"
@@ -139,11 +161,17 @@ export function AddDebtSheet({
           <PlusIcon />
           Thêm khoản nợ
         </Button>}
-      </SheetTrigger>
+      </SheetTrigger> : null}
       <SheetContent
         className="gap-0 data-[side=right]:w-full sm:max-w-md!"
         showCloseButton={!pending}
         onOpenAutoFocus={(event) => event.preventDefault()}
+        onCloseAutoFocus={(event) => {
+          if (returnFocusRef?.current) {
+            event.preventDefault()
+            returnFocusRef.current.focus()
+          }
+        }}
       >
         <SheetHeader>
           <SheetTitle>{debt ? "Sửa khoản nợ" : "Thêm khoản nợ"}</SheetTitle>

@@ -5,6 +5,7 @@ import { AddDebtSheet } from "./add-debt-sheet"
 import { FieldError } from "@/components/ui/field"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/animate-ui/components/radix/alert-dialog"
 import {
+  EllipsisIcon,
   PencilIcon,
   Trash2Icon,
   CheckIcon,
@@ -16,7 +17,14 @@ import { DebtPaymentHistory } from "./debt-payment-history"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { formatCurrency } from "@/lib/format-currency"
@@ -40,53 +48,59 @@ type DebtDetailPanelProps = {
   onRecordPayment: (payment: NewDebtPayment) => Promise<void>
 }
 
-export function DebtDetailPanel({
-  contacts,
-  onChangeDebt,
+export function DebtContactHeader({ contact }: { contact: Contact }) {
+  return (
+    <div className="flex items-center gap-3">
+      <Avatar size="lg">
+        <AvatarFallback>{contact.initials}</AvatarFallback>
+      </Avatar>
+      <div className="min-w-0">
+        <p className="truncate font-heading font-extrabold">{contact.name}</p>
+        {contact.phone ? (
+          <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
+            <PhoneIcon className="size-3.5" />
+            {contact.phone}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+export function DebtDetailPanel(props: DebtDetailPanelProps) {
+  return (
+    <Card className="gap-0 py-0">
+      <CardHeader className="h-16 content-center">
+        <CardTitle className="sr-only">Chi tiết khoản nợ</CardTitle>
+        <DebtContactHeader contact={props.contact} />
+        <CardAction className="self-center">
+          <DebtActionsMenu {...props} />
+        </CardAction>
+      </CardHeader>
+      <Separator variant="chunky" />
+      <CardContent className="space-y-5 py-4">
+        <DebtDetailInfo {...props} />
+        <DebtRecordPaymentButton {...props} />
+      </CardContent>
+    </Card>
+  )
+}
+
+/** Debt figures and payment history; shared by the side panel and the sheet. */
+export function DebtDetailInfo({
   contact,
   debt,
-  onRecordPayment,
   accounts,
   onEditPayment,
   onDeletePayment,
 }: DebtDetailPanelProps) {
-  const [deleting, setDeleting] = React.useState(false)
-  const [pending, setPending] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
-  const submitting = React.useRef(false)
   const { paidAmount, remainingAmount, paymentProgress, interestAmount, interestDate, totalAmount, days } = getDebtMetrics(debt)
   const deadline = getDebtDeadline(debt)
-  const paymentAction = debt.direction === "lent" ? "Ghi nhận thu" : "Ghi nhận trả"
 
   return (
-    <Card className="gap-0 py-0">
-      <CardHeader className="h-16 content-center">
-        <div className="flex items-center gap-3">
-          <Avatar size="lg">
-            <AvatarFallback>{contact.initials}</AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <CardTitle>{contact.name}</CardTitle>
-            {contact.phone ? (
-              <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
-                <PhoneIcon className="size-3.5" />
-                {contact.phone}
-              </p>
-            ) : null}
-          </div>
-        </div>
-      </CardHeader>
-      <Separator />
-      <CardContent className="space-y-5 py-4">
+    <div className="space-y-5">
         <div className="flex flex-wrap gap-2">
-          <Badge
-            variant={debt.direction === "lent" ? "secondary" : "destructive"}
-            className={
-              debt.direction === "lent"
-                ? "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
-                : undefined
-            }
-          >
+          <Badge variant={debt.direction === "lent" ? "default" : "destructive"}>
             {debt.direction === "lent" ? "Cho vay" : "Đi vay"}
           </Badge>
           {debt.recordingMode === "opening" ? <Badge variant="outline">Nợ có sẵn</Badge> : null}
@@ -123,7 +137,7 @@ export function DebtDetailPanel({
               {formatCurrency(paidAmount, { signDisplay: "never" })}
             </span>
           </div>
-          <Separator />
+          <Separator variant="chunky" />
           <div className="flex items-end justify-between gap-4">
             <span className="text-sm text-muted-foreground">Còn lại</span>
             <span className="shrink-0 text-right text-sm font-semibold tabular-nums">
@@ -147,27 +161,90 @@ export function DebtDetailPanel({
         </div>
 
         <DebtPaymentHistory debt={debt} contact={contact} accounts={accounts} onEdit={onEditPayment} onDelete={onDeletePayment} />
+    </div>
+  )
+}
 
-        <RecordDebtPaymentSheet
-          accounts={accounts}
-          contact={contact}
-          debt={debt}
-          onRecordPayment={onRecordPayment}
-          trigger={
-            <Button className="w-full" disabled={remainingAmount <= 0 || !accounts.some((account) => account.status === "active")}>
-              <CheckIcon />
-              {paymentAction}
+/** Records a collection or repayment; the sheet places it in its footer. */
+export function DebtRecordPaymentButton({
+  contact,
+  debt,
+  onRecordPayment,
+  accounts,
+}: DebtDetailPanelProps) {
+  const { remainingAmount } = getDebtMetrics(debt)
+  const paymentAction = debt.direction === "lent" ? "Ghi nhận thu" : "Ghi nhận trả"
+
+  return (
+    <RecordDebtPaymentSheet
+      accounts={accounts}
+      contact={contact}
+      debt={debt}
+      onRecordPayment={onRecordPayment}
+      trigger={
+        <Button className="w-full" disabled={remainingAmount <= 0 || !accounts.some((account) => account.status === "active")}>
+          <CheckIcon />
+          {paymentAction}
+        </Button>
+      }
+    />
+  )
+}
+
+/** "More" menu with edit and delete, so they stay out of the main actions. */
+export function DebtActionsMenu({
+  accounts,
+  contacts,
+  debt,
+  onChangeDebt,
+}: DebtDetailPanelProps) {
+  const [editing, setEditing] = React.useState(false)
+  const [deleting, setDeleting] = React.useState(false)
+  const [pending, setPending] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
+  const submitting = React.useRef(false)
+  const menuButton = React.useRef<HTMLButtonElement>(null)
+
+  return (
+    <>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button ref={menuButton} type="button" variant="ghost" size="icon-sm" aria-label="Thao tác với khoản nợ">
+              <EllipsisIcon />
             </Button>
-          }
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="w-48"
+            onCloseAutoFocus={(event) => {
+              if (editing || deleting) event.preventDefault()
+            }}
+          >
+            <DropdownMenuItem onSelect={() => setEditing(true)}>
+              <PencilIcon />
+              Sửa khoản nợ
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" onSelect={() => { setError(null); setDeleting(true) }}>
+              <Trash2Icon />
+              Xoá khoản nợ
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <AddDebtSheet
+          debt={debt}
+          contacts={contacts}
+          accounts={accounts}
+          onAddDebt={onChangeDebt}
+          open={editing}
+          onOpenChange={setEditing}
+          returnFocusRef={menuButton}
         />
-
-        <div className="grid grid-cols-2 gap-2">
-          <AddDebtSheet debt={debt} contacts={contacts} accounts={accounts} onAddDebt={onChangeDebt}
-            trigger={<Button variant="outline"><PencilIcon />Sửa khoản nợ</Button>} />
-          <Button variant="outline" onClick={() => { setError(null); setDeleting(true) }}><Trash2Icon />Xoá khoản nợ</Button>
-        </div>
         <AlertDialog open={deleting} onOpenChange={(open) => { if (!submitting.current) setDeleting(open) }}>
-          <AlertDialogContent>
+          <AlertDialogContent onCloseAutoFocus={(event) => {
+            event.preventDefault()
+            menuButton.current?.focus()
+          }}>
             <AlertDialogHeader>
               <AlertDialogTitle>Xoá khoản {debt.direction === "lent" ? "cho vay" : "đi vay"}?</AlertDialogTitle>
               <AlertDialogDescription>
@@ -198,7 +275,6 @@ export function DebtDetailPanel({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </CardContent>
-    </Card>
+    </>
   )
 }
