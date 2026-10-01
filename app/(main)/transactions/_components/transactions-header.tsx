@@ -14,9 +14,8 @@ export function TransactionsHeader({ children }: TransactionsHeaderProps) {
             Theo dõi các khoản thu, chi và chuyển khoản của bạn.
           </p>
         </div>
-        <div className="w-full shrink-0 self-start sm:w-auto sm:self-auto">
-          {children}
-        </div>
+        {/* Below md the add action floats above the bottom nav instead. */}
+        <div className="hidden shrink-0 md:block">{children}</div>
       </div>
     </header>
   )

@@ -8,7 +8,7 @@ export type TransactionTrend = {
   percentage: number | null
 }
 
-export type TopExpenseCategory = {
+export type ExpenseCategoryStat = {
   amount: number
   count: number
   group: CategoryGroup | undefined
@@ -23,7 +23,8 @@ export type TransactionHeroStats = {
   income: number
   incomeCount: number
   incomeTrend: TransactionTrend
-  topExpenseCategory: TopExpenseCategory | null
+  /** Expense categories sorted by amount, largest first. */
+  expenseCategories: ExpenseCategoryStat[]
 }
 
 function getTrend(current: number, previous: number): TransactionTrend {
@@ -43,11 +44,11 @@ function getTrend(current: number, previous: number): TransactionTrend {
   }
 }
 
-function getTopExpenseCategory(
+function getExpenseCategories(
   transactions: Transaction[],
   categoryGroups: CategoryGroup[],
   totalExpense: number,
-): TopExpenseCategory | null {
+): ExpenseCategoryStat[] {
   const expensesByGroup = new Map<
     string,
     { amount: number; count: number; groupId?: string; name: string }
@@ -70,22 +71,18 @@ function getTopExpenseCategory(
     expensesByGroup.set(key, current)
   })
 
-  const topExpense = [...expensesByGroup.values()].sort(
-    (left, right) => right.amount - left.amount,
-  )[0]
-
-  if (!topExpense) return null
-
-  return {
-    amount: topExpense.amount,
-    count: topExpense.count,
-    group: categoryGroups.find((group) => group.id === topExpense.groupId),
-    name: topExpense.name,
-    percentage:
-      totalExpense > 0
-        ? Math.round((topExpense.amount / totalExpense) * 100)
-        : 0,
-  }
+  return [...expensesByGroup.values()]
+    .sort((left, right) => right.amount - left.amount)
+    .map((category) => ({
+      amount: category.amount,
+      count: category.count,
+      group: categoryGroups.find((group) => group.id === category.groupId),
+      name: category.name,
+      percentage:
+        totalExpense > 0
+          ? Math.round((category.amount / totalExpense) * 100)
+          : 0,
+    }))
 }
 
 export function getTransactionHeroStats(
@@ -95,6 +92,11 @@ export function getTransactionHeroStats(
 ): TransactionHeroStats {
   const summary = getTransactionSummary(transactions)
   const previousSummary = getTransactionSummary(previousTransactions)
+  const expenseCategories = getExpenseCategories(
+    transactions,
+    categoryGroups,
+    summary.expense,
+  )
 
   return {
     income: summary.income,
@@ -109,10 +111,6 @@ export function getTransactionHeroStats(
         (transaction.kind === "transfer" && (transaction.fee ?? 0) > 0),
     ).length,
     expenseTrend: getTrend(summary.expense, previousSummary.expense),
-    topExpenseCategory: getTopExpenseCategory(
-      transactions,
-      categoryGroups,
-      summary.expense,
-    ),
+    expenseCategories,
   }
 }

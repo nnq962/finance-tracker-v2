@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-} from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -12,49 +7,71 @@ const transactionRows = [
   { titleWidth: "w-32", descriptionWidth: "w-40", amountWidth: "w-28" },
 ]
 
-function CashFlowCardSkeleton() {
+function CashFlowStatSkeleton() {
   return (
-    <Card className="h-44">
-      <CardHeader>
-        <Skeleton className="h-6 w-16 rounded-full" />
-        <CardAction>
-          <div className="flex items-center gap-1">
-            <Skeleton className="size-4 shrink-0 rounded-full" />
-            <Skeleton className="h-4 w-24" />
-          </div>
-        </CardAction>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-5">
-          <Skeleton className="h-10 w-44 max-w-full" />
-          <Separator className="data-horizontal:h-0! border-t-2 border-dashed border-[#e7e4dd] bg-transparent dark:border-[#35323e]" />
-          <Skeleton className="h-4 w-20" />
-        </div>
-      </CardContent>
-    </Card>
+    <div className="rounded-xl border-2 border-[#e7e4dd] p-3 sm:p-4 dark:border-[#35323e]">
+      <div className="flex items-center justify-between gap-2">
+        <Skeleton className="size-8 rounded-lg" />
+        <Skeleton className="h-6 w-14 rounded-full" />
+      </div>
+      <Skeleton className="mt-3 h-4 w-14" />
+      <Skeleton className="mt-1.5 h-6 w-28 max-w-full" />
+      <Skeleton className="mt-1.5 h-3.5 w-20" />
+    </div>
   )
 }
 
-function TopExpenseCardSkeleton() {
+function TransactionsHeroSkeleton() {
   return (
-    <Card className="h-44 md:col-span-2 lg:col-span-1">
-      <CardHeader>
-        <Skeleton className="h-5 w-40 max-w-full" />
-      </CardHeader>
-      <CardContent className="flex flex-1">
-        <div className="w-full space-y-5">
-          <div className="flex items-center gap-3">
-            <Skeleton className="size-11 shrink-0 rounded-lg" />
-            <div className="min-w-0 flex-1 space-y-1">
-              <Skeleton className="h-5 w-24 max-w-full" />
-              <Skeleton className="h-5 w-28 max-w-full" />
+    <Card className="[--card-spacing:--spacing(5)] sm:[--card-spacing:--spacing(6)]">
+      <CardContent className="@container/transactions-hero min-w-0">
+        <div className="grid min-w-0 gap-6 @min-[52rem]/transactions-hero:grid-cols-[minmax(0,1.5fr)_auto_minmax(0,1fr)] @min-[52rem]/transactions-hero:gap-8">
+          <div className="min-w-0">
+            <div className="flex items-center justify-between gap-2">
+              <Skeleton className="h-5 w-44 max-w-full" />
+              <Skeleton className="h-6 w-24 rounded-full" />
             </div>
-            <Skeleton className="h-8 w-12 shrink-0" />
+            <Skeleton className="mt-3 h-10 w-52 max-w-full" />
+            <Skeleton className="mt-1.5 h-4 w-40" />
+            <div className="mt-5 flex gap-1">
+              <Skeleton className="h-[18px] flex-[3] rounded-full" />
+              <Skeleton className="h-[18px] flex-[2] rounded-full" />
+            </div>
+            <div className="mt-2 flex justify-between">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <CashFlowStatSkeleton />
+              <CashFlowStatSkeleton />
+            </div>
           </div>
-          <Skeleton className="h-[18px] w-full rounded-full" />
-          <div className="flex items-center justify-between gap-4">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-32 max-w-full" />
+
+          <Separator
+            orientation="vertical"
+            variant="chunky"
+            className="hidden @min-[52rem]/transactions-hero:block"
+          />
+          <Separator
+            variant="chunky"
+            className="@min-[52rem]/transactions-hero:hidden"
+          />
+
+          <div className="min-w-0">
+            <Skeleton className="h-5 w-40 max-w-full" />
+            <div className="mt-4 space-y-3">
+              {[0, 1, 2].map((row) => (
+                <div key={row} className="flex items-center gap-3">
+                  <Skeleton className="size-9 shrink-0 rounded-lg" />
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <Skeleton className="h-4 w-24 max-w-full" />
+                    <Skeleton className="h-3.5 w-16" />
+                  </div>
+                  <Skeleton className="h-4 w-20 shrink-0" />
+                  <Skeleton className="h-4 w-8 shrink-0" />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </CardContent>
@@ -161,15 +178,11 @@ export default function TransactionsLoading() {
             <Skeleton className="h-9 w-36" />
             <Skeleton className="h-5 w-80 max-w-full" />
           </div>
-          <Skeleton className="h-8 w-full rounded-lg sm:w-36" />
+          <Skeleton className="hidden h-8 w-36 shrink-0 rounded-lg md:block" />
         </div>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <CashFlowCardSkeleton />
-        <CashFlowCardSkeleton />
-        <TopExpenseCardSkeleton />
-      </section>
+      <TransactionsHeroSkeleton />
 
       <TransactionToolbarSkeleton />
 

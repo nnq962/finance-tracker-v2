@@ -91,6 +91,7 @@ export function TransactionsDashboard({
         categoryGroups={categoryGroups}
         period={period}
         previousTransactions={previousPeriodTransactions}
+        rangeLabel={periodData.rangeLabel}
         transactions={periodData.transactions}
       />
       <TransactionToolbar
@@ -127,6 +128,16 @@ export function TransactionsDashboard({
         todayDateKey={todayDateKey}
         transactions={visibleTransactions}
       />
+      {/* On mobile the action floats above the bottom nav so it stays within
+          thumb reach while scrolling a long list. */}
+      <div className="pointer-events-none sticky bottom-4 z-20 flex justify-end md:hidden">
+        <div className="pointer-events-auto">
+          <AddTransactionButton
+            accounts={accounts}
+            categoryGroups={categoryGroups}
+          />
+        </div>
+      </div>
     </>
   )
 }
