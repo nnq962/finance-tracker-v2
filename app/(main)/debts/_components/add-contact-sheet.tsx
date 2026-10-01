@@ -48,7 +48,7 @@ export function AddContactSheet({ contact, onAddContact, open: controlledOpen, o
       }}>
         <SheetHeader>
           <SheetTitle>{contact ? "Sửa người liên hệ" : "Thêm người vào danh bạ"}</SheetTitle>
-          <SheetDescription>Lưu tên và mối quan hệ để dễ theo dõi các khoản nợ.</SheetDescription>
+          <SheetDescription>Người cho vay hoặc đi vay với bạn.</SheetDescription>
         </SheetHeader>
         <form className="flex min-h-0 flex-1 flex-col" aria-busy={pending} onSubmit={async (event) => {
           event.preventDefault()
@@ -80,16 +80,16 @@ export function AddContactSheet({ contact, onAddContact, open: controlledOpen, o
         }}>
           <fieldset disabled={pending} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
             <Card>
-              <CardHeader><CardTitle>Thông tin người liên hệ</CardTitle></CardHeader>
+              <CardHeader><CardTitle>Người liên hệ</CardTitle></CardHeader>
               <CardContent>
                 <FieldGroup>
                   <Field>
                     <FieldLabel htmlFor={`${id}-name`}>Họ và tên</FieldLabel>
-                    <Input id={`${id}-name`} name="name" defaultValue={contact?.name} required maxLength={80} autoComplete="name" placeholder="Nhập họ và tên" onInput={(event) => event.currentTarget.setCustomValidity("")} />
+                    <Input id={`${id}-name`} name="name" defaultValue={contact?.name} required maxLength={80} autoComplete="name" onInput={(event) => event.currentTarget.setCustomValidity("")} />
                   </Field>
                   <Field>
                     <FieldLabel htmlFor={`${id}-relationship`}>Mối quan hệ</FieldLabel>
-                    <Input id={`${id}-relationship`} name="relationship" defaultValue={contact?.relationship} maxLength={80} placeholder="Ví dụ: Đồng nghiệp, người yêu, anh trai" />
+                    <Input id={`${id}-relationship`} name="relationship" defaultValue={contact?.relationship} maxLength={80} placeholder="Ví dụ: Đồng nghiệp" />
                   </Field>
                 </FieldGroup>
               </CardContent>

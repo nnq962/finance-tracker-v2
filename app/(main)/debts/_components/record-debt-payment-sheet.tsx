@@ -6,9 +6,8 @@ import { toast } from "sonner"
 import { AccountSelectGroups } from "@/components/account-select-groups"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
@@ -39,7 +38,7 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
   const submitting = React.useRef(false)
   const id = React.useId()
   const baseDebt = payment ? { ...debt, paidAmount: debt.paidAmount - payment.amount, payments: debt.payments?.filter((item) => item.id !== payment.id) } : debt
-  const { remainingAmount, interestAmount } = getPaymentMetrics(baseDebt, paidAt || todayDate())
+  const { remainingAmount } = getPaymentMetrics(baseDebt, paidAt || todayDate())
   const isCollection = debt.direction === "lent"
   const actionLabel = payment ? (isCollection ? "Sửa khoản thu nợ" : "Sửa khoản trả nợ") : (isCollection ? "Ghi nhận thu nợ" : "Ghi nhận trả nợ")
   const eligibleAccounts = accounts.filter((account) => account.status === "active" || account.id === payment?.accountId)
@@ -66,7 +65,7 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
       }}>
         <SheetHeader>
           <SheetTitle>{actionLabel}</SheetTitle>
-          <SheetDescription>{isCollection ? `Ghi lại tiền nhận từ ${contact.name}.` : `Ghi lại tiền trả cho ${contact.name}.`} Có thể thanh toán một phần hoặc toàn bộ.</SheetDescription>
+          <SheetDescription>{isCollection ? `Tiền nhận từ ${contact.name}.` : `Tiền trả cho ${contact.name}.`}</SheetDescription>
         </SheetHeader>
         <form className="flex min-h-0 flex-1 flex-col" aria-busy={pending} onSubmit={async (event) => {
           event.preventDefault()
@@ -92,13 +91,12 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
             <FieldGroup>
               <Card>
                 <CardHeader>
-                  <CardTitle>Số tiền {isCollection ? "thu nợ" : "trả nợ"}</CardTitle>
-                  <CardDescription>Còn lại tại ngày thanh toán: {formatCurrency(remainingAmount)}{debt.hasInterest ? ` (đã tính ${formatCurrency(interestAmount)} tiền lãi)` : ""}.</CardDescription>
+                  <CardTitle>Số tiền</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <Field>
-                      <FieldLabel htmlFor={`${id}-amount`}>Số tiền <Badge variant="secondary">VND</Badge></FieldLabel>
+                      <FieldLabel htmlFor={`${id}-amount`} className="sr-only">Số tiền</FieldLabel>
                       <CurrencyInput id={`${id}-amount`} name="amount" value={amount} required onValueChange={(value) => { setAmount(value); setErrorMessage(null) }} />
                     </Field>
                     <div className="flex flex-wrap gap-2" aria-label="Nhập nhanh số tiền còn lại">
@@ -106,13 +104,22 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
                         <Button key={choice.divisor} type="button" variant="outline" size="sm" disabled={pending || remainingAmount < 1} onClick={() => { setAmount(Math.max(1, Math.floor(remainingAmount / choice.divisor))); setErrorMessage(null) }}>{choice.label}</Button>
                       ))}
                     </div>
-                    <p className="text-sm text-muted-foreground">Còn lại sau lần này: <span className="font-medium text-foreground">{formatCurrency(Math.max(0, remainingAmount - (amount ?? 0)))}</span></p>
+                    <dl className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <dt className="text-muted-foreground">Đang còn{debt.hasInterest ? " (gồm lãi)" : ""}</dt>
+                        <dd className="font-bold tabular-nums">{formatCurrency(remainingAmount)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted-foreground">Sau lần này</dt>
+                        <dd className="font-bold tabular-nums">{formatCurrency(Math.max(0, remainingAmount - (amount ?? 0)))}</dd>
+                      </div>
+                    </dl>
                     {payment ? <p className="text-xs text-muted-foreground">Các lần thanh toán sau ngày này sẽ được kiểm tra lại khi lưu.</p> : null}
                   </div>
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader><CardTitle>Thông tin thanh toán</CardTitle></CardHeader>
+                <CardHeader><CardTitle>Chi tiết</CardTitle></CardHeader>
                 <CardContent>
                   <FieldGroup>
                     <Field>
@@ -127,7 +134,7 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
                     </Field>
                     <DateTimeFields
                       idPrefix={id}
-                      label="Thời gian thanh toán"
+                      label="Thời gian"
                       dateName="paidAt"
                       timeName="paidTime"
                       dateValue={paidAt}
@@ -140,7 +147,7 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
                       }}
                       required
                     />
-                    <Field><FieldLabel htmlFor={`${id}-note`}>Ghi chú</FieldLabel><Textarea id={`${id}-note`} name="note" defaultValue={payment?.note} maxLength={500} placeholder={isCollection ? "Ví dụ: Nhận tiền chuyển khoản" : "Ví dụ: Trả một phần khoản vay"} /></Field>
+                    <Field><FieldLabel htmlFor={`${id}-note`}>Ghi chú</FieldLabel><Textarea id={`${id}-note`} name="note" defaultValue={payment?.note} maxLength={500} /></Field>
                   </FieldGroup>
                 </CardContent>
               </Card>

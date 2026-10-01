@@ -10,13 +10,12 @@ import {
 } from "lucide-react"
 
 import { AccountSelectGroups } from "@/components/account-select-groups"
+import { AmountSuggestions, useAmountQuickPick } from "@/components/forms/amount-suggestions"
 import { CurrencyInput } from "@/components/forms/currency-input"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -69,6 +68,8 @@ import type {
   NewDebt,
 } from "../_types/debt"
 
+const NO_HISTORY: number[] = []
+
 const directionOptions = [
   {
     value: "lent",
@@ -115,6 +116,7 @@ export function AddDebtSheet({
   const [recordingMode, setRecordingMode] = React.useState<DebtRecordingMode>(debt?.recordingMode ?? "cash-flow")
   const isOpening = recordingMode === "opening"
   const [hasInterest, setHasInterest] = React.useState(debt?.hasInterest ?? false)
+  const amountPick = useAmountQuickPick(debt?.amount ?? null, NO_HISTORY)
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   const [wasOpen, setWasOpen] = React.useState(open)
 
@@ -127,6 +129,7 @@ export function AddDebtSheet({
       setDirection(debt?.direction ?? "lent")
       setRecordingMode(debt?.recordingMode ?? "cash-flow")
       setHasInterest(debt?.hasInterest ?? false)
+      amountPick.reset(debt?.amount ?? null)
     }
   }
   const [pending, setPending] = React.useState(false)
@@ -134,10 +137,6 @@ export function AddDebtSheet({
   const today = React.useMemo(() => todayDate(), [])
   const accountLabel =
     direction === "lent" ? "Nguồn tiền" : "Tài khoản nhận tiền"
-  const accountDescription =
-    direction === "lent"
-      ? "Khoản cho vay sẽ được lấy ra từ tài khoản này."
-      : "Khoản tiền đi vay sẽ được nhận vào tài khoản này."
   const activeAccounts = accounts.filter((account) => account.status === "active" || account.id === debt?.accountId)
   const isDisabled = contacts.length === 0
 
@@ -176,7 +175,7 @@ export function AddDebtSheet({
         <SheetHeader>
           <SheetTitle>{debt ? "Sửa khoản nợ" : "Thêm khoản nợ"}</SheetTitle>
           <SheetDescription>
-            {debt ? isOpening ? "Thay đổi thông tin khoản nợ có sẵn, không điều chỉnh số dư tiền gốc. Lịch sử thanh toán được giữ lại." : "Thay đổi thông tin và điều khoản. Số dư được điều chỉnh theo khoản nợ mới; lịch sử thanh toán được giữ lại." : "Ghi lại khoản đang cho vay hoặc đi vay và các điều khoản liên quan."}
+            {debt ? "Lịch sử thanh toán được giữ nguyên." : "Ghi lại khoản cho vay hoặc đi vay."}
           </SheetDescription>
         </SheetHeader>
 
@@ -230,82 +229,56 @@ export function AddDebtSheet({
             <FieldGroup>
               <Card>
                 <CardHeader>
-                  <CardTitle id="debt-recording-mode-title">Cách ghi nhận</CardTitle>
-                  <CardDescription id="debt-recording-mode-description">
-                    {isOpening ? "Chỉ ghi nhận nợ, không thay đổi số dư tài khoản và không tạo giao dịch tiền. Các lần thu/trả sau này vẫn cập nhật số dư." : "Đi vay cộng tiền vào tài khoản; cho vay trừ tiền từ tài khoản và tạo giao dịch tương ứng."}
-                    {debt ? " Cách ghi nhận không thể thay đổi sau khi tạo." : ""}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Field>
-                    <Select value={recordingMode} onValueChange={(value) => setRecordingMode(value as DebtRecordingMode)} disabled={pending || Boolean(debt)}>
-                      <SelectTrigger id="debt-recording-mode" aria-labelledby="debt-recording-mode-title" aria-describedby="debt-recording-mode-description" className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectItem value="cash-flow">Phát sinh khoản vay mới</SelectItem>
-                          <SelectItem value="opening">Ghi nhận nợ có sẵn</SelectItem>
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  </Field>
-                  {!isOpening && activeAccounts.length === 0 ? <FieldError>Thêm tài khoản để ghi nhận khoản vay mới, hoặc chọn ghi nhận nợ có sẵn.</FieldError> : null}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Loại giao dịch</CardTitle>
-                  <CardDescription>
-                    {debt?.payments?.length ? "Khoản đã có thanh toán không thể đổi chiều vay." : "Chọn chiều tiền phù hợp với khoản nợ."}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Field>
-                    <FieldLabel className="sr-only">
-                      Loại khoản nợ
-                    </FieldLabel>
-                    <ToggleGroup
-                      disabled={pending || Boolean(debt?.payments?.length)}
-                      type="single"
-                      variant="outline"
-                      value={direction}
-                      onValueChange={(value) => {
-                        if (value) setDirection(value as DebtDirection)
-                      }}
-                      className="grid w-full grid-cols-2"
-                      aria-label="Chọn loại khoản nợ"
-                    >
-                      {directionOptions.map(
-                        ({ value, label, icon: Icon }) => (
-                          <ToggleGroupItem
-                            key={value}
-                            value={value}
-                            className="w-full"
-                          >
-                            <Icon />
-                            {label}
-                          </ToggleGroupItem>
-                        ),
-                      )}
-                    </ToggleGroup>
-                  </Field>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Thông tin khoản nợ</CardTitle>
-                  <CardDescription>
-                    {isOpening ? "Chọn người liên quan và nhập số nợ còn lại tại ngày bắt đầu theo dõi." : "Chọn người liên quan, tài khoản và nhập số tiền."}
-                  </CardDescription>
+                  <CardTitle>Khoản nợ</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <FieldGroup>
                     <Field>
-                      <FieldLabel htmlFor="debt-contact">
-                        Người liên quan
-                      </FieldLabel>
+                      <FieldLabel className="sr-only">Loại khoản nợ</FieldLabel>
+                      <ToggleGroup
+                        disabled={pending || Boolean(debt?.payments?.length)}
+                        type="single"
+                        variant="outline"
+                        value={direction}
+                        onValueChange={(value) => {
+                          if (value) setDirection(value as DebtDirection)
+                        }}
+                        className="grid w-full grid-cols-2"
+                        aria-label="Chọn loại khoản nợ"
+                      >
+                        {directionOptions.map(({ value, label, icon: Icon }) => (
+                          <ToggleGroupItem key={value} value={value} className="w-full">
+                            <Icon />
+                            {label}
+                          </ToggleGroupItem>
+                        ))}
+                      </ToggleGroup>
+                      {debt?.payments?.length ? (
+                        <FieldDescription>Đã có thanh toán nên không thể đổi chiều vay.</FieldDescription>
+                      ) : null}
+                    </Field>
+
+                    <Field>
+                      <FieldLabel htmlFor="debt-recording-mode">Cách ghi nhận</FieldLabel>
+                      <Select value={recordingMode} onValueChange={(value) => setRecordingMode(value as DebtRecordingMode)} disabled={pending || Boolean(debt)}>
+                        <SelectTrigger id="debt-recording-mode" className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value="cash-flow">Phát sinh khoản vay mới</SelectItem>
+                            <SelectItem value="opening">Ghi nhận nợ có sẵn</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <FieldDescription>
+                        {isOpening ? "Không thay đổi số dư tài khoản." : "Cập nhật số dư tài khoản đã chọn."}
+                      </FieldDescription>
+                      {!isOpening && activeAccounts.length === 0 ? <FieldError>Thêm tài khoản trước, hoặc chọn ghi nhận nợ có sẵn.</FieldError> : null}
+                    </Field>
+
+                    <Field>
+                      <FieldLabel htmlFor="debt-contact">Người liên quan</FieldLabel>
                       <Select defaultValue={debt?.contactId} name="contactId" required disabled={pending}>
                         <SelectTrigger id="debt-contact" className="w-full">
                           <SelectValue placeholder="Chọn từ danh bạ" />
@@ -328,15 +301,19 @@ export function AddDebtSheet({
                       <CurrencyInput
                         id="debt-amount"
                         name="amount"
-                        defaultValue={debt?.amount}
+                        value={amountPick.amount}
+                        onValueChange={amountPick.onType}
                         required
+                      />
+                      <AmountSuggestions
+                        suggestions={amountPick.suggestions}
+                        value={amountPick.amount}
+                        onSelect={amountPick.onPick}
                       />
                     </Field>
 
                     {!isOpening && <Field>
-                      <FieldLabel htmlFor="debt-account">
-                        {accountLabel}
-                      </FieldLabel>
+                      <FieldLabel htmlFor="debt-account">{accountLabel}</FieldLabel>
                       <Select defaultValue={debt?.accountId} name="accountId" required disabled={pending}>
                         <SelectTrigger id="debt-account" className="w-full">
                           <SelectValue placeholder="Chọn tài khoản" />
@@ -345,7 +322,6 @@ export function AddDebtSheet({
                           <AccountSelectGroups accounts={activeAccounts} />
                         </SelectContent>
                       </Select>
-                      <FieldDescription>{accountDescription}</FieldDescription>
                     </Field>}
 
                     <Field>
@@ -355,7 +331,6 @@ export function AddDebtSheet({
                         name="note"
                         defaultValue={debt?.note}
                         required
-                        placeholder="Ví dụ: Cho mượn đóng học phí"
                       />
                     </Field>
                   </FieldGroup>
@@ -365,9 +340,6 @@ export function AddDebtSheet({
               <Card>
                 <CardHeader>
                   <CardTitle>Điều khoản</CardTitle>
-                  <CardDescription>
-                    Thiết lập thời hạn và lãi suất nếu có.
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <FieldGroup>
@@ -389,7 +361,7 @@ export function AddDebtSheet({
                       </Field>
                       <Field className="min-w-0">
                         <FieldLabel htmlFor="debt-due-at">
-                          Hẹn trả <Badge variant="outline">Tùy chọn</Badge>
+                          Hẹn trả
                         </FieldLabel>
                         <div className="flex min-w-0">
                           <Input
@@ -408,9 +380,9 @@ export function AddDebtSheet({
                         <FieldLabel htmlFor="debt-has-interest">
                           Có tính lãi
                         </FieldLabel>
-                        <FieldDescription>
-                          {isOpening ? "Lãi được tính từ ngày bắt đầu theo dõi trên tiền gốc còn nợ. Chưa hỗ trợ nhập riêng lãi còn nợ trước ngày này; không nhập các lần đã trả trước đó thành thanh toán mới." : "Bật để lưu mức lãi suất của khoản nợ."}
-                        </FieldDescription>
+                        {isOpening ? (
+                          <FieldDescription>Tính từ ngày bắt đầu theo dõi.</FieldDescription>
+                        ) : null}
                       </FieldContent>
                       <Switch
                         disabled={pending}
