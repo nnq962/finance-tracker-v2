@@ -1,4 +1,7 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Finance Tracker
+
+Personal finance app (Next.js 16, PostgreSQL, Firebase Auth/FCM), self-hosted
+at `finance.nnqlab.dev` — see [`deploy/README.md`](deploy/README.md).
 
 ## Getting Started
 
@@ -35,53 +38,30 @@ FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE K
 Enable Google as a sign-in provider and add `localhost` to Firebase
 Authentication's authorized domains before testing locally.
 
-First, run the development server:
+Then run the development server and open [http://localhost:3000](http://localhost:3000):
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Production
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The app runs on a home server with Docker Compose behind a Cloudflare Tunnel;
+setup, deploys, backups and the DNS cutover are in
+[`deploy/README.md`](deploy/README.md).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`next.config.ts` rewrites Firebase's OAuth helper at `/__/auth/*` to the
+project's `firebaseapp.com` domain, so production can set
+`NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=finance.nnqlab.dev` and keep its own domain
+visible to Google Sign-In. That requires:
 
-## Learn More
+1. `finance.nnqlab.dev` in Firebase Authentication's authorized domains.
+2. `https://finance.nnqlab.dev/__/auth/handler` in the authorized redirect URIs
+   of the Google OAuth web client for this Firebase project.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The app is served from `finance.nnqlab.dev`. The rewrite in `vercel.json`
-proxies Firebase's OAuth helper at `/__/auth/*` to the project's Firebase
-Hosting domain while keeping `finance.nnqlab.dev` visible to Google Sign-In.
-Before setting the production auth domain, configure all of the following:
-
-1. Add `finance.nnqlab.dev` to Firebase Authentication's authorized domains.
-2. Add `https://finance.nnqlab.dev/__/auth/handler` to the authorized redirect
-   URIs of the Google OAuth web client for this Firebase project.
-3. Set `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=finance.nnqlab.dev` in Vercel's
-   **Production** environment and redeploy. Next.js embeds `NEXT_PUBLIC_*`
-   values at build time, so updating the variable alone does not change an
-   existing deployment.
-4. Verify that `https://finance.nnqlab.dev/__/auth/handler` loads through the
-   rewrite, then test Google Sign-In on the deployed app.
-
-Keep the Firebase-provided `<project-id>.firebaseapp.com` auth domain in
-`.env.local` for local development. Changing only `authDomain` without the
-rewrite and OAuth redirect URI will break Google Sign-In.
+Next.js embeds `NEXT_PUBLIC_*` values at build time, so changing them needs a
+rebuild (`deploy/scripts/deploy.sh`). Keep the Firebase-provided
+`<project-id>.firebaseapp.com` auth domain in `.env.local` for local development.
 
 ## Debt tracking
 

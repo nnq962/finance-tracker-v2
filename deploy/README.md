@@ -76,7 +76,7 @@ Có hai cách, chọn một:
 **B. Dùng tunnel `cloudflared` đã có sẵn trên máy**: thêm public hostname
 `finance.nnqlab.dev` → `http://127.0.0.1:3010`, để trống `CLOUDFLARE_TUNNEL_TOKEN`.
 
-## Chuyển domain từ Vercel sang server
+## Chuyển domain sang server (đã làm 2026-10-01)
 
 Domain giữ nguyên nên cấu hình Firebase Auth (authorized domain, OAuth redirect)
 không phải đổi.

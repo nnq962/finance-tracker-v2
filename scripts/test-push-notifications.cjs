@@ -205,6 +205,13 @@ async function main() {
     return Array.isArray(content) ? content : [content]
   }
   async function flush() { for (let i = 0; i < 10; i++) await Promise.resolve() }
+  // Pick a time, then press Save: the time is only persisted by the button.
+  function saveReminderTime(time) {
+    const { props } = renderPreferences()[0]
+    props.onSettingsChange({ ...props.settings, dailyReminderTime: time })
+    assert.equal(renderPreferences()[0].props.reminderTimeChanged, true)
+    renderPreferences()[0].props.onReminderTimeSave()
+  }
   renderPreferences()[0].props.onNotificationsEnabledChange(true)
   await flush()
   assert.equal(renderPreferences()[0].props.notificationsEnabled, false)
@@ -226,12 +233,13 @@ async function main() {
   await flush()
   assert.equal(renderPreferences()[0].props.notificationsEnabled, true, 'Failed save must restore the enabled preference')
   saveFailure = false
-  renderPreferences()[0].props.onReminderTimeCommit('21:30')
+  saveReminderTime('21:30')
   await flush()
   assert.equal(renderPreferences()[0].props.settings.dailyReminderTime, '21:30')
+  assert.equal(renderPreferences()[0].props.reminderTimeChanged, false)
   assert.equal(renderPreferences()[0].props.settings.timeZone, 'Asia/Ho_Chi_Minh')
   saveFailure = true
-  renderPreferences()[0].props.onReminderTimeCommit('22:00')
+  saveReminderTime('22:00')
   await flush()
   assert.equal(renderPreferences()[0].props.settings.dailyReminderTime, '21:30', 'Failed time save must roll back')
   saveFailure = false
