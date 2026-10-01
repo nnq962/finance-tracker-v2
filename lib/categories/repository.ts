@@ -46,6 +46,29 @@ function getItemsCollection(userId: string) {
   return getUserReference(userId).collection("categoryItems")
 }
 
+/**
+ * Transactions keep a snapshot of their category and group names for
+ * display. Refresh them after every save; it is idempotent, so retrying after
+ * a failed refresh repairs names left stale.
+ */
+async function syncCategoryNameInTransactions(
+  userId: string,
+  kind: "category" | "categoryGroup",
+  id: string,
+  name: string,
+) {
+  const snapshot = await getUserReference(userId)
+    .collection("transactions")
+    .where(`${kind}Id`, "==", id)
+    .get()
+  const writer = getFirebaseAdminFirestore().bulkWriter()
+  const writes = snapshot.docs
+    .filter((document) => document.get(`${kind}Name`) !== name)
+    .map((document) => writer.update(document.ref, { [`${kind}Name`]: name }))
+
+  await Promise.all([...writes, writer.close()])
+}
+
 function compareByOrderThenName<T extends { id: string; name: string; order: number }>(
   left: T,
   right: T,
@@ -246,6 +269,7 @@ export async function updateCategoryGroup(
     ...values,
     updatedAt: FieldValue.serverTimestamp(),
   })
+  await syncCategoryNameInTransactions(userId, "categoryGroup", groupId, values.name)
 }
 
 export async function updateCategoryGroupName(
@@ -261,6 +285,7 @@ export async function updateCategoryGroupName(
   }
 
   await reference.update({ name, updatedAt: FieldValue.serverTimestamp() })
+  await syncCategoryNameInTransactions(userId, "categoryGroup", groupId, name)
 }
 
 export async function archiveCategoryGroup(userId: string, groupId: string) {
@@ -374,6 +399,7 @@ export async function updateCategoryItem(
       updatedAt: FieldValue.serverTimestamp(),
     })
   })
+  await syncCategoryNameInTransactions(userId, "category", itemId, values.name)
 }
 
 export async function archiveCategoryItem(userId: string, itemId: string) {

@@ -68,6 +68,25 @@ async function run() {
     assert.equal((await emptyRoot.collection('categoryGroups').doc('food').get()).exists, true)
     assert.equal((await emptyRoot.collection('categoryItems').doc('breakfast').get()).exists, true)
 
+    // Renaming a category or group refreshes the names on its transactions,
+    // leaving transactions of other categories untouched.
+    await root.collection('transactions').doc('meal').set({
+      kind: 'expense', amount: 1000, categoryId: 'breakfast', categoryName: 'Mục đã sửa',
+      categoryGroupId: 'food', categoryGroupName: 'Nhóm đã sửa',
+    })
+    await root.collection('transactions').doc('other').set({
+      kind: 'expense', amount: 1000, categoryId: 'lunch', categoryName: 'Trưa',
+      categoryGroupId: 'drinks', categoryGroupName: 'Đồ uống',
+    })
+    await categories.updateCategoryItem(userId, 'breakfast', { name: 'Bữa sáng', iconName: 'coffee' })
+    await categories.updateCategoryGroupName(userId, 'food', 'Ăn uống')
+    const meal = await root.collection('transactions').doc('meal').get()
+    assert.equal(meal.get('categoryName'), 'Bữa sáng')
+    assert.equal(meal.get('categoryGroupName'), 'Ăn uống')
+    const other = await root.collection('transactions').doc('other').get()
+    assert.equal(other.get('categoryName'), 'Trưa')
+    assert.equal(other.get('categoryGroupName'), 'Đồ uống')
+
     for (let index = 0; index < 3; index++) {
       const groupId = `race_${index}`
       await root.collection('categoryGroups').doc(groupId).set({

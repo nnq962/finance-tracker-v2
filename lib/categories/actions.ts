@@ -44,8 +44,9 @@ function failure(error: unknown): { success: false; error: string } {
 
 function revalidateCategoryData(userId: string) {
   updateTag(categoryGroupsCacheTag(userId))
-  revalidatePath("/accounts")
+  revalidatePath("/budget")
   revalidatePath("/transactions")
+  revalidatePath("/settings")
 }
 
 export async function createCategoryGroupAction(

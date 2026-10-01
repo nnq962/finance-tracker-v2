@@ -98,7 +98,7 @@ export default function SettingsLoading() {
       <div className="grid items-start gap-6 md:grid-cols-[14rem_minmax(0,1fr)]" aria-hidden="true">
         <Card size="sm" className="sticky top-20 hidden md:flex">
           <CardContent className="space-y-1">
-            {[0, 1, 2].map((item) => (
+            {[0, 1, 2, 3].map((item) => (
               <div key={item} className="flex h-8 items-center gap-2">
                 <Skeleton className="size-4 shrink-0 rounded-full" />
                 <Skeleton className="h-4 w-24" />
@@ -109,6 +109,9 @@ export default function SettingsLoading() {
 
         <div className="min-w-0 space-y-6 md:space-y-0">
           <AccountSettingsSkeleton />
+          <div className="md:hidden">
+            <AppearanceSettingsSkeleton />
+          </div>
           <div className="md:hidden">
             <AppearanceSettingsSkeleton />
           </div>
