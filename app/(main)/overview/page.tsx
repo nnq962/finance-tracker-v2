@@ -1,5 +1,5 @@
 import { getAccounts } from "@/lib/accounts/repository"
-import { requireSession } from "@/lib/auth/session"
+import { loadWithSession } from "@/lib/auth/session"
 import { getCategoryGroups } from "@/lib/categories/repository"
 import { todayDate } from "@/lib/debts/calculations"
 import { getContacts, getDebtSummaries } from "@/lib/debts/repository"
@@ -32,20 +32,23 @@ function getOverviewTransactionRange(today: string) {
 }
 
 export default async function OverviewPage() {
-  const user = await requireSession()
   const today = todayDate()
   const transactionRange = getOverviewTransactionRange(today)
-  const [accounts, debts, contacts, transactions, categoryGroups] = await Promise.all([
-    getAccounts(user.uid),
-    getDebtSummaries(user.uid),
-    getContacts(user.uid),
-    getTransactionsInRange(
-      user.uid,
-      transactionRange.start,
-      transactionRange.end,
-    ),
-    getCategoryGroups(user.uid),
-  ])
+  const {
+    data: [accounts, debts, contacts, transactions, categoryGroups],
+  } = await loadWithSession((user) =>
+    Promise.all([
+      getAccounts(user.uid),
+      getDebtSummaries(user.uid),
+      getContacts(user.uid),
+      getTransactionsInRange(
+        user.uid,
+        transactionRange.start,
+        transactionRange.end,
+      ),
+      getCategoryGroups(user.uid),
+    ]),
+  )
   const summary = getOverviewSummary(
     accounts,
     debts,

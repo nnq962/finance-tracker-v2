@@ -1,5 +1,5 @@
 import { getAccounts } from "@/lib/accounts/repository"
-import { requireSession } from "@/lib/auth/session"
+import { loadWithSession } from "@/lib/auth/session"
 import { getCategoryGroups } from "@/lib/categories/repository"
 import { getTransactionsInRange } from "@/lib/transactions/repository"
 
@@ -15,18 +15,21 @@ export default async function TransactionsPage({
 }: {
   searchParams: Promise<{ month?: string }>
 }) {
-  const user = await requireSession()
   const todayDateKey = getTransactionDateKey(new Date())
   const selectedMonth = getTransactionMonthKey(
     (await searchParams).month,
     todayDateKey,
   )
   const range = getTransactionMonthRange(selectedMonth, 1)
-  const [transactions, accounts, categoryGroups] = await Promise.all([
-    getTransactionsInRange(user.uid, range.start, range.end),
-    getAccounts(user.uid),
-    getCategoryGroups(user.uid),
-  ])
+  const {
+    data: [transactions, accounts, categoryGroups],
+  } = await loadWithSession((user) =>
+    Promise.all([
+      getTransactionsInRange(user.uid, range.start, range.end),
+      getAccounts(user.uid),
+      getCategoryGroups(user.uid),
+    ]),
+  )
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 pb-12">

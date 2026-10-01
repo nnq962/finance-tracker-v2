@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 
-import { requireSession } from "@/lib/auth/session"
+import { loadWithSession } from "@/lib/auth/session"
 import { getNotificationState } from "@/lib/notifications/repository"
 import { getPushContext } from "@/lib/notifications/context"
 
@@ -11,9 +11,10 @@ export const metadata: Metadata = {
 }
 
 export default async function SettingsPage() {
-  const user = await requireSession()
-  const context = await getPushContext().catch(() => undefined)
-  const notifications = await getNotificationState(user.uid, context)
+  const { user, data: notifications } = await loadWithSession(async (user) => {
+    const context = await getPushContext().catch(() => undefined)
+    return getNotificationState(user.uid, context)
+  })
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8">

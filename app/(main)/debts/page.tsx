@@ -1,5 +1,5 @@
 import { getAccounts } from "@/lib/accounts/repository"
-import { requireSession } from "@/lib/auth/session"
+import { loadWithSession } from "@/lib/auth/session"
 
 import { DebtsDashboard } from "./_components/debts-dashboard"
 import {
@@ -10,18 +10,27 @@ import {
 
 export default async function DebtsPage({ searchParams }: { searchParams: Promise<{ debt?: string }> }) {
   const { debt } = await searchParams
-  const user = await requireSession()
-  const [accounts, contacts, debtSummaries] = await Promise.all([
-    getAccounts(user.uid),
-    getContacts(user.uid),
-    getDebtSummaries(user.uid),
-  ])
+  const {
+    data: [accounts, contacts, debtSummaries, requestedPayments],
+    user,
+  } = await loadWithSession((user) =>
+    Promise.all([
+      getAccounts(user.uid),
+      getContacts(user.uid),
+      getDebtSummaries(user.uid),
+      // With a debt in the URL its payments load alongside the summaries
+      // instead of after them; the result is discarded if the id is unknown.
+      debt ? getDebtPayments(user.uid, debt).catch(() => null) : null,
+    ]),
+  )
   const selectedDebtId = debtSummaries.some((item) => item.id === debt)
     ? debt
     : debtSummaries[0]?.id
-  const selectedPayments = selectedDebtId
-    ? await getDebtPayments(user.uid, selectedDebtId)
-    : []
+  const selectedPayments = !selectedDebtId
+    ? []
+    : selectedDebtId === debt && requestedPayments
+      ? requestedPayments
+      : await getDebtPayments(user.uid, selectedDebtId)
   const debts = debtSummaries.map((item) =>
     item.id === selectedDebtId
       ? { ...item, payments: selectedPayments }
