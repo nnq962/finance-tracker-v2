@@ -46,7 +46,15 @@ echo "==> Migrating"
 # Production never rewrites db/schema.sql in the checkout.
 "${compose[@]}" run --rm -e DBMATE_NO_DUMP_SCHEMA=true migrate up
 
+# Compose keeps a running container even when its image tag now points to a
+# new build, so replace web explicitly whenever the image changed.
+running="$(docker inspect --format '{{.Image}}' "$("${compose[@]}" ps -q web)" 2>/dev/null || true)"
+built="$(docker image inspect --format '{{.Id}}' finance-web)"
+recreate=()
+[[ "$running" == "$built" ]] || recreate=(--force-recreate)
+
 echo "==> Starting ${services[*]}"
+"${compose[@]}" up -d --wait --no-deps "${recreate[@]}" web
 "${compose[@]}" up -d --wait --remove-orphans "${services[@]}"
 docker image prune -f >/dev/null
 
