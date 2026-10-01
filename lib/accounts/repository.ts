@@ -1,114 +1,15 @@
 import "server-only"
 
-import { FieldValue, Timestamp } from "firebase-admin/firestore"
-
 import type {
   Account,
   AccountFormValues,
+  AccountStatus,
+  AccountType,
 } from "@/lib/accounts/types"
 import { AccountValidationError } from "@/lib/accounts/validation"
-import { getFirebaseAdminFirestore } from "@/lib/firebase/admin"
+import { lockAccounts, setBalance, shiftBalance } from "@/lib/db/accounts"
+import { getDb } from "@/lib/db/client"
 import { getInstitution } from "@/lib/institutions"
-
-type AccountDocument = AccountFormValues & {
-  openingBalance?: number
-  status: "active" | "archived"
-  createdAt: Timestamp
-  updatedAt: Timestamp
-}
-
-const MAX_MONEY = 999_999_999_999_999
-const MAX_DELETION_WRITES = 450
-
-function getUserReference(userId: string) {
-  return getFirebaseAdminFirestore().collection("users").doc(userId)
-}
-
-function getAccountsCollection(userId: string) {
-  return getUserReference(userId).collection("accounts")
-}
-
-function addTransactionImpact(
-  impacts: Map<string, number>,
-  accountId: unknown,
-  delta: number,
-) {
-  if (typeof accountId !== "string" || !Number.isSafeInteger(delta)) return
-  impacts.set(accountId, (impacts.get(accountId) ?? 0) + delta)
-}
-
-async function backfillOpeningBalances(
-  userId: string,
-  documents: FirebaseFirestore.QueryDocumentSnapshot[],
-) {
-  const missingDocuments = documents.filter((document) =>
-    !Number.isSafeInteger(document.get("openingBalance")),
-  )
-
-  if (missingDocuments.length === 0) return new Map<string, number>()
-
-  const firestore = getFirebaseAdminFirestore()
-  const transactionSnapshot = await firestore
-    .collection("users")
-    .doc(userId)
-    .collection("transactions")
-    .get()
-  const transactionImpacts = new Map<string, number>()
-
-  transactionSnapshot.docs.forEach((document) => {
-    const kind = document.get("kind")
-    const amount = document.get("amount")
-    const fee = document.get("fee") ?? 0
-
-    if (!Number.isSafeInteger(amount) || !Number.isSafeInteger(fee)) return
-
-    if (kind === "expense") {
-      addTransactionImpact(
-        transactionImpacts,
-        document.get("accountId"),
-        -amount,
-      )
-    } else if (kind === "income") {
-      addTransactionImpact(
-        transactionImpacts,
-        document.get("accountId"),
-        amount,
-      )
-    } else if (kind === "transfer") {
-      addTransactionImpact(
-        transactionImpacts,
-        document.get("fromAccountId"),
-        -(amount + fee),
-      )
-      addTransactionImpact(
-        transactionImpacts,
-        document.get("toAccountId"),
-        amount,
-      )
-    }
-  })
-
-  const openingBalances = new Map<string, number>()
-  const updates: Promise<FirebaseFirestore.WriteResult>[] = []
-
-  missingDocuments.forEach((document) => {
-    const currentBalance = document.get("balance")
-    const inferredOpeningBalance =
-      currentBalance - (transactionImpacts.get(document.id) ?? 0)
-    const openingBalance =
-      Number.isSafeInteger(inferredOpeningBalance) &&
-      inferredOpeningBalance >= 0 &&
-      inferredOpeningBalance <= 999_999_999_999_999
-        ? inferredOpeningBalance
-        : currentBalance
-
-    openingBalances.set(document.id, openingBalance)
-    updates.push(document.ref.update({ openingBalance }))
-  })
-
-  await Promise.all(updates)
-  return openingBalances
-}
 
 function getLogoFallback(name: string, institutionName?: string) {
   return (institutionName ?? name)
@@ -121,38 +22,35 @@ function getLogoFallback(name: string, institutionName?: string) {
 }
 
 export async function getAccounts(userId: string): Promise<Account[]> {
-  const snapshot = await getAccountsCollection(userId)
-    .orderBy("createdAt", "asc")
-    .get()
-  const backfilledOpeningBalances = await backfillOpeningBalances(
-    userId,
-    snapshot.docs,
-  )
+  const rows = await getDb()
+    .selectFrom("accounts")
+    .selectAll()
+    .where("userId", "=", userId)
+    .orderBy("createdAt")
+    .orderBy("id")
+    .execute()
 
-  return snapshot.docs.map((document) => {
-    const data = document.data() as AccountDocument
+  return rows.map((row) => {
+    const type = row.type as AccountType
     const institution =
-      data.type !== "cash" && data.institutionId
-        ? getInstitution(data.type, data.institutionId)
+      type !== "cash" && row.institutionId
+        ? getInstitution(type, row.institutionId)
         : undefined
     const institutionName = institution?.shortName ?? institution?.name
 
     return {
-      id: document.id,
-      name: data.name,
-      type: data.type,
-      openingBalance:
-        data.openingBalance ??
-        backfilledOpeningBalances.get(document.id) ??
-        data.balance,
-      balance: data.balance,
-      institutionId: data.institutionId,
+      id: row.id,
+      name: row.name,
+      type,
+      openingBalance: row.openingBalance,
+      balance: row.balance,
+      institutionId: row.institutionId ?? undefined,
       institutionName,
-      note: data.note,
+      note: row.note ?? undefined,
       logoUrl: institution?.logoPath,
-      logoFallback: getLogoFallback(data.name, institutionName),
-      status: data.status,
-      updatedAt: data.updatedAt.toDate().toISOString(),
+      logoFallback: getLogoFallback(row.name, institutionName),
+      status: row.status as AccountStatus,
+      updatedAt: row.updatedAt.toISOString(),
     }
   })
 }
@@ -161,22 +59,18 @@ export async function createAccount(
   userId: string,
   values: AccountFormValues,
 ) {
-  const now = FieldValue.serverTimestamp()
-  const document = {
-    name: values.name,
-    type: values.type,
-    openingBalance: values.balance,
-    balance: values.balance,
-    status: "active",
-    createdAt: now,
-    updatedAt: now,
-    ...(values.institutionId
-      ? { institutionId: values.institutionId }
-      : {}),
-    ...(values.note ? { note: values.note } : {}),
-  }
-
-  await getAccountsCollection(userId).add(document)
+  await getDb()
+    .insertInto("accounts")
+    .values({
+      userId,
+      name: values.name,
+      type: values.type,
+      institutionId: values.institutionId ?? null,
+      openingBalance: values.balance,
+      balance: values.balance,
+      note: values.note ?? null,
+    })
+    .execute()
 }
 
 export async function updateAccount(
@@ -185,65 +79,33 @@ export async function updateAccount(
   values: AccountFormValues,
   expectedBalance: number,
 ) {
-  const reference = getAccountsCollection(userId).doc(accountId)
-  await getFirebaseAdminFirestore().runTransaction(async (transaction) => {
-    const account = await transaction.get(reference)
-    if (!account.exists || account.get("status") !== "active") {
+  await getDb().transaction().execute(async (trx) => {
+    const account = (await lockAccounts(trx, userId, [accountId])).get(accountId)
+
+    if (!account || account.status !== "active") {
       throw new AccountValidationError("Tài khoản đã ngừng sử dụng. Hãy kích hoạt lại trước khi chỉnh sửa.")
     }
+
     // The balance is overwritten directly, without a transaction record, and
     // only when the user changed it; reject if it moved since the form opened.
     const balanceChanged = values.balance !== expectedBalance
-    if (balanceChanged && account.get("balance") !== expectedBalance) {
+
+    if (balanceChanged && account.balance !== expectedBalance) {
       throw new AccountValidationError("Số dư tài khoản vừa thay đổi. Vui lòng tải lại trang rồi thử lại.")
     }
-    transaction.update(reference, {
-      ...(balanceChanged ? { balance: values.balance } : {}),
-      name: values.name,
-      type: values.type,
-      institutionId: values.institutionId ?? FieldValue.delete(),
-      note: values.note ?? FieldValue.delete(),
-      excludeFromReports: FieldValue.delete(),
-      updatedAt: FieldValue.serverTimestamp(),
-    })
+
+    await trx
+      .updateTable("accounts")
+      .set({
+        ...(balanceChanged ? { balance: values.balance } : {}),
+        name: values.name,
+        type: values.type,
+        institutionId: values.institutionId ?? null,
+        note: values.note ?? null,
+      })
+      .where("id", "=", accountId)
+      .execute()
   })
-
-  // Runs on every save, not only renames, so retrying after a failed refresh
-  // repairs names left stale.
-  await syncAccountNameInTransactions(userId, accountId, values.name)
-}
-
-/**
- * Transactions keep a snapshot of their account names for display. Refresh
- * them after a rename; it runs after the account commit, so transactions
- * written in the meantime already carry the new name.
- */
-async function syncAccountNameInTransactions(
-  userId: string,
-  accountId: string,
-  name: string,
-) {
-  const snapshot = await getUserReference(userId)
-    .collection("transactions")
-    .where("accountIds", "array-contains", accountId)
-    .get()
-  const writer = getFirebaseAdminFirestore().bulkWriter()
-  const writes: Promise<unknown>[] = []
-
-  for (const document of snapshot.docs) {
-    const update: Record<string, string> = {}
-    for (const field of ["account", "fromAccount", "toAccount"]) {
-      if (
-        document.get(`${field}Id`) === accountId &&
-        document.get(`${field}Name`) !== name
-      ) {
-        update[`${field}Name`] = name
-      }
-    }
-    if (Object.keys(update).length) writes.push(writer.update(document.ref, update))
-  }
-
-  await Promise.all([...writes, writer.close()])
 }
 
 export async function setAccountArchived(
@@ -251,128 +113,111 @@ export async function setAccountArchived(
   accountId: string,
   archived: boolean,
 ) {
-  await getAccountsCollection(userId)
-    .doc(accountId)
-    .update({
-      status: archived ? "archived" : "active",
-      updatedAt: FieldValue.serverTimestamp(),
-    })
+  await getDb()
+    .updateTable("accounts")
+    .set({ status: archived ? "archived" : "active" })
+    .where("id", "=", accountId)
+    .where("userId", "=", userId)
+    .execute()
 }
 
+/**
+ * Deletes the account with every transaction, loan and payment that touches
+ * it, and reverses their effect on the user's other accounts, atomically.
+ */
 export async function deleteAccount(userId: string, accountId: string) {
-  const firestore = getFirebaseAdminFirestore()
-  const userReference = getUserReference(userId)
-  const accountReference = getAccountsCollection(userId).doc(accountId)
+  await getDb().transaction().execute(async (trx) => {
+    const account = (await lockAccounts(trx, userId, [accountId])).get(accountId)
+    if (!account) return
 
-  await firestore.runTransaction(async (transaction) => {
-    const accountSnapshot = await transaction.get(accountReference)
-    if (!accountSnapshot.exists) return
+    const transactions = await trx
+      .selectFrom("transactions")
+      .select(["id", "kind", "amount", "fee", "accountId", "fromAccountId", "toAccountId"])
+      .where("userId", "=", userId)
+      // A loan's own cash movement goes with the loan below.
+      .where("debtId", "is", null)
+      .where((eb) => eb.or([
+        eb("accountId", "=", accountId),
+        eb("fromAccountId", "=", accountId),
+        eb("toAccountId", "=", accountId),
+      ]))
+      .execute()
 
-    const [transactionSnapshot, debtSnapshot] = await Promise.all([
-      transaction.get(
-        userReference
-          .collection("transactions")
-          .where("accountIds", "array-contains", accountId)
-      ),
-      transaction.get(
-        userReference
-          .collection("debts")
-          .where("accountIds", "array-contains", accountId)
-      ),
-    ])
-
-    const transactionDocuments = new Map(
-      transactionSnapshot.docs.map((document) => [document.ref.path, document]),
-    )
-    const paymentDocuments: FirebaseFirestore.QueryDocumentSnapshot[] = []
-
-    for (const debt of debtSnapshot.docs) {
-      const [payments, ledgers] = await Promise.all([
-        transaction.get(debt.ref.collection("payments")),
-        transaction.get(
-          userReference.collection("transactions").where("debtId", "==", debt.id),
+    const debts = await trx
+      .selectFrom("debts")
+      .select(["id", "direction", "recordingMode", "accountId", "amount"])
+      .where("userId", "=", userId)
+      .where((eb) => eb.or([
+        eb("accountId", "=", accountId),
+        eb.exists(
+          eb.selectFrom("debtPayments")
+            .select("debtPayments.id")
+            .whereRef("debtPayments.debtId", "=", "debts.id")
+            .where("debtPayments.accountId", "=", accountId),
         ),
-      ])
-      paymentDocuments.push(...payments.docs)
-      for (const ledger of ledgers.docs) {
-        transactionDocuments.set(ledger.ref.path, ledger)
-      }
-    }
+      ]))
+      .forUpdate()
+      .execute()
 
-    const deltas = new Map<string, number>()
-    const addDelta = (id: unknown, value: number) => {
-      if (typeof id !== "string" || !Number.isSafeInteger(value)) {
-        throw new AccountValidationError("Dữ liệu liên kết với tài khoản không hợp lệ.")
-      }
-      if (id !== accountId) deltas.set(id, (deltas.get(id) ?? 0) + value)
-    }
-
-    for (const document of transactionDocuments.values()) {
-      if (document.get("source") === "debt") continue
-      const kind = document.get("kind")
-      const amount = document.get("amount")
-      const fee = document.get("fee") ?? 0
-      if (!Number.isSafeInteger(amount) || amount < 0 || !Number.isSafeInteger(fee) || fee < 0) {
-        throw new AccountValidationError("Giao dịch liên quan có số tiền không hợp lệ.")
-      }
-      if (kind === "transfer") {
-        addDelta(document.get("fromAccountId"), amount + fee)
-        addDelta(document.get("toAccountId"), -amount)
-      } else if (kind === "income" || kind === "expense") {
-        addDelta(document.get("accountId"), kind === "income" ? -amount : amount)
-      } else {
-        throw new AccountValidationError("Giao dịch liên quan có loại không hợp lệ.")
-      }
-    }
-
-    for (const debt of debtSnapshot.docs) {
-      const amount = debt.get("amount")
-      const direction = debt.get("direction")
-      if (!Number.isSafeInteger(amount) || amount < 0 || (direction !== "borrowed" && direction !== "lent")) {
-        throw new AccountValidationError("Khoản nợ liên quan không hợp lệ.")
-      }
-      const principalSign = direction === "borrowed" ? 1 : -1
-      if (debt.get("recordingMode") !== "opening") addDelta(debt.get("accountId"), -principalSign * amount)
-      for (const payment of paymentDocuments.filter((item) => item.ref.parent.parent?.id === debt.id)) {
-        const paymentAmount = payment.get("amount")
-        if (!Number.isSafeInteger(paymentAmount) || paymentAmount < 0) {
-          throw new AccountValidationError("Lịch sử thanh toán không hợp lệ.")
-        }
-        addDelta(payment.get("accountId"), principalSign * paymentAmount)
-      }
-    }
-
-    const relatedAccounts = deltas.size
-      ? await transaction.getAll(
-          ...[...deltas.keys()].map((id) => getAccountsCollection(userId).doc(id)),
-        )
+    const payments = debts.length
+      ? await trx
+        .selectFrom("debtPayments")
+        .select(["debtId", "accountId", "amount"])
+        .where("debtId", "in", debts.map((debt) => debt.id))
+        .execute()
       : []
-    const writeCount = 1 + transactionDocuments.size + debtSnapshot.size +
-      paymentDocuments.length + relatedAccounts.length
-    if (writeCount > MAX_DELETION_WRITES) {
-      throw new AccountValidationError(
-        "Tài khoản có quá nhiều dữ liệu liên quan để xoá trong một lần. Vui lòng liên hệ hỗ trợ.",
-      )
+
+    // Undo each movement on the accounts that are kept.
+    const deltas = new Map<string, number>()
+    const addDelta = (id: string | null, value: number) => {
+      if (id && id !== accountId) deltas.set(id, (deltas.get(id) ?? 0) + value)
     }
 
-    for (const relatedAccount of relatedAccounts) {
-      const balance = relatedAccount.get("balance")
-      const nextBalance = balance + deltas.get(relatedAccount.id)!
-      if (!relatedAccount.exists || !Number.isSafeInteger(balance) ||
-        !Number.isSafeInteger(nextBalance) || nextBalance < 0 || nextBalance > MAX_MONEY) {
+    for (const transaction of transactions) {
+      if (transaction.kind === "transfer") {
+        addDelta(transaction.fromAccountId, transaction.amount + transaction.fee)
+        addDelta(transaction.toAccountId, -transaction.amount)
+      } else {
+        addDelta(transaction.accountId, transaction.kind === "income" ? -transaction.amount : transaction.amount)
+      }
+    }
+
+    for (const debt of debts) {
+      // Borrowing brought money in; lending sent it out. Payments go the other way.
+      const principalSign = debt.direction === "borrowed" ? 1 : -1
+      if (debt.recordingMode !== "opening") addDelta(debt.accountId, -principalSign * debt.amount)
+      for (const payment of payments.filter((item) => item.debtId === debt.id)) {
+        addDelta(payment.accountId, principalSign * payment.amount)
+      }
+    }
+
+    const relatedAccounts = await lockAccounts(trx, userId, deltas.keys())
+
+    for (const [id, delta] of deltas) {
+      const related = relatedAccounts.get(id)
+      const balance = related ? shiftBalance(related.balance, delta) : null
+
+      if (balance === null) {
         throw new AccountValidationError(
           "Không thể xoá vì số dư của tài khoản liên quan sẽ không hợp lệ.",
         )
       }
-      transaction.update(relatedAccount.ref, {
-        balance: nextBalance,
-        updatedAt: FieldValue.serverTimestamp(),
-      })
+      if (delta !== 0) await setBalance(trx, id, balance)
     }
 
-    for (const document of transactionDocuments.values()) transaction.delete(document.ref)
-    for (const document of paymentDocuments) transaction.delete(document.ref)
-    for (const document of debtSnapshot.docs) transaction.delete(document.ref)
-    transaction.delete(accountReference)
+    if (transactions.length) {
+      await trx
+        .deleteFrom("transactions")
+        .where("id", "in", transactions.map((transaction) => transaction.id))
+        .execute()
+    }
+    if (debts.length) {
+      // Cascades to the loans' payments and cash movements.
+      await trx
+        .deleteFrom("debts")
+        .where("id", "in", debts.map((debt) => debt.id))
+        .execute()
+    }
+    await trx.deleteFrom("accounts").where("id", "=", accountId).execute()
   })
 }

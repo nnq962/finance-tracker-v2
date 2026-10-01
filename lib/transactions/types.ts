@@ -40,7 +40,6 @@ export type TransactionFormValues =
 export type Transaction = {
   source?: "debt"
   debtId?: string
-  debtPaymentId?: string
   id: string
   title: string
   description: string

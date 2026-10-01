@@ -1,5 +1,7 @@
 import "server-only"
 
+import { isUuid } from "@/lib/db/ids"
+
 import { categoryColorOptions } from "@/lib/categories/category-colors"
 import type {
   CategoryFormValues,
@@ -97,7 +99,7 @@ export function parseCategoryItemFormValues(
 }
 
 export function assertCategoryId(id: unknown, label = "Hạng mục") {
-  if (typeof id !== "string" || !/^[A-Za-z0-9_-]{1,1500}$/.test(id)) {
+  if (!isUuid(id)) {
     throw new CategoryValidationError(`${label} không hợp lệ.`)
   }
 }

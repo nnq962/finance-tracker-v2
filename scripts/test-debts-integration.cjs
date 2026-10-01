@@ -1,39 +1,30 @@
 /* eslint-disable @typescript-eslint/no-require-imports -- CommonJS harness installs the TypeScript loader before loading server modules. */
-/* Run: DEBT_TEST_LIVE=1 node scripts/test-debts-integration.cjs
- * Uses only a unique test namespace; never writes to a real user's records.
+/* Run: npm run db:up && node scripts/test-debts-integration.cjs
+ * Runs against the finance_test database with isolated users removed afterwards.
  */
 const assert = require('node:assert/strict')
-const fs = require('node:fs')
-const path = require('node:path')
-const Module = require('node:module')
-const ts = require('typescript')
 const { randomUUID } = require('node:crypto')
-if (process.env.DEBT_TEST_LIVE !== '1') throw new Error('Set DEBT_TEST_LIVE=1 to run the isolated Firestore integration check.')
-require('@next/env').loadEnvConfig(process.cwd())
-const originalLoad = Module._load
-Module._load = function(id, parent, main) {
-  if (id === 'server-only') return {}
-  if (id.startsWith('@/')) id = path.join(process.cwd(), id.slice(2))
-  return originalLoad.call(this, id, parent, main)
-}
-require.extensions['.ts'] = (mod, filename) => mod._compile(ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, esModuleInterop: true },
-}).outputText, filename)
+const { sql, createUser, cleanup } = require('./lib/db-harness.cjs')
 const repository = require('../lib/debts/repository.ts')
-const { getFirebaseAdminFirestore } = require('../lib/firebase/admin.ts')
 const { getTransactions, createTransaction, updateTransaction, deleteTransaction } = require('../lib/transactions/repository.ts')
 const { deleteAccount, updateAccount } = require('../lib/accounts/repository.ts')
 const { todayDate, getPaymentMetrics } = require('../lib/debts/calculations.ts')
 const { getDaysUntilDue, getDebtDeadline } = require('../app/(main)/debts/_lib/debt-presentation.ts')
-const { Timestamp } = require('firebase-admin/firestore')
-const firestore = getFirebaseAdminFirestore()
-const uid = `codex_debt_test_${randomUUID()}`
-const otherUid = `codex_debt_test_${randomUUID()}`
-const root = firestore.collection('users').doc(uid)
+let uid
+let otherUid
 let checks = 0
 const equal = (actual, expected) => { assert.deepEqual(actual, expected); checks++ }
 const rejects = async (fn) => { await assert.rejects(fn); checks++ }
-const balance = async (id) => (await root.collection('accounts').doc(id).get()).get('balance')
+// Tests name accounts by letter; acc maps each letter to its uuid.
+const acc = {}
+const addAccount = async (key, amount) => {
+  acc[key] = (await sql(`INSERT INTO accounts (user_id, name, type, opening_balance, balance)
+    VALUES ($1, $2, 'cash', $3, $3) RETURNING id`, [uid, key, amount])).rows[0].id
+}
+const setAccount = (key, column, value) => sql(`UPDATE accounts SET ${column} = $2 WHERE id = $1`, [acc[key], value])
+const balance = async (key) => Number((await sql('SELECT balance FROM accounts WHERE id = $1', [acc[key]])).rows[0].balance)
+const count = async (table, column, value) => Number((await sql(`SELECT count(*) FROM ${table} WHERE ${column} = $1`, [value])).rows[0].count)
+const movementId = async (debtId) => (await getTransactions(uid)).find((item) => item.debtId === debtId).id
 async function run() {
   try {
     const nativeDate = Date
@@ -51,7 +42,9 @@ async function run() {
       if (previousTimezone === undefined) delete process.env.TZ
       else process.env.TZ = previousTimezone
     }
-    for (const id of ['a', 'b']) await root.collection('accounts').doc(id).set({name:id, balance:10000000, openingBalance:10000000, status:'active', type:'cash', createdAt:Timestamp.now(), updatedAt:Timestamp.now()})
+    uid = await createUser('debt_test')
+    otherUid = await createUser('debt_test')
+    for (const id of ['a', 'b']) await addAccount(id, 10000000)
     equal((await repository.getContacts(uid)).length, 0)
     equal((await repository.getDebts(uid)).length, 0)
     const contactOperation = randomUUID()
@@ -59,7 +52,7 @@ async function run() {
     equal((await repository.createContact(uid, {name:'Test contact', relationship:'Test'}, contactOperation)).id, contact.id)
     equal((await repository.getContacts(uid)).length, 1)
     await repository.updateContact(uid, contact.id, {name:'Updated', relationship:''})
-    equal((await repository.getContacts(uid))[0].relationship, '')
+    equal((await repository.getContacts(uid))[0].relationship, undefined)
     await rejects(() => repository.updateContact(otherUid, contact.id, {name:'not owner'}))
     // Opening debts record an existing obligation without replaying its principal.
     for (const direction of ['borrowed', 'lent']) {
@@ -71,12 +64,12 @@ async function run() {
       equal((await repository.createDebt(uid, opening, openingOp)).id, existing.id)
       equal(await balance('a'), 10000000)
       equal((await getTransactions(uid)).length, 0)
-      equal((await root.collection('debts').doc(existing.id).get()).get('accountIds'), [])
-      await rejects(() => repository.changeDebt(uid, existing.id, {...opening, recordingMode:'cash-flow', accountId:'a'}, randomUUID()))
+      equal((await sql('SELECT account_id FROM debts WHERE id = $1', [existing.id])).rows[0].account_id, null)
+      await rejects(() => repository.changeDebt(uid, existing.id, {...opening, recordingMode:'cash-flow', accountId:acc.a}, randomUUID()))
       await repository.changeDebt(uid, existing.id, {...opening, amount:6000000}, randomUUID())
       equal(await balance('a'), 10000000)
       equal((await getTransactions(uid)).length, 0)
-      const pay = {accountId:'a', amount:2000000, paidAt:todayDate(), paidTime:'12:00', note:''}
+      const pay = {accountId:acc.a, amount:2000000, paidAt:todayDate(), paidTime:'12:00', note:''}
       const sign = direction === 'borrowed' ? -1 : 1
       const payOp = randomUUID()
       let changed = await repository.saveDebtPayment(uid, existing.id, undefined, pay, payOp)
@@ -85,7 +78,7 @@ async function run() {
       await repository.saveDebtPayment(uid, existing.id, undefined, pay, payOp)
       equal(await balance('a'), 10000000 + sign * 2000000)
       const payId = changed.payments[0].id
-      changed = await repository.saveDebtPayment(uid, existing.id, payId, {...pay, accountId:'b', amount:1000000}, randomUUID())
+      changed = await repository.saveDebtPayment(uid, existing.id, payId, {...pay, accountId:acc.b, amount:1000000}, randomUUID())
       equal(await balance('a'), 10000000)
       equal(await balance('b'), 10000000 + sign * 1000000)
       await rejects(() => repository.changeDebt(uid, existing.id, {...opening, amount:500000}, randomUUID()))
@@ -105,16 +98,16 @@ async function run() {
       await repository.changeDebt(otherUid, noAccount.id, null, randomUUID())
       equal((await repository.getDebts(otherUid)).length, 0)
       // Deleting a payment account reverses only payments on other accounts.
-      await root.collection('accounts').doc('opening_cascade').set({name:'Cascade', balance:10000000, openingBalance:10000000, status:'active', type:'cash', createdAt:Timestamp.now(), updatedAt:Timestamp.now()})
+      await addAccount('opening_cascade', 10000000)
       const cascade = await repository.createDebt(uid, opening, randomUUID())
-      await repository.saveDebtPayment(uid, cascade.id, undefined, {...pay, accountId:'opening_cascade', amount:1000000}, randomUUID())
-      await repository.saveDebtPayment(uid, cascade.id, undefined, {...pay, accountId:'b', amount:1000000}, randomUUID())
-      await deleteAccount(uid, 'opening_cascade')
+      await repository.saveDebtPayment(uid, cascade.id, undefined, {...pay, accountId:acc.opening_cascade, amount:1000000}, randomUUID())
+      await repository.saveDebtPayment(uid, cascade.id, undefined, {...pay, accountId:acc.b, amount:1000000}, randomUUID())
+      await deleteAccount(uid, acc.opening_cascade)
       equal(await balance('b'), 10000000)
-      equal((await root.collection('debts').doc(cascade.id).get()).exists, false)
+      equal(await count('debts', 'id', cascade.id), 0)
     }
     await rejects(() => repository.createDebt(uid, {recordingMode:'invalid'}, randomUUID()))
-    const values = {contactId:contact.id, accountId:'a', direction:'lent', amount:3000000, paidAmount:0, hasInterest:true, interestRate:1, interestPeriod:'month', recordedAt:'2026-08-01', note:'test debt'}
+    const values = {contactId:contact.id, accountId:acc.a, direction:'lent', amount:3000000, paidAmount:0, hasInterest:true, interestRate:1, interestPeriod:'month', recordedAt:'2026-08-01', note:'test debt'}
     const operation = randomUUID()
     const debt = await repository.createDebt(uid, values, operation)
     equal(await balance('a'), 7000000)
@@ -127,10 +120,10 @@ async function run() {
     equal(await balance('a'), 7000000)
     equal((await repository.getDebts(uid)).length, 1)
     await rejects(() => repository.deleteContact(uid, contact.id))
-    await rejects(() => deleteTransaction(uid, `debt_${debt.id}`))
-    await rejects(() => updateTransaction(uid, `debt_${debt.id}`, {}))
+    await rejects(async () => deleteTransaction(uid, await movementId(debt.id)))
+    await rejects(async () => updateTransaction(uid, await movementId(debt.id), {}))
     const paymentOperation = randomUUID()
-    const payment = {accountId:'a', amount:500000, paidAt:'2026-08-15', paidTime:'12:00', note:'test'}
+    const payment = {accountId:acc.a, amount:500000, paidAt:'2026-08-15', paidTime:'12:00', note:'test'}
     let updated = await repository.saveDebtPayment(uid, debt.id, undefined, payment, paymentOperation)
     equal(await balance('a'), 7500000)
     equal(updated.payments.length, 1)
@@ -140,16 +133,11 @@ async function run() {
     equal((await getTransactions(uid)).length, 1)
     await rejects(() => repository.saveDebtPayment(otherUid, debt.id, undefined, payment, randomUUID()))
     const paymentId = updated.payments[0].id
-    const legacyLedger = root.collection('transactions').doc(`debt_${debt.id}_${paymentId}`)
-    await legacyLedger.set({ source:'debt', debtPaymentId:paymentId, occurredAt:Timestamp.now() })
-    equal((await getTransactions(uid)).length, 1)
-    equal(await balance('a'), 7500000)
-    updated = await repository.saveDebtPayment(uid, debt.id, paymentId, {...payment, accountId:'b', amount:600000}, randomUUID())
+    updated = await repository.saveDebtPayment(uid, debt.id, paymentId, {...payment, accountId:acc.b, amount:600000}, randomUUID())
     equal(await balance('a'), 7000000)
     equal(await balance('b'), 10600000)
     equal(updated.paidAmount, 600000)
-    equal((await getTransactions(uid)).some((item) => item.debtPaymentId === paymentId), false)
-    equal((await root.collection('transactions').doc(`debt_${debt.id}_${paymentId}`).get()).exists, false)
+    equal((await getTransactions(uid)).length, 1)
     updated = await repository.saveDebtPayment(uid, debt.id, paymentId, null, randomUUID())
     equal(await balance('b'), 10000000)
     equal(updated.paidAmount, 0)
@@ -166,22 +154,22 @@ async function run() {
     equal(await balance('a'), 8000000)
     updated = await repository.saveDebtPayment(uid, borrowed.id, undefined, {...payment, amount:100000, paidAt:todayDate()}, randomUUID())
     equal(await balance('a'), 7900000)
-    equal((await getTransactions(uid)).some((item) => item.debtPaymentId === updated.payments[0].id), false)
+    equal((await getTransactions(uid)).some((item) => item.id === updated.payments[0].id), false)
     const archivedPayment = updated.payments[0].id
-    await root.collection('accounts').doc('a').update({status:'archived'})
+    await setAccount('a', 'status', 'archived')
     await rejects(() => repository.createDebt(uid, values, randomUUID()))
     await rejects(() => repository.saveDebtPayment(uid, borrowed.id, undefined, {...payment, paidAt:todayDate()}, randomUUID()))
     await rejects(() => repository.saveDebtPayment(uid, borrowed.id, archivedPayment, {...payment, amount:120000, paidAt:todayDate()}, randomUUID()))
     equal(await balance('a'), 7900000)
     await repository.saveDebtPayment(uid, borrowed.id, archivedPayment, {...payment, amount:100000, paidAt:todayDate(), note:'Sửa ghi chú'}, randomUUID())
     equal(await balance('a'), 7900000)
-    await repository.saveDebtPayment(uid, borrowed.id, archivedPayment, {...payment, accountId:'b', amount:100000, paidAt:todayDate()}, randomUUID())
+    await repository.saveDebtPayment(uid, borrowed.id, archivedPayment, {...payment, accountId:acc.b, amount:100000, paidAt:todayDate()}, randomUUID())
     equal(await balance('a'), 8000000)
     equal(await balance('b'), 9900000)
     await repository.saveDebtPayment(uid, borrowed.id, archivedPayment, null, randomUUID())
     equal(await balance('a'), 8000000)
     equal(await balance('b'), 10000000)
-    await root.collection('accounts').doc('a').update({status:'active'})
+    await setAccount('a', 'status', 'active')
     const concurrentId = randomUUID()
     await Promise.all([1, 2].map(() => repository.saveDebtPayment(uid, borrowed.id, undefined, {...payment, amount:10000, paidAt:todayDate()}, concurrentId)))
     equal(await balance('a'), 7990000)
@@ -195,7 +183,7 @@ async function run() {
     const beforeA = await balance('a')
     const beforeB = await balance('b')
     await repository.saveDebtPayment(uid, editDebt.id, undefined, {...payment, amount:200000}, randomUUID())
-    const editValues = {...values, amount:1500000, accountId:'b', hasInterest:false, note:'Edited'}
+    const editValues = {...values, amount:1500000, accountId:acc.b, hasInterest:false, note:'Edited'}
     const editOperation = randomUUID()
     await repository.changeDebt(uid, editDebt.id, editValues, editOperation)
     equal(await balance('a'), beforeA + 1200000)
@@ -216,12 +204,12 @@ async function run() {
     equal(await balance('b'), beforeB)
     equal((await repository.getDebts(uid)).some(item => item.id === editDebt.id), false)
     equal((await getTransactions(uid)).some(item => item.debtId === editDebt.id), false)
-    equal((await root.collection('debts').doc(editDebt.id).collection('payments').get()).size, 0)
+    equal(await count('debt_payments', 'debt_id', editDebt.id), 0)
 
     const oldA = await balance('a')
     const oldB = await balance('b')
     const reverseDebt = await repository.createDebt(uid, {...values, amount:1000000, hasInterest:false, direction:'borrowed'}, randomUUID())
-    await repository.saveDebtPayment(uid, reverseDebt.id, undefined, {...payment, accountId:'b', amount:300000}, randomUUID())
+    await repository.saveDebtPayment(uid, reverseDebt.id, undefined, {...payment, accountId:acc.b, amount:300000}, randomUUID())
     await repository.changeDebt(uid, reverseDebt.id, null, randomUUID())
     equal(await balance('a'), oldA)
     equal(await balance('b'), oldB)
@@ -230,11 +218,11 @@ async function run() {
     await repository.changeDebt(uid, noPayments.id, {...values, amount:200000, direction:'borrowed', hasInterest:false}, randomUUID())
     equal(await balance('a'), oldA + 200000)
     // An unfundable reversal must leave the loan and its ledger intact.
-    await root.collection('accounts').doc('a').update({balance:0})
+    await setAccount('a', 'balance', 0)
     await rejects(() => repository.changeDebt(uid, noPayments.id, null, randomUUID()))
     equal((await repository.getDebts(uid)).some(item => item.id === noPayments.id), true)
     equal((await getTransactions(uid)).some(item => item.debtId === noPayments.id), true)
-    await root.collection('accounts').doc('a').update({balance:oldA + 200000})
+    await setAccount('a', 'balance', oldA + 200000)
     await repository.changeDebt(uid, noPayments.id, null, randomUUID())
     equal(await balance('a'), oldA)
     const disposable = await repository.createContact(uid, {name:'Disposable'}, randomUUID())
@@ -243,65 +231,62 @@ async function run() {
 
     // Account deletion removes linked cash movements and debt history, while
     // reversing their impact on another account in the same transaction.
-    for (const id of ['c', 'd']) await root.collection('accounts').doc(id).set({name:id, balance:1000000, openingBalance:1000000, status:'active', type:'cash', createdAt:Timestamp.now(), updatedAt:Timestamp.now()})
-    await createTransaction(uid, {kind:'transfer', amount:100000, fee:1000, fromAccountId:'c', toAccountId:'d', occurredAt:new Date(), note:''})
-    const linkedDebt = await repository.createDebt(uid, {...values, accountId:'c', amount:200000, hasInterest:false}, randomUUID())
-    await repository.saveDebtPayment(uid, linkedDebt.id, undefined, {...payment, accountId:'d', amount:50000, paidAt:todayDate()}, randomUUID())
+    for (const id of ['c', 'd']) await addAccount(id, 1000000)
+    await createTransaction(uid, {kind:'transfer', amount:100000, fee:1000, fromAccountId:acc.c, toAccountId:acc.d, occurredAt:new Date(), note:''})
+    const linkedDebt = await repository.createDebt(uid, {...values, accountId:acc.c, amount:200000, hasInterest:false}, randomUUID())
+    await repository.saveDebtPayment(uid, linkedDebt.id, undefined, {...payment, accountId:acc.d, amount:50000, paidAt:todayDate()}, randomUUID())
     equal(await balance('c'), 699000)
     equal(await balance('d'), 1150000)
     // Editing overwrites the balance directly, without a transaction, and
     // rejects a stale form whose balance moved since it was opened.
     const transactionCount = (await getTransactions(uid)).length
-    await updateAccount(uid, 'c', {name:'c', type:'cash', balance:750000}, 699000)
+    await updateAccount(uid, acc.c, {name:'c', type:'cash', balance:750000}, 699000)
     equal(await balance('c'), 750000)
     equal((await getTransactions(uid)).length, transactionCount)
-    await updateAccount(uid, 'c', {name:'Đổi tên', type:'cash', balance:699000}, 699000)
+    await updateAccount(uid, acc.c, {name:'Đổi tên', type:'cash', balance:699000}, 699000)
     equal(await balance('c'), 750000)
-    // Renaming refreshes the account name shown on transfers and debt ledgers.
+    // Renaming shows the new name on transfers and loan movements.
     const renamed = await getTransactions(uid)
     equal(renamed.some(item => item.kind === 'transfer' && item.fromAccountName === 'Đổi tên' && item.toAccountName === 'd'), true)
     equal(renamed.some(item => item.debtId === linkedDebt.id && item.accountName === 'Đổi tên'), true)
     equal(renamed.some(item => [item.accountName, item.fromAccountName].includes('c')), false)
-    await rejects(() => updateAccount(uid, 'c', {name:'c', type:'cash', balance:800000}, 699000))
-    await updateAccount(uid, 'c', {name:'c', type:'cash', balance:699000}, 750000)
-    await root.collection('accounts').doc('c').update({status:'archived'})
-    await rejects(() => updateAccount(uid, 'c', {name:'Đã sửa', type:'cash', balance:0}, 699000))
-    await root.collection('accounts').doc('c').update({status:'active'})
-    await deleteAccount(uid, 'c')
-    equal((await root.collection('accounts').doc('c').get()).exists, false)
+    await rejects(() => updateAccount(uid, acc.c, {name:'c', type:'cash', balance:800000}, 699000))
+    await updateAccount(uid, acc.c, {name:'c', type:'cash', balance:699000}, 750000)
+    await setAccount('c', 'status', 'archived')
+    await rejects(() => updateAccount(uid, acc.c, {name:'Đã sửa', type:'cash', balance:0}, 699000))
+    await setAccount('c', 'status', 'active')
+    await deleteAccount(uid, acc.c)
+    equal(await count('accounts', 'id', acc.c), 0)
     equal(await balance('d'), 1000000)
     equal((await repository.getDebts(uid)).some(item => item.id === linkedDebt.id), false)
-    equal((await root.collection('debts').doc(linkedDebt.id).collection('payments').get()).size, 0)
-    equal((await getTransactions(uid)).some(item => item.accountId === 'c' || item.fromAccountId === 'c' || item.toAccountId === 'c' || item.debtId === linkedDebt.id), false)
+    equal(await count('debt_payments', 'debt_id', linkedDebt.id), 0)
+    equal((await getTransactions(uid)).some(item => item.accountId === acc.c || item.fromAccountId === acc.c || item.toAccountId === acc.c || item.debtId === linkedDebt.id), false)
 
-    for (const id of ['e', 'f']) await root.collection('accounts').doc(id).set({name:id, balance:1000000, openingBalance:1000000, status:'active', type:'cash', createdAt:Timestamp.now(), updatedAt:Timestamp.now()})
-    const paymentLinkedDebt = await repository.createDebt(uid, {...values, accountId:'e', amount:200000, hasInterest:false}, randomUUID())
-    await repository.saveDebtPayment(uid, paymentLinkedDebt.id, undefined, {...payment, accountId:'f', amount:50000, paidAt:todayDate()}, randomUUID())
+    for (const id of ['e', 'f']) await addAccount(id, 1000000)
+    const paymentLinkedDebt = await repository.createDebt(uid, {...values, accountId:acc.e, amount:200000, hasInterest:false}, randomUUID())
+    await repository.saveDebtPayment(uid, paymentLinkedDebt.id, undefined, {...payment, accountId:acc.f, amount:50000, paidAt:todayDate()}, randomUUID())
     equal(await balance('e'), 800000)
-    await deleteAccount(uid, 'f')
+    await deleteAccount(uid, acc.f)
     equal(await balance('e'), 1000000)
     equal((await repository.getDebts(uid)).some(item => item.id === paymentLinkedDebt.id), false)
     equal((await getTransactions(uid)).some(item => item.debtId === paymentLinkedDebt.id), false)
     const archivedPrincipal = await repository.createDebt(uid, {...values, amount:100000, direction:'borrowed', hasInterest:false}, randomUUID())
     const principalBalance = await balance('a')
-    await root.collection('accounts').doc('a').update({status:'archived'})
+    await setAccount('a', 'status', 'archived')
     await rejects(() => repository.changeDebt(uid, archivedPrincipal.id, {...values, amount:200000, direction:'borrowed', hasInterest:false}, randomUUID()))
     equal(await balance('a'), principalBalance)
     await repository.changeDebt(uid, archivedPrincipal.id, {...values, amount:100000, direction:'borrowed', hasInterest:false, note:'Sửa ghi chú'}, randomUUID())
     equal(await balance('a'), principalBalance)
     const balanceBeforeMove = await balance('b')
-    await repository.changeDebt(uid, archivedPrincipal.id, {...values, accountId:'b', amount:100000, direction:'borrowed', hasInterest:false}, randomUUID())
+    await repository.changeDebt(uid, archivedPrincipal.id, {...values, accountId:acc.b, amount:100000, direction:'borrowed', hasInterest:false}, randomUUID())
     equal(await balance('a'), principalBalance - 100000)
     equal(await balance('b'), balanceBeforeMove + 100000)
     await repository.changeDebt(uid, archivedPrincipal.id, null, randomUUID())
     equal(await balance('b'), balanceBeforeMove)
     console.log(`${checks} integration checks passed: persistence, isolation, balances, linked ledger, retries, concurrency, validation, and settlement.`)
   } finally {
-    // These exact generated namespaces contain only records created by this run.
-    await firestore.recursiveDelete(root)
-    await firestore.recursiveDelete(firestore.collection('users').doc(otherUid))
+    await cleanup()
     console.log('Isolated test records cleaned up.')
-    await firestore.terminate()
   }
 }
 run().catch((error) => { console.error(error); process.exitCode = 1 })

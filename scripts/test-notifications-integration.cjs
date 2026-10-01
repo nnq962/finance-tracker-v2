@@ -1,31 +1,13 @@
-/* eslint-disable @typescript-eslint/no-require-imports -- Isolated Firestore integration harness. */
-/* Run: NOTIFICATION_TEST_LIVE=1 node scripts/test-notifications-integration.cjs
- * Creates only synthetic users/browser identities; never sends FCM messages.
+/* eslint-disable @typescript-eslint/no-require-imports -- CommonJS harness loads server TypeScript modules. */
+/* Run: npm run db:up && node scripts/test-notifications-integration.cjs
+ * Runs against the finance_test database with isolated users; never sends FCM messages.
  */
 const assert = require('node:assert/strict')
-const fs = require('node:fs')
-const path = require('node:path')
-const Module = require('node:module')
-const ts = require('typescript')
 const { randomUUID, createHash } = require('node:crypto')
-if (process.env.NOTIFICATION_TEST_LIVE !== '1') throw new Error('Set NOTIFICATION_TEST_LIVE=1 to run this isolated test.')
-require('@next/env').loadEnvConfig(process.cwd())
-const originalLoad = Module._load
-Module._load = function(id, parent, main) {
-  if (id === 'server-only') return {}
-  if (id.startsWith('@/')) id = path.join(process.cwd(), id.slice(2))
-  return originalLoad.call(this, id, parent, main)
-}
-require.extensions['.ts'] = (mod, filename) => mod._compile(ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
-}).outputText, filename)
+const { sql, createUser, cleanup } = require('./lib/db-harness.cjs')
 const repository = require('../lib/notifications/repository.ts')
-const { getFirebaseAdminFirestore } = require('../lib/firebase/admin.ts')
-const { FieldValue, Timestamp } = require('firebase-admin/firestore')
 const { getNextReminderAt } = require('../lib/notifications/schedule.ts')
-const db = getFirebaseAdminFirestore()
-const namespace = 'codex_notification_test_' + randomUUID()
-const users = [namespace + '_a', namespace + '_b']
+const users = []
 const browserIds = new Set()
 const fids = Array.from({ length: 4 }, () => 'c' + randomUUID().replaceAll('-', '').slice(0, 21))
 const idFor = (fid) => createHash('sha256').update(fid).digest('hex')
@@ -37,26 +19,28 @@ async function open(uid, browserId, sessionId) {
 
 async function main() {
   try {
+    users.push(await createUser('notification_test'), await createUser('notification_test'))
     const [a, b] = users
+    const stored = async () => (await sql('SELECT next_reminder_at, updated_at FROM notification_settings WHERE user_id = $1', [a])).rows[0]
+    const setNextReminder = (value) => sql('UPDATE notification_settings SET next_reminder_at = $2 WHERE user_id = $1', [a, value])
     assert.equal((await repository.getNotificationSettings(a)).notificationsEnabled, false)
     const settings = { notificationsEnabled: true, dailyReminderTime: '21:45', timeZone: 'Asia/Ho_Chi_Minh' }
-    const settingsRef = db.collection('users').doc(a).collection('notificationSettings').doc('default')
-    await repository.saveNotificationSettings(a, { ...settings, timeZone: 'Asia/Tokyo', nextReminderAt: Timestamp.fromMillis(0) })
+    // The client cannot choose the time zone or the next reminder.
+    await repository.saveNotificationSettings(a, { ...settings, timeZone: 'Asia/Tokyo', nextReminderAt: new Date(0) })
     assert.deepEqual(await repository.getNotificationSettings(a), settings)
-    let stored = (await settingsRef.get()).data()
-    assert.ok(stored.nextReminderAt instanceof Timestamp)
-    assert.equal(stored.nextReminderAt.toMillis(), getNextReminderAt(settings.dailyReminderTime, stored.updatedAt.toDate()).getTime())
+    let row = await stored()
+    assert.equal(row.next_reminder_at.getTime(), getNextReminderAt(settings.dailyReminderTime, row.updated_at).getTime())
     // Re-saving identical preferences must not discard an overdue reminder.
-    const overdue = Timestamp.fromMillis(1)
-    await settingsRef.update({ nextReminderAt: overdue })
+    const overdue = new Date(1)
+    await setNextReminder(overdue)
     await repository.saveNotificationSettings(a, settings)
-    assert.equal((await settingsRef.get()).get('nextReminderAt').toMillis(), overdue.toMillis())
+    assert.equal((await stored()).next_reminder_at.getTime(), overdue.getTime())
     await repository.saveNotificationSettings(a, { ...settings, dailyReminderTime: '00:10' })
-    stored = (await settingsRef.get()).data()
-    assert.equal(stored.nextReminderAt.toMillis(), getNextReminderAt('00:10', stored.updatedAt.toDate()).getTime())
-    await settingsRef.update({ nextReminderAt: FieldValue.delete() })
+    row = await stored()
+    assert.equal(row.next_reminder_at.getTime(), getNextReminderAt('00:10', row.updated_at).getTime())
+    await setNextReminder(null)
     await repository.saveNotificationSettings(a, settings)
-    assert.ok((await settingsRef.get()).get('nextReminderAt') instanceof Timestamp)
+    assert.ok((await stored()).next_reminder_at instanceof Date)
     assert.equal((await repository.getNotificationSettings(b)).dailyReminderTime, '20:00')
     for (const bad of [null, { ...settings, dailyReminderTime: '24:00' }, { ...settings, timeZone: 'Invalid/Zone' }, { ...settings, notificationsEnabled: 'true' }]) {
       await assert.rejects(repository.saveNotificationSettings(a, bad))
@@ -77,7 +61,7 @@ async function main() {
     await Promise.all(Array.from({ length: 3 }, () => repository.registerPushDevice(a, laptop, fids[1], 'macOS · Chrome')))
     assert.equal((await repository.getNotificationState(a, laptop)).devices.length, 2)
     await repository.registerPushDevice(a, phone, fids[2], 'iPhone · PWA')
-    assert.equal((await db.collection('pushInstallations').doc(idFor(fids[0])).get()).exists, false)
+    assert.equal((await sql('SELECT count(*) FROM push_devices WHERE id = $1', [idFor(fids[0])])).rows[0].count, '0')
     assert.equal((await repository.getNotificationState(a, phone)).devices.length, 2)
 
     const switched = await open(b, phone.browserId, phone.sessionId)
@@ -104,20 +88,18 @@ async function main() {
     await assert.rejects(repository.getCurrentPushFid(a, relogin))
 
     await repository.saveNotificationSettings(a, { ...settings, notificationsEnabled: false })
-    assert.equal((await settingsRef.get()).get('nextReminderAt'), undefined)
+    assert.equal((await stored()).next_reminder_at, null)
     await repository.saveNotificationSettings(a, settings)
-    assert.ok((await settingsRef.get()).get('nextReminderAt') instanceof Timestamp)
+    assert.ok((await stored()).next_reminder_at instanceof Date)
     await repository.saveNotificationSettings(a, { ...settings, notificationsEnabled: false })
-    assert.equal((await settingsRef.get()).get('nextReminderAt'), undefined)
+    assert.equal((await stored()).next_reminder_at, null)
     assert.equal((await repository.getNotificationState(a, laptop)).devices.length, 1)
     assert.equal((await repository.getNotificationSettings(a)).notificationsEnabled, false)
     console.log('Notification integration checks passed: settings persistence, validation, multiple devices, retries, FID refresh, ownership transfer, logout, stale-session rejection and account isolation. No push messages sent.')
   } finally {
-    for (const uid of users) await db.recursiveDelete(db.collection('users').doc(uid))
-    const batch = db.batch()
-    for (const id of browserIds) batch.delete(db.collection('notificationBrowsers').doc(id))
-    for (const fid of fids) batch.delete(db.collection('pushInstallations').doc(idFor(fid)))
-    await batch.commit()
+    // Browser rows outlive their user (they only lose the link), so remove them first.
+    if (browserIds.size) await sql('DELETE FROM notification_browsers WHERE id = ANY($1)', [[...browserIds]])
+    await cleanup()
     console.log('Isolated notification test records removed.')
   }
 }

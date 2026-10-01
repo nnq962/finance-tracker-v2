@@ -693,7 +693,7 @@ ALTER TABLE ONLY public.debt_operations
 --
 
 ALTER TABLE ONLY public.debt_payments
-    ADD CONSTRAINT debt_payments_user_id_account_id_fkey FOREIGN KEY (user_id, account_id) REFERENCES public.accounts(user_id, id);
+    ADD CONSTRAINT debt_payments_user_id_account_id_fkey FOREIGN KEY (user_id, account_id) REFERENCES public.accounts(user_id, id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
@@ -709,7 +709,7 @@ ALTER TABLE ONLY public.debt_payments
 --
 
 ALTER TABLE ONLY public.debts
-    ADD CONSTRAINT debts_user_id_account_id_fkey FOREIGN KEY (user_id, account_id) REFERENCES public.accounts(user_id, id);
+    ADD CONSTRAINT debts_user_id_account_id_fkey FOREIGN KEY (user_id, account_id) REFERENCES public.accounts(user_id, id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
@@ -717,7 +717,7 @@ ALTER TABLE ONLY public.debts
 --
 
 ALTER TABLE ONLY public.debts
-    ADD CONSTRAINT debts_user_id_contact_id_fkey FOREIGN KEY (user_id, contact_id) REFERENCES public.contacts(user_id, id);
+    ADD CONSTRAINT debts_user_id_contact_id_fkey FOREIGN KEY (user_id, contact_id) REFERENCES public.contacts(user_id, id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
@@ -773,7 +773,7 @@ ALTER TABLE ONLY public.push_devices
 --
 
 ALTER TABLE ONLY public.transactions
-    ADD CONSTRAINT transactions_user_id_account_id_fkey FOREIGN KEY (user_id, account_id) REFERENCES public.accounts(user_id, id);
+    ADD CONSTRAINT transactions_user_id_account_id_fkey FOREIGN KEY (user_id, account_id) REFERENCES public.accounts(user_id, id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
@@ -781,7 +781,7 @@ ALTER TABLE ONLY public.transactions
 --
 
 ALTER TABLE ONLY public.transactions
-    ADD CONSTRAINT transactions_user_id_category_item_id_kind_fkey FOREIGN KEY (user_id, category_item_id, kind) REFERENCES public.category_items(user_id, id, type);
+    ADD CONSTRAINT transactions_user_id_category_item_id_kind_fkey FOREIGN KEY (user_id, category_item_id, kind) REFERENCES public.category_items(user_id, id, type) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
@@ -805,7 +805,7 @@ ALTER TABLE ONLY public.transactions
 --
 
 ALTER TABLE ONLY public.transactions
-    ADD CONSTRAINT transactions_user_id_from_account_id_fkey FOREIGN KEY (user_id, from_account_id) REFERENCES public.accounts(user_id, id);
+    ADD CONSTRAINT transactions_user_id_from_account_id_fkey FOREIGN KEY (user_id, from_account_id) REFERENCES public.accounts(user_id, id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
@@ -813,7 +813,7 @@ ALTER TABLE ONLY public.transactions
 --
 
 ALTER TABLE ONLY public.transactions
-    ADD CONSTRAINT transactions_user_id_to_account_id_fkey FOREIGN KEY (user_id, to_account_id) REFERENCES public.accounts(user_id, id);
+    ADD CONSTRAINT transactions_user_id_to_account_id_fkey FOREIGN KEY (user_id, to_account_id) REFERENCES public.accounts(user_id, id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --

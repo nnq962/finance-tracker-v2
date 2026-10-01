@@ -2,6 +2,14 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+Data lives in PostgreSQL (see [`db/README.md`](db/README.md)); Firebase is used
+only for Google sign-in (Auth) and push notifications (FCM). Start the local
+database first; it also adds `DATABASE_URL` to `.env.local`:
+
+```bash
+npm run db:up
+```
+
 Copy `.env.example` to `.env.local` and provide both the Firebase Web app
 configuration and Firebase Admin credentials. The Admin credentials are used
 only on the server to verify ID tokens and create HTTP-only session cookies.
@@ -77,19 +85,18 @@ rewrite and OAuth redirect URI will break Google Sign-In.
 
 ## Debt tracking
 
-`/debts` reads the authenticated user's Firestore data. It does not seed the
-sample contacts or debts. The Firebase Admin SDK uses the existing `(default)`
-Standard database; direct client access remains denied by `firestore.rules`.
+`/debts` reads the authenticated user's data from PostgreSQL. It does not seed
+the sample contacts or debts.
 
-- `users/{uid}/contacts`: contact details and fixed avatar initials.
-- `users/{uid}/debts`: loan principal, interest terms, paid total, and referenced
-  `accountIds`; `payments/{paymentId}` stores individual collections/repayments.
-- `users/{uid}/transactions/debt_{debtId}`: the original loan cash movement.
-- `users/{uid}/debtOperations`: request fingerprints for retry deduplication.
+- `contacts`: contact details and fixed avatar initials.
+- `debts`: loan principal and interest terms; the paid total and status are
+  derived from `debt_payments`, which stores individual collections/repayments.
+- `transactions` rows with `debt_id`: the original loan cash movement.
+- `debt_operations`: request fingerprints for retry deduplication.
 
-Server Actions validate the session and input. Firestore transactions atomically
-update the debt/payment and account balances. The recording mode is stored as `recordingMode`: `cash-flow` (also the default for
-older records) or `opening`. Only cash-flow loans require an account and create
+Server Actions validate the session and input. Database transactions atomically
+update the debt/payment and account balances, locking the affected rows. The
+recording mode is stored as `recording_mode`: `cash-flow` or `opening`. Only cash-flow loans require an account and create
 an initial linked cash movement. Opening debts record outstanding principal at
 the tracking start date, without changing account balances or creating a
 transaction; they can be created without any accounts. Their interest accrues
@@ -101,7 +108,7 @@ opening debt principal never affects balances; deleting its payments (including
 through account deletion) reverses only their actual account impacts. Lending and
 repaying decrease the selected account balance; borrowing and collecting increase
 it. Editing a payment reverses its previous account impact and applies the new
-one; deleting reverses the impact. Payments are stored only in debt history; legacy payment transactions are hidden and removed when that payment is edited/deleted. Negative
+one; deleting reverses the impact. Payments are stored only in debt history. Negative
 account balances are rejected. Existing archived accounts can be used to correct
 old payments, but cannot be selected for new payments or loans.
 
@@ -117,21 +124,18 @@ Interest uses the original principal and elapsed calendar days: 30 days/month or
 are replayed chronologically and rejected if any payment would exceed the amount
 owed on its date. Contacts with debt history cannot be deleted. Deleting an
 account also deletes its related transactions, debts, and payment histories,
-and reverses their effects on other accounts in one Firestore transaction.
-Deletion is rejected if a related balance would become invalid or the
-operation exceeds the safe Firestore transaction size.
+and reverses their effects on other accounts in one database transaction.
+Deletion is rejected if a related balance would become invalid.
 
-To run integration checks against configured Firebase credentials:
+Integration checks run against the local `finance_test` database (never the dev
+data) with isolated users that are removed afterwards:
 
 ```bash
-DEBT_TEST_LIVE=1 node scripts/test-debts-integration.cjs
+node scripts/test-db-schema.cjs
+node scripts/test-debts-integration.cjs
+node scripts/test-categories-integration.cjs
+node scripts/test-notifications-integration.cjs
 ```
-
-The script creates a unique `codex_debt_test_*` namespace, tests persistence,
-account balances, linked transactions, validation, retries, concurrent requests,
-and ownership isolation, then removes its test records in `finally`. It does not
-use or change a real user's records. An interrupted process may require cleaning
-up its isolated test namespace.
 
 
 ## Cài đặt thông báo và thiết bị
@@ -149,18 +153,16 @@ trình duyệt được yêu cầu cấp quyền và đăng ký thiết bị; sw
 hoàn tất. Nếu quyền đã bị chặn, switch giữ tắt và hướng dẫn bật quyền trong
 cài đặt trình duyệt/PWA. Quay lại app sẽ kiểm tra quyền lại. Có thể dùng **Kết nối
 thiết bị này** để đăng ký nhận thông báo ngay cả khi lời nhắc tắt. Trên iPhone/iPad, đăng ký từ PWA
-đã thêm vào Màn hình chính. Server lưu lịch đến hạn; Python worker gửi tự động
-khi được vận hành trên server cá nhân với credentials và index phù hợp.
+đã thêm vào Màn hình chính. Server lưu lịch đến hạn trong PostgreSQL.
+
+> **Tạm dừng:** worker Python gửi nhắc vẫn đọc Firestore nên đang tạm dừng,
+> sẽ được chuyển sang PostgreSQL sau. Trong thời gian này lời nhắc không được gửi.
 
 Khi bật lời nhắc hoặc đổi giờ, server tính `nextReminderAt` theo
-`Asia/Ho_Chi_Minh` và lưu dưới dạng Firestore Timestamp. Nếu giờ nhắc hôm nay
+`Asia/Ho_Chi_Minh` và lưu vào cột `next_reminder_at` (`timestamptz`). Nếu giờ nhắc hôm nay
 đã qua, lịch chuyển sang ngày mai; đúng thời điểm nhắc thì lịch đến hạn ngay.
-Tắt lời nhắc xóa trường `nextReminderAt`. Lưu lại cùng cài đặt giữ lịch hiện có;
-cài đặt cũ chưa có lịch sẽ được khởi tạo khi lưu. Client không được quyết định
-`nextReminderAt`. Các cài đặt đã bật nhưng chưa được lưu lại chưa được backfill.
-Worker chạy mỗi 10 phút; kết quả gửi theo thiết bị được lưu trong
-`users/{uid}/notificationLogs/{YYYY-MM-DD}`. Việc khởi chạy worker là riêng với
-web, không tự xảy ra khi chạy `next dev` hoặc deploy Vercel.
+Tắt lời nhắc xoá lịch. Lưu lại cùng cài đặt giữ lịch hiện có; cài đặt chưa có
+lịch sẽ được khởi tạo khi lưu. Client không được quyết định lịch nhắc.
 
 Kiểm tra tính lịch, không cần credentials:
 
@@ -168,15 +170,13 @@ Kiểm tra tính lịch, không cần credentials:
 node scripts/test-notification-schedule.cjs
 ```
 
-Dữ liệu nằm trong Firestore `(default)` và chỉ được đọc/ghi qua Firebase Admin:
+Dữ liệu nằm trong PostgreSQL:
 
-- `users/{uid}/notificationSettings/default`: `notificationsEnabled`,
-  `dailyReminderTime`, `timeZone`, `nextReminderAt` (khi bật lời nhắc), `updatedAt`.
-- `users/{uid}/pushDevices/{sha256(fid)}`: FID đăng ký FCM, tên thiết bị,
-  browser ID và thời điểm tạo/cập nhật. Một tài khoản có nhiều thiết bị.
-- `notificationBrowsers/{browserId}`: liên kết thiết bị của trình duyệt với
-  tài khoản và nonce phiên. Cookie HttpOnly giữ browser ID và nonce.
-- `pushInstallations/{sha256(fid)}`: chủ sở hữu hiện tại của đăng ký FCM.
+- `notification_settings`: bật/tắt, giờ nhắc, múi giờ, `next_reminder_at`.
+- `push_devices`: id là `sha256(fid)`, FID đăng ký FCM, tên thiết bị, browser.
+  Một tài khoản có nhiều thiết bị; mỗi đăng ký FCM chỉ thuộc một tài khoản.
+- `notification_browsers`: liên kết thiết bị của trình duyệt với tài khoản và
+  nonce phiên. Cookie HttpOnly giữ browser ID và nonce.
 
 Đăng ký được đồng bộ khi mở app, quay lại cửa sổ và khi FCM thay đổi đăng ký.
 Đăng ký tự động không hiện hộp xin quyền; chỉ tiếp tục nếu quyền đã được cấp
@@ -186,19 +186,16 @@ Logout gỡ thiết bị của trình duyệt hiện tại và huỷ đăng ký 
 khác vẫn được giữ. Đổi tài khoản chuyển liên kết bằng transaction. Nonce phiên
 ngăn callback cũ gắn lại thiết bị sau logout/đổi tài khoản.
 
-Không cần mở quyền ghi Firestore cho client hoặc thêm biến môi trường mới.
-
 Kiểm tra không gửi thông báo thật:
 
 ```sh
 node scripts/test-push-notifications.cjs
 ```
 
-Kiểm tra tích hợp Firestore với credentials trong `.env.local` (tạo dữ liệu
-người dùng/thiết bị giả trong namespace ngẫu nhiên rồi dọn trong `finally`):
+Kiểm tra tích hợp trên database `finance_test` (người dùng/thiết bị giả, tự dọn):
 
 ```sh
-NOTIFICATION_TEST_LIVE=1 node scripts/test-notifications-integration.cjs
+node scripts/test-notifications-integration.cjs
 ```
 
 Settings chỉ hiển thị cài đặt lời nhắc và thiết bị nhận thông báo; giao diện gửi

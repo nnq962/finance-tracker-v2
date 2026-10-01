@@ -1,5 +1,7 @@
 import "server-only"
 
+import { isUuid } from "@/lib/db/ids"
+
 import type {
   SupportedTransactionKind,
   TransactionFormValues,
@@ -63,10 +65,7 @@ function getMoney(
 }
 
 export function assertTransactionId(value: unknown) {
-  if (
-    typeof value !== "string" ||
-    !/^[A-Za-z0-9_-]{1,1500}$/.test(value)
-  ) {
+  if (!isUuid(value)) {
     throw new TransactionValidationError("Giao dịch không hợp lệ.")
   }
 }
@@ -74,7 +73,7 @@ export function assertTransactionId(value: unknown) {
 function getDocumentId(formData: FormData, name: string, label: string) {
   const value = getText(formData, name)
 
-  if (!/^[A-Za-z0-9_-]{1,1500}$/.test(value)) {
+  if (!isUuid(value)) {
     throw new TransactionValidationError(`${label} không hợp lệ.`)
   }
 

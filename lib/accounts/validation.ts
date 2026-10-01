@@ -1,6 +1,7 @@
 import "server-only"
 
 import type { AccountFormValues, AccountType } from "@/lib/accounts/types"
+import { isUuid } from "@/lib/db/ids"
 import { getInstitution } from "@/lib/institutions"
 
 const accountTypes = new Set<AccountType>(["cash", "bank", "e-wallet"])
@@ -91,7 +92,7 @@ export function parseExpectedBalance(formData: FormData) {
 }
 
 export function assertAccountId(accountId: string) {
-  if (!/^[A-Za-z0-9_-]{1,1500}$/.test(accountId)) {
+  if (!isUuid(accountId)) {
     throw new AccountValidationError("Tài khoản không hợp lệ.")
   }
 }

@@ -38,8 +38,10 @@ CREATE TABLE debts (
   updated_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE (user_id, id),
   FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-  FOREIGN KEY (user_id, contact_id) REFERENCES contacts (user_id, id),
-  FOREIGN KEY (user_id, account_id) REFERENCES accounts (user_id, id),
+  -- Account and contact keys are checked at commit (DEFERRABLE) so deleting a
+  -- user can cascade through accounts, contacts and debts in any order.
+  FOREIGN KEY (user_id, contact_id) REFERENCES contacts (user_id, id) DEFERRABLE INITIALLY DEFERRED,
+  FOREIGN KEY (user_id, account_id) REFERENCES accounts (user_id, id) DEFERRABLE INITIALLY DEFERRED,
   CHECK ((interest_rate IS NULL) = (interest_period IS NULL)),
   CHECK (recording_mode = 'opening' OR account_id IS NOT NULL)
 );
@@ -58,7 +60,7 @@ CREATE TABLE debt_payments (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   FOREIGN KEY (user_id, debt_id) REFERENCES debts (user_id, id) ON DELETE CASCADE,
-  FOREIGN KEY (user_id, account_id) REFERENCES accounts (user_id, id)
+  FOREIGN KEY (user_id, account_id) REFERENCES accounts (user_id, id) DEFERRABLE INITIALLY DEFERRED
 );
 
 -- Request ids already applied, so a retried request is not applied twice.

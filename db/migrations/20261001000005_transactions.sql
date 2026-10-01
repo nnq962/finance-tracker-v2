@@ -23,12 +23,14 @@ CREATE TABLE transactions (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-  FOREIGN KEY (user_id, account_id) REFERENCES accounts (user_id, id),
-  FOREIGN KEY (user_id, from_account_id) REFERENCES accounts (user_id, id),
-  FOREIGN KEY (user_id, to_account_id) REFERENCES accounts (user_id, id),
+  -- Checked at commit (DEFERRABLE) so deleting a user can cascade through
+  -- accounts and categories in any order.
+  FOREIGN KEY (user_id, account_id) REFERENCES accounts (user_id, id) DEFERRABLE INITIALLY DEFERRED,
+  FOREIGN KEY (user_id, from_account_id) REFERENCES accounts (user_id, id) DEFERRABLE INITIALLY DEFERRED,
+  FOREIGN KEY (user_id, to_account_id) REFERENCES accounts (user_id, id) DEFERRABLE INITIALLY DEFERRED,
   -- The category must be of the same type as the transaction (expense/income).
   FOREIGN KEY (user_id, category_item_id, kind)
-    REFERENCES category_items (user_id, id, type),
+    REFERENCES category_items (user_id, id, type) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (user_id, debt_id) REFERENCES debts (user_id, id) ON DELETE CASCADE,
   CHECK (
     (

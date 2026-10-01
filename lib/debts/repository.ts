@@ -1,232 +1,268 @@
 import "server-only"
 
 import { createHash } from "node:crypto"
-import { FieldValue, Timestamp } from "firebase-admin/firestore"
-import { getFirebaseAdminFirestore } from "@/lib/firebase/admin"
+import type { Transaction } from "kysely"
+
+import { lockAccounts, setBalance, shiftBalance, type LockedAccount } from "@/lib/db/accounts"
+import { getDb } from "@/lib/db/client"
+import type { DB } from "@/lib/db/types"
 import { getPaymentMetrics, todayDate, updateDebtPayment } from "./calculations"
-import type { Contact, Debt, DebtPayment } from "./types"
+import type { Contact, Debt, DebtPayment, NewDebt } from "./types"
 import { assertDebtId, DebtValidationError, MAX_MONEY, parseContact, parseDebt, parsePayment } from "./validation"
 
-function userRef(userId: string) {
-  assertDebtId(userId)
-  return getFirebaseAdminFirestore().collection("users").doc(userId)
-}
-
-function clean<T extends object>(value: T) {
-  return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== undefined))
-}
+type Trx = Transaction<DB>
 
 function fingerprint(kind: string, input: unknown) {
   return createHash("sha256").update(JSON.stringify({ kind, input })).digest("hex")
 }
 
-function verifyOperation(snapshot: FirebaseFirestore.DocumentSnapshot, expected: string) {
-  if (!snapshot.exists) return false
-  if (snapshot.get("fingerprint") !== expected) throw new DebtValidationError("Yêu cầu này đã được dùng cho một thay đổi khác. Vui lòng thử lại.")
+/**
+ * Records a request id. Returns true when that request was already applied,
+ * so a retried request returns the current state instead of applying twice.
+ * A concurrent duplicate waits on the primary key until the first one ends.
+ */
+async function alreadyApplied(trx: Trx, userId: string, operationId: string, hash: string) {
+  const inserted = await trx
+    .insertInto("debtOperations")
+    .values({ userId, id: operationId, fingerprint: hash })
+    .onConflict((conflict) => conflict.columns(["userId", "id"]).doNothing())
+    .returning("id")
+    .executeTakeFirst()
+
+  if (inserted) return false
+
+  const existing = await trx
+    .selectFrom("debtOperations")
+    .select("fingerprint")
+    .where("userId", "=", userId)
+    .where("id", "=", operationId)
+    .executeTakeFirstOrThrow()
+
+  if (existing.fingerprint !== hash) {
+    throw new DebtValidationError("Yêu cầu này đã được dùng cho một thay đổi khác. Vui lòng thử lại.")
+  }
   return true
 }
 
-function operationDoc(value: string) {
-  return { fingerprint: value, createdAt: FieldValue.serverTimestamp() }
+const optional = (value: string | undefined) => value || null
+
+function getInitials(name: string) {
+  return name.split(/\s+/).slice(-2).map((part) => part[0]).join("").toLocaleUpperCase("vi-VN")
 }
 
-function contactFrom(snapshot: FirebaseFirestore.DocumentSnapshot): Contact {
-  if (!snapshot.exists) throw new DebtValidationError("Người liên hệ không tồn tại.")
-  const data = snapshot.data()!
-  return { id: snapshot.id, name: data.name, initials: data.initials, relationship: data.relationship, phone: data.phone, note: data.note }
-}
+type ContactRow = { id: string; name: string; initials: string; relationship: string | null; phone: string | null; note: string | null }
 
-function paymentFrom(snapshot: FirebaseFirestore.DocumentSnapshot): DebtPayment {
-  const data = snapshot.data()!
-  return { id: snapshot.id, amount: data.amount, accountId: data.accountId, accountName: data.accountName, paidAt: data.paidAt, paidTime: data.paidTime, note: data.note }
-}
-
-function debtDocumentFrom(snapshot: FirebaseFirestore.DocumentSnapshot): Debt {
-  if (!snapshot.exists) throw new DebtValidationError("Khoản nợ không tồn tại.")
-  const data = snapshot.data()!
+function toContact(row: ContactRow): Contact {
   return {
-    id: snapshot.id, contactId: data.contactId, accountId: data.accountId, recordingMode: data.recordingMode ?? "cash-flow",
-    direction: data.direction, amount: data.amount, paidAmount: data.paidAmount,
-    hasInterest: data.hasInterest, interestRate: data.interestRate, interestPeriod: data.interestPeriod,
-    recordedAt: data.recordedAt, dueAt: data.dueAt, status: data.status, note: data.note,
+    id: row.id, name: row.name, initials: row.initials,
+    relationship: row.relationship ?? undefined, phone: row.phone ?? undefined, note: row.note ?? undefined,
   }
 }
 
-function paymentsFrom(snapshot: FirebaseFirestore.QuerySnapshot) {
-  return snapshot.docs
-    .map(paymentFrom)
-    .sort((a, b) =>
-      `${a.paidAt}T${a.paidTime}`.localeCompare(`${b.paidAt}T${b.paidTime}`),
-    )
+const contactColumns = ["id", "name", "initials", "relationship", "phone", "note"] as const
+
+export async function getContacts(userId: string): Promise<Contact[]> {
+  const rows = await getDb()
+    .selectFrom("contacts")
+    .select(contactColumns)
+    .where("userId", "=", userId)
+    .orderBy("createdAt")
+    .orderBy("id")
+    .execute()
+  return rows.map(toContact)
 }
 
-function debtFrom(snapshot: FirebaseFirestore.DocumentSnapshot, payments: FirebaseFirestore.QuerySnapshot): Debt {
+async function getContact(db: Trx, userId: string, contactId: string) {
+  const row = await db
+    .selectFrom("contacts")
+    .select(contactColumns)
+    .where("userId", "=", userId)
+    .where("id", "=", contactId)
+    .executeTakeFirst()
+  if (!row) throw new DebtValidationError("Người liên hệ không tồn tại.")
+  return toContact(row)
+}
+
+function selectDebts(db: Trx | ReturnType<typeof getDb>, userId: string) {
+  return db
+    .selectFrom("debts")
+    .select([
+      "id", "contactId", "recordingMode", "accountId", "direction", "amount",
+      "interestRate", "interestPeriod", "note", "recordedAt", "dueAt",
+    ])
+    .where("userId", "=", userId)
+}
+
+type DebtRow = Awaited<ReturnType<ReturnType<typeof selectDebts>["execute"]>>[number]
+
+function selectPayments(db: Trx | ReturnType<typeof getDb>, userId: string) {
+  return db
+    .selectFrom("debtPayments as p")
+    .innerJoin("accounts as a", "a.id", "p.accountId")
+    .select(["p.id", "p.debtId", "p.amount", "p.accountId", "a.name as accountName", "p.paidAt", "p.paidTime", "p.note"])
+    .where("p.userId", "=", userId)
+    .orderBy("p.paidAt")
+    .orderBy("p.paidTime")
+    .orderBy("p.id")
+}
+
+type PaymentRow = Awaited<ReturnType<ReturnType<typeof selectPayments>["execute"]>>[number]
+
+function toPayment(row: PaymentRow): DebtPayment {
+  return {
+    id: row.id, amount: row.amount, accountId: row.accountId, accountName: row.accountName,
+    paidAt: row.paidAt,
+    // time columns read as "HH:MM:SS"; the app works in "HH:MM".
+    paidTime: row.paidTime.slice(0, 5),
+    note: row.note ?? undefined,
+  }
+}
+
+function toDebt(row: DebtRow, payments: DebtPayment[]): Debt {
   const debt: Debt = {
-    ...debtDocumentFrom(snapshot),
-    payments: paymentsFrom(payments),
+    id: row.id, contactId: row.contactId, accountId: row.accountId ?? undefined,
+    recordingMode: row.recordingMode as Debt["recordingMode"],
+    direction: row.direction as Debt["direction"], amount: row.amount,
+    paidAmount: payments.reduce((sum, payment) => sum + payment.amount, 0),
+    hasInterest: row.interestRate !== null,
+    interestRate: row.interestRate ?? undefined,
+    interestPeriod: (row.interestPeriod ?? undefined) as Debt["interestPeriod"],
+    note: row.note, recordedAt: row.recordedAt, dueAt: row.dueAt ?? undefined,
+    status: "active", payments,
   }
   debt.status = getPaymentMetrics(debt).remainingAmount === 0 ? "settled" : debt.dueAt && debt.dueAt < todayDate() ? "overdue" : "active"
   return debt
 }
 
-export async function getContacts(userId: string): Promise<Contact[]> {
-  const snapshot = await userRef(userId).collection("contacts").orderBy("createdAt", "asc").get()
-  return snapshot.docs.map(contactFrom)
-}
-
 export async function getDebts(userId: string): Promise<Debt[]> {
-  // One read transaction keeps parent totals and their payment histories consistent.
-  return getFirebaseAdminFirestore().runTransaction(async (transaction) => {
-    const debts = await transaction.get(userRef(userId).collection("debts").orderBy("recordedAt", "desc"))
-    const results: Debt[] = []
-    // Read histories concurrently in bounded batches, retaining the transaction
-    // snapshot and query order without queuing a request for every debt at once.
-    const batchSize = 10
-    for (let offset = 0; offset < debts.docs.length; offset += batchSize) {
-      const batch = await Promise.all(
-        debts.docs.slice(offset, offset + batchSize).map(async (debt) =>
-          debtFrom(debt, await transaction.get(debt.ref.collection("payments"))),
-        ),
-      )
-      results.push(...batch)
-    }
-    return results
-  }, { readOnly: true })
+  const db = getDb()
+  const [rows, payments] = await Promise.all([
+    selectDebts(db, userId).orderBy("recordedAt", "desc").orderBy("id", "desc").execute(),
+    selectPayments(db, userId).execute(),
+  ])
+  return rows.map((row) => toDebt(row, payments.filter((payment) => payment.debtId === row.id).map(toPayment)))
 }
 
+/**
+ * Debts with their paid total and status but without payment histories, which
+ * are loaded per debt with getDebtPayments.
+ */
 export async function getDebtSummaries(userId: string): Promise<Debt[]> {
-  const snapshot = await userRef(userId)
-    .collection("debts")
-    .orderBy("recordedAt", "desc")
-    .get()
-  const today = todayDate()
-
-  return snapshot.docs.map((document) => {
-    const debt = debtDocumentFrom(document)
-
-    if (debt.status !== "settled") {
-      debt.status = debt.dueAt && debt.dueAt < today ? "overdue" : "active"
-    }
-
-    return debt
-  })
+  return (await getDebts(userId)).map((debt) => ({ ...debt, payments: undefined }))
 }
 
-export async function getDebtPayments(
-  userId: string,
-  debtId: string,
-): Promise<DebtPayment[]> {
+export async function getDebtPayments(userId: string, debtId: string): Promise<DebtPayment[]> {
   assertDebtId(debtId)
-  const snapshot = await userRef(userId)
-    .collection("debts")
-    .doc(debtId)
-    .collection("payments")
-    .get()
+  const rows = await selectPayments(getDb(), userId).where("p.debtId", "=", debtId).execute()
+  return rows.map(toPayment)
+}
 
-  return paymentsFrom(snapshot)
+/** Reads and locks a debt with its payments; concurrent changes to it queue. */
+async function lockDebt(trx: Trx, userId: string, debtId: string) {
+  const row = await selectDebts(trx, userId).where("id", "=", debtId).forUpdate().executeTakeFirst()
+  if (!row) throw new DebtValidationError("Khoản nợ không tồn tại.")
+  const payments = await selectPayments(trx, userId).where("p.debtId", "=", debtId).execute()
+  return toDebt(row, payments.map(toPayment))
 }
 
 export async function createContact(userId: string, input: unknown, operationId: string): Promise<Contact> {
   assertDebtId(operationId)
   const values = parseContact(input)
-  const user = userRef(userId)
-  const reference = user.collection("contacts").doc(operationId)
-  const operation = user.collection("debtOperations").doc(operationId)
   const hash = fingerprint("createContact", values)
-  return getFirebaseAdminFirestore().runTransaction(async (transaction) => {
-    const [op, existing] = await transaction.getAll(operation, reference)
-    if (verifyOperation(op, hash)) return contactFrom(existing)
-    const initials = values.name.split(/\s+/).slice(-2).map((part) => part[0]).join("").toLocaleUpperCase("vi-VN")
-    const contact = { ...values, initials }
-    transaction.create(reference, { ...clean(contact), createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() })
-    transaction.create(operation, operationDoc(hash))
-    return { ...contact, id: reference.id }
+  return getDb().transaction().execute(async (trx) => {
+    // The request id doubles as the contact id, so a retry finds the same row.
+    if (await alreadyApplied(trx, userId, operationId, hash)) return getContact(trx, userId, operationId)
+    const row = await trx
+      .insertInto("contacts")
+      .values({
+        id: operationId, userId, name: values.name, initials: getInitials(values.name),
+        relationship: optional(values.relationship), phone: optional(values.phone), note: optional(values.note),
+      })
+      .returning(contactColumns)
+      .executeTakeFirstOrThrow()
+    return toContact(row)
   })
 }
 
 export async function updateContact(userId: string, contactId: string, input: unknown): Promise<Contact> {
   assertDebtId(contactId)
   const values = parseContact(input)
-  const reference = userRef(userId).collection("contacts").doc(contactId)
-  return getFirebaseAdminFirestore().runTransaction(async (transaction) => {
-    const existing = contactFrom(await transaction.get(reference))
-    // Avatar initials remain unchanged when editing contact details.
-    const contact = { ...existing, ...clean(values) } as Contact
-    transaction.update(reference, { ...clean(values), updatedAt: FieldValue.serverTimestamp() })
-    return contact
-  })
+  // Avatar initials remain unchanged when editing contact details.
+  const row = await getDb()
+    .updateTable("contacts")
+    .set({ name: values.name, relationship: optional(values.relationship), phone: optional(values.phone), note: optional(values.note) })
+    .where("userId", "=", userId)
+    .where("id", "=", contactId)
+    .returning(contactColumns)
+    .executeTakeFirst()
+  if (!row) throw new DebtValidationError("Người liên hệ không tồn tại.")
+  return toContact(row)
 }
 
 export async function deleteContact(userId: string, contactId: string) {
   assertDebtId(contactId)
-  const user = userRef(userId)
-  const reference = user.collection("contacts").doc(contactId)
-  await getFirebaseAdminFirestore().runTransaction(async (transaction) => {
-    const existing = await transaction.get(reference)
-    if (!existing.exists) return
-    const debts = await transaction.get(user.collection("debts").where("contactId", "==", contactId).limit(1))
-    if (!debts.empty) throw new DebtValidationError("Người này có lịch sử khoản nợ, không thể xoá.")
-    transaction.delete(reference)
+  await getDb().transaction().execute(async (trx) => {
+    const debt = await trx
+      .selectFrom("debts")
+      .select("id")
+      .where("userId", "=", userId)
+      .where("contactId", "=", contactId)
+      .limit(1)
+      .executeTakeFirst()
+    if (debt) throw new DebtValidationError("Người này có lịch sử khoản nợ, không thể xoá.")
+    await trx.deleteFrom("contacts").where("userId", "=", userId).where("id", "=", contactId).execute()
   })
 }
 
-function assertAccount(snapshot: FirebaseFirestore.DocumentSnapshot, allowArchived = false) {
-  if (!snapshot.exists || (!allowArchived && snapshot.get("status") !== "active")) throw new DebtValidationError("Tài khoản không tồn tại hoặc đã ngừng sử dụng.")
-  const balance = snapshot.get("balance")
-  if (!Number.isSafeInteger(balance) || balance < 0 || balance > MAX_MONEY) throw new DebtValidationError("Số dư tài khoản không hợp lệ.")
-  // Existing account migration runs before the debts page becomes available.
-  if (!Number.isSafeInteger(snapshot.get("openingBalance"))) throw new DebtValidationError("Vui lòng tải lại trang Tài khoản để hoàn tất cập nhật dữ liệu trước khi tiếp tục.")
-  return balance as number
+function assertAccount(account: LockedAccount | undefined, allowArchived = false): LockedAccount {
+  if (!account || (!allowArchived && account.status !== "active")) throw new DebtValidationError("Tài khoản không tồn tại hoặc đã ngừng sử dụng.")
+  return account
 }
 
-function nextBalance(balance: number, delta: number) {
-  const result = balance + delta
-  if (!Number.isSafeInteger(result) || result < 0 || result > MAX_MONEY) throw new DebtValidationError(delta < 0 ? "Tài khoản không đủ số dư để thực hiện thay đổi này." : "Số dư tài khoản vượt giới hạn cho phép.")
-  return result
+async function applyBalance(trx: Trx, account: LockedAccount, delta: number) {
+  if (delta === 0) return
+  const balance = shiftBalance(account.balance, delta)
+  if (balance === null) throw new DebtValidationError(delta < 0 ? "Tài khoản không đủ số dư để thực hiện thay đổi này." : "Số dư tài khoản vượt giới hạn cho phép.")
+  await setBalance(trx, account.id, balance)
+  account.balance = balance
 }
 
-function ledgerDocument(debt: Debt, contactName: string, accountName: string, payment?: DebtPayment) {
-  const incoming = payment ? debt.direction === "lent" : debt.direction === "borrowed"
-  const label = payment ? incoming ? "Thu nợ" : "Trả nợ" : incoming ? "Đi vay" : "Cho vay"
+function debtColumns(values: NewDebt) {
   return {
-    source: "debt", debtId: debt.id,
-    ...(payment ? { debtPaymentId: payment.id } : {}),
-    kind: incoming ? "income" : "expense",
-    amount: payment?.amount ?? debt.amount,
-    accountId: payment?.accountId ?? debt.accountId,
-    accountIds: [payment?.accountId ?? debt.accountId],
-    accountName,
-    categoryName: `${label} · ${contactName}`,
-    categoryGroupName: "Vay & nợ",
-    note: payment?.note ?? debt.note,
-    occurredAt: Timestamp.fromDate(new Date(`${payment?.paidAt ?? debt.recordedAt}T${payment?.paidTime ?? "00:00"}:00+07:00`)),
-    updatedAt: FieldValue.serverTimestamp(),
+    contactId: values.contactId, recordingMode: values.recordingMode ?? "cash-flow",
+    accountId: values.accountId ?? null, direction: values.direction, amount: values.amount,
+    interestRate: values.hasInterest ? values.interestRate ?? null : null,
+    interestPeriod: values.hasInterest ? values.interestPeriod ?? null : null,
+    note: values.note, recordedAt: values.recordedAt, dueAt: values.dueAt ?? null,
+  }
+}
+
+/** The loan's own cash movement, shown on the Transactions page. */
+function movementColumns(debt: Pick<Debt, "direction" | "amount" | "note" | "recordedAt">, accountId: string) {
+  return {
+    kind: debt.direction === "borrowed" ? "income" : "expense", amount: debt.amount, accountId,
+    note: debt.note, occurredAt: new Date(`${debt.recordedAt}T00:00:00+07:00`),
   }
 }
 
 export async function createDebt(userId: string, input: unknown, operationId: string): Promise<Debt> {
   assertDebtId(operationId)
   const values = parseDebt(input)
-  const user = userRef(userId)
-  const reference = user.collection("debts").doc(operationId)
-  const operation = user.collection("debtOperations").doc(operationId)
   const hash = fingerprint("createDebt", values)
-  return getFirebaseAdminFirestore().runTransaction(async (transaction) => {
-    const op = await transaction.get(operation)
-    if (verifyOperation(op, hash)) return debtFrom(await transaction.get(reference), await transaction.get(reference.collection("payments")))
-    const person = contactFrom(await transaction.get(user.collection("contacts").doc(values.contactId)))
-    const account = values.accountId ? await transaction.get(user.collection("accounts").doc(values.accountId)) : null
-    const balance = account ? assertAccount(account) : 0
-    const debt: Debt = { ...values, id: reference.id, status: values.dueAt && values.dueAt < todayDate() ? "overdue" : "active", payments: [] }
+  return getDb().transaction().execute(async (trx) => {
+    // The request id doubles as the debt id, so a retry finds the same row.
+    if (await alreadyApplied(trx, userId, operationId, hash)) return lockDebt(trx, userId, operationId)
+    await getContact(trx, userId, values.contactId)
+    const account = values.accountId
+      ? assertAccount((await lockAccounts(trx, userId, [values.accountId])).get(values.accountId))
+      : null
+    const debt: Debt = { ...values, id: operationId, status: values.dueAt && values.dueAt < todayDate() ? "overdue" : "active", payments: [] }
     if (getPaymentMetrics(debt).totalAmount > MAX_MONEY) throw new DebtValidationError("Tổng gốc và lãi vượt giới hạn cho phép.")
-    transaction.create(reference, { ...clean(values), status: debt.status, accountIds: values.accountId ? [values.accountId] : [], createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() })
+    await trx.insertInto("debts").values({ id: operationId, userId, ...debtColumns(values) }).execute()
     if (account) {
-      transaction.update(account.ref, { balance: nextBalance(balance, values.direction === "lent" ? -values.amount : values.amount), updatedAt: FieldValue.serverTimestamp() })
-      transaction.create(user.collection("transactions").doc(`debt_${reference.id}`), {
-        ...ledgerDocument(debt, person.name, account.get("name")), createdAt: FieldValue.serverTimestamp(),
-      })
+      await applyBalance(trx, account, values.direction === "lent" ? -values.amount : values.amount)
+      await trx.insertInto("transactions").values({ userId, debtId: operationId, ...movementColumns(values, account.id) }).execute()
     }
-    transaction.create(operation, operationDoc(hash))
     return debt
   })
 }
@@ -237,58 +273,44 @@ export async function saveDebtPayment(userId: string, debtId: string, paymentId:
   if (paymentId !== undefined) assertDebtId(paymentId)
   if (input === null && !paymentId) throw new DebtValidationError("Thiếu thanh toán cần xoá.")
   const values = input === null ? null : parsePayment(input)
-  const user = userRef(userId)
-  const reference = user.collection("debts").doc(debtId)
-  const operation = user.collection("debtOperations").doc(operationId)
   const hash = fingerprint("saveDebtPayment", { debtId, paymentId, values })
-  return getFirebaseAdminFirestore().runTransaction(async (transaction) => {
-    const op = await transaction.get(operation)
-    const debt = debtFrom(await transaction.get(reference), await transaction.get(reference.collection("payments")))
-    if (verifyOperation(op, hash)) return debt
+  return getDb().transaction().execute(async (trx) => {
+    const debt = await lockDebt(trx, userId, debtId)
+    if (await alreadyApplied(trx, userId, operationId, hash)) return debt
     const previous = paymentId ? debt.payments?.find((payment) => payment.id === paymentId) : undefined
     if (paymentId && !previous) throw new DebtValidationError("Thanh toán không còn tồn tại. Vui lòng tải lại trang.")
-    const accountIds = [...new Set([previous?.accountId, values?.accountId].filter((id): id is string => Boolean(id)))]
-    const snapshots = accountIds.length ? await transaction.getAll(...accountIds.map((id) => user.collection("accounts").doc(id))) : []
-    const accounts = new Map(snapshots.map((snapshot) => [snapshot.id, snapshot]))
-    snapshots.forEach((snapshot) => assertAccount(snapshot, snapshot.id === previous?.accountId))
-    const paymentValues = values ? { ...values, accountName: accounts.get(values.accountId)!.get("name") as string } : null
+    const accounts = await lockAccounts(trx, userId, [previous?.accountId, values?.accountId].filter((id): id is string => Boolean(id)))
+    // The account a payment already used may since have been archived.
+    if (previous?.accountId) assertAccount(accounts.get(previous.accountId), true)
+    if (values) assertAccount(accounts.get(values.accountId), values.accountId === previous?.accountId)
+    // New payments take the request id, so a retry cannot create a duplicate.
+    const savedPaymentId = paymentId ?? operationId
     let updated: Debt
     try {
-      updated = updateDebtPayment(debt, paymentId, paymentValues)
+      updated = updateDebtPayment(debt, paymentId, values && { ...values, accountName: accounts.get(values.accountId)!.name })
     } catch (error) {
       throw new DebtValidationError(error instanceof Error ? error.message : "Thanh toán không hợp lệ.")
     }
-    const savedPaymentId = paymentId ?? operationId
-    const ledgerReference = user.collection("transactions").doc(`debt_${debtId}_${savedPaymentId}`)
-    // Use the stable operation ID for new payments so retries cannot create duplicates.
-    if (!paymentId && paymentValues) {
+    if (!paymentId && values) {
       updated.payments = updated.payments?.map((payment) => debt.payments?.some((old) => old.id === payment.id) ? payment : { ...payment, id: savedPaymentId })
     }
     if (getPaymentMetrics(updated).totalAmount > MAX_MONEY) throw new DebtValidationError("Tổng gốc và lãi vượt giới hạn cho phép.")
+    // Collecting (lent) brings money in; repaying (borrowed) sends it out.
     const sign = debt.direction === "lent" ? 1 : -1
-    for (const snapshot of snapshots) {
-      const delta = (values?.accountId === snapshot.id ? sign * values.amount : 0) - (previous?.accountId === snapshot.id ? sign * previous.amount : 0)
-      if (snapshot.get("status") !== "active" && values?.accountId === snapshot.id && delta !== 0) {
+    for (const account of accounts.values()) {
+      const delta = (values?.accountId === account.id ? sign * values.amount : 0) - (previous?.accountId === account.id ? sign * previous.amount : 0)
+      if (account.status !== "active" && values?.accountId === account.id && delta !== 0) {
         throw new DebtValidationError("Tài khoản đã ngừng sử dụng. Hãy chọn tài khoản đang sử dụng để thanh toán.")
       }
-      if (delta !== 0) {
-        transaction.update(snapshot.ref, { balance: nextBalance(assertAccount(snapshot, snapshot.id === previous?.accountId), delta), updatedAt: FieldValue.serverTimestamp() })
-      }
+      await applyBalance(trx, account, delta)
     }
-    const paymentReference = reference.collection("payments").doc(savedPaymentId)
-    if (paymentValues) {
-      const document = { ...clean(paymentValues), updatedAt: FieldValue.serverTimestamp() }
-      if (previous) transaction.update(paymentReference, document)
-      else transaction.create(paymentReference, { ...document, createdAt: FieldValue.serverTimestamp() })
-    } else transaction.delete(paymentReference)
-    // Remove any legacy payment ledger without reversing its balance impact.
-    transaction.delete(ledgerReference)
-    transaction.update(reference, {
-      paidAmount: updated.paidAmount, status: updated.status,
-      accountIds: [...new Set([debt.accountId, ...(updated.payments ?? []).map((payment) => payment.accountId)].filter((id): id is string => Boolean(id)))],
-      updatedAt: FieldValue.serverTimestamp(),
-    })
-    transaction.create(operation, operationDoc(hash))
+    if (values) {
+      const columns = { accountId: values.accountId, amount: values.amount, paidAt: values.paidAt, paidTime: values.paidTime ?? "00:00", note: optional(values.note) }
+      if (previous) await trx.updateTable("debtPayments").set(columns).where("id", "=", savedPaymentId).execute()
+      else await trx.insertInto("debtPayments").values({ id: savedPaymentId, userId, debtId, ...columns }).execute()
+    } else {
+      await trx.deleteFrom("debtPayments").where("id", "=", savedPaymentId).execute()
+    }
     return updated
   })
 }
@@ -298,28 +320,27 @@ export async function changeDebt(userId: string, debtId: string, input: unknown 
   assertDebtId(debtId)
   assertDebtId(operationId)
   const values = input === null ? null : parseDebt(input)
-  const user = userRef(userId)
-  const reference = user.collection("debts").doc(debtId)
-  const operation = user.collection("debtOperations").doc(operationId)
   const hash = fingerprint("changeDebt", { debtId, values })
-  await getFirebaseAdminFirestore().runTransaction(async (transaction) => {
-    if (verifyOperation(await transaction.get(operation), hash)) return
-    const parent = await transaction.get(reference)
-    const history = await transaction.get(reference.collection("payments"))
-    const debt = debtFrom(parent, history)
+  await getDb().transaction().execute(async (trx) => {
+    // Checked first: a retried delete finds the debt already gone.
+    if (await alreadyApplied(trx, userId, operationId, hash)) return
+    const debt = await lockDebt(trx, userId, debtId)
     const payments = debt.payments ?? []
-    let updated: Debt | null = null
     if (values) {
       if (values.recordingMode !== debt.recordingMode) throw new DebtValidationError("Không thể đổi cách ghi nhận của khoản nợ đã tạo.")
       if (payments.length && values.direction !== debt.direction) throw new DebtValidationError("Khoản nợ đã có thanh toán nên không thể đổi giữa đi vay và cho vay.")
       if (payments.some((payment) => payment.paidAt < values.recordedAt)) throw new DebtValidationError("Ngày ghi không được sau ngày thanh toán đầu tiên.")
+      let updated: Debt
       try {
         updated = updateDebtPayment({ ...debt, ...values, paidAmount: debt.paidAmount }, undefined, null)
       } catch (error) {
         throw new DebtValidationError(error instanceof Error ? error.message : "Lịch sử thanh toán không hợp lệ.")
       }
       if (getPaymentMetrics(updated).totalAmount > MAX_MONEY) throw new DebtValidationError("Tổng gốc và lãi vượt giới hạn cho phép.")
+      await getContact(trx, userId, values.contactId)
     }
+    // Undo the old principal movement, then apply the new one (edit) or undo
+    // every payment too (delete).
     const deltas = new Map<string, number>()
     const add = (id: string | undefined, delta: number) => {
       if (!id) throw new DebtValidationError("Khoản nợ thiếu thông tin tài khoản để điều chỉnh số dư.")
@@ -330,42 +351,28 @@ export async function changeDebt(userId: string, debtId: string, input: unknown 
     if (values) {
       if (values.recordingMode !== "opening") add(values.accountId, (values.direction === "borrowed" ? 1 : -1) * values.amount)
     } else for (const payment of payments) add(payment.accountId, sign * payment.amount)
-    const accounts = deltas.size ? await transaction.getAll(...[...deltas.keys()].map((id) => user.collection("accounts").doc(id))) : []
-    const person = values ? contactFrom(await transaction.get(user.collection("contacts").doc(values.contactId))) : null
-    const ledger = user.collection("transactions").doc(`debt_${debtId}`)
-    const oldLedger = await transaction.get(ledger)
-    for (const account of accounts) {
-      const isSelectedAccount = values?.accountId === account.id
-      const allowArchived = !isSelectedAccount || account.id === debt.accountId
-      const balance = assertAccount(account, allowArchived)
-      const delta = deltas.get(account.id)!
-      if (account.get("status") !== "active" && isSelectedAccount && delta !== 0) {
+    const accounts = await lockAccounts(trx, userId, deltas.keys())
+    for (const [id, delta] of deltas) {
+      const isSelectedAccount = values?.accountId === id
+      const account = assertAccount(accounts.get(id), !isSelectedAccount || id === debt.accountId)
+      if (account.status !== "active" && isSelectedAccount && delta !== 0) {
         throw new DebtValidationError("Tài khoản đã ngừng sử dụng. Hãy chọn tài khoản đang sử dụng cho khoản nợ.")
       }
-      if (delta !== 0) {
-        transaction.update(account.ref, { balance: nextBalance(balance, delta), updatedAt: FieldValue.serverTimestamp() })
-      }
+      await applyBalance(trx, account, delta)
     }
-    if (updated && values && person) {
-      transaction.set(reference, {
-        ...clean(values), paidAmount: updated.paidAmount, status: updated.status,
-        accountIds: [...new Set([values.accountId, ...payments.map((payment) => payment.accountId)].filter((id): id is string => Boolean(id)))],
-        createdAt: parent.get("createdAt"), updatedAt: FieldValue.serverTimestamp(),
-      })
+    if (values) {
+      await trx.updateTable("debts").set(debtColumns(values)).where("id", "=", debtId).execute()
       if (values.recordingMode !== "opening") {
-        transaction.set(ledger, {
-          ...ledgerDocument(updated, person.name, accounts.find((account) => account.id === values.accountId)!.get("name")),
-          createdAt: oldLedger.get("createdAt") ?? FieldValue.serverTimestamp(),
-        })
+        const movement = movementColumns(values, values.accountId!)
+        await trx
+          .insertInto("transactions")
+          .values({ userId, debtId, ...movement })
+          .onConflict((conflict) => conflict.column("debtId").doUpdateSet(movement))
+          .execute()
       }
     } else {
-      for (const payment of history.docs) {
-        transaction.delete(payment.ref)
-        transaction.delete(user.collection("transactions").doc(`debt_${debtId}_${payment.id}`))
-      }
-      transaction.delete(ledger)
-      transaction.delete(reference)
+      // Cascades to the payments and the loan's cash movement.
+      await trx.deleteFrom("debts").where("id", "=", debtId).execute()
     }
-    transaction.create(operation, operationDoc(hash))
   })
 }

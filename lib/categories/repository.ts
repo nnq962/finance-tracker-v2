@@ -1,6 +1,5 @@
 import "server-only"
 
-import { FieldValue } from "firebase-admin/firestore"
 import { unstable_cache } from "next/cache"
 
 import { categoryGroupsCacheTag } from "@/lib/cache-tags"
@@ -8,204 +7,129 @@ import { defaultCategoryGroups } from "@/lib/categories/defaults"
 import type {
   CategoryFormValues,
   CategoryGroup,
-  CategoryItem,
   CategoryItemFormValues,
-  CategoryStatus,
   CategoryType,
 } from "@/lib/categories/types"
 import { CategoryValidationError } from "@/lib/categories/validation"
-import { getFirebaseAdminFirestore } from "@/lib/firebase/admin"
+import { getDb } from "@/lib/db/client"
 
-const CATEGORY_SCHEMA_VERSION = 1
 const MAX_GROUPS_PER_TYPE = 100
 const MAX_ITEMS_PER_GROUP = 200
-const MAX_BATCHED_ITEMS = 498
 
-type CategoryGroupDocument = CategoryFormValues & {
-  type: CategoryType
-  order: number
-  status: CategoryStatus
-}
-
-type CategoryItemDocument = CategoryItemFormValues & {
-  groupId: string
-  type: CategoryType
-  order: number
-  status: CategoryStatus
-}
-
-function getUserReference(userId: string) {
-  return getFirebaseAdminFirestore().collection("users").doc(userId)
-}
-
-function getGroupsCollection(userId: string) {
-  return getUserReference(userId).collection("categoryGroups")
-}
-
-function getItemsCollection(userId: string) {
-  return getUserReference(userId).collection("categoryItems")
-}
-
-/**
- * Transactions keep a snapshot of their category and group names for
- * display. Refresh them after every save; it is idempotent, so retrying after
- * a failed refresh repairs names left stale.
- */
-async function syncCategoryNameInTransactions(
-  userId: string,
-  kind: "category" | "categoryGroup",
-  id: string,
-  name: string,
-) {
-  const snapshot = await getUserReference(userId)
-    .collection("transactions")
-    .where(`${kind}Id`, "==", id)
-    .get()
-  const writer = getFirebaseAdminFirestore().bulkWriter()
-  const writes = snapshot.docs
-    .filter((document) => document.get(`${kind}Name`) !== name)
-    .map((document) => writer.update(document.ref, { [`${kind}Name`]: name }))
-
-  await Promise.all([...writes, writer.close()])
-}
-
-function compareByOrderThenName<T extends { id: string; name: string; order: number }>(
+function compareByOrderThenName<T extends { id: string; name: string; sortOrder: number }>(
   left: T,
   right: T,
 ) {
-  return left.order - right.order ||
+  return left.sortOrder - right.sortOrder ||
     left.name.localeCompare(right.name, "vi") ||
     left.id.localeCompare(right.id)
 }
 
+/**
+ * Creates the user's row and, the first time only, the default categories.
+ * Safe to call on every sign-in: the user row is locked while it checks, so
+ * concurrent first logins create the defaults once.
+ */
 export async function ensureDefaultCategories(userId: string) {
-  const firestore = getFirebaseAdminFirestore()
-  const userReference = getUserReference(userId)
-  const settingsReference = userReference
-    .collection("categorySettings")
-    .doc("default")
+  await getDb().transaction().execute(async (trx) => {
+    await trx
+      .insertInto("users")
+      .values({ id: userId })
+      .onConflict((conflict) => conflict.column("id").doNothing())
+      .execute()
 
-  await firestore.runTransaction(async (transaction) => {
-    const settingsSnapshot = await transaction.get(settingsReference)
+    const user = await trx
+      .selectFrom("users")
+      .select("categoriesInitializedAt")
+      .where("id", "=", userId)
+      .forUpdate()
+      .executeTakeFirstOrThrow()
 
-    if (settingsSnapshot.exists) return
+    if (user.categoriesInitializedAt) return
 
-    const [existingGroups, existingItems] = await Promise.all([
-      transaction.get(getGroupsCollection(userId).limit(1)),
-      transaction.get(getItemsCollection(userId).limit(1)),
-    ])
-    const now = FieldValue.serverTimestamp()
+    const existing = await trx
+      .selectFrom("categoryGroups")
+      .select("id")
+      .where("userId", "=", userId)
+      .limit(1)
+      .executeTakeFirst()
 
-    if (existingGroups.empty && existingItems.empty) {
-      defaultCategoryGroups.forEach((group, groupIndex) => {
-        transaction.set(getGroupsCollection(userId).doc(group.id), {
-          name: group.name,
-          type: group.type,
-          iconName: group.iconName,
-          colorName: group.colorName,
-          order: groupIndex,
-          status: "active",
-          createdAt: now,
-          updatedAt: now,
-        })
-
-        group.items.forEach((item, itemIndex) => {
-          transaction.set(getItemsCollection(userId).doc(item.id), {
-            groupId: group.id,
+    if (!existing) {
+      for (const [groupIndex, group] of defaultCategoryGroups.entries()) {
+        const { id: groupId } = await trx
+          .insertInto("categoryGroups")
+          .values({
+            userId,
             type: group.type,
-            name: item.name,
-            iconName: item.iconName,
-            order: itemIndex,
-            status: "active",
-            createdAt: now,
-            updatedAt: now,
+            name: group.name,
+            iconName: group.iconName,
+            colorName: group.colorName,
+            sortOrder: groupIndex,
           })
-        })
-      })
+          .returning("id")
+          .executeTakeFirstOrThrow()
+
+        if (group.items.length > 0) {
+          await trx
+            .insertInto("categoryItems")
+            .values(group.items.map((item, itemIndex) => ({
+              userId,
+              groupId,
+              type: group.type,
+              name: item.name,
+              iconName: item.iconName,
+              sortOrder: itemIndex,
+            })))
+            .execute()
+        }
+      }
     }
 
-    transaction.set(settingsReference, {
-      schemaVersion: CATEGORY_SCHEMA_VERSION,
-      initializedAt: now,
-      updatedAt: now,
-    })
+    await trx
+      .updateTable("users")
+      .set({ categoriesInitializedAt: new Date() })
+      .where("id", "=", userId)
+      .execute()
   })
 }
 
 async function getCategoryGroupsUncached(
   userId: string,
 ): Promise<CategoryGroup[]> {
-  let [groupSnapshot, itemSnapshot] = await Promise.all([
-    getGroupsCollection(userId).where("status", "==", "active").get(),
-    getItemsCollection(userId).where("status", "==", "active").get(),
+  const db = getDb()
+  const [groups, items] = await Promise.all([
+    db.selectFrom("categoryGroups")
+      .select(["id", "type", "name", "iconName", "colorName", "sortOrder"])
+      .where("userId", "=", userId)
+      .where("status", "=", "active")
+      .execute(),
+    db.selectFrom("categoryItems")
+      .select(["id", "groupId", "type", "name", "iconName", "sortOrder"])
+      .where("userId", "=", userId)
+      .where("status", "=", "active")
+      .execute(),
   ])
 
-  if (groupSnapshot.empty && itemSnapshot.empty) {
-    await ensureDefaultCategories(userId)
-    ;[groupSnapshot, itemSnapshot] = await Promise.all([
-      getGroupsCollection(userId).where("status", "==", "active").get(),
-      getItemsCollection(userId).where("status", "==", "active").get(),
-    ])
-  }
-
-  const itemsByGroup = new Map<
-    string,
-    Array<Omit<CategoryItem, "colorName"> & { order: number }>
-  >()
-
-  itemSnapshot.docs.forEach((document) => {
-    const data = document.data() as CategoryItemDocument
-
-    if (data.status !== "active") return
-
-    const items = itemsByGroup.get(data.groupId) ?? []
-    items.push({
-      id: document.id,
-      groupId: data.groupId,
-      type: data.type,
-      name: data.name,
-      iconName: data.iconName,
-      order: data.order,
-    })
-    itemsByGroup.set(data.groupId, items)
-  })
-
-  return groupSnapshot.docs
-    .map((document) => {
-      const data = document.data() as CategoryGroupDocument
-
-      if (data.status !== "active") return null
-
-      const items = (itemsByGroup.get(document.id) ?? [])
+  return groups
+    .sort(compareByOrderThenName)
+    .map((group) => ({
+      id: group.id,
+      type: group.type as CategoryType,
+      name: group.name,
+      iconName: group.iconName as CategoryGroup["iconName"],
+      colorName: group.colorName as CategoryGroup["colorName"],
+      items: items
+        .filter((item) => item.groupId === group.id)
         .sort(compareByOrderThenName)
         .map((item) => ({
           id: item.id,
           groupId: item.groupId,
-          type: item.type,
+          type: item.type as CategoryType,
           name: item.name,
-          iconName: item.iconName,
-          colorName: data.colorName,
-        }))
-
-      return {
-        id: document.id,
-        type: data.type,
-        name: data.name,
-        iconName: data.iconName,
-        colorName: data.colorName,
-        order: data.order,
-        items,
-      }
-    })
-    .filter((group): group is CategoryGroup & { order: number } => group !== null)
-    .sort(compareByOrderThenName)
-    .map((group) => ({
-      id: group.id,
-      type: group.type,
-      name: group.name,
-      iconName: group.iconName,
-      colorName: group.colorName,
-      items: group.items,
+          iconName: item.iconName as CategoryGroup["iconName"],
+          // Items take their color from the group.
+          colorName: group.colorName as CategoryGroup["colorName"],
+        })),
     }))
 }
 
@@ -228,29 +152,51 @@ export async function createCategoryGroup(
   values: CategoryFormValues,
 ) {
   await ensureDefaultCategories(userId)
-  const collection = getGroupsCollection(userId)
-  const snapshot = await collection.get()
-  const activeGroupCount = snapshot.docs.filter((document) => {
-    const data = document.data() as CategoryGroupDocument
-    return data.status === "active" && data.type === type
-  }).length
 
-  if (activeGroupCount >= MAX_GROUPS_PER_TYPE) {
-    throw new CategoryValidationError(
-      `Mỗi loại chỉ được có tối đa ${MAX_GROUPS_PER_TYPE} nhóm.`,
-    )
-  }
+  return getDb().transaction().execute(async (trx) => {
+    // Serialises group creation per user so the limit below holds.
+    await trx.selectFrom("users").select("id").where("id", "=", userId).forUpdate().execute()
 
-  const now = FieldValue.serverTimestamp()
-  const reference = await collection.add({
-    ...values,
-    type,
-    order: Date.now(),
-    status: "active",
-    createdAt: now,
-    updatedAt: now,
+    const { count } = await trx
+      .selectFrom("categoryGroups")
+      .select((eb) => eb.fn.countAll<number>().as("count"))
+      .where("userId", "=", userId)
+      .where("type", "=", type)
+      .where("status", "=", "active")
+      .executeTakeFirstOrThrow()
+
+    if (Number(count) >= MAX_GROUPS_PER_TYPE) {
+      throw new CategoryValidationError(
+        `Mỗi loại chỉ được có tối đa ${MAX_GROUPS_PER_TYPE} nhóm.`,
+      )
+    }
+
+    const { id } = await trx
+      .insertInto("categoryGroups")
+      .values({ userId, type, ...values, sortOrder: Date.now() })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    return id
   })
-  return reference.id
+}
+
+async function updateActiveGroup(
+  userId: string,
+  groupId: string,
+  values: Partial<CategoryFormValues>,
+) {
+  const result = await getDb()
+    .updateTable("categoryGroups")
+    .set(values)
+    .where("id", "=", groupId)
+    .where("userId", "=", userId)
+    .where("status", "=", "active")
+    .executeTakeFirst()
+
+  if (result.numUpdatedRows === BigInt(0)) {
+    throw new CategoryValidationError("Nhóm hạng mục không tồn tại.")
+  }
 }
 
 export async function updateCategoryGroup(
@@ -258,18 +204,7 @@ export async function updateCategoryGroup(
   groupId: string,
   values: CategoryFormValues,
 ) {
-  const reference = getGroupsCollection(userId).doc(groupId)
-  const snapshot = await reference.get()
-
-  if (!snapshot.exists || snapshot.get("status") !== "active") {
-    throw new CategoryValidationError("Nhóm hạng mục không tồn tại.")
-  }
-
-  await reference.update({
-    ...values,
-    updatedAt: FieldValue.serverTimestamp(),
-  })
-  await syncCategoryNameInTransactions(userId, "categoryGroup", groupId, values.name)
+  await updateActiveGroup(userId, groupId, values)
 }
 
 export async function updateCategoryGroupName(
@@ -277,44 +212,31 @@ export async function updateCategoryGroupName(
   groupId: string,
   name: string,
 ) {
-  const reference = getGroupsCollection(userId).doc(groupId)
-  const snapshot = await reference.get()
-
-  if (!snapshot.exists || snapshot.get("status") !== "active") {
-    throw new CategoryValidationError("Nhóm hạng mục không tồn tại.")
-  }
-
-  await reference.update({ name, updatedAt: FieldValue.serverTimestamp() })
-  await syncCategoryNameInTransactions(userId, "categoryGroup", groupId, name)
+  await updateActiveGroup(userId, groupId, { name })
 }
 
 export async function archiveCategoryGroup(userId: string, groupId: string) {
-  const firestore = getFirebaseAdminFirestore()
-  const groupReference = getGroupsCollection(userId).doc(groupId)
-  await firestore.runTransaction(async (transaction) => {
-    const [groupSnapshot, itemSnapshot] = await Promise.all([
-      transaction.get(groupReference),
-      transaction.get(getItemsCollection(userId).where("groupId", "==", groupId)),
-    ])
+  await getDb().transaction().execute(async (trx) => {
+    const group = await trx
+      .updateTable("categoryGroups")
+      .set({ status: "archived" })
+      .where("id", "=", groupId)
+      .where("userId", "=", userId)
+      .where("status", "=", "active")
+      .returning("id")
+      .executeTakeFirst()
 
-    if (!groupSnapshot.exists || groupSnapshot.get("status") !== "active") {
+    if (!group) {
       throw new CategoryValidationError("Nhóm hạng mục không tồn tại.")
     }
 
-    const activeItems = itemSnapshot.docs.filter(
-      (document) => document.get("status") === "active",
-    )
-    if (activeItems.length > MAX_BATCHED_ITEMS) {
-      throw new CategoryValidationError(
-        "Nhóm có quá nhiều hạng mục để xoá an toàn.",
-      )
-    }
-
-    const now = FieldValue.serverTimestamp()
-    transaction.update(groupReference, { status: "archived", updatedAt: now })
-    activeItems.forEach((document) => {
-      transaction.update(document.ref, { status: "archived", updatedAt: now })
-    })
+    await trx
+      .updateTable("categoryItems")
+      .set({ status: "archived" })
+      .where("userId", "=", userId)
+      .where("groupId", "=", groupId)
+      .where("status", "=", "active")
+      .execute()
   })
 }
 
@@ -323,45 +245,45 @@ export async function createCategoryItem(
   groupId: string,
   values: CategoryItemFormValues,
 ) {
-  const firestore = getFirebaseAdminFirestore()
-  const groupReference = getGroupsCollection(userId).doc(groupId)
-  const itemReference = getItemsCollection(userId).doc()
-  await firestore.runTransaction(async (transaction) => {
-    const [groupSnapshot, itemSnapshot] = await Promise.all([
-      transaction.get(groupReference),
-      transaction.get(getItemsCollection(userId).where("groupId", "==", groupId)),
-    ])
+  await getDb().transaction().execute(async (trx) => {
+    // Locking the group serialises item creation against archiving it and
+    // against other creates, so the per-group limit holds.
+    const group = await trx
+      .selectFrom("categoryGroups")
+      .select(["type", "status"])
+      .where("id", "=", groupId)
+      .where("userId", "=", userId)
+      .forUpdate()
+      .executeTakeFirst()
 
-    if (!groupSnapshot.exists || groupSnapshot.get("status") !== "active") {
+    if (!group || group.status !== "active") {
       throw new CategoryValidationError("Nhóm hạng mục không tồn tại.")
     }
 
-    const activeItemCount = itemSnapshot.docs.filter(
-      (document) => document.get("status") === "active",
-    ).length
+    const { count } = await trx
+      .selectFrom("categoryItems")
+      .select((eb) => eb.fn.countAll<number>().as("count"))
+      .where("userId", "=", userId)
+      .where("groupId", "=", groupId)
+      .where("status", "=", "active")
+      .executeTakeFirstOrThrow()
 
-    if (activeItemCount >= MAX_ITEMS_PER_GROUP) {
+    if (Number(count) >= MAX_ITEMS_PER_GROUP) {
       throw new CategoryValidationError(
         `Mỗi nhóm chỉ được có tối đa ${MAX_ITEMS_PER_GROUP} hạng mục.`,
       )
     }
 
-    const type = groupSnapshot.get("type")
-    if (type !== "expense" && type !== "income") {
-      throw new CategoryValidationError("Loại nhóm hạng mục không hợp lệ.")
-    }
-
-    const now = FieldValue.serverTimestamp()
-    transaction.update(groupReference, { updatedAt: now })
-    transaction.create(itemReference, {
-      ...values,
-      groupId,
-      type,
-      order: Date.now(),
-      status: "active",
-      createdAt: now,
-      updatedAt: now,
-    })
+    await trx
+      .insertInto("categoryItems")
+      .values({
+        userId,
+        groupId,
+        type: group.type,
+        ...values,
+        sortOrder: Date.now(),
+      })
+      .execute()
   })
 }
 
@@ -370,48 +292,35 @@ export async function updateCategoryItem(
   itemId: string,
   values: CategoryItemFormValues,
 ) {
-  const firestore = getFirebaseAdminFirestore()
-  const reference = getItemsCollection(userId).doc(itemId)
-  await firestore.runTransaction(async (transaction) => {
-    const snapshot = await transaction.get(reference)
+  const result = await getDb()
+    .updateTable("categoryItems")
+    .set(values)
+    .where("id", "=", itemId)
+    .where("userId", "=", userId)
+    .where("status", "=", "active")
+    .where((eb) => eb.exists(
+      eb.selectFrom("categoryGroups")
+        .select("categoryGroups.id")
+        .whereRef("categoryGroups.id", "=", "categoryItems.groupId")
+        .where("categoryGroups.status", "=", "active"),
+    ))
+    .executeTakeFirst()
 
-    if (!snapshot.exists || snapshot.get("status") !== "active") {
-      throw new CategoryValidationError("Hạng mục không tồn tại.")
-    }
-
-    const groupId = snapshot.get("groupId")
-
-    if (typeof groupId !== "string") {
-      throw new CategoryValidationError("Nhóm hạng mục không hợp lệ.")
-    }
-
-    const groupSnapshot = await transaction.get(
-      getGroupsCollection(userId).doc(groupId),
-    )
-
-    if (!groupSnapshot.exists || groupSnapshot.get("status") !== "active") {
-      throw new CategoryValidationError("Nhóm hạng mục không tồn tại.")
-    }
-
-    transaction.update(reference, {
-      ...values,
-      colorName: FieldValue.delete(),
-      updatedAt: FieldValue.serverTimestamp(),
-    })
-  })
-  await syncCategoryNameInTransactions(userId, "category", itemId, values.name)
+  if (result.numUpdatedRows === BigInt(0)) {
+    throw new CategoryValidationError("Hạng mục không tồn tại.")
+  }
 }
 
 export async function archiveCategoryItem(userId: string, itemId: string) {
-  const reference = getItemsCollection(userId).doc(itemId)
-  const snapshot = await reference.get()
+  const result = await getDb()
+    .updateTable("categoryItems")
+    .set({ status: "archived" })
+    .where("id", "=", itemId)
+    .where("userId", "=", userId)
+    .where("status", "=", "active")
+    .executeTakeFirst()
 
-  if (!snapshot.exists || snapshot.get("status") !== "active") {
+  if (result.numUpdatedRows === BigInt(0)) {
     throw new CategoryValidationError("Hạng mục không tồn tại.")
   }
-
-  await reference.update({
-    status: "archived",
-    updatedAt: FieldValue.serverTimestamp(),
-  })
 }

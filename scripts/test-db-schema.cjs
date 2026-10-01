@@ -41,6 +41,9 @@ const PERMISSION = '42501'
 async function run() {
   await client.connect()
   await client.query('BEGIN')
+  // Cross-table keys are deferred to commit; check them per statement here so
+  // each rejected case fails where it happens.
+  await client.query('SET CONSTRAINTS ALL IMMEDIATE')
   try {
     const alice = `test_${randomUUID()}`
     const bob = `test_${randomUUID()}`
@@ -119,8 +122,14 @@ async function run() {
     const touched = (await client.query(`SELECT updated_at = now() AS current FROM accounts WHERE id = $1`, [aliceSaving])).rows[0]
     assert.equal(touched.current, true, 'trigger sets updated_at on update')
 
-    // Deleting a user removes everything they own
+    // Deleting a user removes everything they own, payments included
+    const keptDebt = (await client.query(insertDebt, [alice, contact, 'cash-flow', aliceCash, null, null])).rows[0].id
+    await client.query(`INSERT INTO debt_payments (user_id, debt_id, account_id, amount, paid_at, paid_time)
+      VALUES ($1, $2, $3, 100, current_date, '09:30')`, [alice, keptDebt, aliceSaving])
+    // As in a real commit: deferred keys are checked once the cascade is done.
+    await client.query('SET CONSTRAINTS ALL DEFERRED')
     await client.query(`DELETE FROM users WHERE id = $1`, [alice])
+    await client.query('SET CONSTRAINTS ALL IMMEDIATE')
     const remaining = await client.query(`SELECT
       (SELECT count(*) FROM accounts WHERE user_id = $1) +
       (SELECT count(*) FROM transactions WHERE user_id = $1) +

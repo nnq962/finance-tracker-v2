@@ -1,42 +1,13 @@
 /* eslint-disable @typescript-eslint/no-require-imports -- CommonJS harness loads server TypeScript modules. */
-/* Run: CATEGORY_TEST_LIVE=1 node scripts/test-categories-integration.cjs */
+/* Run: npm run db:up && node scripts/test-categories-integration.cjs */
 const assert = require('node:assert/strict')
-const fs = require('node:fs')
-const path = require('node:path')
-const Module = require('node:module')
-const { randomUUID } = require('node:crypto')
-const ts = require('typescript')
-
-if (process.env.CATEGORY_TEST_LIVE !== '1') {
-  throw new Error('Set CATEGORY_TEST_LIVE=1 to run the isolated Firestore check.')
-}
-
-require('@next/env').loadEnvConfig(process.cwd())
-const originalLoad = Module._load
-Module._load = function (id, parent, main) {
-  if (id === 'server-only') return {}
-  if (id.startsWith('@/')) id = path.join(process.cwd(), id.slice(2))
-  return originalLoad.call(this, id, parent, main)
-}
-require.extensions['.ts'] = (mod, filename) => mod._compile(
-  ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2022,
-      esModuleInterop: true,
-    },
-  }).outputText,
-  filename,
-)
-
+const { sql, createUser, cleanup } = require('./lib/db-harness.cjs')
 const categories = require('../lib/categories/repository.ts')
 const validation = require('../lib/categories/validation.ts')
-const { getFirebaseAdminFirestore } = require('../lib/firebase/admin.ts')
-const firestore = getFirebaseAdminFirestore()
-const userId = `codex_category_test_${randomUUID()}`
-const emptyUserId = `codex_category_test_${randomUUID()}`
-const root = firestore.collection('users').doc(userId)
-const emptyRoot = firestore.collection('users').doc(emptyUserId)
+const { createTransaction, getTransactions } = require('../lib/transactions/repository.ts')
+const { defaultCategoryGroups } = require('../lib/categories/defaults.ts')
+
+const count = async (text, params) => Number((await sql(text, params)).rows[0].count)
 
 async function run() {
   try {
@@ -49,50 +20,44 @@ async function run() {
       validation.CategoryValidationError,
     )
     assert.equal(validation.parseCategoryItemFormValues({ name: 'Test', iconName: 'coffee' }).iconName, 'coffee')
+    assert.throws(() => validation.assertCategoryId('food'), validation.CategoryValidationError)
 
-    await root.collection('categoryGroups').doc('food').set({
-      name: 'Nhóm đã sửa', type: 'expense', iconName: 'utensils', colorName: 'orange',
-      order: 0, status: 'active',
-    })
-    await root.collection('categoryItems').doc('breakfast').set({
-      name: 'Mục đã sửa', groupId: 'food', type: 'expense', iconName: 'coffee',
-      order: 0, status: 'active',
-    })
+    // A user with categories of their own is not given the defaults.
+    const userId = await createUser('category_test')
+    const food = (await sql(`INSERT INTO category_groups (user_id, type, name, icon_name, color_name)
+      VALUES ($1, 'expense', 'Nhóm đã sửa', 'utensils', 'orange') RETURNING id`, [userId])).rows[0].id
+    const breakfast = (await sql(`INSERT INTO category_items (user_id, group_id, type, name, icon_name)
+      VALUES ($1, $2, 'expense', 'Mục đã sửa', 'coffee') RETURNING id`, [userId, food])).rows[0].id
     await categories.ensureDefaultCategories(userId)
-    assert.equal((await root.collection('categoryGroups').doc('food').get()).get('name'), 'Nhóm đã sửa')
-    assert.equal((await root.collection('categoryItems').doc('breakfast').get()).get('name'), 'Mục đã sửa')
-    assert.equal((await root.collection('categoryGroups').get()).size, 1)
-    assert.equal((await root.collection('categorySettings').doc('default').get()).exists, true)
+    assert.equal(await count('SELECT count(*) FROM category_groups WHERE user_id = $1', [userId]), 1)
+    assert.ok((await sql('SELECT categories_initialized_at FROM users WHERE id = $1', [userId])).rows[0].categories_initialized_at)
 
-    await categories.ensureDefaultCategories(emptyUserId)
-    assert.equal((await emptyRoot.collection('categoryGroups').doc('food').get()).exists, true)
-    assert.equal((await emptyRoot.collection('categoryItems').doc('breakfast').get()).exists, true)
+    // A new user gets every default once, even with concurrent first sign-ins.
+    const newUserId = await createUser('category_test')
+    await Promise.all([1, 2, 3].map(() => categories.ensureDefaultCategories(newUserId)))
+    const groups = await categories.getCategoryGroups(newUserId)
+    assert.deepEqual(groups.map((group) => group.name), defaultCategoryGroups.map((group) => group.name))
+    assert.equal(
+      groups.reduce((total, group) => total + group.items.length, 0),
+      defaultCategoryGroups.reduce((total, group) => total + group.items.length, 0),
+    )
+    assert.ok(groups.every((group) => group.items.every((item) => item.colorName === group.colorName)))
 
-    // Renaming a category or group refreshes the names on its transactions,
-    // leaving transactions of other categories untouched.
-    await root.collection('transactions').doc('meal').set({
-      kind: 'expense', amount: 1000, categoryId: 'breakfast', categoryName: 'Mục đã sửa',
-      categoryGroupId: 'food', categoryGroupName: 'Nhóm đã sửa',
-    })
-    await root.collection('transactions').doc('other').set({
-      kind: 'expense', amount: 1000, categoryId: 'lunch', categoryName: 'Trưa',
-      categoryGroupId: 'drinks', categoryGroupName: 'Đồ uống',
-    })
-    await categories.updateCategoryItem(userId, 'breakfast', { name: 'Bữa sáng', iconName: 'coffee' })
-    await categories.updateCategoryGroupName(userId, 'food', 'Ăn uống')
-    const meal = await root.collection('transactions').doc('meal').get()
-    assert.equal(meal.get('categoryName'), 'Bữa sáng')
-    assert.equal(meal.get('categoryGroupName'), 'Ăn uống')
-    const other = await root.collection('transactions').doc('other').get()
-    assert.equal(other.get('categoryName'), 'Trưa')
-    assert.equal(other.get('categoryGroupName'), 'Đồ uống')
+    // Renames show on existing transactions, which read names by join.
+    const account = (await sql(`INSERT INTO accounts (user_id, name, type, opening_balance, balance)
+      VALUES ($1, 'Ví', 'cash', 100000, 100000) RETURNING id`, [userId])).rows[0].id
+    await createTransaction(userId, { kind: 'expense', amount: 1000, accountId: account, categoryId: breakfast, occurredAt: new Date() })
+    await categories.updateCategoryItem(userId, breakfast, { name: 'Bữa sáng', iconName: 'coffee' })
+    await categories.updateCategoryGroupName(userId, food, 'Ăn uống')
+    const [meal] = await getTransactions(userId)
+    assert.equal(meal.categoryName, 'Bữa sáng')
+    assert.equal(meal.categoryGroupName, 'Ăn uống')
+    await assert.rejects(() => categories.updateCategoryGroupName(newUserId, food, 'Not mine'), validation.CategoryValidationError)
 
+    // Creating an item races with archiving its group: either may win, but no
+    // active item may remain in an archived group.
     for (let index = 0; index < 3; index++) {
-      const groupId = `race_${index}`
-      await root.collection('categoryGroups').doc(groupId).set({
-        name: 'Race', type: 'expense', iconName: 'utensils', colorName: 'orange',
-        order: index + 1, status: 'active',
-      })
+      const groupId = await categories.createCategoryGroup(userId, 'expense', { name: 'Race', iconName: 'utensils', colorName: 'orange' })
       const [createResult, archiveResult] = await Promise.allSettled([
         categories.createCategoryItem(userId, groupId, { name: 'Mục mới', iconName: 'coffee' }),
         categories.archiveCategoryGroup(userId, groupId),
@@ -101,9 +66,7 @@ async function run() {
       if (createResult.status === 'rejected') {
         assert.ok(createResult.reason instanceof validation.CategoryValidationError)
       }
-      assert.equal((await root.collection('categoryGroups').doc(groupId).get()).get('status'), 'archived')
-      const items = await root.collection('categoryItems').where('groupId', '==', groupId).get()
-      assert.equal(items.docs.some((item) => item.get('status') === 'active'), false)
+      assert.equal(await count(`SELECT count(*) FROM category_items WHERE group_id = $1 AND status = 'active'`, [groupId]), 0)
       await assert.rejects(
         () => categories.createCategoryItem(userId, groupId, { name: 'Mục muộn', iconName: 'coffee' }),
         validation.CategoryValidationError,
@@ -111,8 +74,7 @@ async function run() {
     }
     console.log('Category integration checks passed.')
   } finally {
-    await Promise.all([firestore.recursiveDelete(root), firestore.recursiveDelete(emptyRoot)])
-    await firestore.terminate()
+    await cleanup()
   }
 }
 

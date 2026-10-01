@@ -1,8 +1,10 @@
 import "server-only"
 
-import { FieldValue, Timestamp } from "firebase-admin/firestore"
+import type { Transaction as DbTransaction } from "kysely"
 
-import { getFirebaseAdminFirestore } from "@/lib/firebase/admin"
+import { lockAccounts, setBalance, shiftBalance, type LockedAccount } from "@/lib/db/accounts"
+import { getDb } from "@/lib/db/client"
+import type { DB } from "@/lib/db/types"
 import type {
   SupportedTransactionKind,
   Transaction,
@@ -10,197 +12,153 @@ import type {
 } from "@/lib/transactions/types"
 import { TransactionValidationError } from "@/lib/transactions/validation"
 
-const MAX_MONEY = 999_999_999_999_999
-
-type TransactionDocument = {
-  source?: "debt"
-  debtId?: string
-  debtPaymentId?: string
-  kind: SupportedTransactionKind
+type Movement = {
+  kind: string
   amount: number
-  fee?: number
-  note?: string
-  occurredAt: Timestamp
-  accountIds: string[]
-  accountId?: string
-  accountName?: string
-  categoryId?: string
-  categoryName?: string
-  categoryGroupId?: string
-  categoryGroupName?: string
-  fromAccountId?: string
-  fromAccountName?: string
-  toAccountId?: string
-  toAccountName?: string
-  createdAt: Timestamp
-  updatedAt: Timestamp
+  fee: number
+  accountId: string | null
+  fromAccountId: string | null
+  toAccountId: string | null
 }
 
-type AccountDocument = {
-  balance: number
-  name: string
-  status: "active" | "archived"
+function getAccountIds(values: Movement) {
+  return [values.accountId, values.fromAccountId, values.toAccountId]
+    .filter((id): id is string => Boolean(id))
 }
 
-type CategoryItemDocument = {
-  groupId: string
-  name: string
-  status: "active" | "archived"
-  type: "expense" | "income"
+function getBalanceImpacts(values: Movement) {
+  if (values.kind === "transfer") {
+    return new Map([
+      [values.fromAccountId!, -(values.amount + values.fee)],
+      [values.toAccountId!, values.amount],
+    ])
+  }
+
+  return new Map([[values.accountId!, values.kind === "expense" ? -values.amount : values.amount]])
 }
 
-type CategoryGroupDocument = {
-  name: string
-  status: "active" | "archived"
-  type: "expense" | "income"
-}
-
-function getUserReference(userId: string) {
-  return getFirebaseAdminFirestore().collection("users").doc(userId)
-}
-
-function getTransactionsCollection(userId: string) {
-  return getUserReference(userId).collection("transactions")
-}
-
-function getAccountReference(userId: string, accountId: string) {
-  return getUserReference(userId).collection("accounts").doc(accountId)
-}
-
-function getCategoryItemReference(userId: string, categoryId: string) {
-  return getUserReference(userId).collection("categoryItems").doc(categoryId)
-}
-
-function getCategoryGroupReference(userId: string, groupId: string) {
-  return getUserReference(userId).collection("categoryGroups").doc(groupId)
-}
-
-function getAccountIds(values: TransactionFormValues) {
+function toMovement(values: TransactionFormValues): Movement {
   return values.kind === "transfer"
-    ? [values.fromAccountId, values.toAccountId]
-    : [values.accountId]
-}
-
-function getDocumentAccountIds(document: TransactionDocument) {
-  if (document.kind === "transfer") {
-    if (!document.fromAccountId || !document.toAccountId) {
-      throw new TransactionValidationError("Dữ liệu giao dịch không hợp lệ.")
+    ? {
+      kind: values.kind,
+      amount: values.amount,
+      fee: values.fee,
+      accountId: null,
+      fromAccountId: values.fromAccountId,
+      toAccountId: values.toAccountId,
     }
-
-    return [document.fromAccountId, document.toAccountId]
-  }
-
-  if (!document.accountId) {
-    throw new TransactionValidationError("Dữ liệu giao dịch không hợp lệ.")
-  }
-
-  return [document.accountId]
+    : {
+      kind: values.kind,
+      amount: values.amount,
+      fee: 0,
+      accountId: values.accountId,
+      fromAccountId: null,
+      toAccountId: null,
+    }
 }
 
-function getBalanceImpacts(
-  values: Pick<TransactionDocument, "accountId" | "amount" | "fee" | "fromAccountId" | "kind" | "toAccountId">,
-) {
-  if (values.kind === "expense") {
-    return new Map([[values.accountId as string, -values.amount]])
-  }
-
-  if (values.kind === "income") {
-    return new Map([[values.accountId as string, values.amount]])
-  }
-
-  return new Map([
-    [values.fromAccountId as string, -(values.amount + (values.fee ?? 0))],
-    [values.toAccountId as string, values.amount],
-  ])
-}
-
-function mergeImpact(
+async function applyImpacts(
+  trx: DbTransaction<DB>,
+  accounts: Map<string, LockedAccount>,
   impacts: Map<string, number>,
-  accountId: string,
-  delta: number,
 ) {
-  impacts.set(accountId, (impacts.get(accountId) ?? 0) + delta)
+  for (const [accountId, delta] of impacts) {
+    if (delta === 0) continue
+
+    const account = accounts.get(accountId)
+    const balance = account ? shiftBalance(account.balance, delta) : null
+
+    if (balance === null) {
+      throw new TransactionValidationError(
+        delta < 0
+          ? "Tài khoản không đủ số dư để thực hiện giao dịch."
+          : "Số dư tài khoản vượt quá giới hạn cho phép.",
+      )
+    }
+
+    await setBalance(trx, accountId, balance)
+  }
 }
 
-function assertBalance(balance: unknown, delta: number) {
-  if (!Number.isSafeInteger(balance)) {
-    throw new TransactionValidationError("Số dư tài khoản không hợp lệ.")
-  }
-
-  const nextBalance = (balance as number) + delta
-
-  if (
-    !Number.isSafeInteger(nextBalance) ||
-    nextBalance < 0 ||
-    nextBalance > MAX_MONEY
-  ) {
-    throw new TransactionValidationError(
-      delta < 0
-        ? "Tài khoản không đủ số dư để thực hiện giao dịch."
-        : "Số dư tài khoản vượt quá giới hạn cho phép.",
-    )
-  }
-
-  return nextBalance
+function selectTransactions(userId: string) {
+  return getDb()
+    .selectFrom("transactions as t")
+    .leftJoin("accounts as a", "a.id", "t.accountId")
+    .leftJoin("accounts as fa", "fa.id", "t.fromAccountId")
+    .leftJoin("accounts as ta", "ta.id", "t.toAccountId")
+    .leftJoin("categoryItems as ci", "ci.id", "t.categoryItemId")
+    .leftJoin("categoryGroups as cg", "cg.id", "ci.groupId")
+    .leftJoin("debts as d", "d.id", "t.debtId")
+    .leftJoin("contacts as c", "c.id", "d.contactId")
+    .select([
+      "t.id", "t.kind", "t.amount", "t.fee", "t.note", "t.occurredAt", "t.debtId",
+      "t.accountId", "a.name as accountName",
+      "t.fromAccountId", "fa.name as fromAccountName",
+      "t.toAccountId", "ta.name as toAccountName",
+      "t.categoryItemId", "ci.name as categoryName",
+      "ci.groupId as categoryGroupId", "cg.name as categoryGroupName",
+      "d.direction as debtDirection", "c.name as contactName",
+    ])
+    .where("t.userId", "=", userId)
+    .orderBy("t.occurredAt", "desc")
+    .orderBy("t.id", "desc")
 }
 
-function toTransaction(id: string, data: TransactionDocument): Transaction {
-  if (data.kind === "transfer") {
+type TransactionRow = Awaited<ReturnType<ReturnType<typeof selectTransactions>["execute"]>>[number]
+
+function toTransaction(row: TransactionRow): Transaction {
+  const kind = row.kind as SupportedTransactionKind
+  const note = row.note ?? undefined
+  const occurredAt = row.occurredAt.toISOString()
+
+  if (kind === "transfer") {
+    const fromAccountName = row.fromAccountName ?? undefined
+    const toAccountName = row.toAccountName ?? undefined
+
     return {
-      id,
-      kind: data.kind,
+      id: row.id,
+      kind,
       title: "Chuyển khoản",
-      description: `${data.fromAccountName ?? "Tài khoản"} → ${data.toAccountName ?? "Tài khoản"}${data.fee ? ` · Phí ${data.fee.toLocaleString("vi-VN")}đ` : ""}`,
-      amount: data.amount,
-      fee: data.fee ?? 0,
-      fromAccountId: data.fromAccountId,
-      fromAccountName: data.fromAccountName,
-      toAccountId: data.toAccountId,
-      toAccountName: data.toAccountName,
-      note: data.note,
-      occurredAt: data.occurredAt.toDate().toISOString(),
+      description: `${fromAccountName ?? "Tài khoản"} → ${toAccountName ?? "Tài khoản"}${row.fee ? ` · Phí ${row.fee.toLocaleString("vi-VN")}đ` : ""}`,
+      amount: row.amount,
+      fee: row.fee,
+      fromAccountId: row.fromAccountId ?? undefined,
+      fromAccountName,
+      toAccountId: row.toAccountId ?? undefined,
+      toAccountName,
+      note,
+      occurredAt,
     }
   }
+
+  // A loan's initial cash movement has no category; it is labelled from the loan.
+  const categoryName = row.debtId
+    ? `${row.debtDirection === "borrowed" ? "Đi vay" : "Cho vay"} · ${row.contactName ?? "Người liên hệ"}`
+    : row.categoryName ?? undefined
+  const categoryGroupName = row.debtId ? "Vay & nợ" : row.categoryGroupName ?? undefined
+  const accountName = row.accountName ?? undefined
 
   return {
-    id,
-    source: data.source,
-    debtId: data.debtId,
-    debtPaymentId: data.debtPaymentId,
-    kind: data.kind,
-    title: data.categoryName ?? "Giao dịch",
-    description: `${data.categoryGroupName ?? "Hạng mục"} · ${data.accountName ?? "Tài khoản"}`,
-    amount: data.kind === "expense" ? -data.amount : data.amount,
-    accountId: data.accountId,
-    accountName: data.accountName,
-    categoryId: data.categoryId,
-    categoryName: data.categoryName,
-    categoryGroupId: data.categoryGroupId,
-    categoryGroupName: data.categoryGroupName,
-    note: data.note,
-    occurredAt: data.occurredAt.toDate().toISOString(),
+    id: row.id,
+    ...(row.debtId ? { source: "debt" as const, debtId: row.debtId } : {}),
+    kind,
+    title: categoryName ?? "Giao dịch",
+    description: `${categoryGroupName ?? "Hạng mục"} · ${accountName ?? "Tài khoản"}`,
+    amount: kind === "expense" ? -row.amount : row.amount,
+    accountId: row.accountId ?? undefined,
+    accountName,
+    categoryId: row.categoryItemId ?? undefined,
+    categoryName,
+    categoryGroupId: row.categoryGroupId ?? undefined,
+    categoryGroupName,
+    note,
+    occurredAt,
   }
-}
-
-function visibleTransactions(snapshot: FirebaseFirestore.QuerySnapshot) {
-  // Older debt-payment ledgers can still exist in production data. They are
-  // balance records, not rows that should appear in the transaction UI.
-  return snapshot.docs
-    .filter(
-      (document) =>
-        !(document.get("source") === "debt" && document.get("debtPaymentId")),
-    )
-    .map((document) =>
-      toTransaction(document.id, document.data() as TransactionDocument),
-    )
 }
 
 export async function getTransactions(userId: string): Promise<Transaction[]> {
-  const snapshot = await getTransactionsCollection(userId)
-    .orderBy("occurredAt", "desc")
-    .get()
-
-  return visibleTransactions(snapshot)
+  const rows = await selectTransactions(userId).execute()
+  return rows.map(toTransaction)
 }
 
 export async function getTransactionsInRange(
@@ -208,149 +166,82 @@ export async function getTransactionsInRange(
   start: Date,
   end: Date,
 ): Promise<Transaction[]> {
-  const snapshot = await getTransactionsCollection(userId)
-    .where("occurredAt", ">=", Timestamp.fromDate(start))
-    .where("occurredAt", "<", Timestamp.fromDate(end))
-    .orderBy("occurredAt", "desc")
-    .get()
+  const rows = await selectTransactions(userId)
+    .where("t.occurredAt", ">=", start)
+    .where("t.occurredAt", "<", end)
+    .execute()
 
-  return visibleTransactions(snapshot)
+  return rows.map(toTransaction)
 }
 
-async function getTransactionDetails(
-  firestoreTransaction: FirebaseFirestore.Transaction,
+/**
+ * Locks and checks the accounts and category of a new or edited transaction.
+ * When editing, the accounts and category it already uses may be archived.
+ */
+async function prepare(
+  trx: DbTransaction<DB>,
   userId: string,
   values: TransactionFormValues,
-  options: {
-    allowedArchivedAccountIds?: Set<string>
-    allowedArchivedCategoryId?: string
-  } = {},
+  existing?: Movement & { categoryItemId: string | null },
 ) {
-  const accountIds = getAccountIds(values)
-  const accountReferences = accountIds.map((accountId) =>
-    getAccountReference(userId, accountId),
-  )
-  const accountSnapshots = await firestoreTransaction.getAll(...accountReferences)
-  const accounts = new Map<string, AccountDocument>()
+  const accountIds = getAccountIds(toMovement(values))
+  const previousAccountIds = existing ? getAccountIds(existing) : []
+  const accounts = await lockAccounts(trx, userId, [...accountIds, ...previousAccountIds])
 
-  accountSnapshots.forEach((snapshot) => {
-    const isAllowedArchivedAccount =
-      snapshot.exists && options.allowedArchivedAccountIds?.has(snapshot.id)
+  for (const accountId of accountIds) {
+    const account = accounts.get(accountId)
 
-    if (
-      !snapshot.exists ||
-      (snapshot.get("status") !== "active" && !isAllowedArchivedAccount)
-    ) {
+    if (!account || (account.status !== "active" && !previousAccountIds.includes(accountId))) {
       throw new TransactionValidationError(
         "Tài khoản không tồn tại hoặc đã ngừng sử dụng.",
       )
     }
-
-    accounts.set(snapshot.id, snapshot.data() as AccountDocument)
-  })
-
-  if (values.kind === "transfer") {
-    return { accounts }
   }
 
-  const itemSnapshot = await firestoreTransaction.get(
-    getCategoryItemReference(userId, values.categoryId),
-  )
-
-  const isAllowedArchivedCategory =
-    itemSnapshot.exists &&
-    options.allowedArchivedCategoryId === itemSnapshot.id
-
-  if (
-    !itemSnapshot.exists ||
-    (itemSnapshot.get("status") !== "active" && !isAllowedArchivedCategory)
-  ) {
+  if (previousAccountIds.some((accountId) => !accounts.has(accountId))) {
     throw new TransactionValidationError(
-      "Hạng mục không tồn tại hoặc đã ngừng sử dụng.",
+      "Tài khoản của giao dịch cũ không còn tồn tại.",
     )
   }
 
-  const category = itemSnapshot.data() as CategoryItemDocument
+  if (values.kind !== "transfer") {
+    const category = await trx
+      .selectFrom("categoryItems as ci")
+      .innerJoin("categoryGroups as cg", "cg.id", "ci.groupId")
+      .select(["ci.type", "ci.status", "cg.status as groupStatus"])
+      .where("ci.id", "=", values.categoryId)
+      .where("ci.userId", "=", userId)
+      .executeTakeFirst()
+    const isPreviousCategory = existing?.categoryItemId === values.categoryId
 
-  if (category.type !== values.kind) {
-    throw new TransactionValidationError(
-      "Hạng mục không phù hợp với loại giao dịch.",
-    )
+    if (!category || (category.status !== "active" && !isPreviousCategory)) {
+      throw new TransactionValidationError(
+        "Hạng mục không tồn tại hoặc đã ngừng sử dụng.",
+      )
+    }
+
+    if (category.type !== values.kind) {
+      throw new TransactionValidationError(
+        "Hạng mục không phù hợp với loại giao dịch.",
+      )
+    }
+
+    if (category.groupStatus !== "active" && !isPreviousCategory) {
+      throw new TransactionValidationError(
+        "Nhóm hạng mục không tồn tại hoặc đã ngừng sử dụng.",
+      )
+    }
   }
 
-  const groupSnapshot = await firestoreTransaction.get(
-    getCategoryGroupReference(userId, category.groupId),
-  )
-
-  if (
-    !groupSnapshot.exists ||
-    (groupSnapshot.get("status") !== "active" && !isAllowedArchivedCategory)
-  ) {
-    throw new TransactionValidationError(
-      "Nhóm hạng mục không tồn tại hoặc đã ngừng sử dụng.",
-    )
-  }
-
-  const categoryGroup = groupSnapshot.data() as CategoryGroupDocument
-
-  if (categoryGroup.type !== values.kind) {
-    throw new TransactionValidationError(
-      "Nhóm hạng mục không phù hợp với loại giao dịch.",
-    )
-  }
-
-  return { accounts, category, categoryGroup }
+  return accounts
 }
 
-function createDocument(
-  values: TransactionFormValues,
-  details: Awaited<ReturnType<typeof getTransactionDetails>>,
-  timestamps: { createdAt: FieldValue; updatedAt: FieldValue },
-) {
-  const common = {
-    kind: values.kind,
-    amount: values.amount,
-    occurredAt: Timestamp.fromDate(values.occurredAt),
-    accountIds: getAccountIds(values),
-    createdAt: timestamps.createdAt,
-    updatedAt: timestamps.updatedAt,
-    ...(values.note ? { note: values.note } : {}),
-  }
-
-  if (values.kind === "transfer") {
-    const fromAccount = details.accounts.get(values.fromAccountId)
-    const toAccount = details.accounts.get(values.toAccountId)
-
-    if (!fromAccount || !toAccount) {
-      throw new TransactionValidationError("Tài khoản không tồn tại.")
-    }
-
-    return {
-      ...common,
-      fee: values.fee,
-      fromAccountId: values.fromAccountId,
-      fromAccountName: fromAccount.name,
-      toAccountId: values.toAccountId,
-      toAccountName: toAccount.name,
-    }
-  }
-
-  const account = details.accounts.get(values.accountId)
-
-  if (!account || !details.category || !details.categoryGroup) {
-    throw new TransactionValidationError(
-      "Tài khoản hoặc hạng mục không tồn tại.",
-    )
-  }
-
+function toRow(values: TransactionFormValues) {
   return {
-    ...common,
-    accountId: values.accountId,
-    accountName: account.name,
-    categoryId: values.categoryId,
-    categoryName: details.category.name,
-    categoryGroupId: details.category.groupId,
-    categoryGroupName: details.categoryGroup.name,
+    ...toMovement(values),
+    categoryItemId: values.kind === "transfer" ? null : values.categoryId,
+    note: values.note ?? null,
+    occurredAt: values.occurredAt,
   }
 }
 
@@ -358,32 +249,42 @@ export async function createTransaction(
   userId: string,
   values: TransactionFormValues,
 ) {
-  const firestore = getFirebaseAdminFirestore()
-  const transactionReference = getTransactionsCollection(userId).doc()
+  await getDb().transaction().execute(async (trx) => {
+    const accounts = await prepare(trx, userId, values)
 
-  await firestore.runTransaction(async (firestoreTransaction) => {
-    const details = await getTransactionDetails(
-      firestoreTransaction,
-      userId,
-      values,
-    )
-    const document = createDocument(values, details, {
-      createdAt: FieldValue.serverTimestamp(),
-      updatedAt: FieldValue.serverTimestamp(),
-    })
-    const impacts = getBalanceImpacts(document)
-
-    impacts.forEach((delta, accountId) => {
-      const account = details.accounts.get(accountId)
-      const accountReference = getAccountReference(userId, accountId)
-
-      firestoreTransaction.update(accountReference, {
-        balance: assertBalance(account?.balance, delta),
-        updatedAt: FieldValue.serverTimestamp(),
-      })
-    })
-    firestoreTransaction.create(transactionReference, document)
+    await applyImpacts(trx, accounts, getBalanceImpacts(toMovement(values)))
+    await trx
+      .insertInto("transactions")
+      .values({ userId, ...toRow(values) })
+      .execute()
   })
+}
+
+async function lockExisting(
+  trx: DbTransaction<DB>,
+  userId: string,
+  transactionId: string,
+  action: "sửa" | "xoá",
+) {
+  const existing = await trx
+    .selectFrom("transactions")
+    .select(["kind", "amount", "fee", "accountId", "fromAccountId", "toAccountId", "categoryItemId", "debtId"])
+    .where("id", "=", transactionId)
+    .where("userId", "=", userId)
+    .forUpdate()
+    .executeTakeFirst()
+
+  if (!existing) {
+    throw new TransactionValidationError("Giao dịch không tồn tại.")
+  }
+
+  if (existing.debtId) {
+    throw new TransactionValidationError(
+      `Hãy ${action} giao dịch này tại trang Nợ & Cho vay để giữ đồng bộ khoản nợ.`,
+    )
+  }
+
+  return existing
 }
 
 export async function updateTransaction(
@@ -391,111 +292,33 @@ export async function updateTransaction(
   transactionId: string,
   values: TransactionFormValues,
 ) {
-  const firestore = getFirebaseAdminFirestore()
-  const transactionReference = getTransactionsCollection(userId).doc(transactionId)
-
-  await firestore.runTransaction(async (firestoreTransaction) => {
-    const existingSnapshot = await firestoreTransaction.get(transactionReference)
-
-    if (!existingSnapshot.exists) {
-      throw new TransactionValidationError("Giao dịch không tồn tại.")
-    }
-
-    if (existingSnapshot.get("source") === "debt") throw new TransactionValidationError("Hãy sửa giao dịch này tại trang Nợ & Cho vay để giữ đồng bộ khoản nợ.")
-    const existing = existingSnapshot.data() as TransactionDocument
-    const existingAccountIds = new Set(getDocumentAccountIds(existing))
-    const details = await getTransactionDetails(
-      firestoreTransaction,
-      userId,
-      values,
-      {
-        allowedArchivedAccountIds: existingAccountIds,
-        allowedArchivedCategoryId: existing.categoryId,
-      },
-    )
-    const allAccountIds = Array.from(
-      new Set([...existingAccountIds, ...getAccountIds(values)]),
-    )
-    const missingAccountIds = allAccountIds.filter(
-      (accountId) => !details.accounts.has(accountId),
-    )
-
-    if (missingAccountIds.length > 0) {
-      const snapshots = await firestoreTransaction.getAll(
-        ...missingAccountIds.map((accountId) =>
-          getAccountReference(userId, accountId),
-        ),
-      )
-
-      snapshots.forEach((snapshot) => {
-        if (!snapshot.exists) {
-          throw new TransactionValidationError(
-            "Tài khoản của giao dịch cũ không còn tồn tại.",
-          )
-        }
-        details.accounts.set(snapshot.id, snapshot.data() as AccountDocument)
-      })
-    }
-
-    const updatedDocument = createDocument(values, details, {
-      createdAt: existing.createdAt,
-      updatedAt: FieldValue.serverTimestamp(),
-    })
+  await getDb().transaction().execute(async (trx) => {
+    const existing = await lockExisting(trx, userId, transactionId, "sửa")
+    const accounts = await prepare(trx, userId, values, existing)
     const impacts = new Map<string, number>()
+    const merge = (accountId: string, delta: number) =>
+      impacts.set(accountId, (impacts.get(accountId) ?? 0) + delta)
 
-    getBalanceImpacts(existing).forEach((delta, accountId) =>
-      mergeImpact(impacts, accountId, -delta),
-    )
-    getBalanceImpacts(updatedDocument).forEach((delta, accountId) =>
-      mergeImpact(impacts, accountId, delta),
-    )
+    getBalanceImpacts(existing).forEach((delta, accountId) => merge(accountId, -delta))
+    getBalanceImpacts(toMovement(values)).forEach((delta, accountId) => merge(accountId, delta))
 
-    impacts.forEach((delta, accountId) => {
-      const account = details.accounts.get(accountId)
-      firestoreTransaction.update(getAccountReference(userId, accountId), {
-        balance: assertBalance(account?.balance, delta),
-        updatedAt: FieldValue.serverTimestamp(),
-      })
-    })
-    firestoreTransaction.set(transactionReference, updatedDocument)
+    await applyImpacts(trx, accounts, impacts)
+    await trx
+      .updateTable("transactions")
+      .set(toRow(values))
+      .where("id", "=", transactionId)
+      .execute()
   })
 }
 
 export async function deleteTransaction(userId: string, transactionId: string) {
-  const firestore = getFirebaseAdminFirestore()
-  const transactionReference = getTransactionsCollection(userId).doc(transactionId)
+  await getDb().transaction().execute(async (trx) => {
+    const existing = await lockExisting(trx, userId, transactionId, "xoá")
+    const accounts = await lockAccounts(trx, userId, getAccountIds(existing))
+    const impacts = new Map<string, number>()
 
-  await firestore.runTransaction(async (firestoreTransaction) => {
-    const snapshot = await firestoreTransaction.get(transactionReference)
-
-    if (!snapshot.exists) {
-      throw new TransactionValidationError("Giao dịch không tồn tại.")
-    }
-
-    if (snapshot.get("source") === "debt") throw new TransactionValidationError("Hãy xoá giao dịch này tại trang Nợ & Cho vay để giữ đồng bộ khoản nợ.")
-    const document = snapshot.data() as TransactionDocument
-    const accountIds = getDocumentAccountIds(document)
-    const accountSnapshots = await firestoreTransaction.getAll(
-      ...accountIds.map((accountId) => getAccountReference(userId, accountId)),
-    )
-    const accounts = new Map<string, AccountDocument>()
-
-    accountSnapshots.forEach((accountSnapshot) => {
-      if (!accountSnapshot.exists) {
-        throw new TransactionValidationError(
-          "Tài khoản của giao dịch không còn tồn tại.",
-        )
-      }
-      accounts.set(accountSnapshot.id, accountSnapshot.data() as AccountDocument)
-    })
-
-    getBalanceImpacts(document).forEach((delta, accountId) => {
-      const account = accounts.get(accountId)
-      firestoreTransaction.update(getAccountReference(userId, accountId), {
-        balance: assertBalance(account?.balance, -delta),
-        updatedAt: FieldValue.serverTimestamp(),
-      })
-    })
-    firestoreTransaction.delete(transactionReference)
+    getBalanceImpacts(existing).forEach((delta, accountId) => impacts.set(accountId, -delta))
+    await applyImpacts(trx, accounts, impacts)
+    await trx.deleteFrom("transactions").where("id", "=", transactionId).execute()
   })
 }

@@ -1,3 +1,4 @@
+import { isUuid } from "@/lib/db/ids"
 import { todayDate } from "./calculations"
 import type { NewContact, NewDebt, NewDebtPayment } from "./types"
 
@@ -18,7 +19,7 @@ function object(value: unknown): Record<string, unknown> {
 }
 
 export function assertDebtId(value: unknown): asserts value is string {
-  if (typeof value !== "string" || !/^[A-Za-z0-9_-]{1,128}$/.test(value)) {
+  if (!isUuid(value)) {
     throw new DebtValidationError("Mã dữ liệu không hợp lệ.")
   }
 }
