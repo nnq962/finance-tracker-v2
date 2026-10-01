@@ -5,6 +5,7 @@ import { ImagePlusIcon, PaperclipIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { AccountSelectGroups } from "@/components/account-select-groups"
+import { AmountSuggestions, useAmountQuickPick } from "@/components/forms/amount-suggestions"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
 import { Badge } from "@/components/ui/badge"
@@ -28,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { getLocalDateTime } from "@/lib/date-time"
 
 import type { TransactionFieldProps } from "../form-types"
+import { useTransactionHistory } from "../transaction-history-context"
 
 function AccountSelect({
   accounts,
@@ -65,8 +67,23 @@ export function TransferFields({
   defaultValues,
   isCreating,
 }: TransactionFieldProps) {
+  const history = useTransactionHistory("transfer", defaultValues?.id)
+  const historyAmounts = React.useMemo(
+    () => history.map((transaction) => Math.abs(transaction.amount)),
+    [history],
+  )
+  const amountPick = useAmountQuickPick(defaultValues?.amount ?? null, historyAmounts)
+  // New transfers start from the account used most recently as the source.
+  const lastUsedFromAccountId = defaultValues
+    ? undefined
+    : history.find((transaction) =>
+        accounts.some(
+          (account) =>
+            account.status === "active" && account.id === transaction.fromAccountId,
+        ),
+      )?.fromAccountId
   const [fromAccountId, setFromAccountId] = React.useState(
-    defaultValues?.fromAccountId ?? "",
+    defaultValues?.fromAccountId ?? lastUsedFromAccountId ?? "",
   )
   const [toAccountId, setToAccountId] = React.useState(
     defaultValues?.toAccountId === defaultValues?.fromAccountId
@@ -91,15 +108,20 @@ export function TransferFields({
             </>
           ) : null}
         </CardHeader>
-        <CardContent className="grid gap-4">
+        <CardContent className="grid grid-cols-1 gap-4">
           <Field>
             <FieldLabel htmlFor="transfer-amount">Số tiền</FieldLabel>
             <CurrencyInput
-              key={`${defaultValues?.id ?? "new"}-transfer-amount`}
               id="transfer-amount"
               name="amount"
-              defaultValue={defaultValues?.amount}
+              value={amountPick.amount}
+              onValueChange={amountPick.onType}
               required
+            />
+            <AmountSuggestions
+              suggestions={amountPick.suggestions}
+              value={amountPick.amount}
+              onSelect={amountPick.onPick}
             />
           </Field>
           <Field>

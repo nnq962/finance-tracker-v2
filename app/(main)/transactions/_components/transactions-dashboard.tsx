@@ -17,6 +17,7 @@ import type {
   TransactionSearchFilters,
 } from "../_types/transaction"
 import { AddTransactionButton } from "./add-transaction-button"
+import { TransactionHistoryProvider } from "./add-transaction/transaction-history-context"
 import { TransactionsHeader } from "./transactions-header"
 import { TransactionsHero } from "./transactions-hero"
 import { TransactionsView } from "./transactions-view"
@@ -80,7 +81,7 @@ export function TransactionsDashboard({
   )
 
   return (
-    <>
+    <TransactionHistoryProvider transactions={transactions}>
       <TransactionsHeader>
         <AddTransactionButton
           accounts={accounts}
@@ -138,6 +139,6 @@ export function TransactionsDashboard({
           />
         </div>
       </div>
-    </>
+    </TransactionHistoryProvider>
   )
 }

@@ -11,6 +11,7 @@ import {
 import { toast } from "sonner"
 
 import { AccountSelectGroups } from "@/components/account-select-groups"
+import { AmountSuggestions, useAmountQuickPick } from "@/components/forms/amount-suggestions"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
 import { Badge } from "@/components/ui/badge"
@@ -39,6 +40,9 @@ import { getLocalDateTime } from "@/lib/date-time"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 
 import type { TransactionFieldProps } from "../form-types"
+import { useTransactionHistory } from "../transaction-history-context"
+
+const MAX_SUGGESTED_CATEGORIES = 3
 
 type CashFlowFieldsProps = TransactionFieldProps & {
   idPrefix: "expense" | "income"
@@ -61,11 +65,39 @@ export function CashFlowFields({
   const availableGroups = categoryGroups.filter(
     (group) => group.type === idPrefix && group.items.length > 0,
   )
-  const suggestedCategories = availableGroups
-    .flatMap((group) => group.items)
-    .slice(0, 3)
+  const history = useTransactionHistory(idPrefix, defaultValues?.id)
+  // New entries start on the account used most recently for this kind.
+  const lastUsedAccountId = defaultValues
+    ? undefined
+    : history.find((transaction) =>
+        availableAccounts.some((account) => account.id === transaction.accountId),
+      )?.accountId
+  const availableItems = availableGroups.flatMap((group) => group.items)
+  // Most used categories first, topped up with the catalog order.
+  const usageByCategory = new Map<string, number>()
+  for (const transaction of history) {
+    if (!transaction.categoryId) continue
+    usageByCategory.set(
+      transaction.categoryId,
+      (usageByCategory.get(transaction.categoryId) ?? 0) + 1,
+    )
+  }
+  const suggestedCategories = [...availableItems]
+    .sort(
+      (left, right) =>
+        (usageByCategory.get(right.id) ?? 0) - (usageByCategory.get(left.id) ?? 0),
+    )
+    .slice(0, MAX_SUGGESTED_CATEGORIES)
   const [categoryId, setCategoryId] = React.useState(
     defaultValues?.categoryId ?? "",
+  )
+  const historyAmounts = React.useMemo(
+    () => history.map((transaction) => Math.abs(transaction.amount)),
+    [history],
+  )
+  const amountPick = useAmountQuickPick(
+    defaultValues ? Math.abs(defaultValues.amount) : null,
+    historyAmounts,
   )
   const defaultCategoryIsMissing =
     Boolean(defaultValues?.categoryId) &&
@@ -80,7 +112,7 @@ export function CashFlowFields({
     <FieldGroup>
       <Card>
         <CardHeader>
-          <CardTitle>Số tiền giao dịch</CardTitle>
+          <CardTitle>Số tiền</CardTitle>
           {!isCreating ? (
             <>
               <CardDescription>Nhập số tiền theo đơn vị Việt Nam đồng.</CardDescription>
@@ -96,13 +128,16 @@ export function CashFlowFields({
               Số tiền
             </FieldLabel>
             <CurrencyInput
-              key={`${idPrefix}-${defaultValues?.id ?? "new"}-amount`}
               id={`${idPrefix}-amount`}
               name="amount"
-              defaultValue={
-                defaultValues ? Math.abs(defaultValues.amount) : undefined
-              }
+              value={amountPick.amount}
+              onValueChange={amountPick.onType}
               required
+            />
+            <AmountSuggestions
+              suggestions={amountPick.suggestions}
+              value={amountPick.amount}
+              onSelect={amountPick.onPick}
             />
           </Field>
         </CardContent>
@@ -129,7 +164,7 @@ export function CashFlowFields({
                 </FieldLabel>
                 <Select
                   name="accountId"
-                  defaultValue={defaultValues?.accountId}
+                  defaultValue={defaultValues?.accountId ?? lastUsedAccountId}
                   required
                 >
                   <SelectTrigger id={`${idPrefix}-account`} className="w-full">
