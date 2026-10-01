@@ -9,7 +9,7 @@ async function mutate<T>(operation: (uid: string) => Promise<T>) {
   const user = await requireSession()
   try {
     const data = await operation(user.uid)
-    for (const path of ["/debts", "/accounts", "/transactions", "/overview"]) revalidatePath(path)
+    for (const path of ["/debts", "/budget", "/transactions", "/overview"]) revalidatePath(path)
     return { success: true as const, data }
   } catch (error) {
     if (!(error instanceof DebtValidationError)) console.error("Debt operation failed", error)

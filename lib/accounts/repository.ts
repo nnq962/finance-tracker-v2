@@ -17,19 +17,6 @@ type AccountDocument = AccountFormValues & {
   updatedAt: Timestamp
 }
 
-type CategoryItemDocument = {
-  groupId: string
-  name: string
-  status: "active" | "archived"
-  type: "expense" | "income"
-}
-
-type CategoryGroupDocument = {
-  name: string
-  status: "active" | "archived"
-  type: "expense" | "income"
-}
-
 const MAX_MONEY = 999_999_999_999_999
 const MAX_DELETION_WRITES = 450
 
@@ -39,14 +26,6 @@ function getUserReference(userId: string) {
 
 function getAccountsCollection(userId: string) {
   return getUserReference(userId).collection("accounts")
-}
-
-function getCategoryItemsCollection(userId: string) {
-  return getUserReference(userId).collection("categoryItems")
-}
-
-function getCategoryGroupsCollection(userId: string) {
-  return getUserReference(userId).collection("categoryGroups")
 }
 
 function addTransactionImpact(
@@ -109,27 +88,13 @@ async function backfillOpeningBalances(
     }
   })
 
-  const adjustmentSnapshots = await Promise.all(
-    missingDocuments.map((document) =>
-      document.ref.collection("balanceAdjustments").get(),
-    ),
-  )
   const openingBalances = new Map<string, number>()
   const updates: Promise<FirebaseFirestore.WriteResult>[] = []
 
-  missingDocuments.forEach((document, index) => {
+  missingDocuments.forEach((document) => {
     const currentBalance = document.get("balance")
-    const adjustmentImpact = adjustmentSnapshots[index].docs.reduce(
-      (total, adjustment) => {
-        const difference = adjustment.get("difference")
-        return Number.isSafeInteger(difference) ? total + difference : total
-      },
-      0,
-    )
     const inferredOpeningBalance =
-      currentBalance -
-      (transactionImpacts.get(document.id) ?? 0) -
-      adjustmentImpact
+      currentBalance - (transactionImpacts.get(document.id) ?? 0)
     const openingBalance =
       Number.isSafeInteger(inferredOpeningBalance) &&
       inferredOpeningBalance >= 0 &&
@@ -218,6 +183,7 @@ export async function updateAccount(
   userId: string,
   accountId: string,
   values: AccountFormValues,
+  expectedBalance: number,
 ) {
   const reference = getAccountsCollection(userId).doc(accountId)
   await getFirebaseAdminFirestore().runTransaction(async (transaction) => {
@@ -225,7 +191,14 @@ export async function updateAccount(
     if (!account.exists || account.get("status") !== "active") {
       throw new AccountValidationError("Tài khoản đã ngừng sử dụng. Hãy kích hoạt lại trước khi chỉnh sửa.")
     }
+    // The balance is overwritten directly, without a transaction record, and
+    // only when the user changed it; reject if it moved since the form opened.
+    const balanceChanged = values.balance !== expectedBalance
+    if (balanceChanged && account.get("balance") !== expectedBalance) {
+      throw new AccountValidationError("Số dư tài khoản vừa thay đổi. Vui lòng tải lại trang rồi thử lại.")
+    }
     transaction.update(reference, {
+      ...(balanceChanged ? { balance: values.balance } : {}),
       name: values.name,
       type: values.type,
       institutionId: values.institutionId ?? FieldValue.delete(),
@@ -234,6 +207,43 @@ export async function updateAccount(
       updatedAt: FieldValue.serverTimestamp(),
     })
   })
+
+  // Runs on every save, not only renames, so retrying after a failed refresh
+  // repairs names left stale.
+  await syncAccountNameInTransactions(userId, accountId, values.name)
+}
+
+/**
+ * Transactions keep a snapshot of their account names for display. Refresh
+ * them after a rename; it runs after the account commit, so transactions
+ * written in the meantime already carry the new name.
+ */
+async function syncAccountNameInTransactions(
+  userId: string,
+  accountId: string,
+  name: string,
+) {
+  const snapshot = await getUserReference(userId)
+    .collection("transactions")
+    .where("accountIds", "array-contains", accountId)
+    .get()
+  const writer = getFirebaseAdminFirestore().bulkWriter()
+  const writes: Promise<unknown>[] = []
+
+  for (const document of snapshot.docs) {
+    const update: Record<string, string> = {}
+    for (const field of ["account", "fromAccount", "toAccount"]) {
+      if (
+        document.get(`${field}Id`) === accountId &&
+        document.get(`${field}Name`) !== name
+      ) {
+        update[`${field}Name`] = name
+      }
+    }
+    if (Object.keys(update).length) writes.push(writer.update(document.ref, update))
+  }
+
+  await Promise.all([...writes, writer.close()])
 }
 
 export async function setAccountArchived(
@@ -249,107 +259,6 @@ export async function setAccountArchived(
     })
 }
 
-export async function adjustAccountBalance(
-  userId: string,
-  accountId: string,
-  adjustment: {
-    actualBalance: number
-    categoryId: string
-    note: string
-    occurredAt: Date
-  },
-) {
-  const firestore = getFirebaseAdminFirestore()
-  const accountReference = getAccountsCollection(userId).doc(accountId)
-  const categoryReference = getCategoryItemsCollection(userId).doc(
-    adjustment.categoryId,
-  )
-  const transactionReference = getUserReference(userId)
-    .collection("transactions")
-    .doc()
-
-  await firestore.runTransaction(async (transaction) => {
-    const [accountSnapshot, categorySnapshot] = await transaction.getAll(
-      accountReference,
-      categoryReference,
-    )
-
-    if (!accountSnapshot.exists) {
-      throw new AccountValidationError("Tài khoản không tồn tại.")
-    }
-
-    if (accountSnapshot.get("status") !== "active") {
-      throw new AccountValidationError("Tài khoản đã ngừng sử dụng. Hãy kích hoạt lại trước khi điều chỉnh số dư.")
-    }
-
-    const previousBalance = accountSnapshot.get("balance")
-
-    if (!Number.isSafeInteger(previousBalance)) {
-      throw new Error("Số dư tài khoản hiện tại không hợp lệ.")
-    }
-
-    const difference = adjustment.actualBalance - previousBalance
-
-    if (difference === 0) {
-      throw new AccountValidationError(
-        "Số dư thực tế không có thay đổi.",
-      )
-    }
-
-    const expectedCategoryType = difference > 0 ? "income" : "expense"
-    const expectedCategoryLabel = difference > 0 ? "thu" : "chi"
-
-    if (
-      !categorySnapshot.exists ||
-      categorySnapshot.get("status") !== "active" ||
-      categorySnapshot.get("type") !== expectedCategoryType
-    ) {
-      throw new AccountValidationError(
-        `Hạng mục ${expectedCategoryLabel} không tồn tại, đã ngừng sử dụng hoặc không phù hợp với chênh lệch số dư.`,
-      )
-    }
-
-    const category = categorySnapshot.data() as CategoryItemDocument
-    const categoryGroupSnapshot = await transaction.get(
-      getCategoryGroupsCollection(userId).doc(category.groupId),
-    )
-
-    if (
-      !categoryGroupSnapshot.exists ||
-      categoryGroupSnapshot.get("status") !== "active" ||
-      categoryGroupSnapshot.get("type") !== expectedCategoryType
-    ) {
-      throw new AccountValidationError(
-        `Nhóm hạng mục ${expectedCategoryLabel} không tồn tại, đã ngừng sử dụng hoặc không phù hợp với chênh lệch số dư.`,
-      )
-    }
-
-    const categoryGroup =
-      categoryGroupSnapshot.data() as CategoryGroupDocument
-
-    transaction.update(accountReference, {
-      balance: adjustment.actualBalance,
-      updatedAt: FieldValue.serverTimestamp(),
-    })
-    transaction.create(transactionReference, {
-      source: "balance_adjustment",
-      kind: expectedCategoryType,
-      amount: Math.abs(difference),
-      accountId,
-      accountIds: [accountId],
-      accountName: accountSnapshot.get("name"),
-      categoryId: categorySnapshot.id,
-      categoryName: category.name,
-      categoryGroupId: category.groupId,
-      categoryGroupName: categoryGroup.name,
-      note: adjustment.note,
-      occurredAt: Timestamp.fromDate(adjustment.occurredAt),
-      createdAt: FieldValue.serverTimestamp(),
-      updatedAt: FieldValue.serverTimestamp(),
-    })
-  })
-}
-
 export async function deleteAccount(userId: string, accountId: string) {
   const firestore = getFirebaseAdminFirestore()
   const userReference = getUserReference(userId)
@@ -359,7 +268,7 @@ export async function deleteAccount(userId: string, accountId: string) {
     const accountSnapshot = await transaction.get(accountReference)
     if (!accountSnapshot.exists) return
 
-    const [transactionSnapshot, debtSnapshot, adjustmentSnapshot] = await Promise.all([
+    const [transactionSnapshot, debtSnapshot] = await Promise.all([
       transaction.get(
         userReference
           .collection("transactions")
@@ -370,7 +279,6 @@ export async function deleteAccount(userId: string, accountId: string) {
           .collection("debts")
           .where("accountIds", "array-contains", accountId)
       ),
-      transaction.get(accountReference.collection("balanceAdjustments")),
     ])
 
     const transactionDocuments = new Map(
@@ -440,7 +348,7 @@ export async function deleteAccount(userId: string, accountId: string) {
         )
       : []
     const writeCount = 1 + transactionDocuments.size + debtSnapshot.size +
-      paymentDocuments.length + adjustmentSnapshot.size + relatedAccounts.length
+      paymentDocuments.length + relatedAccounts.length
     if (writeCount > MAX_DELETION_WRITES) {
       throw new AccountValidationError(
         "Tài khoản có quá nhiều dữ liệu liên quan để xoá trong một lần. Vui lòng liên hệ hỗ trợ.",
@@ -465,7 +373,6 @@ export async function deleteAccount(userId: string, accountId: string) {
     for (const document of transactionDocuments.values()) transaction.delete(document.ref)
     for (const document of paymentDocuments) transaction.delete(document.ref)
     for (const document of debtSnapshot.docs) transaction.delete(document.ref)
-    for (const document of adjustmentSnapshot.docs) transaction.delete(document.ref)
     transaction.delete(accountReference)
   })
 }

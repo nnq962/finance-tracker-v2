@@ -20,7 +20,7 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/overview/:path*",
-    "/accounts/:path*",
+    "/budget/:path*",
     "/transactions/:path*",
     "/categories/:path*",
     "/debts/:path*",

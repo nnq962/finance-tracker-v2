@@ -3,7 +3,6 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import {
-  CircleDollarSignIcon,
   CirclePauseIcon,
   CirclePlayIcon,
   EllipsisIcon,
@@ -30,10 +29,8 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer"
 import type { Account } from "@/lib/accounts/types"
-import type { CategoryGroup } from "@/lib/categories/types"
 
 import { setAccountArchivedAction } from "../../actions"
-import { AdjustBalanceSheet } from "./adjust-balance-sheet"
 import { DeleteAccountAlert } from "./delete-account-alert"
 import { EditAccountSheet } from "./edit-account-sheet"
 
@@ -41,19 +38,16 @@ type AccountActionsMenuProps = {
   account: Account
   trigger?: React.ReactElement
   presentation?: "dropdown" | "drawer"
-  categoryGroups: CategoryGroup[]
 }
 
 export function AccountActionsMenu({
   account,
   trigger,
   presentation = "dropdown",
-  categoryGroups,
 }: AccountActionsMenuProps) {
   const router = useRouter()
   const [isPending, startTransition] = React.useTransition()
   const [editOpen, setEditOpen] = React.useState(false)
-  const [adjustBalanceOpen, setAdjustBalanceOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
   const [drawerOpen, setDrawerOpen] = React.useState(false)
   const pendingDrawerAction = React.useRef<(() => void) | null>(null)
@@ -136,18 +130,6 @@ export function AccountActionsMenu({
                 <Button
                   variant="ghost"
                   className="justify-start"
-                  disabled={isLocked || isPending}
-                  onClick={() =>
-                    queueDrawerAction(() => setAdjustBalanceOpen(true))
-                  }
-                >
-                  <CircleDollarSignIcon />Điều chỉnh số dư
-                </Button>
-              </DrawerClose>
-              <DrawerClose asChild>
-                <Button
-                  variant="ghost"
-                  className="justify-start"
                   disabled={isPending}
                   onClick={() => queueDrawerAction(handleArchivedChange)}
                 >
@@ -189,13 +171,6 @@ export function AccountActionsMenu({
               <PencilIcon />
               Chỉnh sửa
             </DropdownMenuItem>
-            <DropdownMenuItem
-              disabled={isLocked}
-              onSelect={() => setAdjustBalanceOpen(true)}
-            >
-              <CircleDollarSignIcon />
-              Điều chỉnh số dư
-            </DropdownMenuItem>
             <DropdownMenuItem onSelect={handleArchivedChange}>
               {isLocked ? <CirclePlayIcon /> : <CirclePauseIcon />}
               {isLocked ? "Tiếp tục sử dụng" : "Ngừng sử dụng"}
@@ -216,12 +191,6 @@ export function AccountActionsMenu({
         account={account}
         open={editOpen}
         onOpenChange={setEditOpen}
-      />
-      <AdjustBalanceSheet
-        account={account}
-        categoryGroups={categoryGroups}
-        open={adjustBalanceOpen}
-        onOpenChange={setAdjustBalanceOpen}
       />
       <DeleteAccountAlert
         account={account}

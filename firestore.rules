@@ -16,13 +16,6 @@ rules_version = '2';
 //   createdAt: timestamp
 //   updatedAt: timestamp
 //
-// users/{uid}/accounts/{accountId}/balanceAdjustments/{adjustmentId}
-//   previousBalance, actualBalance, difference: integers
-//   category: "Đối soát số dư" | "Lãi tài khoản" |
-//             "Phí dịch vụ" | "Khác"
-//   note: string (<= 500 chars)
-//   occurredAt, createdAt: timestamps
-//
 // users/{uid}/categoryGroups/{groupId}
 //   name: string (required, 1..80 chars)
 //   type: "expense" | "income" (immutable)

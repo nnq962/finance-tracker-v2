@@ -10,7 +10,7 @@ export function AccountsHeader({ children }: AccountsHeaderProps) {
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1.5">
           <h1 className="text-3xl font-semibold tracking-tight">
-            Tài khoản
+            Ngân sách
           </h1>
           <p className="text-sm text-muted-foreground sm:text-base">
             Theo dõi số dư và quản lý các tài khoản của bạn.

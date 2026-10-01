@@ -38,7 +38,7 @@ export type TransactionFormValues =
   | TransferTransactionValues
 
 export type Transaction = {
-  source?: "debt" | "balance_adjustment"
+  source?: "debt"
   debtId?: string
   debtPaymentId?: string
   id: string

@@ -14,20 +14,17 @@ import {
 } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/format-currency"
 import type { Account } from "@/lib/accounts/types"
-import type { CategoryGroup } from "@/lib/categories/types"
 
 import { AccountActionsMenu } from "./account-actions/account-actions-menu"
 
 type AccountCardProps = {
   account: Account
   distribution?: { fill: string; percentageLabel: string }
-  categoryGroups: CategoryGroup[]
 }
 
 export function AccountCard({
   account,
   distribution,
-  categoryGroups,
 }: AccountCardProps) {
   const isLocked = account.status === "archived"
   const accountKind =
@@ -54,7 +51,6 @@ export function AccountCard({
       <AccountActionsMenu
         presentation="drawer"
         account={account}
-        categoryGroups={categoryGroups}
         trigger={
           <Card pressable asChild className={`min-w-0 flex-row items-center justify-between gap-3 px-(--card-spacing) text-left sm:hidden ${isLocked ? "[--button-shade:var(--destructive)] dark:[--button-shade:var(--destructive)]" : ""}`}>
             <button type="button">
@@ -95,7 +91,6 @@ export function AccountCard({
           <CardAction>
             <AccountActionsMenu
               account={account}
-              categoryGroups={categoryGroups}
             />
           </CardAction>
         </CardHeader>

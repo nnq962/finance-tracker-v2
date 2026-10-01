@@ -34,7 +34,6 @@ const transactions = [
   { id: 'expense', kind: 'expense', amount: -500_000, categoryGroupId: 'food', categoryGroupName: 'Ăn uống', occurredAt },
   { id: 'transfer', kind: 'transfer', amount: 1_000_000, occurredAt },
   { id: 'debt', source: 'debt', kind: 'income', amount: 5_000_000, occurredAt },
-  { id: 'adjustment', source: 'balance_adjustment', kind: 'expense', amount: -200_000, occurredAt },
 ]
 
 const summary = getOverviewSummary(accounts, debts, contacts, transactions, '2026-09-23')
@@ -51,6 +50,6 @@ assert.deepEqual(summary.spending, [{ id: 'food', name: 'Ăn uống', amount: 50
 assert.equal(summary.dueDebts.length, 1)
 assert.equal(summary.dueDebts[0].contactName, 'Bạn')
 assert.equal(summary.dueDebts[0].daysUntilDue, 2)
-assert.equal(summary.recentTransactions.length, 5)
+assert.equal(summary.recentTransactions.length, 4)
 
 console.log('Overview summary checks passed.')

@@ -59,8 +59,8 @@ export function DeleteAccountAlert({
         <AlertDialogHeader>
           <AlertDialogTitle>Xoá tài khoản?</AlertDialogTitle>
           <AlertDialogDescription>
-            Xoá tài khoản {account.name} sẽ xoá vĩnh viễn mọi giao dịch, lần
-            điều chỉnh số dư và khoản vay nợ có liên quan, kể cả lịch sử thanh
+            Xoá tài khoản {account.name} sẽ xoá vĩnh viễn mọi giao dịch và
+            khoản vay nợ có liên quan, kể cả lịch sử thanh
             toán. Số dư của các tài khoản khác trong giao dịch hoặc khoản nợ
             liên quan sẽ được đối soát lại. Sau khi xác nhận, bạn có 6 giây để
             hoàn tác.

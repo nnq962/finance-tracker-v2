@@ -13,7 +13,7 @@ import { TransactionValidationError } from "@/lib/transactions/validation"
 const MAX_MONEY = 999_999_999_999_999
 
 type TransactionDocument = {
-  source?: "debt" | "balance_adjustment"
+  source?: "debt"
   debtId?: string
   debtPaymentId?: string
   kind: SupportedTransactionKind
@@ -168,9 +168,7 @@ function toTransaction(id: string, data: TransactionDocument): Transaction {
     debtId: data.debtId,
     debtPaymentId: data.debtPaymentId,
     kind: data.kind,
-    title: data.source === "balance_adjustment"
-      ? `Điều chỉnh số dư · ${data.categoryName ?? "Giao dịch"}`
-      : data.categoryName ?? "Giao dịch",
+    title: data.categoryName ?? "Giao dịch",
     description: `${data.categoryGroupName ?? "Hạng mục"} · ${data.accountName ?? "Tài khoản"}`,
     amount: data.kind === "expense" ? -data.amount : data.amount,
     accountId: data.accountId,
@@ -459,10 +457,7 @@ export async function updateTransaction(
         updatedAt: FieldValue.serverTimestamp(),
       })
     })
-    firestoreTransaction.set(transactionReference, {
-      ...updatedDocument,
-      ...(existing.source === "balance_adjustment" ? { source: existing.source } : {}),
-    })
+    firestoreTransaction.set(transactionReference, updatedDocument)
   })
 }
 

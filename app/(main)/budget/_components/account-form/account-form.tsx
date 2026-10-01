@@ -85,8 +85,10 @@ function matchesInstitution(institution: FinancialInstitution, query: string) {
 type AccountFormProps = {
   action: (formData: FormData) => Promise<AccountActionResult>
   defaultValues?: Partial<AccountFormValues>
+  /** Set when editing: the balance the form opened with, sent so the server
+   * only overwrites the balance when the user changed it. */
+  expectedBalance?: number
   onSuccess: () => void
-  showBalance?: boolean
   submitLabel?: string
   successMessage: string
 }
@@ -94,8 +96,8 @@ type AccountFormProps = {
 export function AccountForm({
   action,
   defaultValues,
+  expectedBalance,
   onSuccess,
-  showBalance = true,
   submitLabel = "Lưu tài khoản",
   successMessage,
 }: AccountFormProps) {
@@ -296,23 +298,26 @@ export function AccountForm({
                   />
                 </Field>
 
-                {showBalance ? (
-                  <Field>
-                    <FieldLabel htmlFor="account-balance">Số dư ban đầu</FieldLabel>
-                    <CurrencyInput
-                      id="account-balance"
-                      name="balance"
-                      value={balancePick.amount}
-                      onValueChange={balancePick.onType}
-                      required
-                    />
-                    <AmountSuggestions
-                      suggestions={balancePick.suggestions}
-                      value={balancePick.amount}
-                      onSelect={balancePick.onPick}
-                    />
-                  </Field>
-                ) : null}
+                <Field>
+                  <FieldLabel htmlFor="account-balance">
+                    {expectedBalance === undefined ? "Số dư ban đầu" : "Số dư hiện tại"}
+                  </FieldLabel>
+                  {expectedBalance === undefined ? null : (
+                    <input type="hidden" name="expectedBalance" value={expectedBalance} />
+                  )}
+                  <CurrencyInput
+                    id="account-balance"
+                    name="balance"
+                    value={balancePick.amount}
+                    onValueChange={balancePick.onType}
+                    required
+                  />
+                  <AmountSuggestions
+                    suggestions={balancePick.suggestions}
+                    value={balancePick.amount}
+                    onSelect={balancePick.onPick}
+                  />
+                </Field>
 
                 <Field>
                   <FieldLabel htmlFor="account-note">Ghi chú</FieldLabel>

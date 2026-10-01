@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache"
 
 import { requireSession } from "@/lib/auth/session"
 import {
-  adjustAccountBalance,
   createAccount,
   deleteAccount,
   setAccountArchived,
@@ -16,7 +15,7 @@ import {
   assertAccountId,
   assertBoolean,
   parseAccountFormData,
-  parseBalanceAdjustment,
+  parseExpectedBalance,
 } from "@/lib/accounts/validation"
 
 function failure(error: unknown): AccountActionResult {
@@ -34,7 +33,7 @@ function failure(error: unknown): AccountActionResult {
 }
 
 function revalidateAccountPaths() {
-  revalidatePath("/accounts")
+  revalidatePath("/budget")
   revalidatePath("/transactions")
   revalidatePath("/debts")
   revalidatePath("/overview")
@@ -48,7 +47,7 @@ export async function createAccountAction(
   try {
     await createAccount(
       user.uid,
-      parseAccountFormData(formData, { includeBalance: true }),
+      parseAccountFormData(formData),
     )
     revalidateAccountPaths()
     return { success: true }
@@ -68,27 +67,8 @@ export async function updateAccountAction(
     await updateAccount(
       user.uid,
       accountId,
-      parseAccountFormData(formData, { includeBalance: false }),
-    )
-    revalidateAccountPaths()
-    return { success: true }
-  } catch (error) {
-    return failure(error)
-  }
-}
-
-export async function adjustAccountBalanceAction(
-  accountId: string,
-  formData: FormData,
-): Promise<AccountActionResult> {
-  const user = await requireSession()
-
-  try {
-    assertAccountId(accountId)
-    await adjustAccountBalance(
-      user.uid,
-      accountId,
-      parseBalanceAdjustment(formData),
+      parseAccountFormData(formData),
+      parseExpectedBalance(formData),
     )
     revalidateAccountPaths()
     return { success: true }

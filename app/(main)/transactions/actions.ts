@@ -31,7 +31,7 @@ function failure(error: unknown): TransactionActionResult {
 
 function revalidateTransactionPaths() {
   revalidatePath("/transactions")
-  revalidatePath("/accounts")
+  revalidatePath("/budget")
   revalidatePath("/overview")
 }
 

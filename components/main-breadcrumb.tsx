@@ -12,7 +12,7 @@ import {
 const routeLabels: Record<string, string> = {
   "/overview": "Tổng quan",
   "/transactions": "Giao dịch",
-  "/accounts": "Tài khoản",
+  "/budget": "Ngân sách",
   "/debts": "Nợ & Cho vay",
   "/settings": "Cài đặt",
   ...(process.env.NODE_ENV === "development"

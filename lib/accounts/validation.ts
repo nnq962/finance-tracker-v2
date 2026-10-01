@@ -55,10 +55,7 @@ function getMoney(formData: FormData, name: string, label: string) {
   return value
 }
 
-export function parseAccountFormData(
-  formData: FormData,
-  options: { includeBalance: boolean },
-) {
+export function parseAccountFormData(formData: FormData) {
   const type = getText(formData, "type") as AccountType
   const institutionId = getText(formData, "institutionId")
 
@@ -78,9 +75,7 @@ export function parseAccountFormData(
   const values: AccountFormValues = {
     name: getBoundedText(formData, "name", "Tên tài khoản", 80, true),
     type,
-    balance: options.includeBalance
-      ? getMoney(formData, "balance", "Số dư")
-      : 0,
+    balance: getMoney(formData, "balance", "Số dư"),
   }
   const note = getBoundedText(formData, "note", "Ghi chú", 500)
 
@@ -90,33 +85,9 @@ export function parseAccountFormData(
   return values
 }
 
-export function parseBalanceAdjustment(formData: FormData) {
-  const categoryId = getText(formData, "categoryId")
-  const date = getText(formData, "date")
-  const time = getText(formData, "time")
-  const occurredAt = new Date(`${date}T${time}:00+07:00`)
-
-  if (!/^[A-Za-z0-9_-]{1,1500}$/.test(categoryId)) {
-    throw new AccountValidationError("Hạng mục điều chỉnh không hợp lệ.")
-  }
-
-  if (
-    !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
-    !/^([01]\d|2[0-3]):[0-5]\d$/.test(time) ||
-    Number.isNaN(occurredAt.getTime()) ||
-    occurredAt.toLocaleDateString("en-CA", {
-      timeZone: "Asia/Ho_Chi_Minh",
-    }) !== date
-  ) {
-    throw new AccountValidationError("Thời gian điều chỉnh không hợp lệ.")
-  }
-
-  return {
-    actualBalance: getMoney(formData, "actualBalance", "Số dư thực tế"),
-    categoryId,
-    occurredAt,
-    note: getBoundedText(formData, "note", "Ghi chú", 500),
-  }
+/** Balance the edit form was opened with, to detect concurrent changes. */
+export function parseExpectedBalance(formData: FormData) {
+  return getMoney(formData, "expectedBalance", "Số dư hiện tại")
 }
 
 export function assertAccountId(accountId: string) {

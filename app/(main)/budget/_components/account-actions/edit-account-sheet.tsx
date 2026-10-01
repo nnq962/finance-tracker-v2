@@ -28,7 +28,7 @@ export function EditAccountSheet({ account, onOpenChange, open }: EditAccountShe
         <SheetHeader>
           <SheetTitle>Chỉnh sửa tài khoản</SheetTitle>
           <SheetDescription>
-            Cập nhật thông tin của tài khoản {account.name}.
+            Cập nhật thông tin và số dư của tài khoản {account.name}.
           </SheetDescription>
         </SheetHeader>
         <AccountForm
@@ -36,10 +36,10 @@ export function EditAccountSheet({ account, onOpenChange, open }: EditAccountShe
             name: account.name,
             type: account.type,
             institutionId: account.institutionId,
-            balance: account.openingBalance,
+            balance: account.balance,
             note: account.note,
           }}
-          showBalance={false}
+          expectedBalance={account.balance}
           submitLabel="Lưu thay đổi"
           action={updateAccountAction.bind(null, account.id)}
           onSuccess={() => onOpenChange(false)}

@@ -12,19 +12,16 @@ import {
 } from "@/components/ui/empty"
 import { getAccountDistribution } from "@/lib/accounts/distribution"
 import type { Account } from "@/lib/accounts/types"
-import type { CategoryGroup } from "@/lib/categories/types"
 
 import { AccountCard } from "./account-card"
 import { AddAccountButton } from "./add-account-button"
 
 type AccountListProps = {
   accounts: Account[]
-  categoryGroups: CategoryGroup[]
 }
 
 export function AccountList({
   accounts,
-  categoryGroups,
 }: AccountListProps) {
   const { distribution } = getAccountDistribution(accounts)
   const distributionById = new Map(distribution.map((account) => [account.id, account]))
@@ -69,7 +66,6 @@ export function AccountList({
                 key={account.id}
                 account={account}
                 distribution={distributionById.get(account.id)}
-                categoryGroups={categoryGroups}
               />
             ))}
           </div>
@@ -95,7 +91,6 @@ export function AccountList({
               <AccountCard
                 key={account.id}
                 account={account}
-                categoryGroups={categoryGroups}
               />
             ))}
           </div>

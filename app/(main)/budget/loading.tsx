@@ -104,7 +104,7 @@ export default function AccountsLoading() {
     <div
       className="space-y-8"
       role="status"
-      aria-label="Đang tải tài khoản"
+      aria-label="Đang tải ngân sách"
       aria-busy="true"
     >
       <header className="pt-1">
@@ -131,7 +131,7 @@ export default function AccountsLoading() {
         </div>
       </section>
 
-      <span className="sr-only">Đang tải dữ liệu tài khoản...</span>
+      <span className="sr-only">Đang tải dữ liệu ngân sách...</span>
     </div>
   )
 }

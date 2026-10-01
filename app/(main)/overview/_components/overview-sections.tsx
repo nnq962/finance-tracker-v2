@@ -78,7 +78,7 @@ const netWorthParts = [
   {
     key: "cash",
     label: "Số dư tài khoản",
-    href: "/accounts",
+    href: "/budget",
     icon: WalletCardsIcon,
     iconClassName: "bg-[#d6f4ff] text-[#0083c4] dark:bg-[#113950] dark:text-[#78d0ff]",
   },

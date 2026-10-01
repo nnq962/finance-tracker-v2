@@ -27,9 +27,9 @@ export const appNavigationItems: AppNavigationItem[] = [
     icon: ArrowLeftRightIcon,
   },
   {
-    title: "Tài khoản",
-    mobileTitle: "Tài khoản",
-    url: "/accounts",
+    title: "Ngân sách",
+    mobileTitle: "Ngân sách",
+    url: "/budget",
     icon: WalletCardsIcon,
   },
   {

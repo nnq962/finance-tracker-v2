@@ -17,7 +17,7 @@ export function TransactionHistoryProvider({
   transactions: Transaction[]
   children: React.ReactNode
 }) {
-  // Debt movements and balance adjustments aren't amounts people type.
+  // Debt movements aren't amounts people type.
   const userEntered = React.useMemo(
     () =>
       transactions

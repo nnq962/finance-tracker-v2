@@ -11,17 +11,17 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-export default function AccountsError({ reset }: { reset: () => void }) {
+export default function AccountsError({ retry }: { retry: () => void }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Không thể tải tài khoản</CardTitle>
+        <CardTitle>Không thể tải ngân sách</CardTitle>
         <CardDescription>
           Đã có lỗi khi kết nối dữ liệu. Vui lòng thử lại.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Button onClick={reset}>
+        <Button onClick={() => retry()}>
           <RotateCcwIcon />
           Thử lại
         </Button>
