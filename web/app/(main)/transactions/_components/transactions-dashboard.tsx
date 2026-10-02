@@ -16,6 +16,7 @@ import type {
 } from "../_types/transaction"
 import { AddTransactionButton } from "./add-transaction-button"
 import { TransactionHistoryProvider } from "./add-transaction/transaction-history-context"
+import { TransactionFilterPanel } from "./transaction-filter-fields"
 import { TransactionsHero } from "./transactions-hero"
 import { TransactionsLayout } from "./transactions-layout"
 import { TransactionsView } from "./transactions-view"
@@ -71,6 +72,11 @@ export function TransactionsDashboard({
     () => filterTransactions(periodData.transactions, filter, searchFilters),
     [filter, periodData.transactions, searchFilters],
   )
+  // Clears the filter conditions; the search text and month stay.
+  const resetFilters = () => {
+    setFilter("all")
+    setSearchFilters({ ...initialSearchFilters, query: searchFilters.query })
+  }
 
   return (
     <TransactionHistoryProvider transactions={transactions}>
@@ -103,6 +109,17 @@ export function TransactionsDashboard({
             }}
           />
         }
+        filters={
+          <TransactionFilterPanel
+            accounts={accounts}
+            categoryGroups={categoryGroups}
+            filter={filter}
+            searchFilters={searchFilters}
+            onFilterChange={setFilter}
+            onSearchFiltersChange={setSearchFilters}
+            onReset={resetFilters}
+          />
+        }
       >
         <TransactionToolbar
           accounts={accounts}
@@ -112,11 +129,7 @@ export function TransactionsDashboard({
           transactionCount={visibleTransactions.length}
           onFilterChange={setFilter}
           onSearchFiltersChange={setSearchFilters}
-          onReset={() => {
-            // Clears the filter conditions; the search text and month stay.
-            setFilter("all")
-            setSearchFilters({ ...initialSearchFilters, query: searchFilters.query })
-          }}
+          onReset={resetFilters}
         />
         <TransactionsView
           accounts={accounts}

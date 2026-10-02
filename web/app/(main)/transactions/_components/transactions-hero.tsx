@@ -81,8 +81,15 @@ export function TransactionsHero({
   }
 
   return (
-    <Card asChild>
-      <section aria-label="Tổng quan giao dịch">
+    <section aria-labelledby="transactions-summary-title" className="space-y-2">
+      {/* A caption above the card, as on the overview's sections. */}
+      <h2
+        id="transactions-summary-title"
+        className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+      >
+        Thu chi trong tháng
+      </h2>
+      <Card>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between gap-2">
             <Button
@@ -153,7 +160,7 @@ export function TransactionsHero({
             </span>
           </div>
         </CardContent>
-      </section>
-    </Card>
+      </Card>
+    </section>
   )
 }

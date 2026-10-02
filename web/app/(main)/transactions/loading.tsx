@@ -9,29 +9,59 @@ import { TransactionsLayout } from "./_components/transactions-layout"
 
 function TransactionsHeroSkeleton() {
   return (
-    <Card>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between gap-2">
-          <Skeleton className="size-8 rounded-lg" />
-          <Skeleton className="h-5 w-32" />
-          <Skeleton className="size-8 rounded-lg" />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          {[0, 1].map((index) => (
-            <div key={index} className="space-y-1.5">
-              <Skeleton className="h-4 w-14" />
-              <Skeleton className="h-6 w-28 max-w-full" />
-              <Skeleton className="h-3.5 w-20" />
+    <div className="space-y-2">
+      <div className="flex min-h-4 items-center px-3">
+        <Skeleton className="h-3 w-28" />
+      </div>
+      <Card>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <Skeleton className="size-8 rounded-lg" />
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="size-8 rounded-lg" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {[0, 1].map((index) => (
+              <div key={index} className="space-y-1.5">
+                <Skeleton className="h-4 w-14" />
+                <Skeleton className="h-6 w-28 max-w-full" />
+                <Skeleton className="h-3.5 w-20" />
+              </div>
+            ))}
+          </div>
+          <Separator variant="chunky" />
+          <div className="flex justify-between gap-3">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-28" />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+/** Same footprint as the desktop filter panel: a caption, then rows of chips. */
+function FilterPanelSkeleton() {
+  return (
+    <div className="space-y-2">
+      <div className="flex min-h-6 items-center px-3">
+        <Skeleton className="h-3 w-16" />
+      </div>
+      <Card>
+        <CardContent className="space-y-6">
+          {[3, 2, 4].map((chips, index) => (
+            <div key={index} className="space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <div className="flex flex-wrap gap-2">
+                {Array.from({ length: chips }, (_, chip) => (
+                  <Skeleton key={chip} className="h-7 w-20 rounded-lg" />
+                ))}
+              </div>
             </div>
           ))}
-        </div>
-        <Separator variant="chunky" />
-        <div className="flex justify-between gap-3">
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-4 w-28" />
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
 
@@ -73,10 +103,13 @@ export default function TransactionsLoading() {
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
         <PageHeaderSkeleton action />
-        <TransactionsLayout summary={<TransactionsHeroSkeleton />}>
+        <TransactionsLayout
+          summary={<TransactionsHeroSkeleton />}
+          filters={<FilterPanelSkeleton />}
+        >
           <div className="flex gap-2">
-            <Skeleton className="h-8 max-w-md flex-1 rounded-lg" />
-            <Skeleton className="h-8 w-20 rounded-lg" />
+            <Skeleton className="h-8 max-w-md flex-1 rounded-lg lg:max-w-none" />
+            <Skeleton className="h-8 w-20 rounded-lg lg:hidden" />
           </div>
           <div className="space-y-6">
             <DayGroupSkeleton rows={3} />
