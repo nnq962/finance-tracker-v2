@@ -35,7 +35,12 @@ if [[ "${1:-}" != "--no-pull" ]]; then
     echo "The checkout has local changes; commit or discard them first." >&2
     exit 1
   fi
+  before="$(sha256sum "$0")"
   git -C "$root" pull --ff-only
+  # Bash already read the old copy of this script: rerun the pulled one.
+  if [[ "$(sha256sum "$0")" != "$before" ]]; then
+    exec "$0" --no-pull
+  fi
 fi
 
 echo "==> Building $(git -C "$root" rev-parse --short HEAD)"
