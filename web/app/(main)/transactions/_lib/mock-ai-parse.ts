@@ -56,7 +56,8 @@ function parseKind(text: string): TransactionKind {
   return "expense"
 }
 
-function shiftDate(dateKey: string, days: number) {
+/** The day `days` after (or before) a "YYYY-MM-DD" key. */
+export function shiftDate(dateKey: string, days: number) {
   const date = new Date(`${dateKey}T00:00:00Z`)
   date.setUTCDate(date.getUTCDate() + days)
   return date.toISOString().slice(0, 10)
