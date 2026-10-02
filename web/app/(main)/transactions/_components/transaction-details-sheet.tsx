@@ -13,13 +13,11 @@ import {
 } from "@/components/animate-ui/components/radix/popover"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
   SheetContent,
   SheetClose,
-  SheetDescription,
   SheetFooter,
-  SheetHeader,
-  SheetTitle,
 } from "@/components/ui/sheet"
 import { getCategoryColor } from "@/lib/categories/category-colors"
 import type { CategoryItem } from "@/lib/categories/types"
@@ -137,13 +135,11 @@ export function TransactionDetailsSheet({
   }
 
   return (
-    <SheetContent onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
-      <SheetHeader>
-        <SheetTitle>Chi tiết giao dịch</SheetTitle>
-        <SheetDescription>
-          Thông tin đầy đủ của giao dịch đã ghi nhận.
-        </SheetDescription>
-      </SheetHeader>
+    <SheetContent showCloseButton={false} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
+      <SheetNavHeader
+        title="Chi tiết giao dịch"
+        description="Thông tin đầy đủ của giao dịch đã ghi nhận."
+      />
 
       <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 pb-4">
         <div className="flex flex-col items-center pb-4 text-center">

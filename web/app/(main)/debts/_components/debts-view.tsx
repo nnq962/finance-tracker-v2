@@ -34,14 +34,12 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group"
+import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
   Sheet,
   SheetClose,
   SheetContent,
-  SheetDescription,
   SheetFooter,
-  SheetHeader,
-  SheetTitle,
 } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -330,15 +328,14 @@ export function DebtsView({
         }}
       >
         <SheetContent
+          showCloseButton={false}
           className="gap-0 data-[side=right]:w-full sm:max-w-md!"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
-          <SheetHeader>
-            <SheetTitle>Chi tiết khoản nợ</SheetTitle>
-            <SheetDescription>
-              Số còn lại, lãi suất và lịch sử thu trả của khoản nợ.
-            </SheetDescription>
-          </SheetHeader>
+          <SheetNavHeader
+            title="Chi tiết khoản nợ"
+            description="Số còn lại, lãi suất và lịch sử thu trả của khoản nợ."
+          />
           {isSheetReady && sheetDebt && sheetContact ? (
             <React.Fragment key={sheetDebt.id}>
               <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 pb-4">

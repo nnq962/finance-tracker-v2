@@ -10,7 +10,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { SheetNavHeader } from "@/components/sheet-nav-header"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetFooter,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 import type { Account } from "@/lib/accounts/types"
 import { getLocalDateTime } from "@/lib/date-time"
@@ -57,16 +64,17 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
   return (
     <Sheet open={open} onOpenChange={changeOpen}>
       {typeof trigger === "function" ? trigger(() => changeOpen(true)) : <SheetTrigger asChild>{trigger}</SheetTrigger>}
-      <SheetContent showCloseButton={!pending} className="gap-0 data-[side=right]:w-full sm:max-w-md!" onOpenAutoFocus={(event) => event.preventDefault()} onCloseAutoFocus={(event) => {
+      <SheetContent showCloseButton={false} className="gap-0 data-[side=right]:w-full sm:max-w-md!" onOpenAutoFocus={(event) => event.preventDefault()} onCloseAutoFocus={(event) => {
         if (returnFocusRef?.current) {
           event.preventDefault()
           returnFocusRef.current.focus()
         }
       }}>
-        <SheetHeader>
-          <SheetTitle>{actionLabel}</SheetTitle>
-          <SheetDescription>{isCollection ? `Tiền nhận từ ${contact.name}.` : `Tiền trả cho ${contact.name}.`}</SheetDescription>
-        </SheetHeader>
+        <SheetNavHeader
+          title={actionLabel}
+          description={isCollection ? `Tiền nhận từ ${contact.name}.` : `Tiền trả cho ${contact.name}.`}
+          disabled={pending}
+        />
         <form className="flex min-h-0 flex-1 flex-col" aria-busy={pending} onSubmit={async (event) => {
           event.preventDefault()
           if (submitting.current) return

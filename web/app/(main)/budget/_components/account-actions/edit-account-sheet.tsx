@@ -1,11 +1,9 @@
 "use client"
 
+import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
 } from "@/components/ui/sheet"
 import type { Account } from "@/lib/accounts/types"
 
@@ -22,15 +20,14 @@ export function EditAccountSheet({ account, onOpenChange, open }: EditAccountShe
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
+        showCloseButton={false}
         className="gap-0 data-[side=right]:w-full sm:max-w-md!"
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
-        <SheetHeader>
-          <SheetTitle>Chỉnh sửa tài khoản</SheetTitle>
-          <SheetDescription>
-            Cập nhật thông tin và số dư của tài khoản {account.name}.
-          </SheetDescription>
-        </SheetHeader>
+        <SheetNavHeader
+          title="Chỉnh sửa tài khoản"
+          description={`Cập nhật thông tin và số dư của tài khoản ${account.name}.`}
+        />
         <AccountForm
           defaultValues={{
             name: account.name,

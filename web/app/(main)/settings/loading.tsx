@@ -7,7 +7,7 @@ function GroupSkeleton({ rows, title = true }: { rows: number; title?: boolean }
   return (
     <div className="space-y-2">
       {title ? <Skeleton className="mx-3 h-3 w-16" /> : null}
-      <Card size="sm" className="gap-0 py-1">
+      <Card size="sm" className="gap-0 py-0">
         <div className="divide-y-2 divide-[#e7e4dd] px-1 dark:divide-[#35323e]">
           {Array.from({ length: rows }, (_, row) => (
             <div key={row} className="flex items-center gap-2.5 px-3 py-3.5">

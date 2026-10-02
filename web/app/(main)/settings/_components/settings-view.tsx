@@ -3,7 +3,6 @@
 import * as React from "react"
 import {
   BellRingIcon,
-  ChevronLeftIcon,
   PaletteIcon,
   SmartphoneIcon,
   TagsIcon,
@@ -12,15 +11,11 @@ import {
 import { CategoryManagementSheet } from "@/components/categories/category-management-sheet"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
   Sheet,
-  SheetClose,
   SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
 } from "@/components/ui/sheet"
 import { useIsMobile } from "@/hooks/use-mobile"
 import type { SessionUser } from "@/lib/auth/session"
@@ -189,16 +184,11 @@ export function SettingsView({ user, notifications, categoryGroups }: SettingsVi
         >
           {sheetScreen ? (
             <>
-              <SheetHeader>
-                <SheetClose asChild>
-                  <Button type="button" variant="ghost" size="sm" className="-ml-2 self-start">
-                    <ChevronLeftIcon />
-                    Cài đặt
-                  </Button>
-                </SheetClose>
-                <SheetTitle>{screens[sheetScreen].title}</SheetTitle>
-                <SheetDescription>{screens[sheetScreen].description}</SheetDescription>
-              </SheetHeader>
+              <SheetNavHeader
+                backLabel="Cài đặt"
+                title={screens[sheetScreen].title}
+                description={screens[sheetScreen].description}
+              />
               <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))]">
                 {renderScreen(sheetScreen)}
               </div>

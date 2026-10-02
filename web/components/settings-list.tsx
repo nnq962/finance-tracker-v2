@@ -36,8 +36,9 @@ function SettingsGroup({
           {title}
         </h2>
       ) : null}
-      {/* Rows carry their own padding, so the card only frames them. */}
-      <Card size="sm" className="gap-0 py-1">
+      {/* Rows carry their own, equal padding, so the card only frames them:
+          first and last rows match the ones in between. */}
+      <Card size="sm" className="gap-0 py-0">
         <ul className="divide-y-2 divide-[#e7e4dd] px-1 dark:divide-[#35323e]">
           {children}
         </ul>

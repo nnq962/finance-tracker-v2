@@ -6,9 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
-  Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter,
-  SheetHeader, SheetTitle, SheetTrigger,
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetFooter,
+  SheetTrigger,
 } from "@/components/ui/sheet"
 import type { Contact, NewContact } from "../_types/debt"
 
@@ -40,16 +44,17 @@ export function AddContactSheet({ contact, onAddContact, open: controlledOpen, o
           {contact ? <PencilIcon /> : <><PlusIcon />Thêm người</>}
         </Button>
       </SheetTrigger> : null}
-      <SheetContent showCloseButton={!pending} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!" onCloseAutoFocus={(event) => {
+      <SheetContent showCloseButton={false} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!" onCloseAutoFocus={(event) => {
         if (returnFocusRef?.current) {
           event.preventDefault()
           returnFocusRef.current.focus()
         }
       }}>
-        <SheetHeader>
-          <SheetTitle>{contact ? "Sửa người liên hệ" : "Thêm người vào danh bạ"}</SheetTitle>
-          <SheetDescription>Người cho vay hoặc đi vay với bạn.</SheetDescription>
-        </SheetHeader>
+        <SheetNavHeader
+          title={contact ? "Sửa người liên hệ" : "Thêm người vào danh bạ"}
+          description="Người cho vay hoặc đi vay với bạn."
+          disabled={pending}
+        />
         <form className="flex min-h-0 flex-1 flex-col" aria-busy={pending} onSubmit={async (event) => {
           event.preventDefault()
           if (submitting.current) return

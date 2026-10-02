@@ -30,14 +30,12 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
   Sheet,
   SheetClose,
   SheetContent,
-  SheetDescription,
   SheetFooter,
-  SheetHeader,
-  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { TabsContent } from "@/components/ui/tabs"
@@ -208,19 +206,23 @@ export function CategoryManagementSheet({
         </SheetTrigger>
       ) : null}
       <SheetContent
+        showCloseButton={false}
         className="gap-0 data-[side=right]:w-full sm:max-w-md!"
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
-        <SheetHeader>
-          <SheetTitle>{editor ? editorTitle : "Quản lý hạng mục"}</SheetTitle>
-          <SheetDescription>
-            {editor?.kind === "group"
+        <SheetNavHeader
+          title={editor ? editorTitle : "Quản lý hạng mục"}
+          description={
+            editor?.kind === "group"
               ? "Nhóm hạng mục chỉ cần một tên để sắp xếp các khoản thu, chi."
               : editor?.kind === "item"
                 ? `Chọn icon và đặt tên trong nhóm “${editingGroup?.name ?? ""}”.`
-                : "Chạm vào hạng mục để sửa hoặc thêm nhóm mới."}
-          </SheetDescription>
-        </SheetHeader>
+                : "Chạm vào hạng mục để sửa hoặc thêm nhóm mới."
+          }
+          // In the editor, back returns to the list instead of closing.
+          onBack={editor ? () => setEditor(null) : undefined}
+          disabled={isPending}
+        />
 
         {editor ? (
           <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSave}>

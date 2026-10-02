@@ -43,14 +43,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
   Sheet,
   SheetClose,
   SheetContent,
-  SheetDescription,
   SheetFooter,
-  SheetHeader,
-  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { Switch } from "@/components/ui/switch"
@@ -163,7 +161,7 @@ export function AddDebtSheet({
       </SheetTrigger> : null}
       <SheetContent
         className="gap-0 data-[side=right]:w-full sm:max-w-md!"
-        showCloseButton={!pending}
+        showCloseButton={false}
         onOpenAutoFocus={(event) => event.preventDefault()}
         onCloseAutoFocus={(event) => {
           if (returnFocusRef?.current) {
@@ -172,12 +170,11 @@ export function AddDebtSheet({
           }
         }}
       >
-        <SheetHeader>
-          <SheetTitle>{debt ? "Sửa khoản nợ" : "Thêm khoản nợ"}</SheetTitle>
-          <SheetDescription>
-            {debt ? "Lịch sử thanh toán được giữ nguyên." : "Ghi lại khoản cho vay hoặc đi vay."}
-          </SheetDescription>
-        </SheetHeader>
+        <SheetNavHeader
+          title={debt ? "Sửa khoản nợ" : "Thêm khoản nợ"}
+          description={debt ? "Lịch sử thanh toán được giữ nguyên." : "Ghi lại khoản cho vay hoặc đi vay."}
+          disabled={pending}
+        />
 
         <form
           className="flex min-h-0 flex-1 flex-col"

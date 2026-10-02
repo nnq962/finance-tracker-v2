@@ -2,12 +2,10 @@
 
 import * as React from "react"
 
+import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
 
@@ -25,15 +23,14 @@ export function AddAccountSheet({ trigger }: AddAccountSheetProps) {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>{trigger}</SheetTrigger>
       <SheetContent
+        showCloseButton={false}
         className="gap-0 data-[side=right]:w-full sm:max-w-md!"
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
-        <SheetHeader>
-          <SheetTitle>Thêm tài khoản</SheetTitle>
-          <SheetDescription>
-            Nhập thông tin và số dư ban đầu của tài khoản mới.
-          </SheetDescription>
-        </SheetHeader>
+        <SheetNavHeader
+          title="Thêm tài khoản"
+          description="Nhập thông tin và số dư ban đầu của tài khoản mới."
+        />
         <AccountForm
           action={createAccountAction}
           onSuccess={() => setOpen(false)}

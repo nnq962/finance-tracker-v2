@@ -2,12 +2,10 @@
 
 import * as React from "react"
 
+import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
 } from "@/components/ui/sheet"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
@@ -47,13 +45,11 @@ export function EditTransactionSheet({
         onOpenChange(nextOpen)
       }}
     >
-      <SheetContent onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
-        <SheetHeader>
-          <SheetTitle>Chỉnh sửa giao dịch</SheetTitle>
-          <SheetDescription>
-            Thay đổi thông tin sẽ tự động đối soát lại số dư tài khoản.
-          </SheetDescription>
-        </SheetHeader>
+      <SheetContent showCloseButton={false} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
+        <SheetNavHeader
+          title="Chỉnh sửa giao dịch"
+          description="Thay đổi thông tin sẽ tự động đối soát lại số dư tài khoản."
+        />
         <div className="px-4 pb-4">
           <TransactionKindSelector value={kind} onValueChange={setKind} />
         </div>

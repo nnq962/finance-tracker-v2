@@ -5,12 +5,10 @@ import { PlusIcon } from "lucide-react"
 
 import { CategoryManagementSheet } from "@/components/categories/category-management-sheet"
 import { Button } from "@/components/ui/button"
+import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
 import type { Account } from "@/lib/accounts/types"
@@ -43,13 +41,11 @@ export function AddTransactionSheet({
             Thêm giao dịch
           </Button>
         </SheetTrigger>
-        <SheetContent onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
-          <SheetHeader>
-            <SheetTitle>Giao dịch mới</SheetTitle>
-            <SheetDescription>
-              Ghi lại giao dịch mới vào sổ tài chính của bạn.
-            </SheetDescription>
-          </SheetHeader>
+        <SheetContent showCloseButton={false} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
+          <SheetNavHeader
+            title="Giao dịch mới"
+            description="Ghi lại giao dịch mới vào sổ tài chính của bạn."
+          />
           <div className="px-4 pb-4">
             <TransactionKindSelector value={kind} onValueChange={setKind} />
           </div>
