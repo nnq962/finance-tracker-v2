@@ -107,8 +107,8 @@ export function DebtsDashboard({
   return (
     <Page>
       <PageHeader title="Nợ & Cho vay" actions={addDebtSheet} />
-      <DebtSummary debts={debts} summary={summary} />
       <DebtsView
+        summary={<DebtSummary debts={debts} summary={summary} />}
         initialSelectedDebtId={selectedDebtId}
         contacts={contacts}
         debts={debts}

@@ -73,6 +73,8 @@ type DebtsViewProps = {
   onRecordPayment: (debtId: string, payment: NewDebtPayment) => Promise<void>
   onOpenContacts: () => void
   emptyAction?: React.ReactNode
+  /** The totals, at the top of the list column. */
+  summary: React.ReactNode
 }
 
 function isSettled(debt: Debt) {
@@ -95,6 +97,7 @@ export function DebtsView({
   onDeletePayment,
   onOpenContacts,
   emptyAction,
+  summary,
 }: DebtsViewProps) {
   const router = useRouter()
   const [, startNavigation] = React.useTransition()
@@ -181,6 +184,7 @@ export function DebtsView({
   if (debts.length === 0) {
     return (
       <div className="space-y-6">
+        {summary}
         <Card>
           <Empty>
             <EmptyHeader>
@@ -203,6 +207,8 @@ export function DebtsView({
   return (
     <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
       <div className="min-w-0 space-y-6">
+        {summary}
+
         {overdueDebts.length > 0 ? (
           <SettingsGroup>
             <SettingsRow
@@ -224,7 +230,12 @@ export function DebtsView({
           return (
             <SettingsGroup
               key={direction}
-              title={`${label} · ${formatCurrency(total, { signDisplay: "never" })}`}
+              title={label}
+              action={
+                <span className="shrink-0 font-heading text-xs font-extrabold tabular-nums">
+                  {formatCurrency(total, { signDisplay: "never" })}
+                </span>
+              }
             >
               {renderRows(items)}
             </SettingsGroup>
@@ -290,11 +301,7 @@ export function DebtsView({
               role="status"
               aria-label="Đang tải chi tiết khoản nợ"
             >
-              <div className="space-y-2 px-3">
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-9 w-48" />
-                <Skeleton className="h-[18px] w-full rounded-full" />
-              </div>
+              <Skeleton className="h-36 w-full rounded-xl" />
               <Skeleton className="h-48 w-full rounded-xl" />
               <Skeleton className="h-36 w-full rounded-xl" />
             </div>

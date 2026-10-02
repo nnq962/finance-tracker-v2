@@ -47,8 +47,18 @@ export function DebtSummary({ debts, summary }: DebtSummaryProps) {
     debts.filter((debt) => debt.direction === direction && debt.status !== "settled").length
 
   return (
-    <Card asChild>
-      <section aria-label="Tổng quan nợ và cho vay">
+    <section aria-labelledby="debt-summary-title" className="space-y-2">
+      {/* A caption like the lists' below, the same height as the detail
+          panel's beside it, so both columns start on one line. */}
+      <div className="flex min-h-6 items-center px-3">
+        <h2
+          id="debt-summary-title"
+          className="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+        >
+          Tổng quan
+        </h2>
+      </div>
+      <Card>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <DirectionStat amount={totalLent} count={openCount("lent")} direction="lent" />
@@ -70,7 +80,7 @@ export function DebtSummary({ debts, summary }: DebtSummaryProps) {
             </span>
           </div>
         </CardContent>
-      </section>
-    </Card>
+      </Card>
+    </section>
   )
 }

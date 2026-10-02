@@ -5,26 +5,39 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { settingsSeparatorClassName } from "@/components/settings-list"
 import { cn } from "@/lib/utils"
 
+/** Same footprint as a caption above a card, with an amount when `total`. */
+function CaptionSkeleton({ total = false }: { total?: boolean }) {
+  return (
+    <div className="flex min-h-6 items-center justify-between gap-3 px-3">
+      <Skeleton className="h-3 w-24" />
+      {total ? <Skeleton className="h-3 w-20" /> : null}
+    </div>
+  )
+}
+
 function SummarySkeleton() {
   return (
-    <Card>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          {[0, 1].map((index) => (
-            <div key={index} className="space-y-1.5">
-              <Skeleton className="h-4 w-28 max-w-full" />
-              <Skeleton className="h-6 w-32 max-w-full" />
-              <Skeleton className="h-3.5 w-20" />
-            </div>
-          ))}
-        </div>
-        <Separator variant="chunky" />
-        <div className="flex justify-between gap-3">
-          <Skeleton className="h-4 w-16" />
-          <Skeleton className="h-4 w-28" />
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-2">
+      <CaptionSkeleton />
+      <Card>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            {[0, 1].map((index) => (
+              <div key={index} className="space-y-1.5">
+                <Skeleton className="h-4 w-28 max-w-full" />
+                <Skeleton className="h-6 w-32 max-w-full" />
+                <Skeleton className="h-3.5 w-20" />
+              </div>
+            ))}
+          </div>
+          <Separator variant="chunky" />
+          <div className="flex justify-between gap-3">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-4 w-28" />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
 
@@ -32,7 +45,7 @@ function SummarySkeleton() {
 function GroupSkeleton({ rows, title = true }: { rows: number; title?: boolean }) {
   return (
     <div className="space-y-2">
-      {title ? <Skeleton className="mx-3 h-3 w-32" /> : null}
+      {title ? <CaptionSkeleton total /> : null}
       <Card size="sm" className="gap-0 py-0">
         <div className="px-1">
           {Array.from({ length: rows }, (_, row) => (
@@ -56,18 +69,13 @@ function GroupSkeleton({ rows, title = true }: { rows: number; title?: boolean }
 
 function DetailSkeleton() {
   return (
-    <div className="space-y-6">
-      <div className="space-y-2 px-3">
-        <Skeleton className="h-6 w-36" />
-        <Skeleton className="h-4 w-48" />
+    <div className="space-y-2">
+      <CaptionSkeleton />
+      <div className="space-y-6">
+        <Skeleton className="h-36 w-full rounded-xl" />
+        <Skeleton className="h-48 w-full rounded-xl" />
+        <Skeleton className="h-36 w-full rounded-xl" />
       </div>
-      <div className="space-y-2 px-3">
-        <Skeleton className="h-4 w-16" />
-        <Skeleton className="h-9 w-48" />
-        <Skeleton className="h-[18px] w-full rounded-full" />
-      </div>
-      <Skeleton className="h-48 w-full rounded-xl" />
-      <Skeleton className="h-36 w-full rounded-xl" />
     </div>
   )
 }
@@ -82,10 +90,9 @@ export default function DebtsLoading() {
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
         <PageHeaderSkeleton action />
 
-        <SummarySkeleton />
-
         <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
           <div className="min-w-0 space-y-6">
+            <SummarySkeleton />
             <GroupSkeleton rows={2} />
             <GroupSkeleton rows={1} />
             <GroupSkeleton rows={1} title={false} />

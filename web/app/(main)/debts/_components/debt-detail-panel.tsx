@@ -10,6 +10,7 @@ import type { Account } from "@/lib/accounts/types"
 import { DebtPaymentHistory } from "./debt-payment-history"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { formatCurrency } from "@/lib/format-currency"
 import { actionErrorMessage } from "@/lib/stale-deploy"
@@ -36,12 +37,20 @@ type DebtDetailPanelProps = {
 /** Side panel beside the list (xl and up); below xl the same content opens in a sheet. */
 export function DebtDetailPanel(props: DebtDetailPanelProps) {
   return (
-    <section aria-labelledby="debt-detail-title" className="space-y-6">
-      <h2 id="debt-detail-title" className="truncate px-3 font-heading text-lg font-extrabold">
-        {props.contact.name}
-      </h2>
-      <DebtDetailInfo {...props} />
-      <DebtRecordPaymentButton {...props} />
+    <section aria-labelledby="debt-detail-title" className="space-y-2">
+      {/* A caption like the summary's beside it, so both columns start on one line. */}
+      <div className="flex min-h-6 items-center px-3">
+        <h2
+          id="debt-detail-title"
+          className="truncate text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+        >
+          {props.contact.name}
+        </h2>
+      </div>
+      <div className="space-y-6">
+        <DebtDetailInfo {...props} />
+        <DebtRecordPaymentButton {...props} />
+      </div>
     </section>
   )
 }
@@ -56,16 +65,18 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2 px-3">
-        <p className="text-sm text-muted-foreground">Còn lại</p>
-        <p className="font-heading text-3xl leading-tight font-extrabold tabular-nums [overflow-wrap:anywhere]">
-          {formatCurrency(remainingAmount, { signDisplay: "never" })}
-        </p>
-        <Progress value={paymentProgress} tone={collecting ? "leaf" : "coral"} />
-        <p className="text-xs text-muted-foreground">
-          {paidLabel} {formatCurrency(paidAmount, { signDisplay: "never" })} / {formatCurrency(totalAmount, { signDisplay: "never" })} · {Math.round(paymentProgress)}%
-        </p>
-      </div>
+      <Card>
+        <CardContent className="space-y-2">
+          <p className="text-sm text-muted-foreground">Còn lại</p>
+          <p className="font-heading text-3xl leading-tight font-extrabold tabular-nums [overflow-wrap:anywhere]">
+            {formatCurrency(remainingAmount, { signDisplay: "never" })}
+          </p>
+          <Progress value={paymentProgress} tone={collecting ? "leaf" : "coral"} />
+          <p className="text-xs text-muted-foreground">
+            {paidLabel} {formatCurrency(paidAmount, { signDisplay: "never" })} / {formatCurrency(totalAmount, { signDisplay: "never" })} · {Math.round(paymentProgress)}%
+          </p>
+        </CardContent>
+      </Card>
 
       <SettingsGroup
         footer={debt.hasInterest
