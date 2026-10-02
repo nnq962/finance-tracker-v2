@@ -11,7 +11,7 @@ import {
 
 import { AddAccountSheet } from "@/app/(main)/budget/_components/add-account/add-account-sheet"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetFooter, SheetTitle } from "@/components/ui/sheet"
 import { getCategoryColor, type CategoryColorName } from "@/lib/categories/category-colors"
 import { markOnboardingSeenAction } from "@/lib/onboarding/actions"
 import { cn } from "@/lib/utils"
@@ -137,7 +137,8 @@ export function WelcomeProvider({
               <p className="text-muted-foreground" aria-live="polite">{slide.body}</p>
             </div>
           </div>
-          <div className="space-y-4 p-4">
+          {/* SheetFooter keeps the button clear of the Home indicator, as in other sheets. */}
+          <SheetFooter className="gap-4">
             <div className="flex justify-center gap-2" aria-label={`Trang ${index + 1} trên ${slides.length}`}>
               {slides.map((item, dot) => (
                 <button
@@ -160,7 +161,7 @@ export function WelcomeProvider({
             >
               {isLast ? "Bắt đầu" : "Tiếp"}
             </Button>
-          </div>
+          </SheetFooter>
         </SheetContent>
       </Sheet>
       <AddAccountSheet open={addAccountOpen} onOpenChange={setAddAccountOpen} />
