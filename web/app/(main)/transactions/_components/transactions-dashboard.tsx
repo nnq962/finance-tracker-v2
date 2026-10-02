@@ -8,10 +8,7 @@ import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 
 import { filterTransactions } from "../_lib/filter-transactions"
-import {
-  getTransactionPeriod,
-  shiftPeriodAnchor,
-} from "../_lib/get-transaction-period"
+import { getTransactionPeriod } from "../_lib/get-transaction-period"
 import type {
   Transaction,
   TransactionFilter,
@@ -69,17 +66,6 @@ export function TransactionsDashboard({
       ),
     [effectiveAnchorDateKey, period, todayDateKey, transactions],
   )
-  const previousPeriodTransactions = React.useMemo(
-    () =>
-      getTransactionPeriod(
-        transactions,
-        period,
-        shiftPeriodAnchor(effectiveAnchorDateKey, period, -1),
-        todayDateKey,
-        todayDateKey,
-      ).transactions,
-    [effectiveAnchorDateKey, period, todayDateKey, transactions],
-  )
   const visibleTransactions = React.useMemo(
     () => filterTransactions(periodData.transactions, filter, searchFilters),
     [filter, periodData.transactions, searchFilters],
@@ -97,24 +83,11 @@ export function TransactionsDashboard({
         }
       />
       <TransactionsHero
-        categoryGroups={categoryGroups}
-        period={period}
-        previousTransactions={previousPeriodTransactions}
-        rangeLabel={periodData.rangeLabel}
         transactions={periodData.transactions}
-      />
-      <TransactionToolbar
-        accounts={accounts}
-        categoryGroups={categoryGroups}
-        filter={filter}
-        searchFilters={searchFilters}
+        rangeLabel={periodData.rangeLabel}
         selectedMonth={selectedMonth}
         maxMonth={todayDateKey.slice(0, 7)}
         isMonthPending={isNavigating}
-        rangeLabel={periodData.rangeLabel}
-        transactionCount={visibleTransactions.length}
-        onFilterChange={setFilter}
-        onSearchFiltersChange={setSearchFilters}
         onMonthChange={(month) => {
           startNavigation(() =>
             router.push(
@@ -125,10 +98,19 @@ export function TransactionsDashboard({
             ),
           )
         }}
+      />
+      <TransactionToolbar
+        accounts={accounts}
+        categoryGroups={categoryGroups}
+        filter={filter}
+        searchFilters={searchFilters}
+        transactionCount={visibleTransactions.length}
+        onFilterChange={setFilter}
+        onSearchFiltersChange={setSearchFilters}
         onReset={() => {
+          // Clears the filter conditions; the search text and month stay.
           setFilter("all")
-          setSearchFilters(initialSearchFilters)
-          startNavigation(() => router.push("/transactions", { scroll: false }))
+          setSearchFilters({ ...initialSearchFilters, query: searchFilters.query })
         }}
       />
       <TransactionsView

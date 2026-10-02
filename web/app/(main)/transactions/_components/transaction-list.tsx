@@ -37,15 +37,14 @@ export function TransactionList({
   }
 
   return (
-    <div>
-      {groups.map((group, index) => (
+    <div className="space-y-6">
+      {groups.map((group) => (
         <TransactionDateGroup
           accounts={accounts}
           categoryGroups={categoryGroups}
           key={group.dateKey}
           group={group}
           isToday={group.dateKey === todayDateKey}
-          showConnector={index < groups.length - 1}
         />
       ))}
     </div>
