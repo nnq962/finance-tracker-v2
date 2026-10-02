@@ -141,7 +141,7 @@ export function TransactionDetailsSheet({
         description="Thông tin đầy đủ của giao dịch đã ghi nhận."
       />
 
-      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 pb-4">
+      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 pt-px pb-4">
         <div className="flex flex-col items-center pb-4 text-center">
           <div
             className={`flex size-16 items-center justify-center rounded-xl ${categoryColor?.surfaceClassName ?? presentation.iconClassName}`}

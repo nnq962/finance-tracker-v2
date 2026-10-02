@@ -338,7 +338,7 @@ export function DebtsView({
           />
           {isSheetReady && sheetDebt && sheetContact ? (
             <React.Fragment key={sheetDebt.id}>
-              <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 pb-4">
+              <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 pt-px pb-4">
                 <div className="flex items-center justify-between gap-3">
                   <DebtContactHeader contact={sheetContact} />
                   <DebtActionsMenu {...getDetailProps(sheetDebt, sheetContact)} />
@@ -360,7 +360,7 @@ export function DebtsView({
             </React.Fragment>
           ) : (
             <div
-              className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 pb-4"
+              className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 pt-px pb-4"
               role="status"
               aria-label="Đang tải chi tiết khoản nợ"
             >

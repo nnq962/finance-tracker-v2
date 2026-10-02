@@ -226,7 +226,7 @@ export function CategoryManagementSheet({
 
         {editor ? (
           <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSave}>
-            <div className="flex-1 overflow-y-auto px-4 pb-4">
+            <div className="flex-1 overflow-y-auto px-4 pt-px pb-4">
               <FieldGroup>
                 <Field data-invalid={Boolean(error)}>
                   <FieldLabel htmlFor="category-mock-name">
