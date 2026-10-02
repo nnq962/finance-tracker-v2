@@ -1,19 +1,14 @@
 # Finance Backend
 
-Backend Python 3.12 dùng uv: API (FastAPI) và worker nhắc thông báo, sau này
-thêm LLM/STT tự host. Dữ liệu nằm trong PostgreSQL (schema ở [`db/`](../db/));
-Firebase chỉ dùng để gửi thông báo đẩy (FCM).
-
-Hiện production chỉ chạy **worker nhắc thông báo**. Khung API (`GET /health`)
-được giữ lại để dùng cho tính năng LLM sau này; nó chưa được deploy, không đọc
-database và không cần credentials.
+Backend Python 3.12 dùng uv. Hiện chỉ có **worker nhắc thông báo**; dữ liệu
+nằm trong PostgreSQL (schema ở [`db/`](../db/)), Firebase chỉ dùng để gửi
+thông báo đẩy (FCM). Khi cần LLM/STT sẽ thêm service mới tại đây.
 
 ## Tổ chức code
 
 ```text
 src/finance_backend/
-├── cli.py                  # `serve` chạy API, `reminders` chạy worker
-├── api/                    # HTTP endpoints, mỗi tính năng một route
+├── cli.py                  # `finance-backend reminders` chạy worker
 ├── integrations/
 │   ├── postgres.py         # kết nối qua DATABASE_URL
 │   └── firebase.py         # Firebase Admin, chỉ dùng FCM
@@ -21,9 +16,6 @@ src/finance_backend/
     ├── reminders.py        # worker nhắc thông báo
     └── reminder_messages.* # 50 câu nhắc, chọn ngẫu nhiên mỗi ngày
 ```
-
-Worker chạy riêng với API để không nhân bản lịch khi tăng số tiến trình API.
-LLM/STT sẽ chạy trong container riêng, API gọi nội bộ.
 
 ## Worker nhắc thông báo
 
@@ -81,16 +73,6 @@ export GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/firebase-admin.json
 uv run finance-backend reminders --once --dry-run   # chỉ liệt kê, không gửi/ghi
 uv run finance-backend reminders --once             # một lượt thật
 ```
-
-## API (chưa dùng trên production)
-
-```sh
-cd backend
-uv sync --locked
-uv run --locked finance-backend serve    # http://127.0.0.1:8000, tài liệu ở /docs
-```
-
-Hoặc bằng Docker: `docker compose up --build -d` (cổng 127.0.0.1:8000).
 
 ## Kiểm tra
 
