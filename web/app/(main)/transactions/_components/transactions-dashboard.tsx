@@ -17,6 +17,7 @@ import type {
 import { AddTransactionButton } from "./add-transaction-button"
 import { TransactionHistoryProvider } from "./add-transaction/transaction-history-context"
 import { TransactionsHero } from "./transactions-hero"
+import { TransactionsLayout } from "./transactions-layout"
 import { TransactionsView } from "./transactions-view"
 import { TransactionToolbar } from "./transaction-toolbar"
 
@@ -82,43 +83,48 @@ export function TransactionsDashboard({
           />
         }
       />
-      <TransactionsHero
-        transactions={periodData.transactions}
-        rangeLabel={periodData.rangeLabel}
-        selectedMonth={selectedMonth}
-        maxMonth={todayDateKey.slice(0, 7)}
-        isMonthPending={isNavigating}
-        onMonthChange={(month) => {
-          startNavigation(() =>
-            router.push(
-              month === todayDateKey.slice(0, 7)
-                ? "/transactions"
-                : `/transactions?month=${month}`,
-              { scroll: false },
-            ),
-          )
-        }}
-      />
-      <TransactionToolbar
-        accounts={accounts}
-        categoryGroups={categoryGroups}
-        filter={filter}
-        searchFilters={searchFilters}
-        transactionCount={visibleTransactions.length}
-        onFilterChange={setFilter}
-        onSearchFiltersChange={setSearchFilters}
-        onReset={() => {
-          // Clears the filter conditions; the search text and month stay.
-          setFilter("all")
-          setSearchFilters({ ...initialSearchFilters, query: searchFilters.query })
-        }}
-      />
-      <TransactionsView
-        accounts={accounts}
-        categoryGroups={categoryGroups}
-        todayDateKey={todayDateKey}
-        transactions={visibleTransactions}
-      />
+      <TransactionsLayout
+        summary={
+          <TransactionsHero
+            transactions={periodData.transactions}
+            rangeLabel={periodData.rangeLabel}
+            selectedMonth={selectedMonth}
+            maxMonth={todayDateKey.slice(0, 7)}
+            isMonthPending={isNavigating}
+            onMonthChange={(month) => {
+              startNavigation(() =>
+                router.push(
+                  month === todayDateKey.slice(0, 7)
+                    ? "/transactions"
+                    : `/transactions?month=${month}`,
+                  { scroll: false },
+                ),
+              )
+            }}
+          />
+        }
+      >
+        <TransactionToolbar
+          accounts={accounts}
+          categoryGroups={categoryGroups}
+          filter={filter}
+          searchFilters={searchFilters}
+          transactionCount={visibleTransactions.length}
+          onFilterChange={setFilter}
+          onSearchFiltersChange={setSearchFilters}
+          onReset={() => {
+            // Clears the filter conditions; the search text and month stay.
+            setFilter("all")
+            setSearchFilters({ ...initialSearchFilters, query: searchFilters.query })
+          }}
+        />
+        <TransactionsView
+          accounts={accounts}
+          categoryGroups={categoryGroups}
+          todayDateKey={todayDateKey}
+          transactions={visibleTransactions}
+        />
+      </TransactionsLayout>
       {/* On mobile the action floats above the bottom nav so it stays within
           thumb reach while scrolling a long list. */}
       <div className="pointer-events-none sticky bottom-4 z-20 flex justify-end md:hidden">

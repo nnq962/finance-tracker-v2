@@ -66,24 +66,33 @@ export function TransactionItem({
         chevron={false}
         onClick={() => setDetailsOpen(true)}
         action={
-          <span className="flex flex-col items-end">
-            <span
-              className={cn(
-                "font-heading text-sm font-extrabold tabular-nums",
-                presentation.amountClassName,
-              )}
-            >
-              {amountSigns[transaction.kind]}
-              {formatCurrency(Math.abs(transaction.amount), {
-                signDisplay: "never",
-              })}
+          <span className="flex items-center gap-6">
+            {transaction.note ? (
+              // Only where the list is a wide container: the transactions
+              // page on desktop, not a phone or the overview's day sheet.
+              <span className="hidden max-w-64 truncate text-sm text-muted-foreground @2xl:block">
+                {transaction.note}
+              </span>
+            ) : null}
+            <span className="flex flex-col items-end">
+              <span
+                className={cn(
+                  "font-heading text-sm font-extrabold tabular-nums",
+                  presentation.amountClassName,
+                )}
+              >
+                {amountSigns[transaction.kind]}
+                {formatCurrency(Math.abs(transaction.amount), {
+                  signDisplay: "never",
+                })}
+              </span>
+              <time
+                className="text-xs text-muted-foreground"
+                dateTime={transaction.occurredAt}
+              >
+                {formatTime(transaction.occurredAt)}
+              </time>
             </span>
-            <time
-              className="text-xs text-muted-foreground"
-              dateTime={transaction.occurredAt}
-            >
-              {formatTime(transaction.occurredAt)}
-            </time>
           </span>
         }
       />

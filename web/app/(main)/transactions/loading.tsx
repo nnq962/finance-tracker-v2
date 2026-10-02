@@ -5,6 +5,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { settingsSeparatorClassName } from "@/components/settings-list"
 import { cn } from "@/lib/utils"
 
+import { TransactionsLayout } from "./_components/transactions-layout"
+
 function TransactionsHeroSkeleton() {
   return (
     <Card>
@@ -71,15 +73,16 @@ export default function TransactionsLoading() {
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
         <PageHeaderSkeleton action />
-        <TransactionsHeroSkeleton />
-        <div className="flex gap-2">
-          <Skeleton className="h-8 max-w-md flex-1 rounded-lg" />
-          <Skeleton className="h-8 w-20 rounded-lg" />
-        </div>
-        <div className="space-y-6">
-          <DayGroupSkeleton rows={3} />
-          <DayGroupSkeleton rows={2} />
-        </div>
+        <TransactionsLayout summary={<TransactionsHeroSkeleton />}>
+          <div className="flex gap-2">
+            <Skeleton className="h-8 max-w-md flex-1 rounded-lg" />
+            <Skeleton className="h-8 w-20 rounded-lg" />
+          </div>
+          <div className="space-y-6">
+            <DayGroupSkeleton rows={3} />
+            <DayGroupSkeleton rows={2} />
+          </div>
+        </TransactionsLayout>
       </div>
 
       <span className="sr-only">Đang tải dữ liệu giao dịch...</span>
