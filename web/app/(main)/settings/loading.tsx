@@ -14,10 +14,10 @@ function CaptionSkeleton() {
 }
 
 /** Same footprint as SettingsGroup with `rows` SettingsRow items. */
-function GroupSkeleton({ rows, title = true }: { rows: number; title?: boolean }) {
+function GroupSkeleton({ rows }: { rows: number }) {
   return (
     <div className="space-y-2">
-      {title ? <CaptionSkeleton /> : null}
+      <CaptionSkeleton />
       <Card size="sm" className="gap-0 py-0">
         <div className="px-1">
           {Array.from({ length: rows }, (_, row) => (
@@ -44,18 +44,14 @@ export default function SettingsLoading() {
 
       <div
         aria-hidden="true"
-        className="grid items-start gap-6 md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] md:gap-8 xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]"
+        className="grid items-start gap-6 md:grid-cols-2 md:gap-x-8"
       >
-        <div className="min-w-0 space-y-6">
-          <GroupSkeleton rows={2} />
-          <GroupSkeleton rows={2} />
-          <GroupSkeleton rows={2} />
+        <GroupSkeleton rows={2} />
+        <GroupSkeleton rows={2} />
+        <GroupSkeleton rows={2} />
+        <GroupSkeleton rows={1} />
+        <div className="md:col-span-2">
           <GroupSkeleton rows={1} />
-          <GroupSkeleton rows={1} />
-        </div>
-
-        <div className="hidden max-w-2xl min-w-0 md:block">
-          <GroupSkeleton rows={3} />
         </div>
       </div>
 

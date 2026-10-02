@@ -19,7 +19,6 @@ import {
   Sheet,
   SheetContent,
 } from "@/components/ui/sheet"
-import { useIsMobile } from "@/hooks/use-mobile"
 import type { SessionUser } from "@/lib/auth/session"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { NotificationState } from "@/lib/notifications/types"
@@ -31,7 +30,7 @@ import { SignOutRow } from "./sign-out-row"
 import { ThemeOptions, themeOptions, useThemeChoice } from "./theme-options"
 import { VoiceLab } from "./voice-lab"
 
-/** Screens opened from the list: a sliding sheet on mobile, a side panel from md. */
+/** Screens opened from the list, in a sheet that slides in from the side. */
 const screens = {
   appearance: {
     title: "Giao diện",
@@ -58,9 +57,7 @@ type SettingsViewProps = {
 }
 
 export function SettingsView({ user, notifications, categoryGroups, initialScreen }: SettingsViewProps) {
-  const isMobile = useIsMobile()
-  const [sheetScreen, setSheetScreen] = React.useState<Screen | null>(null)
-  const [panelScreen, setPanelScreen] = React.useState<Screen>(initialScreen ?? "appearance")
+  const [sheetScreen, setSheetScreen] = React.useState<Screen | null>(initialScreen ?? null)
   const [categoriesOpen, setCategoriesOpen] = React.useState(false)
   // Summaries on the list follow changes made in the screens.
   const [reminder, setReminder] = React.useState(notifications.settings)
@@ -68,18 +65,7 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
   const { choice } = useThemeChoice()
   const { openWelcome } = useWelcome()
 
-  const open = (screen: Screen) => {
-    if (isMobile) setSheetScreen(screen)
-    else setPanelScreen(screen)
-  }
-
-  // A deep-linked screen: beside the list from md up, as a sheet on phones
-  // once the first render on the client has told which one this is.
-  const [pendingScreen, setPendingScreen] = React.useState(initialScreen)
-  if (pendingScreen && isMobile) {
-    setPendingScreen(undefined)
-    setSheetScreen(pendingScreen)
-  }
+  const open = (screen: Screen) => setSheetScreen(screen)
 
   const renderScreen = (screen: Screen) => {
     switch (screen) {
@@ -116,8 +102,10 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
     .toLocaleUpperCase("vi-VN")
 
   return (
-    <div className="grid items-start gap-6 md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] md:gap-8 xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
-      <div className="min-w-0 space-y-6">
+    <>
+      {/* From md up the groups pair up across the full width; the app group
+          closes the page across both columns. */}
+      <div className="grid items-start gap-6 md:grid-cols-2 md:gap-x-8">
         <SettingsGroup title="Tài khoản">
           <SettingsRow
             media={
@@ -138,7 +126,6 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
             color="violet"
             title="Giao diện"
             value={themeOptions.find((option) => option.value === choice)?.label}
-            active={panelScreen === "appearance"}
             onClick={() => open("appearance")}
           />
           <SettingsRow
@@ -156,7 +143,6 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
             color="amber"
             title="Nhắc ghi chi tiêu"
             value={reminder.notificationsEnabled ? `Bật · ${reminder.dailyReminderTime}` : "Tắt"}
-            active={panelScreen === "notifications"}
             onClick={() => open("notifications")}
           />
           <SettingsRow
@@ -164,22 +150,8 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
             color="blue"
             title="Thiết bị nhận thông báo"
             value={String(devices.devices.length)}
-            active={panelScreen === "devices"}
             onClick={() => open("devices")}
           />
-        </SettingsGroup>
-
-        <SettingsGroup
-          title="Ứng dụng"
-          footer={`Finance Tracker · v${process.env.NEXT_PUBLIC_APP_VERSION}`}
-        >
-          <SettingsRow
-            icon={CircleHelpIcon}
-            color="cyan"
-            title="Hướng dẫn sử dụng"
-            onClick={openWelcome}
-          />
-          <InstallAppRow />
         </SettingsGroup>
 
         <SettingsGroup title="Thử nghiệm">
@@ -187,30 +159,27 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
             icon={MicIcon}
             color="rose"
             title="Thử giọng nói"
-            active={panelScreen === "voice"}
             onClick={() => open("voice")}
           />
         </SettingsGroup>
+
+        <div className="md:col-span-2">
+          <SettingsGroup
+            title="Ứng dụng"
+            footer={`Finance Tracker · v${process.env.NEXT_PUBLIC_APP_VERSION}`}
+          >
+            <SettingsRow
+              icon={CircleHelpIcon}
+              color="cyan"
+              title="Hướng dẫn sử dụng"
+              onClick={openWelcome}
+            />
+            <InstallAppRow />
+          </SettingsGroup>
+      </div>
       </div>
 
-      {/* md and up: the chosen screen next to the list, under a caption the
-          same height as the list's first, so both columns start on one line.
-          Capped so its rows stay readable on wide screens. */}
-      {!isMobile ? (
-        <section aria-labelledby="settings-panel-title" className="hidden max-w-2xl min-w-0 space-y-2 md:block">
-          <div className="flex min-h-6 items-center px-3">
-            <h2
-              id="settings-panel-title"
-              className="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
-            >
-              {screens[panelScreen].title}
-            </h2>
-          </div>
-          {renderScreen(panelScreen)}
-        </section>
-      ) : null}
-
-      {/* Mobile: screens slide in like native navigation. */}
+      {/* Screens slide in like native navigation. */}
       <Sheet open={sheetScreen !== null} onOpenChange={(next) => !next && setSheetScreen(null)}>
         <SheetContent
           showCloseButton={false}
@@ -237,6 +206,6 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
         open={categoriesOpen}
         onOpenChange={setCategoriesOpen}
       />
-    </div>
+    </>
   )
 }
