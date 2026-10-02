@@ -455,6 +455,14 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
       animation: none;
     }
   }
+
+  /* Held still while the AI drawer is open: the turning ring repaints every
+     frame, and the overlay's backdrop blur over it with it, which kept the
+     main thread busy enough to make the drawer's scrollbar thumbs lag. */
+  body:has([data-slot="ai-drawer-content"][data-state="open"]) .ai-glow::before,
+  body:has([data-slot="ai-drawer-content"][data-state="open"]) .ai-glow::after {
+    animation-play-state: paused;
+  }
 }
 
 /*
