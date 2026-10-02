@@ -24,8 +24,10 @@ export function TransactionsLayout({ summary, filters, children }: TransactionsL
         {summary}
         {filters ? <div className="hidden lg:block">{filters}</div> : null}
       </div>
-      {/* A container, so rows show more once the list itself is wide. */}
-      <div className="@container min-w-0 space-y-6 md:space-y-8">{children}</div>
+      {/* A container, so rows show more once the list itself is wide. From lg
+          up it starts 24px down, past the summary's caption (16px line, 8px
+          gap), so the search lines up with the summary card. */}
+      <div className="@container min-w-0 space-y-6 md:space-y-8 lg:pt-6">{children}</div>
     </div>
   )
 }
