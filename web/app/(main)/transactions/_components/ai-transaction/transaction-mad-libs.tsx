@@ -10,7 +10,6 @@ import { CurrencyInput } from "@/components/forms/currency-input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { Account } from "@/lib/accounts/types"
 import { getAmountSuggestions } from "@/lib/amount-suggestions"
@@ -353,13 +352,12 @@ function BlankEditor({ field, draft, today, groups, accounts, onPick, onChange }
       return <DateEditor date={draft.date} today={today} onPick={(date) => onPick({ date })} />
     case "category":
       return (
-        // Long catalogs scroll inside the drawer. vaul takes a swipe up at
-        // the top of a list for closing the drawer, which made it jolt on the
-        // first swipe; this list is left to scroll. The viewport, not the
-        // root, caps the height, so a short list stays short.
-        <ScrollArea data-vaul-no-drag className="[&>[data-slot=scroll-area-viewport]]:max-h-64">
-          {/* Clear of the scrollbar. */}
-          <div className="space-y-3 pr-3">
+        // Long catalogs scroll inside the drawer, natively: ScrollArea's
+        // thumb, moved by script, lagged behind on iOS. vaul takes a swipe up
+        // at the top of a list for closing the drawer, which made it jolt on
+        // the first swipe; this list is left to scroll.
+        <div data-vaul-no-drag className="max-h-64 overflow-y-auto overscroll-contain">
+          <div className="space-y-3">
             {groups.map((group) => {
               const color = getCategoryColor(group.colorName)
               return (
@@ -388,7 +386,7 @@ function BlankEditor({ field, draft, today, groups, accounts, onPick, onChange }
               )
             })}
           </div>
-        </ScrollArea>
+        </div>
       )
     case "accountId":
     case "toAccountId": {
