@@ -209,6 +209,18 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   body:has([data-app-shell="main"])
     [data-sonner-toaster][data-y-position="top"] {
     position: absolute;
+    /* Sonner's mobile width: 100% plus its side offset would overhang the
+       screen; as an absolute box that widens the page, which phones then
+       zoom out. Let the left and right offsets set the width instead. */
+    width: auto;
+  }
+
+  /* The toaster now spans the space between its offsets; toasts fill it,
+     as wide as before. */
+  body:has([data-app-shell="main"])
+    [data-sonner-toaster][data-y-position="top"]
+    [data-sonner-toast] {
+    width: 100%;
   }
 }
 

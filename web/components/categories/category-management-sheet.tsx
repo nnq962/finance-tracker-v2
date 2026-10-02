@@ -100,7 +100,30 @@ export function CategoryManagementSheet({
     ? editingGroup?.items.find((item) => item.id === editor.itemId)
     : undefined
 
+  // The list unmounts while an editor is open; its scroll position is kept
+  // here and put back when the list returns, so it reopens where it was.
+  const listRefs = React.useRef<Partial<Record<CategoryType, HTMLDivElement | null>>>({})
+  const savedScroll = React.useRef<{ type: CategoryType; top: number } | null>(null)
+  function rememberScroll() {
+    savedScroll.current = { type: activeType, top: listRefs.current[activeType]?.scrollTop ?? 0 }
+  }
+  React.useLayoutEffect(() => {
+    const saved = savedScroll.current
+    if (editor || !saved) return
+    savedScroll.current = null
+    const restore = () => {
+      const list = listRefs.current[saved.type]
+      if (list) list.scrollTop = saved.top
+    }
+    restore()
+    // Once more after the list has its full height (the tab content lays out
+    // a frame later), which the first attempt may have been clamped to.
+    const frame = requestAnimationFrame(restore)
+    return () => cancelAnimationFrame(frame)
+  }, [editor])
+
   function openGroupEditor(group?: CategoryGroup) {
+    rememberScroll()
     setActiveType(group?.type ?? activeType)
     setName(group?.name ?? "")
     setColorName(group?.colorName ?? DEFAULT_COLOR)
@@ -110,6 +133,7 @@ export function CategoryManagementSheet({
   }
 
   function openItemEditor(group: CategoryGroup, item?: CategoryItem) {
+    rememberScroll()
     setActiveType(group.type)
     setName(item?.name ?? "")
     // Items take their colour from the group.
@@ -321,7 +345,14 @@ export function CategoryManagementSheet({
             {sections.map(({ type }) => {
               const visibleGroups = groups.filter((group) => group.type === type)
               return (
-                <TabsContent key={type} value={type} className="min-h-0 overflow-y-auto px-4 pt-px pb-4">
+                <TabsContent
+                  key={type}
+                  value={type}
+                  ref={(element) => {
+                    listRefs.current[type] = element
+                  }}
+                  className="min-h-0 overflow-y-auto px-4 pt-px pb-4"
+                >
                   {visibleGroups.length ? (
                     // Every group at once, so all categories are one scroll away.
                     <div className="space-y-6">
