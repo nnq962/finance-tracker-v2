@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { LogOutIcon } from "lucide-react"
 
@@ -27,7 +26,6 @@ type AccountSettingsProps = {
 }
 
 export function AccountSettings({ user }: AccountSettingsProps) {
-  const router = useRouter()
   const [isSigningOut, setIsSigningOut] = React.useState(false)
   const initials = user.name
     .trim()
@@ -44,8 +42,9 @@ export function AccountSettings({ user }: AccountSettingsProps) {
 
     try {
       await signOutCurrentUser()
-      router.replace("/login")
-      router.refresh()
+      // Full navigation: nothing of this account stays in the client cache or
+      // in the back/forward cache.
+      window.location.replace("/login")
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Không thể đăng xuất. Vui lòng thử lại.")
       setIsSigningOut(false)

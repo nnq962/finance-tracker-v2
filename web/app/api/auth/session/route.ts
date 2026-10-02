@@ -5,6 +5,7 @@ import {
   SESSION_COOKIE_NAME,
   SESSION_DURATION_MS,
 } from "@/lib/auth/constants"
+import { getSessionUser } from "@/lib/auth/session"
 import { getFirebaseAdminAuth } from "@/lib/firebase/admin"
 import { initializeUserWorkspace } from "@/lib/onboarding/bootstrap"
 import { closePushSession, openPushSession } from "@/lib/notifications/repository"
@@ -27,6 +28,20 @@ function isCrossOrigin(request: Request) {
   } catch {
     return true
   }
+}
+
+/**
+ * Whether this browser still has a valid session, for pages restored from
+ * memory (back/forward cache, a resumed PWA) that never asked the server.
+ * Returns only the user id, so the client can spot an account switch.
+ */
+export async function GET() {
+  const user = await getSessionUser()
+  const headers = { "Cache-Control": "no-store" }
+
+  return user
+    ? NextResponse.json({ uid: user.uid }, { headers })
+    : NextResponse.json({ error: "Phiên đăng nhập đã hết hạn." }, { status: 401, headers })
 }
 
 export async function POST(request: NextRequest) {
