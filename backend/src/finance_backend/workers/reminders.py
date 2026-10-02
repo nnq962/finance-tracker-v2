@@ -1,4 +1,10 @@
-"""Independent ten-minute reminder worker; no HTTP server required."""
+"""Independent ten-minute reminder worker; no HTTP server required.
+
+Each due user gets one reminder run per Vietnam calendar day, recorded in
+notification_logs. A run is leased to one worker at a time, every device is
+sent to at most MAX_ATTEMPTS times, and every step runs in its own database
+transaction with row locks, so a crash or a second worker never sends twice.
+"""
 
 import hashlib
 import logging
@@ -6,15 +12,15 @@ import re
 import signal
 import threading
 import time
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from email.utils import parsedate_to_datetime
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 
-from firebase_admin import exceptions, firestore, messaging
-from google.cloud.firestore_v1.base_query import FieldFilter
+from firebase_admin import exceptions, messaging
 
-from finance_backend.integrations.firebase import get_firebase_app, get_firestore
+from finance_backend.integrations.firebase import get_firebase_app
+from finance_backend.integrations.postgres import connect
 from finance_backend.workers.reminder_messages import daily_message
 
 LOGGER = logging.getLogger(__name__)
@@ -22,14 +28,23 @@ VIETNAM = ZoneInfo("Asia/Ho_Chi_Minh")
 INTERVAL_SECONDS = 600
 LEASE_DURATION = timedelta(minutes=5)
 MAX_ATTEMPTS = 3
+LOG_RETENTION_DAYS = 90
+# A claimed run only continues while these settings are unchanged.
+SCHEDULE_COLUMNS = (
+    "notifications_enabled",
+    "daily_reminder_time",
+    "time_zone",
+    "next_reminder_at",
+    "updated_at",
+)
 
 
-def owns_lease(log: dict, attempt_id: str, now: datetime) -> bool:
-    until = log.get("leaseUntil")
+def owns_lease(log: dict | None, attempt_id, now: datetime) -> bool:
     return (
-        log.get("attemptId") == attempt_id
-        and isinstance(until, datetime)
-        and until > now
+        log is not None
+        and log["attempt_id"] == attempt_id
+        and log["lease_until"] is not None
+        and log["lease_until"] > now
     )
 
 
@@ -71,298 +86,281 @@ def next_reminder(time_text: str, now: datetime) -> datetime:
     return result.astimezone(UTC)
 
 
-def settings_user(ref) -> str | None:
-    parts = ref.path.split("/")
-    if (
-        len(parts) == 4
-        and parts[0] == "users"
-        and parts[2:]
-        == [
-            "notificationSettings",
-            "default",
-        ]
-    ):
-        return parts[1]
-    return None
-
-
-def due(settings: dict, now: datetime) -> bool:
-    scheduled = settings.get("nextReminderAt")
-    return (
-        settings.get("notificationsEnabled") is True
-        and isinstance(scheduled, datetime)
-        and scheduled.tzinfo is not None
-        and scheduled <= now
+def due(settings: dict | None, now: datetime) -> bool:
+    scheduled = settings and settings["next_reminder_at"]
+    return bool(settings and settings["notifications_enabled"] and scheduled) and (
+        scheduled <= now
     )
 
 
-def same_schedule(settings: dict, claimed: dict) -> bool:
-    return all(
-        settings.get(key) == claimed.get(key)
-        for key in (
-            "notificationsEnabled",
-            "dailyReminderTime",
-            "timeZone",
-            "nextReminderAt",
-            "updatedAt",
-        )
+def same_schedule(settings: dict | None, claimed: dict) -> bool:
+    return settings is not None and all(
+        settings[key] == claimed[key] for key in SCHEDULE_COLUMNS
     )
+
+
+def reminder_time(settings: dict) -> str:
+    return settings["daily_reminder_time"].strftime("%H:%M")
 
 
 class ReminderWorker:
-    def __init__(self, db, send=None, clock=None):
-        self.db = db
+    def __init__(self, conn, send=None, clock=None):
+        # An autocommit connection; each step opens its own transaction.
+        self.conn = conn
         self.send = send or (
             lambda message: messaging.send(message, app=get_firebase_app())
         )
         self.clock = clock or (lambda: datetime.now(UTC))
 
-    def claim(self, ref, now):
-        uid = settings_user(ref)
-        if uid is None:
-            return None
-        log_ref = self.db.document(
-            f"users/{uid}/notificationLogs/{now.astimezone(VIETNAM).date()}"
+    # --- Locked reads -------------------------------------------------------
+
+    def _settings(self, cur, uid: str) -> dict | None:
+        cur.execute(
+            f"SELECT {', '.join(SCHEDULE_COLUMNS)} FROM notification_settings "
+            "WHERE user_id = %s FOR UPDATE",
+            (uid,),
+        )
+        return cur.fetchone()
+
+    def _log(self, cur, uid: str, day: date) -> dict | None:
+        cur.execute(
+            "SELECT status, attempt_id, lease_until, message_title, message_body "
+            "FROM notification_logs WHERE user_id = %s AND date = %s FOR UPDATE",
+            (uid, day),
+        )
+        return cur.fetchone()
+
+    def _result(self, cur, uid: str, day: date, device_id: str) -> dict | None:
+        cur.execute(
+            "SELECT status, attempts, retry_at FROM notification_log_devices "
+            "WHERE user_id = %s AND date = %s AND device_id = %s",
+            (uid, day, device_id),
+        )
+        return cur.fetchone()
+
+    def _save_result(self, cur, uid, day, device_id, status, attempts, **extra):
+        cur.execute(
+            "INSERT INTO notification_log_devices "
+            "(user_id, date, device_id, status, attempts, error_code, retry_at, "
+            "updated_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) "
+            "ON CONFLICT (user_id, date, device_id) DO UPDATE SET "
+            "status = EXCLUDED.status, attempts = EXCLUDED.attempts, "
+            "error_code = EXCLUDED.error_code, retry_at = EXCLUDED.retry_at, "
+            "updated_at = EXCLUDED.updated_at",
+            (
+                uid,
+                day,
+                device_id,
+                status,
+                attempts,
+                extra.get("error_code"),
+                extra.get("retry_time"),
+                self.clock(),
+            ),
         )
 
-        @firestore.transactional
-        def acquire(tx):
-            settings = ref.get(transaction=tx).to_dict() or {}
-            log = log_ref.get(transaction=tx).to_dict() or {}
+    def _bump_schedule(self, cur, uid: str, settings: dict, now: datetime) -> None:
+        cur.execute(
+            "UPDATE notification_settings SET next_reminder_at = %s WHERE user_id = %s",
+            (next_reminder(reminder_time(settings), now), uid),
+        )
+
+    def linked_device(self, cur, uid: str, device_id: str) -> dict | None:
+        """The device's FCM registration, if it is still linked to this user's
+        browser session; registrations of other users or ended sessions are
+        never targeted."""
+        cur.execute(
+            "SELECT d.fid, d.browser_id, d.updated_at, b.session_id "
+            "FROM push_devices d "
+            "JOIN notification_browsers b ON b.id = d.browser_id "
+            "WHERE d.id = %s AND d.user_id = %s "
+            "AND b.user_id = %s AND b.device_id = d.id",
+            (device_id, uid, uid),
+        )
+        device = cur.fetchone()
+        if device is None or not re.fullmatch(r"[A-Za-z0-9_-]{22}", device["fid"]):
+            return None
+        if hashlib.sha256(device["fid"].encode()).hexdigest() != device_id:
+            return None
+        return device
+
+    # --- Steps --------------------------------------------------------------
+
+    def claim(self, uid: str, now: datetime):
+        today = now.astimezone(VIETNAM).date()
+        with self.conn.transaction(), self.conn.cursor() as cur:
+            settings = self._settings(cur, uid)
             if not due(settings, now):
                 return None
+            log = self._log(cur, uid, today)
             # Never replay reminders from previous calendar days.
-            if settings["nextReminderAt"].astimezone(VIETNAM).date() < (
-                now.astimezone(VIETNAM).date()
-            ) or log.get("status") in {"sent", "failed"}:
-                tx.update(
-                    ref,
-                    {
-                        "nextReminderAt": next_reminder(
-                            settings["dailyReminderTime"], now
-                        ),
-                    },
-                )
+            if settings["next_reminder_at"].astimezone(VIETNAM).date() < today or (
+                log and log["status"] in {"sent", "failed"}
+            ):
+                self._bump_schedule(cur, uid, settings, now)
                 return None
-            if log.get("leaseUntil", datetime.min.replace(tzinfo=UTC)) > now:
+            if log and log["lease_until"] and log["lease_until"] > now:
                 return None
-            content = log.get("message") or daily_message()
-            attempt_id = str(uuid4())
-            tx.set(
-                log_ref,
-                {
-                    "status": "processing",
-                    "attemptId": attempt_id,
-                    "message": content,
-                    "leaseUntil": now + LEASE_DURATION,
-                    "updatedAt": now,
-                },
-                merge=True,
+            content = (
+                {"title": log["message_title"], "body": log["message_body"]}
+                if log
+                else daily_message()
             )
-            return (
-                settings,
-                log_ref,
-                attempt_id,
-                (content),
+            attempt_id = uuid4()
+            cur.execute(
+                "INSERT INTO notification_logs (user_id, date, status, attempt_id, "
+                "lease_until, message_title, message_body, updated_at) "
+                "VALUES (%s, %s, 'processing', %s, %s, %s, %s, %s) "
+                "ON CONFLICT (user_id, date) DO UPDATE SET status = 'processing', "
+                "attempt_id = EXCLUDED.attempt_id, "
+                "lease_until = EXCLUDED.lease_until, updated_at = EXCLUDED.updated_at",
+                (
+                    uid,
+                    today,
+                    attempt_id,
+                    now + LEASE_DURATION,
+                    content["title"],
+                    content["body"],
+                    now,
+                ),
             )
+            return settings, today, attempt_id, content
 
-        return acquire(self.db.transaction())
-
-    def linked_device(self, uid, device_ref, *, tx=None):
-        device = device_ref.get(transaction=tx).to_dict() or {}
-        fid, browser_id = device.get("fid"), device.get("browserId")
-        if not isinstance(fid, str) or not re.fullmatch(r"[A-Za-z0-9_-]{22}", fid):
-            return None
-        if hashlib.sha256(fid.encode()).hexdigest() != device_ref.id:
-            return None
-        if not isinstance(browser_id, str) or not re.fullmatch(
-            r"[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}", browser_id
-        ):
-            return None
-        owner_ref = self.db.document(f"pushInstallations/{device_ref.id}")
-        browser_ref = self.db.document(f"notificationBrowsers/{browser_id}")
-        owner = owner_ref.get(transaction=tx).to_dict() or {}
-        browser = browser_ref.get(transaction=tx).to_dict() or {}
-        if owner.get("uid") != uid or owner.get("browserId") != browser_id:
-            return None
-        if browser.get("uid") != uid or browser.get("deviceId") != device_ref.id:
-            return None
-        return device, browser, owner_ref, browser_ref
-
-    def preflight(self, ref, claimed, log_ref, attempt_id, device_ref):
-        @firestore.transactional
-        def prepare(tx):
-            settings = ref.get(transaction=tx).to_dict() or {}
-            log = log_ref.get(transaction=tx).to_dict() or {}
+    def preflight(self, uid, claimed, day, attempt_id, device_id):
+        with self.conn.transaction(), self.conn.cursor() as cur:
+            settings = self._settings(cur, uid)
+            log = self._log(cur, uid, day)
+            now = self.clock()
             if (
                 not same_schedule(settings, claimed)
-                or not settings.get("notificationsEnabled")
-                or not owns_lease(log, attempt_id, self.clock())
+                or not settings["notifications_enabled"]
+                or not owns_lease(log, attempt_id, now)
             ):
                 return None
-            if self.clock().astimezone(VIETNAM).date().isoformat() != log_ref.id:
+            if now.astimezone(VIETNAM).date() != day:
                 return None
-            previous = log.get("devices", {}).get(device_ref.id, {})
-            if previous.get("status") in {"sent", "unregistered", "failed"}:
+            previous = self._result(cur, uid, day, device_id)
+            if previous and previous["status"] in {"sent", "unregistered", "failed"}:
                 return None
             if (
-                previous.get("status") == "retry"
-                and previous.get("retryAt", self.clock()) > self.clock()
+                previous
+                and previous["status"] == "retry"
+                and (previous["retry_at"] or now) > now
             ):
                 return None
-            linked = self.linked_device(settings_user(ref), device_ref, tx=tx)
+            linked = self.linked_device(cur, uid, device_id)
+            attempts = previous["attempts"] if previous else 0
             if linked is None:
-                if previous.get("status") in {"retry", "sending"}:
-                    tx.update(
-                        log_ref,
-                        {
-                            f"devices.{device_ref.id}": {
-                                "status": "detached",
-                                "attempts": previous.get("attempts", 0),
-                            },
-                        },
-                    )
+                if previous and previous["status"] in {"retry", "sending"}:
+                    self._save_result(cur, uid, day, device_id, "detached", attempts)
                 return None
-            count = previous.get("attempts", 0) + 1
-            tx.update(
-                log_ref,
-                {
-                    "leaseUntil": self.clock() + LEASE_DURATION,
-                    f"devices.{device_ref.id}": {
-                        "status": "sending",
-                        "attempts": count,
-                    },
-                },
+            cur.execute(
+                "UPDATE notification_logs SET lease_until = %s "
+                "WHERE user_id = %s AND date = %s",
+                (now + LEASE_DURATION, uid, day),
             )
-            return linked, count
-
-        return prepare(self.db.transaction())
+            self._save_result(cur, uid, day, device_id, "sending", attempts + 1)
+            return linked, attempts + 1
 
     def record(
-        self,
-        log_ref,
-        attempt_id,
-        device_ref,
-        status,
-        attempts,
-        linked,
-        *,
-        error_code=None,
-        retry_time=None,
+        self, uid, day, attempt_id, device_id, status, attempts, linked, **extra
     ):
-        @firestore.transactional
-        def save(tx):
-            log = log_ref.get(transaction=tx).to_dict() or {}
-            if not owns_lease(log, attempt_id, self.clock()):
+        with self.conn.transaction(), self.conn.cursor() as cur:
+            if not owns_lease(self._log(cur, uid, day), attempt_id, self.clock()):
                 return
-            # Read all cleanup dependencies before issuing any write.
-            current = (
-                self.linked_device(device_ref.parent.parent.id, device_ref, tx=tx)
-                if status == "unregistered"
-                else None
-            )
-            if current and current[0] == linked[0] and current[1] == linked[1]:
-                tx.delete(device_ref)
-                tx.delete(current[2])
-                tx.update(current[3], {"deviceId": None, "updatedAt": self.clock()})
-            tx.update(
-                log_ref,
-                {
-                    f"devices.{device_ref.id}": {
-                        "status": status,
-                        "attempts": attempts,
-                        "updatedAt": self.clock(),
-                        **({"errorCode": error_code} if error_code else {}),
-                        **({"retryAt": retry_time} if retry_time else {}),
-                    },
-                },
-            )
+            if status == "unregistered":
+                # Remove the registration only if it is still exactly the one
+                # sent to; a re-registration, new browser session or new owner
+                # since then is kept.
+                cur.execute(
+                    "DELETE FROM push_devices d USING notification_browsers b "
+                    "WHERE d.id = %s AND d.user_id = %s AND d.fid = %s "
+                    "AND d.browser_id = %s AND d.updated_at = %s "
+                    "AND b.id = d.browser_id AND b.user_id = %s "
+                    "AND b.device_id = d.id AND b.session_id = %s",
+                    (
+                        device_id,
+                        uid,
+                        linked["fid"],
+                        linked["browser_id"],
+                        linked["updated_at"],
+                        uid,
+                        linked["session_id"],
+                    ),
+                )
+            self._save_result(cur, uid, day, device_id, status, attempts, **extra)
 
-        save(self.db.transaction())
-
-    def finish(self, ref, claimed, log_ref, attempt_id, device_ids):
-        @firestore.transactional
-        def complete(tx):
-            settings = ref.get(transaction=tx).to_dict() or {}
-            log = log_ref.get(transaction=tx).to_dict() or {}
-            if not owns_lease(log, attempt_id, self.clock()):
+    def finish(self, uid, claimed, day, attempt_id, device_ids):
+        with self.conn.transaction(), self.conn.cursor() as cur:
+            settings = self._settings(cur, uid)
+            log = self._log(cur, uid, day)
+            now = self.clock()
+            if not owns_lease(log, attempt_id, now):
                 return
-            results = log.get("devices", {})
-            for device_id, result in results.items():
-                if device_id not in device_ids and result.get("status") in {
-                    "retry",
-                    "sending",
-                }:
-                    result["status"] = "detached"
-            results_list = list(results.values())
-            pending = any(r.get("status") in {"sending", "retry"} for r in results_list)
+            # Devices removed during the run no longer hold it open.
+            cur.execute(
+                "UPDATE notification_log_devices SET status = 'detached', "
+                "updated_at = %s WHERE user_id = %s AND date = %s "
+                "AND status IN ('retry', 'sending') AND NOT (device_id = ANY(%s))",
+                (now, uid, day, list(device_ids)),
+            )
+            cur.execute(
+                "SELECT status FROM notification_log_devices "
+                "WHERE user_id = %s AND date = %s",
+                (uid, day),
+            )
+            results = [row["status"] for row in cur.fetchall()]
+            pending = any(status in {"sending", "retry"} for status in results)
             status = (
                 "retry"
                 if pending
-                else (
-                    "sent"
-                    if any(r.get("status") == "sent" for r in results_list)
-                    else "failed"
-                    if results
-                    else "waiting"
-                )
+                else "sent"
+                if "sent" in results
+                else "failed"
+                if results
+                else "waiting"
             )
-            tx.update(
-                log_ref,
-                {
-                    "status": status,
-                    "devices": results,
-                    "leaseUntil": firestore.DELETE_FIELD,
-                    "updatedAt": self.clock(),
-                },
+            cur.execute(
+                "UPDATE notification_logs SET status = %s, attempt_id = NULL, "
+                "lease_until = NULL, updated_at = %s WHERE user_id = %s AND date = %s",
+                (status, now, uid, day),
             )
             if results and not pending and same_schedule(settings, claimed):
-                tx.update(
-                    ref,
-                    {
-                        "nextReminderAt": next_reminder(
-                            settings["dailyReminderTime"],
-                            self.clock(),
-                        ),
-                    },
-                )
+                self._bump_schedule(cur, uid, settings, now)
 
-        complete(self.db.transaction())
+    def devices(self, uid: str) -> list[str]:
+        with self.conn.cursor() as cur:
+            cur.execute(
+                "SELECT id FROM push_devices WHERE user_id = %s "
+                "ORDER BY created_at, id",
+                (uid,),
+            )
+            return [row["id"] for row in cur.fetchall()]
 
-    def process(self, ref, now):
-        claim = self.claim(ref, now)
+    def process(self, uid: str, now: datetime) -> None:
+        claim = self.claim(uid, now)
         if claim is None:
             return
-        claimed, log_ref, attempt_id, content = claim
-        uid = settings_user(ref)
-        devices = self.db.collection(f"users/{uid}/pushDevices")
-        snapshots = list(devices.stream())
-        for snapshot in snapshots:
-            prepared = self.preflight(
-                ref,
-                claimed,
-                log_ref,
-                attempt_id,
-                snapshot.reference,
-            )
+        claimed, day, attempt_id, content = claim
+        device_ids = self.devices(uid)
+        for device_id in device_ids:
+            prepared = self.preflight(uid, claimed, day, attempt_id, device_id)
             if prepared is None:
                 continue
             linked, attempts = prepared
             if attempts > MAX_ATTEMPTS:
-                self.record(
-                    log_ref, attempt_id, snapshot.reference, "failed", attempts, linked
-                )
+                self.record(uid, day, attempt_id, device_id, "failed", attempts, linked)
                 continue
             message = messaging.Message(
-                fid=linked[0]["fid"],
+                fid=linked["fid"],
                 notification=messaging.Notification(
                     title=content["title"], body=content["body"]
                 ),
-                data={"type": "daily-reminder", "date": log_ref.id},
+                data={"type": "daily-reminder", "date": day.isoformat()},
                 webpush=messaging.WebpushConfig(
                     headers={"TTL": "600"},
                     notification=messaging.WebpushNotification(
-                        tag=f"daily-reminder-{log_ref.id}",
+                        tag=f"daily-reminder-{day.isoformat()}",
                     ),
                 ),
             )
@@ -376,83 +374,83 @@ class ReminderWorker:
             except Exception as error:
                 # Avoid logging payloads, FIDs or service-account contents.
                 LOGGER.warning("FCM send failed (%s)", type(error).__name__)
-                error_code = getattr(error, "code", type(error).__name__)
+                error_code = str(getattr(error, "code", type(error).__name__))[:100]
                 retry_time = retry_at(error, attempts, self.clock())
                 status = "retry" if retry_time else "failed"
             self.record(
-                log_ref,
+                uid,
+                day,
                 attempt_id,
-                snapshot.reference,
+                device_id,
                 status,
                 attempts,
                 linked,
                 error_code=error_code,
                 retry_time=retry_time,
             )
-        self.finish(ref, claimed, log_ref, attempt_id, {s.id for s in snapshots})
+        self.finish(uid, claimed, day, attempt_id, device_ids)
 
     def run_once(self, *, dry_run=False, limit=100):
         now = self.clock()
-        query = (
-            self.db.collection_group("notificationSettings")
-            .where(filter=FieldFilter("notificationsEnabled", "==", True))
-            .where(filter=FieldFilter("nextReminderAt", "<=", now))
-            .order_by("nextReminderAt")
+        with self.conn.cursor() as cur:
+            cur.execute(
+                "SELECT user_id FROM notification_settings "
+                "WHERE notifications_enabled AND next_reminder_at <= %s "
+                "ORDER BY next_reminder_at, user_id LIMIT %s",
+                (now, limit),
+            )
+            due_users = [row["user_id"] for row in cur.fetchall()]
+        for uid in due_users:
+            if dry_run:
+                with self.conn.cursor() as cur:
+                    linked = sum(
+                        self.linked_device(cur, uid, device_id) is not None
+                        for device_id in self.devices(uid)
+                    )
+                LOGGER.info(
+                    "Preview due reminder: user=%s linked_devices=%d", uid, linked
+                )
+                continue
+            try:
+                self.process(uid, self.clock())
+            except Exception as error:
+                LOGGER.error(
+                    "Reminder processing failed: user=%s error=%s",
+                    uid,
+                    type(error).__name__,
+                )
+        if not dry_run:
+            cutoff = now.astimezone(VIETNAM).date() - timedelta(days=LOG_RETENTION_DAYS)
+            with self.conn.cursor() as cur:
+                cur.execute("DELETE FROM notification_logs WHERE date < %s", (cutoff,))
+        LOGGER.info(
+            "Reminder pass completed: settings=%d dry_run=%s", len(due_users), dry_run
         )
-        # Snapshot pagination preserves the cursor even when processed schedules move.
-        count, cursor = 0, None
-        while count < limit:
-            page = query.start_after(cursor) if cursor else query
-            snapshots = list(page.limit(min(25, limit - count)).stream())
-            if not snapshots:
-                break
-            for snapshot in snapshots:
-                uid = settings_user(snapshot.reference)
-                if uid:
-                    if dry_run:
-                        linked = sum(
-                            self.linked_device(uid, device.reference) is not None
-                            for device in self.db.collection(
-                                f"users/{uid}/pushDevices"
-                            ).stream()
-                        )
-                        LOGGER.info(
-                            "Preview due reminder: user=%s linked_devices=%d",
-                            uid,
-                            linked,
-                        )
-                    else:
-                        try:
-                            self.process(snapshot.reference, self.clock())
-                        except Exception as error:
-                            LOGGER.error(
-                                "Reminder processing failed: user=%s error=%s",
-                                uid,
-                                type(error).__name__,
-                            )
-                count += 1
-            cursor = snapshots[-1]
-        LOGGER.info("Reminder pass completed: settings=%d dry_run=%s", count, dry_run)
-        return count
+        return len(due_users)
 
 
 def run(*, once=False, dry_run=False, limit=100):
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s"
     )
-    worker = ReminderWorker(get_firestore())
+
+    def run_pass():
+        # A fresh connection per pass survives database restarts.
+        with connect(autocommit=True) as conn:
+            ReminderWorker(conn).run_once(dry_run=dry_run, limit=limit)
+
     if once:
-        worker.run_once(dry_run=dry_run, limit=limit)
+        run_pass()
         return
     stop = threading.Event()
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, lambda *_: stop.set())
     while not stop.is_set():
         try:
-            worker.run_once(dry_run=dry_run, limit=limit)
+            run_pass()
         except Exception as error:
             LOGGER.error(
-                "Reminder query failed (%s); check credentials/index",
+                "Reminder pass failed (%s); check DATABASE_URL and credentials",
                 type(error).__name__,
             )
         # Align subsequent passes to :00, :10, :20, :30, :40 and :50.

@@ -220,6 +220,45 @@ CREATE TABLE public.notification_browsers (
 
 
 --
+-- Name: notification_log_devices; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.notification_log_devices (
+    user_id text NOT NULL,
+    date date NOT NULL,
+    device_id text NOT NULL,
+    status text NOT NULL,
+    attempts integer DEFAULT 0 NOT NULL,
+    error_code text,
+    retry_at timestamp with time zone,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT notification_log_devices_attempts_check CHECK ((attempts >= 0)),
+    CONSTRAINT notification_log_devices_device_id_check CHECK ((device_id ~ '^[0-9a-f]{64}$'::text)),
+    CONSTRAINT notification_log_devices_error_code_check CHECK ((char_length(error_code) <= 100)),
+    CONSTRAINT notification_log_devices_status_check CHECK ((status = ANY (ARRAY['sending'::text, 'retry'::text, 'sent'::text, 'unregistered'::text, 'failed'::text, 'detached'::text])))
+);
+
+
+--
+-- Name: notification_logs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.notification_logs (
+    user_id text NOT NULL,
+    date date NOT NULL,
+    status text NOT NULL,
+    attempt_id uuid,
+    lease_until timestamp with time zone,
+    message_title text NOT NULL,
+    message_body text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT notification_logs_check CHECK (((attempt_id IS NULL) = (lease_until IS NULL))),
+    CONSTRAINT notification_logs_status_check CHECK ((status = ANY (ARRAY['processing'::text, 'retry'::text, 'sent'::text, 'failed'::text, 'waiting'::text])))
+);
+
+
+--
 -- Name: notification_settings; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -420,6 +459,22 @@ ALTER TABLE ONLY public.notification_browsers
 
 
 --
+-- Name: notification_log_devices notification_log_devices_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notification_log_devices
+    ADD CONSTRAINT notification_log_devices_pkey PRIMARY KEY (user_id, date, device_id);
+
+
+--
+-- Name: notification_logs notification_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notification_logs
+    ADD CONSTRAINT notification_logs_pkey PRIMARY KEY (user_id, date);
+
+
+--
 -- Name: notification_settings notification_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -527,6 +582,13 @@ CREATE INDEX debts_user_recorded_idx ON public.debts USING btree (user_id, recor
 --
 
 CREATE INDEX notification_browsers_device_idx ON public.notification_browsers USING btree (device_id) WHERE (device_id IS NOT NULL);
+
+
+--
+-- Name: notification_logs_date_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX notification_logs_date_idx ON public.notification_logs USING btree (date);
 
 
 --
@@ -745,6 +807,22 @@ ALTER TABLE ONLY public.notification_browsers
 
 
 --
+-- Name: notification_log_devices notification_log_devices_user_id_date_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notification_log_devices
+    ADD CONSTRAINT notification_log_devices_user_id_date_fkey FOREIGN KEY (user_id, date) REFERENCES public.notification_logs(user_id, date) ON DELETE CASCADE;
+
+
+--
+-- Name: notification_logs notification_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notification_logs
+    ADD CONSTRAINT notification_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: notification_settings notification_settings_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -833,4 +911,5 @@ INSERT INTO dbmate.schema_migrations (version) VALUES
     ('20261001000003'),
     ('20261001000004'),
     ('20261001000005'),
-    ('20261001000006');
+    ('20261001000006'),
+    ('20261002000001');

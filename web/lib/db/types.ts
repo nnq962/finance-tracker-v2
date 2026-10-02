@@ -108,6 +108,29 @@ export interface NotificationBrowsers {
   userId: string | null;
 }
 
+export interface NotificationLogDevices {
+  attempts: Generated<number>;
+  date: string;
+  deviceId: string;
+  errorCode: string | null;
+  retryAt: Timestamp | null;
+  status: string;
+  updatedAt: Generated<Timestamp>;
+  userId: string;
+}
+
+export interface NotificationLogs {
+  attemptId: string | null;
+  createdAt: Generated<Timestamp>;
+  date: string;
+  leaseUntil: Timestamp | null;
+  messageBody: string;
+  messageTitle: string;
+  status: string;
+  updatedAt: Generated<Timestamp>;
+  userId: string;
+}
+
 export interface NotificationSettings {
   dailyReminderTime: Generated<string>;
   nextReminderAt: Timestamp | null;
@@ -159,6 +182,8 @@ export interface DB {
   debtPayments: DebtPayments;
   debts: Debts;
   notificationBrowsers: NotificationBrowsers;
+  notificationLogDevices: NotificationLogDevices;
+  notificationLogs: NotificationLogs;
   notificationSettings: NotificationSettings;
   pushDevices: PushDevices;
   transactions: Transactions;

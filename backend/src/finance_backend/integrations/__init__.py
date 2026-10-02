@@ -1,1 +1,1 @@
-"""Adapters for Firebase and future self-hosted LLM/STT services."""
+"""Adapters for PostgreSQL, Firebase (FCM) and future LLM/STT services."""

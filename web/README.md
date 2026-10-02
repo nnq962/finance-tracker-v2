@@ -135,8 +135,8 @@ cài đặt trình duyệt/PWA. Quay lại app sẽ kiểm tra quyền lại. C�
 thiết bị này** để đăng ký nhận thông báo ngay cả khi lời nhắc tắt. Trên iPhone/iPad, đăng ký từ PWA
 đã thêm vào Màn hình chính. Server lưu lịch đến hạn trong PostgreSQL.
 
-> **Tạm dừng:** worker Python gửi nhắc vẫn đọc Firestore nên đang tạm dừng,
-> sẽ được chuyển sang PostgreSQL sau. Trong thời gian này lời nhắc không được gửi.
+Worker Python (service `worker` trong `deploy/compose.prod.yaml`) gửi lời nhắc
+mỗi 10 phút; cách hoạt động ở [`backend/README.md`](../backend/README.md).
 
 Khi bật lời nhắc hoặc đổi giờ, server tính `nextReminderAt` theo
 `Asia/Ho_Chi_Minh` và lưu vào cột `next_reminder_at` (`timestamptz`). Nếu giờ nhắc hôm nay

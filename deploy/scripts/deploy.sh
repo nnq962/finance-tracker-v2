@@ -23,7 +23,7 @@ compose=(docker compose
   --env-file "$env_file"
   -f "$root/deploy/compose.yaml"
   -f "$root/deploy/compose.prod.yaml")
-services=(web)
+services=(web worker)
 if [[ -n "${CLOUDFLARE_TUNNEL_TOKEN:-}" ]]; then
   compose+=(--profile tunnel)
   services+=(cloudflared)
@@ -39,7 +39,7 @@ if [[ "${1:-}" != "--no-pull" ]]; then
 fi
 
 echo "==> Building $(git -C "$root" rev-parse --short HEAD)"
-"${compose[@]}" build web
+"${compose[@]}" build web worker
 
 echo "==> Migrating"
 "${compose[@]}" up -d --wait postgres
@@ -47,14 +47,18 @@ echo "==> Migrating"
 "${compose[@]}" run --rm -e DBMATE_NO_DUMP_SCHEMA=true migrate up
 
 # Compose keeps a running container even when its image tag now points to a
-# new build, so replace web explicitly whenever the image changed.
-running="$(docker inspect --format '{{.Image}}' "$("${compose[@]}" ps -q web)" 2>/dev/null || true)"
-built="$(docker image inspect --format '{{.Id}}' finance-web)"
-recreate=()
-[[ "$running" == "$built" ]] || recreate=(--force-recreate)
+# new build, so replace a service explicitly whenever its image changed.
+start() {
+  local service="$1" image="$2" running built recreate=()
+  running="$(docker inspect --format '{{.Image}}' "$("${compose[@]}" ps -q "$service")" 2>/dev/null || true)"
+  built="$(docker image inspect --format '{{.Id}}' "$image")"
+  [[ "$running" == "$built" ]] || recreate=(--force-recreate)
+  "${compose[@]}" up -d --wait --no-deps "${recreate[@]}" "$service"
+}
 
 echo "==> Starting ${services[*]}"
-"${compose[@]}" up -d --wait --no-deps "${recreate[@]}" web
+start web finance-web
+start worker finance-backend
 "${compose[@]}" up -d --wait --remove-orphans "${services[@]}"
 docker image prune -f >/dev/null
 
