@@ -7,12 +7,11 @@ import { getContacts, getDebtSummaries } from "@/lib/debts/repository"
 import { getOverviewSummary } from "@/lib/overview/summary"
 import { getTransactionsInRange } from "@/lib/transactions/repository"
 
-import { CashFlowCalendar } from "./_components/cash-flow-calendar"
+import { OverviewMonth } from "./_components/overview-month"
 import {
   CashFlowTrend,
   DueDebts,
   NetWorth,
-  Spending,
 } from "./_components/overview-sections"
 
 function monthKey(year: number, monthIndex: number) {
@@ -65,21 +64,16 @@ export default async function OverviewPage() {
         title="Tổng quan"
       />
       <NetWorth data={summary.netWorth} />
-      <div className="grid min-w-0 grid-cols-1 items-start gap-6 lg:grid-cols-2">
-        <CashFlowCalendar
-          accounts={accounts}
-          categoryGroups={categoryGroups}
-          transactions={transactions}
-          today={today}
-          // The six months loaded for the chart.
-          minMonth={transactionRange.startMonth}
-        />
-        <div className="min-w-0 space-y-6">
-          <DueDebts debts={summary.dueDebts} />
-          <Spending categoryGroups={categoryGroups} summary={summary} />
-          <CashFlowTrend summary={summary} />
-        </div>
-      </div>
+      <OverviewMonth
+        accounts={accounts}
+        categoryGroups={categoryGroups}
+        transactions={transactions}
+        today={today}
+        // The six months loaded for the chart.
+        minMonth={transactionRange.startMonth}
+        aside={<DueDebts debts={summary.dueDebts} />}
+        footer={<CashFlowTrend summary={summary} />}
+      />
     </Page>
   )
 }

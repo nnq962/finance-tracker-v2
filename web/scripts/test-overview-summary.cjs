@@ -46,7 +46,6 @@ assert.deepEqual(summary.netWorth, {
 })
 assert.equal(summary.cashFlow.current.income, 2_000_000)
 assert.equal(summary.cashFlow.current.expense, 500_000)
-assert.deepEqual(summary.spending, [{ id: 'food', name: 'Ăn uống', amount: 500_000 }])
 assert.equal(summary.dueDebts.length, 1)
 assert.equal(summary.dueDebts[0].contactName, 'Bạn')
 assert.equal(summary.dueDebts[0].daysUntilDue, 2)

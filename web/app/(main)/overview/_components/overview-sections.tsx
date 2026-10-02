@@ -4,22 +4,17 @@ import { useRouter } from "next/navigation"
 import {
   ArrowDownLeftIcon,
   ArrowUpRightIcon,
-  ReceiptTextIcon,
   WalletCardsIcon,
 } from "lucide-react"
 
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
-import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
-import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import type { OverviewSummary } from "@/lib/overview/summary"
 import { cn } from "@/lib/utils"
 
 import { CashFlowChart } from "./overview-charts"
-
-const MAX_SPENDING_GROUPS = 5
 
 const overdueClassName = "text-[#c8393a] dark:text-[#ff9b93]"
 
@@ -90,42 +85,6 @@ export function CashFlowTrend({ summary }: { summary: OverviewSummary }) {
         </CardContent>
       </Card>
     </section>
-  )
-}
-
-export function Spending({
-  categoryGroups,
-  summary,
-}: {
-  categoryGroups: CategoryGroup[]
-  summary: OverviewSummary
-}) {
-  const total = summary.cashFlow.current.expense
-  const groupsById = new Map(categoryGroups.map((group) => [group.id, group]))
-  const topGroups = summary.spending.slice(0, MAX_SPENDING_GROUPS)
-
-  return (
-    <SettingsGroup title={`Chi theo nhóm · ${summary.monthLabel}`}>
-      {topGroups.length ? (
-        topGroups.map((item) => {
-          const group = groupsById.get(item.id)
-          const share = total > 0 ? Math.round((item.amount / total) * 100) : 0
-
-          return (
-            <SettingsRow
-              key={item.id}
-              icon={group ? categoryIconRegistry[group.iconName] : ReceiptTextIcon}
-              color={group?.colorName ?? "slate"}
-              title={item.name}
-              description={`${share}% tổng chi`}
-              value={formatCurrency(item.amount)}
-            />
-          )
-        })
-      ) : (
-        <SettingsRow title="Chưa có chi tiêu tháng này" />
-      )}
-    </SettingsGroup>
   )
 }
 

@@ -61,6 +61,9 @@ type CashFlowCalendarProps = {
   today: string
   /** Earliest month with loaded transactions, "YYYY-MM". */
   minMonth: string
+  /** The month shown, "YYYY-MM"; shared with the allocation chart. */
+  month: string
+  onMonthChange: (month: string) => void
 }
 
 /** A month of days, each with what came in and went out; a day opens its transactions. */
@@ -70,9 +73,10 @@ export function CashFlowCalendar({
   transactions,
   today,
   minMonth,
+  month,
+  onMonthChange,
 }: CashFlowCalendarProps) {
   const maxMonth = today.slice(0, 7)
-  const [month, setMonth] = React.useState(maxMonth)
   const [openDay, setOpenDay] = React.useState<string | null>(null)
 
   // Totals per day, counting income and expenses as the transactions page does.
@@ -117,7 +121,7 @@ export function CashFlowCalendar({
               size="icon"
               aria-label="Tháng trước"
               disabled={month <= minMonth}
-              onClick={() => setMonth(shiftMonth(month, -1))}
+              onClick={() => onMonthChange(shiftMonth(month, -1))}
             >
               <ChevronLeftIcon />
             </Button>
@@ -130,7 +134,7 @@ export function CashFlowCalendar({
               size="icon"
               aria-label="Tháng sau"
               disabled={month >= maxMonth}
-              onClick={() => setMonth(shiftMonth(month, 1))}
+              onClick={() => onMonthChange(shiftMonth(month, 1))}
             >
               <ChevronRightIcon />
             </Button>

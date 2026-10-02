@@ -1,6 +1,10 @@
+// chartFill: the shade used for chart marks such as donut slices. Same hue
+// family as the class colours, stepped (blue darker, violet lighter) so the
+// default groups stay apart; checked with the dataviz palette validator.
 export const categoryColorOptions = [
   {
     name: "emerald",
+    chartFill: "#059669",
     label: "Xanh ngọc",
     dotClassName: "bg-emerald-500",
     iconClassName: "text-emerald-600 dark:text-emerald-400",
@@ -10,6 +14,7 @@ export const categoryColorOptions = [
   },
   {
     name: "orange",
+    chartFill: "#f97316",
     label: "Cam",
     dotClassName: "bg-orange-500",
     iconClassName: "text-orange-600 dark:text-orange-400",
@@ -19,6 +24,7 @@ export const categoryColorOptions = [
   },
   {
     name: "blue",
+    chartFill: "#1d4ed8",
     label: "Xanh dương",
     dotClassName: "bg-blue-500",
     iconClassName: "text-blue-600 dark:text-blue-400",
@@ -27,6 +33,7 @@ export const categoryColorOptions = [
   },
   {
     name: "violet",
+    chartFill: "#a78bfa",
     label: "Tím",
     dotClassName: "bg-violet-500",
     iconClassName: "text-violet-600 dark:text-violet-400",
@@ -36,6 +43,7 @@ export const categoryColorOptions = [
   },
   {
     name: "rose",
+    chartFill: "#e11d48",
     label: "Đỏ hồng",
     dotClassName: "bg-rose-500",
     iconClassName: "text-rose-600 dark:text-rose-400",
@@ -44,6 +52,7 @@ export const categoryColorOptions = [
   },
   {
     name: "amber",
+    chartFill: "#f59e0b",
     label: "Vàng",
     dotClassName: "bg-amber-500",
     iconClassName: "text-amber-600 dark:text-amber-400",
@@ -53,6 +62,7 @@ export const categoryColorOptions = [
   },
   {
     name: "cyan",
+    chartFill: "#06b6d4",
     label: "Xanh cyan",
     dotClassName: "bg-cyan-500",
     iconClassName: "text-cyan-600 dark:text-cyan-400",
@@ -61,6 +71,7 @@ export const categoryColorOptions = [
   },
   {
     name: "pink",
+    chartFill: "#ec4899",
     label: "Hồng",
     dotClassName: "bg-pink-500",
     iconClassName: "text-pink-600 dark:text-pink-400",
@@ -69,6 +80,7 @@ export const categoryColorOptions = [
   },
   {
     name: "lime",
+    chartFill: "#65a30d",
     label: "Xanh lá",
     dotClassName: "bg-lime-500",
     iconClassName: "text-lime-600 dark:text-lime-400",
@@ -77,6 +89,7 @@ export const categoryColorOptions = [
   },
   {
     name: "slate",
+    chartFill: "#94a3b8",
     label: "Xám",
     dotClassName: "bg-slate-500",
     iconClassName: "text-slate-600 dark:text-slate-400",

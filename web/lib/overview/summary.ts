@@ -49,7 +49,6 @@ export function getOverviewSummary(
   const months = monthKeys(today).map((month) => ({ ...month, income: 0, expense: 0 }))
   const monthByKey = new Map(months.map((month) => [month.key, month]))
   const currentMonth = today.slice(0, 7)
-  const spendingByGroup = new Map<string, { id: string; name: string; amount: number }>()
 
   for (const transaction of transactions) {
     if (transaction.source || transaction.kind === "transfer") continue
@@ -60,17 +59,7 @@ export function getOverviewSummary(
     if (transaction.kind === "income") {
       bucket.income += Math.abs(transaction.amount)
     } else {
-      const amount = Math.abs(transaction.amount)
-      bucket.expense += amount
-      if (month === currentMonth) {
-        const id = transaction.categoryGroupId ?? "other"
-        const existing = spendingByGroup.get(id)
-        spendingByGroup.set(id, {
-          id,
-          name: transaction.categoryGroupName ?? "Chưa phân loại",
-          amount: (existing?.amount ?? 0) + amount,
-        })
-      }
+      bucket.expense += Math.abs(transaction.amount)
     }
   }
 
@@ -96,9 +85,7 @@ export function getOverviewSummary(
       current: months.find((month) => month.key === currentMonth) ?? { income: 0, expense: 0 },
       hasActivity: months.some((month) => month.income > 0 || month.expense > 0),
     },
-    spending: [...spendingByGroup.values()].sort((left, right) => right.amount - left.amount),
     dueDebts,
-    monthLabel: `Tháng ${Number(today.slice(5, 7))}/${today.slice(0, 4)}`,
   }
 }
 

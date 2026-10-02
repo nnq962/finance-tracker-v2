@@ -1,0 +1,199 @@
+"use client"
+
+import * as React from "react"
+import { ReceiptTextIcon } from "lucide-react"
+import { Cell, Label, Pie, PieChart } from "recharts"
+
+import { Tabs, TabsList, TabsTrigger } from "@/components/animate-ui/components/radix/tabs"
+import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { Card, CardContent } from "@/components/ui/card"
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart"
+import { getCategoryColor, type CategoryColorName } from "@/lib/categories/category-colors"
+import type { CategoryGroup, CategoryType } from "@/lib/categories/types"
+import { formatCurrency } from "@/lib/format-currency"
+import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
+import type { Transaction } from "@/lib/transactions/types"
+
+import { getTransactionDateKey } from "../../transactions/_lib/get-transaction-period"
+
+// Five groups and the rest folded into one neutral "Khác" slice.
+const MAX_SLICES = 5
+const OTHER_COLOR: CategoryColorName = "slate"
+
+const chartConfig = { amount: { label: "Số tiền" } } satisfies ChartConfig
+
+type Slice = {
+  key: string
+  name: string
+  amount: number
+  share: number
+  color: CategoryColorName
+  group?: CategoryGroup
+  fill: string
+}
+
+type AllocationDonutProps = {
+  categoryGroups: CategoryGroup[]
+  transactions: Transaction[]
+  /** "YYYY-MM", the month shown by the calendar. */
+  month: string
+}
+
+/**
+ * How a month's income or expenses split across category groups. Loans are
+ * left out: borrowing and lending are not income or spending.
+ */
+export function AllocationDonut({ categoryGroups, transactions, month }: AllocationDonutProps) {
+  const [type, setType] = React.useState<CategoryType>("expense")
+  const groupsById = new Map(categoryGroups.map((group) => [group.id, group]))
+
+  const totals = new Map<string, number>()
+  for (const transaction of transactions) {
+    if (transaction.source || transaction.kind !== type) continue
+    if (getTransactionDateKey(transaction.occurredAt).slice(0, 7) !== month) continue
+    const key = transaction.categoryGroupId ?? "other"
+    totals.set(key, (totals.get(key) ?? 0) + Math.abs(transaction.amount))
+  }
+  const total = [...totals.values()].reduce((sum, amount) => sum + amount, 0)
+  const ranked = [...totals].sort((left, right) => right[1] - left[1])
+  const visible = ranked.length > MAX_SLICES + 1 ? ranked.slice(0, MAX_SLICES) : ranked
+  const restAmount = ranked.slice(visible.length).reduce((sum, [, amount]) => sum + amount, 0)
+  const toShare = (amount: number) => (total > 0 ? Math.round((amount / total) * 100) : 0)
+
+  const slices: Slice[] = visible.map(([key, amount]) => {
+    const group = groupsById.get(key)
+    const color = group?.colorName ?? OTHER_COLOR
+    return {
+      key,
+      name: group?.name ?? "Chưa phân loại",
+      amount,
+      share: toShare(amount),
+      color,
+      group,
+      fill: getCategoryColor(color).chartFill,
+    }
+  })
+  if (restAmount > 0) {
+    slices.push({
+      key: "rest",
+      name: `Khác (${ranked.length - visible.length} nhóm)`,
+      amount: restAmount,
+      share: toShare(restAmount),
+      color: OTHER_COLOR,
+      fill: getCategoryColor(OTHER_COLOR).chartFill,
+    })
+  }
+
+  const [year, monthNumber] = month.split("-").map(Number)
+  const typeLabel = type === "expense" ? "chi" : "thu"
+
+  return (
+    <section aria-labelledby="allocation-title" className="space-y-2">
+      <h2
+        id="allocation-title"
+        className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+      >
+        Phân bổ · Tháng {monthNumber}/{year}
+      </h2>
+      <Card>
+        <CardContent className="space-y-4">
+          <Tabs value={type} onValueChange={(value) => setType(value as CategoryType)}>
+            <TabsList className="w-full">
+              <TabsTrigger value="expense">Chi tiền</TabsTrigger>
+              <TabsTrigger value="income">Thu tiền</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          {slices.length > 0 ? (
+            <ChartContainer config={chartConfig} className="mx-auto aspect-square h-56">
+              <PieChart accessibilityLayer>
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent
+                      hideLabel
+                      nameKey="name"
+                      formatter={(value, _name, item) => (
+                        <span className="flex w-full items-center justify-between gap-3">
+                          <span className="text-muted-foreground">{item.payload.name}</span>
+                          <span className="font-mono font-medium tabular-nums">
+                            {formatCurrency(Number(value))} · {item.payload.share}%
+                          </span>
+                        </span>
+                      )}
+                    />
+                  }
+                />
+                <Pie
+                  data={slices}
+                  dataKey="amount"
+                  nameKey="name"
+                  innerRadius="62%"
+                  outerRadius="92%"
+                  // Largest first, clockwise from twelve o'clock.
+                  startAngle={90}
+                  endAngle={-270}
+                  cornerRadius={4}
+                  // A 2px gap in the card's colour between slices; a lone
+                  // slice is a full ring with no seam.
+                  stroke="var(--card)"
+                  strokeWidth={slices.length > 1 ? 2 : 0}
+                  isAnimationActive={false}
+                >
+                  {slices.map((slice) => (
+                    <Cell key={slice.key} fill={slice.fill} />
+                  ))}
+                  <Label
+                    content={({ viewBox }) => {
+                      if (!viewBox || !("cx" in viewBox)) return null
+                      return (
+                        <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
+                          <tspan
+                            x={viewBox.cx}
+                            y={(viewBox.cy ?? 0) - 8}
+                            className="fill-foreground font-heading text-base font-extrabold"
+                          >
+                            {formatCurrency(total)}
+                          </tspan>
+                          <tspan
+                            x={viewBox.cx}
+                            y={(viewBox.cy ?? 0) + 14}
+                            className="fill-muted-foreground text-xs"
+                          >
+                            tổng {typeLabel}
+                          </tspan>
+                        </text>
+                      )
+                    }}
+                  />
+                </Pie>
+              </PieChart>
+            </ChartContainer>
+          ) : (
+            <p className="py-10 text-center text-sm text-muted-foreground">
+              Chưa có khoản {typeLabel} trong tháng này.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+      {slices.length > 0 ? (
+        // The legend: each row's icon has its slice's colour.
+        <SettingsGroup>
+          {slices.map((slice) => (
+            <SettingsRow
+              key={slice.key}
+              icon={slice.group ? categoryIconRegistry[slice.group.iconName] : ReceiptTextIcon}
+              color={slice.color}
+              title={slice.name}
+              description={`${slice.share}% tổng ${typeLabel}`}
+              value={formatCurrency(slice.amount)}
+            />
+          ))}
+        </SettingsGroup>
+      ) : null}
+    </section>
+  )
+}
