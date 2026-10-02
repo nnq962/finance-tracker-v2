@@ -21,25 +21,18 @@ function Page({ className, ...props }: React.ComponentProps<"div">) {
 
 type PageHeaderProps = {
   title: React.ReactNode
-  description?: React.ReactNode
   /** Shown from md up; below md pages offer their main action as a floating button. */
   actions?: React.ReactNode
 }
 
-function PageHeader({ title, description, actions }: PageHeaderProps) {
+/** A title only, as in native apps: what each page holds is plain from its content. */
+function PageHeader({ title, actions }: PageHeaderProps) {
   return (
     <header
       data-slot="page-header"
-      className="flex flex-col gap-5 pt-1 sm:flex-row sm:items-end sm:justify-between"
+      className="flex flex-col gap-5 pt-1 sm:flex-row sm:items-center sm:justify-between"
     >
-      <div className="min-w-0 space-y-1.5">
-        <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
-        {description ? (
-          <p className="max-w-2xl text-sm text-muted-foreground sm:text-base">
-            {description}
-          </p>
-        ) : null}
-      </div>
+      <h1 className="min-w-0 text-3xl font-semibold tracking-tight">{title}</h1>
       {actions ? (
         <div className="hidden shrink-0 flex-wrap gap-2 md:flex">{actions}</div>
       ) : null}
@@ -52,12 +45,9 @@ function PageHeaderSkeleton({ action = false }: { action?: boolean }) {
   return (
     <div
       aria-hidden="true"
-      className="flex flex-col gap-5 pt-1 sm:flex-row sm:items-end sm:justify-between"
+      className="flex flex-col gap-5 pt-1 sm:flex-row sm:items-center sm:justify-between"
     >
-      <div className="min-w-0 space-y-1.5">
-        <Skeleton className="h-9 w-40" />
-        <Skeleton className="h-5 w-80 max-w-full sm:h-6" />
-      </div>
+      <Skeleton className="h-9 w-40" />
       {action ? (
         <Skeleton className="hidden h-8 w-36 shrink-0 rounded-lg md:block" />
       ) : null}

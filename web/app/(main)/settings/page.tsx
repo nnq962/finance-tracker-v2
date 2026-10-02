@@ -29,7 +29,6 @@ export default async function SettingsPage() {
     <Page>
       <PageHeader
         title="Cài đặt"
-        description="Quản lý tài khoản, giao diện, hạng mục và cách bạn nhận thông báo."
       />
 
       <SettingsView

@@ -62,7 +62,6 @@ export default async function OverviewPage() {
     <Page>
       <PageHeader
         title="Tổng quan"
-        description="Tài sản, thu chi và các khoản cần theo dõi."
       />
       <NetWorth data={summary.netWorth} />
       <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-2">

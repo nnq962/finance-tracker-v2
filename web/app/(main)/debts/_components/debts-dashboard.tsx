@@ -113,7 +113,6 @@ export function DebtsDashboard({
     <Page>
       <PageHeader
         title="Nợ & Cho vay"
-        description="Theo dõi ai đang nợ bạn, bạn đang nợ ai và quản lý danh bạ cho các khoản vay."
         actions={
           <AddDebtSheet accounts={accounts} contacts={contacts} onAddDebt={addDebt} />
         }

@@ -17,7 +17,6 @@ export default async function AccountsPage() {
     <Page>
       <PageHeader
         title="Ngân sách"
-        description="Theo dõi số dư và quản lý các tài khoản của bạn."
         actions={<AddAccountButton />}
       />
       {accounts.length > 0 ? (

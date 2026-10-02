@@ -84,7 +84,6 @@ export function TransactionsDashboard({
     <TransactionHistoryProvider transactions={transactions}>
       <PageHeader
         title="Giao dịch"
-        description="Theo dõi các khoản thu, chi và chuyển khoản của bạn."
         actions={
           <AddTransactionButton
             accounts={accounts}
