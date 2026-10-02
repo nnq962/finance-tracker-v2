@@ -114,6 +114,8 @@ export function usePwaInstall() {
 
   return {
     available: !isStandalone && (isIOS || installPrompt !== null),
+    /** Running from the Home Screen, i.e. already installed. */
+    isStandalone,
     isIOS,
     install,
   }

@@ -3,12 +3,14 @@
 import * as React from "react"
 import {
   BellRingIcon,
+  CircleHelpIcon,
   PaletteIcon,
   SmartphoneIcon,
   TagsIcon,
 } from "lucide-react"
 
 import { CategoryManagementSheet } from "@/components/categories/category-management-sheet"
+import { useWelcome } from "@/components/onboarding/welcome"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
@@ -44,27 +46,38 @@ const screens = {
   },
 } as const
 
-type Screen = keyof typeof screens
+export type Screen = keyof typeof screens
 
 type SettingsViewProps = {
   user: SessionUser
   notifications: NotificationState
   categoryGroups: CategoryGroup[]
+  /** Opens this screen straight away, e.g. from the getting-started checklist. */
+  initialScreen?: Screen
 }
 
-export function SettingsView({ user, notifications, categoryGroups }: SettingsViewProps) {
+export function SettingsView({ user, notifications, categoryGroups, initialScreen }: SettingsViewProps) {
   const isMobile = useIsMobile()
   const [sheetScreen, setSheetScreen] = React.useState<Screen | null>(null)
-  const [panelScreen, setPanelScreen] = React.useState<Screen>("appearance")
+  const [panelScreen, setPanelScreen] = React.useState<Screen>(initialScreen ?? "appearance")
   const [categoriesOpen, setCategoriesOpen] = React.useState(false)
   // Summaries on the list follow changes made in the screens.
   const [reminder, setReminder] = React.useState(notifications.settings)
   const [devices, setDevices] = React.useState(notifications)
   const { choice } = useThemeChoice()
+  const { openWelcome } = useWelcome()
 
   const open = (screen: Screen) => {
     if (isMobile) setSheetScreen(screen)
     else setPanelScreen(screen)
+  }
+
+  // A deep-linked screen: beside the list from md up, as a sheet on phones
+  // once the first render on the client has told which one this is.
+  const [pendingScreen, setPendingScreen] = React.useState(initialScreen)
+  if (pendingScreen && isMobile) {
+    setPendingScreen(undefined)
+    setSheetScreen(pendingScreen)
   }
 
   const renderScreen = (screen: Screen) => {
@@ -153,6 +166,15 @@ export function SettingsView({ user, notifications, categoryGroups }: SettingsVi
             onClick={() => open("devices")}
           />
           <InstallAppRow />
+        </SettingsGroup>
+
+        <SettingsGroup>
+          <SettingsRow
+            icon={CircleHelpIcon}
+            color="cyan"
+            title="Hướng dẫn sử dụng"
+            onClick={openWelcome}
+          />
         </SettingsGroup>
 
         <SignOutRow />

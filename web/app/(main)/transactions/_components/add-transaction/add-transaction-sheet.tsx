@@ -22,25 +22,34 @@ import { TransactionKindSelector } from "./transaction-kind-selector"
 type AddTransactionSheetProps = {
   accounts: Account[]
   categoryGroups: CategoryGroup[]
+  /** Controlled mode without the trigger button, e.g. from the first-run checklist. */
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 export function AddTransactionSheet({
   accounts,
   categoryGroups,
+  open: controlledOpen,
+  onOpenChange,
 }: AddTransactionSheetProps) {
-  const [open, setOpen] = React.useState(false)
+  const [internalOpen, setInternalOpen] = React.useState(false)
+  const open = controlledOpen ?? internalOpen
+  const setOpen = onOpenChange ?? setInternalOpen
   const [categoryManagementOpen, setCategoryManagementOpen] = React.useState(false)
   const [kind, setKind] = React.useState<SupportedTransactionKind>("expense")
 
   return (
     <>
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <Button type="button" className="w-full sm:w-auto">
-            <PlusIcon />
-            Thêm giao dịch
-          </Button>
-        </SheetTrigger>
+        {controlledOpen === undefined ? (
+          <SheetTrigger asChild>
+            <Button type="button" className="w-full sm:w-auto">
+              <PlusIcon />
+              Thêm giao dịch
+            </Button>
+          </SheetTrigger>
+        ) : null}
         <SheetContent showCloseButton={false} aria-describedby={undefined} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
           <SheetNavHeader title="Giao dịch mới" />
           <div className="px-4 pb-4">

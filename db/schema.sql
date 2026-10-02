@@ -326,6 +326,8 @@ CREATE TABLE public.users (
     id text NOT NULL,
     categories_initialized_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
+    onboarding_seen_at timestamp with time zone,
+    checklist_hidden_at timestamp with time zone,
     CONSTRAINT users_id_check CHECK ((id ~ '^[A-Za-z0-9_-]{1,128}$'::text))
 );
 
@@ -912,4 +914,5 @@ INSERT INTO dbmate.schema_migrations (version) VALUES
     ('20261001000004'),
     ('20261001000005'),
     ('20261001000006'),
-    ('20261002000001');
+    ('20261002000001'),
+    ('20261002000002');

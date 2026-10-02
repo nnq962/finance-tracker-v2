@@ -169,8 +169,10 @@ export interface Transactions {
 
 export interface Users {
   categoriesInitializedAt: Timestamp | null;
+  checklistHiddenAt: Timestamp | null;
   createdAt: Generated<Timestamp>;
   id: string;
+  onboardingSeenAt: Timestamp | null;
 }
 
 export interface DB {

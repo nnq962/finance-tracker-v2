@@ -12,7 +12,8 @@ export const metadata: Metadata = {
   title: "Cài đặt",
 }
 
-export default async function SettingsPage() {
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ screen?: string }> }) {
+  const { screen } = await searchParams
   const {
     user,
     data: [notifications, categoryGroups],
@@ -36,6 +37,8 @@ export default async function SettingsPage() {
         user={user}
         notifications={notifications}
         categoryGroups={categoryGroups}
+        // Deep link from the getting-started checklist.
+        initialScreen={screen === "notifications" ? "notifications" : undefined}
       />
     </Page>
   )

@@ -13,15 +13,20 @@ import { AccountForm } from "../account-form/account-form"
 import { createAccountAction } from "../../actions"
 
 type AddAccountSheetProps = {
-  trigger: React.ReactNode
+  trigger?: React.ReactNode
+  /** Controlled mode, e.g. opened from the first-run guide. */
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-export function AddAccountSheet({ trigger }: AddAccountSheetProps) {
-  const [open, setOpen] = React.useState(false)
+export function AddAccountSheet({ trigger, open: controlledOpen, onOpenChange }: AddAccountSheetProps) {
+  const [internalOpen, setInternalOpen] = React.useState(false)
+  const open = controlledOpen ?? internalOpen
+  const setOpen = onOpenChange ?? setInternalOpen
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>{trigger}</SheetTrigger>
+      {trigger ? <SheetTrigger asChild>{trigger}</SheetTrigger> : null}
       <SheetContent
         showCloseButton={false}
         aria-describedby={undefined}

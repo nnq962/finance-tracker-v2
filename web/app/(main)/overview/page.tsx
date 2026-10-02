@@ -5,7 +5,10 @@ import { getCategoryGroups } from "@/lib/categories/repository"
 import { todayDate } from "@/lib/debts/calculations"
 import { getContacts, getDebtSummaries } from "@/lib/debts/repository"
 import { getOverviewSummary } from "@/lib/overview/summary"
+import { getChecklistState } from "@/lib/onboarding/repository"
 import { getTransactionsInRange } from "@/lib/transactions/repository"
+
+import { GettingStarted } from "./_components/getting-started"
 
 import { OverviewMonth } from "./_components/overview-month"
 import {
@@ -36,7 +39,7 @@ export default async function OverviewPage() {
   const today = todayDate()
   const transactionRange = getOverviewTransactionRange(today)
   const {
-    data: [accounts, debts, contacts, transactions, categoryGroups],
+    data: [accounts, debts, contacts, transactions, categoryGroups, checklist],
   } = await loadWithSession((user) =>
     Promise.all([
       getAccounts(user.uid),
@@ -48,6 +51,7 @@ export default async function OverviewPage() {
         transactionRange.end,
       ),
       getCategoryGroups(user.uid),
+      getChecklistState(user.uid),
     ]),
   )
   const summary = getOverviewSummary(
@@ -63,6 +67,7 @@ export default async function OverviewPage() {
       <PageHeader
         title="Tổng quan"
       />
+      <GettingStarted state={checklist} accounts={accounts} categoryGroups={categoryGroups} />
       <NetWorth data={summary.netWorth} />
       <OverviewMonth
         accounts={accounts}
