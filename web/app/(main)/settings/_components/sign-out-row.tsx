@@ -3,7 +3,7 @@
 import * as React from "react"
 import { toast } from "sonner"
 
-import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { SettingsRow } from "@/components/settings-list"
 import { signOutCurrentUser } from "@/lib/firebase/auth"
 
 export function SignOutRow() {
@@ -26,13 +26,11 @@ export function SignOutRow() {
   }
 
   return (
-    <SettingsGroup>
-      <SettingsRow
-        destructive
-        title={isSigningOut ? "Đang đăng xuất..." : "Đăng xuất"}
-        disabled={isSigningOut}
-        onClick={() => void handleSignOut()}
-      />
-    </SettingsGroup>
+    <SettingsRow
+      destructive
+      title={isSigningOut ? "Đang đăng xuất..." : "Đăng xuất"}
+      disabled={isSigningOut}
+      onClick={() => void handleSignOut()}
+    />
   )
 }

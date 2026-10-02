@@ -1,14 +1,23 @@
-import { Card, CardContent } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Page, PageHeaderSkeleton } from "@/components/page"
 import { Skeleton } from "@/components/ui/skeleton"
 import { settingsSeparatorClassName } from "@/components/settings-list"
 import { cn } from "@/lib/utils"
 
+/** Same footprint as a SettingsGroup caption. */
+function CaptionSkeleton() {
+  return (
+    <div className="flex min-h-6 items-center px-3">
+      <Skeleton className="h-3 w-20" />
+    </div>
+  )
+}
+
 /** Same footprint as SettingsGroup with `rows` SettingsRow items. */
 function GroupSkeleton({ rows, title = true }: { rows: number; title?: boolean }) {
   return (
     <div className="space-y-2">
-      {title ? <Skeleton className="mx-3 h-3 w-16" /> : null}
+      {title ? <CaptionSkeleton /> : null}
       <Card size="sm" className="gap-0 py-0">
         <div className="px-1">
           {Array.from({ length: rows }, (_, row) => (
@@ -35,29 +44,18 @@ export default function SettingsLoading() {
 
       <div
         aria-hidden="true"
-        className="grid items-start gap-6 md:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] md:gap-8"
+        className="grid items-start gap-6 md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] md:gap-8 xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]"
       >
         <div className="min-w-0 space-y-6">
-          <Card>
-            <CardContent className="flex items-center gap-3">
-              <Skeleton className="size-10 shrink-0 rounded-full" />
-              <div className="min-w-0 flex-1 space-y-1.5">
-                <Skeleton className="h-5 w-36 max-w-full" />
-                <Skeleton className="h-4 w-52 max-w-full" />
-              </div>
-            </CardContent>
-          </Card>
-          <GroupSkeleton rows={3} />
+          <GroupSkeleton rows={2} />
+          <GroupSkeleton rows={2} />
+          <GroupSkeleton rows={2} />
           <GroupSkeleton rows={1} />
-          <GroupSkeleton rows={1} title={false} />
+          <GroupSkeleton rows={1} />
         </div>
 
-        <div className="hidden min-w-0 space-y-4 md:block">
-          <div className="space-y-1.5">
-            <Skeleton className="h-6 w-32" />
-            <Skeleton className="h-4 w-72 max-w-full" />
-          </div>
-          <GroupSkeleton rows={3} title={false} />
+        <div className="hidden max-w-2xl min-w-0 md:block">
+          <GroupSkeleton rows={3} />
         </div>
       </div>
 

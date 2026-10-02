@@ -14,7 +14,6 @@ import { CategoryManagementSheet } from "@/components/categories/category-manage
 import { useWelcome } from "@/components/onboarding/welcome"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Card, CardContent } from "@/components/ui/card"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
   Sheet,
@@ -36,19 +35,15 @@ import { VoiceLab } from "./voice-lab"
 const screens = {
   appearance: {
     title: "Giao diện",
-    description: "Chọn giao diện sáng, tối hoặc theo thiết bị.",
   },
   notifications: {
     title: "Nhắc ghi chi tiêu",
-    description: "Một lời nhắc mỗi ngày để bạn không quên ghi lại chi tiêu.",
   },
   devices: {
     title: "Thiết bị nhận thông báo",
-    description: "Các thiết bị đang nhận lời nhắc của tài khoản này.",
   },
   voice: {
     title: "Thử giọng nói",
-    description: "Kiểm tra micro và nhận dạng giọng nói trên thiết bị này.",
   },
 } as const
 
@@ -121,22 +116,21 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
     .toLocaleUpperCase("vi-VN")
 
   return (
-    <div className="grid items-start gap-6 md:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] md:gap-8">
+    <div className="grid items-start gap-6 md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] md:gap-8 xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
       <div className="min-w-0 space-y-6">
-        <Card>
-          <CardContent className="flex min-w-0 items-center gap-3">
-            <Avatar size="lg">
-              <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback>{initials}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 space-y-0.5">
-              <p className="truncate font-heading text-base font-extrabold">{user.name}</p>
-              <p className="truncate text-sm text-muted-foreground">
-                {user.email || "Chưa cập nhật email"}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <SettingsGroup title="Tài khoản">
+          <SettingsRow
+            media={
+              <Avatar>
+                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarFallback>{initials}</AvatarFallback>
+              </Avatar>
+            }
+            title={user.name}
+            description={user.email || "Chưa cập nhật email"}
+          />
+          <SignOutRow />
+        </SettingsGroup>
 
         <SettingsGroup title="Chung">
           <SettingsRow
@@ -154,6 +148,9 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
             value={`${categoryCount} mục`}
             onClick={() => setCategoriesOpen(true)}
           />
+        </SettingsGroup>
+
+        <SettingsGroup title="Thông báo">
           <SettingsRow
             icon={BellRingIcon}
             color="amber"
@@ -162,9 +159,6 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
             active={panelScreen === "notifications"}
             onClick={() => open("notifications")}
           />
-        </SettingsGroup>
-
-        <SettingsGroup title="Thiết bị">
           <SettingsRow
             icon={SmartphoneIcon}
             color="blue"
@@ -172,6 +166,18 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
             value={String(devices.devices.length)}
             active={panelScreen === "devices"}
             onClick={() => open("devices")}
+          />
+        </SettingsGroup>
+
+        <SettingsGroup
+          title="Ứng dụng"
+          footer={`Finance Tracker · v${process.env.NEXT_PUBLIC_APP_VERSION}`}
+        >
+          <SettingsRow
+            icon={CircleHelpIcon}
+            color="cyan"
+            title="Hướng dẫn sử dụng"
+            onClick={openWelcome}
           />
           <InstallAppRow />
         </SettingsGroup>
@@ -185,31 +191,20 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
             onClick={() => open("voice")}
           />
         </SettingsGroup>
-
-        <SettingsGroup>
-          <SettingsRow
-            icon={CircleHelpIcon}
-            color="cyan"
-            title="Hướng dẫn sử dụng"
-            onClick={openWelcome}
-          />
-        </SettingsGroup>
-
-        <SignOutRow />
-
-        <p className="text-center text-xs text-muted-foreground">
-          Finance Tracker · v{process.env.NEXT_PUBLIC_APP_VERSION}
-        </p>
       </div>
 
-      {/* md and up: the chosen screen next to the list. */}
+      {/* md and up: the chosen screen next to the list, under a caption the
+          same height as the list's first, so both columns start on one line.
+          Capped so its rows stay readable on wide screens. */}
       {!isMobile ? (
-        <section aria-labelledby="settings-panel-title" className="hidden min-w-0 space-y-4 md:block">
-          <div className="space-y-1">
-            <h2 id="settings-panel-title" className="font-heading text-lg font-extrabold">
+        <section aria-labelledby="settings-panel-title" className="hidden max-w-2xl min-w-0 space-y-2 md:block">
+          <div className="flex min-h-6 items-center px-3">
+            <h2
+              id="settings-panel-title"
+              className="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+            >
               {screens[panelScreen].title}
             </h2>
-            <p className="text-sm text-muted-foreground">{screens[panelScreen].description}</p>
           </div>
           {renderScreen(panelScreen)}
         </section>
