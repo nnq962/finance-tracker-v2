@@ -2,6 +2,8 @@
 
 import { toast } from "sonner"
 
+import { actionErrorMessage } from "@/lib/stale-deploy"
+
 const UNDO_DELAY_MS = 6000
 const pendingDeletes = new Set<string>()
 
@@ -65,7 +67,7 @@ export function scheduleUndoableDelete({
       await onCommit()
       toast.success(successMessage, { id: pendingToastId })
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : errorMessage, {
+      toast.error(actionErrorMessage(error, errorMessage), {
         id: pendingToastId,
         description: "Dữ liệu chưa bị xoá.",
       })

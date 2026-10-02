@@ -12,6 +12,7 @@ import {
   SheetFooter,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { actionErrorMessage } from "@/lib/stale-deploy"
 import type { Contact, NewContact } from "../_types/debt"
 
 type AddContactSheetProps = {
@@ -74,7 +75,7 @@ export function AddContactSheet({ contact, onAddContact, open: controlledOpen, o
             })
             setOpen(false)
           } catch (error) {
-            setErrorMessage(error instanceof Error ? error.message : "Không thể lưu người liên hệ.")
+            setErrorMessage(actionErrorMessage(error, "Không thể lưu người liên hệ."))
           } finally {
             submitting.current = false
             setPending(false)

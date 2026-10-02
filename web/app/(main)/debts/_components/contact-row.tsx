@@ -14,6 +14,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/animate-ui/components/radix/alert-dialog"
+import { actionErrorMessage } from "@/lib/stale-deploy"
 import type { Contact, NewContact } from "../_types/debt"
 import { AddContactSheet } from "./add-contact-sheet"
 
@@ -79,7 +80,7 @@ export function ContactRow({ contact, hasDebts, onEdit, onDelete }: ContactRowPr
                 await onDelete()
                 setOpen(false)
               } catch (error) {
-                setErrorMessage(error instanceof Error ? error.message : "Không thể xoá người liên hệ.")
+                setErrorMessage(actionErrorMessage(error, "Không thể xoá người liên hệ."))
               } finally {
                 deleting.current = false
                 setPending(false)

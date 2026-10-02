@@ -1,6 +1,7 @@
 "use client"
 
 import { firebaseApp } from "@/lib/firebase/client"
+import { actionErrorMessage } from "@/lib/stale-deploy"
 
 async function waitForActiveWorker(registration: ServiceWorkerRegistration) {
   if (registration.active) return
@@ -80,5 +81,5 @@ export function pushErrorMessage(error: unknown) {
   if (code.includes("subscribe") || code.includes("registration")) {
     return "Không thể đăng ký FCM. Kiểm tra VAPID key, FCM Registration API và cấu hình Firebase cùng project."
   }
-  return error instanceof Error ? error.message : "Không thể hoàn tất thao tác. Vui lòng thử lại."
+  return actionErrorMessage(error, "Không thể hoàn tất thao tác. Vui lòng thử lại.")
 }

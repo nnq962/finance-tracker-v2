@@ -59,6 +59,11 @@ visible to Google Sign-In. That requires:
 2. `https://finance.nnqlab.dev/__/auth/handler` in the authorized redirect URIs
    of the Google OAuth web client for this Firebase project.
 
+`deploy.sh` builds with `NEXT_DEPLOYMENT_ID` set to the commit, so a tab left
+open across a deploy reloads on its next navigation. A Server Action called
+from such a tab before that fails; `lib/stale-deploy.ts` turns that error into
+a prompt to reload.
+
 Next.js embeds `NEXT_PUBLIC_*` values at build time, so changing them needs a
 rebuild (`deploy/scripts/deploy.sh`). Keep the Firebase-provided
 `<project-id>.firebaseapp.com` auth domain in `.env.local` for local development.

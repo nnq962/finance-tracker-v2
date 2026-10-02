@@ -49,6 +49,7 @@ import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { Account } from "@/lib/accounts/types"
+import { actionErrorMessage } from "@/lib/stale-deploy"
 import { todayDate } from "../_lib/debt-payments"
 
 import type {
@@ -223,7 +224,7 @@ export function AddDebtSheet({
               setContactId("")
               setOpen(false)
             } catch (error) {
-              setErrorMessage(error instanceof Error ? error.message : "Không thể lưu khoản nợ.")
+              setErrorMessage(actionErrorMessage(error, "Không thể lưu khoản nợ."))
             } finally {
               submitting.current = false
               setPending(false)

@@ -51,6 +51,7 @@ async function main() {
     '@/lib/firebase/auth': { async clearServerSession() {}, async syncServerSession() {} },
     '@/lib/firebase/client': { firebaseAuth: { currentUser: { uid: 'me' } } },
     '@/lib/firebase/push-device': { stopPushDeviceSync() {}, async syncAccountPushDevice() {} },
+    '@/lib/stale-deploy': { isStaleDeployError() { return false }, showStaleDeployToast() {} },
   }
   const filename = 'components/auth-session-guard.tsx'
   const exports = {}

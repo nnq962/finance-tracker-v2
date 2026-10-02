@@ -19,6 +19,9 @@ ARG NEXT_PUBLIC_FIREBASE_API_KEY \
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# The commit being deployed. Next.js sends it with every page, so a tab left
+# open across a deploy reloads itself instead of running on the old build.
+ARG NEXT_DEPLOYMENT_ID
 RUN npm run build
 
 FROM node:24-alpine AS runtime

@@ -66,6 +66,7 @@ async function main() {
   const worker = { active: {} }
   const client = load('lib/firebase/messaging.ts', {
     '@/lib/firebase/client': { firebaseApp: {} },
+    '@/lib/stale-deploy': { actionErrorMessage(error, fallback) { return error instanceof Error ? error.message : fallback } },
     'firebase/messaging': {
       async isSupported() { events.push('support'); return true },
       getMessaging() { return messaging },

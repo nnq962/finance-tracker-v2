@@ -12,6 +12,7 @@ import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { formatCurrency } from "@/lib/format-currency"
+import { actionErrorMessage } from "@/lib/stale-deploy"
 
 import {
   formatDebtDate,
@@ -199,7 +200,7 @@ function DebtManageRows({
                 await onChangeDebt(null)
                 setDeleting(false)
               } catch (error) {
-                setError(error instanceof Error ? error.message : "Không thể xoá khoản nợ.")
+                setError(actionErrorMessage(error, "Không thể xoá khoản nợ."))
               } finally {
                 submitting.current = false
                 setPending(false)

@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/animate-ui/components/radix/alert-dialog"
 import type { Account } from "@/lib/accounts/types"
 import { formatCurrency } from "@/lib/format-currency"
+import { actionErrorMessage } from "@/lib/stale-deploy"
 import { formatDebtDate } from "../_lib/debt-presentation"
 import { getOpeningPaidAmount } from "../_lib/debt-payments"
 import type { Contact, Debt, DebtPayment, NewDebtPayment } from "../_types/debt"
@@ -80,7 +81,7 @@ function PaymentEntry({ payment, debt, contact, accounts, onEdit, onDelete }: Pr
                 await onDelete(payment.id)
                 setDeleting(false)
               } catch (error) {
-                setErrorMessage(error instanceof Error ? error.message : "Không thể xoá thanh toán.")
+                setErrorMessage(actionErrorMessage(error, "Không thể xoá thanh toán."))
               } finally {
                 submitting.current = false
                 setPending(false)

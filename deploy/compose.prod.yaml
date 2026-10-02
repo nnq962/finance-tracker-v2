@@ -13,6 +13,8 @@ services:
         NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID:-}
         NEXT_PUBLIC_FIREBASE_APP_ID: ${NEXT_PUBLIC_FIREBASE_APP_ID:-}
         NEXT_PUBLIC_FIREBASE_VAPID_KEY: ${NEXT_PUBLIC_FIREBASE_VAPID_KEY:-}
+        # Set by deploy.sh to the commit being built.
+        NEXT_DEPLOYMENT_ID: ${NEXT_DEPLOYMENT_ID:-}
     image: finance-web
     environment:
       DATABASE_URL: postgres://finance_app:${APP_DB_PASSWORD}@postgres:5432/finance

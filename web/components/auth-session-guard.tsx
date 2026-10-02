@@ -10,10 +10,18 @@ import RootLoading from "@/app/loading"
 import { clearServerSession, syncServerSession } from "@/lib/firebase/auth"
 import { firebaseAuth } from "@/lib/firebase/client"
 import { stopPushDeviceSync, syncAccountPushDevice } from "@/lib/firebase/push-device"
+import { isStaleDeployError, showStaleDeployToast } from "@/lib/stale-deploy"
 
 // Back within this long after hiding the page: show it again without asking
 // the server. Longer, the session may have ended meanwhile.
 const RECHECK_AFTER_MS = 60_000
+
+// The sync runs by itself whenever the window regains focus, so after a deploy
+// it is the first call to meet the new server: offer the reload, not an error.
+function reportPushSyncError(error: unknown) {
+  if (isStaleDeployError(error)) showStaleDeployToast()
+  else toast.error(pushErrorMessage(error), { id: "push-device-sync" })
+}
 
 // Set on <html> while the page must stay covered. Toggled straight from the
 // event handlers, so it applies before the browser paints the old content.
@@ -54,9 +62,7 @@ export function AuthSessionGuard({ children, initialUid }: { children: React.Rea
         if (active && firebaseAuth.currentUser?.uid === user.uid) {
           if (user.uid !== initialUid) router.refresh()
           void syncAccountPushDevice(user.uid).catch((error) => {
-            if (active && firebaseAuth.currentUser?.uid === user.uid) {
-              toast.error(pushErrorMessage(error), { id: "push-device-sync" })
-            }
+            if (active && firebaseAuth.currentUser?.uid === user.uid) reportPushSyncError(error)
           })
         }
       } catch {
@@ -70,7 +76,7 @@ export function AuthSessionGuard({ children, initialUid }: { children: React.Rea
     const refreshDevice = () => {
       const uid = firebaseAuth.currentUser?.uid
       if (uid && active) void syncAccountPushDevice(uid).catch((error) => {
-        if (active && firebaseAuth.currentUser?.uid === uid) toast.error(pushErrorMessage(error), { id: "push-device-sync" })
+        if (active && firebaseAuth.currentUser?.uid === uid) reportPushSyncError(error)
       })
     }
     window.addEventListener("focus", refreshDevice)

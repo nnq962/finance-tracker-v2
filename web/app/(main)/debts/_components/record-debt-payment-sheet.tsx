@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea"
 import type { Account } from "@/lib/accounts/types"
 import { getLocalDateTime } from "@/lib/date-time"
 import { formatCurrency } from "@/lib/format-currency"
+import { actionErrorMessage } from "@/lib/stale-deploy"
 import { getPaymentMetrics, todayDate } from "../_lib/debt-payments"
 import type { Contact, Debt, DebtPayment, NewDebtPayment } from "../_types/debt"
 
@@ -87,7 +88,7 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
             toast.success(payment ? "Đã cập nhật thanh toán." : "Đã ghi nhận thanh toán.")
             setOpen(false)
           } catch (error) {
-            setErrorMessage(error instanceof Error ? error.message : "Không thể lưu thanh toán.")
+            setErrorMessage(actionErrorMessage(error, "Không thể lưu thanh toán."))
           } finally {
             submitting.current = false
             setPending(false)

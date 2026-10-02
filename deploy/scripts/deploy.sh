@@ -43,7 +43,9 @@ if [[ "${1:-}" != "--no-pull" ]]; then
   fi
 fi
 
-echo "==> Building $(git -C "$root" rev-parse --short HEAD)"
+# Baked into the web build, so open tabs notice the new version (web/Dockerfile).
+export NEXT_DEPLOYMENT_ID="$(git -C "$root" rev-parse --short HEAD)"
+echo "==> Building $NEXT_DEPLOYMENT_ID"
 "${compose[@]}" build web worker
 
 echo "==> Migrating"
