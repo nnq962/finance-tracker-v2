@@ -42,7 +42,7 @@ type AiAssistDrawerProps<Result> = {
   onOpenChange: (open: boolean) => void
   /** What to ask for, e.g. "Bạn vừa tiêu gì?". */
   prompt: string
-  /** Tappable sample requests, shown before anything is said. */
+  /** Sample requests, faded in turn inside the empty input before anything is said. */
   examples: string[]
   /** Turns what was said into a result; rejects with a message to show. */
   onSubmit: (text: string) => Promise<Result>
@@ -100,6 +100,7 @@ export function AiAssistDrawer<Result>({
   }
 
   const showTyping = typing || !speech.supported
+  const hint = useRotatingHint(["Bấm micro và nói tự nhiên.", ...examples.map((example) => `Thử nói “${example}”`)])
 
   return (
     <AiDrawer open={open} onOpenChange={handleOpenChange}>
@@ -107,8 +108,9 @@ export function AiAssistDrawer<Result>({
         {/* The drawer spans the screen like shadcn's; its content keeps a
             phone's width, centred. */}
         <div className="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col">
-          <AiDrawerHeader className="relative px-12">
-            <AiDrawerTitle className="flex items-center justify-center gap-2 md:justify-start">
+          {/* Centred on every screen; the Drawer header aligns left from md. */}
+          <AiDrawerHeader className="relative px-12 md:text-center">
+            <AiDrawerTitle className="flex items-center justify-center gap-2">
               <SparklesIcon className="size-4 text-[#a78bfa]" aria-hidden="true" />
               Trợ lý AI
             </AiDrawerTitle>
@@ -165,7 +167,7 @@ export function AiAssistDrawer<Result>({
                         />
                       ) : (
                         <Card>
-                          <CardContent className="flex min-h-24 items-center justify-center text-center">
+                          <CardContent className="flex min-h-14 items-center justify-center text-center">
                             {heard ? (
                               <p className="font-heading text-lg leading-snug font-extrabold" aria-live="polite">
                                 {/* Each word rises in as it is heard. */}
@@ -187,14 +189,14 @@ export function AiAssistDrawer<Result>({
                             ) : (
                               <AnimatePresence mode="wait" initial={false}>
                                 <motion.p
-                                  key={speech.listening ? "listening" : "idle"}
+                                  key={speech.listening ? "listening" : hint}
                                   className="text-sm text-muted-foreground"
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  exit={{ opacity: 0 }}
-                                  transition={{ duration: 0.2 }}
+                                  initial={{ opacity: 0, y: 6, filter: "blur(3px)" }}
+                                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                                  exit={{ opacity: 0, y: -6, filter: "blur(3px)" }}
+                                  transition={{ duration: 0.3, ease: EASE_OUT }}
                                 >
-                                  {speech.listening ? "Đang nghe… nói xong thì bấm dừng." : "Bấm micro và nói tự nhiên."}
+                                  {speech.listening ? "Đang nghe… nói xong thì bấm dừng." : hint}
                                 </motion.p>
                               </AnimatePresence>
                             )}
@@ -205,7 +207,7 @@ export function AiAssistDrawer<Result>({
                       {/* Above the samples and errors, which come and go, so the
                           microphone stays put; the bottom padding leaves room
                           for its rings. */}
-                      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 pb-5">
+                      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 pb-4">
                         {speech.supported ? (
                           <Button
                             type="button"
@@ -240,7 +242,7 @@ export function AiAssistDrawer<Result>({
                             <Button
                               type="button"
                               variant={speech.listening ? "destructive" : "default"}
-                              className="size-16 rounded-full [&_svg:not([class*='size-'])]:size-7"
+                              className="size-14 rounded-full [&_svg:not([class*='size-'])]:size-6"
                               aria-label={speech.listening ? "Dừng nghe" : "Bắt đầu nói"}
                               onClick={speech.listening ? speech.stop : speech.start}
                             >
@@ -257,33 +259,6 @@ export function AiAssistDrawer<Result>({
                         </p>
                       ) : null}
 
-                      {!heard && !text ? (
-                        <div className="space-y-2">
-                          <p className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                            Thử nói
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {examples.map((example, index) => (
-                              <motion.span
-                                key={example}
-                                initial={{ opacity: 0, y: -6 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3, ease: EASE_OUT, delay: 0.08 + index * 0.06 }}
-                              >
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  disabled={speech.listening}
-                                  onClick={() => submit(example)}
-                                >
-                                  {example}
-                                </Button>
-                              </motion.span>
-                            ))}
-                          </div>
-                        </div>
-                      ) : null}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -294,6 +269,17 @@ export function AiAssistDrawer<Result>({
       </AiDrawerContent>
     </AiDrawer>
   )
+}
+
+/** Cycles through `hints`, one every few seconds. */
+function useRotatingHint(hints: string[]) {
+  const [index, setIndex] = React.useState(0)
+  React.useEffect(() => {
+    if (hints.length < 2) return
+    const timer = window.setInterval(() => setIndex((current) => (current + 1) % hints.length), 3000)
+    return () => window.clearInterval(timer)
+  }, [hints.length])
+  return hints[index % hints.length]
 }
 
 /** What was asked, quoted above the answer. */
