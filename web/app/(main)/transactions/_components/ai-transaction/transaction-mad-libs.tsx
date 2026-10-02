@@ -10,6 +10,7 @@ import { CurrencyInput } from "@/components/forms/currency-input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { Account } from "@/lib/accounts/types"
 import { getAmountSuggestions } from "@/lib/amount-suggestions"
@@ -352,36 +353,42 @@ function BlankEditor({ field, draft, today, groups, accounts, onPick, onChange }
       return <DateEditor date={draft.date} today={today} onPick={(date) => onPick({ date })} />
     case "category":
       return (
-        // Long catalogs scroll inside the drawer.
-        <div className="max-h-64 space-y-3 overflow-y-auto">
-          {groups.map((group) => {
-            const color = getCategoryColor(group.colorName)
-            return (
-              <div key={group.id} className="space-y-2">
-                <p className="px-3 text-xs text-muted-foreground">{group.name}</p>
-                <ToggleGroup
-                  type="single"
-                  size="sm"
-                  value={draft.categoryId ?? ""}
-                  // Tapping the picked one again keeps it and moves on.
-                  onValueChange={(categoryId) => onPick(categoryId ? { categoryId } : {})}
-                  className="flex-wrap p-1"
-                  aria-label={group.name}
-                >
-                  {group.items.map((item) => {
-                    const ItemIcon = categoryIconRegistry[item.iconName]
-                    return (
-                      <ToggleGroupItem key={item.id} value={item.id}>
-                        <ItemIcon className={color.iconClassName} />
-                        {item.name}
-                      </ToggleGroupItem>
-                    )
-                  })}
-                </ToggleGroup>
-              </div>
-            )
-          })}
-        </div>
+        // Long catalogs scroll inside the drawer. vaul takes a swipe up at
+        // the top of a list for closing the drawer, which made it jolt on the
+        // first swipe; this list is left to scroll. The viewport, not the
+        // root, caps the height, so a short list stays short.
+        <ScrollArea data-vaul-no-drag className="[&>[data-slot=scroll-area-viewport]]:max-h-64">
+          {/* Clear of the scrollbar. */}
+          <div className="space-y-3 pr-3">
+            {groups.map((group) => {
+              const color = getCategoryColor(group.colorName)
+              return (
+                <div key={group.id} className="space-y-2">
+                  <p className="px-3 text-xs text-muted-foreground">{group.name}</p>
+                  <ToggleGroup
+                    type="single"
+                    size="sm"
+                    value={draft.categoryId ?? ""}
+                    // Tapping the picked one again keeps it and moves on.
+                    onValueChange={(categoryId) => onPick(categoryId ? { categoryId } : {})}
+                    className="flex-wrap p-1"
+                    aria-label={group.name}
+                  >
+                    {group.items.map((item) => {
+                      const ItemIcon = categoryIconRegistry[item.iconName]
+                      return (
+                        <ToggleGroupItem key={item.id} value={item.id}>
+                          <ItemIcon className={color.iconClassName} />
+                          {item.name}
+                        </ToggleGroupItem>
+                      )
+                    })}
+                  </ToggleGroup>
+                </div>
+              )
+            })}
+          </div>
+        </ScrollArea>
       )
     case "accountId":
     case "toAccountId": {
