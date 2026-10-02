@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { AnimatePresence, motion, MotionConfig } from "motion/react"
-import { KeyboardIcon, MicIcon, SendHorizontalIcon, SparklesIcon, SquareIcon, XIcon } from "lucide-react"
+import { EraserIcon, KeyboardIcon, MicIcon, SendHorizontalIcon, SparklesIcon, SquareIcon, XIcon } from "lucide-react"
 
 import { AutoHeight } from "@/components/animate-ui/primitives/effects/auto-height"
 import { Button } from "@/components/ui/button"
@@ -40,7 +40,7 @@ type Phase<Result> =
 type AiAssistDrawerProps<Result> = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  /** What to ask for, e.g. "Bạn vừa tiêu gì?". */
+  /** What to ask for, e.g. "Bạn vừa tiêu gì?", read to screen readers. */
   prompt: string
   /** Sample requests, faded in turn inside the empty input before anything is said. */
   examples: string[]
@@ -114,7 +114,7 @@ export function AiAssistDrawer<Result>({
               <SparklesIcon className="size-4 text-[#a78bfa]" aria-hidden="true" />
               Trợ lý AI
             </AiDrawerTitle>
-            <AiDrawerDescription>{prompt}</AiDrawerDescription>
+            <AiDrawerDescription className="sr-only">{prompt}</AiDrawerDescription>
             <AiDrawerClose asChild>
               <Button type="button" variant="ghost" size="icon-sm" className="absolute top-3 right-3" aria-label="Đóng">
                 <XIcon />
@@ -122,12 +122,13 @@ export function AiAssistDrawer<Result>({
             </AiDrawerClose>
           </AiDrawerHeader>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-2">
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
             <MotionConfig reducedMotion="user">
-              {/* The drawer's height follows each step; the 4px padding keeps
-                  the cards' rings clear of the clipping, the side margins
-                  keep the content where it was. */}
-              <AutoHeight className="-mx-1 p-1" deps={[phase.name, showTyping]}>
+              {/* The drawer's height follows each step. It clips, so it
+                  reaches 12px into the padding around it, room for the cards'
+                  rings and the microphone's ripples, and pads the content
+                  back to where it was: 16px from every edge. */}
+              <AutoHeight className="-mx-3 -mt-1 -mb-3 px-3 pt-1 pb-3" deps={[phase.name, showTyping]}>
                 <AnimatePresence mode="wait" initial={false}>
                   {phase.name === "result" ? (
                     <motion.div key="result" className="space-y-4" {...stepMotion}>
@@ -163,7 +164,6 @@ export function AiAssistDrawer<Result>({
                           }}
                           placeholder="Ví dụ: ăn trưa 45 nghìn bằng MoMo"
                           aria-label="Yêu cầu cho AI"
-                          autoFocus
                         />
                       ) : (
                         <Card>
@@ -204,10 +204,9 @@ export function AiAssistDrawer<Result>({
                         </Card>
                       )}
 
-                      {/* Above the samples and errors, which come and go, so the
-                          microphone stays put; the bottom padding leaves room
-                          for its rings. */}
-                      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 pb-4">
+                      {/* Above the errors, which come and go, so the microphone
+                          stays put. */}
+                      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                         {speech.supported ? (
                           <Button
                             type="button"
@@ -234,18 +233,39 @@ export function AiAssistDrawer<Result>({
                           <span className="relative inline-flex">
                             {speech.listening ? (
                               <>
-                                {/* Shaped like the button they ring. */}
-                                <span className="ai-ripple rounded-lg" aria-hidden="true" />
-                                <span className="ai-ripple rounded-lg" aria-hidden="true" />
+                                <span className="ai-ripple" aria-hidden="true" />
+                                <span className="ai-ripple" aria-hidden="true" />
                               </>
                             ) : null}
-                            <Button type="button" onClick={speech.listening ? speech.stop : speech.start}>
+                            {/* Round and a size up from the icon buttons beside it. */}
+                            <Button
+                              type="button"
+                              size="icon-lg"
+                              className="size-12 rounded-full [&_svg:not([class*='size-'])]:size-5"
+                              aria-label={speech.listening ? "Dừng nghe" : "Bắt đầu nói"}
+                              onClick={speech.listening ? speech.stop : speech.start}
+                            >
                               {speech.listening ? <SquareIcon /> : <MicIcon />}
-                              {speech.listening ? "Dừng" : "Nói"}
                             </Button>
                           </span>
                         )}
-                        <span />
+
+                        <AnimatePresence initial={false}>
+                          {showTyping && text ? (
+                            <motion.span
+                              key="clear"
+                              className="justify-self-end"
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.8 }}
+                              transition={{ duration: 0.18, ease: EASE_OUT }}
+                            >
+                              <Button type="button" variant="ghost" size="icon" aria-label="Xoá chữ" onClick={() => setText("")}>
+                                <EraserIcon />
+                              </Button>
+                            </motion.span>
+                          ) : null}
+                        </AnimatePresence>
                       </div>
 
                       {phase.error || speech.error ? (

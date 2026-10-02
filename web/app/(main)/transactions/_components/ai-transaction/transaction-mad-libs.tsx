@@ -69,7 +69,9 @@ const Blank = React.forwardRef<HTMLButtonElement, BlankProps>(function Blank(
       ref={ref}
       type="button"
       className={cn(
-        "group/blank mx-0.5 inline rounded-md px-1 py-0.5 font-semibold text-foreground transition-colors outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-[#38b8f6] data-[state=open]:bg-muted",
+        // The padding gives the hover background room; the negative margin
+        // keeps it out of the spacing, so no gap shows before a comma.
+        "group/blank -mx-1 inline rounded-md px-1 py-0.5 font-semibold text-foreground transition-colors outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-[#38b8f6] data-[state=open]:bg-muted",
         !filled && "font-normal text-muted-foreground italic",
         className,
       )}
