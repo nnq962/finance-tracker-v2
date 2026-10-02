@@ -5,6 +5,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { settingsSeparatorClassName } from "@/components/settings-list"
 import { cn } from "@/lib/utils"
 
+import { OverviewLayout } from "./_components/overview-layout"
+
 /** Same footprint as a SettingsGroup with `rows` rows. */
 function GroupSkeleton({ rows, title = true }: { rows: number; title?: boolean }) {
   return (
@@ -27,28 +29,47 @@ function GroupSkeleton({ rows, title = true }: { rows: number; title?: boolean }
 
 function CalendarSkeleton() {
   return (
-    <Card>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Skeleton className="size-8 rounded-lg" />
-          <Skeleton className="h-4 w-28" />
-          <Skeleton className="size-8 rounded-lg" />
-        </div>
-        <div className="grid grid-cols-7 gap-1">
-          {Array.from({ length: 35 }, (_, index) => (
-            <div key={index} className="flex min-h-14 flex-col items-center gap-1 pt-1">
-              <Skeleton className="size-6 rounded-full" />
-              <Skeleton className="h-2.5 w-8" />
+    <div className="space-y-2">
+      <Skeleton className="mx-3 h-3 w-24" />
+      <Card>
+        <CardContent className="@container space-y-4">
+          <div className="flex items-center justify-between">
+            <Skeleton className="mx-1 h-5 w-32" />
+            <div className="flex gap-1">
+              <Skeleton className="size-8 rounded-lg" />
+              <Skeleton className="size-8 rounded-lg" />
             </div>
-          ))}
-        </div>
-        <Separator variant="chunky" />
-        <div className="grid grid-cols-2 gap-4">
-          <Skeleton className="h-9 w-28" />
-          <Skeleton className="h-9 w-28" />
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+          <div className="grid grid-cols-7 gap-1">
+            {Array.from({ length: 35 }, (_, index) => (
+              <div key={index} className="flex min-h-14 flex-col items-center gap-1 pt-1 @lg:min-h-20 @lg:pt-2">
+                <Skeleton className="size-6 rounded-full" />
+                <Skeleton className="h-2.5 w-8" />
+              </div>
+            ))}
+          </div>
+          <Separator variant="chunky" />
+          <div className="grid grid-cols-2 gap-4">
+            <Skeleton className="h-9 w-28" />
+            <Skeleton className="h-9 w-28" />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+/** A caption and a card, as for the allocation and the six-month chart. */
+function ChartSkeleton({ className }: { className: string }) {
+  return (
+    <div className="space-y-2">
+      <Skeleton className="mx-3 h-3 w-28" />
+      <Card>
+        <CardContent>
+          <Skeleton className={cn("w-full rounded-lg", className)} />
+        </CardContent>
+      </Card>
+    </div>
   )
 }
 
@@ -61,26 +82,24 @@ export default function OverviewLoading() {
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
         <PageHeaderSkeleton />
-        <div className="space-y-4">
-          <Card>
-            <CardContent className="space-y-1.5">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-10 w-56 max-w-full" />
-            </CardContent>
-          </Card>
-          <GroupSkeleton rows={3} title={false} />
-        </div>
-        <div className="grid min-w-0 grid-cols-1 items-start gap-6 lg:grid-cols-2">
-          <CalendarSkeleton />
-          <div className="min-w-0 space-y-6">
-            <GroupSkeleton rows={3} />
-            <Card>
-              <CardContent>
-                <Skeleton className="h-48 w-full rounded-lg" />
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        <OverviewLayout
+          netWorth={
+            <div className="space-y-2">
+              <Skeleton className="mx-3 h-3 w-24" />
+              <div className="space-y-4">
+                <Card>
+                  <CardContent>
+                    <Skeleton className="h-11 w-56 max-w-full" />
+                  </CardContent>
+                </Card>
+                <GroupSkeleton rows={3} title={false} />
+              </div>
+            </div>
+          }
+          calendar={<CalendarSkeleton />}
+          allocation={<ChartSkeleton className="h-72" />}
+          trend={<ChartSkeleton className="h-48 sm:h-56" />}
+        />
       </div>
 
       <span className="sr-only">Đang tải tổng quan tài chính...</span>

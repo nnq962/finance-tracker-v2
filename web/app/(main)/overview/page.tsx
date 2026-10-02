@@ -69,7 +69,6 @@ export default async function OverviewPage() {
         title="Tổng quan"
       />
       <GettingStarted state={checklist} accounts={accounts} categoryGroups={categoryGroups} />
-      <NetWorth data={summary.netWorth} />
       <OverviewMonth
         accounts={accounts}
         categoryGroups={categoryGroups}
@@ -79,8 +78,11 @@ export default async function OverviewPage() {
         today={today}
         // The six months loaded for the chart.
         minMonth={transactionRange.startMonth}
-        aside={<DueDebts debts={summary.dueDebts} />}
-        footer={<CashFlowTrend summary={summary} />}
+        netWorth={<NetWorth data={summary.netWorth} />}
+        dueDebts={
+          summary.dueDebts.length > 0 ? <DueDebts debts={summary.dueDebts} /> : undefined
+        }
+        trend={<CashFlowTrend summary={summary} />}
       />
     </Page>
   )

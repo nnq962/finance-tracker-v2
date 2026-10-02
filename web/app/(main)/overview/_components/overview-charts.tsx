@@ -70,8 +70,9 @@ export function CashFlowChart({ data }: { data: OverviewSummary["cashFlow"] }) {
               />
             }
           />
-          <Bar dataKey="income" fill="var(--color-income)" radius={[4, 4, 0, 0]} maxBarSize={18} />
-          <Bar dataKey="expense" fill="var(--color-expense)" radius={[4, 4, 0, 0]} maxBarSize={18} />
+          {/* Phones stay below the cap; it only keeps bars from growing too wide on desktop. */}
+          <Bar dataKey="income" fill="var(--color-income)" radius={[4, 4, 0, 0]} maxBarSize={32} />
+          <Bar dataKey="expense" fill="var(--color-expense)" radius={[4, 4, 0, 0]} maxBarSize={32} />
         </BarChart>
       </ChartContainer>
       {/* sr-only on a div: a table cannot shrink to 1px and would stretch the

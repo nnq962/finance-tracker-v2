@@ -25,6 +25,10 @@ import { getDayTransactionsAction } from "../actions"
 
 const weekdays = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
 
+// Tiny on a phone-sized card, where seven days share the width; larger once
+// the card is wide (32rem and up).
+const amountClassName = "text-[10px] leading-tight font-bold tabular-nums @lg:text-xs"
+
 /** Short amounts that fit a day cell: 460k, 1,2tr, 25tr, 1,5tỷ. */
 function compactAmount(value: number) {
   const format = (amount: number, unit: string) =>
@@ -104,33 +108,44 @@ export function CashFlowCalendar({
   const sheetTitle = shownDay ? formatDayLabel(shownDay, today) : ""
 
   return (
-    <Card asChild>
-      <section aria-label="Lịch thu chi">
-        <CardContent className="space-y-4">
+    <section aria-labelledby="cash-flow-calendar-title" className="space-y-2">
+      <h2
+        id="cash-flow-calendar-title"
+        className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+      >
+        Lịch thu chi
+      </h2>
+      <Card>
+        {/* A container, so the days grow with the card rather than the screen. */}
+        <CardContent className="@container space-y-4">
+          {/* The month on the left and both arrows together on the right, so
+              they stay close on a wide card. */}
           <div className="flex items-center justify-between gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="Tháng trước"
-              disabled={month <= minMonth}
-              onClick={() => onMonthChange(shiftMonth(month, -1))}
-            >
-              <ChevronLeftIcon />
-            </Button>
-            <h2 className="font-heading text-sm font-extrabold">
+            <p className="px-1 font-heading text-base font-extrabold" aria-live="polite">
               Tháng {monthNumber}, {year}
-            </h2>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="Tháng sau"
-              disabled={month >= maxMonth}
-              onClick={() => onMonthChange(shiftMonth(month, 1))}
-            >
-              <ChevronRightIcon />
-            </Button>
+            </p>
+            <div className="flex items-center gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Tháng trước"
+                disabled={month <= minMonth}
+                onClick={() => onMonthChange(shiftMonth(month, -1))}
+              >
+                <ChevronLeftIcon />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Tháng sau"
+                disabled={month >= maxMonth}
+                onClick={() => onMonthChange(shiftMonth(month, 1))}
+              >
+                <ChevronRightIcon />
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-7 gap-1 text-center">
@@ -156,18 +171,19 @@ export function CashFlowCalendar({
                     {day}
                   </span>
                   {totals?.income ? (
-                    <span className={cn("text-[10px] leading-tight font-bold tabular-nums", cashFlowColors.income.text)}>
+                    <span className={cn(amountClassName, cashFlowColors.income.text)}>
                       +{compactAmount(totals.income)}
                     </span>
                   ) : null}
                   {totals?.expense ? (
-                    <span className={cn("text-[10px] leading-tight font-bold tabular-nums", cashFlowColors.expense.text)}>
+                    <span className={cn(amountClassName, cashFlowColors.expense.text)}>
                       −{compactAmount(totals.expense)}
                     </span>
                   ) : null}
                 </>
               )
-              const cellClassName = "flex min-h-14 min-w-0 flex-col items-center gap-0.5 rounded-lg pt-1"
+              const cellClassName =
+                "flex min-h-14 min-w-0 flex-col items-center gap-0.5 rounded-lg pt-1 @lg:min-h-20 @lg:pt-2"
 
               // Only days with transactions open a sheet.
               return totals ? (
@@ -253,7 +269,7 @@ export function CashFlowCalendar({
             </SheetContent>
           </Sheet>
         </CardContent>
-      </section>
-    </Card>
+      </Card>
+    </section>
   )
 }
