@@ -50,7 +50,7 @@ export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemPr
         </Avatar>
       }
       title={contact.name}
-      description={debt.note}
+      description={debt.note || undefined}
       action={
         <span className="flex flex-col items-end">
           <span

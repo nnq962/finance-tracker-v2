@@ -85,7 +85,7 @@ export function parseDebt(value: unknown): NewDebt {
   return {
     contactId: id(input.contactId), recordingMode, accountId: recordingMode === "cash-flow" ? id(input.accountId) : undefined, direction: input.direction,
     amount: money(input.amount), paidAmount: 0, hasInterest: input.hasInterest,
-    interestRate, interestPeriod, recordedAt, dueAt, note: text(input.note, "Nội dung", 500, true),
+    interestRate, interestPeriod, recordedAt, dueAt, note: text(input.note, "Ghi chú", 500),
   }
 }
 

@@ -190,7 +190,7 @@ CREATE TABLE public.debts (
     amount bigint NOT NULL,
     interest_rate numeric(5,2),
     interest_period text,
-    note text NOT NULL,
+    note text,
     recorded_at date NOT NULL,
     due_at date,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -915,4 +915,5 @@ INSERT INTO dbmate.schema_migrations (version) VALUES
     ('20261001000005'),
     ('20261001000006'),
     ('20261002000001'),
-    ('20261002000002');
+    ('20261002000002'),
+    ('20261002000003');

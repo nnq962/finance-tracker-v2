@@ -127,7 +127,7 @@ function toDebt(row: DebtRow, payments: DebtPayment[]): Debt {
     hasInterest: row.interestRate !== null,
     interestRate: row.interestRate ?? undefined,
     interestPeriod: (row.interestPeriod ?? undefined) as Debt["interestPeriod"],
-    note: row.note, recordedAt: row.recordedAt, dueAt: row.dueAt ?? undefined,
+    note: row.note ?? "", recordedAt: row.recordedAt, dueAt: row.dueAt ?? undefined,
     status: "active", payments,
   }
   debt.status = getPaymentMetrics(debt).remainingAmount === 0 ? "settled" : debt.dueAt && debt.dueAt < todayDate() ? "overdue" : "active"
@@ -223,7 +223,8 @@ function debtColumns(values: NewDebt) {
     accountId: values.accountId ?? null, direction: values.direction, amount: values.amount,
     interestRate: values.hasInterest ? values.interestRate ?? null : null,
     interestPeriod: values.hasInterest ? values.interestPeriod ?? null : null,
-    note: values.note, recordedAt: values.recordedAt, dueAt: values.dueAt ?? null,
+    // An empty note is stored as NULL.
+    note: optional(values.note), recordedAt: values.recordedAt, dueAt: values.dueAt ?? null,
   }
 }
 
@@ -231,7 +232,7 @@ function debtColumns(values: NewDebt) {
 function movementColumns(debt: Pick<Debt, "direction" | "amount" | "note" | "recordedAt">, accountId: string) {
   return {
     kind: debt.direction === "borrowed" ? "income" : "expense", amount: debt.amount, accountId,
-    note: debt.note, occurredAt: new Date(`${debt.recordedAt}T00:00:00+07:00`),
+    note: optional(debt.note), occurredAt: new Date(`${debt.recordedAt}T00:00:00+07:00`),
   }
 }
 

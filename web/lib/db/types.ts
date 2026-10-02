@@ -93,7 +93,7 @@ export interface Debts {
   id: Generated<string>;
   interestPeriod: string | null;
   interestRate: number | null;
-  note: string;
+  note: string | null;
   recordedAt: string;
   recordingMode: Generated<string>;
   updatedAt: Generated<Timestamp>;

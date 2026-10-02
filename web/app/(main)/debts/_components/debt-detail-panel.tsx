@@ -71,7 +71,11 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
           ? `Lãi đơn trên gốc ban đầu, ${debt.interestPeriod === "year" ? "365 ngày/năm" : "30 ngày/tháng"}, tính đến ${formatDebtDate(interestDate)}. Dừng tính lãi khi tất toán.`
           : undefined}
       >
-        <SettingsRow title="Nội dung" description={debt.note} />
+        <SettingsRow
+          title="Ghi chú"
+          description={debt.note || undefined}
+          value={debt.note ? undefined : "Không có"}
+        />
         <SettingsRow title="Loại" value={collecting ? "Cho vay" : "Đi vay"} />
         <SettingsRow title="Tiền gốc" value={formatCurrency(debt.amount, { signDisplay: "never" })} />
         <SettingsRow
@@ -177,7 +181,7 @@ function DebtManageRows({
           <AlertDialogHeader>
             <AlertDialogTitle>Xoá khoản {debt.direction === "lent" ? "cho vay" : "đi vay"}?</AlertDialogTitle>
             <AlertDialogDescription>
-              Xoá “{debt.note}” cùng toàn bộ {debt.payments?.length ?? 0} lần thu/trả.
+              Xoá {debt.note ? `“${debt.note}”` : "khoản này"} cùng toàn bộ {debt.payments?.length ?? 0} lần thu/trả.
               {debt.recordingMode === "opening" ? " Chỉ hoàn tác tác động số dư của các lần thu/trả đã ghi nhận; tiền gốc không ảnh hưởng số dư." : " Xoá giao dịch ban đầu và điều chỉnh số dư các tài khoản như chưa từng có khoản nợ này."}
               {" "}Sau khi xác nhận, bạn có 6 giây để hoàn tác.
             </AlertDialogDescription>

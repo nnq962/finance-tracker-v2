@@ -9,7 +9,8 @@ type DayTransactionsResult =
   | { success: true; data: Transaction[] }
   | { success: false; error: string }
 
-/** One Vietnam day's transactions, newest first, for the calendar's day sheet. */
+/** One Vietnam day's transactions, newest first, for the calendar's day
+ * sheet; loans are left out, as in the calendar's totals. */
 export async function getDayTransactionsAction(dateKey: unknown): Promise<DayTransactionsResult> {
   const user = await requireSession()
   const start = typeof dateKey === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateKey)
@@ -22,7 +23,8 @@ export async function getDayTransactionsAction(dateKey: unknown): Promise<DayTra
 
   try {
     const end = new Date(start.getTime() + 86_400_000)
-    return { success: true, data: await getTransactionsInRange(user.uid, start, end) }
+    const transactions = await getTransactionsInRange(user.uid, start, end)
+    return { success: true, data: transactions.filter((transaction) => !transaction.source) }
   } catch (error) {
     console.error("Day transactions failed", error)
     return { success: false, error: "Không thể tải giao dịch. Vui lòng thử lại." }

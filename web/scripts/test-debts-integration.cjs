@@ -283,6 +283,13 @@ async function run() {
     equal(await balance('b'), balanceBeforeMove + 100000)
     await repository.changeDebt(uid, archivedPrincipal.id, null, randomUUID())
     equal(await balance('b'), balanceBeforeMove)
+    // The note is optional: an empty one is stored as NULL and read back
+    // empty, on the debt and on its cash movement.
+    const noNote = await repository.createDebt(uid, {...values, accountId:acc.b, amount:100000, hasInterest:false, note:''}, randomUUID())
+    equal((await repository.getDebts(uid)).find(item => item.id === noNote.id).note, '')
+    equal((await sql('SELECT note FROM debts WHERE id = $1', [noNote.id])).rows[0].note, null)
+    equal((await getTransactions(uid)).find(item => item.debtId === noNote.id).note, undefined)
+    await repository.changeDebt(uid, noNote.id, null, randomUUID())
     console.log(`${checks} integration checks passed: persistence, isolation, balances, linked ledger, retries, concurrency, validation, and settlement.`)
   } finally {
     await cleanup()

@@ -10,7 +10,7 @@ import type { Transaction } from "@/lib/transactions/types"
 export type DayTotals = {
   income: number
   expense: number
-  /** Transactions that day of any kind, transfers included. */
+  /** Transactions that day of any kind, transfers included, loans not. */
   count: number
 }
 
@@ -22,10 +22,15 @@ export type MonthAllocation = {
   income: GroupTotals
 }
 
-/** Per Vietnam day ("YYYY-MM-DD"), counted as the transactions page does. */
+/**
+ * Per Vietnam day ("YYYY-MM-DD"). Loans are left out, as in the allocation
+ * chart and the six-month chart: borrowing and lending are not income or
+ * spending.
+ */
 export function summarizeDays(transactions: Transaction[]) {
   const days: Record<string, DayTotals> = {}
   for (const transaction of transactions) {
+    if (transaction.source) continue
     const key = toDateKey(transaction.occurredAt)
     const day = (days[key] ??= { income: 0, expense: 0, count: 0 })
     if (transaction.kind === "income") day.income += Math.abs(transaction.amount)

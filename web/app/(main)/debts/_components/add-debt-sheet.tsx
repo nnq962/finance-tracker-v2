@@ -333,12 +333,13 @@ export function AddDebtSheet({
               </Field>}
 
               <Field>
-                <FieldLabel htmlFor="debt-note">Nội dung</FieldLabel>
+                <FieldLabel htmlFor="debt-note">Ghi chú</FieldLabel>
                 <Textarea
                   id="debt-note"
                   name="note"
                   defaultValue={debt?.note}
-                  required
+                  maxLength={500}
+                  placeholder="Không bắt buộc, ví dụ: Mượn tiền sửa xe"
                 />
               </Field>
 

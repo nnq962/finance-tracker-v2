@@ -50,12 +50,11 @@ assert.equal(summary.dueDebts.length, 1)
 assert.equal(summary.dueDebts[0].contactName, 'Bạn')
 assert.equal(summary.dueDebts[0].daysUntilDue, 2)
 
-// Calendar and allocation totals: days count every transaction (the loan
-// income too, as the transactions page does); allocation leaves out loans
-// and transfers.
+// Calendar and allocation totals leave out loans; allocation also leaves out
+// transfers.
 const { summarizeAllocation, summarizeDays } = require('../lib/overview/month-data.ts')
 assert.deepEqual(summarizeDays(transactions), {
-  '2026-09-22': { income: 7_000_000, expense: 500_000, count: 4 },
+  '2026-09-22': { income: 2_000_000, expense: 500_000, count: 3 },
 })
 assert.deepEqual(summarizeAllocation(transactions), {
   '2026-09': { expense: { food: 500_000 }, income: { other: 2_000_000 } },
