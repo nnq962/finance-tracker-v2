@@ -14,12 +14,42 @@ import { formatCurrency } from "@/lib/format-currency"
 import type { OverviewSummary } from "@/lib/overview/summary"
 import { cn } from "@/lib/utils"
 
+import { cashFlowColors } from "../../transactions/_lib/transaction-presentation"
 import { CashFlowChart } from "./overview-charts"
 
 const overdueClassName = "text-[#c8393a] dark:text-[#ff9b93]"
 
+/** An amount in a net-worth row; the sign shows how it enters the total. */
+function NetWorthAmount({ value, sign }: { value: number; sign?: "+" | "−" }) {
+  return (
+    <span
+      className={cn(
+        "font-heading font-extrabold tabular-nums",
+        value === 0
+          ? "text-muted-foreground"
+          : sign === "+"
+            ? cashFlowColors.income.text
+            : sign === "−"
+              ? cashFlowColors.expense.text
+              : "text-foreground",
+      )}
+    >
+      {value !== 0 ? sign : null}
+      {formatCurrency(value)}
+    </span>
+  )
+}
+
 export function NetWorth({ data }: { data: OverviewSummary["netWorth"] }) {
   const router = useRouter()
+  // The total sits on a band in its sign's colour: green when positive, red
+  // when negative, neutral at zero.
+  const bandClassName =
+    data.total > 0
+      ? cashFlowColors.income.surface
+      : data.total < 0
+        ? cashFlowColors.expense.surface
+        : "bg-[#f3f1ec] dark:bg-muted/50"
 
   return (
     <section aria-labelledby="net-worth-title" className="space-y-2">
@@ -34,35 +64,32 @@ export function NetWorth({ data }: { data: OverviewSummary["netWorth"] }) {
       {/* One card: the total, then the three amounts it is made of. */}
       <SettingsGroup
         header={
-          <p
-            className={cn(
-              "font-heading text-4xl leading-tight font-extrabold tracking-tight tabular-nums [overflow-wrap:anywhere]",
-              data.total < 0 && overdueClassName,
-            )}
-          >
-            {formatCurrency(data.total)}
-          </p>
+          <div className={cn("px-4 py-5", bandClassName)}>
+            <p className="font-heading text-4xl leading-tight font-extrabold tracking-tight tabular-nums [overflow-wrap:anywhere]">
+              {formatCurrency(data.total)}
+            </p>
+          </div>
         }
       >
         <SettingsRow
           icon={WalletCardsIcon}
           color="blue"
           title="Số dư tài khoản"
-          value={formatCurrency(data.cash)}
+          value={<NetWorthAmount value={data.cash} />}
           onClick={() => router.push("/budget")}
         />
         <SettingsRow
           icon={ArrowDownLeftIcon}
           color="emerald"
           title="Người khác nợ tôi"
-          value={formatCurrency(data.receivable)}
+          value={<NetWorthAmount value={data.receivable} sign="+" />}
           onClick={() => router.push("/debts")}
         />
         <SettingsRow
           icon={ArrowUpRightIcon}
           color="rose"
           title="Tôi đang nợ"
-          value={formatCurrency(data.payable)}
+          value={<NetWorthAmount value={data.payable} sign="−" />}
           onClick={() => router.push("/debts")}
         />
       </SettingsGroup>

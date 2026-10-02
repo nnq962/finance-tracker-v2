@@ -15,7 +15,7 @@ function GroupSkeleton({ rows, header }: { rows: number; header?: React.ReactNod
     <div className="space-y-2">
       <Skeleton className="mx-3 h-3 w-28" />
       <Card size="sm" className="gap-0 py-0">
-        {header ? <div className="p-4">{header}</div> : null}
+        {header ? <div className="px-4 py-5">{header}</div> : null}
         <div className="px-1">
           {Array.from({ length: rows }, (_, row) => (
             <div key={row} className={cn("flex items-center gap-2.5 px-3 py-3.5 not-first:pt-4", settingsSeparatorClassName(true))}>

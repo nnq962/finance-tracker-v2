@@ -44,7 +44,7 @@ function SettingsGroup({
   title?: React.ReactNode
   /** Small control at the end of the caption, e.g. to edit the group. */
   action?: React.ReactNode
-  /** Shown in the card above the rows, e.g. the total the rows add up to. */
+  /** Shown in the card above the rows, with its own padding, e.g. the total the rows add up to. */
   header?: React.ReactNode
   footer?: React.ReactNode
   children: React.ReactNode
@@ -64,8 +64,7 @@ function SettingsGroup({
       {/* Rows carry their own, equal padding, so the card only frames them:
           first and last rows match the ones in between. */}
       <Card size="sm" className="gap-0 py-0">
-        {/* 16px all round, where the rows' content starts. */}
-        {header ? <div className="p-4">{header}</div> : null}
+        {header}
         <ul className="px-1">
           {children}
         </ul>

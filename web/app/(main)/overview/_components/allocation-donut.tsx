@@ -96,7 +96,8 @@ export function AllocationDonut({ categoryGroups, allocation, month }: Allocatio
           its slice's colour. */}
       <SettingsGroup
         header={
-          <div className="space-y-4">
+          // 16px all round, where the rows' content starts.
+          <div className="space-y-4 p-4">
             <Tabs value={type} onValueChange={(value) => setType(value as CategoryType)}>
               <TabsList className="w-full">
                 <TabsTrigger value="expense">Chi tiền</TabsTrigger>
