@@ -21,62 +21,8 @@ function load(filename, mocks, globals = {}) {
 }
 
 async function main() {
-  const sent = []
-  const delays = []
-  let sessionValid = true
-  let sendError = null
-  let detached = 0
-  let owned = true
-  class NotificationValidationError extends Error {}
-  const { sendPushTestAction } = load('app/(main)/settings/actions.ts', {
-    '@/lib/auth/session': { async requireSession() {
-      if (!sessionValid) throw new Error('Unauthorized')
-      return { uid: 'test-user' }
-    } },
-    '@/lib/notifications/context': { async getPushContext() { return { browserId: 'browser', sessionId: 'session' } } },
-    '@/lib/notifications/validation': { NotificationValidationError },
-    '@/lib/notifications/repository': {
-      async getCurrentPushFid(uid) {
-        assert.equal(uid, 'test-user')
-        if (!owned) throw new NotificationValidationError('Thiết bị đã đăng xuất.')
-        return fid
-      },
-      async detachPushDevice() { detached++ },
-    },
-    '@/lib/firebase/admin': { getFirebaseAdminMessaging() {
-      return { async send(message) {
-        if (sendError) throw sendError
-        sent.push(message)
-        return 'test-message-id'
-      } }
-    } },
-  }, { setTimeout(callback, ms) { delays.push(ms); callback() } })
-
+  // A registered FCM installation id, as returned by onRegistered.
   const fid = 'c' + 'a'.repeat(21)
-  sessionValid = false
-  await assert.rejects(sendPushTestAction(), /Unauthorized/)
-  sessionValid = true
-  for (const invalid of [null, {}, '', '../another-user', 'a'.repeat(100)]) {
-    assert.equal((await sendPushTestAction(invalid)).success, false)
-  }
-  assert.equal((await sendPushTestAction('true')).success, false)
-  assert.equal(sent.length, 0)
-  assert.equal((await sendPushTestAction()).messageId, 'test-message-id')
-  assert.equal(sent[0].token, fid)
-  assert.equal(sent[0].data.type, 'push-test')
-  assert.equal(sent[0].webpush.headers.TTL, '60')
-  assert.ok(sent[0].notification.title)
-  await sendPushTestAction(true)
-  assert.deepEqual(delays, [8000])
-  sendError = { code: 'messaging/registration-token-not-registered' }
-  assert.match((await sendPushTestAction()).error, /không còn hợp lệ/)
-  assert.equal(detached, 1)
-  owned = false
-  assert.match((await sendPushTestAction(true)).error, /đăng xuất/)
-  owned = true
-  sendError = { code: 'messaging/mismatched-credential' }
-  assert.match((await sendPushTestAction()).error, /khác project/)
-
   // Cookie writes must complete in order; stale callbacks cannot clear a new account.
   const authState = { currentUser: { uid: 'a' } }
   const requests = []
@@ -146,13 +92,13 @@ async function main() {
       return worker
     } } },
   })
-  assert.equal(await client.registerPushTestDevice(), fid)
+  assert.equal(await client.registerFcmDevice(), fid)
   assert.deepEqual(events, ['permission', 'support', 'unsubscribe'])
   const permissionPrompts = events.filter(event => event === 'permission').length
-  await client.registerPushTestDevice()
+  await client.registerFcmDevice()
   assert.equal(events.filter(event => event === 'permission').length, permissionPrompts)
   permission = 'denied'
-  await assert.rejects(client.registerPushTestDevice(), /đã bị chặn/)
+  await assert.rejects(client.registerFcmDevice(), /đã bị chặn/)
   assert.equal(events.filter(event => event === 'permission').length, permissionPrompts)
 
   // Exercise the actual switch handler with permission denied and a pending grant.
@@ -192,7 +138,7 @@ async function main() {
         await new Promise(resolve => { resolveRegistration = resolve })
       },
     },
-    '@/lib/firebase/messaging': { pushTestError(error) { return error.message } },
+    '@/lib/firebase/messaging': { pushErrorMessage(error) { return error.message } },
   }, {
     window: { Notification: {} },
     Notification: { get permission() { return uiPermission } },
@@ -276,7 +222,7 @@ async function main() {
   await clickWork
   assert.deepEqual(opened, ['https://test.example/transactions'])
   assert.ok(!script.includes('showNotification('), 'FCM must not display duplicate notifications')
-  console.log('Push checks passed: session, input, sending, delay, errors, permission, FID registration, worker and click link. No live messages sent.')
+  console.log('Push checks passed: session cookies, permission, FID registration, settings UI, worker and click link. No live messages sent.')
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1 })

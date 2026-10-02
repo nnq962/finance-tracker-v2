@@ -1,7 +1,7 @@
 "use client"
 
 import { firebaseApp, firebaseAuth } from "./client"
-import { registerPushTestDevice } from "./messaging"
+import { registerFcmDevice } from "./messaging"
 import { detachPushDeviceAction, getNotificationStateAction, registerPushDeviceAction } from "@/lib/notifications/actions"
 
 export const PUSH_DEVICE_CHANGED = "finance-push-device-changed"
@@ -60,7 +60,7 @@ export async function registerAccountPushDevice(uid: string) {
   registering++
   try {
     // This call must remain directly in the button event to retain the permission gesture.
-    const fid = await registerPushTestDevice()
+    const fid = await registerFcmDevice()
     return await persist(fid, uid, version)
   } finally { registering-- }
 }
@@ -106,7 +106,7 @@ export async function syncAccountPushDevice(uid: string) {
     if (!state.data.settings.notificationsEnabled && !state.data.currentDeviceId) return
     registering++
     try {
-      const fid = await registerPushTestDevice(false)
+      const fid = await registerFcmDevice(false)
       await persist(fid, uid, version)
     } finally { registering-- }
   })()

@@ -16,7 +16,8 @@ export function PushMessageListener() {
       unsubscribe = onMessage(getMessaging(firebaseApp), (payload) => {
         toast(payload.notification?.title ?? "Finance Tracker", {
           description: payload.notification?.body,
-          action: payload.data?.type === "push-test" ? {
+          // Daily reminders ask to log spending, so offer the Transactions page.
+          action: payload.data?.type === "daily-reminder" ? {
             label: "Mở giao dịch",
             onClick: () => { router.push("/transactions") },
           } : undefined,

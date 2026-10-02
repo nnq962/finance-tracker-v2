@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator"
 import { saveNotificationSettingsAction } from "@/lib/notifications/actions"
 import type { NotificationSettings } from "@/lib/notifications/types"
 import { PUSH_DEVICE_CHANGED, notifyPushDeviceChanged, registerAccountPushDevice } from "@/lib/firebase/push-device"
-import { pushTestError } from "@/lib/firebase/messaging"
+import { pushErrorMessage } from "@/lib/firebase/messaging"
 
 function notificationPermission() {
   return "Notification" in window ? Notification.permission : "unsupported"
@@ -59,7 +59,7 @@ export function NotificationPreferences({ uid, initialSettings, children }: { ui
       toast.success(enabled ? "Đã bật thông báo." : "Đã tắt thông báo.", { id: toastId })
     } catch (error) {
       setDraft(saved.current)
-      toast.error(pushTestError(error), { id: toastId })
+      toast.error(pushErrorMessage(error), { id: toastId })
     } finally {
       pending.current = false
       setSaving(false)
@@ -77,7 +77,7 @@ export function NotificationPreferences({ uid, initialSettings, children }: { ui
       toast.success(`Đã lưu giờ nhắc ${draft.dailyReminderTime}.`, { id: toastId })
     } catch (error) {
       setDraft(saved.current)
-      toast.error(pushTestError(error), { id: toastId })
+      toast.error(pushErrorMessage(error), { id: toastId })
     } finally {
       pending.current = false
       setSaving(false)

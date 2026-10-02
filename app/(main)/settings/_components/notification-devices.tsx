@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 
 import { Badge } from "@/components/ui/badge"
 import { FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { pushTestError } from "@/lib/firebase/messaging"
+import { pushErrorMessage } from "@/lib/firebase/messaging"
 import { PUSH_DEVICE_CHANGED } from "@/lib/firebase/push-device"
 import { getNotificationStateAction } from "@/lib/notifications/actions"
 import type { NotificationState } from "@/lib/notifications/types"
@@ -30,7 +30,7 @@ export function NotificationDevices({ uid, initialState }: { uid: string; initia
           setDeviceId(result.data.currentDeviceId)
         }
       } catch (error) {
-        if (active && id === requestId) toast.error(pushTestError(error), { id: "notification-devices" })
+        if (active && id === requestId) toast.error(pushErrorMessage(error), { id: "notification-devices" })
       }
     }
     const refreshPermission = () => {

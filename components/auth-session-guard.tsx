@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { toast } from "sonner"
-import { pushTestError } from "@/lib/firebase/messaging"
+import { pushErrorMessage } from "@/lib/firebase/messaging"
 import { onIdTokenChanged } from "firebase/auth"
 import { usePathname, useRouter } from "next/navigation"
 
@@ -44,7 +44,7 @@ export function AuthSessionGuard({ children, initialUid }: { children: React.Rea
           if (user.uid !== initialUid) router.refresh()
           void syncAccountPushDevice(user.uid).catch((error) => {
             if (active && firebaseAuth.currentUser?.uid === user.uid) {
-              toast.error(pushTestError(error), { id: "push-device-sync" })
+              toast.error(pushErrorMessage(error), { id: "push-device-sync" })
             }
           })
         }
@@ -63,7 +63,7 @@ export function AuthSessionGuard({ children, initialUid }: { children: React.Rea
     const refreshDevice = () => {
       const uid = firebaseAuth.currentUser?.uid
       if (uid && active) void syncAccountPushDevice(uid).catch((error) => {
-        if (active && firebaseAuth.currentUser?.uid === uid) toast.error(pushTestError(error), { id: "push-device-sync" })
+        if (active && firebaseAuth.currentUser?.uid === uid) toast.error(pushErrorMessage(error), { id: "push-device-sync" })
       })
     }
     window.addEventListener("focus", refreshDevice)

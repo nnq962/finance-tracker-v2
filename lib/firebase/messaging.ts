@@ -23,7 +23,7 @@ async function waitForActiveWorker(registration: ServiceWorkerRegistration) {
   })
 }
 
-export async function registerPushTestDevice(requestPermission = true) {
+export async function registerFcmDevice(requestPermission = true) {
   const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY
   if (!vapidKey) {
     throw new Error("Thiếu VAPID key. Thêm NEXT_PUBLIC_FIREBASE_VAPID_KEY rồi khởi động lại hoặc redeploy ứng dụng.")
@@ -71,7 +71,7 @@ export async function registerPushTestDevice(requestPermission = true) {
   })
 }
 
-export function pushTestError(error: unknown) {
+export function pushErrorMessage(error: unknown) {
   const code = typeof error === "object" && error !== null && "code" in error
     ? String(error.code) : ""
   if (code.includes("failed-service-worker-registration")) {
