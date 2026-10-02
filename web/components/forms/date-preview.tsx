@@ -1,16 +1,10 @@
 import { FieldDescription } from "@/components/ui/field"
-
-const weekdayFormatter = new Intl.DateTimeFormat("vi-VN", {
-  weekday: "long",
-  timeZone: "UTC",
-})
+import { formatLongDate } from "@/lib/format-date"
 
 /** "Thứ Sáu, 02/10/2026" (· "14:05") from "YYYY-MM-DD" and "HH:mm". */
 export function formatDatePreview(date: string, time?: string) {
-  const [year, month, day] = date.split("-").map(Number)
-  if (!year || !month || !day) return null
-  const weekday = weekdayFormatter.format(new Date(Date.UTC(year, month - 1, day)))
-  const label = `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)}, ${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year}`
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null
+  const label = formatLongDate(date)
   return time ? `${label} · ${time.slice(0, 5)}` : label
 }
 

@@ -1,20 +1,8 @@
 import type { Account, BalanceSummary } from "@/lib/accounts/types"
+import { formatDate, formatTime, toDateKey } from "@/lib/format-date"
 
 function formatUpdatedAt(value: Date) {
-  const time = value.toLocaleTimeString("vi-VN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "Asia/Ho_Chi_Minh",
-  })
-  const date = value.toLocaleDateString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    timeZone: "Asia/Ho_Chi_Minh",
-  })
-
-  return `${time} ${date}`
+  return `${formatTime(value)} ${formatDate(toDateKey(value))}`
 }
 
 export function getBalanceSummary(accounts: Account[]): BalanceSummary {

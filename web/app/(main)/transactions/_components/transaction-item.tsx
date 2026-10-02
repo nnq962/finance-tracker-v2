@@ -8,6 +8,7 @@ import { Sheet } from "@/components/ui/sheet"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
+import { formatTime } from "@/lib/format-date"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { cn } from "@/lib/utils"
 
@@ -15,13 +16,6 @@ import { transactionPresentation } from "../_lib/transaction-presentation"
 import type { Transaction } from "../_types/transaction"
 import { EditTransactionSheet } from "./edit-transaction-sheet"
 import { TransactionDetailsSheet } from "./transaction-details-sheet"
-
-const timeFormatter = new Intl.DateTimeFormat("vi-VN", {
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false,
-  timeZone: "Asia/Ho_Chi_Minh",
-})
 
 const amountSigns = { expense: "−", income: "+", transfer: "" } as const
 
@@ -88,7 +82,7 @@ export function TransactionItem({
               className="text-xs text-muted-foreground"
               dateTime={transaction.occurredAt}
             >
-              {timeFormatter.format(new Date(transaction.occurredAt))}
+              {formatTime(transaction.occurredAt)}
             </time>
           </span>
         }

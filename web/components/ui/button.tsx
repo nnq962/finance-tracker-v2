@@ -6,8 +6,13 @@ import { Slot } from "radix-ui"
 const pressEffect =
   "button-raised bg-transparent text-[var(--button-text)] hover:brightness-105 disabled:[--button-face:#e8e6e1] disabled:[--button-text:#aaa6ae] disabled:[--button-shade:#d4d1ca] disabled:brightness-100"
 
+// On touch screens an invisible ::after grows every size to a 44px tap
+// target (Apple's minimum) without changing how the button looks.
+const touchTarget =
+  "relative pointer-coarse:after:absolute pointer-coarse:after:content-['']"
+
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-border font-heading text-sm leading-none font-extrabold tracking-[0.06em] uppercase whitespace-nowrap [--button-edge:3px] transition-[background-color,border-color,color,filter] duration-[80ms] outline-none select-none disabled:pointer-events-none aria-invalid:border-[#ff645f] aria-invalid:ring-3 aria-invalid:ring-[#ffe5e1] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  `${touchTarget} group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-border font-heading text-sm leading-none font-extrabold tracking-[0.06em] uppercase whitespace-nowrap [--button-edge:3px] transition-[background-color,border-color,color,filter] duration-[80ms] outline-none select-none disabled:pointer-events-none aria-invalid:border-[#ff645f] aria-invalid:ring-3 aria-invalid:ring-[#ffe5e1] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
   {
     variants: {
       variant: {
@@ -24,16 +29,16 @@ const buttonVariants = cva(
       },
       size: {
         default:
-          "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [--button-edge:4px]",
-        xs: "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3 [--button-edge:2px]",
-        sm: "h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5 [--button-edge:3px]",
-        lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [--button-edge:6px]",
-        icon: "size-8 [--button-edge:3px]",
+          "pointer-coarse:after:-inset-y-1.5 pointer-coarse:after:inset-x-0 h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [--button-edge:4px]",
+        xs: "pointer-coarse:after:-inset-y-2.5 pointer-coarse:after:-inset-x-1 h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3 [--button-edge:2px]",
+        sm: "pointer-coarse:after:-inset-y-2 pointer-coarse:after:inset-x-0 h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5 [--button-edge:3px]",
+        lg: "pointer-coarse:after:-inset-y-1 pointer-coarse:after:inset-x-0 h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [--button-edge:6px]",
+        icon: "pointer-coarse:after:-inset-1.5 size-8 [--button-edge:3px]",
         "icon-xs":
-          "size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3 [--button-edge:2px]",
+          "pointer-coarse:after:-inset-2.5 size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3 [--button-edge:2px]",
         "icon-sm":
-          "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg [--button-edge:3px]",
-        "icon-lg": "size-9 [--button-edge:6px]",
+          "pointer-coarse:after:-inset-2 size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg [--button-edge:3px]",
+        "icon-lg": "pointer-coarse:after:-inset-1 size-9 [--button-edge:6px]",
       },
     },
     defaultVariants: {

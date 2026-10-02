@@ -20,27 +20,13 @@ import { SheetContent } from "@/components/ui/sheet"
 import { getCategoryColor } from "@/lib/categories/category-colors"
 import type { CategoryItem } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
+import { formatLongDate, formatTime, toDateKey } from "@/lib/format-date"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { scheduleUndoableDelete } from "@/lib/undoable-delete"
 
 import { deleteTransactionAction } from "../actions"
 import { transactionPresentation } from "../_lib/transaction-presentation"
 import type { Transaction } from "../_types/transaction"
-
-const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
-  weekday: "long",
-  day: "2-digit",
-  month: "2-digit",
-  year: "numeric",
-  timeZone: "Asia/Ho_Chi_Minh",
-})
-
-const timeFormatter = new Intl.DateTimeFormat("vi-VN", {
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false,
-  timeZone: "Asia/Ho_Chi_Minh",
-})
 
 type TransactionDetailsSheetProps = {
   category?: CategoryItem
@@ -141,7 +127,7 @@ export function TransactionDetailsSheet({
             className="mt-1 text-sm text-muted-foreground"
             dateTime={transaction.occurredAt}
           >
-            {dateFormatter.format(occurredAt)} · {timeFormatter.format(occurredAt)}
+            {formatLongDate(toDateKey(occurredAt))} · {formatTime(occurredAt)}
           </time>
         </div>
 

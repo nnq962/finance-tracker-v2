@@ -31,7 +31,7 @@ async function main() {
   let unregistered = 0
   const authClient = load('lib/firebase/auth.ts', {
     'firebase/app': { FirebaseError: class extends Error {} },
-    'firebase/auth': { GoogleAuthProvider: class {}, async signOut() {}, signInWithPopup() {} },
+    'firebase/auth': { GoogleAuthProvider: class { setCustomParameters() {} }, async signOut() {}, signInWithPopup() {} },
     '@/lib/firebase/client': { firebaseAuth: authState },
     '@/lib/firebase/push-device': {
       stopPushDeviceSync() { stopped++ },
@@ -124,7 +124,7 @@ async function main() {
       useSyncExternalStore(_, snapshot) { return snapshot() },
     },
     'react/jsx-runtime': { jsx(type, props) { return { type, props } }, jsxs(type, props) { return { type, props } } },
-    '@/components/user-menu/notification-dialog-content': { NotificationDialogContent: 'Preferences' },
+    './notification-dialog-content': { NotificationDialogContent: 'Preferences' },
     sonner: { toast: { loading(message) { uiToasts.push(['loading', message]); return 'toast' }, success(message) { uiToasts.push(['success', message]) }, error(message) { uiToasts.push(['error', message]) } } },
     '@/components/ui/separator': { Separator: 'Separator' },
     '@/components/ui/badge': { Badge: 'Badge' },

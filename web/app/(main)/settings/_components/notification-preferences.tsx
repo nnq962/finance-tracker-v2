@@ -2,7 +2,7 @@
 
 import { useRef, useState, useSyncExternalStore, type ReactNode } from "react"
 import { toast } from "sonner"
-import { NotificationDialogContent } from "@/components/user-menu/notification-dialog-content"
+import { NotificationDialogContent } from "./notification-dialog-content"
 import { Separator } from "@/components/ui/separator"
 import { saveNotificationSettingsAction } from "@/lib/notifications/actions"
 import type { NotificationSettings } from "@/lib/notifications/types"

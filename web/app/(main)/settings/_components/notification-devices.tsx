@@ -8,15 +8,14 @@ import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Badge } from "@/components/ui/badge"
 import { pushErrorMessage } from "@/lib/firebase/messaging"
 import { PUSH_DEVICE_CHANGED } from "@/lib/firebase/push-device"
+import { formatDate, toDateKey } from "@/lib/format-date"
 import { getNotificationStateAction } from "@/lib/notifications/actions"
 import type { NotificationState } from "@/lib/notifications/types"
 
 import { toast } from "sonner"
 
 function formatUpdatedAt(value: string) {
-  return new Intl.DateTimeFormat("vi-VN", {
-    timeZone: "Asia/Ho_Chi_Minh", day: "2-digit", month: "2-digit", year: "numeric",
-  }).format(new Date(value))
+  return formatDate(toDateKey(value))
 }
 
 export function NotificationDevices({ uid, initialState, onChange }: {

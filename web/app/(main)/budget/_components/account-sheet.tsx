@@ -10,33 +10,12 @@ import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import type { Account } from "@/lib/accounts/types"
 import { formatCurrency } from "@/lib/format-currency"
+import { formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
 import type { Transaction } from "@/lib/transactions/types"
 
 import { setAccountArchivedAction } from "../actions"
 import { DeleteAccountAlert } from "./account-actions/delete-account-alert"
 import { EditAccountSheet } from "./account-actions/edit-account-sheet"
-
-const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
-  day: "2-digit",
-  month: "2-digit",
-  timeZone: "Asia/Ho_Chi_Minh",
-})
-const timeFormatter = new Intl.DateTimeFormat("vi-VN", {
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false,
-  timeZone: "Asia/Ho_Chi_Minh",
-})
-
-/** "02/10 · 10:16" */
-function formatDateTime(value: string) {
-  const date = new Date(value)
-  // vi-VN joins day and month with "-"; build "02/10" from the parts.
-  const parts = Object.fromEntries(
-    dateFormatter.formatToParts(date).map((part) => [part.type, part.value]),
-  )
-  return `${parts.day}/${parts.month} · ${timeFormatter.format(date)}`
-}
 
 const accountTypeLabels = {
   cash: "Tiền mặt",
@@ -147,7 +126,7 @@ export function AccountSheet({ account, share, transactions, onOpenChange }: Acc
                         icon={row.icon}
                         color={row.color}
                         title={transaction.title}
-                        description={formatDateTime(transaction.occurredAt)}
+                        description={`${formatShortDate(toDateKey(transaction.occurredAt))} · ${formatTime(transaction.occurredAt)}`}
                         value={formatCurrency(amount, { signDisplay: "always" })}
                       />
                     )

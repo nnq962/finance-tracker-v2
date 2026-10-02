@@ -1,7 +1,15 @@
 /* eslint-disable @typescript-eslint/no-require-imports -- CommonJS test harness transpiles TypeScript modules before loading them. */
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
+const Module = require('node:module')
+const path = require('node:path')
 const ts = require('typescript')
+
+// Resolve the app's "@/" imports from the web root, as Next.js does.
+const originalLoad = Module._load
+Module._load = function (id, parent, main) {
+  return originalLoad.call(this, id.startsWith('@/') ? path.join(__dirname, '..', id.slice(2)) : id, parent, main)
+}
 
 require.extensions['.ts'] = (module, filename) => module._compile(
   ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
@@ -32,6 +40,18 @@ const localSeptemberTransaction = {
 
 assert.equal(getTransactionDateKey(localSeptemberTransaction.occurredAt), '2026-09-01')
 assert.equal(groupTransactionsByDate([localSeptemberTransaction])[0].dateKey, '2026-09-01')
+assert.equal(groupTransactionsByDate([localSeptemberTransaction])[0].weekdayLabel, 'Thứ Ba')
+assert.equal(groupTransactionsByDate([localSeptemberTransaction])[0].dateLabel, '01/09')
+
+// One way of writing dates across the app, in Vietnam time.
+const dates = require('../lib/format-date.ts')
+assert.equal(dates.formatDate('2026-09-01'), '01/09/2026')
+assert.equal(dates.formatLongDate('2026-10-04'), 'Chủ Nhật, 04/10/2026')
+assert.equal(dates.formatDayLabel('2026-10-02', '2026-10-02'), 'Hôm nay, 02/10')
+assert.equal(dates.formatDayLabel('2026-10-01', '2026-10-02'), 'Thứ Năm, 01/10')
+assert.equal(dates.toDateKey(localSeptemberTransaction.occurredAt), '2026-09-01')
+assert.equal(dates.formatTime(localSeptemberTransaction.occurredAt), '00:30')
+assert.equal(dates.formatTime('2026-09-01T10:05:00.000Z'), '17:05')
 assert.equal(getTransactionPeriod([localSeptemberTransaction], 'month', today, today, today).transactions.length, 1)
 assert.equal(getTransactionPeriod([localSeptemberTransaction], 'month', '2026-08-01', today, today).transactions.length, 0)
 

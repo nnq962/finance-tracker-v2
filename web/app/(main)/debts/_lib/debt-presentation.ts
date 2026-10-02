@@ -1,11 +1,7 @@
 import type { Debt } from "../_types/debt"
 import { todayDate } from "./debt-payments"
 
-export const dateFormatter = new Intl.DateTimeFormat("vi-VN")
-
-export function formatDebtDate(date: string) {
-  return dateFormatter.format(new Date(`${date}T00:00:00`))
-}
+export { formatDate as formatDebtDate } from "@/lib/format-date"
 
 export { getPaymentMetrics as getDebtMetrics } from "./debt-payments"
 

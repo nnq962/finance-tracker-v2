@@ -12,6 +12,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
+import { formatDayLabel } from "@/lib/format-date"
 import type { Transaction } from "@/lib/transactions/types"
 import { cn } from "@/lib/utils"
 
@@ -20,11 +21,6 @@ import { getTransactionDateKey } from "../../transactions/_lib/get-transaction-p
 import { cashFlowColors } from "../../transactions/_lib/transaction-presentation"
 
 const weekdays = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
-
-const weekdayFormatter = new Intl.DateTimeFormat("vi-VN", {
-  weekday: "long",
-  timeZone: "UTC",
-})
 
 type DayTotals = { income: number; expense: number; transactions: Transaction[] }
 
@@ -37,14 +33,6 @@ function compactAmount(value: number) {
   if (value >= 1_000_000) return format(value / 1_000_000, "tr")
   if (value >= 1_000) return `${Math.round(value / 1_000)}k`
   return `${value}đ`
-}
-
-/** "Hôm nay, 02/10" or "Thứ sáu, 02/10". */
-function formatDayTitle(dateKey: string, today: string) {
-  const [year, month, day] = dateKey.split("-").map(Number)
-  const weekday = weekdayFormatter.format(new Date(Date.UTC(year, month - 1, day)))
-  const label = dateKey === today ? "Hôm nay" : weekday.charAt(0).toUpperCase() + weekday.slice(1)
-  return `${label}, ${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}`
 }
 
 function shiftMonth(month: string, offset: number) {
@@ -108,7 +96,7 @@ export function CashFlowCalendar({
   // Keeps the last day's title while the sheet slides closed.
   const [shownDay, setShownDay] = React.useState(openDay)
   if (openDay && openDay !== shownDay) setShownDay(openDay)
-  const sheetTitle = shownDay ? formatDayTitle(shownDay, today) : ""
+  const sheetTitle = shownDay ? formatDayLabel(shownDay, today) : ""
 
   return (
     <Card asChild>
