@@ -17,6 +17,20 @@ import {
 import { cn } from "@/lib/utils"
 
 /**
+ * Separator above every row but the first, as in iOS: it starts where the
+ * row's text starts (after the 32px icon, or at the text when there is none)
+ * and runs to the card's right edge. Exported for loading skeletons.
+ */
+export function settingsSeparatorClassName(hasMedia: boolean) {
+  return cn(
+    // -right-1 crosses the list's 4px side padding to reach the card's edge.
+    "relative before:absolute before:top-0 before:-right-1 before:h-0.5 before:bg-[#e7e4dd] first:before:hidden dark:before:bg-[#35323e]",
+    // Row padding (12px), plus the icon (32px) and gap (10px) when present.
+    hasMedia ? "before:left-[3.375rem]" : "before:left-3",
+  )
+}
+
+/**
  * Grouped list in the style of native settings screens: an optional caption,
  * a flat card of rows separated by dividers, and an optional footnote.
  */
@@ -47,7 +61,7 @@ function SettingsGroup({
       {/* Rows carry their own, equal padding, so the card only frames them:
           first and last rows match the ones in between. */}
       <Card size="sm" className="gap-0 py-0">
-        <ul className="divide-y-2 divide-[#e7e4dd] px-1 dark:divide-[#35323e]">
+        <ul className="px-1">
           {children}
         </ul>
       </Card>
@@ -136,7 +150,7 @@ function SettingsRow({
   )
 
   return (
-    <li className="py-1">
+    <li className={cn("py-1", settingsSeparatorClassName(Boolean(Icon || media)))}>
       {onClick ? (
         <Item asChild>
           <button

@@ -2,6 +2,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Page, PageHeaderSkeleton } from "@/components/page"
 import { Skeleton } from "@/components/ui/skeleton"
+import { settingsSeparatorClassName } from "@/components/settings-list"
+import { cn } from "@/lib/utils"
 
 function SummarySkeleton() {
   return (
@@ -32,9 +34,9 @@ function GroupSkeleton({ rows, title = true }: { rows: number; title?: boolean }
     <div className="space-y-2">
       {title ? <Skeleton className="mx-3 h-3 w-32" /> : null}
       <Card size="sm" className="gap-0 py-0">
-        <div className="divide-y-2 divide-[#e7e4dd] px-1 dark:divide-[#35323e]">
+        <div className="px-1">
           {Array.from({ length: rows }, (_, row) => (
-            <div key={row} className="flex items-center gap-2.5 px-3 py-3.5">
+            <div key={row} className={cn("flex items-center gap-2.5 px-3 py-3.5", settingsSeparatorClassName(true))}>
               <Skeleton className="size-8 shrink-0 rounded-full" />
               <div className="min-w-0 flex-1 space-y-1.5">
                 <Skeleton className="h-4 w-28 max-w-full" />
