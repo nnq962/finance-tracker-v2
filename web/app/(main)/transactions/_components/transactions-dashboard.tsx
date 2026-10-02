@@ -146,8 +146,10 @@ export function TransactionsDashboard({
       </TransactionsLayout>
       {/* On mobile the action floats above the bottom nav so it stays within
           thumb reach while scrolling a long list. */}
+      {/* The AI button sits above the add button, so the two stay within a
+          phone's width. */}
       <div className="pointer-events-none sticky bottom-4 z-20 flex justify-end md:hidden">
-        <div className="pointer-events-auto flex items-center gap-3">
+        <div className="pointer-events-auto flex flex-col items-end gap-4">
           <AiAssistButton onClick={() => setAiOpen(true)}>AI</AiAssistButton>
           <AddTransactionButton
             accounts={accounts}

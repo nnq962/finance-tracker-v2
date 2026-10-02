@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { CheckIcon, RotateCcwIcon } from "lucide-react"
+import { AnimatePresence, motion, type Variants } from "motion/react"
 import { toast } from "sonner"
 
 import { CurrencyInput } from "@/components/forms/currency-input"
@@ -20,7 +21,6 @@ import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import type { Account } from "@/lib/accounts/types"
-import { getCategoryColor, type CategoryColorName } from "@/lib/categories/category-colors"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDayLabel } from "@/lib/format-date"
@@ -35,25 +35,33 @@ const kindWords: Record<TransactionKind, string> = {
   transfer: "chuyển",
 }
 
-const kindColors: Record<TransactionKind, CategoryColorName> = {
-  expense: "rose",
-  income: "emerald",
-  transfer: "blue",
+const EASE_OUT = [0.22, 1, 0.36, 1] as const
+
+// The sentence comes in a phrase at a time, each out of a light blur.
+const sentence: Variants = {
+  hidden: {},
+  shown: { transition: { staggerChildren: 0.07 } },
+}
+const phrase: Variants = {
+  hidden: { opacity: 0, filter: "blur(4px)" },
+  shown: { opacity: 1, filter: "blur(0px)", transition: { duration: 0.35, ease: EASE_OUT } },
 }
 
 type BlankProps = React.ComponentProps<"button"> & {
-  color: CategoryColorName
-  /** Shown, and highlighted as missing, while the blank has no value. */
+  /** Shown, softly marked as missing, while the blank has no value. */
   placeholder: string
   filled: boolean
+  /** Changes with the value, so a new value slides in over the old. */
+  valueKey: string
 }
 
 /**
- * One blank of the sentence: the word the assistant filled in, tinted and
- * underlined so it reads as tappable; a missing one asks to be chosen.
+ * One blank of the sentence: the filled-in word stands out from the muted
+ * sentence with a light underline, and a soft background when hovered or
+ * open; a missing one shows its question with a dashed amber underline.
  */
 const Blank = React.forwardRef<HTMLButtonElement, BlankProps>(function Blank(
-  { color, placeholder, filled, className, children, ...props },
+  { placeholder, filled, valueKey, className, children, ...props },
   ref,
 ) {
   return (
@@ -61,14 +69,29 @@ const Blank = React.forwardRef<HTMLButtonElement, BlankProps>(function Blank(
       ref={ref}
       type="button"
       className={cn(
-        "mx-0.5 inline rounded-md px-1.5 py-0.5 font-heading font-extrabold underline decoration-dashed decoration-2 underline-offset-4 outline-none [box-decoration-break:clone] focus-visible:ring-2 focus-visible:ring-[#38b8f6]",
-        getCategoryColor(filled ? color : "rose").surfaceClassName,
-        !filled && "animate-pulse",
+        "group/blank mx-0.5 inline rounded-md px-1 py-0.5 font-semibold text-foreground transition-colors outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-[#38b8f6] data-[state=open]:bg-muted",
+        !filled && "font-normal text-muted-foreground italic",
         className,
       )}
       {...props}
     >
-      {filled ? children : placeholder}
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.span
+          key={valueKey}
+          // The underline sits on this word, as a box of its own does not
+          // inherit the button's.
+          className={cn(
+            "inline-block underline decoration-foreground/25 decoration-1 underline-offset-[6px] transition-colors group-hover/blank:decoration-foreground/60",
+            !filled && "decoration-[#f59e0b]/70 decoration-dashed",
+          )}
+          initial={{ opacity: 0, y: -6, filter: "blur(3px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          exit={{ opacity: 0, y: 6, filter: "blur(3px)" }}
+          transition={{ duration: 0.22, ease: EASE_OUT }}
+        >
+          {filled ? children : placeholder}
+        </motion.span>
+      </AnimatePresence>
     </button>
   )
 })
@@ -103,7 +126,6 @@ export function TransactionMadLibs({
   const toAccount = activeAccounts.find((item) => item.id === draft.toAccountId)
   const groups = categoryGroups.filter((group) => group.type === draft.kind)
   const category = groups.flatMap((group) => group.items).find((item) => item.id === draft.categoryId)
-  const categoryGroup = groups.find((group) => group.id === category?.groupId)
 
   const complete =
     draft.amount !== null &&
@@ -115,7 +137,7 @@ export function TransactionMadLibs({
   const kindBlank = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Blank color={kindColors[draft.kind]} placeholder="" filled>
+        <Blank placeholder="" filled valueKey={draft.kind}>
           {kindWords[draft.kind]}
         </Blank>
       </DropdownMenuTrigger>
@@ -138,7 +160,7 @@ export function TransactionMadLibs({
   const amountBlank = (
     <Popover>
       <PopoverTrigger asChild>
-        <Blank color={kindColors[draft.kind]} placeholder="bao nhiêu" filled={draft.amount !== null}>
+        <Blank placeholder="bao nhiêu" filled={draft.amount !== null} valueKey={String(draft.amount)}>
           {formatCurrency(draft.amount ?? 0)}
         </Blank>
       </PopoverTrigger>
@@ -159,7 +181,7 @@ export function TransactionMadLibs({
   const accountBlank = (field: "accountId" | "toAccountId", value: Account | undefined, placeholder: string) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Blank color="blue" placeholder={placeholder} filled={value !== undefined}>
+        <Blank placeholder={placeholder} filled={value !== undefined} valueKey={value?.id ?? ""}>
           {value?.name}
         </Blank>
       </DropdownMenuTrigger>
@@ -178,11 +200,7 @@ export function TransactionMadLibs({
   const categoryBlank = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Blank
-          color={categoryGroup?.colorName ?? "violet"}
-          placeholder="hạng mục nào"
-          filled={category !== undefined}
-        >
+        <Blank placeholder="hạng mục nào" filled={category !== undefined} valueKey={category?.id ?? ""}>
           {category?.name}
         </Blank>
       </DropdownMenuTrigger>
@@ -206,7 +224,7 @@ export function TransactionMadLibs({
   const dateBlank = (
     <Popover>
       <PopoverTrigger asChild>
-        <Blank color="amber" placeholder="" filled>
+        <Blank placeholder="" filled valueKey={draft.date}>
           {formatDayLabel(draft.date, today)}
         </Blank>
       </PopoverTrigger>
@@ -228,7 +246,7 @@ export function TransactionMadLibs({
   const titleBlank = (
     <Popover>
       <PopoverTrigger asChild>
-        <Blank color="slate" placeholder="nội dung gì" filled={draft.title.trim() !== ""}>
+        <Blank placeholder="nội dung gì" filled={draft.title.trim() !== ""} valueKey={draft.title.trim() ? "title" : ""}>
           {draft.title}
         </Blank>
       </PopoverTrigger>
@@ -250,29 +268,50 @@ export function TransactionMadLibs({
     <div className="space-y-4">
       <Card>
         <CardContent>
-          {/* Loose leading leaves room for the blanks' tint and underline. */}
-          <p className="text-lg leading-[2.4]">
-            {dateBlank}, bạn đã {kindBlank} {amountBlank}{" "}
-            {draft.kind === "expense" ? (
-              <>cho {categoryBlank} từ {accountBlank("accountId", account, "tài khoản nào")}</>
-            ) : draft.kind === "income" ? (
-              <>từ {categoryBlank} vào {accountBlank("accountId", account, "tài khoản nào")}</>
-            ) : (
-              <>
+          {/* Loose leading leaves room for the blanks' underline and hover. */}
+          <motion.p
+            className="text-lg leading-[2.2] text-muted-foreground"
+            variants={sentence}
+            initial="hidden"
+            animate="shown"
+          >
+            <motion.span variants={phrase}>{dateBlank}, bạn đã </motion.span>
+            <motion.span variants={phrase}>{kindBlank} {amountBlank} </motion.span>
+            {draft.kind === "transfer" ? (
+              <motion.span variants={phrase}>
                 từ {accountBlank("accountId", account, "tài khoản nào")} sang{" "}
                 {accountBlank("toAccountId", toAccount, "tài khoản nào")}
+              </motion.span>
+            ) : (
+              <>
+                <motion.span variants={phrase}>
+                  {draft.kind === "expense" ? "cho" : "từ"} {categoryBlank}{" "}
+                </motion.span>
+                <motion.span variants={phrase}>
+                  {draft.kind === "expense" ? "từ" : "vào"} {accountBlank("accountId", account, "tài khoản nào")}
+                </motion.span>
               </>
             )}
-            , ghi là {titleBlank}.
-          </p>
+            <motion.span variants={phrase}>, ghi là {titleBlank}.</motion.span>
+          </motion.p>
         </CardContent>
       </Card>
 
-      <p className="px-3 text-xs text-muted-foreground">
-        {complete ? "Bấm vào từ được tô màu để sửa." : "Điền các ô còn trống trước khi lưu."}
-      </p>
+      <motion.p
+        className="px-3 text-xs text-muted-foreground"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.45 }}
+      >
+        {complete ? "Bấm vào từ được gạch chân để sửa." : "Điền các ô còn trống trước khi lưu."}
+      </motion.p>
 
-      <div className="grid grid-cols-2 gap-2">
+      <motion.div
+        className="grid grid-cols-2 gap-2"
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: EASE_OUT, delay: 0.5 }}
+      >
         <Button type="button" variant="outline" onClick={onRetry}>
           <RotateCcwIcon />
           Nói lại
@@ -288,7 +327,7 @@ export function TransactionMadLibs({
           <CheckIcon />
           Lưu
         </Button>
-      </div>
+      </motion.div>
     </div>
   )
 }

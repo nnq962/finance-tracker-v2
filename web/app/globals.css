@@ -419,17 +419,18 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   .ai-glow::after {
     content: "";
     position: absolute;
-    inset: calc(-2px - var(--ai-edge, 3px)) -2px -2px;
+    inset: calc(-1.5px - var(--ai-edge, 3px)) -1.5px -1.5px;
     z-index: -1;
     border-radius: inherit;
     background: conic-gradient(from var(--ai-angle), #38b8f6, #a78bfa, #f472b6, #fbbf24, #6ecc49, #38b8f6);
-    animation: ai-spin 4s linear infinite;
+    opacity: 0.8;
+    animation: ai-spin 6s linear infinite;
     pointer-events: none;
   }
 
   .ai-glow::after {
-    filter: blur(10px);
-    opacity: 0.55;
+    filter: blur(8px);
+    opacity: 0.25;
     z-index: -2;
   }
 
