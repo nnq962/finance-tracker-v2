@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import {
+  ArrowDownUpIcon,
   BellRingIcon,
   CalculatorIcon,
   CircleHelpIcon,
@@ -30,6 +31,7 @@ import { NotificationPreferences } from "./notification-preferences"
 import { SalaryCalculator } from "./salary-calculator"
 import { SignOutRow } from "./sign-out-row"
 import { ThemeOptions, themeOptions, useThemeChoice } from "./theme-options"
+import { ScrollLab } from "./scroll-lab"
 import { VoiceLab } from "./voice-lab"
 
 /** Screens opened from the list, in a sheet that slides in from the side. */
@@ -45,6 +47,9 @@ const screens = {
   },
   voice: {
     title: "Thử giọng nói",
+  },
+  scroll: {
+    title: "Thử thanh cuộn",
   },
   salary: {
     title: "Tính lương",
@@ -94,6 +99,8 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
         )
       case "voice":
         return <VoiceLab />
+      case "scroll":
+        return <ScrollLab />
       case "salary":
         return <SalaryCalculator />
     }
@@ -176,6 +183,12 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
             color="rose"
             title="Thử giọng nói"
             onClick={() => open("voice")}
+          />
+          <SettingsRow
+            icon={ArrowDownUpIcon}
+            color="cyan"
+            title="Thử thanh cuộn"
+            onClick={() => open("scroll")}
           />
         </SettingsGroup>
 
