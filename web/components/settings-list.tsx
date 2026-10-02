@@ -62,6 +62,8 @@ function SettingsGroup({
 
 type SettingsRowProps = {
   icon?: LucideIcon
+  /** Leading content in place of the icon tile, e.g. an avatar. */
+  media?: React.ReactNode
   color?: CategoryColorName
   title: React.ReactNode
   description?: React.ReactNode
@@ -87,6 +89,7 @@ const pressableRow =
 
 function SettingsRow({
   icon: Icon,
+  media,
   color = "slate",
   title,
   description,
@@ -106,6 +109,8 @@ function SettingsRow({
         >
           <Icon className="size-4" aria-hidden="true" />
         </ItemMedia>
+      ) : media ? (
+        <ItemMedia>{media}</ItemMedia>
       ) : null}
       <ItemContent className={cn("min-w-0", destructive && "items-center")}>
         <ItemTitle

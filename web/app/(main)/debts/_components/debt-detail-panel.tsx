@@ -4,29 +4,13 @@ import * as React from "react"
 import { AddDebtSheet } from "./add-debt-sheet"
 import { FieldError } from "@/components/ui/field"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/animate-ui/components/radix/alert-dialog"
-import {
-  EllipsisIcon,
-  PencilIcon,
-  Trash2Icon,
-  CheckIcon,
-  PhoneIcon,
-} from "lucide-react"
+import { CheckIcon } from "lucide-react"
 
 import type { Account } from "@/lib/accounts/types"
 import { DebtPaymentHistory } from "./debt-payment-history"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
+import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Progress } from "@/components/ui/progress"
-import { Separator } from "@/components/ui/separator"
 import { formatCurrency } from "@/lib/format-currency"
 
 import {
@@ -48,119 +32,86 @@ type DebtDetailPanelProps = {
   onRecordPayment: (payment: NewDebtPayment) => Promise<void>
 }
 
-export function DebtContactHeader({ contact }: { contact: Contact }) {
-  return (
-    <div className="flex items-center gap-3">
-      <Avatar size="lg">
-        <AvatarFallback>{contact.initials}</AvatarFallback>
-      </Avatar>
-      <div className="min-w-0">
-        <p className="truncate font-heading font-extrabold">{contact.name}</p>
-        {contact.phone ? (
-          <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
-            <PhoneIcon className="size-3.5" />
-            {contact.phone}
-          </p>
-        ) : null}
-      </div>
-    </div>
-  )
+/** Subtitle under the contact's name: what the debt is for and which way. */
+export function getDebtSubtitle(debt: Debt) {
+  return `${debt.note} · ${debt.direction === "lent" ? "Cho vay" : "Đi vay"}`
 }
 
+/** Side panel beside the list (xl and up); below xl the same content opens in a sheet. */
 export function DebtDetailPanel(props: DebtDetailPanelProps) {
   return (
-    <Card className="gap-0 py-0">
-      <CardHeader className="h-16 content-center">
-        <CardTitle className="sr-only">Chi tiết khoản nợ</CardTitle>
-        <DebtContactHeader contact={props.contact} />
-        <CardAction className="self-center">
-          <DebtActionsMenu {...props} />
-        </CardAction>
-      </CardHeader>
-      <Separator variant="chunky" />
-      <CardContent className="space-y-5 py-4">
-        <DebtDetailInfo {...props} />
-        <DebtRecordPaymentButton {...props} />
-      </CardContent>
-    </Card>
+    <section aria-labelledby="debt-detail-title" className="space-y-6">
+      <div className="space-y-1 px-3">
+        <h2 id="debt-detail-title" className="truncate font-heading text-lg font-extrabold">
+          {props.contact.name}
+        </h2>
+        <p className="text-sm text-muted-foreground">{getDebtSubtitle(props.debt)}</p>
+      </div>
+      <DebtDetailInfo {...props} />
+      <DebtRecordPaymentButton {...props} />
+    </section>
   )
 }
 
-/** Debt figures and payment history; shared by the side panel and the sheet. */
-export function DebtDetailInfo({
-  contact,
-  debt,
-  accounts,
-  onEditPayment,
-  onDeletePayment,
-}: DebtDetailPanelProps) {
+/** Debt figures, payment history and edit/delete; shared by the side panel and the sheet. */
+export function DebtDetailInfo(props: DebtDetailPanelProps) {
+  const { contact, debt, accounts, onEditPayment, onDeletePayment } = props
   const { paidAmount, remainingAmount, paymentProgress, interestAmount, interestDate, totalAmount, days } = getDebtMetrics(debt)
   const deadline = getDebtDeadline(debt)
+  const collecting = debt.direction === "lent"
+  const paidLabel = collecting ? "Đã thu" : "Đã trả"
 
   return (
-    <div className="space-y-5">
-        <div className="flex flex-wrap gap-2">
-          <Badge variant={debt.direction === "lent" ? "default" : "destructive"}>
-            {debt.direction === "lent" ? "Cho vay" : "Đi vay"}
-          </Badge>
-          {debt.recordingMode === "opening" ? <Badge variant="outline">Nợ có sẵn</Badge> : null}
-          <Badge variant={deadline.isOverdue ? "destructive" : "outline"}>
-            {deadline.label}
-          </Badge>
-        </div>
+    <div className="space-y-6">
+      <div className="space-y-2 px-3">
+        <p className="text-sm text-muted-foreground">Còn lại</p>
+        <p className="font-heading text-3xl leading-tight font-extrabold tabular-nums [overflow-wrap:anywhere]">
+          {formatCurrency(remainingAmount, { signDisplay: "never" })}
+        </p>
+        <Progress value={paymentProgress} tone={collecting ? "leaf" : "coral"} />
+        <p className="text-xs text-muted-foreground">
+          {paidLabel} {formatCurrency(paidAmount, { signDisplay: "never" })} / {formatCurrency(totalAmount, { signDisplay: "never" })} · {Math.round(paymentProgress)}%
+        </p>
+      </div>
 
-        <div>
-          <p className="font-semibold">{debt.note}</p>
-        </div>
+      <SettingsGroup
+        footer={debt.hasInterest
+          ? `Lãi đơn trên gốc ban đầu, ${debt.interestPeriod === "year" ? "365 ngày/năm" : "30 ngày/tháng"}, tính đến ${formatDebtDate(interestDate)}. Dừng tính lãi khi tất toán.`
+          : undefined}
+      >
+        <SettingsRow title="Tiền gốc" value={formatCurrency(debt.amount, { signDisplay: "never" })} />
+        <SettingsRow
+          title="Lãi suất"
+          value={debt.hasInterest ? `${debt.interestRate ?? 0}%/${debt.interestPeriod === "year" ? "năm" : "tháng"}` : "Không tính lãi"}
+        />
+        {debt.hasInterest ? (
+          <>
+            <SettingsRow title={`Tiền lãi · ${days} ngày`} value={formatCurrency(interestAmount)} />
+            <SettingsRow title="Tổng gốc và lãi" value={formatCurrency(totalAmount)} />
+          </>
+        ) : null}
+        <SettingsRow title={paidLabel} value={formatCurrency(paidAmount, { signDisplay: "never" })} />
+      </SettingsGroup>
 
-        <div className="space-y-3 rounded-lg bg-muted p-4">
-          <div className="flex items-center justify-between gap-4 text-sm">
-            <span className="text-muted-foreground">Tiền gốc</span>
-            <span className="shrink-0 text-right font-medium tabular-nums">
-              {formatCurrency(debt.amount, { signDisplay: "never" })}
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-4 text-sm">
-            <span className="text-muted-foreground">Lãi suất</span>
-            <span className="shrink-0 text-right tabular-nums">{debt.hasInterest ? `${debt.interestRate ?? 0}%/${debt.interestPeriod === "year" ? "năm" : "tháng"}` : "Không tính lãi"}</span>
-          </div>
-          {debt.hasInterest ? <>
-            <div className="flex items-center justify-between gap-4 text-sm"><span className="text-muted-foreground">Tiền lãi · {days} ngày</span><span className="shrink-0 text-right font-medium tabular-nums">{formatCurrency(interestAmount)}</span></div>
-            <p className="text-sm text-orange-700 dark:text-orange-400">Lãi đơn trên gốc ban đầu, {debt.interestPeriod === "year" ? "365 ngày/năm" : "30 ngày/tháng"}, đến {formatDebtDate(interestDate)}. Dừng tính lãi khi tất toán.</p>
-            <div className="flex items-center justify-between gap-4 text-sm"><span>Tổng gốc và lãi</span><span className="shrink-0 text-right font-medium tabular-nums">{formatCurrency(totalAmount)}</span></div>
-          </> : null}
-          <div className="flex items-center justify-between gap-4 text-sm">
-            <span className="text-muted-foreground">
-              {debt.direction === "lent" ? "Đã thu" : "Đã trả"}
-            </span>
-            <span className="shrink-0 text-right font-medium tabular-nums">
-              {formatCurrency(paidAmount, { signDisplay: "never" })}
-            </span>
-          </div>
-          <Separator variant="chunky" />
-          <div className="flex items-end justify-between gap-4">
-            <span className="text-sm text-muted-foreground">Còn lại</span>
-            <span className="shrink-0 text-right text-sm font-semibold tabular-nums">
-              {formatCurrency(remainingAmount, { signDisplay: "never" })}
-            </span>
-          </div>
-          <Progress value={paymentProgress} />
-        </div>
+      <SettingsGroup>
+        <SettingsRow
+          title={debt.recordingMode === "opening" ? "Ngày bắt đầu theo dõi" : "Ngày ghi"}
+          value={formatDebtDate(debt.recordedAt)}
+        />
+        <SettingsRow
+          title="Hẹn trả"
+          description={debt.dueAt && debt.status !== "settled" ? deadline.label : undefined}
+          value={debt.dueAt ? formatDebtDate(debt.dueAt) : "Không có"}
+        />
+        <SettingsRow
+          title="Cách ghi nhận"
+          value={debt.recordingMode === "opening" ? "Nợ có sẵn" : "Khoản vay mới"}
+        />
+      </SettingsGroup>
 
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p className="text-muted-foreground">{debt.recordingMode === "opening" ? "Ngày bắt đầu theo dõi" : "Ngày ghi"}</p>
-            <p className="font-medium">{formatDebtDate(debt.recordedAt)}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Hẹn trả</p>
-            <p className={deadline.isOverdue ? "font-medium text-destructive" : "font-medium"}>
-              {debt.dueAt ? formatDebtDate(debt.dueAt) : "Không có"}
-            </p>
-          </div>
-        </div>
+      <DebtPaymentHistory debt={debt} contact={contact} accounts={accounts} onEdit={onEditPayment} onDelete={onDeletePayment} />
 
-        <DebtPaymentHistory debt={debt} contact={contact} accounts={accounts} onEdit={onEditPayment} onDelete={onDeletePayment} />
+      <DebtManageRows {...props} />
     </div>
   )
 }
@@ -191,8 +142,8 @@ export function DebtRecordPaymentButton({
   )
 }
 
-/** "More" menu with edit and delete, so they stay out of the main actions. */
-export function DebtActionsMenu({
+/** Edit and delete as rows at the end, like the other editors. */
+function DebtManageRows({
   accounts,
   contacts,
   debt,
@@ -203,78 +154,62 @@ export function DebtActionsMenu({
   const [pending, setPending] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const submitting = React.useRef(false)
-  const menuButton = React.useRef<HTMLButtonElement>(null)
 
   return (
     <>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button ref={menuButton} type="button" variant="ghost" size="icon-sm" aria-label="Thao tác với khoản nợ">
-              <EllipsisIcon />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="w-48"
-            onCloseAutoFocus={(event) => {
-              if (editing || deleting) event.preventDefault()
-            }}
-          >
-            <DropdownMenuItem onSelect={() => setEditing(true)}>
-              <PencilIcon />
-              Sửa khoản nợ
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onSelect={() => { setError(null); setDeleting(true) }}>
-              <Trash2Icon />
-              Xoá khoản nợ
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <AddDebtSheet
-          debt={debt}
-          contacts={contacts}
-          accounts={accounts}
-          onAddDebt={onChangeDebt}
-          open={editing}
-          onOpenChange={setEditing}
-          returnFocusRef={menuButton}
+      <SettingsGroup>
+        <SettingsRow title="Sửa khoản nợ" onClick={() => setEditing(true)} />
+      </SettingsGroup>
+      <SettingsGroup>
+        <SettingsRow
+          destructive
+          title="Xoá khoản nợ"
+          onClick={() => {
+            setError(null)
+            setDeleting(true)
+          }}
         />
-        <AlertDialog open={deleting} onOpenChange={(open) => { if (!submitting.current) setDeleting(open) }}>
-          <AlertDialogContent onCloseAutoFocus={(event) => {
-            event.preventDefault()
-            menuButton.current?.focus()
-          }}>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Xoá khoản {debt.direction === "lent" ? "cho vay" : "đi vay"}?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Xoá “{debt.note}” cùng toàn bộ {debt.payments?.length ?? 0} lần thu/trả.
-                {debt.recordingMode === "opening" ? " Chỉ hoàn tác tác động số dư của các lần thu/trả đã ghi nhận; tiền gốc không ảnh hưởng số dư." : " Xoá giao dịch ban đầu và điều chỉnh số dư các tài khoản như chưa từng có khoản nợ này."}
-                {" "}Sau khi xác nhận, bạn có 6 giây để hoàn tác.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            {error ? <FieldError role="alert">{error}</FieldError> : null}
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={pending}>Huỷ</AlertDialogCancel>
-              <AlertDialogAction disabled={pending} onClick={async (event) => {
-                event.preventDefault()
-                if (submitting.current) return
-                submitting.current = true
-                setPending(true)
-                setError(null)
-                try {
-                  await onChangeDebt(null)
-                  setDeleting(false)
-                } catch (error) {
-                  setError(error instanceof Error ? error.message : "Không thể xoá khoản nợ.")
-                } finally {
-                  submitting.current = false
-                  setPending(false)
-                }
-              }}>{pending ? "Đang xoá…" : "Xoá khoản nợ"}</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+      </SettingsGroup>
+      <AddDebtSheet
+        debt={debt}
+        contacts={contacts}
+        accounts={accounts}
+        onAddDebt={onChangeDebt}
+        open={editing}
+        onOpenChange={setEditing}
+      />
+      <AlertDialog open={deleting} onOpenChange={(open) => { if (!submitting.current) setDeleting(open) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xoá khoản {debt.direction === "lent" ? "cho vay" : "đi vay"}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Xoá “{debt.note}” cùng toàn bộ {debt.payments?.length ?? 0} lần thu/trả.
+              {debt.recordingMode === "opening" ? " Chỉ hoàn tác tác động số dư của các lần thu/trả đã ghi nhận; tiền gốc không ảnh hưởng số dư." : " Xoá giao dịch ban đầu và điều chỉnh số dư các tài khoản như chưa từng có khoản nợ này."}
+              {" "}Sau khi xác nhận, bạn có 6 giây để hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {error ? <FieldError role="alert">{error}</FieldError> : null}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={pending}>Huỷ</AlertDialogCancel>
+            <AlertDialogAction disabled={pending} onClick={async (event) => {
+              event.preventDefault()
+              if (submitting.current) return
+              submitting.current = true
+              setPending(true)
+              setError(null)
+              try {
+                await onChangeDebt(null)
+                setDeleting(false)
+              } catch (error) {
+                setError(error instanceof Error ? error.message : "Không thể xoá khoản nợ.")
+              } finally {
+                submitting.current = false
+                setPending(false)
+              }
+            }}>{pending ? "Đang xoá…" : "Xoá khoản nợ"}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

@@ -9,7 +9,7 @@ type UndoableDeleteOptions = {
   description: string
   errorMessage: string
   key: string
-  onCommit: () => Promise<void>
+  onCommit: () => Promise<unknown>
   pendingMessage: string
   successMessage: string
   title: string

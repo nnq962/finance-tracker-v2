@@ -2,19 +2,19 @@
 
 import * as React from "react"
 import {
-  ArrowLeftIcon,
+  BookUserIcon,
   ChevronDownIcon,
-  FileTextIcon,
   HandCoinsIcon,
-  SearchIcon,
-  XIcon,
+  TriangleAlertIcon,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 import type { Account } from "@/lib/accounts/types"
+import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import {
   Collapsible,
   CollapsibleContent,
@@ -28,41 +28,40 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from "@/components/ui/input-group"
-import { SheetNavHeader } from "@/components/sheet-nav-header"
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetFooter,
-} from "@/components/ui/sheet"
-import { Separator } from "@/components/ui/separator"
+import { Sheet, SheetContent, SheetFooter } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { formatCurrency } from "@/lib/format-currency"
 
 import {
   compareDebtsByUrgency,
   getDebtDeadline,
   getDebtMetrics,
 } from "../_lib/debt-presentation"
-import { filterDebts, type DebtFilter } from "../_lib/filter-debts"
-import type { Contact, Debt, NewDebt, NewDebtPayment } from "../_types/debt"
+import type { Contact, Debt, DebtDirection, NewDebt, NewDebtPayment } from "../_types/debt"
 import {
-  DebtContactHeader,
   DebtDetailInfo,
   DebtDetailPanel,
-  DebtActionsMenu,
   DebtRecordPaymentButton,
+  getDebtSubtitle,
 } from "./debt-detail-panel"
 import { DebtListItem } from "./debt-list-item"
 
 // Matches Tailwind's `xl`, where the detail panel sits beside the list.
 const SIDE_PANEL_QUERY = "(min-width: 80rem)"
+
+function subscribeSidePanel(onChange: () => void) {
+  const query = window.matchMedia(SIDE_PANEL_QUERY)
+  query.addEventListener("change", onChange)
+  return () => query.removeEventListener("change", onChange)
+}
+
+function useHasSidePanel() {
+  return React.useSyncExternalStore(
+    subscribeSidePanel,
+    () => window.matchMedia(SIDE_PANEL_QUERY).matches,
+    () => false,
+  )
+}
 
 type DebtsViewProps = {
   onChangeDebt: (id: string, values: NewDebt | null) => Promise<void>
@@ -73,12 +72,18 @@ type DebtsViewProps = {
   contacts: Contact[]
   debts: Debt[]
   onRecordPayment: (debtId: string, payment: NewDebtPayment) => Promise<void>
+  onOpenContacts: () => void
   emptyAction?: React.ReactNode
 }
 
 function isSettled(debt: Debt) {
   return debt.status === "settled" || getDebtMetrics(debt).remainingAmount <= 0
 }
+
+const sections: Array<{ direction: DebtDirection; label: string }> = [
+  { direction: "lent", label: "Cần thu" },
+  { direction: "borrowed", label: "Cần trả" },
+]
 
 export function DebtsView({
   onChangeDebt,
@@ -89,30 +94,20 @@ export function DebtsView({
   accounts,
   onEditPayment,
   onDeletePayment,
+  onOpenContacts,
   emptyAction,
 }: DebtsViewProps) {
   const router = useRouter()
   const [, startNavigation] = React.useTransition()
-  const [filter, setFilter] = React.useState<DebtFilter>("all")
-  const [query, setQuery] = React.useState("")
   const [sheetDebtId, setSheetDebtId] = React.useState<string | null>(null)
+  const hasSidePanel = useHasSidePanel()
   const selectedDebtId = initialSelectedDebtId ?? debts[0]?.id
   const contactById = new Map(contacts.map((contact) => [contact.id, contact]))
-  const normalizedQuery = query.trim().toLocaleLowerCase("vi-VN")
-  const overdueCount = debts.filter((debt) => getDebtDeadline(debt).isOverdue).length
-  // The overdue chip disappears once nothing is overdue; fall back to all.
-  const activeFilter = filter === "overdue" && overdueCount === 0 ? "all" : filter
-  const visibleDebts = filterDebts(debts, activeFilter).filter((debt) => {
-    const contact = contactById.get(debt.contactId)
-
-    return normalizedQuery.length === 0 ||
-      contact?.name.toLocaleLowerCase("vi-VN").includes(normalizedQuery) ||
-      debt.note.toLocaleLowerCase("vi-VN").includes(normalizedQuery)
-  })
-  const openDebts = visibleDebts.filter((debt) => !isSettled(debt)).sort(compareDebtsByUrgency)
-  const settledDebts = visibleDebts
+  const openDebts = debts.filter((debt) => !isSettled(debt)).sort(compareDebtsByUrgency)
+  const settledDebts = debts
     .filter(isSettled)
     .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt))
+  const overdueDebts = openDebts.filter((debt) => getDebtDeadline(debt).isOverdue)
   const selectedDebt = debts.find((debt) => debt.id === selectedDebtId)
   const selectedContact = selectedDebt
     ? contactById.get(selectedDebt.contactId)
@@ -122,23 +117,6 @@ export function DebtsView({
   const sheetDebt = sheetDebtId ? debts.find((debt) => debt.id === sheetDebtId) : undefined
   const sheetContact = sheetDebt ? contactById.get(sheetDebt.contactId) : undefined
   const isSheetReady = sheetDebt !== undefined && sheetDebt.id === selectedDebtId
-
-  const filters: Array<{ value: DebtFilter; label: string; count: number }> = [
-    { value: "all", label: "Tất cả", count: debts.length },
-    {
-      value: "lent",
-      label: "Cho vay",
-      count: debts.filter((debt) => debt.direction === "lent").length,
-    },
-    {
-      value: "borrowed",
-      label: "Đi vay",
-      count: debts.filter((debt) => debt.direction === "borrowed").length,
-    },
-    ...(overdueCount > 0
-      ? [{ value: "overdue" as const, label: "Quá hạn", count: overdueCount }]
-      : []),
-  ]
 
   function selectDebt(debtId: string) {
     if (!window.matchMedia(SIDE_PANEL_QUERY).matches) {
@@ -168,111 +146,87 @@ export function DebtsView({
     }
   }
 
-  function renderDebtList(items: Debt[]) {
-    return (
-      <ul className="grid gap-3">
-        {items.map((debt) => {
-          const contact = contactById.get(debt.contactId)
-          if (!contact) return null
+  function renderRows(items: Debt[]) {
+    return items.map((debt) => {
+      const contact = contactById.get(debt.contactId)
+      if (!contact) return null
 
-          return (
-            <li key={debt.id}>
-              <DebtListItem
-                contact={contact}
-                debt={debt}
-                selected={debt.id === selectedDebt?.id}
-                onSelect={() => selectDebt(debt.id)}
-              />
-            </li>
-          )
-        })}
-      </ul>
-    )
+      return (
+        <DebtListItem
+          key={debt.id}
+          contact={contact}
+          debt={debt}
+          active={hasSidePanel && debt.id === selectedDebt?.id}
+          onSelect={() => selectDebt(debt.id)}
+        />
+      )
+    })
   }
+
+  const contactsRow = (
+    <SettingsGroup>
+      <SettingsRow
+        icon={BookUserIcon}
+        color="blue"
+        title="Danh bạ"
+        value={`${contacts.length} người`}
+        onClick={onOpenContacts}
+      />
+    </SettingsGroup>
+  )
 
   if (debts.length === 0) {
     return (
-      <Card>
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <HandCoinsIcon />
-            </EmptyMedia>
-            <EmptyTitle>Chưa có khoản nợ</EmptyTitle>
-            <EmptyDescription>
-              {contacts.length > 0
-                ? "Ghi lại khoản cho vay hoặc đi vay để theo dõi số còn lại, hạn trả và lịch sử thu trả."
-                : "Thêm người vào danh bạ trước, sau đó ghi lại khoản cho vay hoặc đi vay với họ."}
-            </EmptyDescription>
-          </EmptyHeader>
-          {emptyAction ? <EmptyContent>{emptyAction}</EmptyContent> : null}
-        </Empty>
-      </Card>
+      <div className="space-y-6">
+        <Card>
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <HandCoinsIcon />
+              </EmptyMedia>
+              <EmptyTitle>Chưa có khoản nợ</EmptyTitle>
+              <EmptyDescription>
+                Ghi lại khoản cho vay hoặc đi vay để theo dõi số còn lại, hạn trả và lịch sử thu trả.
+              </EmptyDescription>
+            </EmptyHeader>
+            {emptyAction ? <EmptyContent>{emptyAction}</EmptyContent> : null}
+          </Empty>
+        </Card>
+        {contactsRow}
+      </div>
     )
   }
 
   return (
     <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-      <div className="min-w-0 space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <InputGroup className="sm:max-w-xs">
-            <InputGroupAddon>
-              <SearchIcon aria-hidden="true" />
-            </InputGroupAddon>
-            <InputGroupInput
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              aria-label="Tìm khoản nợ hoặc tên người"
-              placeholder="Tìm tên, ghi chú..."
+      <div className="min-w-0 space-y-6">
+        {overdueDebts.length > 0 ? (
+          <SettingsGroup>
+            <SettingsRow
+              icon={TriangleAlertIcon}
+              color="rose"
+              title={`${overdueDebts.length} khoản quá hạn`}
+              description={[...new Set(overdueDebts.map((debt) => contactById.get(debt.contactId)?.name))].filter(Boolean).join(", ")}
+              // Opens the one overdue the longest; the rest sit at the top of their sections.
+              onClick={() => selectDebt(overdueDebts[0].id)}
             />
-            {query ? (
-              <InputGroupAddon align="inline-end">
-                <InputGroupButton
-                  size="icon-xs"
-                  aria-label="Xóa tìm kiếm"
-                  onClick={() => setQuery("")}
-                >
-                  <XIcon />
-                </InputGroupButton>
-              </InputGroupAddon>
-            ) : null}
-          </InputGroup>
-          <div className="-mx-1 overflow-x-auto px-1 pt-1 pb-1">
-            <ToggleGroup
-              type="single"
-              value={activeFilter}
-              onValueChange={(value) => {
-                if (value) setFilter(value as DebtFilter)
-              }}
-              aria-label="Lọc khoản nợ"
-            >
-              {filters.map((item) => (
-                <ToggleGroupItem key={item.value} value={item.value}>
-                  {item.label}
-                  <span className="opacity-60">{item.count}</span>
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          </div>
-        </div>
-
-        {visibleDebts.length === 0 ? (
-          <Card>
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <SearchIcon />
-                </EmptyMedia>
-                <EmptyTitle>Không tìm thấy khoản nợ</EmptyTitle>
-                <EmptyDescription>
-                  Không có khoản nào phù hợp với bộ lọc hiện tại.
-                </EmptyDescription>
-              </EmptyHeader>
-            </Empty>
-          </Card>
+          </SettingsGroup>
         ) : null}
 
-        {openDebts.length > 0 ? renderDebtList(openDebts) : null}
+        {sections.map(({ direction, label }) => {
+          const items = openDebts.filter((debt) => debt.direction === direction)
+          if (items.length === 0) return null
+          const total = items.reduce((sum, debt) => sum + getDebtMetrics(debt).remainingAmount, 0)
+
+          return (
+            <SettingsGroup
+              key={direction}
+              title={`${label} · ${formatCurrency(total, { signDisplay: "never" })}`}
+            >
+              {renderRows(items)}
+            </SettingsGroup>
+          )
+        })}
 
         {settledDebts.length > 0 ? (
           <Collapsible defaultOpen={openDebts.length === 0}>
@@ -286,39 +240,23 @@ export function DebtsView({
                 />
               </Button>
             </CollapsibleTrigger>
-            <CollapsibleContent className="pt-3">
-              {renderDebtList(settledDebts)}
+            <CollapsibleContent className="pt-2">
+              <SettingsGroup>{renderRows(settledDebts)}</SettingsGroup>
             </CollapsibleContent>
           </Collapsible>
         ) : null}
+
+        {contactsRow}
       </div>
 
-      {/* The 1px padding keeps the card's outer ring inside the scroll box. */}
-      <div className="hidden xl:sticky xl:top-20 xl:-m-px xl:block xl:max-h-[calc(100svh-6rem)] xl:overflow-y-auto xl:p-px">
+      {/* The 1px padding keeps the cards' outer ring inside the scroll box. */}
+      <div className="hidden xl:sticky xl:top-20 xl:-m-px xl:block xl:max-h-[calc(100svh-6rem)] xl:overflow-y-auto xl:p-px xl:pb-4">
         {selectedDebt && selectedContact ? (
           <DebtDetailPanel
             key={selectedDebt.id}
             {...getDetailProps(selectedDebt, selectedContact)}
           />
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Chi tiết khoản nợ</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Empty>
-                <EmptyHeader>
-                  <EmptyMedia variant="icon"><FileTextIcon /></EmptyMedia>
-                  <EmptyTitle>Chưa chọn khoản nợ</EmptyTitle>
-                  <EmptyDescription>
-                    Chọn một khoản trong danh sách để xem số còn lại, lãi suất
-                    và lịch sử thu trả.
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            </CardContent>
-          </Card>
-        )}
+        ) : null}
       </div>
 
       <Sheet
@@ -333,52 +271,31 @@ export function DebtsView({
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
           <SheetNavHeader
-            title="Chi tiết khoản nợ"
-            description="Số còn lại, lãi suất và lịch sử thu trả của khoản nợ."
+            title={sheetContact?.name ?? "Chi tiết khoản nợ"}
+            description={sheetDebt ? getDebtSubtitle(sheetDebt) : undefined}
           />
           {isSheetReady && sheetDebt && sheetContact ? (
             <React.Fragment key={sheetDebt.id}>
-              <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 pt-px pb-4">
-                <div className="flex items-center justify-between gap-3">
-                  <DebtContactHeader contact={sheetContact} />
-                  <DebtActionsMenu {...getDetailProps(sheetDebt, sheetContact)} />
-                </div>
-                <Separator variant="chunky" />
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
                 <DebtDetailInfo {...getDetailProps(sheetDebt, sheetContact)} />
               </div>
               <SheetFooter>
-                <div className="grid grid-cols-2 gap-2">
-                  <SheetClose asChild>
-                    <Button type="button" variant="outline">
-                      <ArrowLeftIcon />
-                      Quay lại
-                    </Button>
-                  </SheetClose>
-                  <DebtRecordPaymentButton {...getDetailProps(sheetDebt, sheetContact)} />
-                </div>
+                <DebtRecordPaymentButton {...getDetailProps(sheetDebt, sheetContact)} />
               </SheetFooter>
             </React.Fragment>
           ) : (
             <div
-              className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 pt-px pb-4"
+              className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-px pb-4"
               role="status"
               aria-label="Đang tải chi tiết khoản nợ"
             >
-              <div className="flex items-center gap-3">
-                <Skeleton className="size-10 shrink-0 rounded-full" />
-                <div className="space-y-1.5">
-                  <Skeleton className="h-5 w-28" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
+              <div className="space-y-2 px-3">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-9 w-48" />
+                <Skeleton className="h-[18px] w-full rounded-full" />
               </div>
-              <Separator variant="chunky" />
-              <div className="flex gap-2">
-                <Skeleton className="h-6 w-20 rounded-full" />
-                <Skeleton className="h-6 w-24 rounded-full" />
-              </div>
-              <Skeleton className="h-5 w-48" />
-              <Skeleton className="h-48 w-full rounded-lg" />
-              <Skeleton className="h-24 w-full rounded-lg" />
+              <Skeleton className="h-48 w-full rounded-xl" />
+              <Skeleton className="h-36 w-full rounded-xl" />
             </div>
           )}
         </SheetContent>

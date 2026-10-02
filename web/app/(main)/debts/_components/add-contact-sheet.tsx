@@ -21,7 +21,7 @@ type AddContactSheetProps = {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   returnFocusRef?: React.RefObject<HTMLButtonElement | null>
-  onAddContact: (contact: NewContact) => Promise<void>
+  onAddContact: (contact: NewContact) => Promise<unknown>
 }
 
 export function AddContactSheet({ contact, onAddContact, open: controlledOpen, onOpenChange, returnFocusRef }: AddContactSheetProps) {

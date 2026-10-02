@@ -2,6 +2,7 @@ import { getAccounts } from "@/lib/accounts/repository"
 import { loadWithSession } from "@/lib/auth/session"
 
 import { DebtsDashboard } from "./_components/debts-dashboard"
+import { compareDebtsByUrgency } from "./_lib/debt-presentation"
 import {
   getContacts,
   getDebtPayments,
@@ -23,9 +24,13 @@ export default async function DebtsPage({ searchParams }: { searchParams: Promis
       debt ? getDebtPayments(user.uid, debt).catch(() => null) : null,
     ]),
   )
+  // Without a debt in the URL, the side panel opens the most urgent open one.
+  const defaultDebt = debtSummaries
+    .filter((item) => item.status !== "settled")
+    .sort(compareDebtsByUrgency)[0] ?? debtSummaries[0]
   const selectedDebtId = debtSummaries.some((item) => item.id === debt)
     ? debt
-    : debtSummaries[0]?.id
+    : defaultDebt?.id
   const selectedPayments = !selectedDebtId
     ? []
     : selectedDebtId === debt && requestedPayments

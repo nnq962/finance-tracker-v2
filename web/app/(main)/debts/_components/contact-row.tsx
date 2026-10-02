@@ -2,9 +2,9 @@
 
 import * as React from "react"
 import { EllipsisIcon, PencilIcon, Trash2Icon } from "lucide-react"
+import { SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
 import { FieldError } from "@/components/ui/field"
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -17,14 +17,14 @@ import {
 import type { Contact, NewContact } from "../_types/debt"
 import { AddContactSheet } from "./add-contact-sheet"
 
-type ContactCardProps = {
+type ContactRowProps = {
   contact: Contact
   hasDebts: boolean
   onEdit: (values: NewContact) => Promise<void>
   onDelete: () => Promise<void>
 }
 
-export function ContactCard({ contact, hasDebts, onEdit, onDelete }: ContactCardProps) {
+export function ContactRow({ contact, hasDebts, onEdit, onDelete }: ContactRowProps) {
   const [open, setOpen] = React.useState(false)
   const [editing, setEditing] = React.useState(false)
   const [pending, setPending] = React.useState(false)
@@ -32,14 +32,12 @@ export function ContactCard({ contact, hasDebts, onEdit, onDelete }: ContactCard
   const deleting = React.useRef(false)
   const menuButton = React.useRef<HTMLButtonElement>(null)
   return (
-    <Card size="sm">
-      <CardContent>
-        <div className="flex min-w-0 items-center gap-3">
-      <Avatar size="lg"><AvatarFallback>{contact.initials}</AvatarFallback></Avatar>
-          <div className="min-w-0 flex-1 space-y-1">
-            <CardTitle><span className="block truncate" title={contact.name}>{contact.name}</span></CardTitle>
-            <CardDescription><span className="block truncate" title={contact.relationship}>{contact.relationship || "Chưa cập nhật quan hệ"}</span></CardDescription>
-          </div>
+    <>
+      <SettingsRow
+        media={<Avatar><AvatarFallback>{contact.initials}</AvatarFallback></Avatar>}
+        title={contact.name}
+        description={contact.relationship || "Chưa cập nhật quan hệ"}
+        action={
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button ref={menuButton} type="button" variant="ghost" size="icon-sm" aria-label={`Thao tác với ${contact.name}`}><EllipsisIcon /></Button>
@@ -52,8 +50,8 @@ export function ContactCard({ contact, hasDebts, onEdit, onDelete }: ContactCard
               <DropdownMenuItem variant="destructive" onSelect={() => { setErrorMessage(null); setOpen(true) }}><Trash2Icon />Xoá người</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
-      </CardContent>
+        }
+      />
       <AddContactSheet contact={contact} onAddContact={onEdit} open={editing} onOpenChange={setEditing} returnFocusRef={menuButton} />
       <AlertDialog open={open} onOpenChange={(nextOpen) => { if (!deleting.current) setOpen(nextOpen) }}>
         <AlertDialogContent onCloseAutoFocus={(event) => {
@@ -90,6 +88,6 @@ export function ContactCard({ contact, hasDebts, onEdit, onDelete }: ContactCard
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </>
   )
 }

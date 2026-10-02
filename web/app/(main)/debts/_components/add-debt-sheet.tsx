@@ -63,8 +63,10 @@ import type {
   DebtDirection,
   DebtRecordingMode,
   InterestPeriod,
+  NewContact,
   NewDebt,
 } from "../_types/debt"
+import { AddContactSheet } from "./add-contact-sheet"
 
 const NO_HISTORY: number[] = []
 
@@ -91,6 +93,8 @@ type AddDebtSheetProps = {
   accounts: Account[]
   contacts: Contact[]
   onAddDebt: (debt: NewDebt) => Promise<void>
+  /** Lets the form add a person on the spot; the new contact is then selected. */
+  onAddContact?: (contact: NewContact) => Promise<Contact>
   /** Controlled mode (no trigger), e.g. opened from an actions menu. */
   open?: boolean
   onOpenChange?: (open: boolean) => void
@@ -103,6 +107,7 @@ export function AddDebtSheet({
   accounts,
   contacts,
   onAddDebt,
+  onAddContact,
   open: controlledOpen,
   onOpenChange,
   returnFocusRef,
@@ -117,6 +122,8 @@ export function AddDebtSheet({
   const amountPick = useAmountQuickPick(debt?.amount ?? null, NO_HISTORY)
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   const [wasOpen, setWasOpen] = React.useState(open)
+  const [contactId, setContactId] = React.useState(debt?.contactId ?? "")
+  const [addingContact, setAddingContact] = React.useState(false)
 
   // A controlled open never passes through onOpenChange, so reset the form
   // fields here whenever the sheet opens.
@@ -127,6 +134,7 @@ export function AddDebtSheet({
       setDirection(debt?.direction ?? "lent")
       setRecordingMode(debt?.recordingMode ?? "cash-flow")
       setHasInterest(debt?.hasInterest ?? false)
+      setContactId(debt?.contactId ?? "")
       amountPick.reset(debt?.amount ?? null)
     }
   }
@@ -136,7 +144,7 @@ export function AddDebtSheet({
   const accountLabel =
     direction === "lent" ? "Nguồn tiền" : "Tài khoản nhận tiền"
   const activeAccounts = accounts.filter((account) => account.status === "active" || account.id === debt?.accountId)
-  const isDisabled = contacts.length === 0
+  const isDisabled = contacts.length === 0 && !onAddContact
 
   return (
     <Sheet open={open} onOpenChange={(nextOpen) => {
@@ -213,6 +221,7 @@ export function AddDebtSheet({
               form.reset()
               setDirection("lent")
               setHasInterest(false)
+              setContactId("")
               setOpen(false)
             } catch (error) {
               setErrorMessage(error instanceof Error ? error.message : "Không thể lưu khoản nợ.")
@@ -275,8 +284,16 @@ export function AddDebtSheet({
                     </Field>
 
                     <Field>
-                      <FieldLabel htmlFor="debt-contact">Người liên quan</FieldLabel>
-                      <Select defaultValue={debt?.contactId} name="contactId" required disabled={pending}>
+                      <div className="flex items-center justify-between gap-2">
+                        <FieldLabel htmlFor="debt-contact">Người liên quan</FieldLabel>
+                        {onAddContact ? (
+                          <Button type="button" variant="ghost" size="xs" onClick={() => setAddingContact(true)}>
+                            <PlusIcon />
+                            Người mới
+                          </Button>
+                        ) : null}
+                      </div>
+                      <Select value={contactId} onValueChange={setContactId} name="contactId" required disabled={pending}>
                         <SelectTrigger id="debt-contact" className="w-full">
                           <SelectValue placeholder="Chọn từ danh bạ" />
                         </SelectTrigger>
@@ -460,6 +477,13 @@ export function AddDebtSheet({
             </div>
           </SheetFooter>
         </form>
+        {onAddContact ? (
+          <AddContactSheet
+            open={addingContact}
+            onOpenChange={setAddingContact}
+            onAddContact={async (values) => setContactId((await onAddContact(values)).id)}
+          />
+        ) : null}
       </SheetContent>
     </Sheet>
   )
