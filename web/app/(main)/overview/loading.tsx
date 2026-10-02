@@ -1,3 +1,5 @@
+import type * as React from "react"
+
 import { Card, CardContent } from "@/components/ui/card"
 import { Page, PageHeaderSkeleton } from "@/components/page"
 import { Separator } from "@/components/ui/separator"
@@ -7,12 +9,13 @@ import { cn } from "@/lib/utils"
 
 import { OverviewLayout } from "./_components/overview-layout"
 
-/** Same footprint as a SettingsGroup with `rows` rows. */
-function GroupSkeleton({ rows, title = true }: { rows: number; title?: boolean }) {
+/** Same footprint as a SettingsGroup with `rows` rows, and its `header` if any. */
+function GroupSkeleton({ rows, header }: { rows: number; header?: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      {title ? <Skeleton className="mx-3 h-3 w-28" /> : null}
+      <Skeleton className="mx-3 h-3 w-28" />
       <Card size="sm" className="gap-0 py-0">
+        {header ? <div className="p-4">{header}</div> : null}
         <div className="px-1">
           {Array.from({ length: rows }, (_, row) => (
             <div key={row} className={cn("flex items-center gap-2.5 px-3 py-3.5 not-first:pt-4", settingsSeparatorClassName(true))}>
@@ -84,17 +87,7 @@ export default function OverviewLoading() {
         <PageHeaderSkeleton />
         <OverviewLayout
           netWorth={
-            <div className="space-y-2">
-              <Skeleton className="mx-3 h-3 w-24" />
-              <div className="space-y-4">
-                <Card>
-                  <CardContent>
-                    <Skeleton className="h-11 w-56 max-w-full" />
-                  </CardContent>
-                </Card>
-                <GroupSkeleton rows={3} title={false} />
-              </div>
-            </div>
+            <GroupSkeleton rows={3} header={<Skeleton className="h-11 w-56 max-w-full" />} />
           }
           calendar={<CalendarSkeleton />}
           allocation={<ChartSkeleton className="h-72" />}

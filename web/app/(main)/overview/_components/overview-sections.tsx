@@ -31,43 +31,41 @@ export function NetWorth({ data }: { data: OverviewSummary["netWorth"] }) {
       >
         Tài sản ròng
       </h2>
-      <div className="space-y-4">
-        <Card>
-          <CardContent>
-            <p
-              className={cn(
-                "font-heading text-4xl leading-tight font-extrabold tracking-tight tabular-nums [overflow-wrap:anywhere]",
-                data.total < 0 && overdueClassName,
-              )}
-            >
-              {formatCurrency(data.total)}
-            </p>
-          </CardContent>
-        </Card>
-        <SettingsGroup>
-          <SettingsRow
-            icon={WalletCardsIcon}
-            color="blue"
-            title="Số dư tài khoản"
-            value={formatCurrency(data.cash)}
-            onClick={() => router.push("/budget")}
-          />
-          <SettingsRow
-            icon={ArrowDownLeftIcon}
-            color="emerald"
-            title="Người khác nợ tôi"
-            value={formatCurrency(data.receivable)}
-            onClick={() => router.push("/debts")}
-          />
-          <SettingsRow
-            icon={ArrowUpRightIcon}
-            color="rose"
-            title="Tôi đang nợ"
-            value={formatCurrency(data.payable)}
-            onClick={() => router.push("/debts")}
-          />
-        </SettingsGroup>
-      </div>
+      {/* One card: the total, then the three amounts it is made of. */}
+      <SettingsGroup
+        header={
+          <p
+            className={cn(
+              "font-heading text-4xl leading-tight font-extrabold tracking-tight tabular-nums [overflow-wrap:anywhere]",
+              data.total < 0 && overdueClassName,
+            )}
+          >
+            {formatCurrency(data.total)}
+          </p>
+        }
+      >
+        <SettingsRow
+          icon={WalletCardsIcon}
+          color="blue"
+          title="Số dư tài khoản"
+          value={formatCurrency(data.cash)}
+          onClick={() => router.push("/budget")}
+        />
+        <SettingsRow
+          icon={ArrowDownLeftIcon}
+          color="emerald"
+          title="Người khác nợ tôi"
+          value={formatCurrency(data.receivable)}
+          onClick={() => router.push("/debts")}
+        />
+        <SettingsRow
+          icon={ArrowUpRightIcon}
+          color="rose"
+          title="Tôi đang nợ"
+          value={formatCurrency(data.payable)}
+          onClick={() => router.push("/debts")}
+        />
+      </SettingsGroup>
     </section>
   )
 }

@@ -1,4 +1,4 @@
-import * as React from "react"
+import type * as React from "react"
 import { ChevronRightIcon, type LucideIcon } from "lucide-react"
 
 import { Card } from "@/components/ui/card"
@@ -10,7 +10,6 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item"
-import { Separator } from "@/components/ui/separator"
 import {
   getCategoryColor,
   type CategoryColorName,
@@ -45,7 +44,7 @@ function SettingsGroup({
   title?: React.ReactNode
   /** Small control at the end of the caption, e.g. to edit the group. */
   action?: React.ReactNode
-  /** Shown in the card above the rows, e.g. the chart the rows are the legend of. */
+  /** Shown in the card above the rows, e.g. the total the rows add up to. */
   header?: React.ReactNode
   footer?: React.ReactNode
   children: React.ReactNode
@@ -65,13 +64,8 @@ function SettingsGroup({
       {/* Rows carry their own, equal padding, so the card only frames them:
           first and last rows match the ones in between. */}
       <Card size="sm" className="gap-0 py-0">
-        {header ? (
-          <>
-            {/* 16px all round, where the rows' content starts. */}
-            <div className="p-4">{header}</div>
-            {React.Children.count(children) > 0 ? <Separator variant="chunky" /> : null}
-          </>
-        ) : null}
+        {/* 16px all round, where the rows' content starts. */}
+        {header ? <div className="p-4">{header}</div> : null}
         <ul className="px-1">
           {children}
         </ul>
