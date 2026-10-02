@@ -16,7 +16,7 @@ import type {
   TransactionSearchFilters,
 } from "../_types/transaction"
 import { AddTransactionButton } from "./add-transaction-button"
-import { AiTransactionSheet } from "./ai-transaction/ai-transaction-sheet"
+import { AiTransactionDrawer } from "./ai-transaction/ai-transaction-drawer"
 import { TransactionHistoryProvider } from "./add-transaction/transaction-history-context"
 import { TransactionFilterPanel } from "./transaction-filter-fields"
 import { TransactionsHero } from "./transactions-hero"
@@ -157,7 +157,7 @@ export function TransactionsDashboard({
           />
         </div>
       </div>
-      <AiTransactionSheet
+      <AiTransactionDrawer
         open={aiOpen}
         onOpenChange={setAiOpen}
         accounts={accounts}

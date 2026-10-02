@@ -1,6 +1,6 @@
 "use client"
 
-import { AiAssistSheet } from "@/components/ai-assist/ai-assist-sheet"
+import { AiAssistDrawer } from "@/components/ai-assist/ai-assist-drawer"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 
@@ -13,7 +13,7 @@ const examples = [
   "Nhận lương 25 triệu",
 ]
 
-type AiTransactionSheetProps = {
+type AiTransactionDrawerProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   accounts: Account[]
@@ -22,15 +22,15 @@ type AiTransactionSheetProps = {
 }
 
 /** Records a transaction from a sentence. Not yet connected to the AI: a rule-based stand-in reads the request. */
-export function AiTransactionSheet({
+export function AiTransactionDrawer({
   open,
   onOpenChange,
   accounts,
   categoryGroups,
   todayDateKey,
-}: AiTransactionSheetProps) {
+}: AiTransactionDrawerProps) {
   return (
-    <AiAssistSheet
+    <AiAssistDrawer
       open={open}
       onOpenChange={onOpenChange}
       prompt="Nói một câu về khoản thu chi, AI sẽ điền giúp bạn."
