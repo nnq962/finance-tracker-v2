@@ -5,51 +5,59 @@ import {
   ArrowDownLeftIcon,
   ArrowUpRightIcon,
   WalletCardsIcon,
+  type LucideIcon,
 } from "lucide-react"
 
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
-import { formatCurrency } from "@/lib/format-currency"
+import { getCategoryColor, type CategoryColorName } from "@/lib/categories/category-colors"
+import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
 import type { OverviewSummary } from "@/lib/overview/summary"
 import { cn } from "@/lib/utils"
 
-import { cashFlowColors } from "../../transactions/_lib/transaction-presentation"
 import { CashFlowChart } from "./overview-charts"
 
 const overdueClassName = "text-[#c8393a] dark:text-[#ff9b93]"
 
-/** An amount in a net-worth row; the sign shows how it enters the total. */
-function NetWorthAmount({ value, sign }: { value: number; sign?: "+" | "−" }) {
+type NetWorthTileProps = {
+  icon: LucideIcon
+  color: CategoryColorName
+  label: string
+  value: number
+  onClick: () => void
+}
+
+/**
+ * One of the amounts behind the total, as a tinted tile that opens its page.
+ * Three share the card's width, so the amount is shortened; the full one is
+ * in the tooltip and the accessible name.
+ */
+function NetWorthTile({ icon: Icon, color, label, value, onClick }: NetWorthTileProps) {
   return (
-    <span
+    <button
+      type="button"
+      title={formatCurrency(value)}
+      aria-label={`${label}: ${formatCurrency(value)}`}
+      onClick={onClick}
       className={cn(
-        "font-heading font-extrabold tabular-nums",
-        value === 0
-          ? "text-muted-foreground"
-          : sign === "+"
-            ? cashFlowColors.income.text
-            : sign === "−"
-              ? cashFlowColors.expense.text
-              : "text-foreground",
+        "flex min-w-0 flex-col items-start gap-2 rounded-xl p-3 text-left outline-none transition-[filter] hover:brightness-95 focus-visible:ring-3 focus-visible:ring-ring/50 active:brightness-90",
+        getCategoryColor(color).surfaceClassName,
       )}
     >
-      {value !== 0 ? sign : null}
-      {formatCurrency(value)}
-    </span>
+      <Icon className="size-4" aria-hidden="true" />
+      <span className="space-y-0.5">
+        <span className="block text-xs font-semibold text-muted-foreground">{label}</span>
+        <span className="block font-heading text-base leading-tight font-extrabold text-foreground tabular-nums">
+          {formatCompactCurrency(value, 1)}
+        </span>
+      </span>
+    </button>
   )
 }
 
 export function NetWorth({ data }: { data: OverviewSummary["netWorth"] }) {
   const router = useRouter()
-  // The total sits on a band in its sign's colour: green when positive, red
-  // when negative, neutral at zero.
-  const bandClassName =
-    data.total > 0
-      ? cashFlowColors.income.surface
-      : data.total < 0
-        ? cashFlowColors.expense.surface
-        : "bg-[#f3f1ec] dark:bg-muted/50"
 
   return (
     <section aria-labelledby="net-worth-title" className="space-y-2">
@@ -62,37 +70,41 @@ export function NetWorth({ data }: { data: OverviewSummary["netWorth"] }) {
         Tài sản ròng
       </h2>
       {/* One card: the total, then the three amounts it is made of. */}
-      <SettingsGroup
-        header={
-          <div className={cn("px-4 py-5", bandClassName)}>
-            <p className="font-heading text-4xl leading-tight font-extrabold tracking-tight tabular-nums [overflow-wrap:anywhere]">
-              {formatCurrency(data.total)}
-            </p>
+      <Card>
+        <CardContent className="space-y-4">
+          <p
+            className={cn(
+              "font-heading text-4xl leading-tight font-extrabold tracking-tight tabular-nums [overflow-wrap:anywhere]",
+              data.total < 0 && overdueClassName,
+            )}
+          >
+            {formatCurrency(data.total)}
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            <NetWorthTile
+              icon={WalletCardsIcon}
+              color="blue"
+              label="Tài khoản"
+              value={data.cash}
+              onClick={() => router.push("/budget")}
+            />
+            <NetWorthTile
+              icon={ArrowDownLeftIcon}
+              color="emerald"
+              label="Được nợ"
+              value={data.receivable}
+              onClick={() => router.push("/debts")}
+            />
+            <NetWorthTile
+              icon={ArrowUpRightIcon}
+              color="rose"
+              label="Đang nợ"
+              value={data.payable}
+              onClick={() => router.push("/debts")}
+            />
           </div>
-        }
-      >
-        <SettingsRow
-          icon={WalletCardsIcon}
-          color="blue"
-          title="Số dư tài khoản"
-          value={<NetWorthAmount value={data.cash} />}
-          onClick={() => router.push("/budget")}
-        />
-        <SettingsRow
-          icon={ArrowDownLeftIcon}
-          color="emerald"
-          title="Người khác nợ tôi"
-          value={<NetWorthAmount value={data.receivable} sign="+" />}
-          onClick={() => router.push("/debts")}
-        />
-        <SettingsRow
-          icon={ArrowUpRightIcon}
-          color="rose"
-          title="Tôi đang nợ"
-          value={<NetWorthAmount value={data.payable} sign="−" />}
-          onClick={() => router.push("/debts")}
-        />
-      </SettingsGroup>
+        </CardContent>
+      </Card>
     </section>
   )
 }

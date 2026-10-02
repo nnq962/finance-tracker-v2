@@ -1,30 +1,25 @@
-import type * as React from "react"
-
 import { Card, CardContent } from "@/components/ui/card"
 import { Page, PageHeaderSkeleton } from "@/components/page"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
-import { settingsSeparatorClassName } from "@/components/settings-list"
 import { cn } from "@/lib/utils"
 
 import { OverviewLayout } from "./_components/overview-layout"
 
-/** Same footprint as a SettingsGroup with `rows` rows, and its `header` if any. */
-function GroupSkeleton({ rows, header }: { rows: number; header?: React.ReactNode }) {
+/** The total and its three tiles. */
+function NetWorthSkeleton() {
   return (
     <div className="space-y-2">
-      <Skeleton className="mx-3 h-3 w-28" />
-      <Card size="sm" className="gap-0 py-0">
-        {header ? <div className="px-4 py-5">{header}</div> : null}
-        <div className="px-1">
-          {Array.from({ length: rows }, (_, row) => (
-            <div key={row} className={cn("flex items-center gap-2.5 px-3 py-3.5 not-first:pt-4", settingsSeparatorClassName(true))}>
-              <Skeleton className="size-8 shrink-0 rounded-lg" />
-              <Skeleton className="h-4 w-32 max-w-full" />
-              <Skeleton className="ml-auto h-4 w-24" />
-            </div>
-          ))}
-        </div>
+      <Skeleton className="mx-3 h-3 w-24" />
+      <Card>
+        <CardContent className="space-y-4">
+          <Skeleton className="h-11 w-56 max-w-full" />
+          <div className="grid grid-cols-3 gap-2">
+            {Array.from({ length: 3 }, (_, index) => (
+              <Skeleton key={index} className="h-[5.375rem] rounded-xl" />
+            ))}
+          </div>
+        </CardContent>
       </Card>
     </div>
   )
@@ -86,9 +81,7 @@ export default function OverviewLoading() {
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
         <PageHeaderSkeleton />
         <OverviewLayout
-          netWorth={
-            <GroupSkeleton rows={3} header={<Skeleton className="h-11 w-56 max-w-full" />} />
-          }
+          netWorth={<NetWorthSkeleton />}
           calendar={<CalendarSkeleton />}
           allocation={<ChartSkeleton className="h-72" />}
           trend={<ChartSkeleton className="h-48 sm:h-56" />}

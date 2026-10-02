@@ -13,7 +13,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
-import { formatCurrency } from "@/lib/format-currency"
+import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
 import { formatDayLabel } from "@/lib/format-date"
 import type { DayTotals } from "@/lib/overview/month-data"
 import type { Transaction } from "@/lib/transactions/types"
@@ -28,17 +28,6 @@ const weekdays = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
 // Tiny on a phone-sized card, where seven days share the width; larger once
 // the card is wide (32rem and up).
 const amountClassName = "text-[10px] leading-tight font-bold tabular-nums @lg:text-xs"
-
-/** Short amounts that fit a day cell: 460k, 1,2tr, 25tr, 1,5tỷ. */
-function compactAmount(value: number) {
-  const format = (amount: number, unit: string) =>
-    `${Number(amount.toFixed(amount < 10 ? 1 : 0)).toLocaleString("vi-VN")}${unit}`
-
-  if (value >= 1_000_000_000) return format(value / 1_000_000_000, "tỷ")
-  if (value >= 1_000_000) return format(value / 1_000_000, "tr")
-  if (value >= 1_000) return `${Math.round(value / 1_000)}k`
-  return `${value}đ`
-}
 
 function shiftMonth(month: string, offset: number) {
   const [year, monthIndex] = month.split("-").map(Number)
@@ -172,12 +161,12 @@ export function CashFlowCalendar({
                   </span>
                   {totals?.income ? (
                     <span className={cn(amountClassName, cashFlowColors.income.text)}>
-                      +{compactAmount(totals.income)}
+                      +{formatCompactCurrency(totals.income)}
                     </span>
                   ) : null}
                   {totals?.expense ? (
                     <span className={cn(amountClassName, cashFlowColors.expense.text)}>
-                      −{compactAmount(totals.expense)}
+                      −{formatCompactCurrency(totals.expense)}
                     </span>
                   ) : null}
                 </>
