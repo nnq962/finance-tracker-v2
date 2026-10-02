@@ -120,6 +120,7 @@ export function TransactionMadLibs({
   onDone,
 }: TransactionMadLibsProps) {
   const [draft, setDraft] = React.useState(initialDraft)
+  const dateInput = React.useRef<HTMLInputElement>(null)
   const update = (values: Partial<AiTransactionDraft>) =>
     setDraft((current) => ({ ...current, ...values }))
 
@@ -223,26 +224,42 @@ export function TransactionMadLibs({
     </DropdownMenu>
   )
 
+  const openDatePicker = () => {
+    const input = dateInput.current
+    if (!input) return
+    try {
+      input.showPicker()
+    } catch {
+      input.focus()
+    }
+  }
+
   const dateBlank = (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Blank placeholder="" filled valueKey={draft.date}>
-          {formatDayLabel(draft.date, today)}
-        </Blank>
-      </PopoverTrigger>
-      <PopoverContent className="w-64">
-        <Field>
-          <FieldLabel htmlFor="ai-date">Ngày</FieldLabel>
-          <Input
-            id="ai-date"
-            type="date"
-            max={today}
-            value={draft.date}
-            onChange={(event) => event.target.value && update({ date: event.target.value })}
-          />
-        </Field>
-      </PopoverContent>
-    </Popover>
+    <span className="relative">
+      <Blank
+        placeholder=""
+        filled
+        valueKey={draft.date}
+        aria-label={`${formatDayLabel(draft.date, today)}, chọn ngày khác`}
+        onClick={openDatePicker}
+      >
+        {formatDayLabel(draft.date, today)}
+      </Blank>
+      {/* The native date picker, opened from the blank above. */}
+      <input
+        ref={dateInput}
+        type="date"
+        tabIndex={-1}
+        aria-hidden="true"
+        className="sr-only"
+        max={today}
+        value={draft.date}
+        onChange={(event) => {
+          const date = event.target.value
+          if (date && date <= today) update({ date })
+        }}
+      />
+    </span>
   )
 
   const titleBlank = (
