@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react"
 
+import { BellOffIcon, MonitorIcon, SmartphoneIcon } from "lucide-react"
+
+import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Badge } from "@/components/ui/badge"
-import { FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { pushErrorMessage } from "@/lib/firebase/messaging"
 import { PUSH_DEVICE_CHANGED } from "@/lib/firebase/push-device"
 import { getNotificationStateAction } from "@/lib/notifications/actions"
@@ -11,7 +13,18 @@ import type { NotificationState } from "@/lib/notifications/types"
 
 import { toast } from "sonner"
 
-export function NotificationDevices({ uid, initialState }: { uid: string; initialState: NotificationState }) {
+function formatUpdatedAt(value: string) {
+  return new Intl.DateTimeFormat("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh", day: "2-digit", month: "2-digit", year: "numeric",
+  }).format(new Date(value))
+}
+
+export function NotificationDevices({ uid, initialState, onChange }: {
+  uid: string
+  initialState: NotificationState
+  /** Reports the latest device list, e.g. for a summary elsewhere. */
+  onChange?: (state: NotificationState) => void
+}) {
   const [deviceState, setDeviceState] = useState(initialState)
   const [deviceId, setDeviceId] = useState(initialState.currentDeviceId)
   const [permission, setPermission] = useState<NotificationPermission | "unsupported" | null>(null)
@@ -49,30 +62,34 @@ export function NotificationDevices({ uid, initialState }: { uid: string; initia
     }
   }, [uid])
 
-  const permissionLabel = permission === null ? "Đang kiểm tra quyền"
-    : permission === "granted" ? "Đã cấp quyền"
-      : permission === "denied" ? "Đã chặn thông báo"
-        : permission === "unsupported" ? "Chưa hỗ trợ" : "Chưa cấp quyền"
+  useEffect(() => {
+    onChange?.(deviceState)
+  }, [deviceState, onChange])
+
+  const status = permission === null ? "Đang kiểm tra quyền thông báo…"
+    : permission === "denied" ? "Thông báo đang bị chặn. Bật lại trong cài đặt của trình duyệt hoặc iPhone (Cài đặt → Thông báo)."
+      : permission === "unsupported" ? "Trình duyệt này chưa hỗ trợ thông báo. Trên iPhone, hãy cài app ra Màn hình chính."
+        : permission === "granted" && deviceId ? "Thiết bị này đang nhận thông báo."
+          : "Bật Nhắc ghi chi tiêu để kết nối thiết bị này."
 
   return (
-    <FieldGroup>
-      <div className="flex flex-wrap items-center gap-2">
-        <FieldLabel asChild><h3>Thiết bị ({deviceState.devices.length})</h3></FieldLabel>
-        <Badge variant={permission === "denied" ? "destructive" : permission === "granted" && deviceId ? "secondary" : "outline"}>
-          {permission === "granted" ? deviceId ? "Đã kết nối" : "Chưa kết nối" : permissionLabel}
-        </Badge>
-      </div>
-      {deviceState.devices.length > 0 && (
-        <ul className="space-y-2" aria-label="Thiết bị nhận thông báo">
-          {deviceState.devices.map((device) => (
-            <li key={device.id}>
-              <FieldDescription>
-                {device.name}{device.id === deviceId ? " · Thiết bị này" : ""}
-              </FieldDescription>
-            </li>
-          ))}
-        </ul>
-      )}
-    </FieldGroup>
+    <SettingsGroup footer={status}>
+      {deviceState.devices.length === 0 ? (
+        <SettingsRow
+          icon={BellOffIcon}
+          title="Chưa có thiết bị nào"
+          description="Thiết bị được thêm khi bạn bật nhắc trên nó."
+        />
+      ) : deviceState.devices.map((device) => (
+        <SettingsRow
+          key={device.id}
+          icon={/iphone|ipad|android|pwa/i.test(device.name) ? SmartphoneIcon : MonitorIcon}
+          color="blue"
+          title={device.name}
+          description={`Cập nhật ${formatUpdatedAt(device.updatedAt)}`}
+          action={device.id === deviceId ? <Badge variant="secondary">Thiết bị này</Badge> : null}
+        />
+      ))}
+    </SettingsGroup>
   )
 }

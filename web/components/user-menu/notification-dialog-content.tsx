@@ -1,20 +1,10 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { BellRingIcon, SaveIcon } from "lucide-react"
+import { BellRingIcon, ClockIcon, SaveIcon } from "lucide-react"
 
+import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
 import { Switch } from "@/components/ui/switch"
 import {
   Select,
@@ -69,46 +59,36 @@ export function NotificationDialogContent({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <BellRingIcon className="size-4" />
-          Thông báo
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <FieldGroup>
-          <Field orientation="horizontal">
-            <FieldLabel htmlFor="notifications-enabled">
-              Bật thông báo
-            </FieldLabel>
+    <div className="space-y-6">
+      <SettingsGroup footer="Mỗi ngày một lời nhắc, theo giờ Việt Nam, tới mọi thiết bị đã kết nối.">
+        <SettingsRow
+          icon={BellRingIcon}
+          color="amber"
+          title="Nhắc hằng ngày"
+          action={
             <Switch
               id="notifications-enabled"
+              aria-label="Nhắc hằng ngày"
               checked={notificationsEnabled}
               disabled={disabled}
               onCheckedChange={(checked) =>
                 onNotificationsEnabledChange ? onNotificationsEnabledChange(checked) : updateSetting("notificationsEnabled", checked)
               }
             />
-          </Field>
-
-          <Field>
-            <FieldLabel htmlFor="daily-reminder-hour">
-              Giờ nhắc hằng ngày
-            </FieldLabel>
-            <div
-              className={
-                onReminderTimeSave
-                  ? "grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-3"
-                  : "grid grid-cols-2 gap-4"
-              }
-            >
+          }
+        />
+        <SettingsRow
+          icon={ClockIcon}
+          color="blue"
+          title="Giờ nhắc"
+          action={
+            <div className="flex items-center gap-1.5">
               <Select
                 value={reminderHour}
                 onValueChange={(hour) => updateReminderTime(hour, reminderMinute)}
                 disabled={timeDisabled}
               >
-                <SelectTrigger id="daily-reminder-hour" aria-label="Giờ nhắc" className="w-full">
+                <SelectTrigger id="daily-reminder-hour" aria-label="Giờ nhắc" className="w-18">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent position="popper" showScrollButtons={false} className="max-h-[min(15rem,var(--radix-select-content-available-height))]">
@@ -119,12 +99,13 @@ export function NotificationDialogContent({
                   </SelectGroup>
                 </SelectContent>
               </Select>
+              <span aria-hidden="true" className="font-heading font-extrabold text-muted-foreground">:</span>
               <Select
                 value={reminderMinute}
                 onValueChange={(minute) => updateReminderTime(reminderHour, minute)}
                 disabled={timeDisabled}
               >
-                <SelectTrigger id="daily-reminder-minute" aria-label="Phút nhắc" className="w-full">
+                <SelectTrigger id="daily-reminder-minute" aria-label="Phút nhắc" className="w-18">
                   <SelectValue>{reminderMinute}</SelectValue>
                 </SelectTrigger>
                 <SelectContent position="popper" showScrollButtons={false} className="max-h-[min(15rem,var(--radix-select-content-available-height))]">
@@ -135,21 +116,22 @@ export function NotificationDialogContent({
                   </SelectGroup>
                 </SelectContent>
               </Select>
-              {onReminderTimeSave ? (
-                <Button
-                  type="button"
-                  onClick={onReminderTimeSave}
-                  disabled={timeDisabled || !reminderTimeChanged}
-                >
-                  <SaveIcon />
-                  Lưu
-                </Button>
-              ) : null}
             </div>
-          </Field>
-        </FieldGroup>
-        {children}
-      </CardContent>
-    </Card>
+          }
+        />
+      </SettingsGroup>
+      {onReminderTimeSave ? (
+        <Button
+          type="button"
+          className="w-full"
+          onClick={onReminderTimeSave}
+          disabled={timeDisabled || !reminderTimeChanged}
+        >
+          <SaveIcon />
+          Lưu giờ nhắc
+        </Button>
+      ) : null}
+      {children}
+    </div>
   )
 }

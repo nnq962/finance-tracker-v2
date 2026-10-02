@@ -1,85 +1,24 @@
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-} from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+import { Card, CardContent } from "@/components/ui/card"
 import { Page, PageHeaderSkeleton } from "@/components/page"
 import { Skeleton } from "@/components/ui/skeleton"
 
-function AccountSettingsSkeleton() {
+/** Same footprint as SettingsGroup with `rows` SettingsRow items. */
+function GroupSkeleton({ rows, title = true }: { rows: number; title?: boolean }) {
   return (
-    <Card>
-      <CardHeader>
-        <Skeleton className="h-6 w-40 max-w-full" />
-        <CardAction>
-          <Skeleton className="h-6 w-28 rounded-full" />
-        </CardAction>
-      </CardHeader>
-      <CardContent className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-center gap-3">
-          <Skeleton className="size-10 shrink-0 rounded-full" />
-          <div className="min-w-0 space-y-1">
-            <Skeleton className="h-5 w-36 max-w-full" />
-            <Skeleton className="h-5 w-60 max-w-full" />
-          </div>
+    <div className="space-y-2">
+      {title ? <Skeleton className="mx-3 h-3 w-16" /> : null}
+      <Card size="sm" className="gap-0 py-1">
+        <div className="divide-y-2 divide-[#e7e4dd] px-1 dark:divide-[#35323e]">
+          {Array.from({ length: rows }, (_, row) => (
+            <div key={row} className="flex items-center gap-2.5 px-3 py-3.5">
+              <Skeleton className="size-8 shrink-0 rounded-lg" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="ml-auto h-4 w-14" />
+            </div>
+          ))}
         </div>
-        <div className="flex shrink-0 justify-end">
-          <Skeleton className="h-9 w-32 rounded-xl" />
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function AppearanceSettingsSkeleton() {
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Skeleton className="size-4 rounded-full" />
-          <Skeleton className="h-6 w-20" />
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        <Skeleton className="h-5 w-36" />
-        <Skeleton className="h-9 w-full rounded-xl" />
-      </CardContent>
-    </Card>
-  )
-}
-
-function NotificationSettingsSkeleton() {
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Skeleton className="size-4 rounded-full" />
-          <Skeleton className="h-6 w-24" />
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-5">
-          <div className="flex items-center justify-between gap-2">
-            <Skeleton className="h-5 w-28" />
-            <Skeleton className="h-[30px] w-[52px] shrink-0 rounded-full" />
-          </div>
-          <div className="space-y-2">
-            <Skeleton className="h-5 w-36" />
-            <Skeleton className="h-8 w-full rounded-lg" />
-          </div>
-        </div>
-        <Separator />
-        <div className="space-y-5">
-          <div className="flex flex-wrap items-center gap-2">
-            <Skeleton className="h-5 w-20" />
-            <Skeleton className="h-6 w-24 rounded-full" />
-          </div>
-          <Skeleton className="h-5 w-48 max-w-full" />
-        </div>
-      </CardContent>
-    </Card>
+      </Card>
+    </div>
   )
 }
 
@@ -92,29 +31,31 @@ export default function SettingsLoading() {
     >
       <PageHeaderSkeleton />
 
-      <div className="grid items-start gap-6 md:grid-cols-[14rem_minmax(0,1fr)]" aria-hidden="true">
-        <Card size="sm" className="sticky top-20 hidden md:flex">
-          <CardContent className="space-y-1">
-            {[0, 1, 2, 3].map((item) => (
-              <div key={item} className="flex h-8 items-center gap-2">
-                <Skeleton className="size-4 shrink-0 rounded-full" />
-                <Skeleton className="h-4 w-24" />
+      <div
+        aria-hidden="true"
+        className="grid items-start gap-6 md:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] md:gap-8"
+      >
+        <div className="min-w-0 space-y-6">
+          <Card>
+            <CardContent className="flex items-center gap-3">
+              <Skeleton className="size-10 shrink-0 rounded-full" />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <Skeleton className="h-5 w-36 max-w-full" />
+                <Skeleton className="h-4 w-52 max-w-full" />
               </div>
-            ))}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+          <GroupSkeleton rows={3} />
+          <GroupSkeleton rows={1} />
+          <GroupSkeleton rows={1} title={false} />
+        </div>
 
-        <div className="min-w-0 space-y-6 md:space-y-0">
-          <AccountSettingsSkeleton />
-          <div className="md:hidden">
-            <AppearanceSettingsSkeleton />
+        <div className="hidden min-w-0 space-y-4 md:block">
+          <div className="space-y-1.5">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-4 w-72 max-w-full" />
           </div>
-          <div className="md:hidden">
-            <AppearanceSettingsSkeleton />
-          </div>
-          <div className="md:hidden">
-            <NotificationSettingsSkeleton />
-          </div>
+          <GroupSkeleton rows={3} title={false} />
         </div>
       </div>
 

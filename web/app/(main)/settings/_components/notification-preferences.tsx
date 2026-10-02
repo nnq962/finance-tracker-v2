@@ -24,7 +24,7 @@ function subscribePermission(onChange: () => void) {
   }
 }
 
-export function NotificationPreferences({ uid, initialSettings, children }: { uid: string; initialSettings: NotificationSettings; children?: ReactNode }) {
+export function NotificationPreferences({ uid, initialSettings, onSaved, children }: { uid: string; initialSettings: NotificationSettings; onSaved?: (settings: NotificationSettings) => void; children?: ReactNode }) {
   const [draft, setDraft] = useState({ ...initialSettings, timeZone: "Asia/Ho_Chi_Minh" })
   const saved = useRef(initialSettings)
   const [savedTime, setSavedTime] = useState(initialSettings.dailyReminderTime)
@@ -39,6 +39,7 @@ export function NotificationPreferences({ uid, initialSettings, children }: { ui
     saved.current = result.data
     setSavedTime(result.data.dailyReminderTime)
     setDraft(result.data)
+    onSaved?.(result.data)
     notifyPushDeviceChanged()
   }
 
