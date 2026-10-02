@@ -1,24 +1,22 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
-import { PencilIcon, Trash2Icon, XIcon } from "lucide-react"
+import { Trash2Icon } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 import {
-  Popover,
-  PopoverClose,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/animate-ui/components/radix/popover"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/animate-ui/components/radix/alert-dialog"
+import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
-import {
-  SheetContent,
-  SheetClose,
-  SheetFooter,
-} from "@/components/ui/sheet"
+import { SheetContent } from "@/components/ui/sheet"
 import { getCategoryColor } from "@/lib/categories/category-colors"
 import type { CategoryItem } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
@@ -43,20 +41,6 @@ const timeFormatter = new Intl.DateTimeFormat("vi-VN", {
   hour12: false,
   timeZone: "Asia/Ho_Chi_Minh",
 })
-
-type DetailRowProps = {
-  label: string
-  value: string
-}
-
-function DetailRow({ label, value }: DetailRowProps) {
-  return (
-    <div className="flex items-start justify-between gap-6">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="text-right font-medium">{value}</dd>
-    </div>
-  )
-}
 
 type TransactionDetailsSheetProps = {
   category?: CategoryItem
@@ -138,8 +122,8 @@ export function TransactionDetailsSheet({
     <SheetContent showCloseButton={false} aria-describedby={undefined} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
       <SheetNavHeader title="Chi tiết giao dịch" />
 
-      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 pt-px pb-4">
-        <div className="flex flex-col items-center pb-4 text-center">
+      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-px pb-4">
+        <div className="flex flex-col items-center text-center">
           <div
             className={`flex size-16 items-center justify-center rounded-xl ${categoryColor?.surfaceClassName ?? presentation.iconClassName}`}
           >
@@ -161,88 +145,56 @@ export function TransactionDetailsSheet({
           </time>
         </div>
 
-        <Separator />
-
-        <dl className="space-y-4 text-sm">
-          <DetailRow
-            label="Loại giao dịch"
-            value={presentation.label}
-          />
+        <SettingsGroup>
+          <SettingsRow title="Loại giao dịch" value={presentation.label} />
           {details.map((detail) => (
-            <DetailRow
-              key={detail.label}
-              label={detail.label}
-              value={detail.value}
-            />
+            <SettingsRow key={detail.label} title={detail.label} value={detail.value} />
           ))}
-        </dl>
+          <SettingsRow
+            title="Ghi chú"
+            description={transaction.note ? <span className="whitespace-pre-wrap">{transaction.note}</span> : undefined}
+            value={transaction.note ? undefined : "Không có"}
+          />
+        </SettingsGroup>
 
-        <Separator />
-
-        <div className="space-y-2 text-sm">
-          <p className="text-muted-foreground">Ghi chú</p>
-          <p className="whitespace-pre-wrap">
-            {transaction.note || "Không có ghi chú."}
-          </p>
-        </div>
+        {/* Edit and delete as rows at the end, like the other detail sheets. */}
+        {transaction.source === "debt" ? (
+          <SettingsGroup footer="Giao dịch này tạo từ một khoản vay nợ, nên được sửa hoặc xoá ở đó.">
+            <SettingsRow
+              title="Quản lý tại vay nợ"
+              onClick={() => router.push(`/debts?debt=${encodeURIComponent(transaction.debtId ?? "")}`)}
+            />
+          </SettingsGroup>
+        ) : (
+          <>
+            <SettingsGroup>
+              <SettingsRow title="Sửa giao dịch" onClick={onEdit} />
+            </SettingsGroup>
+            <SettingsGroup>
+              <SettingsRow destructive title="Xoá giao dịch" onClick={() => setDeleteOpen(true)} />
+            </SettingsGroup>
+          </>
+        )}
       </div>
 
-      <SheetFooter>
-        {transaction.source === "debt" ? (
-          <div className="grid grid-cols-2 gap-2">
-            <SheetClose asChild>
-              <Button type="button" variant="outline">
-                <XIcon />
-                Đóng
-              </Button>
-            </SheetClose>
-            <Button asChild><Link href={`/debts?debt=${encodeURIComponent(transaction.debtId ?? "")}`} prefetch={false}>Quản lý tại vay nợ</Link></Button>
-          </div>
-        ) : <div className="grid grid-cols-2 gap-2">
-          <Popover
-            open={deleteOpen}
-            onOpenChange={setDeleteOpen}
-          >
-            <PopoverTrigger asChild>
-              <Button type="button" variant="destructive">
-                <Trash2Icon />
-                Xoá giao dịch
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="start" side="top" className="space-y-4">
-              <div className="space-y-1.5">
-                <p className="text-sm font-medium">Xoá giao dịch?</p>
-                <p className="text-xs text-muted-foreground">
-                  Giao dịch “{transaction.title}” sẽ bị xoá và số dư liên quan
-                  được đối soát lại. Sau khi xác nhận, bạn có 6 giây để hoàn
-                  tác.
-                </p>
-              </div>
-              <div className="flex justify-end gap-2">
-                <PopoverClose asChild>
-                  <Button type="button" variant="outline" size="sm">
-                    Huỷ
-                  </Button>
-                </PopoverClose>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleDelete}
-                >
-                  <Trash2Icon />
-                  Xoá giao dịch
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-
-          <Button type="button" onClick={onEdit}>
-            <PencilIcon />
-            Sửa giao dịch
-          </Button>
-        </div>}
-      </SheetFooter>
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xoá giao dịch?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Giao dịch “{transaction.title}” sẽ bị xoá và số dư liên quan được
+              đối soát lại. Sau khi xác nhận, bạn có 6 giây để hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Huỷ</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>
+              <Trash2Icon />
+              Xoá giao dịch
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </SheetContent>
   )
 }

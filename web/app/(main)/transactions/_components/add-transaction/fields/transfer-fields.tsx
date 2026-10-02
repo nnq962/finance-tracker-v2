@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ImagePlusIcon, PaperclipIcon } from "lucide-react"
+import { ImagePlusIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { AccountSelectGroups } from "@/components/account-select-groups"
@@ -10,14 +10,6 @@ import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
   Select,
@@ -96,137 +88,96 @@ export function TransferFields({
 
   return (
     <FieldGroup>
-      <Card>
-        <CardHeader>
-          <CardTitle>Giá trị chuyển khoản</CardTitle>
-          {!isCreating ? (
-            <>
-              <CardDescription>Nhập số tiền và phí phát sinh nếu có.</CardDescription>
-              <CardAction>
-                <Badge variant="secondary">VND</Badge>
-              </CardAction>
-            </>
-          ) : null}
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-4">
-          <Field>
-            <FieldLabel htmlFor="transfer-amount">Số tiền</FieldLabel>
-            <CurrencyInput
-              id="transfer-amount"
-              name="amount"
-              value={amountPick.amount}
-              onValueChange={amountPick.onType}
-              required
-            />
-            <AmountSuggestions
-              suggestions={amountPick.suggestions}
-              value={amountPick.amount}
-              onSelect={amountPick.onPick}
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="transfer-fee">
-              Phí chuyển {!isCreating ? <Badge variant="outline">Tùy chọn</Badge> : null}
-            </FieldLabel>
-            <CurrencyInput
-              key={`${defaultValues?.id ?? "new"}-transfer-fee`}
-              id="transfer-fee"
-              name="fee"
-              defaultValue={defaultValues?.fee}
-            />
-          </Field>
-        </CardContent>
-      </Card>
+      <Field>
+        <FieldLabel htmlFor="transfer-amount">Số tiền</FieldLabel>
+        <CurrencyInput
+          id="transfer-amount"
+          name="amount"
+          value={amountPick.amount}
+          onValueChange={amountPick.onType}
+          required
+        />
+        <AmountSuggestions
+          suggestions={amountPick.suggestions}
+          value={amountPick.amount}
+          onSelect={amountPick.onPick}
+        />
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="transfer-fee">
+          Phí chuyển {!isCreating ? <Badge variant="outline">Tùy chọn</Badge> : null}
+        </FieldLabel>
+        <CurrencyInput
+          key={`${defaultValues?.id ?? "new"}-transfer-fee`}
+          id="transfer-fee"
+          name="fee"
+          defaultValue={defaultValues?.fee}
+        />
+      </Field>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Luồng tiền
-          </CardTitle>
-          {!isCreating ? (
-            <CardDescription>
-              Chọn tài khoản gửi, tài khoản nhận và thời gian chuyển.
-            </CardDescription>
-          ) : null}
-        </CardHeader>
-        <CardContent>
-          <FieldGroup>
-            <div className="grid gap-4">
-              <Field>
-                <FieldLabel htmlFor="transfer-from-account">
-                  Từ tài khoản
-                </FieldLabel>
-                <AccountSelect
-                  accounts={accounts}
-                  excludedAccountId={toAccountId}
-                  id="transfer-from-account"
-                  name="fromAccountId"
-                  onValueChange={setFromAccountId}
-                  value={fromAccountId}
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="transfer-to-account">
-                  Đến tài khoản
-                </FieldLabel>
-                <AccountSelect
-                  accounts={accounts}
-                  excludedAccountId={fromAccountId}
-                  id="transfer-to-account"
-                  name="toAccountId"
-                  onValueChange={setToAccountId}
-                  value={toAccountId}
-                />
-              </Field>
-            </div>
+      <div className="grid gap-4">
+        <Field>
+          <FieldLabel htmlFor="transfer-from-account">
+            Từ tài khoản
+          </FieldLabel>
+          <AccountSelect
+            accounts={accounts}
+            excludedAccountId={toAccountId}
+            id="transfer-from-account"
+            name="fromAccountId"
+            onValueChange={setFromAccountId}
+            value={fromAccountId}
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="transfer-to-account">
+            Đến tài khoản
+          </FieldLabel>
+          <AccountSelect
+            accounts={accounts}
+            excludedAccountId={fromAccountId}
+            id="transfer-to-account"
+            name="toAccountId"
+            onValueChange={setToAccountId}
+            value={toAccountId}
+          />
+        </Field>
+      </div>
 
-            <DateTimeFields
-              idPrefix="transfer"
-              defaultDate={defaultDateTime?.date}
-              defaultTime={defaultDateTime?.time}
-              required
-            />
+      <DateTimeFields
+        idPrefix="transfer"
+        defaultDate={defaultDateTime?.date}
+        defaultTime={defaultDateTime?.time}
+        required
+      />
 
-            <Field>
-              <FieldLabel htmlFor="transfer-note">
-                Ghi chú {!isCreating ? <Badge variant="outline">Tùy chọn</Badge> : null}
-              </FieldLabel>
-              <Textarea
-                id="transfer-note"
-                name="note"
-                defaultValue={defaultValues?.note}
-                placeholder="Thêm ghi chú cho giao dịch chuyển khoản..."
-              />
-            </Field>
-          </FieldGroup>
-        </CardContent>
-      </Card>
+      <Field>
+        <FieldLabel htmlFor="transfer-note">
+          Ghi chú {!isCreating ? <Badge variant="outline">Tùy chọn</Badge> : null}
+        </FieldLabel>
+        <Textarea
+          id="transfer-note"
+          name="note"
+          defaultValue={defaultValues?.note}
+          placeholder="Thêm ghi chú cho giao dịch chuyển khoản..."
+        />
+      </Field>
 
       {!isCreating ? (
-        <Card size="sm">
-          <CardContent className="flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-              <PaperclipIcon className="size-4 text-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium">Biên lai chuyển khoản</p>
-                <p className="text-xs text-muted-foreground">
-                  Đính kèm ảnh để tiện đối chiếu sau này.
-                </p>
-              </div>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() =>
-                toast.info("Đính kèm biên lai sẽ được hỗ trợ trong bản cập nhật tới.")
-              }
-            >
-              <ImagePlusIcon />
-              Đính kèm
-              <Badge variant="secondary">Sắp có</Badge>
-            </Button>
-          </CardContent>
-        </Card>
+        <Field>
+          <FieldLabel>Biên lai chuyển khoản</FieldLabel>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() =>
+              toast.info("Đính kèm biên lai sẽ được hỗ trợ trong bản cập nhật tới.")
+            }
+          >
+            <ImagePlusIcon />
+            Đính kèm
+            <Badge variant="secondary">Sắp có</Badge>
+          </Button>
+        </Field>
       ) : null}
     </FieldGroup>
   )

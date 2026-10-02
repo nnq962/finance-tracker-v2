@@ -2,12 +2,12 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { LoaderCircleIcon, SaveIcon, XIcon } from "lucide-react"
+import { LoaderCircleIcon, SaveIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
-import { SheetClose, SheetFooter } from "@/components/ui/sheet"
+import { SheetFooter } from "@/components/ui/sheet"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type {
@@ -101,31 +101,15 @@ export function TransactionForm({
       </div>
       <SheetFooter>
         {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
-        <div className="grid grid-cols-2 gap-2">
-          <SheetClose asChild>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              disabled={isPending}
-            >
-              <XIcon />
-              Huỷ
-            </Button>
-          </SheetClose>
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isPending}
-          >
-            {isPending ? (
-              <LoaderCircleIcon className="animate-spin" />
-            ) : (
-              <SaveIcon />
-            )}
-            {isPending ? "Đang lưu..." : submitLabel}
-          </Button>
-        </div>
+        {/* Back is in the header, so the footer only saves. */}
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending ? (
+            <LoaderCircleIcon className="animate-spin" />
+          ) : (
+            <SaveIcon />
+          )}
+          {isPending ? "Đang lưu..." : submitLabel}
+        </Button>
       </SheetFooter>
     </form>
   )

@@ -2,6 +2,7 @@
 
 import * as React from "react"
 
+import { DatePreview } from "@/components/forms/date-preview"
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { getCurrentLocalDateTime } from "@/lib/date-time"
@@ -47,6 +48,11 @@ export function DateTimeFields({
   timeValue,
 }: DateTimeFieldsProps) {
   const [currentDateTime] = React.useState(getCurrentLocalDateTime)
+  // What the inputs hold, for the written-out preview below them.
+  const [shownDate, setShownDate] = React.useState(defaultDate ?? currentDateTime.date)
+  const [shownTime, setShownTime] = React.useState(defaultTime ?? currentDateTime.time)
+  const previewDate = dateValue ?? shownDate
+  const previewTime = timeValue ?? shownTime
 
   return (
     <Field data-disabled={disabled || undefined}>
@@ -75,7 +81,10 @@ export function DateTimeFields({
               value={dateValue}
               min={minDate}
               max={maxDate}
-              onChange={onDateChange}
+              onChange={(event) => {
+                setShownDate(event.target.value)
+                onDateChange?.(event)
+              }}
               required={required}
               disabled={disabled}
               className="w-auto min-w-0 max-w-full flex-1"
@@ -94,7 +103,10 @@ export function DateTimeFields({
                 : undefined
             }
             value={timeValue}
-            onChange={onTimeChange}
+            onChange={(event) => {
+              setShownTime(event.target.value)
+              onTimeChange?.(event)
+            }}
             onBlur={onTimeBlur}
             required={required}
             disabled={disabled}
@@ -102,6 +114,7 @@ export function DateTimeFields({
           />
         </div>
       </div>
+      <DatePreview date={showDate ? previewDate : undefined} time={previewTime} />
     </Field>
   )
 }

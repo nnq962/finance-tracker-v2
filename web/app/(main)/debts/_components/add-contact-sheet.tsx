@@ -1,15 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { PencilIcon, PlusIcon, SaveIcon, XIcon } from "lucide-react"
+import { PencilIcon, PlusIcon, SaveIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetFooter,
   SheetTrigger,
@@ -83,33 +81,20 @@ export function AddContactSheet({ contact, onAddContact, open: controlledOpen, o
           }
         }}>
           <fieldset disabled={pending} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
-            <Card>
-              <CardHeader><CardTitle>Người liên hệ</CardTitle></CardHeader>
-              <CardContent>
-                <FieldGroup>
-                  <Field>
-                    <FieldLabel htmlFor={`${id}-name`}>Họ và tên</FieldLabel>
-                    <Input id={`${id}-name`} name="name" defaultValue={contact?.name} required maxLength={80} autoComplete="name" onInput={(event) => event.currentTarget.setCustomValidity("")} />
-                  </Field>
-                  <Field>
-                    <FieldLabel htmlFor={`${id}-relationship`}>Mối quan hệ</FieldLabel>
-                    <Input id={`${id}-relationship`} name="relationship" defaultValue={contact?.relationship} maxLength={80} placeholder="Ví dụ: Đồng nghiệp" />
-                  </Field>
-                </FieldGroup>
-              </CardContent>
-            </Card>
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor={`${id}-name`}>Họ và tên</FieldLabel>
+                <Input id={`${id}-name`} name="name" defaultValue={contact?.name} required maxLength={80} autoComplete="name" onInput={(event) => event.currentTarget.setCustomValidity("")} />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor={`${id}-relationship`}>Mối quan hệ</FieldLabel>
+                <Input id={`${id}-relationship`} name="relationship" defaultValue={contact?.relationship} maxLength={80} placeholder="Ví dụ: Đồng nghiệp" />
+              </Field>
+            </FieldGroup>
           </fieldset>
           <SheetFooter>
             {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
-            <div className="grid grid-cols-2 gap-2">
-              <SheetClose asChild>
-                <Button type="button" variant="outline" disabled={pending}>
-                  <XIcon />
-                  Huỷ
-                </Button>
-              </SheetClose>
-              <Button type="submit" disabled={pending}><SaveIcon />{pending ? "Đang lưu…" : contact ? "Lưu thay đổi" : "Lưu người liên hệ"}</Button>
-            </div>
+            <Button type="submit" className="w-full" disabled={pending}><SaveIcon />{pending ? "Đang lưu…" : contact ? "Lưu thay đổi" : "Lưu người liên hệ"}</Button>
           </SheetFooter>
         </form>
       </SheetContent>

@@ -1,19 +1,17 @@
 "use client"
 
 import * as React from "react"
-import { CheckIcon, XIcon } from "lucide-react"
+import { CheckIcon } from "lucide-react"
 import { toast } from "sonner"
 import { AccountSelectGroups } from "@/components/account-select-groups"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetFooter,
   SheetTrigger,
@@ -97,81 +95,57 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
         }}>
           <fieldset disabled={pending} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
             <FieldGroup>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Số tiền</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <Field>
-                      <FieldLabel htmlFor={`${id}-amount`} className="sr-only">Số tiền</FieldLabel>
-                      <CurrencyInput id={`${id}-amount`} name="amount" value={amount} required onValueChange={(value) => { setAmount(value); setErrorMessage(null) }} />
-                    </Field>
-                    <div className="flex flex-wrap gap-2" aria-label="Nhập nhanh số tiền còn lại">
-                      {[{ label: "1/3 còn lại", divisor: 3 }, { label: "1/2 còn lại", divisor: 2 }, { label: "Toàn bộ", divisor: 1 }].map((choice) => (
-                        <Button key={choice.divisor} type="button" variant="outline" size="sm" disabled={pending || remainingAmount < 1} onClick={() => { setAmount(Math.max(1, Math.floor(remainingAmount / choice.divisor))); setErrorMessage(null) }}>{choice.label}</Button>
-                      ))}
-                    </div>
-                    <dl className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <dt className="text-muted-foreground">Đang còn{debt.hasInterest ? " (gồm lãi)" : ""}</dt>
-                        <dd className="font-bold tabular-nums">{formatCurrency(remainingAmount)}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-muted-foreground">Sau lần này</dt>
-                        <dd className="font-bold tabular-nums">{formatCurrency(Math.max(0, remainingAmount - (amount ?? 0)))}</dd>
-                      </div>
-                    </dl>
-                    {payment ? <p className="text-xs text-muted-foreground">Các lần thanh toán sau ngày này sẽ được kiểm tra lại khi lưu.</p> : null}
+              <Field>
+                <FieldLabel htmlFor={`${id}-amount`}>Số tiền</FieldLabel>
+                <CurrencyInput id={`${id}-amount`} name="amount" value={amount} required onValueChange={(value) => { setAmount(value); setErrorMessage(null) }} />
+                <div className="flex flex-wrap gap-2" aria-label="Nhập nhanh số tiền còn lại">
+                  {[{ label: "1/3 còn lại", divisor: 3 }, { label: "1/2 còn lại", divisor: 2 }, { label: "Toàn bộ", divisor: 1 }].map((choice) => (
+                    <Button key={choice.divisor} type="button" variant="outline" size="sm" disabled={pending || remainingAmount < 1} onClick={() => { setAmount(Math.max(1, Math.floor(remainingAmount / choice.divisor))); setErrorMessage(null) }}>{choice.label}</Button>
+                  ))}
+                </div>
+                <dl className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <dt className="text-muted-foreground">Đang còn{debt.hasInterest ? " (gồm lãi)" : ""}</dt>
+                    <dd className="font-bold tabular-nums">{formatCurrency(remainingAmount)}</dd>
                   </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader><CardTitle>Chi tiết</CardTitle></CardHeader>
-                <CardContent>
-                  <FieldGroup>
-                    <Field>
-                      <FieldLabel htmlFor={`${id}-account`}>{isCollection ? "Tài khoản nhận tiền" : "Nguồn tiền trả nợ"}</FieldLabel>
-                      <Select value={accountId} onValueChange={setAccountId} required disabled={pending}>
-                        <SelectTrigger id={`${id}-account`} className="w-full"><SelectValue placeholder="Chọn tài khoản" /></SelectTrigger>
-                        <SelectContent>
-                          <AccountSelectGroups accounts={eligibleAccounts} />
-                        </SelectContent>
-                      </Select>
-                      {eligibleAccounts.length === 0 ? <FieldError>Hãy thêm tài khoản trước khi ghi nhận thanh toán.</FieldError> : null}
-                    </Field>
-                    <DateTimeFields
-                      idPrefix={id}
-                      label="Thời gian"
-                      dateName="paidAt"
-                      timeName="paidTime"
-                      dateValue={paidAt}
-                      defaultTime={payment?.paidTime ?? getLocalDateTime(new Date().toISOString()).time}
-                      minDate={debt.recordedAt}
-                      maxDate={todayDate()}
-                      onDateChange={(event) => {
-                        setPaidAt(event.target.value)
-                        setErrorMessage(null)
-                      }}
-                      required
-                    />
-                    <Field><FieldLabel htmlFor={`${id}-note`}>Ghi chú</FieldLabel><Textarea id={`${id}-note`} name="note" defaultValue={payment?.note} maxLength={500} /></Field>
-                  </FieldGroup>
-                </CardContent>
-              </Card>
+                  <div>
+                    <dt className="text-muted-foreground">Sau lần này</dt>
+                    <dd className="font-bold tabular-nums">{formatCurrency(Math.max(0, remainingAmount - (amount ?? 0)))}</dd>
+                  </div>
+                </dl>
+                {payment ? <p className="text-xs text-muted-foreground">Các lần thanh toán sau ngày này sẽ được kiểm tra lại khi lưu.</p> : null}
+              </Field>
+              <Field>
+                <FieldLabel htmlFor={`${id}-account`}>{isCollection ? "Tài khoản nhận tiền" : "Nguồn tiền trả nợ"}</FieldLabel>
+                <Select value={accountId} onValueChange={setAccountId} required disabled={pending}>
+                  <SelectTrigger id={`${id}-account`} className="w-full"><SelectValue placeholder="Chọn tài khoản" /></SelectTrigger>
+                  <SelectContent>
+                    <AccountSelectGroups accounts={eligibleAccounts} />
+                  </SelectContent>
+                </Select>
+                {eligibleAccounts.length === 0 ? <FieldError>Hãy thêm tài khoản trước khi ghi nhận thanh toán.</FieldError> : null}
+              </Field>
+              <DateTimeFields
+                idPrefix={id}
+                label="Thời gian"
+                dateName="paidAt"
+                timeName="paidTime"
+                dateValue={paidAt}
+                defaultTime={payment?.paidTime ?? getLocalDateTime(new Date().toISOString()).time}
+                minDate={debt.recordedAt}
+                maxDate={todayDate()}
+                onDateChange={(event) => {
+                  setPaidAt(event.target.value)
+                  setErrorMessage(null)
+                }}
+                required
+              />
+              <Field><FieldLabel htmlFor={`${id}-note`}>Ghi chú</FieldLabel><Textarea id={`${id}-note`} name="note" defaultValue={payment?.note} maxLength={500} /></Field>
               {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
             </FieldGroup>
           </fieldset>
           <SheetFooter>
-            <div className="grid grid-cols-2 gap-2">
-              <SheetClose asChild>
-                <Button type="button" variant="outline" disabled={pending}>
-                  <XIcon />
-                  Huỷ
-                </Button>
-              </SheetClose>
-              <Button type="submit" disabled={pending || !amount || amount <= 0 || !accountId || !paidAt}><CheckIcon />{pending ? "Đang lưu…" : payment ? "Lưu thay đổi" : isCollection ? "Xác nhận đã thu" : "Xác nhận đã trả"}</Button>
-            </div>
+            <Button type="submit" className="w-full" disabled={pending || !amount || amount <= 0 || !accountId || !paidAt}><CheckIcon />{pending ? "Đang lưu…" : payment ? "Lưu thay đổi" : isCollection ? "Xác nhận đã thu" : "Xác nhận đã trả"}</Button>
           </SheetFooter>
         </form>
       </SheetContent>
