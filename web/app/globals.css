@@ -378,3 +378,80 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
     }
   }
 }
+
+/*
+ * AI entry points: a raised button framed by a slowly turning ring of
+ * colour with a soft glow behind it. Wrap the button in `.ai-glow`; the ring
+ * covers the button's lower edge too (--button-edge, 3px by default).
+ */
+@property --ai-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes ai-spin {
+  to {
+    --ai-angle: 360deg;
+  }
+}
+
+@keyframes ai-ripple {
+  from {
+    opacity: 0.45;
+    scale: 1;
+  }
+  to {
+    opacity: 0;
+    scale: 1.9;
+  }
+}
+
+@layer components {
+  .ai-glow {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    border-radius: calc(var(--radius-lg) + 2px);
+  }
+
+  .ai-glow::before,
+  .ai-glow::after {
+    content: "";
+    position: absolute;
+    inset: calc(-2px - var(--ai-edge, 3px)) -2px -2px;
+    z-index: -1;
+    border-radius: inherit;
+    background: conic-gradient(from var(--ai-angle), #38b8f6, #a78bfa, #f472b6, #fbbf24, #6ecc49, #38b8f6);
+    animation: ai-spin 4s linear infinite;
+    pointer-events: none;
+  }
+
+  .ai-glow::after {
+    filter: blur(10px);
+    opacity: 0.55;
+    z-index: -2;
+  }
+
+  /* Rings spreading from the microphone while it listens. */
+  .ai-ripple {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: conic-gradient(from var(--ai-angle), #38b8f6, #a78bfa, #f472b6, #38b8f6);
+    animation: ai-ripple 1.6s ease-out infinite, ai-spin 4s linear infinite;
+    pointer-events: none;
+  }
+
+  .ai-ripple:nth-child(2) {
+    animation-delay: 0.8s, 0s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ai-glow::before,
+    .ai-glow::after,
+    .ai-ripple {
+      animation: none;
+    }
+  }
+}

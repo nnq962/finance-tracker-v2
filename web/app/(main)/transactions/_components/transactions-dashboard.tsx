@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 
+import { AiAssistButton } from "@/components/ai-assist/ai-assist-button"
 import { PageHeader } from "@/components/page"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
@@ -15,6 +16,7 @@ import type {
   TransactionSearchFilters,
 } from "../_types/transaction"
 import { AddTransactionButton } from "./add-transaction-button"
+import { AiTransactionSheet } from "./ai-transaction/ai-transaction-sheet"
 import { TransactionHistoryProvider } from "./add-transaction/transaction-history-context"
 import { TransactionFilterPanel } from "./transaction-filter-fields"
 import { TransactionsHero } from "./transactions-hero"
@@ -51,6 +53,7 @@ export function TransactionsDashboard({
   const [isNavigating, startNavigation] = React.useTransition()
   const period = "month" as const
   const [filter, setFilter] = React.useState<TransactionFilter>("all")
+  const [aiOpen, setAiOpen] = React.useState(false)
   const [searchFilters, setSearchFilters] =
     React.useState<TransactionSearchFilters>(() => ({
       ...initialSearchFilters,
@@ -83,10 +86,13 @@ export function TransactionsDashboard({
       <PageHeader
         title="Giao dịch"
         actions={
-          <AddTransactionButton
-            accounts={accounts}
-            categoryGroups={categoryGroups}
-          />
+          <>
+            <AiAssistButton onClick={() => setAiOpen(true)}>Nhập bằng AI</AiAssistButton>
+            <AddTransactionButton
+              accounts={accounts}
+              categoryGroups={categoryGroups}
+            />
+          </>
         }
       />
       <TransactionsLayout
@@ -141,13 +147,21 @@ export function TransactionsDashboard({
       {/* On mobile the action floats above the bottom nav so it stays within
           thumb reach while scrolling a long list. */}
       <div className="pointer-events-none sticky bottom-4 z-20 flex justify-end md:hidden">
-        <div className="pointer-events-auto">
+        <div className="pointer-events-auto flex items-center gap-3">
+          <AiAssistButton onClick={() => setAiOpen(true)}>AI</AiAssistButton>
           <AddTransactionButton
             accounts={accounts}
             categoryGroups={categoryGroups}
           />
         </div>
       </div>
+      <AiTransactionSheet
+        open={aiOpen}
+        onOpenChange={setAiOpen}
+        accounts={accounts}
+        categoryGroups={categoryGroups}
+        todayDateKey={todayDateKey}
+      />
     </TransactionHistoryProvider>
   )
 }
