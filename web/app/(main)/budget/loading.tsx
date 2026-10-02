@@ -27,7 +27,7 @@ function AccountsSkeleton({ rows }: { rows: number }) {
       <Card size="sm" className="gap-0 py-0">
         <div className="px-1">
           {Array.from({ length: rows }, (_, row) => (
-            <div key={row} className={cn("flex items-center gap-2.5 px-3 py-3.5", settingsSeparatorClassName(true))}>
+            <div key={row} className={cn("flex items-center gap-2.5 px-3 py-3.5 not-first:pt-4", settingsSeparatorClassName(true))}>
               <Skeleton className="size-8 shrink-0 rounded-full" />
               <div className="min-w-0 flex-1 space-y-1.5">
                 <Skeleton className="h-4 w-32 max-w-full" />

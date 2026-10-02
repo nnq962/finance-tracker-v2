@@ -150,7 +150,9 @@ function SettingsRow({
   )
 
   return (
-    <li className={cn("py-1", settingsSeparatorClassName(Boolean(Icon || media)))}>
+    // Rows after the first get 2px more on top for the separator, so the
+    // pressed background keeps the same 4px all round on every row.
+    <li className={cn("py-1 not-first:pt-1.5", settingsSeparatorClassName(Boolean(Icon || media)))}>
       {onClick ? (
         <Item asChild>
           <button
