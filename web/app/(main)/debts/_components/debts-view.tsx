@@ -42,7 +42,6 @@ import {
   DebtDetailInfo,
   DebtDetailPanel,
   DebtRecordPaymentButton,
-  getDebtSubtitle,
 } from "./debt-detail-panel"
 import { DebtListItem } from "./debt-list-item"
 
@@ -267,13 +266,11 @@ export function DebtsView({
       >
         <SheetContent
           showCloseButton={false}
+          aria-describedby={undefined}
           className="gap-0 data-[side=right]:w-full sm:max-w-md!"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
-          <SheetNavHeader
-            title={sheetContact?.name ?? "Chi tiết khoản nợ"}
-            description={sheetDebt ? getDebtSubtitle(sheetDebt) : undefined}
-          />
+          <SheetNavHeader title={sheetContact?.name ?? "Chi tiết khoản nợ"} />
           {isSheetReady && sheetDebt && sheetContact ? (
             <React.Fragment key={sheetDebt.id}>
               <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-4">

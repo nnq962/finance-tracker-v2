@@ -179,6 +179,7 @@ export function SettingsView({ user, notifications, categoryGroups }: SettingsVi
       <Sheet open={sheetScreen !== null} onOpenChange={(next) => !next && setSheetScreen(null)}>
         <SheetContent
           showCloseButton={false}
+          aria-describedby={undefined}
           className="gap-0 data-[side=right]:w-full sm:max-w-md!"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
@@ -187,7 +188,6 @@ export function SettingsView({ user, notifications, categoryGroups }: SettingsVi
               <SheetNavHeader
                 backLabel="Cài đặt"
                 title={screens[sheetScreen].title}
-                description={screens[sheetScreen].description}
               />
               <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-[max(1rem,env(safe-area-inset-bottom,0px))]">
                 {renderScreen(sheetScreen)}

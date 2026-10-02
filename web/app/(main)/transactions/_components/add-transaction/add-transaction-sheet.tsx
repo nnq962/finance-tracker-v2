@@ -41,11 +41,8 @@ export function AddTransactionSheet({
             Thêm giao dịch
           </Button>
         </SheetTrigger>
-        <SheetContent showCloseButton={false} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
-          <SheetNavHeader
-            title="Giao dịch mới"
-            description="Ghi lại giao dịch mới vào sổ tài chính của bạn."
-          />
+        <SheetContent showCloseButton={false} aria-describedby={undefined} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
+          <SheetNavHeader title="Giao dịch mới" />
           <div className="px-4 pb-4">
             <TransactionKindSelector value={kind} onValueChange={setKind} />
           </div>

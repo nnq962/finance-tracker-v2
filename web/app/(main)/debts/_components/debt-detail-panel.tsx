@@ -32,21 +32,13 @@ type DebtDetailPanelProps = {
   onRecordPayment: (payment: NewDebtPayment) => Promise<void>
 }
 
-/** Subtitle under the contact's name: what the debt is for and which way. */
-export function getDebtSubtitle(debt: Debt) {
-  return `${debt.note} · ${debt.direction === "lent" ? "Cho vay" : "Đi vay"}`
-}
-
 /** Side panel beside the list (xl and up); below xl the same content opens in a sheet. */
 export function DebtDetailPanel(props: DebtDetailPanelProps) {
   return (
     <section aria-labelledby="debt-detail-title" className="space-y-6">
-      <div className="space-y-1 px-3">
-        <h2 id="debt-detail-title" className="truncate font-heading text-lg font-extrabold">
-          {props.contact.name}
-        </h2>
-        <p className="text-sm text-muted-foreground">{getDebtSubtitle(props.debt)}</p>
-      </div>
+      <h2 id="debt-detail-title" className="truncate px-3 font-heading text-lg font-extrabold">
+        {props.contact.name}
+      </h2>
       <DebtDetailInfo {...props} />
       <DebtRecordPaymentButton {...props} />
     </section>
@@ -79,6 +71,8 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
           ? `Lãi đơn trên gốc ban đầu, ${debt.interestPeriod === "year" ? "365 ngày/năm" : "30 ngày/tháng"}, tính đến ${formatDebtDate(interestDate)}. Dừng tính lãi khi tất toán.`
           : undefined}
       >
+        <SettingsRow title="Nội dung" description={debt.note} />
+        <SettingsRow title="Loại" value={collecting ? "Cho vay" : "Đi vay"} />
         <SettingsRow title="Tiền gốc" value={formatCurrency(debt.amount, { signDisplay: "never" })} />
         <SettingsRow
           title="Lãi suất"

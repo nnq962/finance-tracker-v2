@@ -37,10 +37,11 @@ export function ContactsSheet({ open, onOpenChange, contacts, debts, onAdd, onEd
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         showCloseButton={false}
+        aria-describedby={undefined}
         className="gap-0 data-[side=right]:w-full sm:max-w-md!"
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
-        <SheetNavHeader title="Danh bạ" description="Người cho vay hoặc đi vay với bạn." />
+        <SheetNavHeader title="Danh bạ" />
         <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
           {contacts.length === 0 ? (
             <Empty>

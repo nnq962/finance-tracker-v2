@@ -45,11 +45,8 @@ export function EditTransactionSheet({
         onOpenChange(nextOpen)
       }}
     >
-      <SheetContent showCloseButton={false} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
-        <SheetNavHeader
-          title="Chỉnh sửa giao dịch"
-          description="Thay đổi thông tin sẽ tự động đối soát lại số dư tài khoản."
-        />
+      <SheetContent showCloseButton={false} aria-describedby={undefined} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
+        <SheetNavHeader title="Chỉnh sửa giao dịch" />
         <div className="px-4 pb-4">
           <TransactionKindSelector value={kind} onValueChange={setKind} />
         </div>

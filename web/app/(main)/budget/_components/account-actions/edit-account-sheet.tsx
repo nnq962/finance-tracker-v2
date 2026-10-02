@@ -21,13 +21,11 @@ export function EditAccountSheet({ account, onOpenChange, open }: EditAccountShe
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         showCloseButton={false}
+        aria-describedby={undefined}
         className="gap-0 data-[side=right]:w-full sm:max-w-md!"
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
-        <SheetNavHeader
-          title="Chỉnh sửa tài khoản"
-          description={`Cập nhật thông tin và số dư của tài khoản ${account.name}.`}
-        />
+        <SheetNavHeader title="Chỉnh sửa tài khoản" />
         <AccountForm
           defaultValues={{
             name: account.name,

@@ -24,13 +24,11 @@ export function AddAccountSheet({ trigger }: AddAccountSheetProps) {
       <SheetTrigger asChild>{trigger}</SheetTrigger>
       <SheetContent
         showCloseButton={false}
+        aria-describedby={undefined}
         className="gap-0 data-[side=right]:w-full sm:max-w-md!"
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
-        <SheetNavHeader
-          title="Thêm tài khoản"
-          description="Nhập thông tin và số dư ban đầu của tài khoản mới."
-        />
+        <SheetNavHeader title="Thêm tài khoản" />
         <AccountForm
           action={createAccountAction}
           onSuccess={() => setOpen(false)}

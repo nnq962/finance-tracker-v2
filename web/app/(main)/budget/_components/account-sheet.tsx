@@ -106,13 +106,11 @@ export function AccountSheet({ account, share, transactions, onOpenChange }: Acc
       <Sheet open={account !== undefined} onOpenChange={onOpenChange}>
         <SheetContent
           showCloseButton={false}
+          aria-describedby={undefined}
           className="gap-0 data-[side=right]:w-full sm:max-w-md!"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
-          <SheetNavHeader
-            title={shown.name}
-            description={[accountTypeLabels[shown.type], shown.institutionName, isLocked ? "Đã khoá" : undefined].filter(Boolean).join(" · ")}
-          />
+          <SheetNavHeader title={shown.name} />
           <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-px pb-4">
             <div className="px-3">
               <p className="text-sm text-muted-foreground">
@@ -124,6 +122,13 @@ export function AccountSheet({ account, share, transactions, onOpenChange }: Acc
             </div>
 
             <SettingsGroup>
+              <SettingsRow title="Loại" value={accountTypeLabels[shown.type]} />
+              {shown.institutionName ? (
+                <SettingsRow
+                  title={shown.type === "bank" ? "Ngân hàng" : "Ví"}
+                  value={shown.institutionName}
+                />
+              ) : null}
               <SettingsRow title="Số dư ban đầu" value={formatCurrency(shown.openingBalance)} />
               {share ? <SettingsRow title="Tỉ trọng" value={share.percentageLabel} /> : null}
               <SettingsRow title="Ghi chú" description={shown.note || undefined} value={shown.note ? undefined : "—"} />

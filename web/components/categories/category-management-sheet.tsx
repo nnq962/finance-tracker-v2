@@ -208,18 +208,12 @@ export function CategoryManagementSheet({
       ) : null}
       <SheetContent
         showCloseButton={false}
+        aria-describedby={undefined}
         className="gap-0 data-[side=right]:w-full sm:max-w-md!"
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
         <SheetNavHeader
           title={editor ? editorTitle : "Quản lý hạng mục"}
-          description={
-            editor?.kind === "group"
-              ? "Các hạng mục trong nhóm dùng chung màu của nhóm."
-              : editor?.kind === "item"
-                ? `Hạng mục trong nhóm “${editingGroup?.name ?? ""}”.`
-                : "Chạm vào hạng mục hoặc nút Sửa của nhóm để chỉnh sửa."
-          }
           // In the editor, back returns to the list instead of closing.
           onBack={editor ? () => setEditor(null) : undefined}
           disabled={isPending}

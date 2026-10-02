@@ -47,7 +47,8 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
   const baseDebt = payment ? { ...debt, paidAmount: debt.paidAmount - payment.amount, payments: debt.payments?.filter((item) => item.id !== payment.id) } : debt
   const { remainingAmount } = getPaymentMetrics(baseDebt, paidAt || todayDate())
   const isCollection = debt.direction === "lent"
-  const actionLabel = payment ? (isCollection ? "Sửa khoản thu nợ" : "Sửa khoản trả nợ") : (isCollection ? "Ghi nhận thu nợ" : "Ghi nhận trả nợ")
+  // The person is named in the title now that sheets carry no description.
+  const actionLabel = payment ? (isCollection ? "Sửa khoản thu nợ" : "Sửa khoản trả nợ") : (isCollection ? `Thu nợ từ ${contact.name}` : `Trả nợ cho ${contact.name}`)
   const eligibleAccounts = accounts.filter((account) => account.status === "active" || account.id === payment?.accountId)
 
   const changeOpen = (nextOpen: boolean) => {
@@ -64,7 +65,7 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
   return (
     <Sheet open={open} onOpenChange={changeOpen}>
       {typeof trigger === "function" ? trigger(() => changeOpen(true)) : <SheetTrigger asChild>{trigger}</SheetTrigger>}
-      <SheetContent showCloseButton={false} className="gap-0 data-[side=right]:w-full sm:max-w-md!" onOpenAutoFocus={(event) => event.preventDefault()} onCloseAutoFocus={(event) => {
+      <SheetContent showCloseButton={false} aria-describedby={undefined} className="gap-0 data-[side=right]:w-full sm:max-w-md!" onOpenAutoFocus={(event) => event.preventDefault()} onCloseAutoFocus={(event) => {
         if (returnFocusRef?.current) {
           event.preventDefault()
           returnFocusRef.current.focus()
@@ -72,7 +73,6 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
       }}>
         <SheetNavHeader
           title={actionLabel}
-          description={isCollection ? `Tiền nhận từ ${contact.name}.` : `Tiền trả cho ${contact.name}.`}
           disabled={pending}
         />
         <form className="flex min-h-0 flex-1 flex-col" aria-busy={pending} onSubmit={async (event) => {

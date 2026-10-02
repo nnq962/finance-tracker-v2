@@ -170,6 +170,7 @@ export function AddDebtSheet({
       <SheetContent
         className="gap-0 data-[side=right]:w-full sm:max-w-md!"
         showCloseButton={false}
+        aria-describedby={undefined}
         onOpenAutoFocus={(event) => event.preventDefault()}
         onCloseAutoFocus={(event) => {
           if (returnFocusRef?.current) {
@@ -180,7 +181,6 @@ export function AddDebtSheet({
       >
         <SheetNavHeader
           title={debt ? "Sửa khoản nợ" : "Thêm khoản nợ"}
-          description={debt ? "Lịch sử thanh toán được giữ nguyên." : "Ghi lại khoản cho vay hoặc đi vay."}
           disabled={pending}
         />
 

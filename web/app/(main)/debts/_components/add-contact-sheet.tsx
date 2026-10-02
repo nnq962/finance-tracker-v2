@@ -44,7 +44,7 @@ export function AddContactSheet({ contact, onAddContact, open: controlledOpen, o
           {contact ? <PencilIcon /> : <><PlusIcon />Thêm người</>}
         </Button>
       </SheetTrigger> : null}
-      <SheetContent showCloseButton={false} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!" onCloseAutoFocus={(event) => {
+      <SheetContent showCloseButton={false} aria-describedby={undefined} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!" onCloseAutoFocus={(event) => {
         if (returnFocusRef?.current) {
           event.preventDefault()
           returnFocusRef.current.focus()
@@ -52,7 +52,6 @@ export function AddContactSheet({ contact, onAddContact, open: controlledOpen, o
       }}>
         <SheetNavHeader
           title={contact ? "Sửa người liên hệ" : "Thêm người vào danh bạ"}
-          description="Người cho vay hoặc đi vay với bạn."
           disabled={pending}
         />
         <form className="flex min-h-0 flex-1 flex-col" aria-busy={pending} onSubmit={async (event) => {

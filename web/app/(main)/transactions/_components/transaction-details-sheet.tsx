@@ -135,11 +135,8 @@ export function TransactionDetailsSheet({
   }
 
   return (
-    <SheetContent showCloseButton={false} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
-      <SheetNavHeader
-        title="Chi tiết giao dịch"
-        description="Thông tin đầy đủ của giao dịch đã ghi nhận."
-      />
+    <SheetContent showCloseButton={false} aria-describedby={undefined} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
+      <SheetNavHeader title="Chi tiết giao dịch" />
 
       <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 pt-px pb-4">
         <div className="flex flex-col items-center pb-4 text-center">
