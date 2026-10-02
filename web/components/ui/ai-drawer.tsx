@@ -21,9 +21,13 @@ import {
  */
 function AiDrawer({
   direction = "top",
+  // vaul resizes the drawer to the visual viewport while the keyboard is up,
+  // which is meant for bottom drawers: a top one stretched down to the
+  // keyboard and came back shorter than it opened. It stays as laid out.
+  repositionInputs = false,
   ...props
 }: React.ComponentProps<typeof Drawer>) {
-  return <Drawer data-slot="ai-drawer" direction={direction} {...props} />
+  return <Drawer data-slot="ai-drawer" direction={direction} repositionInputs={repositionInputs} {...props} />
 }
 
 function AiDrawerContent({

@@ -8,9 +8,10 @@ import { mockParseTransaction } from "../../_lib/mock-ai-parse"
 import { TransactionMadLibs } from "./transaction-mad-libs"
 
 const examples = [
-  "Ăn trưa 45k",
-  "Hôm qua đổ xăng 80 nghìn",
-  "Nhận lương 25 triệu",
+  "Ăn trưa 45k bằng ví MoMo",
+  "Hôm qua uống trà sữa lúc 4h chiều 80 cành bằng tiền mặt",
+  "Sáng nay đổ xăng 100 nghìn quẹt thẻ Techcombank",
+  "Nhận lương tháng 9 25 triệu vào Vietcombank",
 ]
 
 type AiTransactionDrawerProps = {

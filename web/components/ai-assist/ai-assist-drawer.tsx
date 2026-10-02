@@ -100,7 +100,7 @@ export function AiAssistDrawer<Result>({
   }
 
   const showTyping = typing || !speech.supported
-  const hint = useRotatingHint(["Bấm micro và nói tự nhiên.", ...examples.map((example) => `Thử nói “${example}”`)])
+  const hint = useRotatingHint(["Bấm micro và nói tự nhiên.", ...examples.map((example) => `“${example}”`)])
 
   return (
     <AiDrawer open={open} onOpenChange={handleOpenChange}>
@@ -234,19 +234,14 @@ export function AiAssistDrawer<Result>({
                           <span className="relative inline-flex">
                             {speech.listening ? (
                               <>
-                                <span className="ai-ripple" aria-hidden="true" />
-                                <span className="ai-ripple" aria-hidden="true" />
+                                {/* Shaped like the button they ring. */}
+                                <span className="ai-ripple rounded-lg" aria-hidden="true" />
+                                <span className="ai-ripple rounded-lg" aria-hidden="true" />
                               </>
                             ) : null}
-                            {/* The one large control of the drawer, sized for a thumb. */}
-                            <Button
-                              type="button"
-                              variant={speech.listening ? "destructive" : "default"}
-                              className="size-14 rounded-full [&_svg:not([class*='size-'])]:size-6"
-                              aria-label={speech.listening ? "Dừng nghe" : "Bắt đầu nói"}
-                              onClick={speech.listening ? speech.stop : speech.start}
-                            >
+                            <Button type="button" onClick={speech.listening ? speech.stop : speech.start}>
                               {speech.listening ? <SquareIcon /> : <MicIcon />}
+                              {speech.listening ? "Dừng" : "Nói"}
                             </Button>
                           </span>
                         )}
