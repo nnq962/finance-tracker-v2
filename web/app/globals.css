@@ -212,6 +212,16 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   }
 }
 
+/*
+ * Height of a raised control's lower edge; 0 while pressed. Registered as a
+ * length so it can be transitioned on its own, apart from the edge colour.
+ */
+@property --button-travel {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
 /* Keep the painted face separate from the press shadow, including while held. */
 @layer components {
   .button-raised {
@@ -238,11 +248,10 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   }
 
   .button-raised:is(:active, [aria-expanded="true"], [aria-pressed="true"], [data-state="open"], [data-state="on"]):not(:disabled) {
-    translate: 0 0;
+    --button-travel: 0px;
   }
 
   .button-raised:is(:active, [aria-expanded="true"], [aria-pressed="true"], [data-state="open"], [data-state="on"]):not(:disabled)::before {
-    box-shadow: none;
     border-bottom-width: var(--button-face-border, 0px);
   }
 }
@@ -251,16 +260,17 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
  * iOS may paint after touchend clears :active but before the synthesized click
  * commits aria/data state. Keep the pressed face in place across that gap so a
  * toggle or disclosure does not briefly rise before settling back down.
+ * Only the geometry waits: colours (face and edge) change together at once.
  */
 @media (hover: none) and (pointer: coarse) {
   .button-raised {
-    transition-property: filter, translate;
+    transition-property: filter, --button-travel;
     transition-duration: 0s;
     transition-delay: 80ms;
   }
 
   .button-raised::before {
-    transition-property: box-shadow, border-bottom-width;
+    transition-property: border-bottom-width;
     transition-duration: 0s;
     transition-delay: 80ms;
   }
