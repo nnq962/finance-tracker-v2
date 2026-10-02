@@ -121,7 +121,7 @@ export function CashFlowCalendar({
           {/* The month on the left and both arrows together on the right, so
               they stay close on a wide card. */}
           <div className="flex items-center justify-between gap-2">
-            <p className="px-1 font-heading text-base font-extrabold" aria-live="polite">
+            <p className="px-1 font-heading text-base font-extrabold">
               Tháng {monthNumber}, {year}
             </p>
             <div className="flex items-center gap-1">
