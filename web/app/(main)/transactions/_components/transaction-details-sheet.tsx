@@ -99,7 +99,6 @@ export function TransactionDetailsSheet({
         const result = await deleteTransactionAction(transaction.id)
 
         if (!result.success) throw new Error(result.error)
-        router.refresh()
       },
     })
   }

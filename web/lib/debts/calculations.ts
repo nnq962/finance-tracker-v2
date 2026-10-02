@@ -1,7 +1,10 @@
+import { toDateKey } from "@/lib/format-date"
+
 import type { Debt, DebtPayment, NewDebtPayment } from "./types"
 
+/** Today in Vietnam time, as "YYYY-MM-DD". */
 export function todayDate() {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date())
+  return toDateKey(new Date())
 }
 
 export function getInterest(debt: Debt, date: string) {

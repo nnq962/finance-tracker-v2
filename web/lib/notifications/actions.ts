@@ -1,5 +1,7 @@
 "use server"
 
+import { revalidatePath } from "next/cache"
+
 import { requireSession } from "@/lib/auth/session"
 import { getPushContext } from "./context"
 import { detachPushDevice, getNotificationState, registerPushDevice, saveNotificationSettings } from "./repository"
@@ -23,7 +25,10 @@ export async function getNotificationStateAction(expectedUid: string) {
 }
 
 export async function saveNotificationSettingsAction(input: unknown, expectedUid: string) {
-  return mutate(expectedUid, (uid) => saveNotificationSettings(uid, input))
+  const result = await mutate(expectedUid, (uid) => saveNotificationSettings(uid, input))
+  // The overview's getting-started card ticks off the reminder step.
+  if (result.success) revalidatePath("/overview")
+  return result
 }
 
 export async function registerPushDeviceAction(fid: unknown, name: unknown, expectedUid: string) {

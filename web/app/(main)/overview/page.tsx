@@ -3,7 +3,7 @@ import { getAccounts } from "@/lib/accounts/repository"
 import { loadWithSession } from "@/lib/auth/session"
 import { getCategoryGroups } from "@/lib/categories/repository"
 import { todayDate } from "@/lib/debts/calculations"
-import { getContacts, getDebtSummaries } from "@/lib/debts/repository"
+import { getContacts, getDebts } from "@/lib/debts/repository"
 import { getOverviewSummary } from "@/lib/overview/summary"
 import { getChecklistState } from "@/lib/onboarding/repository"
 import { getTransactionsInRange } from "@/lib/transactions/repository"
@@ -43,7 +43,7 @@ export default async function OverviewPage() {
   } = await loadWithSession((user) =>
     Promise.all([
       getAccounts(user.uid),
-      getDebtSummaries(user.uid),
+      getDebts(user.uid),
       getContacts(user.uid),
       getTransactionsInRange(
         user.uid,

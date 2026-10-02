@@ -3,18 +3,10 @@ import type {
   TransactionPeriod,
 } from "../_types/transaction"
 
-const vietnamDateFormatter = new Intl.DateTimeFormat("en-CA", {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  timeZone: "Asia/Ho_Chi_Minh",
-})
+import { toDateKey } from "@/lib/format-date"
 
-export function getTransactionDateKey(occurredAt: string | Date) {
-  const parts = vietnamDateFormatter.formatToParts(new Date(occurredAt))
-  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]))
-  return `${values.year}-${values.month}-${values.day}`
-}
+/** The Vietnam calendar day of a transaction, as "YYYY-MM-DD". */
+export const getTransactionDateKey = toDateKey
 
 function parseDateKey(dateKey: string) {
   const [year, month, day] = dateKey.split("-").map(Number)

@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
 import {
   BanknoteIcon,
   LandmarkIcon,
@@ -94,11 +93,12 @@ export function AccountForm({
   submitLabel = "Lưu tài khoản",
   successMessage,
 }: AccountFormProps) {
-  const router = useRouter()
   const formRef = React.useRef<HTMLFormElement>(null)
   const institutionAnchor = useComboboxAnchor()
   const [isPending, startTransition] = React.useTransition()
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
+  // A new account keeps one request id across retries, so it is added once.
+  const [requestId, setRequestId] = React.useState(() => crypto.randomUUID())
   const [accountType, setAccountType] = React.useState<AccountType>(
     defaultValues?.type ?? "cash",
   )
@@ -131,8 +131,8 @@ export function AccountForm({
 
             if (result.success) {
               toast.success(successMessage)
+              setRequestId(crypto.randomUUID())
               onSuccess()
-              router.refresh()
               return
             }
 
@@ -146,6 +146,7 @@ export function AccountForm({
         })
       }}
     >
+      {!defaultValues ? <input type="hidden" name="requestId" value={requestId} /> : null}
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
         <FieldGroup>
           <Field>

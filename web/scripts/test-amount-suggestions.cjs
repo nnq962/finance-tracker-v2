@@ -1,7 +1,15 @@
 /* eslint-disable @typescript-eslint/no-require-imports -- CommonJS test harness transpiles TypeScript modules before loading them. */
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
+const Module = require('node:module')
+const path = require('node:path')
 const ts = require('typescript')
+
+// Resolve the app's "@/" imports from the web root, as Next.js does.
+const originalLoad = Module._load
+Module._load = function (id, parent, main) {
+  return originalLoad.call(this, id.startsWith('@/') ? path.join(__dirname, '..', id.slice(2)) : id, parent, main)
+}
 
 require.extensions['.ts'] = (module, filename) => module._compile(
   ts.transpileModule(fs.readFileSync(filename, 'utf8'), {

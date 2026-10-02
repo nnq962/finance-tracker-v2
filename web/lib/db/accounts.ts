@@ -4,7 +4,9 @@ import type { Transaction } from "kysely"
 
 import type { DB } from "@/lib/db/types"
 
-export const MAX_MONEY = 999_999_999_999_999
+import { MAX_MONEY } from "@/lib/money"
+
+export { MAX_MONEY }
 
 export type LockedAccount = {
   id: string

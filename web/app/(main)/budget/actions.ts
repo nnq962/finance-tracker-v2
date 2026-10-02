@@ -45,9 +45,12 @@ export async function createAccountAction(
   const user = await requireSession()
 
   try {
+    const requestId = formData.get("requestId")
+    if (requestId !== null) assertAccountId(String(requestId))
     await createAccount(
       user.uid,
       parseAccountFormData(formData),
+      requestId === null ? undefined : String(requestId),
     )
     revalidateAccountPaths()
     return { success: true }

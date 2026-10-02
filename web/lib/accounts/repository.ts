@@ -55,13 +55,16 @@ export async function getAccounts(userId: string): Promise<Account[]> {
   })
 }
 
+/** The request id becomes the account id, so a retried request adds nothing. */
 export async function createAccount(
   userId: string,
   values: AccountFormValues,
+  requestId?: string,
 ) {
-  await getDb()
+  const inserted = await getDb()
     .insertInto("accounts")
     .values({
+      ...(requestId ? { id: requestId } : {}),
       userId,
       name: values.name,
       type: values.type,
@@ -70,7 +73,18 @@ export async function createAccount(
       balance: values.balance,
       note: values.note ?? null,
     })
-    .execute()
+    .onConflict((conflict) => conflict.column("id").doNothing())
+    .returning("id")
+    .executeTakeFirst()
+
+  if (!inserted && requestId) {
+    const existing = await getDb()
+      .selectFrom("accounts")
+      .select("userId")
+      .where("id", "=", requestId)
+      .executeTakeFirst()
+    if (existing?.userId !== userId) throw new AccountValidationError("Tài khoản không hợp lệ.")
+  }
 }
 
 export async function updateAccount(

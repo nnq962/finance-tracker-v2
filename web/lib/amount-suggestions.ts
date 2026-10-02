@@ -1,4 +1,6 @@
-export const MAX_AMOUNT = 999_999_999_999_999
+import { MAX_MONEY } from "@/lib/money"
+
+export const MAX_AMOUNT = MAX_MONEY
 export const MAX_AMOUNT_SUGGESTIONS = 5
 
 const MAX_HISTORY_MATCHES = 2

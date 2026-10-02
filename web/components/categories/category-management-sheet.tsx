@@ -8,7 +8,6 @@ import {
   PlusIcon,
   Trash2Icon,
 } from "lucide-react"
-import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import {
@@ -82,7 +81,6 @@ export function CategoryManagementSheet({
   onOpenChange,
   initialType = "expense",
 }: CategoryManagementSheetProps) {
-  const router = useRouter()
   const [internalOpen, setInternalOpen] = React.useState(false)
   const open = controlledOpen ?? internalOpen
   const [isPending, startTransition] = React.useTransition()
@@ -151,7 +149,6 @@ export function CategoryManagementSheet({
 
         setEditor(null)
         toast.success(editor.kind === "group" ? "Đã lưu nhóm." : "Đã lưu hạng mục.")
-        router.refresh()
       } catch {
         const message = "Không thể lưu thay đổi. Vui lòng thử lại."
         setError(message)
@@ -179,7 +176,6 @@ export function CategoryManagementSheet({
         setDeleteOpen(false)
         setEditor(null)
         toast.success(currentEditor.kind === "group" ? "Đã xoá nhóm." : "Đã xoá hạng mục.")
-        router.refresh()
       } catch {
         const message = "Không thể xoá. Vui lòng thử lại."
         setDeleteError(message)

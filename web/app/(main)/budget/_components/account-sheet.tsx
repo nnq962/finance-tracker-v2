@@ -69,7 +69,6 @@ export function AccountSheet({ account, share, transactions, onOpenChange }: Acc
 
         if (result.success) {
           toast.success(isLocked ? "Đã kích hoạt lại tài khoản." : "Đã ngừng sử dụng tài khoản.")
-          router.refresh()
           return
         }
 

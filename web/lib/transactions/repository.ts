@@ -1,6 +1,6 @@
 import "server-only"
 
-import type { Transaction as DbTransaction } from "kysely"
+import { sql, type Transaction as DbTransaction } from "kysely"
 
 import { lockAccounts, setBalance, shiftBalance, type LockedAccount } from "@/lib/db/accounts"
 import { getDb } from "@/lib/db/client"
@@ -161,22 +161,51 @@ export async function getTransactions(userId: string): Promise<Transaction[]> {
   return rows.map(toTransaction)
 }
 
-/** The latest transactions that moved money in or out of one account. */
-export async function getRecentAccountTransactions(
+/**
+ * The latest transactions that moved money in or out of each account, in two
+ * queries whatever the number of accounts: rank every account movement (a
+ * transfer counts for both of its accounts), then load the top ones.
+ */
+export async function getRecentTransactionsByAccount(
   userId: string,
-  accountId: string,
   limit = 5,
-): Promise<Transaction[]> {
-  const rows = await selectTransactions(userId)
-    .where((eb) => eb.or([
-      eb("t.accountId", "=", accountId),
-      eb("t.fromAccountId", "=", accountId),
-      eb("t.toAccountId", "=", accountId),
-    ]))
-    .limit(limit)
-    .execute()
+): Promise<Record<string, Transaction[]>> {
+  const ranked = await sql<{ accountId: string; id: string }>`
+    SELECT account_id, id FROM (
+      SELECT m.account_id, m.id, row_number() OVER (
+        PARTITION BY m.account_id ORDER BY m.occurred_at DESC, m.id DESC
+      ) AS position
+      FROM (
+        SELECT id, occurred_at, account_id FROM transactions
+        WHERE user_id = ${userId} AND account_id IS NOT NULL
+        UNION ALL
+        SELECT id, occurred_at, from_account_id FROM transactions
+        WHERE user_id = ${userId} AND from_account_id IS NOT NULL
+        UNION ALL
+        SELECT id, occurred_at, to_account_id FROM transactions
+        WHERE user_id = ${userId} AND to_account_id IS NOT NULL
+      ) AS m (id, occurred_at, account_id)
+    ) AS ranked
+    WHERE position <= ${limit}
+  `.execute(getDb())
+  if (ranked.rows.length === 0) return {}
 
-  return rows.map(toTransaction)
+  const rows = await selectTransactions(userId)
+    .where("t.id", "in", [...new Set(ranked.rows.map((row) => row.id))])
+    .execute()
+  const accountsById = new Map<string, string[]>()
+  for (const { accountId, id } of ranked.rows) {
+    accountsById.set(id, [...(accountsById.get(id) ?? []), accountId])
+  }
+  const byAccount: Record<string, Transaction[]> = {}
+  // selectTransactions orders newest first; that order is kept per account.
+  for (const row of rows) {
+    const transaction = toTransaction(row)
+    for (const accountId of accountsById.get(row.id) ?? []) {
+      (byAccount[accountId] ??= []).push(transaction)
+    }
+  }
+  return byAccount
 }
 
 export async function getTransactionsInRange(
@@ -263,17 +292,35 @@ function toRow(values: TransactionFormValues) {
   }
 }
 
+/**
+ * Records a transaction and moves its accounts' balances. The request id
+ * becomes the row id, so a retried request (lost response, double submit)
+ * finds its row and changes nothing a second time.
+ */
 export async function createTransaction(
   userId: string,
   values: TransactionFormValues,
+  requestId?: string,
 ) {
   await getDb().transaction().execute(async (trx) => {
+    // Locks the accounts first, so a concurrent retry waits here and then
+    // sees the row this request inserted.
     const accounts = await prepare(trx, userId, values)
+
+    if (requestId) {
+      const existing = await trx
+        .selectFrom("transactions")
+        .select("userId")
+        .where("id", "=", requestId)
+        .executeTakeFirst()
+      if (existing?.userId === userId) return
+      if (existing) throw new TransactionValidationError("Giao dịch không hợp lệ.")
+    }
 
     await applyImpacts(trx, accounts, getBalanceImpacts(toMovement(values)))
     await trx
       .insertInto("transactions")
-      .values({ userId, ...toRow(values) })
+      .values({ ...(requestId ? { id: requestId } : {}), userId, ...toRow(values) })
       .execute()
   })
 }

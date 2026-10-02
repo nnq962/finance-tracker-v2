@@ -3,18 +3,7 @@ import { getPaymentMetrics } from "@/lib/debts/calculations"
 import type { Contact, Debt } from "@/lib/debts/types"
 import type { Transaction } from "@/lib/transactions/types"
 
-const vietnamDateFormatter = new Intl.DateTimeFormat("en-CA", {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  timeZone: "Asia/Ho_Chi_Minh",
-})
-
-function dateKey(value: string) {
-  const parts = vietnamDateFormatter.formatToParts(new Date(value))
-  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]))
-  return `${values.year}-${values.month}-${values.day}`
-}
+import { toDateKey as dateKey } from "@/lib/format-date"
 
 function monthKeys(today: string) {
   const [year, month] = today.split("-").map(Number)

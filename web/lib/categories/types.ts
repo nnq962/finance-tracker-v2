@@ -3,8 +3,6 @@ import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
 
 export type CategoryType = "expense" | "income"
 
-export type CategoryStatus = "active" | "archived"
-
 export type CategoryFormValues = {
   name: string
   colorName: CategoryColorName

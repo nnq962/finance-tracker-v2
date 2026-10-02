@@ -41,7 +41,9 @@ export async function createTransactionAction(
   const user = await requireSession()
 
   try {
-    await createTransaction(user.uid, parseTransactionFormData(formData))
+    const requestId = formData.get("requestId") ?? undefined
+    if (requestId !== undefined) assertTransactionId(requestId)
+    await createTransaction(user.uid, parseTransactionFormData(formData), requestId as string | undefined)
     revalidateTransactionPaths()
     return { success: true }
   } catch (error) {

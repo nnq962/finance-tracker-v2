@@ -4,7 +4,6 @@ import * as React from "react"
 import { Page, PageHeader } from "@/components/page"
 import type { Account } from "@/lib/accounts/types"
 
-import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { createContactAction, updateContactAction, deleteContactAction, createDebtAction, saveDebtPaymentAction, changeDebtAction } from "../actions"
 import { scheduleUndoableDelete } from "@/lib/undoable-delete"
@@ -35,7 +34,6 @@ export function DebtsDashboard({
   initialDebts,
   selectedDebtId,
 }: DebtsDashboardProps) {
-  const router = useRouter()
   const contacts = initialContacts
   const debts = initialDebts
   const summary = getDebtSummary(debts)
@@ -49,7 +47,6 @@ export function DebtsDashboard({
     const result = await action(operationId)
     if (!result.success) throw new Error(result.error)
     operations.current.delete(key)
-    router.refresh()
     return result.data
   }
 

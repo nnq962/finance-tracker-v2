@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { useRouter } from "next/navigation"
 import { Trash2Icon } from "lucide-react"
 
 import {
@@ -33,7 +32,6 @@ export function DeleteAccountAlert({
   open,
   onConfirmed,
 }: DeleteAccountAlertProps) {
-  const router = useRouter()
 
   const handleDelete = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
@@ -52,7 +50,6 @@ export function DeleteAccountAlert({
         const result = await deleteAccountAction(account.id)
 
         if (!result.success) throw new Error(result.error)
-        router.refresh()
       },
     })
   }

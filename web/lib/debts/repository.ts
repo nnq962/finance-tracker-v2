@@ -140,21 +140,11 @@ export async function getDebts(userId: string): Promise<Debt[]> {
     selectDebts(db, userId).orderBy("recordedAt", "desc").orderBy("id", "desc").execute(),
     selectPayments(db, userId).execute(),
   ])
-  return rows.map((row) => toDebt(row, payments.filter((payment) => payment.debtId === row.id).map(toPayment)))
-}
-
-/**
- * Debts with their paid total and status but without payment histories, which
- * are loaded per debt with getDebtPayments.
- */
-export async function getDebtSummaries(userId: string): Promise<Debt[]> {
-  return (await getDebts(userId)).map((debt) => ({ ...debt, payments: undefined }))
-}
-
-export async function getDebtPayments(userId: string, debtId: string): Promise<DebtPayment[]> {
-  assertDebtId(debtId)
-  const rows = await selectPayments(getDb(), userId).where("p.debtId", "=", debtId).execute()
-  return rows.map(toPayment)
+  const paymentsByDebt = new Map<string, DebtPayment[]>()
+  for (const payment of payments) {
+    paymentsByDebt.set(payment.debtId, [...(paymentsByDebt.get(payment.debtId) ?? []), toPayment(payment)])
+  }
+  return rows.map((row) => toDebt(row, paymentsByDebt.get(row.id) ?? []))
 }
 
 /** Reads and locks a debt with its payments; concurrent changes to it queue. */

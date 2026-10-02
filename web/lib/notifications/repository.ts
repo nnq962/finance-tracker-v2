@@ -1,7 +1,7 @@
 import "server-only"
 
 import { createHash, randomUUID } from "node:crypto"
-import type { Transaction } from "kysely"
+import { sql, type Transaction } from "kysely"
 
 import { getDb } from "@/lib/db/client"
 import type { DB } from "@/lib/db/types"
@@ -56,7 +56,9 @@ export async function openPushSession(uid: string, oldBrowserId?: string, oldSes
     await trx
       .insertInto("notificationBrowsers")
       .values({ id: browserId, userId: uid, sessionId, deviceId: null })
-      .onConflict((conflict) => conflict.column("id").doUpdateSet({ userId: uid, sessionId, deviceId: null }))
+      // updated_at marks the latest sign-in: the worker removes rows without a
+      // device only once they are far older than any session.
+      .onConflict((conflict) => conflict.column("id").doUpdateSet({ userId: uid, sessionId, deviceId: null, updatedAt: sql`now()` }))
       .execute()
     return { browserId, sessionId }
   })
@@ -70,7 +72,7 @@ export async function closePushSession(browserId?: string, sessionId?: string) {
     await unlink(trx, browserId, data)
     await trx
       .updateTable("notificationBrowsers")
-      .set({ userId: null, sessionId: randomUUID(), deviceId: null })
+      .set({ userId: null, sessionId: randomUUID(), deviceId: null, updatedAt: sql`now()` })
       .where("id", "=", browserId)
       .execute()
   })

@@ -2,7 +2,9 @@ import { isUuid } from "@/lib/db/ids"
 import { todayDate } from "./calculations"
 import type { NewContact, NewDebt, NewDebtPayment } from "./types"
 
-export const MAX_MONEY = 999_999_999_999_999
+import { MAX_MONEY } from "@/lib/money"
+
+export { MAX_MONEY }
 
 export class DebtValidationError extends Error {
   constructor(message: string) {

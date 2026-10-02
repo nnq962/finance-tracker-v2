@@ -3,6 +3,7 @@ import "server-only"
 import type { AccountFormValues, AccountType } from "@/lib/accounts/types"
 import { isUuid } from "@/lib/db/ids"
 import { getInstitution } from "@/lib/institutions"
+import { MAX_MONEY } from "@/lib/money"
 
 const accountTypes = new Set<AccountType>(["cash", "bank", "e-wallet"])
 
@@ -48,7 +49,7 @@ function getMoney(formData: FormData, name: string, label: string) {
     !rawValue ||
     !Number.isSafeInteger(value) ||
     value < 0 ||
-    value > 999_999_999_999_999
+    value > MAX_MONEY
   ) {
     throw new AccountValidationError(`${label} không hợp lệ.`)
   }

@@ -1,6 +1,7 @@
 """Reminder worker checks on PostgreSQL (finance_test); FCM is always faked."""
 
 import hashlib
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, date, datetime, time, timedelta
 from types import SimpleNamespace
@@ -429,7 +430,7 @@ def test_expired_owner_cannot_send_record_cleanup_or_finish(conn, users):
     assert (log(conn, uid), result(conn, uid, target.id)) == before
 
 
-def test_old_logs_are_removed_after_90_days(conn, users):
+def test_cleanup_runs_daily_and_removes_only_old_rows(conn, users):
     uid = users()
     for day in (TODAY - timedelta(days=91), TODAY - timedelta(days=90)):
         conn.execute(
@@ -437,6 +438,76 @@ def test_old_logs_are_removed_after_90_days(conn, users):
             "message_body) VALUES (%s, %s, 'sent', 'Title', 'Body')",
             (uid, day),
         )
+    old_op, new_op = uuid4(), uuid4()
+    for op, age in ((old_op, 31), (new_op, 1)):
+        conn.execute(
+            "INSERT INTO debt_operations (user_id, id, fingerprint, created_at) "
+            "VALUES (%s, %s, %s, %s)",
+            (uid, op, "a" * 64, NOW - timedelta(days=age)),
+        )
+    old_browser, fresh_browser = uuid4(), uuid4()
+    for browser, age in ((old_browser, 31), (fresh_browser, 1)):
+        users.browsers.append(browser)
+        conn.execute(
+            "INSERT INTO notification_browsers (id, user_id, session_id, updated_at) "
+            "VALUES (%s, NULL, %s, %s)",
+            (browser, uuid4(), NOW - timedelta(days=age)),
+        )
+    kept = device(conn, users, uid)
+    conn.execute(
+        "UPDATE notification_browsers SET updated_at = %s WHERE id = %s",
+        (NOW - timedelta(days=60), kept.browser_id),
+    )
+
+    # Not in the 03:00 pass: nothing is removed.
     worker(conn).run_once(limit=0)
+    assert log(conn, uid, TODAY - timedelta(days=91)) is not None
+
+    at_three = datetime(2026, 9, 30, 20, 5, tzinfo=UTC)  # 03:05 on 1 October in Vietnam
+    worker(conn, at=at_three).run_once(limit=0)
     assert log(conn, uid, TODAY - timedelta(days=91)) is None
     assert log(conn, uid, TODAY - timedelta(days=90)) is not None
+    assert not exists(conn, "debt_operations", "id", old_op)
+    assert exists(conn, "debt_operations", "id", new_op)
+    assert not exists(conn, "notification_browsers", "id", old_browser)
+    assert exists(conn, "notification_browsers", "id", fresh_browser)
+    # A browser still holding a device is kept however old.
+    assert exists(conn, "notification_browsers", "id", kept.browser_id)
+
+
+def test_late_evening_reminder_is_sent_after_midnight(conn, users):
+    """Due at 23:55, first seen by the 00:00 pass of the next day."""
+    uid = users()
+    due_at = datetime(2026, 10, 1, 16, 55, tzinfo=UTC)  # 23:55 in Vietnam
+    midnight = datetime(2026, 10, 1, 17, 0, tzinfo=UTC)  # 00:00 on 2 October
+    settings(conn, uid, daily_reminder_time=time(23, 55), next_reminder_at=due_at)
+    target = device(conn, users, uid)
+    sent = []
+    worker(conn, sent.append, at=midnight).process(uid, midnight)
+    assert len(sent) == 1
+    # Counted for the day it was due, then scheduled for the next evening.
+    assert log(conn, uid, TODAY)["status"] == "sent"
+    assert result(conn, uid, target.id, TODAY)["status"] == "sent"
+    assert next_at(conn, uid) == due_at + timedelta(days=1)
+
+
+def test_long_overdue_reminder_is_skipped(conn, users):
+    uid = users()
+    settings(conn, uid, next_reminder_at=NOW - timedelta(hours=3))
+    device(conn, users, uid)
+    worker(conn, lambda _: pytest.fail("sent a stale reminder")).process(uid, NOW)
+    assert log(conn, uid) is None
+    assert next_at(conn, uid) == TOMORROW_AT_20
+
+
+def test_shutdown_stops_before_sending(conn, users):
+    uid = users()
+    settings(conn, uid)
+    device(conn, users, uid)
+    stop = threading.Event()
+    stop.set()
+    instance = worker(conn, lambda _: pytest.fail("sent during shutdown"))
+    instance.run_once(limit=1000, stop=stop)
+    instance.process(uid, NOW, stop)
+    # Left due: the next pass sends it once the lease expires.
+    assert next_at(conn, uid) <= NOW

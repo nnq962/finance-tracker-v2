@@ -1,9 +1,12 @@
 """Independent ten-minute reminder worker; no HTTP server required.
 
-Each due user gets one reminder run per Vietnam calendar day, recorded in
-notification_logs. A run is leased to one worker at a time, every device is
-sent to at most MAX_ATTEMPTS times, and every step runs in its own database
-transaction with row locks, so a crash or a second worker never sends twice.
+Each due user gets one reminder run per scheduled day (the Vietnam date of
+next_reminder_at), recorded in notification_logs. A run is leased to one
+worker at a time and every step runs in its own database transaction with row
+locks, so a second worker never sends the same run. Every device is sent to
+at most MAX_ATTEMPTS times; a crash between a send and its record can repeat
+that send once (the notification tag lets the browser collapse the two).
+A reminder more than STALE_AFTER late is skipped rather than sent late.
 """
 
 import hashlib
@@ -29,6 +32,14 @@ INTERVAL_SECONDS = 600
 LEASE_DURATION = timedelta(minutes=5)
 MAX_ATTEMPTS = 3
 LOG_RETENTION_DAYS = 90
+# Past this, a missed reminder (worker down, retries exhausted) is skipped.
+STALE_AFTER = timedelta(hours=2)
+# Debt request ids only guard against retries of a just-sent request.
+OPERATION_RETENTION = timedelta(days=30)
+# Browser rows without a device; far longer than a login session lasts.
+BROWSER_RETENTION = timedelta(days=30)
+# Daily housekeeping runs in the pass that starts in this Vietnam hour.
+CLEANUP_HOUR = 3
 # A claimed run only continues while these settings are unchanged.
 SCHEDULE_COLUMNS = (
     "notifications_enabled",
@@ -91,6 +102,16 @@ def due(settings: dict | None, now: datetime) -> bool:
     return bool(settings and settings["notifications_enabled"] and scheduled) and (
         scheduled <= now
     )
+
+
+def stale(settings: dict, now: datetime) -> bool:
+    return now - settings["next_reminder_at"] > STALE_AFTER
+
+
+def run_day(settings: dict) -> date:
+    """The day a run belongs to: when it was scheduled, so a reminder due at
+    23:55 and sent at 00:00 still counts for the day it was due."""
+    return settings["next_reminder_at"].astimezone(VIETNAM).date()
 
 
 def same_schedule(settings: dict | None, claimed: dict) -> bool:
@@ -187,16 +208,14 @@ class ReminderWorker:
     # --- Steps --------------------------------------------------------------
 
     def claim(self, uid: str, now: datetime):
-        today = now.astimezone(VIETNAM).date()
         with self.conn.transaction(), self.conn.cursor() as cur:
             settings = self._settings(cur, uid)
             if not due(settings, now):
                 return None
+            today = run_day(settings)
             log = self._log(cur, uid, today)
-            # Never replay reminders from previous calendar days.
-            if settings["next_reminder_at"].astimezone(VIETNAM).date() < today or (
-                log and log["status"] in {"sent", "failed"}
-            ):
+            # Never send a reminder long after it was due.
+            if stale(settings, now) or (log and log["status"] in {"sent", "failed"}):
                 self._bump_schedule(cur, uid, settings, now)
                 return None
             if log and log["lease_until"] and log["lease_until"] > now:
@@ -237,7 +256,7 @@ class ReminderWorker:
                 or not owns_lease(log, attempt_id, now)
             ):
                 return None
-            if now.astimezone(VIETNAM).date() != day:
+            if stale(claimed, now):
                 return None
             previous = self._result(cur, uid, day, device_id)
             if previous and previous["status"] in {"sent", "unregistered", "failed"}:
@@ -337,13 +356,17 @@ class ReminderWorker:
             )
             return [row["id"] for row in cur.fetchall()]
 
-    def process(self, uid: str, now: datetime) -> None:
+    def process(self, uid: str, now: datetime, stop=None) -> None:
         claim = self.claim(uid, now)
         if claim is None:
             return
         claimed, day, attempt_id, content = claim
         device_ids = self.devices(uid)
         for device_id in device_ids:
+            # On shutdown, leave the rest: the lease expires and the next
+            # pass resumes from the recorded results.
+            if stop is not None and stop.is_set():
+                return
             prepared = self.preflight(uid, claimed, day, attempt_id, device_id)
             if prepared is None:
                 continue
@@ -390,7 +413,23 @@ class ReminderWorker:
             )
         self.finish(uid, claimed, day, attempt_id, device_ids)
 
-    def run_once(self, *, dry_run=False, limit=100):
+    def cleanup(self, now: datetime) -> None:
+        """Daily housekeeping: old reminder logs, debt request ids and browser
+        rows that no longer hold a device."""
+        cutoff = now.astimezone(VIETNAM).date() - timedelta(days=LOG_RETENTION_DAYS)
+        with self.conn.cursor() as cur:
+            cur.execute("DELETE FROM notification_logs WHERE date < %s", (cutoff,))
+            cur.execute(
+                "DELETE FROM debt_operations WHERE created_at < %s",
+                (now - OPERATION_RETENTION,),
+            )
+            cur.execute(
+                "DELETE FROM notification_browsers "
+                "WHERE device_id IS NULL AND updated_at < %s",
+                (now - BROWSER_RETENTION,),
+            )
+
+    def run_once(self, *, dry_run=False, limit=100, stop=None):
         now = self.clock()
         with self.conn.cursor() as cur:
             cur.execute(
@@ -401,6 +440,8 @@ class ReminderWorker:
             )
             due_users = [row["user_id"] for row in cur.fetchall()]
         for uid in due_users:
+            if stop is not None and stop.is_set():
+                break
             if dry_run:
                 with self.conn.cursor() as cur:
                     linked = sum(
@@ -412,17 +453,19 @@ class ReminderWorker:
                 )
                 continue
             try:
-                self.process(uid, self.clock())
+                self.process(uid, self.clock(), stop)
             except Exception as error:
                 LOGGER.error(
                     "Reminder processing failed: user=%s error=%s",
                     uid,
                     type(error).__name__,
                 )
-        if not dry_run:
-            cutoff = now.astimezone(VIETNAM).date() - timedelta(days=LOG_RETENTION_DAYS)
-            with self.conn.cursor() as cur:
-                cur.execute("DELETE FROM notification_logs WHERE date < %s", (cutoff,))
+        if (
+            not dry_run
+            and now.astimezone(VIETNAM).hour == CLEANUP_HOUR
+            and (now.astimezone(VIETNAM).minute < INTERVAL_SECONDS // 60)
+        ):
+            self.cleanup(now)
         LOGGER.info(
             "Reminder pass completed: settings=%d dry_run=%s", len(due_users), dry_run
         )
@@ -434,15 +477,16 @@ def run(*, once=False, dry_run=False, limit=100):
         level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s"
     )
 
+    stop = threading.Event()
+
     def run_pass():
         # A fresh connection per pass survives database restarts.
         with connect(autocommit=True) as conn:
-            ReminderWorker(conn).run_once(dry_run=dry_run, limit=limit)
+            ReminderWorker(conn).run_once(dry_run=dry_run, limit=limit, stop=stop)
 
     if once:
         run_pass()
         return
-    stop = threading.Event()
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, lambda *_: stop.set())
     while not stop.is_set():

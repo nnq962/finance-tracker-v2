@@ -2,25 +2,20 @@ import { Page, PageHeader } from "@/components/page"
 import { loadWithSession } from "@/lib/auth/session"
 import { getAccounts } from "@/lib/accounts/repository"
 import { getBalanceSummary } from "@/lib/accounts/summary"
-import { getRecentAccountTransactions } from "@/lib/transactions/repository"
+import { getRecentTransactionsByAccount } from "@/lib/transactions/repository"
 
 import { AccountList } from "./_components/account-list"
 import { AddAccountButton } from "./_components/add-account-button"
 import { BalanceHero } from "./_components/balance-hero"
 
 export default async function AccountsPage() {
-  const { data: [accounts, recentTransactions] } = await loadWithSession(async (user) => {
-    const accounts = await getAccounts(user.uid)
-    // A few per account, shown when its sheet opens without another round trip.
-    const recent = await Promise.all(
-      accounts.map((account) => getRecentAccountTransactions(user.uid, account.id)),
-    )
-
-    return [
-      accounts,
-      Object.fromEntries(accounts.map((account, index) => [account.id, recent[index]])),
-    ] as const
-  })
+  const { data: [accounts, recentTransactions] } = await loadWithSession((user) =>
+    Promise.all([
+      getAccounts(user.uid),
+      // A few per account, shown when its sheet opens without another round trip.
+      getRecentTransactionsByAccount(user.uid),
+    ]),
+  )
   const balanceSummary = getBalanceSummary(accounts)
 
   return (

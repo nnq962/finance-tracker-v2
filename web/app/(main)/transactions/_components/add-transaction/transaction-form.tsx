@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { useRouter } from "next/navigation"
 import { LoaderCircleIcon, SaveIcon } from "lucide-react"
 import { toast } from "sonner"
 
@@ -55,8 +54,9 @@ export function TransactionForm({
   submitLabel = "Lưu giao dịch",
   successMessage,
 }: TransactionFormProps) {
-  const router = useRouter()
   const [isPending, startTransition] = React.useTransition()
+  // Kept across retries of one entry so the server records it only once.
+  const [requestId, setRequestId] = React.useState(() => crypto.randomUUID())
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   const SpecificFields = specificFields[kind]
 
@@ -74,8 +74,8 @@ export function TransactionForm({
 
             if (result.success) {
               toast.success(successMessage)
+              setRequestId(crypto.randomUUID())
               onSuccess()
-              router.refresh()
               return
             }
 
@@ -90,6 +90,7 @@ export function TransactionForm({
       }}
     >
       <input type="hidden" name="kind" value={kind} />
+      {isCreating ? <input type="hidden" name="requestId" value={requestId} /> : null}
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
         <SpecificFields
           accounts={accounts}

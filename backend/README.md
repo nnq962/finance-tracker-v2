@@ -4,8 +4,9 @@ Backend Python 3.12 dùng uv: API (FastAPI) và worker nhắc thông báo, sau n
 thêm LLM/STT tự host. Dữ liệu nằm trong PostgreSQL (schema ở [`db/`](../db/));
 Firebase chỉ dùng để gửi thông báo đẩy (FCM).
 
-Hiện có `GET /health` và worker nhắc thông báo. API không đọc database và
-không cần credentials.
+Hiện production chỉ chạy **worker nhắc thông báo**. Khung API (`GET /health`)
+được giữ lại để dùng cho tính năng LLM sau này; nó chưa được deploy, không đọc
+database và không cần credentials.
 
 ## Tổ chức code
 
@@ -29,9 +30,12 @@ LLM/STT sẽ chạy trong container riêng, API gọi nội bộ.
 Mỗi 10 phút (đúng :00, :10, :20…), worker:
 
 1. Tìm người dùng đã bật nhắc và đến giờ (`notification_settings.next_reminder_at`).
-2. Mỗi người một lượt mỗi ngày (giờ Việt Nam), ghi trong `notification_logs`.
-   Lượt được **giữ chỗ 5 phút** cho một worker, nên hai worker hay một lần
-   khởi động lại không gửi trùng.
+2. Mỗi người một lượt cho mỗi ngày đã hẹn (ngày theo giờ Việt Nam của
+   `next_reminder_at`, nên lời nhắc 23:55 gửi lúc 00:00 vẫn tính cho hôm
+   trước), ghi trong `notification_logs`. Lượt được **giữ chỗ 5 phút** cho
+   một worker, nên hai worker không gửi cùng một lượt. Nếu worker bị tắt
+   ngay giữa lúc gửi và lúc ghi kết quả, thiết bị đó có thể nhận lại một lần;
+   thông báo cùng `tag` nên trình duyệt gộp làm một.
 3. Gửi một câu nhắc tới mọi thiết bị còn liên kết (`push_devices`), cùng câu
    cho mọi lần thử lại trong ngày. Kết quả từng thiết bị ở
    `notification_log_devices`.
@@ -39,8 +43,16 @@ Mỗi 10 phút (đúng :00, :10, :20…), worker:
    tôn trọng `Retry-After`. Lỗi vĩnh viễn: không thử lại. Đăng ký FCM không
    còn hợp lệ: gỡ thiết bị (chỉ khi đăng ký vẫn y nguyên như lúc gửi).
 5. Xong thì hẹn sang ngày hôm sau. Chưa có thiết bị nào thì giữ lịch, để thiết
-   bị đăng ký sau vẫn nhận lời nhắc của hôm nay.
-6. Xoá nhật ký cũ hơn 90 ngày.
+   bị đăng ký sau vẫn nhận lời nhắc của hôm nay. Lời nhắc trễ quá **2 giờ**
+   (worker từng dừng, hết lượt thử lại) thì bỏ qua thay vì gửi muộn.
+6. Mỗi ngày một lần (lượt 03:00): xoá nhật ký cũ hơn 90 ngày, mã chống gửi
+   trùng của vay nợ (`debt_operations`) cũ hơn 30 ngày và các dòng
+   `notification_browsers` không còn thiết bị, không đổi trong 30 ngày.
+
+Kết nối database có giới hạn chờ (kết nối 10 giây, câu lệnh 30 giây, khoá 10
+giây) để worker không treo khi database có vấn đề. Khi tắt (deploy), worker
+dừng trước người dùng hoặc thiết bị kế tiếp; phần còn lại được lượt sau tiếp
+tục.
 
 Mỗi bước là một transaction có khoá dòng (`FOR UPDATE`). Lịch do server web
 tính khi lưu cài đặt; client không quyết định được giờ gửi.
@@ -68,7 +80,7 @@ uv run finance-backend reminders --once --dry-run   # chỉ liệt kê, không g
 uv run finance-backend reminders --once             # một lượt thật
 ```
 
-## API
+## API (chưa dùng trên production)
 
 ```sh
 cd backend

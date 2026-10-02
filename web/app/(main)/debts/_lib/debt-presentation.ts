@@ -34,26 +34,6 @@ export function getDebtDeadline(debt: Debt) {
   return { label: `Còn ${daysUntilDue} ngày`, isOverdue: false }
 }
 
-export type DebtDeadlineBadge = {
-  label: string
-  variant: "solid" | "sun" | "outline"
-}
-
-/** Badge for list rows: solid when due or overdue, sun within a week. */
-export function getDebtDeadlineBadge(debt: Debt): DebtDeadlineBadge {
-  const deadline = getDebtDeadline(debt)
-
-  if (deadline.isOverdue) {
-    return { label: deadline.label, variant: "solid" }
-  }
-
-  if (debt.status !== "settled" && debt.dueAt && getDaysUntilDue(debt.dueAt) <= 7) {
-    return { label: deadline.label, variant: "sun" }
-  }
-
-  return { label: deadline.label, variant: "outline" }
-}
-
 /** Overdue first, then the nearest due date; debts without a due date last. */
 export function compareDebtsByUrgency(left: Debt, right: Debt) {
   if (!left.dueAt && !right.dueAt) return right.recordedAt.localeCompare(left.recordedAt)

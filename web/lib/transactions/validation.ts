@@ -6,6 +6,7 @@ import type {
   SupportedTransactionKind,
   TransactionFormValues,
 } from "@/lib/transactions/types"
+import { MAX_MONEY } from "@/lib/money"
 
 const supportedKinds = new Set<SupportedTransactionKind>([
   "expense",
@@ -56,7 +57,7 @@ function getMoney(
     (!rawValue && !options.allowZero) ||
     !Number.isSafeInteger(value) ||
     value < minimum ||
-    value > 999_999_999_999_999
+    value > MAX_MONEY
   ) {
     throw new TransactionValidationError(`${label} không hợp lệ.`)
   }

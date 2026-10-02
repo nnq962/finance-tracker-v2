@@ -44,6 +44,8 @@ function revalidateCategoryData(userId: string) {
   revalidatePath("/budget")
   revalidatePath("/transactions")
   revalidatePath("/settings")
+  // The category sheet also opens from the overview's getting-started card.
+  revalidatePath("/overview")
 }
 
 export async function createCategoryGroupAction(
