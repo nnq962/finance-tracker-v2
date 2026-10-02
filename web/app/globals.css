@@ -213,6 +213,14 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
 }
 
 /*
+ * An open sheet or dialog sets pointer-events: none on <body>, which toasts
+ * would inherit; they stay usable (Undo, swipe) above any modal.
+ */
+[data-sonner-toaster] {
+  pointer-events: auto;
+}
+
+/*
  * Height of a raised control's lower edge; 0 while pressed. Registered as a
  * length so it can be transitioned on its own, apart from the edge colour.
  */

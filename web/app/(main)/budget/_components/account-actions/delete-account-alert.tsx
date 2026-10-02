@@ -23,18 +23,22 @@ type DeleteAccountAlertProps = {
   account: Account
   onOpenChange: (open: boolean) => void
   open: boolean
+  /** After the delete is confirmed (it can still be undone from the toast). */
+  onConfirmed?: () => void
 }
 
 export function DeleteAccountAlert({
   account,
   onOpenChange,
   open,
+  onConfirmed,
 }: DeleteAccountAlertProps) {
   const router = useRouter()
 
   const handleDelete = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
     onOpenChange(false)
+    onConfirmed?.()
     scheduleUndoableDelete({
       key: `account:${account.id}`,
       title: `Sắp xoá tài khoản ${account.name}`,

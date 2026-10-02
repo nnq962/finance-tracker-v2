@@ -137,7 +137,11 @@ export function DebtsView({
       contacts,
       contact,
       debt,
-      onChangeDebt: (values: NewDebt | null) => onChangeDebt(debt.id, values),
+      onChangeDebt: async (values: NewDebt | null) => {
+        await onChangeDebt(debt.id, values)
+        // A deleted debt leaves its sheet; the toast can still undo it.
+        if (values === null) setSheetDebtId(null)
+      },
       onEditPayment: (paymentId: string, values: NewDebtPayment) =>
         onEditPayment(debt.id, paymentId, values),
       onDeletePayment: (paymentId: string) => onDeletePayment(debt.id, paymentId),

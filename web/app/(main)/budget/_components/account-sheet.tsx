@@ -188,7 +188,12 @@ export function AccountSheet({ account, share, transactions, onOpenChange }: Acc
         </SheetContent>
       </Sheet>
       <EditAccountSheet account={shown} open={editOpen} onOpenChange={setEditOpen} />
-      <DeleteAccountAlert account={shown} open={deleteOpen} onOpenChange={setDeleteOpen} />
+      <DeleteAccountAlert
+        account={shown}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onConfirmed={() => onOpenChange(false)}
+      />
     </>
   )
 }
