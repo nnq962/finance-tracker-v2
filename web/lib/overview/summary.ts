@@ -98,9 +98,6 @@ export function getOverviewSummary(
     },
     spending: [...spendingByGroup.values()].sort((left, right) => right.amount - left.amount),
     dueDebts,
-    recentTransactions: [...transactions]
-      .sort((left, right) => right.occurredAt.localeCompare(left.occurredAt))
-      .slice(0, 5),
     monthLabel: `Tháng ${Number(today.slice(5, 7))}/${today.slice(0, 4)}`,
   }
 }

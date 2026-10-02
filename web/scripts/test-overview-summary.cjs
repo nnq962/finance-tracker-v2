@@ -50,6 +50,5 @@ assert.deepEqual(summary.spending, [{ id: 'food', name: 'Ăn uống', amount: 50
 assert.equal(summary.dueDebts.length, 1)
 assert.equal(summary.dueDebts[0].contactName, 'Bạn')
 assert.equal(summary.dueDebts[0].daysUntilDue, 2)
-assert.equal(summary.recentTransactions.length, 4)
 
 console.log('Overview summary checks passed.')
