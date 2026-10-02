@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { Page, PageHeader } from "@/components/page"
 import type { Account } from "@/lib/accounts/types"
 
 import { useRouter } from "next/navigation"
@@ -28,7 +29,6 @@ import { AddContactSheet } from "./add-contact-sheet"
 import { AddDebtSheet } from "./add-debt-sheet"
 import { ContactsView } from "./contacts-view"
 import { DebtSummary } from "./debt-summary"
-import { DebtsHeader } from "./debts-header"
 import { DebtsView } from "./debts-view"
 
 type DebtsDashboardProps = {
@@ -110,8 +110,10 @@ export function DebtsDashboard({
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-8 pb-12">
-      <DebtsHeader
+    <Page>
+      <PageHeader
+        title="Nợ & Cho vay"
+        description="Theo dõi ai đang nợ bạn, bạn đang nợ ai và quản lý danh bạ cho các khoản vay."
         actions={
           <AddDebtSheet accounts={accounts} contacts={contacts} onAddDebt={addDebt} />
         }
@@ -186,6 +188,6 @@ export function DebtsDashboard({
           </div>
         </div>
       ) : null}
-    </div>
+    </Page>
   )
 }

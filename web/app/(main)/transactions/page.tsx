@@ -1,3 +1,4 @@
+import { Page } from "@/components/page"
 import { getAccounts } from "@/lib/accounts/repository"
 import { loadWithSession } from "@/lib/auth/session"
 import { getCategoryGroups } from "@/lib/categories/repository"
@@ -32,7 +33,7 @@ export default async function TransactionsPage({
   )
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-8 pb-12">
+    <Page>
       <TransactionsDashboard
         accounts={accounts}
         categoryGroups={categoryGroups}
@@ -40,6 +41,6 @@ export default async function TransactionsPage({
         todayDateKey={todayDateKey}
         transactions={transactions}
       />
-    </div>
+    </Page>
   )
 }

@@ -2,6 +2,7 @@ import { CurrencyInputExample } from "./_components/currency-input-example"
 import { SonnerExamples } from "./_components/sonner-examples"
 import { SwitchExamples } from "./_components/switch-examples"
 import GradientWaves from "@/components/gradient-waves"
+import { Page } from "@/components/page"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import {
@@ -92,7 +93,7 @@ export default function UiLabPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-6xl space-y-8 pb-12">
+    <Page>
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-3xl font-semibold tracking-tight">Thử giao diện</h1>
@@ -600,6 +601,6 @@ export default function UiLabPage() {
           </CardContent>
         </Card>
       </section>
-    </main>
+    </Page>
   )
 }

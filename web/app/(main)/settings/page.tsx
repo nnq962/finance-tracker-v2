@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 
+import { Page, PageHeader } from "@/components/page"
 import { loadWithSession } from "@/lib/auth/session"
 import { getCategoryGroups } from "@/lib/categories/repository"
 import { getNotificationState } from "@/lib/notifications/repository"
@@ -25,15 +26,11 @@ export default async function SettingsPage() {
   )
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-8">
-      <header className="pt-1">
-        <div className="space-y-1.5">
-          <h1 className="text-3xl font-semibold tracking-tight">Cài đặt</h1>
-          <p className="text-sm text-muted-foreground sm:text-base">
-            Quản lý tài khoản, giao diện, hạng mục và cách bạn nhận thông báo.
-          </p>
-        </div>
-      </header>
+    <Page>
+      <PageHeader
+        title="Cài đặt"
+        description="Quản lý tài khoản, giao diện, hạng mục và cách bạn nhận thông báo."
+      />
 
       <SettingsView
         key={user.uid}
@@ -41,6 +38,6 @@ export default async function SettingsPage() {
         notifications={notifications}
         categoryGroups={categoryGroups}
       />
-    </div>
+    </Page>
   )
 }

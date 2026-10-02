@@ -1,4 +1,5 @@
 import { Card, CardAction, CardContent, CardHeader } from "@/components/ui/card"
+import { Page, PageHeaderSkeleton } from "@/components/page"
 import { Skeleton } from "@/components/ui/skeleton"
 
 const distributionRows = [
@@ -101,21 +102,12 @@ function AccountCardSkeleton() {
 
 export default function AccountsLoading() {
   return (
-    <div
-      className="space-y-8"
+    <Page
       role="status"
       aria-label="Đang tải ngân sách"
       aria-busy="true"
     >
-      <header className="pt-1">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-1.5">
-            <Skeleton className="h-9 w-40" />
-            <Skeleton className="h-5 w-80 max-w-full" />
-          </div>
-          <Skeleton className="hidden h-8 w-36 shrink-0 rounded-lg md:block" />
-        </div>
-      </header>
+      <PageHeaderSkeleton action />
 
       <BalanceHeroSkeleton />
 
@@ -132,6 +124,6 @@ export default function AccountsLoading() {
       </section>
 
       <span className="sr-only">Đang tải dữ liệu ngân sách...</span>
-    </div>
+    </Page>
   )
 }

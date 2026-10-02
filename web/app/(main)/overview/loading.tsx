@@ -1,4 +1,5 @@
 import { Card, CardAction, CardContent, CardHeader } from "@/components/ui/card"
+import { Page, PageHeaderSkeleton } from "@/components/page"
 import { Skeleton } from "@/components/ui/skeleton"
 
 const cashFlowBarHeights = ["h-20", "h-14", "h-28", "h-16", "h-6", "h-24"]
@@ -40,17 +41,13 @@ function RowSkeleton() {
 
 export default function OverviewLoading() {
   return (
-    <div
-      className="mx-auto w-full min-w-0 max-w-7xl space-y-6 pb-12 md:space-y-8"
+    <Page
       role="status"
       aria-label="Đang tải tổng quan"
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <header className="space-y-1.5 pt-1">
-          <Skeleton className="h-9 w-40" />
-          <Skeleton className="h-5 w-80 max-w-full" />
-        </header>
+        <PageHeaderSkeleton />
 
         <Card className="[--card-spacing:--spacing(5)] sm:[--card-spacing:--spacing(6)]">
           <CardContent className="space-y-5">
@@ -128,6 +125,6 @@ export default function OverviewLoading() {
       </div>
 
       <span className="sr-only">Đang tải tổng quan tài chính...</span>
-    </div>
+    </Page>
   )
 }

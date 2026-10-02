@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 
+import { PageHeader } from "@/components/page"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 
@@ -18,7 +19,6 @@ import type {
 } from "../_types/transaction"
 import { AddTransactionButton } from "./add-transaction-button"
 import { TransactionHistoryProvider } from "./add-transaction/transaction-history-context"
-import { TransactionsHeader } from "./transactions-header"
 import { TransactionsHero } from "./transactions-hero"
 import { TransactionsView } from "./transactions-view"
 import { TransactionToolbar } from "./transaction-toolbar"
@@ -82,12 +82,16 @@ export function TransactionsDashboard({
 
   return (
     <TransactionHistoryProvider transactions={transactions}>
-      <TransactionsHeader>
-        <AddTransactionButton
-          accounts={accounts}
-          categoryGroups={categoryGroups}
-        />
-      </TransactionsHeader>
+      <PageHeader
+        title="Giao dịch"
+        description="Theo dõi các khoản thu, chi và chuyển khoản của bạn."
+        actions={
+          <AddTransactionButton
+            accounts={accounts}
+            categoryGroups={categoryGroups}
+          />
+        }
+      />
       <TransactionsHero
         categoryGroups={categoryGroups}
         period={period}

@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { Page, PageHeaderSkeleton } from "@/components/page"
 import { Skeleton } from "@/components/ui/skeleton"
 
 const transactionRows = [
@@ -166,21 +167,12 @@ function TransactionGroupSkeleton({
 
 export default function TransactionsLoading() {
   return (
-    <div
-      className="mx-auto w-full max-w-7xl space-y-8 pb-12"
+    <Page
       role="status"
       aria-label="Đang tải giao dịch"
       aria-busy="true"
     >
-      <header className="pt-1">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-1.5">
-            <Skeleton className="h-9 w-36" />
-            <Skeleton className="h-5 w-80 max-w-full" />
-          </div>
-          <Skeleton className="hidden h-8 w-36 shrink-0 rounded-lg md:block" />
-        </div>
-      </header>
+      <PageHeaderSkeleton action />
 
       <TransactionsHeroSkeleton />
 
@@ -192,6 +184,6 @@ export default function TransactionsLoading() {
       </section>
 
       <span className="sr-only">Đang tải dữ liệu giao dịch...</span>
-    </div>
+    </Page>
   )
 }

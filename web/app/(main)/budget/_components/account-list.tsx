@@ -51,7 +51,8 @@ export function AccountList({
   }
 
   return (
-    <div className="space-y-8">
+    // Same rhythm as the page's sections (see components/page.tsx).
+    <div className="space-y-6 md:space-y-8">
       {activeAccounts.length > 0 ? (
         <section className="space-y-4" aria-labelledby="active-accounts-title">
           <div className="flex items-center gap-2">

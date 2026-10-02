@@ -1,3 +1,4 @@
+import { Page, PageHeader } from "@/components/page"
 import { getAccounts } from "@/lib/accounts/repository"
 import { loadWithSession } from "@/lib/auth/session"
 import { getCategoryGroups } from "@/lib/categories/repository"
@@ -58,13 +59,11 @@ export default async function OverviewPage() {
   )
 
   return (
-    <main className="mx-auto w-full min-w-0 max-w-7xl space-y-6 pb-12 md:space-y-8">
-      <header className="space-y-1.5 pt-1">
-        <h1 className="text-3xl font-semibold tracking-tight">Tổng quan</h1>
-        <p className="text-sm text-muted-foreground sm:text-base">
-          Tài sản, thu chi và các khoản cần theo dõi.
-        </p>
-      </header>
+    <Page>
+      <PageHeader
+        title="Tổng quan"
+        description="Tài sản, thu chi và các khoản cần theo dõi."
+      />
       <NetWorth data={summary.netWorth} />
       <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-2">
         <CashFlow summary={summary} />
@@ -72,6 +71,6 @@ export default async function OverviewPage() {
         <DueDebts debts={summary.dueDebts} />
         <RecentTransactions transactions={summary.recentTransactions} />
       </div>
-    </main>
+    </Page>
   )
 }

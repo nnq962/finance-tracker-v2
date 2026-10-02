@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { Page, PageHeaderSkeleton } from "@/components/page"
 import { Skeleton } from "@/components/ui/skeleton"
 
 function DirectionStatSkeleton() {
@@ -156,22 +157,13 @@ function DetailSkeleton() {
 
 export default function DebtsLoading() {
   return (
-    <div
-      className="mx-auto w-full max-w-7xl space-y-8 pb-12"
+    <Page
       role="status"
       aria-label="Đang tải vay nợ"
       aria-busy="true"
     >
-      <div aria-hidden="true" className="space-y-8">
-        <header className="pt-1">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0 space-y-1.5">
-              <Skeleton className="h-9 w-48 max-w-full" />
-              <Skeleton className="h-5 w-96 max-w-full" />
-            </div>
-            <Skeleton className="hidden h-8 w-36 shrink-0 rounded-lg md:block" />
-          </div>
-        </header>
+      <div aria-hidden="true" className="space-y-6 md:space-y-8">
+        <PageHeaderSkeleton action />
 
         <SummarySkeleton />
 
@@ -201,6 +193,6 @@ export default function DebtsLoading() {
       </div>
 
       <span className="sr-only">Đang tải danh bạ và các khoản vay nợ...</span>
-    </div>
+    </Page>
   )
 }

@@ -5,6 +5,7 @@ import {
   CardHeader,
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { Page, PageHeaderSkeleton } from "@/components/page"
 import { Skeleton } from "@/components/ui/skeleton"
 
 function AccountSettingsSkeleton() {
@@ -84,16 +85,12 @@ function NotificationSettingsSkeleton() {
 
 export default function SettingsLoading() {
   return (
-    <div
-      className="mx-auto w-full max-w-5xl space-y-8"
+    <Page
       role="status"
       aria-label="Đang tải cài đặt"
       aria-busy="true"
     >
-      <header className="space-y-1.5 pt-1" aria-hidden="true">
-        <Skeleton className="h-9 w-28" />
-        <Skeleton className="h-5 w-[28rem] max-w-full sm:h-6" />
-      </header>
+      <PageHeaderSkeleton />
 
       <div className="grid items-start gap-6 md:grid-cols-[14rem_minmax(0,1fr)]" aria-hidden="true">
         <Card size="sm" className="sticky top-20 hidden md:flex">
@@ -122,6 +119,6 @@ export default function SettingsLoading() {
       </div>
 
       <span className="sr-only">Đang tải dữ liệu cài đặt...</span>
-    </div>
+    </Page>
   )
 }

@@ -1,9 +1,9 @@
+import { Page, PageHeader } from "@/components/page"
 import { loadWithSession } from "@/lib/auth/session"
 import { getAccounts } from "@/lib/accounts/repository"
 import { getBalanceSummary } from "@/lib/accounts/summary"
 
 import { AccountList } from "./_components/account-list"
-import { AccountsHeader } from "./_components/accounts-header"
 import { AddAccountButton } from "./_components/add-account-button"
 import { BalanceHero } from "./_components/balance-hero"
 
@@ -14,10 +14,12 @@ export default async function AccountsPage() {
   const balanceSummary = getBalanceSummary(accounts)
 
   return (
-    <div className="space-y-8">
-      <AccountsHeader>
-        <AddAccountButton />
-      </AccountsHeader>
+    <Page>
+      <PageHeader
+        title="Ngân sách"
+        description="Theo dõi số dư và quản lý các tài khoản của bạn."
+        actions={<AddAccountButton />}
+      />
       {accounts.length > 0 ? (
         <BalanceHero summary={balanceSummary} accounts={accounts} />
       ) : null}
@@ -31,6 +33,6 @@ export default async function AccountsPage() {
           </div>
         </div>
       ) : null}
-    </div>
+    </Page>
   )
 }
