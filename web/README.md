@@ -189,3 +189,15 @@ thử đã được gỡ. Kết quả đăng ký, lưu cài đặt và lỗi hi�
 Kiểm tra trên thiết bị: chọn giờ/phút nhắc rồi tải lại; đăng nhập cùng tài khoản
 trên hai máy và đăng ký cả hai; logout một máy để kiểm tra máy còn lại vẫn giữ
 đăng ký; đăng nhập tài khoản khác trên máy vừa logout để kiểm tra liên kết mới.
+
+## Tiện ích: tính lương
+
+Settings → Tiện ích → **Tính lương** tính lương thực nhận hoàn toàn trên trình
+duyệt (không lưu vào database; lần nhập gần nhất được nhớ trong `localStorage`
+của thiết bị). Quy định dùng để tính nằm ở `lib/salary/calculate.ts`: lương cơ
+sở, lương tối thiểu vùng, tỉ lệ bảo hiểm, biểu thuế TNCN 5 bậc, giảm trừ gia
+cảnh và hệ số tăng ca. Khi quy định thay đổi, sửa các hằng số ở đó và chạy:
+
+```sh
+node scripts/test-salary.cjs
+```

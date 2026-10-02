@@ -3,6 +3,7 @@
 import * as React from "react"
 import {
   BellRingIcon,
+  CalculatorIcon,
   CircleHelpIcon,
   MicIcon,
   PaletteIcon,
@@ -26,6 +27,7 @@ import type { NotificationState } from "@/lib/notifications/types"
 import { InstallAppRow } from "./install-app-row"
 import { NotificationDevices } from "./notification-devices"
 import { NotificationPreferences } from "./notification-preferences"
+import { SalaryCalculator } from "./salary-calculator"
 import { SignOutRow } from "./sign-out-row"
 import { ThemeOptions, themeOptions, useThemeChoice } from "./theme-options"
 import { VoiceLab } from "./voice-lab"
@@ -43,6 +45,9 @@ const screens = {
   },
   voice: {
     title: "Thử giọng nói",
+  },
+  salary: {
+    title: "Tính lương",
   },
 } as const
 
@@ -89,6 +94,8 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
         )
       case "voice":
         return <VoiceLab />
+      case "salary":
+        return <SalaryCalculator />
     }
   }
 
@@ -103,8 +110,8 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
 
   return (
     <>
-      {/* From md up the groups pair up across the full width; the app group
-          closes the page across both columns. */}
+      {/* From md up the groups pair up across the full width, the app
+          group last. */}
       <div className="grid items-start gap-6 md:grid-cols-2 md:gap-x-8">
         <SettingsGroup title="Tài khoản">
           <SettingsRow
@@ -154,6 +161,16 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
           />
         </SettingsGroup>
 
+        <SettingsGroup title="Tiện ích">
+          <SettingsRow
+            icon={CalculatorIcon}
+            color="emerald"
+            title="Tính lương"
+            description="Lương thực nhận, bảo hiểm, thuế TNCN, tăng ca"
+            onClick={() => open("salary")}
+          />
+        </SettingsGroup>
+
         <SettingsGroup title="Thử nghiệm">
           <SettingsRow
             icon={MicIcon}
@@ -163,20 +180,18 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
           />
         </SettingsGroup>
 
-        <div className="md:col-span-2">
-          <SettingsGroup
-            title="Ứng dụng"
-            footer={`Finance Tracker · v${process.env.NEXT_PUBLIC_APP_VERSION}`}
-          >
-            <SettingsRow
-              icon={CircleHelpIcon}
-              color="cyan"
-              title="Hướng dẫn sử dụng"
-              onClick={openWelcome}
-            />
-            <InstallAppRow />
-          </SettingsGroup>
-      </div>
+        <SettingsGroup
+          title="Ứng dụng"
+          footer={`Finance Tracker · v${process.env.NEXT_PUBLIC_APP_VERSION}`}
+        >
+          <SettingsRow
+            icon={CircleHelpIcon}
+            color="cyan"
+            title="Hướng dẫn sử dụng"
+            onClick={openWelcome}
+          />
+          <InstallAppRow />
+        </SettingsGroup>
       </div>
 
       {/* Screens slide in like native navigation. */}

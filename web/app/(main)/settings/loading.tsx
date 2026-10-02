@@ -50,9 +50,8 @@ export default function SettingsLoading() {
         <GroupSkeleton rows={2} />
         <GroupSkeleton rows={2} />
         <GroupSkeleton rows={1} />
-        <div className="md:col-span-2">
-          <GroupSkeleton rows={1} />
-        </div>
+        <GroupSkeleton rows={1} />
+        <GroupSkeleton rows={1} />
       </div>
 
       <span className="sr-only">Đang tải dữ liệu cài đặt...</span>
