@@ -74,21 +74,25 @@ export function CashFlowChart({ data }: { data: OverviewSummary["cashFlow"] }) {
           <Bar dataKey="expense" fill="var(--color-expense)" radius={[4, 4, 0, 0]} maxBarSize={18} />
         </BarChart>
       </ChartContainer>
-      <table className="sr-only">
-        <caption>Thu và chi 6 tháng gần nhất</caption>
-        <thead>
-          <tr><th>Tháng</th><th>Thu</th><th>Chi</th></tr>
-        </thead>
-        <tbody>
-          {data.months.map((month) => (
-            <tr key={month.key}>
-              <td>{month.label}</td>
-              <td>{formatCurrency(month.income)}</td>
-              <td>{formatCurrency(month.expense)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* sr-only on a div: a table cannot shrink to 1px and would stretch the
+          page's scroll area below the content. */}
+      <div className="sr-only">
+        <table>
+          <caption>Thu và chi 6 tháng gần nhất</caption>
+          <thead>
+            <tr><th>Tháng</th><th>Thu</th><th>Chi</th></tr>
+          </thead>
+          <tbody>
+            {data.months.map((month) => (
+              <tr key={month.key}>
+                <td>{month.label}</td>
+                <td>{formatCurrency(month.income)}</td>
+                <td>{formatCurrency(month.expense)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </>
   )
 }
