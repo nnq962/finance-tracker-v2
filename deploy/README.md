@@ -26,7 +26,7 @@ Hai môi trường tách hẳn nhau:
 | Docker project | `finance-dev` | `finance` |
 | Cấu hình | `deploy/.env.dev` (tự tạo) | `deploy/.env` (tự điền) |
 | Database | `finance-dev_pgdata` | `finance_pgdata` |
-| Truy cập | `npm run dev` → `localhost:3000` | `127.0.0.1:3010` và qua Tunnel |
+| Truy cập | `cd web && npm run dev` → `localhost:3000` | `127.0.0.1:3010` và qua Tunnel |
 
 Production chạy từ **bản clone riêng** để việc đang code dở (file chưa commit,
 nhánh khác) không bao giờ lọt lên bản đang chạy.
@@ -46,10 +46,10 @@ chmod 600 deploy/.env
 - `POSTGRES_PASSWORD`, `APP_DB_PASSWORD`: tạo bằng `openssl rand -hex 24`.
   **Đổi mật khẩu sau khi database đã tạo sẽ không có tác dụng** — chúng chỉ
   được dùng lần khởi tạo đầu tiên.
-- `NEXT_PUBLIC_FIREBASE_*`: chép từ `.env.local`, riêng
+- `NEXT_PUBLIC_FIREBASE_*`: chép từ `web/.env.local`, riêng
   `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=finance.nnqlab.dev`.
 - `FIREBASE_CREDENTIALS_FILE`: đường dẫn tuyệt đối tới file JSON service account
-  (cùng file `GOOGLE_APPLICATION_CREDENTIALS` trong `.env.local`).
+  (cùng file `GOOGLE_APPLICATION_CREDENTIALS` trong `web/.env.local`).
 - `CLOUDFLARE_TUNNEL_TOKEN`: xem phần Tunnel; có thể để trống lúc đầu.
 
 Rồi chạy:

@@ -72,7 +72,7 @@ uv run --locked --env-file .env finance-backend serve
 Adapter dùng Application Default Credentials với
 `GOOGLE_APPLICATION_CREDENTIALS`. Chọn credentials của project
 `finance-tracker-6329d` với quyền IAM cần thiết. Project không tự đọc
-`.env.local` của Next.js. Firebase chỉ khởi tạo khi adapter được gọi.
+`web/.env.local` của Next.js. Firebase chỉ khởi tạo khi adapter được gọi.
 
 ## Docker
 

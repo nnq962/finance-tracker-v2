@@ -9,19 +9,21 @@ db/
 └── schema.sql    # TỰ SINH sau mỗi lần migrate — đọc để xem toàn bộ schema, không sửa tay
 ```
 
-Cấu hình Docker và script nằm ở `deploy/`. Kết nối từ Next.js ở `lib/db/`.
+Cấu hình Docker và script nằm ở `deploy/`. Kết nối từ Next.js ở `web/lib/db/`.
 
 ## Lệnh thường dùng
+
+Chạy trong thư mục `web/`:
 
 ```sh
 npm run db:up                # Bật Postgres + áp migration (lần đầu tự tạo mật khẩu)
 npm run db:down              # Tắt Postgres, dữ liệu vẫn giữ
 npm run db:new -- add_budgets   # Tạo file migration mới
-npm run db:migrate           # Áp migration còn thiếu + sinh lại lib/db/types.ts
+npm run db:migrate           # Áp migration còn thiếu + sinh lại web/lib/db/types.ts
 npm run db:rollback          # Huỷ migration gần nhất
 npm run db:status            # Xem migration nào đã/chưa áp
 npm run db:psql              # Mở cửa sổ gõ SQL
-npm run db:types             # Sinh lại lib/db/types.ts từ database
+npm run db:types             # Sinh lại web/lib/db/types.ts từ database
 ```
 
 Lần đầu `npm run db:up` sẽ:
@@ -29,7 +31,7 @@ Lần đầu `npm run db:up` sẽ:
 1. Tạo `deploy/.env.dev` với mật khẩu ngẫu nhiên (không commit file này).
 2. Khởi động Postgres ở `127.0.0.1:5432`, tạo 2 database: `finance` (dev) và
    `finance_test` (integration test, xoá thoải mái).
-3. Thêm `DATABASE_URL` vào `.env.local` để Next.js kết nối.
+3. Thêm `DATABASE_URL` vào `web/.env.local` để Next.js kết nối.
 
 ## Viết migration
 
@@ -44,8 +46,8 @@ ALTER TABLE accounts DROP COLUMN color;
 ```
 
 - Không sửa migration đã áp ở nơi khác (server, máy khác); tạo migration mới.
-- Sau khi migrate, `lib/db/types.ts` được sinh lại để TypeScript biết cột mới.
-- Commit cả file migration lẫn `db/schema.sql` và `lib/db/types.ts`.
+- Sau khi migrate, `web/lib/db/types.ts` được sinh lại để TypeScript biết cột mới.
+- Commit cả file migration lẫn `db/schema.sql` và `web/lib/db/types.ts`.
 
 ## Quy ước schema
 

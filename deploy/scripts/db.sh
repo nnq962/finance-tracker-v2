@@ -8,7 +8,9 @@
 #   npm run db:rollback         undo the latest migration
 #   npm run db:status           list applied / pending migrations
 #   npm run db:psql             open a SQL shell
-#   npm run db:types            regenerate lib/db/types.ts
+#   npm run db:types            regenerate web/lib/db/types.ts
+#
+# Run the npm scripts from web/.
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -43,12 +45,12 @@ ensure_env() {
   set +a
 }
 
-# Next.js reads DATABASE_URL from .env.local; add it on first run.
+# Next.js reads DATABASE_URL from web/.env.local; add it on first run.
 ensure_app_url() {
   local url="postgres://finance_app:${APP_DB_PASSWORD}@127.0.0.1:${POSTGRES_PORT:-5432}/finance"
-  if ! grep -qs '^DATABASE_URL=' "$root/.env.local"; then
-    printf '\n# Local Postgres (deploy/scripts/db.sh)\nDATABASE_URL=%s\n' "$url" >>"$root/.env.local"
-    echo "Added DATABASE_URL to .env.local."
+  if ! grep -qs '^DATABASE_URL=' "$root/web/.env.local"; then
+    printf '\n# Local Postgres (deploy/scripts/db.sh)\nDATABASE_URL=%s\n' "$url" >>"$root/web/.env.local"
+    echo "Added DATABASE_URL to web/.env.local."
   fi
 }
 
@@ -68,7 +70,7 @@ migrate() {
 }
 
 types() {
-  (cd "$root" && npx kysely-codegen \
+  (cd "$root/web" && npx kysely-codegen \
     --url "$(owner_url)" \
     --dialect postgres \
     --camel-case \

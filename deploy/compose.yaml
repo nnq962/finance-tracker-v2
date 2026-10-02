@@ -2,7 +2,7 @@
 # port: services reach each other by name on the compose network.
 #
 # Prod: deploy/scripts/deploy.sh  + compose.prod.yaml (web, tunnel), deploy/.env
-# Dev:  npm run db:up             + compose.dev.yaml, deploy/.env.dev,
+# Dev:  npm run db:up (in web/)   + compose.dev.yaml, deploy/.env.dev,
 #                                   project "finance-dev"
 
 name: finance

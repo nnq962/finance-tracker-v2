@@ -5,7 +5,7 @@
 services:
   web:
     build:
-      context: ..
+      context: ../web
       args:
         NEXT_PUBLIC_FIREBASE_API_KEY: ${NEXT_PUBLIC_FIREBASE_API_KEY:?Set the Firebase web config}
         NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN:?Set the Firebase web config}

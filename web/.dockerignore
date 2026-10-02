@@ -7,13 +7,8 @@ node_modules
 *.tsbuildinfo
 next-env.d.ts
 
-# Not part of the web app
-backend
-deploy
-db
+# Not needed in the image
 scripts
-my-design
-.agents
 .claude
 Dockerfile
 .dockerignore

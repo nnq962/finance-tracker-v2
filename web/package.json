@@ -7,14 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:up": "deploy/scripts/db.sh up",
-    "db:down": "deploy/scripts/db.sh down",
-    "db:new": "deploy/scripts/db.sh new",
-    "db:migrate": "deploy/scripts/db.sh migrate",
-    "db:rollback": "deploy/scripts/db.sh rollback",
-    "db:status": "deploy/scripts/db.sh status",
-    "db:psql": "deploy/scripts/db.sh psql",
-    "db:types": "deploy/scripts/db.sh types"
+    "db:up": "../deploy/scripts/db.sh up",
+    "db:down": "../deploy/scripts/db.sh down",
+    "db:new": "../deploy/scripts/db.sh new",
+    "db:migrate": "../deploy/scripts/db.sh migrate",
+    "db:rollback": "../deploy/scripts/db.sh rollback",
+    "db:status": "../deploy/scripts/db.sh status",
+    "db:psql": "../deploy/scripts/db.sh psql",
+    "db:types": "../deploy/scripts/db.sh types"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
