@@ -17,6 +17,7 @@ import {
   AiDrawerTitle,
 } from "@/components/ui/ai-drawer"
 import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
 
 import { useSpeechRecognition } from "./use-speech-recognition"
 
@@ -125,10 +126,11 @@ export function AiAssistDrawer<Result>({
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
             <MotionConfig reducedMotion="user">
               {/* The drawer's height follows each step. It clips, so it
-                  reaches 12px into the padding around it, room for the cards'
-                  rings and the microphone's ripples, and pads the content
-                  back to where it was: 16px from every edge. */}
-              <AutoHeight className="-mx-3 -mt-1 -mb-3 px-3 pt-1 pb-3" deps={[phase.name, showTyping]}>
+                  reaches 12px into the padding at the sides and bottom, room
+                  for the cards' rings and the microphone's ripples, and pads
+                  the content back to 16px from those edges. Above, the
+                  scroll area clips, so the rings get 4px below the header. */}
+              <AutoHeight className="-mx-3 -mb-3 px-3 pt-1 pb-3" deps={[phase.name, showTyping]}>
                 <AnimatePresence mode="wait" initial={false}>
                   {phase.name === "result" ? (
                     <motion.div key="result" className="space-y-4" {...stepMotion}>
@@ -169,22 +171,26 @@ export function AiAssistDrawer<Result>({
                         <Card>
                           <CardContent className="flex min-h-14 items-center justify-center text-center">
                             {heard ? (
-                              <p className="font-heading text-lg leading-snug font-extrabold" aria-live="polite">
-                                {/* Each word rises in as it is heard. */}
-                                {speech.transcript.split(" ").filter(Boolean).map((word, index) => (
-                                  <motion.span
-                                    key={`${index}-${word}`}
-                                    className="inline-block whitespace-pre"
-                                    initial={{ opacity: 0, y: 6, filter: "blur(3px)" }}
-                                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                                    transition={{ duration: 0.25, ease: EASE_OUT }}
-                                  >
-                                    {word}{" "}
-                                  </motion.span>
+                              <p className="font-heading text-base leading-snug font-extrabold" aria-live="polite">
+                                {/* Each word rises in as it is heard, muted until the
+                                    recogniser settles on it, then darkens in place:
+                                    keyed by position, a settled word keeps its box. */}
+                                {heardWords(speech.transcript, speech.interim).map(({ word, settled }, index) => (
+                                  <React.Fragment key={index}>
+                                    {index > 0 ? " " : null}
+                                    <motion.span
+                                      className={cn(
+                                        "inline-block transition-colors duration-300",
+                                        !settled && "text-muted-foreground",
+                                      )}
+                                      initial={{ opacity: 0, y: 4, filter: "blur(3px)" }}
+                                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                                      transition={{ duration: 0.25, ease: EASE_OUT }}
+                                    >
+                                      {word}
+                                    </motion.span>
+                                  </React.Fragment>
                                 ))}
-                                {speech.interim ? (
-                                  <span className="text-muted-foreground">{speech.interim}</span>
-                                ) : null}
                               </p>
                             ) : (
                               <AnimatePresence mode="wait" initial={false}>
@@ -284,6 +290,13 @@ export function AiAssistDrawer<Result>({
       </AiDrawerContent>
     </AiDrawer>
   )
+}
+
+/** The words heard so far, the settled ones first. */
+function heardWords(transcript: string, interim: string) {
+  const words = (text: string, settled: boolean) =>
+    text.split(/\s+/).filter(Boolean).map((word) => ({ word, settled }))
+  return [...words(transcript, true), ...words(interim, false)]
 }
 
 /** Cycles through `hints`, one every few seconds. */

@@ -106,9 +106,12 @@ export function useSpeechRecognition({ onEnd }: { onEnd: (transcript: string) =>
 
   const stop = React.useCallback(() => recognition.current?.stop(), [])
   const cancel = React.useCallback(() => {
-    // Ends without handing over what was heard.
+    // Ends without handing over what was heard, and forgets it.
     cancelled.current = true
     recognition.current?.abort()
+    setTranscript("")
+    setInterim("")
+    setError(null)
   }, [])
 
   return { supported, listening, transcript, interim, error, start, stop, cancel }
