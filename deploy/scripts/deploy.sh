@@ -23,7 +23,7 @@ compose=(docker compose
   --env-file "$env_file"
   -f "$root/deploy/compose.yaml"
   -f "$root/deploy/compose.prod.yaml")
-services=(web worker)
+services=(web worker ollama)
 if [[ -n "${CLOUDFLARE_TUNNEL_TOKEN:-}" ]]; then
   compose+=(--profile tunnel)
   services+=(cloudflared)
@@ -62,9 +62,18 @@ start() {
 }
 
 echo "==> Starting ${services[*]}"
+# External, so `docker compose down -v` never deletes downloaded models.
+docker volume create finance-ollama >/dev/null
 start web finance-web
 start worker finance-backend
 "${compose[@]}" up -d --wait --remove-orphans "${services[@]}"
 docker image prune -f >/dev/null
+
+# The model lives in the finance-ollama volume; fetch it only when missing.
+model="${OLLAMA_MODEL:-gemma4:e4b}"
+if ! "${compose[@]}" exec -T ollama ollama show "$model" >/dev/null 2>&1; then
+  echo "==> Pulling $model"
+  "${compose[@]}" exec -T ollama ollama pull "$model"
+fi
 
 echo "==> Deployed. Local check: http://127.0.0.1:${WEB_PORT:-3010}"

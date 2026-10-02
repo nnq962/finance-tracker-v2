@@ -10,7 +10,7 @@ finance.nnqlab.dev → Cloudflare → Tunnel → web (Next.js) → postgres
 | File | Vai trò |
 |---|---|
 | `compose.yaml` | Postgres + migration (dùng chung dev/prod) |
-| `compose.prod.yaml` | `web` (Next.js) + `cloudflared` |
+| `compose.prod.yaml` | `web` (Next.js), `worker`, `ollama` (LLM nội bộ) + `cloudflared` |
 | `compose.dev.yaml` | Dev: mở Postgres ở `127.0.0.1:5432`, thêm DB `finance_test` |
 | `scripts/deploy.sh` | Pull → build → migrate → khởi động lại |
 | `scripts/db.sh` | Lệnh `npm run db:*` cho dev |
@@ -59,6 +59,21 @@ deploy/scripts/deploy.sh
 ```
 
 Mở `http://127.0.0.1:3010` để kiểm tra trước khi mở ra Internet.
+
+## Ollama (LLM nội bộ)
+
+Service `ollama` chạy model `gemma4:e4b` trên GPU (khoảng 5GB VRAM), không mở
+port: chỉ các service trong mạng compose gọi được, qua `http://ollama:11434`.
+Cần NVIDIA Container Toolkit trên máy chủ.
+
+Model nằm trong volume `finance-ollama`, volume này nằm ngoài compose nên
+`down -v` không xoá model. `deploy.sh` chỉ tải model khi chưa có. Muốn đổi model
+thì đặt `OLLAMA_MODEL` trong `deploy/.env`, rồi xoá model cũ:
+
+```sh
+docker exec finance-ollama-1 ollama list
+docker exec finance-ollama-1 ollama rm <model-cũ>
+```
 
 ## Cloudflare Tunnel
 
