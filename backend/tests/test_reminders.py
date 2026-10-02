@@ -511,3 +511,33 @@ def test_shutdown_stops_before_sending(conn, users):
     instance.process(uid, NOW, stop)
     # Left due: the next pass sends it once the lease expires.
     assert next_at(conn, uid) <= NOW
+
+
+def test_users_already_tried_do_not_hold_back_new_ones(conn, users):
+    """A user still waiting for a device is tried again only after users
+    who have not been tried for their due run."""
+    waiting = users()
+    settings(conn, waiting, next_reminder_at=NOW - timedelta(minutes=30))
+    earlier = NOW - timedelta(minutes=20)
+    worker(conn, at=earlier).process(waiting, earlier)
+    assert log(conn, waiting)["status"] == "waiting"
+    fresh = users()
+    settings(conn, fresh, next_reminder_at=NOW - timedelta(minutes=5))
+    target = device(conn, users, fresh)
+    sent = []
+    # Other test users may share the database; the fresh user must still
+    # come before the waiting one.
+    instance = worker(conn, sent.append)
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT s.user_id FROM notification_settings s "
+            "LEFT JOIN notification_logs l ON l.user_id = s.user_id "
+            "AND l.date = (s.next_reminder_at AT TIME ZONE 'Asia/Ho_Chi_Minh')::date "
+            "WHERE s.notifications_enabled AND s.next_reminder_at <= %s "
+            "ORDER BY l.updated_at NULLS FIRST, s.next_reminder_at, s.user_id",
+            (NOW,),
+        )
+        order = [row["user_id"] for row in cur.fetchall()]
+    assert order.index(fresh) < order.index(waiting)
+    instance.run_once(limit=order.index(fresh) + 1)
+    assert result(conn, fresh, target.id)["status"] == "sent"

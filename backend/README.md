@@ -30,6 +30,8 @@ LLM/STT sẽ chạy trong container riêng, API gọi nội bộ.
 Mỗi 10 phút (đúng :00, :10, :20…), worker:
 
 1. Tìm người dùng đã bật nhắc và đến giờ (`notification_settings.next_reminder_at`).
+   Người chưa được xử lý lượt này đi trước; người đã thử (chưa có thiết bị,
+   đang chờ thử lại) xếp sau, để không chiếm chỗ của người vừa đến giờ.
 2. Mỗi người một lượt cho mỗi ngày đã hẹn (ngày theo giờ Việt Nam của
    `next_reminder_at`, nên lời nhắc 23:55 gửi lúc 00:00 vẫn tính cho hôm
    trước), ghi trong `notification_logs`. Lượt được **giữ chỗ 5 phút** cho

@@ -17,9 +17,7 @@ import { getCategoryColor, type CategoryColorName } from "@/lib/categories/categ
 import type { CategoryGroup, CategoryType } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
-import type { Transaction } from "@/lib/transactions/types"
-
-import { getTransactionDateKey } from "../../transactions/_lib/get-transaction-period"
+import type { MonthAllocation } from "@/lib/overview/month-data"
 
 // Five groups and the rest folded into one neutral "Khác" slice.
 const MAX_SLICES = 5
@@ -39,7 +37,8 @@ type Slice = {
 
 type AllocationDonutProps = {
   categoryGroups: CategoryGroup[]
-  transactions: Transaction[]
+  /** Totals per month and category group, summed on the server. */
+  allocation: Record<string, MonthAllocation>
   /** "YYYY-MM", the month shown by the calendar. */
   month: string
 }
@@ -48,19 +47,13 @@ type AllocationDonutProps = {
  * How a month's income or expenses split across category groups. Loans are
  * left out: borrowing and lending are not income or spending.
  */
-export function AllocationDonut({ categoryGroups, transactions, month }: AllocationDonutProps) {
+export function AllocationDonut({ categoryGroups, allocation, month }: AllocationDonutProps) {
   const [type, setType] = React.useState<CategoryType>("expense")
   const groupsById = new Map(categoryGroups.map((group) => [group.id, group]))
 
-  const totals = new Map<string, number>()
-  for (const transaction of transactions) {
-    if (transaction.source || transaction.kind !== type) continue
-    if (getTransactionDateKey(transaction.occurredAt).slice(0, 7) !== month) continue
-    const key = transaction.categoryGroupId ?? "other"
-    totals.set(key, (totals.get(key) ?? 0) + Math.abs(transaction.amount))
-  }
-  const total = [...totals.values()].reduce((sum, amount) => sum + amount, 0)
-  const ranked = [...totals].sort((left, right) => right[1] - left[1])
+  const totals = Object.entries(allocation[month]?.[type] ?? {})
+  const total = totals.reduce((sum, [, amount]) => sum + amount, 0)
+  const ranked = totals.sort((left, right) => right[1] - left[1])
   const visible = ranked.length > MAX_SLICES + 1 ? ranked.slice(0, MAX_SLICES) : ranked
   const restAmount = ranked.slice(visible.length).reduce((sum, [, amount]) => sum + amount, 0)
   const toShare = (amount: number) => (total > 0 ? Math.round((amount / total) * 100) : 0)

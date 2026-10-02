@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import { toast } from "sonner"
 
 import { SettingsGroup } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
@@ -9,20 +10,20 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { Skeleton } from "@/components/ui/skeleton"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDayLabel } from "@/lib/format-date"
+import type { DayTotals } from "@/lib/overview/month-data"
 import type { Transaction } from "@/lib/transactions/types"
 import { cn } from "@/lib/utils"
 
 import { TransactionItem } from "../../transactions/_components/transaction-item"
-import { getTransactionDateKey } from "../../transactions/_lib/get-transaction-period"
 import { cashFlowColors } from "../../transactions/_lib/transaction-presentation"
+import { getDayTransactionsAction } from "../actions"
 
 const weekdays = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
-
-type DayTotals = { income: number; expense: number; transactions: Transaction[] }
 
 /** Short amounts that fit a day cell: 460k, 1,2tr, 25tr, 1,5tỷ. */
 function compactAmount(value: number) {
@@ -44,7 +45,8 @@ function shiftMonth(month: string, offset: number) {
 type CashFlowCalendarProps = {
   accounts: Account[]
   categoryGroups: CategoryGroup[]
-  transactions: Transaction[]
+  /** Totals per Vietnam day ("YYYY-MM-DD"), summed on the server. */
+  days: Record<string, DayTotals>
   /** "YYYY-MM-DD" in Vietnam time. */
   today: string
   /** Earliest month with loaded transactions, "YYYY-MM". */
@@ -58,7 +60,7 @@ type CashFlowCalendarProps = {
 export function CashFlowCalendar({
   accounts,
   categoryGroups,
-  transactions,
+  days,
   today,
   minMonth,
   month,
@@ -67,19 +69,22 @@ export function CashFlowCalendar({
   const maxMonth = today.slice(0, 7)
   const [openDay, setOpenDay] = React.useState<string | null>(null)
 
-  // Totals per day, counting income and expenses as the transactions page does.
-  const days = React.useMemo(() => {
-    const totals = new Map<string, DayTotals>()
-    for (const transaction of transactions) {
-      const key = getTransactionDateKey(transaction.occurredAt)
-      const day = totals.get(key) ?? { income: 0, expense: 0, transactions: [] }
-      if (transaction.kind === "income") day.income += Math.abs(transaction.amount)
-      if (transaction.kind === "expense") day.expense += Math.abs(transaction.amount)
-      day.transactions.push(transaction)
-      totals.set(key, day)
+  // The open day's transactions, loaded when it opens and again whenever
+  // the totals change (an edit or delete in the sheet revalidates the page).
+  const [loaded, setLoaded] = React.useState<{ key: string; items: Transaction[] } | null>(null)
+  React.useEffect(() => {
+    if (!openDay) return
+    let cancelled = false
+    void getDayTransactionsAction(openDay).then((result) => {
+      if (cancelled) return
+      if (result.success) setLoaded({ key: openDay, items: result.data })
+      else toast.error(result.error)
+    })
+    return () => {
+      cancelled = true
     }
-    return totals
-  }, [transactions])
+  }, [openDay, days])
+  const dayItems = loaded && loaded.key === openDay ? loaded.items : null
 
   const [year, monthNumber] = month.split("-").map(Number)
   const daysInMonth = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate()
@@ -87,12 +92,12 @@ export function CashFlowCalendar({
   const leadingBlanks = (new Date(Date.UTC(year, monthNumber - 1, 1)).getUTCDay() + 6) % 7
   const monthDays = Array.from({ length: daysInMonth }, (_, index) => {
     const key = `${month}-${String(index + 1).padStart(2, "0")}`
-    return { key, day: index + 1, totals: days.get(key) }
+    return { key, day: index + 1, totals: days[key] }
   })
   const monthIncome = monthDays.reduce((sum, day) => sum + (day.totals?.income ?? 0), 0)
   const monthExpense = monthDays.reduce((sum, day) => sum + (day.totals?.expense ?? 0), 0)
 
-  const openTotals = openDay ? days.get(openDay) : undefined
+  const openTotals = openDay ? days[openDay] : undefined
   // Keeps the last day's title while the sheet slides closed.
   const [shownDay, setShownDay] = React.useState(openDay)
   if (openDay && openDay !== shownDay) setShownDay(openDay)
@@ -226,10 +231,9 @@ export function CashFlowCalendar({
                       </p>
                     </div>
                   </div>
-                  <SettingsGroup title={`${openTotals.transactions.length} giao dịch`}>
-                    {[...openTotals.transactions]
-                      .sort((left, right) => right.occurredAt.localeCompare(left.occurredAt))
-                      .map((transaction) => (
+                  {dayItems ? (
+                    <SettingsGroup title={`${dayItems.length} giao dịch`}>
+                      {dayItems.map((transaction) => (
                         <TransactionItem
                           key={transaction.id}
                           accounts={accounts}
@@ -237,7 +241,13 @@ export function CashFlowCalendar({
                           transaction={transaction}
                         />
                       ))}
-                  </SettingsGroup>
+                    </SettingsGroup>
+                  ) : (
+                    <div className="space-y-2" role="status" aria-label="Đang tải giao dịch">
+                      <Skeleton className="mx-3 h-3 w-24" />
+                      <Skeleton className="h-36 w-full rounded-xl" />
+                    </div>
+                  )}
                 </div>
               ) : null}
             </SheetContent>

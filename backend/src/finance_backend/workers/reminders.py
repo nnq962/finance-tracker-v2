@@ -432,11 +432,17 @@ class ReminderWorker:
     def run_once(self, *, dry_run=False, limit=100, stop=None):
         now = self.clock()
         with self.conn.cursor() as cur:
+            # Users not yet tried for their due run come first; those already
+            # tried (no device yet, waiting to retry) go last, so they cannot
+            # fill every pass and hold back users who just became due.
             cur.execute(
-                "SELECT user_id FROM notification_settings "
-                "WHERE notifications_enabled AND next_reminder_at <= %s "
-                "ORDER BY next_reminder_at, user_id LIMIT %s",
-                (now, limit),
+                "SELECT s.user_id FROM notification_settings s "
+                "LEFT JOIN notification_logs l ON l.user_id = s.user_id "
+                "AND l.date = (s.next_reminder_at AT TIME ZONE %s)::date "
+                "WHERE s.notifications_enabled AND s.next_reminder_at <= %s "
+                "ORDER BY l.updated_at NULLS FIRST, s.next_reminder_at, s.user_id "
+                "LIMIT %s",
+                (VIETNAM.key, now, limit),
             )
             due_users = [row["user_id"] for row in cur.fetchall()]
         for uid in due_users:

@@ -4,6 +4,7 @@ import { loadWithSession } from "@/lib/auth/session"
 import { getCategoryGroups } from "@/lib/categories/repository"
 import { todayDate } from "@/lib/debts/calculations"
 import { getContacts, getDebts } from "@/lib/debts/repository"
+import { summarizeAllocation, summarizeDays } from "@/lib/overview/month-data"
 import { getOverviewSummary } from "@/lib/overview/summary"
 import { getChecklistState } from "@/lib/onboarding/repository"
 import { getTransactionsInRange } from "@/lib/transactions/repository"
@@ -72,7 +73,9 @@ export default async function OverviewPage() {
       <OverviewMonth
         accounts={accounts}
         categoryGroups={categoryGroups}
-        transactions={transactions}
+        // Totals only: the page no longer sends six months of transactions.
+        days={summarizeDays(transactions)}
+        allocation={summarizeAllocation(transactions)}
         today={today}
         // The six months loaded for the chart.
         minMonth={transactionRange.startMonth}

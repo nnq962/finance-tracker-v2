@@ -27,6 +27,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { getLocalDateTime } from "@/lib/date-time"
+import { toDateKey } from "@/lib/format-date"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 
 import type { TransactionFieldProps } from "../form-types"
@@ -230,6 +231,9 @@ export function CashFlowFields({
 
       <DateTimeFields
         idPrefix={idPrefix}
+        // The server accepts 2000 through today (Vietnam time).
+        minDate="2000-01-01"
+        maxDate={toDateKey(new Date())}
         defaultDate={defaultDateTime?.date}
         defaultTime={defaultDateTime?.time}
         required

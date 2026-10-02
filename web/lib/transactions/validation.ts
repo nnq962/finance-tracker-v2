@@ -7,6 +7,7 @@ import type {
   TransactionFormValues,
 } from "@/lib/transactions/types"
 import { MAX_MONEY } from "@/lib/money"
+import { toDateKey } from "@/lib/format-date"
 
 const supportedKinds = new Set<SupportedTransactionKind>([
   "expense",
@@ -81,6 +82,8 @@ function getDocumentId(formData: FormData, name: string, label: string) {
   return value
 }
 
+export const EARLIEST_DATE = "2000-01-01"
+
 function getOccurredAt(formData: FormData) {
   const date = getText(formData, "date")
   const time = getText(formData, "time")
@@ -95,6 +98,14 @@ function getOccurredAt(formData: FormData) {
     }) !== date
   ) {
     throw new TransactionValidationError("Thời gian giao dịch không hợp lệ.")
+  }
+  // Recorded money has already moved: no later than today (Vietnam time),
+  // and not before 2000, which catches a mistyped year.
+  if (date > toDateKey(new Date())) {
+    throw new TransactionValidationError("Ngày giao dịch không được sau hôm nay.")
+  }
+  if (date < EARLIEST_DATE) {
+    throw new TransactionValidationError("Ngày giao dịch phải từ năm 2000 trở đi.")
   }
 
   return occurredAt

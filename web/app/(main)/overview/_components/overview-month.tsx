@@ -4,7 +4,7 @@ import * as React from "react"
 
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
-import type { Transaction } from "@/lib/transactions/types"
+import type { DayTotals, MonthAllocation } from "@/lib/overview/month-data"
 
 import { AllocationDonut } from "./allocation-donut"
 import { CashFlowCalendar } from "./cash-flow-calendar"
@@ -12,7 +12,8 @@ import { CashFlowCalendar } from "./cash-flow-calendar"
 type OverviewMonthProps = {
   accounts: Account[]
   categoryGroups: CategoryGroup[]
-  transactions: Transaction[]
+  days: Record<string, DayTotals>
+  allocation: Record<string, MonthAllocation>
   today: string
   minMonth: string
   /** Shown above the allocation, e.g. debts coming due. */
@@ -25,7 +26,8 @@ type OverviewMonthProps = {
 export function OverviewMonth({
   accounts,
   categoryGroups,
-  transactions,
+  days,
+  allocation,
   today,
   minMonth,
   aside,
@@ -38,7 +40,7 @@ export function OverviewMonth({
       <CashFlowCalendar
         accounts={accounts}
         categoryGroups={categoryGroups}
-        transactions={transactions}
+        days={days}
         today={today}
         minMonth={minMonth}
         month={month}
@@ -48,7 +50,7 @@ export function OverviewMonth({
         {aside}
         <AllocationDonut
           categoryGroups={categoryGroups}
-          transactions={transactions}
+          allocation={allocation}
           month={month}
         />
         {footer}

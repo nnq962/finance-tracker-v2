@@ -5,6 +5,8 @@ const { randomUUID } = require('node:crypto')
 const { sql, createUser, cleanup } = require('./lib/db-harness.cjs')
 const accounts = require('../lib/accounts/repository.ts')
 const transactions = require('../lib/transactions/repository.ts')
+const validation = require('../lib/transactions/validation.ts')
+const { toDateKey } = require('../lib/format-date.ts')
 
 const count = async (text, params) => Number((await sql(text, params)).rows[0].count)
 const balance = async (id) => Number((await sql('SELECT balance FROM accounts WHERE id = $1', [id])).rows[0].balance)
@@ -66,7 +68,19 @@ async function run() {
     assert.deepEqual([...times].sort().reverse(), times)
     assert.deepEqual(await transactions.getRecentTransactionsByAccount(otherId), {})
 
-    console.log('Transaction checks passed: request ids, balances, recent per account.')
+    // Dates run from 2000 through today in Vietnam time.
+    const form = (date) => {
+      const data = new FormData()
+      for (const [key, value] of Object.entries({ kind: 'expense', amount: '1000', accountId: wallet, categoryId: meal, date, time: '23:59' })) data.set(key, value)
+      return data
+    }
+    const today = toDateKey(new Date())
+    const tomorrow = toDateKey(new Date(Date.now() + 86_400_000))
+    assert.equal(toDateKey(validation.parseTransactionFormData(form(today)).occurredAt), today)
+    assert.throws(() => validation.parseTransactionFormData(form(tomorrow)), /sau hôm nay/)
+    assert.throws(() => validation.parseTransactionFormData(form('1999-12-31')), /năm 2000/)
+
+    console.log('Transaction checks passed: request ids, balances, recent per account, date range.')
   } finally {
     await cleanup()
   }

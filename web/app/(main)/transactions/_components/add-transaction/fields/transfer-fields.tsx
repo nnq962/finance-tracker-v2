@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { getLocalDateTime } from "@/lib/date-time"
+import { toDateKey } from "@/lib/format-date"
 
 import type { TransactionFieldProps } from "../form-types"
 import { useTransactionHistory } from "../transaction-history-context"
@@ -146,6 +147,9 @@ export function TransferFields({
 
       <DateTimeFields
         idPrefix="transfer"
+        // The server accepts 2000 through today (Vietnam time).
+        minDate="2000-01-01"
+        maxDate={toDateKey(new Date())}
         defaultDate={defaultDateTime?.date}
         defaultTime={defaultDateTime?.time}
         required
