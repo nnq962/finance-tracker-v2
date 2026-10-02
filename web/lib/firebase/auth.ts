@@ -10,6 +10,9 @@ import { firebaseAuth } from "@/lib/firebase/client"
 import { stopPushDeviceSync, unregisterLocalPushDevice } from "@/lib/firebase/push-device"
 
 const googleProvider = new GoogleAuthProvider()
+// Always show Google's account chooser; otherwise a browser signed in to one
+// Google account is logged straight back into it after signing out.
+googleProvider.setCustomParameters({ prompt: "select_account" })
 
 export function signInWithGoogle() {
   return signInWithPopup(firebaseAuth, googleProvider)
