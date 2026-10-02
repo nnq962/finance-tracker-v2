@@ -4,6 +4,7 @@ import * as React from "react"
 import {
   BellRingIcon,
   CircleHelpIcon,
+  MicIcon,
   PaletteIcon,
   SmartphoneIcon,
   TagsIcon,
@@ -29,6 +30,7 @@ import { NotificationDevices } from "./notification-devices"
 import { NotificationPreferences } from "./notification-preferences"
 import { SignOutRow } from "./sign-out-row"
 import { ThemeOptions, themeOptions, useThemeChoice } from "./theme-options"
+import { VoiceLab } from "./voice-lab"
 
 /** Screens opened from the list: a sliding sheet on mobile, a side panel from md. */
 const screens = {
@@ -43,6 +45,10 @@ const screens = {
   devices: {
     title: "Thiết bị nhận thông báo",
     description: "Các thiết bị đang nhận lời nhắc của tài khoản này.",
+  },
+  voice: {
+    title: "Thử giọng nói",
+    description: "Kiểm tra micro và nhận dạng giọng nói trên thiết bị này.",
   },
 } as const
 
@@ -100,6 +106,8 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
             onChange={setDevices}
           />
         )
+      case "voice":
+        return <VoiceLab />
     }
   }
 
@@ -166,6 +174,16 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
             onClick={() => open("devices")}
           />
           <InstallAppRow />
+        </SettingsGroup>
+
+        <SettingsGroup title="Thử nghiệm">
+          <SettingsRow
+            icon={MicIcon}
+            color="rose"
+            title="Thử giọng nói"
+            active={panelScreen === "voice"}
+            onClick={() => open("voice")}
+          />
         </SettingsGroup>
 
         <SettingsGroup>
