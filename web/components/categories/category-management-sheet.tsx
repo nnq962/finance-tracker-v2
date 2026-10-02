@@ -3,7 +3,6 @@
 import * as React from "react"
 import {
   ArrowDownLeftIcon,
-  ArrowLeftIcon,
   ArrowUpRightIcon,
   LoaderCircleIcon,
   PlusIcon,
@@ -21,33 +20,35 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/animate-ui/components/radix/alert-dialog"
 import { Tabs, TabsList, TabsTrigger } from "@/components/animate-ui/components/radix/tabs"
+import { ColorPicker } from "@/components/forms/color-picker"
 import { IconPicker } from "@/components/forms/icon-picker"
+import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardTitle } from "@/components/ui/card"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetFooter,
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { TabsContent } from "@/components/ui/tabs"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import {
-  createCategoryGroupNameAction,
+  createCategoryGroupAction,
   createCategoryItemAction,
   deleteCategoryGroupAction,
   deleteCategoryItemAction,
-  updateCategoryGroupNameAction,
+  updateCategoryGroupAction,
   updateCategoryItemAction,
 } from "@/lib/categories/actions"
+import {
+  getCategoryColor,
+  type CategoryColorName,
+} from "@/lib/categories/category-colors"
 import type { CategoryGroup, CategoryItem, CategoryType } from "@/lib/categories/types"
 import {
   categoryIconRegistry,
@@ -64,7 +65,6 @@ type CategoryManagementSheetProps = {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   initialType?: CategoryType
-  showBackButton?: boolean
 }
 
 const sections = [
@@ -72,27 +72,27 @@ const sections = [
   { type: "income", label: "Thu tiền", icon: ArrowDownLeftIcon },
 ] as const
 
+const DEFAULT_COLOR: CategoryColorName = "blue"
+const DEFAULT_ICON: CategoryIconName = "receipt"
+
 export function CategoryManagementSheet({
   groups,
   triggerContent,
   open: controlledOpen,
   onOpenChange,
   initialType = "expense",
-  showBackButton = false,
 }: CategoryManagementSheetProps) {
   const router = useRouter()
   const [internalOpen, setInternalOpen] = React.useState(false)
   const open = controlledOpen ?? internalOpen
   const [isPending, startTransition] = React.useTransition()
   const [activeType, setActiveType] = React.useState<CategoryType>(initialType)
-  const [selectedGroupIds, setSelectedGroupIds] = React.useState<
-    Partial<Record<CategoryType, string>>
-  >({})
   const [editor, setEditor] = React.useState<Editor | null>(null)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
   const [deleteError, setDeleteError] = React.useState("")
   const [name, setName] = React.useState("")
-  const [iconName, setIconName] = React.useState<CategoryIconName>("receipt")
+  const [iconName, setIconName] = React.useState<CategoryIconName>(DEFAULT_ICON)
+  const [colorName, setColorName] = React.useState<CategoryColorName>(DEFAULT_COLOR)
   const [error, setError] = React.useState("")
 
   const editingGroup = editor?.groupId
@@ -105,6 +105,8 @@ export function CategoryManagementSheet({
   function openGroupEditor(group?: CategoryGroup) {
     setActiveType(group?.type ?? activeType)
     setName(group?.name ?? "")
+    setColorName(group?.colorName ?? DEFAULT_COLOR)
+    setIconName(group?.iconName ?? DEFAULT_ICON)
     setError("")
     setEditor({ kind: "group", groupId: group?.id })
   }
@@ -112,7 +114,9 @@ export function CategoryManagementSheet({
   function openItemEditor(group: CategoryGroup, item?: CategoryItem) {
     setActiveType(group.type)
     setName(item?.name ?? "")
-    setIconName(item?.iconName ?? "receipt")
+    // Items take their colour from the group.
+    setColorName(group.colorName)
+    setIconName(item?.iconName ?? DEFAULT_ICON)
     setError("")
     setEditor({ kind: "item", groupId: group.id, itemId: item?.id })
   }
@@ -123,17 +127,18 @@ export function CategoryManagementSheet({
 
     const nextName = name.trim()
     if (!nextName) {
-      setError("Vui lòng nhập tên hạng mục.")
+      setError(editor.kind === "group" ? "Vui lòng nhập tên nhóm." : "Vui lòng nhập tên hạng mục.")
       return
     }
 
     setError("")
     startTransition(async () => {
       try {
+        const groupValues = { name: nextName, colorName, iconName }
         const result = editor.kind === "group"
           ? editor.groupId
-            ? await updateCategoryGroupNameAction(editor.groupId, nextName)
-            : await createCategoryGroupNameAction(activeType, nextName)
+            ? await updateCategoryGroupAction(editor.groupId, groupValues)
+            : await createCategoryGroupAction(activeType, groupValues)
           : editor.itemId
             ? await updateCategoryItemAction(editor.itemId, { name: nextName, iconName })
             : await createCategoryItemAction(editor.groupId, { name: nextName, iconName })
@@ -144,11 +149,8 @@ export function CategoryManagementSheet({
           return
         }
 
-        if (editor.kind === "group" && "id" in result) {
-          setSelectedGroupIds((current) => ({ ...current, [activeType]: result.id }))
-        }
         setEditor(null)
-        toast.success("Đã lưu hạng mục.")
+        toast.success(editor.kind === "group" ? "Đã lưu nhóm." : "Đã lưu hạng mục.")
         router.refresh()
       } catch {
         const message = "Không thể lưu thay đổi. Vui lòng thử lại."
@@ -174,24 +176,23 @@ export function CategoryManagementSheet({
           return
         }
 
-        if (currentEditor.kind === "group") {
-          setSelectedGroupIds((current) => ({ ...current, [activeType]: undefined }))
-        }
         setDeleteOpen(false)
         setEditor(null)
-        toast.success("Đã xoá hạng mục.")
+        toast.success(currentEditor.kind === "group" ? "Đã xoá nhóm." : "Đã xoá hạng mục.")
         router.refresh()
       } catch {
-        const message = "Không thể xoá hạng mục. Vui lòng thử lại."
+        const message = "Không thể xoá. Vui lòng thử lại."
         setDeleteError(message)
         toast.error(message)
       }
     })
   }
 
+  const typeLabel = activeType === "expense" ? "chi" : "thu"
   const editorTitle = editor?.kind === "group"
-    ? `${editor.groupId ? "Sửa" : "Thêm"} nhóm ${activeType === "expense" ? "chi" : "thu"}`
+    ? `${editor.groupId ? "Sửa" : "Thêm"} nhóm ${typeLabel}`
     : `${editor?.itemId ? "Sửa" : "Thêm"} hạng mục`
+  const canDelete = editor?.kind === "group" ? Boolean(editor.groupId) : Boolean(editor?.itemId)
 
   return (
     <Sheet open={open} onOpenChange={(nextOpen) => {
@@ -214,10 +215,10 @@ export function CategoryManagementSheet({
           title={editor ? editorTitle : "Quản lý hạng mục"}
           description={
             editor?.kind === "group"
-              ? "Nhóm hạng mục chỉ cần một tên để sắp xếp các khoản thu, chi."
+              ? "Các hạng mục trong nhóm dùng chung màu của nhóm."
               : editor?.kind === "item"
-                ? `Chọn icon và đặt tên trong nhóm “${editingGroup?.name ?? ""}”.`
-                : "Chạm vào hạng mục để sửa hoặc thêm nhóm mới."
+                ? `Hạng mục trong nhóm “${editingGroup?.name ?? ""}”.`
+                : "Chạm vào hạng mục hoặc nút Sửa của nhóm để chỉnh sửa."
           }
           // In the editor, back returns to the list instead of closing.
           onBack={editor ? () => setEditor(null) : undefined}
@@ -226,14 +227,14 @@ export function CategoryManagementSheet({
 
         {editor ? (
           <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSave}>
-            <div className="flex-1 overflow-y-auto px-4 pt-px pb-4">
+            <div className="flex-1 space-y-6 overflow-y-auto px-4 pt-px pb-4">
               <FieldGroup>
                 <Field data-invalid={Boolean(error)}>
-                  <FieldLabel htmlFor="category-mock-name">
+                  <FieldLabel htmlFor="category-name">
                     {editor.kind === "group" ? "Tên nhóm" : "Tên hạng mục"}
                   </FieldLabel>
                   <Input
-                    id="category-mock-name"
+                    id="category-name"
                     value={name}
                     onChange={(event) => {
                       setName(event.target.value)
@@ -246,69 +247,70 @@ export function CategoryManagementSheet({
                   />
                   {error ? <FieldError>{error}</FieldError> : null}
                 </Field>
-                {editor.kind === "item" ? (
+                {editor.kind === "group" ? (
                   <Field>
-                    <FieldLabel>Biểu tượng</FieldLabel>
-                    <IconPicker color="blue" value={iconName} onValueChange={setIconName} />
+                    <FieldLabel>Màu</FieldLabel>
+                    <ColorPicker value={colorName} onValueChange={setColorName} />
                   </Field>
                 ) : null}
+                <Field>
+                  <FieldLabel>Biểu tượng</FieldLabel>
+                  <IconPicker color={colorName} value={iconName} onValueChange={setIconName} />
+                </Field>
               </FieldGroup>
-              {editor.groupId && (editor.kind === "group" || editor.itemId) ? (
-                <div className="mt-6">
-                  <AlertDialog open={deleteOpen} onOpenChange={(nextOpen) => {
-                    if (isPending) return
-                    setDeleteOpen(nextOpen)
-                    if (nextOpen) setDeleteError("")
-                  }}>
-                    <AlertDialogTrigger asChild>
-                      <Button type="button" variant="destructive" disabled={isPending}>
-                        <Trash2Icon />
-                        Xoá {editor.kind === "group" ? "nhóm" : "hạng mục"}
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Xoá {editor.kind === "group" ? "nhóm" : "hạng mục"}?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          {editor.kind === "group"
-                            ? `Nhóm “${editingGroup?.name ?? ""}” cùng ${editingGroup?.items.length ?? 0} hạng mục bên trong sẽ bị xoá. Các giao dịch cũ vẫn được giữ lại.`
-                            : `Hạng mục “${editingItem?.name ?? ""}” sẽ bị xoá. Các giao dịch cũ vẫn được giữ lại.`}
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      {deleteError ? <FieldError>{deleteError}</FieldError> : null}
-                      <AlertDialogFooter>
-                        <AlertDialogCancel disabled={isPending}>Huỷ</AlertDialogCancel>
-                        <AlertDialogAction
-                          type="button"
-                          disabled={isPending}
-                          onClick={(event) => {
-                            event.preventDefault()
-                            handleDelete()
-                          }}
-                        >
-                          {isPending ? <LoaderCircleIcon className="animate-spin" /> : <Trash2Icon />}
-                          {isPending ? "Đang xoá..." : "Xoá"}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
+
+              {canDelete ? (
+                <SettingsGroup>
+                  <SettingsRow
+                    destructive
+                    title={editor.kind === "group" ? "Xoá nhóm" : "Xoá hạng mục"}
+                    disabled={isPending}
+                    onClick={() => {
+                      setDeleteError("")
+                      setDeleteOpen(true)
+                    }}
+                  />
+                </SettingsGroup>
               ) : null}
             </div>
             <SheetFooter>
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" className="flex-1" disabled={isPending} onClick={() => setEditor(null)}>
-                  <ArrowLeftIcon />
-                  Quay lại
-                </Button>
-                <Button type="submit" className="flex-1" disabled={isPending}>
-                  {isPending ? <LoaderCircleIcon className="animate-spin" /> : null}
-                  {isPending ? "Đang lưu..." : "Lưu"}
-                </Button>
-              </div>
+              <Button type="submit" className="w-full" disabled={isPending}>
+                {isPending ? <LoaderCircleIcon className="animate-spin" /> : null}
+                {isPending ? "Đang lưu..." : "Lưu"}
+              </Button>
             </SheetFooter>
+
+            <AlertDialog open={deleteOpen} onOpenChange={(nextOpen) => {
+              if (!isPending) setDeleteOpen(nextOpen)
+            }}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Xoá {editor.kind === "group" ? "nhóm" : "hạng mục"}?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {editor.kind === "group"
+                      ? `Nhóm “${editingGroup?.name ?? ""}” cùng ${editingGroup?.items.length ?? 0} hạng mục bên trong sẽ bị xoá. Các giao dịch cũ vẫn được giữ lại.`
+                      : `Hạng mục “${editingItem?.name ?? ""}” sẽ bị xoá. Các giao dịch cũ vẫn được giữ lại.`}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                {deleteError ? <FieldError>{deleteError}</FieldError> : null}
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isPending}>Huỷ</AlertDialogCancel>
+                  <AlertDialogAction
+                    type="button"
+                    disabled={isPending}
+                    onClick={(event) => {
+                      event.preventDefault()
+                      handleDelete()
+                    }}
+                  >
+                    {isPending ? <LoaderCircleIcon className="animate-spin" /> : <Trash2Icon />}
+                    {isPending ? "Đang xoá..." : "Xoá"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </form>
         ) : (
           <Tabs
@@ -328,86 +330,55 @@ export function CategoryManagementSheet({
             </div>
             {sections.map(({ type }) => {
               const visibleGroups = groups.filter((group) => group.type === type)
-              const selectedGroup = visibleGroups.find(
-                (group) => group.id === selectedGroupIds[type],
-              ) ?? visibleGroups[0]
               return (
                 <TabsContent key={type} value={type} className="min-h-0 overflow-y-auto px-4 pt-px pb-4">
-                  {selectedGroup ? (
-                    <div className="space-y-5">
-                      <div className="-mx-4 overflow-x-auto px-4 pb-2 pt-1">
-                        <ToggleGroup
-                          type="single"
-                          value={selectedGroup.id}
-                          onValueChange={(value) => {
-                            if (value) setSelectedGroupIds((current) => ({
-                              ...current,
-                              [type]: value,
-                            }))
-                          }}
-                          aria-label={`Nhóm hạng mục ${type === "expense" ? "chi" : "thu"}`}
-                        >
-                          {visibleGroups.map((group) => (
-                            <ToggleGroupItem key={group.id} value={group.id}>
-                              {group.name}
-                            </ToggleGroupItem>
-                          ))}
-                        </ToggleGroup>
-                      </div>
-
-                      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3">
-                        <h2 className="min-w-0 truncate font-heading text-base font-extrabold">
-                          {selectedGroup.name}
-                        </h2>
-                        <Button type="button" variant="ghost" onClick={() => openGroupEditor(selectedGroup)}>
-                          Chỉnh sửa
-                        </Button>
-                        <p className="col-start-1 text-sm text-muted-foreground">
-                          {selectedGroup.items.length} hạng mục
-                        </p>
-                      </div>
-
-                      {selectedGroup.items.length ? (
-                        <div className="grid grid-cols-2 gap-3">
-                          {selectedGroup.items.map((item) => {
-                            const Icon = categoryIconRegistry[item.iconName]
-                            return (
-                              <Card key={item.id} size="sm" pressable asChild className="h-18 justify-center">
-                                <button
-                                  type="button"
-                                  aria-label={`Sửa hạng mục ${item.name}`}
-                                  onClick={() => openItemEditor(selectedGroup, item)}
-                                >
-                                  <CardContent className="flex items-center gap-3">
-                                    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
-                                      <Icon className="size-5" />
-                                    </span>
-                                    <CardTitle className="min-w-0 line-clamp-2 text-left">
-                                      {item.name}
-                                    </CardTitle>
-                                  </CardContent>
-                                </button>
-                              </Card>
-                            )
-                          })}
-                        </div>
-                      ) : (
-                        <Empty>
-                          <EmptyHeader>
-                            <EmptyTitle>Nhóm này chưa có hạng mục</EmptyTitle>
-                            <EmptyDescription>Thêm hạng mục đầu tiên cho nhóm.</EmptyDescription>
-                          </EmptyHeader>
-                        </Empty>
-                      )}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => openItemEditor(selectedGroup)}
-                      >
-                        <PlusIcon />
-                        Thêm hạng mục
-                      </Button>
+                  {visibleGroups.length ? (
+                    // Every group at once, so all categories are one scroll away.
+                    <div className="space-y-6">
+                      {visibleGroups.map((group) => {
+                        const GroupIcon = categoryIconRegistry[group.iconName]
+                        return (
+                          <SettingsGroup
+                            key={group.id}
+                            title={
+                              <>
+                                <GroupIcon
+                                  className={`size-3.5 shrink-0 ${getCategoryColor(group.colorName).iconClassName}`}
+                                  aria-hidden="true"
+                                />
+                                <span className="truncate">{group.name}</span>
+                              </>
+                            }
+                            action={
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="xs"
+                                aria-label={`Sửa nhóm ${group.name}`}
+                                onClick={() => openGroupEditor(group)}
+                              >
+                                Sửa
+                              </Button>
+                            }
+                          >
+                            {group.items.map((item) => (
+                              <SettingsRow
+                                key={item.id}
+                                icon={categoryIconRegistry[item.iconName]}
+                                color={group.colorName}
+                                title={item.name}
+                                onClick={() => openItemEditor(group, item)}
+                              />
+                            ))}
+                            <SettingsRow
+                              icon={PlusIcon}
+                              title="Thêm hạng mục"
+                              chevron={false}
+                              onClick={() => openItemEditor(group)}
+                            />
+                          </SettingsGroup>
+                        )
+                      })}
                     </div>
                   ) : (
                     <Empty>
@@ -421,20 +392,10 @@ export function CategoryManagementSheet({
               )
             })}
             <SheetFooter>
-              <div className="flex gap-2">
-                {showBackButton ? (
-                  <SheetClose asChild>
-                    <Button type="button" variant="outline" className="flex-1">
-                      <ArrowLeftIcon />
-                      Quay lại
-                    </Button>
-                  </SheetClose>
-                ) : null}
-                <Button type="button" className="flex-1" onClick={() => openGroupEditor()}>
-                  <PlusIcon />
-                  Thêm nhóm {activeType === "expense" ? "chi" : "thu"}
-                </Button>
-              </div>
+              <Button type="button" className="w-full" onClick={() => openGroupEditor()}>
+                <PlusIcon />
+                Thêm nhóm {typeLabel}
+              </Button>
             </SheetFooter>
           </Tabs>
         )}

@@ -207,14 +207,6 @@ export async function updateCategoryGroup(
   await updateActiveGroup(userId, groupId, values)
 }
 
-export async function updateCategoryGroupName(
-  userId: string,
-  groupId: string,
-  name: string,
-) {
-  await updateActiveGroup(userId, groupId, { name })
-}
-
 export async function archiveCategoryGroup(userId: string, groupId: string) {
   await getDb().transaction().execute(async (trx) => {
     const group = await trx

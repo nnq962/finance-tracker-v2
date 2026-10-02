@@ -68,7 +68,6 @@ export function AddTransactionSheet({
         initialType={kind === "income" ? "income" : "expense"}
         open={categoryManagementOpen}
         onOpenChange={setCategoryManagementOpen}
-        showBackButton
       />
     </>
   )

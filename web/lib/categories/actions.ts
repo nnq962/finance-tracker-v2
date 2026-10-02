@@ -10,12 +10,10 @@ import {
   createCategoryGroup,
   createCategoryItem,
   updateCategoryGroup,
-  updateCategoryGroupName,
   updateCategoryItem,
 } from "@/lib/categories/repository"
 import type {
   CategoryActionResult,
-  CategoryCreateActionResult,
   CategoryFormValues,
   CategoryItemFormValues,
 } from "@/lib/categories/types"
@@ -24,7 +22,6 @@ import {
   CategoryValidationError,
   parseCategoryFormValues,
   parseCategoryItemFormValues,
-  parseCategoryName,
   parseCategoryType,
 } from "@/lib/categories/validation"
 
@@ -68,25 +65,6 @@ export async function createCategoryGroupAction(
   }
 }
 
-export async function createCategoryGroupNameAction(
-  type: unknown,
-  name: unknown,
-): Promise<CategoryCreateActionResult> {
-  const user = await requireSession()
-
-  try {
-    const id = await createCategoryGroup(user.uid, parseCategoryType(type), {
-      name: parseCategoryName(name),
-      colorName: "blue",
-      iconName: "receipt",
-    })
-    revalidateCategoryData(user.uid)
-    return { success: true, id }
-  } catch (error) {
-    return failure(error)
-  }
-}
-
 export async function updateCategoryGroupAction(
   groupId: unknown,
   values: CategoryFormValues,
@@ -99,26 +77,6 @@ export async function updateCategoryGroupAction(
       user.uid,
       groupId as string,
       parseCategoryFormValues(values),
-    )
-    revalidateCategoryData(user.uid)
-    return { success: true }
-  } catch (error) {
-    return failure(error)
-  }
-}
-
-export async function updateCategoryGroupNameAction(
-  groupId: unknown,
-  name: unknown,
-): Promise<CategoryActionResult> {
-  const user = await requireSession()
-
-  try {
-    assertCategoryId(groupId, "Nhóm hạng mục")
-    await updateCategoryGroupName(
-      user.uid,
-      groupId as string,
-      parseCategoryName(name),
     )
     revalidateCategoryData(user.uid)
     return { success: true }

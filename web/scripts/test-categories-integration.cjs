@@ -48,11 +48,11 @@ async function run() {
       VALUES ($1, 'Ví', 'cash', 100000, 100000) RETURNING id`, [userId])).rows[0].id
     await createTransaction(userId, { kind: 'expense', amount: 1000, accountId: account, categoryId: breakfast, occurredAt: new Date() })
     await categories.updateCategoryItem(userId, breakfast, { name: 'Bữa sáng', iconName: 'coffee' })
-    await categories.updateCategoryGroupName(userId, food, 'Ăn uống')
+    await categories.updateCategoryGroup(userId, food, { name: 'Ăn uống', iconName: 'utensils', colorName: 'orange' })
     const [meal] = await getTransactions(userId)
     assert.equal(meal.categoryName, 'Bữa sáng')
     assert.equal(meal.categoryGroupName, 'Ăn uống')
-    await assert.rejects(() => categories.updateCategoryGroupName(newUserId, food, 'Not mine'), validation.CategoryValidationError)
+    await assert.rejects(() => categories.updateCategoryGroup(newUserId, food, { name: 'Not mine', iconName: 'utensils', colorName: 'orange' }), validation.CategoryValidationError)
 
     // Creating an item races with archiving its group: either may win, but no
     // active item may remain in an archived group.

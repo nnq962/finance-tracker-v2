@@ -22,19 +22,27 @@ import { cn } from "@/lib/utils"
  */
 function SettingsGroup({
   title,
+  action,
   footer,
   children,
 }: {
   title?: React.ReactNode
+  /** Small control at the end of the caption, e.g. to edit the group. */
+  action?: React.ReactNode
   footer?: React.ReactNode
   children: React.ReactNode
 }) {
   return (
     <section className="space-y-2">
-      {title ? (
-        <h2 className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-          {title}
-        </h2>
+      {title || action ? (
+        <div className="flex min-h-6 items-center justify-between gap-3 px-3">
+          {title ? (
+            <h2 className="flex min-w-0 items-center gap-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              {title}
+            </h2>
+          ) : null}
+          {action}
+        </div>
       ) : null}
       {/* Rows carry their own, equal padding, so the card only frames them:
           first and last rows match the ones in between. */}
