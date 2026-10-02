@@ -1,7 +1,18 @@
-import { LockIcon, WalletCardsIcon } from "lucide-react"
+"use client"
 
+import * as React from "react"
+import { ChevronDownIcon, WalletCardsIcon } from "lucide-react"
+
+import { AccountLogo } from "@/components/account-logo"
+import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 import {
   Empty,
   EmptyContent,
@@ -12,21 +23,72 @@ import {
 } from "@/components/ui/empty"
 import { getAccountDistribution } from "@/lib/accounts/distribution"
 import type { Account } from "@/lib/accounts/types"
+import { formatCurrency } from "@/lib/format-currency"
+import type { Transaction } from "@/lib/transactions/types"
+import { cn } from "@/lib/utils"
 
-import { AccountCard } from "./account-card"
+import { AccountSheet, getAccountKind } from "./account-sheet"
 import { AddAccountButton } from "./add-account-button"
 
 type AccountListProps = {
   accounts: Account[]
+  recentTransactions: Record<string, Transaction[]>
 }
 
-export function AccountList({
-  accounts,
-}: AccountListProps) {
+type AccountShare = { fill: string; percentageLabel: string }
+
+function AccountRow({
+  account,
+  share,
+  onSelect,
+}: {
+  account: Account
+  share?: AccountShare
+  onSelect: () => void
+}) {
+  const isLocked = account.status === "archived"
+
+  return (
+    <SettingsRow
+      media={<AccountLogo account={account} className="size-8" />}
+      title={account.name}
+      description={getAccountKind(account)}
+      action={
+        <span className="flex flex-col items-end">
+          <span
+            className={cn(
+              "font-heading text-sm font-extrabold tabular-nums",
+              isLocked && "text-muted-foreground",
+            )}
+          >
+            {formatCurrency(account.balance)}
+          </span>
+          {share ? (
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              {/* The account's colour in the bar above. */}
+              <span
+                className="size-2 rounded-full"
+                style={{ backgroundColor: share.fill }}
+                aria-hidden="true"
+              />
+              {share.percentageLabel}
+            </span>
+          ) : null}
+        </span>
+      }
+      onClick={onSelect}
+    />
+  )
+}
+
+export function AccountList({ accounts, recentTransactions }: AccountListProps) {
+  const [openAccountId, setOpenAccountId] = React.useState<string | null>(null)
+  // Largest balance first, the same order as the bar.
   const { distribution } = getAccountDistribution(accounts)
-  const distributionById = new Map(distribution.map((account) => [account.id, account]))
-  const activeAccounts = accounts.filter((account) => account.status === "active")
   const archivedAccounts = accounts.filter((account) => account.status === "archived")
+  // A deleted account closes its sheet.
+  const openAccount = accounts.find((account) => account.id === openAccountId)
+  const openShare = distribution.find((account) => account.id === openAccountId)
 
   if (accounts.length === 0) {
     return (
@@ -51,52 +113,54 @@ export function AccountList({
   }
 
   return (
-    // Same rhythm as the page's sections (see components/page.tsx).
-    <div className="space-y-6 md:space-y-8">
-      {activeAccounts.length > 0 ? (
-        <section className="space-y-4" aria-labelledby="active-accounts-title">
-          <div className="flex items-center gap-2">
-            <h2 id="active-accounts-title" className="text-lg font-semibold">
-              Danh sách tài khoản
-            </h2>
-            <Badge variant="secondary">{activeAccounts.length}</Badge>
-          </div>
-          <div className="grid auto-rows-fr gap-4 sm:grid-cols-2">
-            {activeAccounts.map((account) => (
-              <AccountCard
-                key={account.id}
-                account={account}
-                distribution={distributionById.get(account.id)}
-              />
-            ))}
-          </div>
-        </section>
+    <div className="space-y-6">
+      {distribution.length > 0 ? (
+        <SettingsGroup title="Tài khoản">
+          {distribution.map((account) => (
+            <AccountRow
+              key={account.id}
+              account={account}
+              share={account}
+              onSelect={() => setOpenAccountId(account.id)}
+            />
+          ))}
+        </SettingsGroup>
       ) : null}
 
       {archivedAccounts.length > 0 ? (
-        <section className="space-y-4" aria-labelledby="archived-accounts-title">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <h2 id="archived-accounts-title" className="flex items-center gap-2 text-lg font-semibold">
-                <LockIcon className="size-4 text-muted-foreground" aria-hidden="true" />
-                Đã khóa
-              </h2>
+        <Collapsible defaultOpen={distribution.length === 0}>
+          <CollapsibleTrigger asChild>
+            <Button type="button" variant="ghost" className="group/archived">
+              Đã khoá
               <Badge variant="outline">{archivedAccounts.length}</Badge>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Không dùng cho giao dịch mới và không tính vào tổng số dư.
-            </p>
-          </div>
-          <div className="grid auto-rows-fr gap-4 sm:grid-cols-2">
-            {archivedAccounts.map((account) => (
-              <AccountCard
-                key={account.id}
-                account={account}
+              <ChevronDownIcon
+                className="transition-transform group-data-[state=open]/archived:rotate-180"
+                aria-hidden="true"
               />
-            ))}
-          </div>
-        </section>
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-2">
+            <SettingsGroup footer="Không dùng cho giao dịch mới và không tính vào tổng số dư.">
+              {archivedAccounts.map((account) => (
+                <AccountRow
+                  key={account.id}
+                  account={account}
+                  onSelect={() => setOpenAccountId(account.id)}
+                />
+              ))}
+            </SettingsGroup>
+          </CollapsibleContent>
+        </Collapsible>
       ) : null}
+
+      <AccountSheet
+        account={openAccount}
+        share={openShare}
+        transactions={openAccount ? recentTransactions[openAccount.id] ?? [] : []}
+        onOpenChange={(open) => {
+          if (!open) setOpenAccountId(null)
+        }}
+      />
     </div>
   )
 }

@@ -161,6 +161,24 @@ export async function getTransactions(userId: string): Promise<Transaction[]> {
   return rows.map(toTransaction)
 }
 
+/** The latest transactions that moved money in or out of one account. */
+export async function getRecentAccountTransactions(
+  userId: string,
+  accountId: string,
+  limit = 5,
+): Promise<Transaction[]> {
+  const rows = await selectTransactions(userId)
+    .where((eb) => eb.or([
+      eb("t.accountId", "=", accountId),
+      eb("t.fromAccountId", "=", accountId),
+      eb("t.toAccountId", "=", accountId),
+    ]))
+    .limit(limit)
+    .execute()
+
+  return rows.map(toTransaction)
+}
+
 export async function getTransactionsInRange(
   userId: string,
   start: Date,

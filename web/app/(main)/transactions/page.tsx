@@ -14,13 +14,11 @@ import {
 export default async function TransactionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string }>
+  searchParams: Promise<{ month?: string; account?: string }>
 }) {
+  const { month, account } = await searchParams
   const todayDateKey = getTransactionDateKey(new Date())
-  const selectedMonth = getTransactionMonthKey(
-    (await searchParams).month,
-    todayDateKey,
-  )
+  const selectedMonth = getTransactionMonthKey(month, todayDateKey)
   const range = getTransactionMonthRange(selectedMonth, 1)
   const {
     data: [transactions, accounts, categoryGroups],
@@ -36,6 +34,8 @@ export default async function TransactionsPage({
     <Page>
       <TransactionsDashboard
         accounts={accounts}
+        // Opened from an account's sheet: start filtered to that account.
+        initialAccountId={accounts.some((item) => item.id === account) ? account : undefined}
         categoryGroups={categoryGroups}
         selectedMonth={selectedMonth}
         todayDateKey={todayDateKey}

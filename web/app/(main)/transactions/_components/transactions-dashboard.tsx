@@ -25,6 +25,7 @@ import { TransactionToolbar } from "./transaction-toolbar"
 
 type TransactionsDashboardProps = {
   accounts: Account[]
+  initialAccountId?: string
   categoryGroups: CategoryGroup[]
   selectedMonth: string
   todayDateKey: string
@@ -41,6 +42,7 @@ const initialSearchFilters: TransactionSearchFilters = {
 
 export function TransactionsDashboard({
   accounts,
+  initialAccountId,
   categoryGroups,
   selectedMonth,
   todayDateKey,
@@ -51,7 +53,10 @@ export function TransactionsDashboard({
   const period = "month" as const
   const [filter, setFilter] = React.useState<TransactionFilter>("all")
   const [searchFilters, setSearchFilters] =
-    React.useState<TransactionSearchFilters>(initialSearchFilters)
+    React.useState<TransactionSearchFilters>(() => ({
+      ...initialSearchFilters,
+      accountIds: initialAccountId ? [initialAccountId] : [],
+    }))
   const effectiveAnchorDateKey = `${selectedMonth}-01`
   const periodData = React.useMemo(
     () =>

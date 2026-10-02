@@ -2,15 +2,25 @@ import { Page, PageHeader } from "@/components/page"
 import { loadWithSession } from "@/lib/auth/session"
 import { getAccounts } from "@/lib/accounts/repository"
 import { getBalanceSummary } from "@/lib/accounts/summary"
+import { getRecentAccountTransactions } from "@/lib/transactions/repository"
 
 import { AccountList } from "./_components/account-list"
 import { AddAccountButton } from "./_components/add-account-button"
 import { BalanceHero } from "./_components/balance-hero"
 
 export default async function AccountsPage() {
-  const { data: accounts } = await loadWithSession((user) =>
-    getAccounts(user.uid),
-  )
+  const { data: [accounts, recentTransactions] } = await loadWithSession(async (user) => {
+    const accounts = await getAccounts(user.uid)
+    // A few per account, shown when its sheet opens without another round trip.
+    const recent = await Promise.all(
+      accounts.map((account) => getRecentAccountTransactions(user.uid, account.id)),
+    )
+
+    return [
+      accounts,
+      Object.fromEntries(accounts.map((account, index) => [account.id, recent[index]])),
+    ] as const
+  })
   const balanceSummary = getBalanceSummary(accounts)
 
   return (
@@ -22,7 +32,7 @@ export default async function AccountsPage() {
       {accounts.length > 0 ? (
         <BalanceHero summary={balanceSummary} accounts={accounts} />
       ) : null}
-      <AccountList accounts={accounts} />
+      <AccountList accounts={accounts} recentTransactions={recentTransactions} />
       {/* On mobile the action floats above the bottom nav so it stays within
           thumb reach while scrolling. The empty state carries its own button. */}
       {accounts.length > 0 ? (
