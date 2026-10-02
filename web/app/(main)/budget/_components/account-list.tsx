@@ -35,15 +35,18 @@ type AccountListProps = {
   recentTransactions: Record<string, Transaction[]>
 }
 
-type AccountShare = { fill: string; percentageLabel: string }
+type AccountShare = { percentageLabel: string }
 
 function AccountRow({
   account,
   share,
+  grouped = false,
   onSelect,
 }: {
   account: Account
   share?: AccountShare
+  /** Under its type's caption, where only the bank or wallet adds anything. */
+  grouped?: boolean
   onSelect: () => void
 }) {
   const isLocked = account.status === "archived"
@@ -52,7 +55,7 @@ function AccountRow({
     <SettingsRow
       media={<AccountLogo account={account} className="size-8" />}
       title={account.name}
-      description={getAccountKind(account)}
+      description={grouped ? account.institutionName : getAccountKind(account)}
       action={
         <span className="flex flex-col items-end">
           <span
@@ -64,13 +67,7 @@ function AccountRow({
             {formatCurrency(account.balance)}
           </span>
           {share ? (
-            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              {/* The account's colour in the bar above. */}
-              <span
-                className="size-2 rounded-full"
-                style={{ backgroundColor: share.fill }}
-                aria-hidden="true"
-              />
+            <span className="text-xs text-muted-foreground">
               {share.percentageLabel}
             </span>
           ) : null}
@@ -83,8 +80,8 @@ function AccountRow({
 
 export function AccountList({ accounts, recentTransactions }: AccountListProps) {
   const [openAccountId, setOpenAccountId] = React.useState<string | null>(null)
-  // Largest balance first, the same order as the bar.
-  const { distribution } = getAccountDistribution(accounts)
+  // Grouped by type, largest total first, the same order as the bar.
+  const { distribution, groups } = getAccountDistribution(accounts)
   const archivedAccounts = accounts.filter((account) => account.status === "archived")
   // A deleted account closes its sheet.
   const openAccount = accounts.find((account) => account.id === openAccountId)
@@ -114,18 +111,27 @@ export function AccountList({ accounts, recentTransactions }: AccountListProps) 
 
   return (
     <div className="space-y-6">
-      {distribution.length > 0 ? (
-        <SettingsGroup title="Tài khoản">
-          {distribution.map((account) => (
+      {groups.map((group) => (
+        <SettingsGroup
+          key={group.type}
+          title={group.label}
+          action={
+            <span className="shrink-0 font-heading text-xs font-extrabold tabular-nums">
+              {formatCurrency(group.total)}
+            </span>
+          }
+        >
+          {group.accounts.map((account) => (
             <AccountRow
               key={account.id}
               account={account}
               share={account}
+              grouped
               onSelect={() => setOpenAccountId(account.id)}
             />
           ))}
         </SettingsGroup>
-      ) : null}
+      ))}
 
       {archivedAccounts.length > 0 ? (
         <Collapsible defaultOpen={distribution.length === 0}>

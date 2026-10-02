@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react"
 
-import { Card, CardContent } from "@/components/ui/card"
+import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Progress } from "@/components/ui/progress"
 import { getAccountDistribution } from "@/lib/accounts/distribution"
 import type { Account, BalanceSummary } from "@/lib/accounts/types"
@@ -11,19 +11,22 @@ type BalanceHeroProps = {
   accounts: Account[]
 }
 
-/** The total, and one bar split by account; each account row carries its colour and share. */
+/**
+ * The total and one bar split by account type, then a row per type in its
+ * colour in the bar, as the legend.
+ */
 export function BalanceHero({ summary, accounts }: BalanceHeroProps) {
-  const { distribution, accountsTotal } = getAccountDistribution(accounts)
+  const { distribution, groups, accountsTotal } = getAccountDistribution(accounts)
   const gradientStops: string[] = []
   let gradientOffset = 0
 
   if (accountsTotal > 0) {
-    for (const account of distribution) {
-      if (account.distributionBalance <= 0) continue
+    for (const group of groups) {
+      if (group.total <= 0) continue
 
       const start = gradientOffset
-      gradientOffset += account.distributionBalance / accountsTotal * 100
-      gradientStops.push(`${account.fill} ${start}% ${gradientOffset}%`)
+      gradientOffset += group.total / accountsTotal * 100
+      gradientStops.push(`${group.fill} ${start}% ${gradientOffset}%`)
     }
   }
 
@@ -34,15 +37,14 @@ export function BalanceHero({ summary, accounts }: BalanceHeroProps) {
   } as CSSProperties
 
   return (
-    <Card asChild>
-      <section aria-label="Tổng số dư">
-        <CardContent className="space-y-3">
-          <div>
-            <p className="text-sm text-muted-foreground">Tổng số dư khả dụng</p>
-            <p className="font-heading text-3xl leading-tight font-extrabold tracking-tight tabular-nums [overflow-wrap:anywhere]">
-              {formatCurrency(summary.totalBalance)}
-            </p>
-          </div>
+    <SettingsGroup
+      title="Tổng số dư"
+      header={
+        // 16px all round, where the rows' content starts.
+        <div className="space-y-3 p-4">
+          <p className="font-heading text-3xl leading-tight font-extrabold tracking-tight tabular-nums [overflow-wrap:anywhere]">
+            {formatCurrency(summary.totalBalance)}
+          </p>
           {accountsTotal > 0 ? (
             <Progress
               value={100}
@@ -54,8 +56,19 @@ export function BalanceHero({ summary, accounts }: BalanceHeroProps) {
           <p className="text-xs text-muted-foreground">
             {distribution.length} tài khoản · cập nhật {summary.updatedAt}
           </p>
-        </CardContent>
-      </section>
-    </Card>
+        </div>
+      }
+    >
+      {groups.map((group) => (
+        <SettingsRow
+          key={group.type}
+          icon={group.icon}
+          color={group.color}
+          title={group.label}
+          description={`${group.percentageLabel} · ${group.accounts.length} tài khoản`}
+          value={formatCurrency(group.total)}
+        />
+      ))}
+    </SettingsGroup>
   )
 }

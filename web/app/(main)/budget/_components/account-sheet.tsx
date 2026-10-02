@@ -8,6 +8,7 @@ import { toast } from "sonner"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { accountTypeLabels } from "@/lib/accounts/distribution"
 import type { Account } from "@/lib/accounts/types"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
@@ -16,12 +17,6 @@ import type { Transaction } from "@/lib/transactions/types"
 import { setAccountArchivedAction } from "../actions"
 import { DeleteAccountAlert } from "./account-actions/delete-account-alert"
 import { EditAccountSheet } from "./account-actions/edit-account-sheet"
-
-const accountTypeLabels = {
-  cash: "Tiền mặt",
-  bank: "Ngân hàng",
-  "e-wallet": "Ví điện tử",
-} as const
 
 const kindRows = {
   expense: { icon: ArrowUpRightIcon, color: "rose" },

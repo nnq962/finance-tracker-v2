@@ -7,6 +7,7 @@ import { getRecentTransactionsByAccount } from "@/lib/transactions/repository"
 import { AccountList } from "./_components/account-list"
 import { AddAccountButton } from "./_components/add-account-button"
 import { BalanceHero } from "./_components/balance-hero"
+import { BudgetLayout } from "./_components/budget-layout"
 
 export default async function AccountsPage() {
   const { data: [accounts, recentTransactions] } = await loadWithSession((user) =>
@@ -25,9 +26,14 @@ export default async function AccountsPage() {
         actions={<AddAccountButton />}
       />
       {accounts.length > 0 ? (
-        <BalanceHero summary={balanceSummary} accounts={accounts} />
-      ) : null}
-      <AccountList accounts={accounts} recentTransactions={recentTransactions} />
+        <BudgetLayout
+          summary={<BalanceHero summary={balanceSummary} accounts={accounts} />}
+        >
+          <AccountList accounts={accounts} recentTransactions={recentTransactions} />
+        </BudgetLayout>
+      ) : (
+        <AccountList accounts={accounts} recentTransactions={recentTransactions} />
+      )}
       {/* On mobile the action floats above the bottom nav so it stays within
           thumb reach while scrolling. The empty state carries its own button. */}
       {accounts.length > 0 ? (
