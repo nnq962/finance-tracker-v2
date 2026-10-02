@@ -172,3 +172,37 @@ export function overtimeHoursForTarget(input: SalaryInput, target: number, kind:
 
   return high / 2
 }
+
+/** What one more hour of overtime of `kind` adds to the net pay, after insurance and tax. */
+export function netPerOvertimeHour(input: SalaryInput, kind: OvertimeKind) {
+  const net = (hours: number) => calculateSalary({
+    ...input,
+    overtimeHours: { ...input.overtimeHours, [kind]: hours },
+  }).netIncome
+
+  return net(input.overtimeHours[kind] + 1) - net(input.overtimeHours[kind])
+}
+
+/**
+ * The contract salary, to the thousand, at which the net pay reaches
+ * `target` with everything else as entered. Insurance follows the salary
+ * unless a separate insurance salary is set.
+ */
+export function baseSalaryForTarget(input: SalaryInput, target: number) {
+  const netWith = (thousands: number) =>
+    calculateSalary({ ...input, baseSalary: thousands * 1000 }).netIncome
+
+  let low = 0
+  let high = 1
+  while (netWith(high) < target) {
+    high *= 2
+    if (high > 1e12) return null
+  }
+  while (high - low > 1) {
+    const middle = Math.floor((low + high) / 2)
+    if (netWith(middle) >= target) high = middle
+    else low = middle
+  }
+
+  return high * 1000
+}

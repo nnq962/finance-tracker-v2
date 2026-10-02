@@ -1,7 +1,14 @@
 "use client"
 
 import * as React from "react"
-import { TriangleAlertIcon } from "lucide-react"
+import {
+  BriefcaseIcon,
+  CalendarDaysIcon,
+  PartyPopperIcon,
+  TriangleAlertIcon,
+  WalletIcon,
+  type LucideIcon,
+} from "lucide-react"
 
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
@@ -19,13 +26,17 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { formatCurrency } from "@/lib/format-currency"
 import {
+  baseSalaryForTarget,
   calculateSalary,
   DEPENDANT_DEDUCTION,
   INSURANCE_CAP,
   MONTHLY_OVERTIME_LIMIT,
+  netPerOvertimeHour,
   overtimeHoursForTarget,
+  overtimeRates,
   regionalMinimumWages,
   SELF_DEDUCTION,
+  type OvertimeKind,
   type Region,
   type SalaryInput,
 } from "@/lib/salary/calculate"
@@ -106,8 +117,18 @@ function formatDeduction(amount: number) {
   return amount > 0 ? `−${formatCurrency(amount)}` : formatCurrency(0)
 }
 
+const overtimeOptions: { kind: OvertimeKind; label: string; icon: LucideIcon }[] = [
+  { kind: "weekday", label: "Ngày thường", icon: BriefcaseIcon },
+  { kind: "weekend", label: "Ngày nghỉ tuần", icon: CalendarDaysIcon },
+  { kind: "holiday", label: "Ngày lễ, Tết", icon: PartyPopperIcon },
+]
+
+function formatNumber(value: number) {
+  return value.toLocaleString("vi-VN", { maximumFractionDigits: 1 })
+}
+
 function formatHours(hours: number) {
-  return `${hours.toLocaleString("vi-VN", { maximumFractionDigits: 1 })} giờ`
+  return `${formatNumber(hours)} giờ`
 }
 
 function NumberField({
@@ -186,7 +207,17 @@ export function SalaryCalculator() {
   const input = toInput(draft)
   const result = calculateSalary(input)
   const overtimeHours = input.overtimeHours.weekday + input.overtimeHours.weekend + input.overtimeHours.holiday
-  const targetHours = draft.target ? overtimeHoursForTarget(input, draft.target) : undefined
+  const target = draft.target ?? 0
+  const shortfall = target - result.netIncome
+  // Each kind of overtime alone, on top of what is entered, to reach the target.
+  const targetOptions = target > 0
+    ? overtimeOptions.map((option) => ({
+        ...option,
+        hours: overtimeHoursForTarget(input, target, option.kind),
+        perHour: netPerOvertimeHour(input, option.kind),
+      }))
+    : []
+  const targetSalary = target > 0 && shortfall > 0 ? baseSalaryForTarget(input, target) : null
 
   return (
     <div className="space-y-6">
@@ -377,7 +408,61 @@ export function SalaryCalculator() {
         </FieldGroup>
       </FormSection>
 
-      <FormSection title="Mục tiêu">
+      <FormSection
+        title="Mục tiêu"
+        after={
+          target > 0 ? (
+            // Set apart from the card like the page's other sections.
+            <div className="space-y-6 pt-4">
+              <SettingsGroup>
+                <SettingsRow
+                  icon={WalletIcon}
+                  color={shortfall > 0 ? "amber" : "emerald"}
+                  title={shortfall > 0 ? "Còn thiếu" : "Đã đạt mục tiêu"}
+                  description={`Thực nhận hiện tại ${formatCurrency(result.netIncome)}`}
+                  value={shortfall > 0 ? formatCurrency(shortfall) : `+${formatCurrency(-shortfall)}`}
+                />
+              </SettingsGroup>
+              {shortfall > 0 ? (
+                <SettingsGroup
+                  title="Nếu chỉ tăng ca thêm"
+                  footer={`Mỗi cách tính riêng, cộng vào số giờ đã nhập. Một ngày làm là ${formatNumber(input.hoursPerDay)} giờ; tăng ca tối đa ${MONTHLY_OVERTIME_LIMIT} giờ/tháng.`}
+                >
+                  {targetOptions.map(({ kind, label, icon, hours, perHour }) => {
+                    const overLimit = hours !== null && overtimeHours + hours > MONTHLY_OVERTIME_LIMIT
+
+                    return (
+                      <SettingsRow
+                        key={kind}
+                        icon={overLimit ? TriangleAlertIcon : icon}
+                        color={overLimit ? "rose" : "blue"}
+                        title={`${label} · ${overtimeRates[kind] * 100}%`}
+                        description={
+                          hours === null
+                            ? "Nhập lương theo hợp đồng để tính."
+                            : `+${formatCurrency(perHour)}/giờ · khoảng ${formatNumber(hours / input.hoursPerDay)} ngày làm${overLimit ? " · vượt giới hạn" : ""}`
+                        }
+                        value={hours === null ? "—" : formatHours(hours)}
+                      />
+                    )
+                  })}
+                </SettingsGroup>
+              ) : null}
+              {targetSalary !== null ? (
+                <SettingsGroup title="Hoặc không tăng ca">
+                  <SettingsRow
+                    icon={BriefcaseIcon}
+                    color="emerald"
+                    title="Lương hợp đồng cần"
+                    description={`Cao hơn hiện tại ${formatCurrency(targetSalary - input.baseSalary)}`}
+                    value={formatCurrency(targetSalary)}
+                  />
+                </SettingsGroup>
+              ) : null}
+            </div>
+          ) : null
+        }
+      >
         <FieldGroup>
           <Field>
             <FieldLabel htmlFor="salary-target">Muốn thực nhận</FieldLabel>
@@ -388,17 +473,7 @@ export function SalaryCalculator() {
               onValueChange={(value) => update("target", value)}
             />
             <FieldDescription>
-              {targetHours === undefined
-                ? "Nhập số tiền để tính số giờ tăng ca ngày thường cần thêm."
-                : targetHours === null
-                  ? "Nhập lương theo hợp đồng để tính."
-                  : targetHours === 0
-                    ? "Đã đạt mục tiêu, không cần tăng ca thêm."
-                    : `Cần thêm ${formatHours(targetHours)} tăng ca ngày thường${
-                        overtimeHours + targetHours > MONTHLY_OVERTIME_LIMIT
-                          ? `, vượt mức ${MONTHLY_OVERTIME_LIMIT} giờ/tháng`
-                          : ""
-                      }.`}
+              Số giờ tăng ca hoặc mức lương cần để đạt số tiền này mỗi tháng.
             </FieldDescription>
           </Field>
         </FieldGroup>

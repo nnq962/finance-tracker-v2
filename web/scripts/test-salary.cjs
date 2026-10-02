@@ -26,6 +26,8 @@ const {
   calculateSalary,
   calculateTax,
   overtimeHoursForTarget,
+  netPerOvertimeHour,
+  baseSalaryForTarget,
 } = require('../lib/salary/calculate.ts')
 
 const base = {
@@ -108,6 +110,23 @@ assert.equal(calculateTax(120_000_000), 27_500_000)
   assert.ok(withHours(hours) >= net + 2_000_000)
   assert.ok(withHours(hours - 0.5) < net + 2_000_000)
   assert.equal(overtimeHoursForTarget({ ...base, baseSalary: 0 }, 1), null)
+}
+
+// One more overtime hour adds its pay less insurance-free tax on the normal part:
+// 30M at 22 days × 8h is 170,454.5/h; a weekday hour pays 255,682, taxing the
+// normal 170,455 at 10%.
+{
+  // Within 1 đồng of the rounding.
+  assert.ok(Math.abs(netPerOvertimeHour(base, 'weekday') - (255_682 - 17_045)) <= 1)
+  assert.ok(netPerOvertimeHour(base, 'holiday') > netPerOvertimeHour(base, 'weekend'))
+}
+
+// The contract salary for a target, to the thousand.
+{
+  const salary = baseSalaryForTarget(base, 26_215_000)
+  assert.equal(salary, 30_000_000)
+  const below = calculateSalary({ ...base, baseSalary: salary - 1000 }).netIncome
+  assert.ok(below < 26_215_000)
 }
 
 console.log('Salary checks passed.')
