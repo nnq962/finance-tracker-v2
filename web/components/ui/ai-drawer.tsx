@@ -13,10 +13,11 @@ import {
 } from "@/components/ui/drawer"
 
 /**
- * shadcn's Drawer for the AI assistant: it drops from the top, keeps the
- * Drawer's size on phones (a small floating panel from md), and has its
- * swipe handle on its lower edge, where the thumb pushes it back up. The slide is longer and softer than vaul's
- * default (see `ai-drawer-content` in globals.css).
+ * shadcn's Drawer for the AI assistant: it drops from the top and keeps the
+ * Drawer's size on phones (a small floating panel from md). It still swipes
+ * back up, without a handle in the way of the microphone's rings. The slide
+ * is longer and softer than vaul's default (see `ai-drawer-content` in
+ * globals.css).
  */
 function AiDrawer({
   direction = "top",
@@ -45,10 +46,6 @@ function AiDrawerContent({
       {...props}
     >
       {children}
-      <div
-        aria-hidden="true"
-        className="mx-auto mt-1 mb-3 h-1 w-[100px] shrink-0 rounded-full bg-muted"
-      />
     </DrawerContent>
   )
 }

@@ -122,9 +122,10 @@ export function AiAssistDrawer<Result>({
 
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-2">
             <MotionConfig reducedMotion="user">
-              {/* The drawer's height follows each step; the 4px margin and padding
-                  keep the cards' rings clear of the clipping. */}
-              <AutoHeight className="-m-1 p-1" deps={[phase.name, showTyping]}>
+              {/* The drawer's height follows each step; the 4px padding keeps
+                  the cards' rings clear of the clipping, the side margins
+                  keep the content where it was. */}
+              <AutoHeight className="-mx-1 p-1" deps={[phase.name, showTyping]}>
                 <AnimatePresence mode="wait" initial={false}>
                   {phase.name === "result" ? (
                     <motion.div key="result" className="space-y-4" {...stepMotion}>
@@ -201,41 +202,10 @@ export function AiAssistDrawer<Result>({
                         </Card>
                       )}
 
-                      {phase.error || speech.error ? (
-                        <p className="px-3 text-sm text-[#c8393a] dark:text-[#ff9b93]" role="alert">
-                          {phase.error ?? speech.error}
-                        </p>
-                      ) : null}
-
-                      {!heard && !text ? (
-                        <div className="space-y-2">
-                          <p className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                            Thử nói
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {examples.map((example, index) => (
-                              <motion.span
-                                key={example}
-                                initial={{ opacity: 0, y: -6 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3, ease: EASE_OUT, delay: 0.08 + index * 0.06 }}
-                              >
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  disabled={speech.listening}
-                                  onClick={() => submit(example)}
-                                >
-                                  {example}
-                                </Button>
-                              </motion.span>
-                            ))}
-                          </div>
-                        </div>
-                      ) : null}
-
-                      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 pt-1">
+                      {/* Above the samples and errors, which come and go, so the
+                          microphone stays put; the bottom padding leaves room
+                          for its rings. */}
+                      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 pb-5">
                         {speech.supported ? (
                           <Button
                             type="button"
@@ -280,6 +250,40 @@ export function AiAssistDrawer<Result>({
                         )}
                         <span />
                       </div>
+
+                      {phase.error || speech.error ? (
+                        <p className="px-3 text-sm text-[#c8393a] dark:text-[#ff9b93]" role="alert">
+                          {phase.error ?? speech.error}
+                        </p>
+                      ) : null}
+
+                      {!heard && !text ? (
+                        <div className="space-y-2">
+                          <p className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                            Thử nói
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {examples.map((example, index) => (
+                              <motion.span
+                                key={example}
+                                initial={{ opacity: 0, y: -6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, ease: EASE_OUT, delay: 0.08 + index * 0.06 }}
+                              >
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={speech.listening}
+                                  onClick={() => submit(example)}
+                                >
+                                  {example}
+                                </Button>
+                              </motion.span>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
                     </motion.div>
                   )}
                 </AnimatePresence>
