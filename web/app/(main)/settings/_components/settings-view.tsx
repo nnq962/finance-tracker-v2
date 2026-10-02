@@ -166,7 +166,6 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
             icon={CalculatorIcon}
             color="emerald"
             title="Tính lương"
-            description="Lương thực nhận, bảo hiểm, thuế TNCN, tăng ca"
             onClick={() => open("salary")}
           />
         </SettingsGroup>

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -143,13 +144,27 @@ function NumberField({
   )
 }
 
-function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
+/** A caption, then the section's fields in a card; `after` goes below the card. */
+function FormSection({
+  title,
+  after,
+  children,
+}: {
+  title: string
+  after?: React.ReactNode
+  children: React.ReactNode
+}) {
   return (
-    <section className="space-y-3">
-      <h3 className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-        {title}
-      </h3>
-      {children}
+    <section className="space-y-2">
+      <div className="flex min-h-6 items-center px-3">
+        <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          {title}
+        </h3>
+      </div>
+      <Card>
+        <CardContent>{children}</CardContent>
+      </Card>
+      {after}
     </section>
   )
 }
@@ -296,11 +311,13 @@ export function SalaryCalculator() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(Object.keys(regionalMinimumWages) as `${Region}`[]).map((region) => (
-                  <SelectItem key={region} value={region}>
-                    Vùng {regionNames[Number(region) as Region]} · {formatCurrency(regionalMinimumWages[Number(region) as Region])}
-                  </SelectItem>
-                ))}
+                <SelectGroup>
+                  {(Object.keys(regionalMinimumWages) as `${Region}`[]).map((region) => (
+                    <SelectItem key={region} value={region}>
+                      Vùng {regionNames[Number(region) as Region]} · {formatCurrency(regionalMinimumWages[Number(region) as Region])}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               </SelectContent>
             </Select>
             <FieldDescription>Quyết định mức trần đóng BHTN.</FieldDescription>
@@ -315,7 +332,21 @@ export function SalaryCalculator() {
         </FieldGroup>
       </FormSection>
 
-      <FormSection title="Tăng ca">
+      <FormSection
+        title="Tăng ca"
+        after={
+          overtimeHours > MONTHLY_OVERTIME_LIMIT ? (
+            <SettingsGroup>
+              <SettingsRow
+                icon={TriangleAlertIcon}
+                color="rose"
+                title={`Vượt ${MONTHLY_OVERTIME_LIMIT} giờ tăng ca mỗi tháng`}
+                description="Mức tối đa theo Bộ luật Lao động 2019."
+              />
+            </SettingsGroup>
+          ) : null
+        }
+      >
         <FieldGroup>
           <div className="grid grid-cols-3 gap-3">
             <NumberField
@@ -344,16 +375,6 @@ export function SalaryCalculator() {
             Số giờ trong tháng, hưởng 150%, 200% và 300% lương giờ. Phần trả thêm so với giờ thường không chịu thuế.
           </FieldDescription>
         </FieldGroup>
-        {overtimeHours > MONTHLY_OVERTIME_LIMIT ? (
-          <SettingsGroup>
-            <SettingsRow
-              icon={TriangleAlertIcon}
-              color="rose"
-              title={`Vượt ${MONTHLY_OVERTIME_LIMIT} giờ tăng ca mỗi tháng`}
-              description="Mức tối đa theo Bộ luật Lao động 2019."
-            />
-          </SettingsGroup>
-        ) : null}
       </FormSection>
 
       <FormSection title="Mục tiêu">
