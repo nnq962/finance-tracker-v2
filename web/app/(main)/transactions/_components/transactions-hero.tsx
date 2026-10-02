@@ -133,7 +133,6 @@ export function TransactionsHero({
               <ChevronRightIcon />
             </Button>
           </div>
-          <Separator variant="chunky" />
           <div className="grid grid-cols-2 gap-4">
             <CashFlowStat amount={income} count={incomeCount} kind="income" />
             <CashFlowStat amount={expense} count={expenseCount} kind="expense" />

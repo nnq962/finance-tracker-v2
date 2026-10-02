@@ -14,7 +14,6 @@ function TransactionsHeroSkeleton() {
           <Skeleton className="h-5 w-32" />
           <Skeleton className="size-8 rounded-lg" />
         </div>
-        <Separator variant="chunky" />
         <div className="grid grid-cols-2 gap-4">
           {[0, 1].map((index) => (
             <div key={index} className="space-y-1.5">
