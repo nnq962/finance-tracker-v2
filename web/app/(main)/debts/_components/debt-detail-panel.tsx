@@ -83,11 +83,6 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
           ? `Lãi đơn trên gốc ban đầu, ${debt.interestPeriod === "year" ? "365 ngày/năm" : "30 ngày/tháng"}, tính đến ${formatDebtDate(interestDate)}. Dừng tính lãi khi tất toán.`
           : undefined}
       >
-        <SettingsRow
-          title="Ghi chú"
-          description={debt.note || undefined}
-          value={debt.note ? undefined : "Không có"}
-        />
         <SettingsRow title="Loại" value={collecting ? "Cho vay" : "Đi vay"} />
         <SettingsRow title="Tiền gốc" value={formatCurrency(debt.amount, { signDisplay: "never" })} />
         <SettingsRow
@@ -101,6 +96,11 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
           </>
         ) : null}
         <SettingsRow title={paidLabel} value={formatCurrency(paidAmount, { signDisplay: "never" })} />
+        <SettingsRow
+          title="Ghi chú"
+          description={debt.note || undefined}
+          value={debt.note ? undefined : "Không có"}
+        />
       </SettingsGroup>
 
       <SettingsGroup>

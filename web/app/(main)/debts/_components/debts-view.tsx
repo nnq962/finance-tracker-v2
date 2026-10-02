@@ -170,11 +170,11 @@ export function DebtsView({
   }
 
   const contactsRow = (
-    <SettingsGroup>
+    <SettingsGroup title="Danh bạ">
       <SettingsRow
         icon={BookUserIcon}
         color="blue"
-        title="Danh bạ"
+        title="Người liên hệ"
         value={`${contacts.length} người`}
         onClick={onOpenContacts}
       />
@@ -263,8 +263,8 @@ export function DebtsView({
         {contactsRow}
       </div>
 
-      {/* The 1px padding keeps the cards' outer ring inside the scroll box. */}
-      <div className="hidden xl:sticky xl:top-20 xl:-m-px xl:block xl:max-h-[calc(100svh-6rem)] xl:overflow-y-auto xl:p-px xl:pb-4">
+      {/* Full height, scrolling with the page rather than on its own. */}
+      <div className="hidden xl:block">
         {selectedDebt && selectedContact ? (
           <DebtDetailPanel
             key={selectedDebt.id}

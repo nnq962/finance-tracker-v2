@@ -42,10 +42,10 @@ function SummarySkeleton() {
 }
 
 /** Same footprint as SettingsGroup with `rows` debt rows. */
-function GroupSkeleton({ rows, title = true }: { rows: number; title?: boolean }) {
+function GroupSkeleton({ rows, total = true }: { rows: number; total?: boolean }) {
   return (
     <div className="space-y-2">
-      {title ? <CaptionSkeleton total /> : null}
+      <CaptionSkeleton total={total} />
       <Card size="sm" className="gap-0 py-0">
         <div className="px-1">
           {Array.from({ length: rows }, (_, row) => (
@@ -95,7 +95,7 @@ export default function DebtsLoading() {
             <SummarySkeleton />
             <GroupSkeleton rows={2} />
             <GroupSkeleton rows={1} />
-            <GroupSkeleton rows={1} title={false} />
+            <GroupSkeleton rows={1} total={false} />
           </div>
           <div className="hidden xl:block">
             <DetailSkeleton />
