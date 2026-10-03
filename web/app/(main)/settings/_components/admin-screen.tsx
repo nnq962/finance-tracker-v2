@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronLeftIcon, CrownIcon, LoaderCircleIcon } from "lucide-react"
+import { CrownIcon, LoaderCircleIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import {
@@ -16,10 +16,12 @@ import {
 } from "@/components/animate-ui/components/radix/alert-dialog"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDate, toDateKey } from "@/lib/format-date"
@@ -41,9 +43,9 @@ const plain = (text: string) =>
 export function AdminScreen({ data }: { data: AdminData }) {
   const [query, setQuery] = React.useState("")
   const [selectedId, setSelectedId] = React.useState<string | null>(null)
+  // Kept while the sheet slides away, so its content does not vanish first.
+  const [detailOpen, setDetailOpen] = React.useState(false)
   const selected = data.users.find((user) => user.id === selectedId)
-
-  if (selected) return <AdminUserDetail user={selected} onBack={() => setSelectedId(null)} />
 
   const term = plain(query.trim())
   const shown = term
@@ -76,19 +78,42 @@ export function AdminScreen({ data }: { data: AdminData }) {
               key={user.id}
               title={user.email || user.name || user.id}
               description={`${paymentReference(user.id)} · AI ${user.aiUsed}/${plans[user.proEndsAt ? "pro" : "free"].aiMonthlyLimit}`}
-              value={user.proEndsAt ? <Badge variant="grape">Pro · {dateOf(user.proEndsAt)}</Badge> : "Miễn phí"}
-              onClick={() => setSelectedId(user.id)}
+              value={user.proEndsAt ? <Badge variant="grape">Pro · {dateOf(user.proEndsAt)}</Badge> : plans.free.label}
+              onClick={() => {
+                setSelectedId(user.id)
+                setDetailOpen(true)
+              }}
             />
           ))
         ) : (
           <SettingsRow title="Không tìm thấy người dùng" />
         )}
       </SettingsGroup>
+
+      {/* A user opens in a sheet of its own on top of this one, as native navigation pushes a screen. */}
+      <Sheet open={detailOpen} onOpenChange={setDetailOpen}>
+        <SheetContent
+          showCloseButton={false}
+          aria-describedby={undefined}
+          className="gap-0 data-[side=right]:w-full sm:max-w-md!"
+          onOpenAutoFocus={(event) => event.preventDefault()}
+        >
+          {selected ? (
+            <>
+              <SheetNavHeader backLabel="Quản trị" title={selected.email || selected.name || "Người dùng"} />
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-[max(1rem,env(safe-area-inset-bottom,0px))]">
+                {/* Keyed, so another user starts with a fresh form. */}
+                <AdminUserDetail key={selected.id} user={selected} />
+              </div>
+            </>
+          ) : null}
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }
 
-function AdminUserDetail({ user, onBack }: { user: AdminUser; onBack: () => void }) {
+function AdminUserDetail({ user }: { user: AdminUser }) {
   const [period, setPeriod] = React.useState<PlanPeriod>("month")
   const [amount, setAmount] = React.useState<number | null>(proPrices.month.amount)
   const [note, setNote] = React.useState("")
@@ -140,17 +165,12 @@ function AdminUserDetail({ user, onBack }: { user: AdminUser; onBack: () => void
 
   return (
     <div className="space-y-6">
-      <Button type="button" variant="ghost" size="sm" onClick={onBack}>
-        <ChevronLeftIcon />
-        Tất cả người dùng
-      </Button>
-
       <SettingsGroup title="Người dùng">
         <SettingsRow title={user.name || "Chưa có tên"} description={user.email || "Chưa có email"} />
         <SettingsRow title="Mã chuyển khoản" value={paymentReference(user.id)} />
         <SettingsRow
           title="Gói"
-          value={user.proEndsAt ? <Badge variant="grape">Pro · đến {dateOf(user.proEndsAt)}</Badge> : "Miễn phí"}
+          value={user.proEndsAt ? <Badge variant="grape">Pro · đến {dateOf(user.proEndsAt)}</Badge> : plans.free.label}
         />
         <SettingsRow title="Lượt AI tháng này" value={String(user.aiUsed)} />
         <SettingsRow title="Tham gia" value={dateOf(user.createdAt)} />
@@ -228,7 +248,7 @@ function AdminUserDetail({ user, onBack }: { user: AdminUser; onBack: () => void
           <AlertDialogHeader>
             <AlertDialogTitle>Thu hồi Pro?</AlertDialogTitle>
             <AlertDialogDescription>
-              {user.email || user.name} sẽ về gói Miễn phí ngay, kể cả phần Pro đã cấp nối tiếp. Số tiền đã ghi
+              {user.email || user.name} sẽ về gói {plans.free.label} ngay, kể cả phần Pro đã cấp nối tiếp. Số tiền đã ghi
               vẫn nằm trong lịch sử.
             </AlertDialogDescription>
           </AlertDialogHeader>

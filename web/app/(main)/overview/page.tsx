@@ -1,4 +1,4 @@
-import { Page, PageHeader } from "@/components/page"
+import { Page } from "@/components/page"
 import { getAccounts } from "@/lib/accounts/repository"
 import { loadWithSession } from "@/lib/auth/session"
 import { getCategoryGroups } from "@/lib/categories/repository"
@@ -7,9 +7,11 @@ import { getContacts, getDebts } from "@/lib/debts/repository"
 import { summarizeAllocation, summarizeDays } from "@/lib/overview/month-data"
 import { getOverviewSummary } from "@/lib/overview/summary"
 import { getChecklistState } from "@/lib/onboarding/repository"
+import { getPlanState } from "@/lib/plans/repository"
 import { getTransactionsInRange } from "@/lib/transactions/repository"
 
 import { GettingStarted } from "./_components/getting-started"
+import { OverviewGreeting } from "./_components/overview-greeting"
 
 import { OverviewMonth } from "./_components/overview-month"
 import {
@@ -40,7 +42,8 @@ export default async function OverviewPage() {
   const today = todayDate()
   const transactionRange = getOverviewTransactionRange(today)
   const {
-    data: [accounts, debts, contacts, transactions, categoryGroups, checklist],
+    user,
+    data: [accounts, debts, contacts, transactions, categoryGroups, checklist, planState],
   } = await loadWithSession((user) =>
     Promise.all([
       getAccounts(user.uid),
@@ -53,6 +56,7 @@ export default async function OverviewPage() {
       ),
       getCategoryGroups(user.uid),
       getChecklistState(user.uid),
+      getPlanState(user.uid),
     ]),
   )
   const summary = getOverviewSummary(
@@ -65,9 +69,7 @@ export default async function OverviewPage() {
 
   return (
     <Page>
-      <PageHeader
-        title="Tổng quan"
-      />
+      <OverviewGreeting user={user} plan={planState.plan} />
       <GettingStarted state={checklist} accounts={accounts} categoryGroups={categoryGroups} />
       <OverviewMonth
         accounts={accounts}

@@ -1,9 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card"
-import { Page, PageHeaderSkeleton } from "@/components/page"
+import { Page } from "@/components/page"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
+import { OverviewGreetingSkeleton } from "./_components/overview-greeting"
 import { OverviewLayout } from "./_components/overview-layout"
 
 /** The total and its three tiles. */
@@ -79,7 +80,7 @@ export default function OverviewLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <PageHeaderSkeleton />
+        <OverviewGreetingSkeleton />
         <OverviewLayout
           netWorth={<NetWorthSkeleton />}
           calendar={<CalendarSkeleton />}

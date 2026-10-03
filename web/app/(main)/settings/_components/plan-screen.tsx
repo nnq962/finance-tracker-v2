@@ -88,7 +88,7 @@ const faqs = [
   },
   {
     question: "Pro có tự động gia hạn không?",
-    answer: "Không. Mỗi lần thanh toán dùng cho đúng thời hạn bạn chọn; hết hạn, tài khoản tự về gói Miễn phí.",
+    answer: `Không. Mỗi lần thanh toán dùng cho đúng thời hạn bạn chọn; hết hạn, tài khoản tự về gói ${plans.free.label}.`,
   },
   {
     question: "Gia hạn sớm có bị mất ngày còn lại không?",
@@ -96,7 +96,7 @@ const faqs = [
   },
   {
     question: "Hết Pro thì dữ liệu của tôi thế nào?",
-    answer: "Giữ nguyên toàn bộ. Chỉ số lượt trợ lý AI mỗi tháng quay về mức của gói Miễn phí.",
+    answer: `Giữ nguyên toàn bộ. Chỉ số lượt trợ lý AI mỗi tháng quay về mức của gói ${plans.free.label}.`,
   },
   {
     question: "Lượt AI được tính thế nào?",
@@ -198,7 +198,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
                 features={[
                   `${plans.pro.aiMonthlyLimit} lượt trợ lý AI mỗi tháng`,
                   "Dùng sớm các tính năng AI mới",
-                  "Mọi tính năng của gói Miễn phí",
+                  `Mọi tính năng của gói ${plans.free.label}`,
                   "Thanh toán một lần, không tự động gia hạn",
                 ]}
               />

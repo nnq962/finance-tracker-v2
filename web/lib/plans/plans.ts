@@ -4,8 +4,8 @@ export type PlanPeriod = "month" | "year"
 
 /** What each plan allows. Everything else in the app is the same on both. */
 export const plans = {
-  free: { label: "Miễn phí", aiMonthlyLimit: 15 },
-  pro: { label: "Pro", aiMonthlyLimit: 200 },
+  free: { label: "Free", aiMonthlyLimit: 15 },
+  pro: { label: "Pro", aiMonthlyLimit: 300 },
 } as const satisfies Record<PlanName, { label: string; aiMonthlyLimit: number }>
 
 /** Pro's price, in VND, and how long each payment lasts. */
