@@ -39,6 +39,7 @@ function SettingsGroup({
   action,
   header,
   footer,
+  listClassName,
   children,
 }: {
   title?: React.ReactNode
@@ -47,6 +48,8 @@ function SettingsGroup({
   /** Shown in the card above the rows, with its own padding, e.g. the total the rows add up to. */
   header?: React.ReactNode
   footer?: React.ReactNode
+  /** Lays the rows out, e.g. in columns on wide screens. */
+  listClassName?: string
   children: React.ReactNode
 }) {
   return (
@@ -65,7 +68,7 @@ function SettingsGroup({
           first and last rows match the ones in between. */}
       <Card size="sm" className="gap-0 py-0">
         {header}
-        <ul className="px-1">
+        <ul className={cn("px-1", listClassName)}>
           {children}
         </ul>
       </Card>

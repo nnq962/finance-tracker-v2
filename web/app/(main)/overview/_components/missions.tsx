@@ -221,6 +221,9 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
             />
           </div>
         }
+        // Two columns from lg up (three on very wide screens), so the list stays short;
+        // the top row has no separators above it and the same padding.
+        listClassName="lg:grid lg:grid-cols-2 lg:gap-x-6 lg:[&>li:nth-child(2)]:pt-1 lg:[&>li:nth-child(2)]:before:hidden 2xl:grid-cols-3 2xl:[&>li:nth-child(3)]:pt-1 2xl:[&>li:nth-child(3)]:before:hidden"
       >
         {ordered.map((mission) =>
           isClaimed(mission) ? (

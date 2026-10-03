@@ -30,22 +30,22 @@ function initialsOf(name: string) {
 
 /**
  * The overview's heading: the user's avatar and a greeting with their full
- * name, the blue tick on Pro. On Free, a card below invites them to Pro, so
- * the name keeps the whole row.
+ * name, the blue tick on Pro. On Free, a card invites them to Pro: below on
+ * a phone, so the name keeps the whole row, and beside the greeting from lg up.
  */
 export function OverviewGreeting({ user, plan }: { user: SessionUser; plan: PlanName }) {
   const name = user.name.trim()
 
   return (
-    <div className="space-y-4">
-      <header className="flex items-center gap-3 pt-1">
+    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
+      <header className="flex min-w-0 items-center gap-3 pt-1">
         <Avatar size="lg">
           <AvatarImage src={user.avatar} alt="" />
           <AvatarFallback>{initialsOf(name) || "?"}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
           <p className="text-sm text-muted-foreground">{greetingFor(new Date())},</p>
-          <h1 className="text-2xl leading-tight font-semibold tracking-tight [overflow-wrap:anywhere]">
+          <h1 className="text-2xl leading-tight font-semibold tracking-tight [overflow-wrap:anywhere] md:text-3xl">
             {name || "bạn"}
             {plan === "pro" ? (
               <BadgeCheckIcon
@@ -59,7 +59,7 @@ export function OverviewGreeting({ user, plan }: { user: SessionUser; plan: Plan
       </header>
 
       {plan === "free" ? (
-        <Card size="sm">
+        <Card size="sm" className="lg:w-md lg:shrink-0">
           <CardContent className="flex items-center gap-3">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#f2e9ff] text-[#7a4aba] dark:bg-[#3b2c54] dark:text-[#d0b2ff]">
               <SparklesIcon className="size-5" aria-hidden="true" />
