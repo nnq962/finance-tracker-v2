@@ -318,7 +318,6 @@ export function AccountForm({
                 setNameEdited(event.target.value.trim().length > 0)
                 clearError("name")
               }}
-              placeholder="Ví dụ: Lương, Tiết kiệm"
               autoComplete="off"
               required
               aria-invalid={Boolean(errors.name) || undefined}

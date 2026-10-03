@@ -89,7 +89,7 @@ export function AddContactSheet({ contact, onAddContact, open: controlledOpen, o
               </Field>
               <Field>
                 <FieldLabel htmlFor={`${id}-relationship`}>Mối quan hệ</FieldLabel>
-                <Input id={`${id}-relationship`} name="relationship" defaultValue={contact?.relationship} maxLength={80} placeholder="Ví dụ: Đồng nghiệp" />
+                <Input id={`${id}-relationship`} name="relationship" defaultValue={contact?.relationship} maxLength={80} />
               </Field>
             </FieldGroup>
           </fieldset>

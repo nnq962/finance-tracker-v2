@@ -209,7 +209,6 @@ function AdminUserDetail({ user }: { user: AdminUser }) {
               id="grant-note"
               value={note}
               maxLength={200}
-              placeholder="Ví dụ: CK Vietcombank 03/10"
               onChange={(event) => setNote(event.target.value)}
             />
           </Field>

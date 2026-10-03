@@ -189,7 +189,7 @@ export function AiAssistDrawer<Result>({
                               submit(text)
                             }
                           }}
-                          placeholder="Ví dụ: ăn trưa 45 nghìn bằng MoMo"
+                          placeholder="Nhập khoản thu chi…"
                           aria-label="Yêu cầu cho AI"
                         />
                       ) : (

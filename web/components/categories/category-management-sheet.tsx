@@ -256,7 +256,7 @@ export function CategoryManagementSheet({
                     }}
                     maxLength={80}
                     disabled={isPending}
-                    placeholder={editor.kind === "group" ? "Ví dụ: Ăn uống" : "Ví dụ: Ăn sáng"}
+                   
                     aria-invalid={Boolean(error)}
                   />
                   {error ? <FieldError>{error}</FieldError> : null}

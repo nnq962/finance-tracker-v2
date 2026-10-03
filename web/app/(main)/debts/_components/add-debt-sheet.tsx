@@ -340,7 +340,6 @@ export function AddDebtSheet({
                   name="note"
                   defaultValue={debt?.note}
                   maxLength={500}
-                  placeholder="Không bắt buộc, ví dụ: Mượn tiền sửa xe"
                 />
               </Field>
 

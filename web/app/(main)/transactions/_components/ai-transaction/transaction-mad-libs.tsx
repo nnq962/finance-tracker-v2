@@ -568,7 +568,6 @@ function BlankEditor({
           aria-label="Ghi chú"
           value={draft.note}
           maxLength={200}
-          placeholder="Ví dụ: ở quán cô Ba"
           onChange={(event) => onChange({ note: event.target.value })}
         />
       )
