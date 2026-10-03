@@ -100,7 +100,7 @@ const faqs = [
   },
   {
     question: "Lượt AI được tính thế nào?",
-    answer: "Mỗi lần nhờ trợ lý AI đọc một câu (gõ hoặc nói) tính là một lượt; lần AI không đọc được thì không bị tính. Lượt được làm mới vào ngày 1 hằng tháng.",
+    answer: "Mỗi lần nhờ trợ lý AI đọc một câu (gõ hoặc nói) tính là một lượt; lần AI không đọc được thì không bị tính. Lượt được làm mới vào ngày 1 hằng tháng; khi hết, lượt thưởng từ nhiệm vụ được dùng tiếp và không hết hạn.",
   },
 ]
 
@@ -308,6 +308,7 @@ function UsageCard({ planState }: { planState: PlanState }) {
         <Progress value={percent} tone={percent >= 90 ? "coral" : isPro ? "grape" : "sky"} aria-label="Lượt AI đã dùng" />
         <p className="text-xs text-muted-foreground">
           Còn {remaining} lượt, làm mới vào ngày 1 hằng tháng
+          {planState.aiCredits > 0 ? ` · ${planState.aiCredits} lượt thưởng` : ""}
           {planState.proEndsAt ? ` · Pro đến ${formatDate(toDateKey(planState.proEndsAt))}` : ""}
         </p>
       </CardContent>

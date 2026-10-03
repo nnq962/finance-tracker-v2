@@ -47,7 +47,7 @@ function revalidateCategoryData(userId: string) {
   revalidatePath("/budget")
   revalidatePath("/transactions")
   revalidatePath("/settings")
-  // The category sheet also opens from the overview's getting-started card.
+  // The category sheet also opens from the missions on the overview.
   revalidatePath("/overview")
 }
 

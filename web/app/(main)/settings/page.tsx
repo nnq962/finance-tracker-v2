@@ -54,7 +54,7 @@ export default async function SettingsPage({
         checkoutEnabled={getPayOS() !== null}
         paymentOutcome={paymentOutcome}
         adminData={adminData}
-        // Deep links: the getting-started checklist, and the way back from payOS.
+        // Deep links: the missions on the overview, and the way back from payOS.
         initialScreen={screen === "notifications" || screen === "plan" ? screen : undefined}
       />
     </Page>

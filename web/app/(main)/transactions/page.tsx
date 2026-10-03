@@ -15,9 +15,9 @@ import {
 export default async function TransactionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string; account?: string }>
+  searchParams: Promise<{ month?: string; account?: string; ai?: string }>
 }) {
-  const { month, account } = await searchParams
+  const { month, account, ai } = await searchParams
   const todayDateKey = getTransactionDateKey(new Date())
   const selectedMonth = getTransactionMonthKey(month, todayDateKey)
   const range = getTransactionMonthRange(selectedMonth, 1)
@@ -43,7 +43,9 @@ export default async function TransactionsPage({
         selectedMonth={selectedMonth}
         todayDateKey={todayDateKey}
         transactions={transactions}
-        aiQuota={{ used: planState.aiUsed, limit: planState.aiLimit }}
+        aiQuota={{ used: planState.aiUsed, limit: planState.aiLimit, credits: planState.aiCredits }}
+        // Opened from the AI mission on the overview.
+        initialAiOpen={ai === "1"}
       />
     </Page>
   )

@@ -33,8 +33,10 @@ type TransactionsDashboardProps = {
   selectedMonth: string
   todayDateKey: string
   transactions: Transaction[]
-  /** This month's AI requests and the plan's limit, as the page loaded. */
+  /** This month's AI requests, the plan's limit and AI credits, as the page loaded. */
   aiQuota: AiQuota
+  /** Opens the AI assistant straight away. */
+  initialAiOpen?: boolean
 }
 
 // The AI button in the assistant's violet, set apart from the green add button.
@@ -56,15 +58,18 @@ export function TransactionsDashboard({
   todayDateKey,
   transactions,
   aiQuota: initialAiQuota,
+  initialAiOpen = false,
 }: TransactionsDashboardProps) {
   const router = useRouter()
   const [isNavigating, startNavigation] = React.useTransition()
   const period = "month" as const
   const [filter, setFilter] = React.useState<TransactionFilter>("all")
-  const [aiOpen, setAiOpen] = React.useState(false)
+  const [aiOpen, setAiOpen] = React.useState(initialAiOpen)
   // Follows each request's answer, which carries the count after it.
   const [aiQuota, setAiQuota] = React.useState(initialAiQuota)
-  const aiRemaining = Math.max(0, aiQuota.limit - aiQuota.used)
+  const aiMonthRemaining = Math.max(0, aiQuota.limit - aiQuota.used)
+  // Credits from missions count once the month's requests are used up.
+  const aiRemaining = aiMonthRemaining + aiQuota.credits
   const [searchFilters, setSearchFilters] =
     React.useState<TransactionSearchFilters>(() => ({
       ...initialSearchFilters,
@@ -178,7 +183,7 @@ export function TransactionsDashboard({
         accounts={accounts}
         categoryGroups={categoryGroups}
         todayDateKey={todayDateKey}
-        quota={{ remaining: aiRemaining, limit: aiQuota.limit }}
+        quota={{ remaining: aiMonthRemaining, limit: aiQuota.limit, credits: aiQuota.credits }}
         onQuotaChange={setAiQuota}
       />
     </TransactionHistoryProvider>

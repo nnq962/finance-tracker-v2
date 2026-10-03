@@ -36,7 +36,7 @@ async function getProEndsAt(userId: string) {
 }
 
 export async function getPlanState(userId: string): Promise<PlanState> {
-  const [proEndsAt, usage] = await Promise.all([
+  const [proEndsAt, usage, user] = await Promise.all([
     getProEndsAt(userId),
     getDb()
       .selectFrom("aiUsage")
@@ -44,6 +44,7 @@ export async function getPlanState(userId: string): Promise<PlanState> {
       .where("userId", "=", userId)
       .where("month", "=", currentMonth())
       .executeTakeFirst(),
+    getDb().selectFrom("users").select("aiCredits").where("id", "=", userId).executeTakeFirst(),
   ])
   const plan = proEndsAt ? "pro" : "free"
   return {
@@ -51,6 +52,7 @@ export async function getPlanState(userId: string): Promise<PlanState> {
     ...(proEndsAt ? { proEndsAt: proEndsAt.toISOString() } : {}),
     aiUsed: usage?.count ?? 0,
     aiLimit: plans[plan].aiMonthlyLimit,
+    aiCredits: user?.aiCredits ?? 0,
   }
 }
 
@@ -58,14 +60,17 @@ export type AiReservation = {
   allowed: boolean
   used: number
   limit: number
-  /** The month the request was counted in, to give it back to. */
-  month: string
+  /** AI credits left (from missions). */
+  credits: number
+  /** What the request was taken from, to give it back to: the month's count, or a credit. */
+  source: { month: string } | "credit" | null
 }
 
 /**
- * Counts one AI request against this month's limit, before it is made. The
- * count only rises while under the limit, in one statement, so requests at
- * the same moment cannot pass it together.
+ * Counts one AI request against this month's limit, before it is made, or
+ * once that is used up takes one of the user's AI credits. The count only
+ * rises while under the limit, and credits only fall while some are left,
+ * each in one statement, so requests at the same moment cannot pass either.
  */
 export async function reserveAiRequest(userId: string): Promise<AiReservation> {
   const month = currentMonth()
@@ -77,19 +82,39 @@ export async function reserveAiRequest(userId: string): Promise<AiReservation> {
     RETURNING count
   `.execute(getDb())
   const counted = result.rows[0]?.count
-  return counted === undefined
-    ? { allowed: false, used: limit, limit, month }
-    : { allowed: true, used: counted, limit, month }
+  if (counted !== undefined) {
+    const user = await getDb().selectFrom("users").select("aiCredits").where("id", "=", userId).executeTakeFirst()
+    return { allowed: true, used: counted, limit, credits: user?.aiCredits ?? 0, source: { month } }
+  }
+
+  const credit = await getDb()
+    .updateTable("users")
+    .set((eb) => ({ aiCredits: eb("aiCredits", "-", 1) }))
+    .where("id", "=", userId)
+    .where("aiCredits", ">", 0)
+    .returning("aiCredits")
+    .executeTakeFirst()
+  return credit
+    ? { allowed: true, used: limit, limit, credits: credit.aiCredits, source: "credit" }
+    : { allowed: false, used: limit, limit, credits: 0, source: null }
 }
 
-/** Gives back a request the AI could not answer. */
-export async function releaseAiRequest(userId: string, month: string) {
-  await getDb()
-    .updateTable("aiUsage")
-    .set((eb) => ({ count: sql<number>`greatest(${eb.ref("count")} - 1, 0)` }))
-    .where("userId", "=", userId)
-    .where("month", "=", month)
-    .execute()
+/** Gives back a request the AI could not answer, to where it was taken from. */
+export async function releaseAiRequest(userId: string, source: AiReservation["source"]) {
+  if (source === "credit") {
+    await getDb()
+      .updateTable("users")
+      .set((eb) => ({ aiCredits: eb("aiCredits", "+", 1) }))
+      .where("id", "=", userId)
+      .execute()
+  } else if (source) {
+    await getDb()
+      .updateTable("aiUsage")
+      .set((eb) => ({ count: sql<number>`greatest(${eb.ref("count")} - 1, 0)` }))
+      .where("userId", "=", userId)
+      .where("month", "=", source.month)
+      .execute()
+  }
 }
 
 /**

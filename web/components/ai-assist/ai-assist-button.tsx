@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 
 /**
  * The way into the AI assistant on any page: a button with a sparkle and,
- * given `remaining`, how many requests are left this month. Its colour is set
+ * given `remaining`, how many requests are left (this month's and AI credits). Its colour is set
  * where it is used, so it stands out from the page's ordinary actions.
  */
 export function AiAssistButton({
@@ -23,7 +23,7 @@ export function AiAssistButton({
       {remaining === undefined ? null : (
         <Badge variant="grape">
           {remaining}
-          <span className="sr-only"> lượt còn lại tháng này</span>
+          <span className="sr-only"> lượt còn lại</span>
         </Badge>
       )}
     </Button>

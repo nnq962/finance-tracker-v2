@@ -106,6 +106,13 @@ export interface Debts {
   userId: string;
 }
 
+export interface MissionRewards {
+  claimedAt: Generated<Timestamp>;
+  credits: number;
+  mission: string;
+  userId: string;
+}
+
 export interface NotificationBrowsers {
   deviceId: string | null;
   id: string;
@@ -202,8 +209,8 @@ export interface Transactions {
 }
 
 export interface Users {
+  aiCredits: Generated<number>;
   categoriesInitializedAt: Timestamp | null;
-  checklistHiddenAt: Timestamp | null;
   createdAt: Generated<Timestamp>;
   id: string;
   onboardingSeenAt: Timestamp | null;
@@ -218,6 +225,7 @@ export interface DB {
   debtOperations: DebtOperations;
   debtPayments: DebtPayments;
   debts: Debts;
+  missionRewards: MissionRewards;
   notificationBrowsers: NotificationBrowsers;
   notificationLogDevices: NotificationLogDevices;
   notificationLogs: NotificationLogs;

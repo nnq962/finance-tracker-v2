@@ -28,13 +28,11 @@ function initialsOf(name: string) {
 }
 
 /**
- * The overview's heading: the user's avatar and a greeting by first name
- * (the last word of a Vietnamese name), with the blue tick on Pro and, on
- * Free, a way to the plans.
+ * The overview's heading: the user's avatar and a greeting with their full
+ * name, the blue tick on Pro and, on Free, a way to the plans.
  */
 export function OverviewGreeting({ user, plan }: { user: SessionUser; plan: PlanName }) {
   const name = user.name.trim()
-  const firstName = name.split(/\s+/).at(-1) || "bạn"
 
   return (
     <header className="flex items-center gap-3 pt-1">
@@ -44,10 +42,15 @@ export function OverviewGreeting({ user, plan }: { user: SessionUser; plan: Plan
       </Avatar>
       <div className="min-w-0 flex-1">
         <p className="text-sm text-muted-foreground">{greetingFor(new Date())},</p>
-        <h1 className="flex min-w-0 items-center gap-1.5 text-2xl font-semibold tracking-tight">
-          <span className="truncate">{firstName}</span>
+        {/* The full name wraps rather than being cut short beside the upgrade button. */}
+        <h1 className="text-2xl leading-tight font-semibold tracking-tight [overflow-wrap:anywhere]">
+          {name || "bạn"}
           {plan === "pro" ? (
-            <BadgeCheckIcon className="size-5 shrink-0 fill-blue-500 text-white" role="img" aria-label="Pro" />
+            <BadgeCheckIcon
+              className="ml-1.5 inline-block size-5 fill-blue-500 align-[-0.15em] text-white"
+              role="img"
+              aria-label="Pro"
+            />
           ) : null}
         </h1>
       </div>

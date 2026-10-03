@@ -80,7 +80,7 @@ type SettingsViewProps = {
   paymentOutcome?: PaymentOutcome
   /** Only for admins: every user and the month's takings. */
   adminData?: AdminData
-  /** Opens this screen straight away, e.g. from the getting-started checklist. */
+  /** Opens this screen straight away, e.g. from the missions on the overview. */
   initialScreen?: Screen
 }
 

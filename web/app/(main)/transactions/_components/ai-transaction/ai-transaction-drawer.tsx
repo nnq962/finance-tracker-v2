@@ -20,7 +20,7 @@ type AiTransactionDrawerProps = {
   accounts: Account[]
   categoryGroups: CategoryGroup[]
   todayDateKey: string
-  quota: { remaining: number; limit: number }
+  quota: { remaining: number; limit: number; credits: number }
   /** The count after each request, as the server keeps it. */
   onQuotaChange: (quota: AiQuota) => void
 }

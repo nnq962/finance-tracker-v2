@@ -26,10 +26,25 @@ async function run() {
     assert.equal((await plans.getPlanState(userId)).aiUsed, free)
 
     // A request the AI could not answer is given back.
-    await plans.releaseAiRequest(userId, results[0].month)
+    await plans.releaseAiRequest(userId, results[0].source)
     assert.equal((await plans.getPlanState(userId)).aiUsed, free - 1)
     assert.equal((await plans.reserveAiRequest(userId)).allowed, true)
     assert.equal((await plans.reserveAiRequest(userId)).allowed, false)
+
+    // Once the month is used up, AI credits pay for requests, never below none.
+    await sql('UPDATE users SET ai_credits = 2 WHERE id = $1', [userId])
+    const onCredits = await Promise.all(Array.from({ length: 4 }, () => plans.reserveAiRequest(userId)))
+    assert.equal(onCredits.filter((result) => result.allowed).length, 2)
+    assert.ok(onCredits.filter((result) => result.allowed).every((result) => result.source === 'credit'))
+    let after = await plans.getPlanState(userId)
+    assert.equal(after.aiUsed, free)
+    assert.equal(after.aiCredits, 0)
+    // A credit the AI could not use goes back to the credits.
+    await plans.releaseAiRequest(userId, 'credit')
+    after = await plans.getPlanState(userId)
+    assert.equal(after.aiCredits, 1)
+    assert.equal(after.aiUsed, free)
+    await sql('UPDATE users SET ai_credits = 0 WHERE id = $1', [userId])
 
     // Pro raises the limit at once.
     await plans.grantPro(admin, userId, { period: 'month', amount: 29000, note: 'CK test' })

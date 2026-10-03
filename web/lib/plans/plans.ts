@@ -21,6 +21,8 @@ export type PlanState = {
   /** AI requests this Vietnam calendar month, and the plan's limit. */
   aiUsed: number
   aiLimit: number
+  /** AI credits earned from missions, used once the month's requests run out. */
+  aiCredits: number
 }
 
 /** What a user writes on a transfer, so the payment can be matched to them. */

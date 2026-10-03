@@ -45,8 +45,8 @@ type AiAssistDrawerProps<Result> = {
   prompt: string
   /** Sample requests, faded in turn inside the empty input before anything is said. */
   examples: string[]
-  /** Requests left this month out of the plan's limit, shown under the title. */
-  quota?: { remaining: number; limit: number }
+  /** Requests left this month out of the plan's limit, and AI credits, shown under the title. */
+  quota?: { remaining: number; limit: number; credits: number }
   /** Turns what was said into a result; rejects with a message to show. */
   onSubmit: (text: string) => Promise<Result>
   renderResult: (result: Result, actions: { retry: () => void; close: () => void }) => React.ReactNode
@@ -138,6 +138,7 @@ export function AiAssistDrawer<Result>({
                 {quota.remaining > 0
                   ? `Còn ${quota.remaining}/${quota.limit} lượt tháng này`
                   : `Đã dùng hết ${quota.limit} lượt tháng này`}
+                {quota.credits > 0 ? ` · ${quota.credits} lượt thưởng` : ""}
               </p>
             ) : null}
             <AiDrawerClose asChild>

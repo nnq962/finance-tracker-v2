@@ -27,6 +27,8 @@ type AddTransactionSheetProps = {
   /** Controlled mode without the trigger button, e.g. from the first-run checklist. */
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  /** The tab it opens on, e.g. transfer for the transfer mission. */
+  initialKind?: SupportedTransactionKind
 }
 
 export function AddTransactionSheet({
@@ -34,12 +36,13 @@ export function AddTransactionSheet({
   categoryGroups,
   open: controlledOpen,
   onOpenChange,
+  initialKind = "expense",
 }: AddTransactionSheetProps) {
   const [internalOpen, setInternalOpen] = React.useState(false)
   const open = controlledOpen ?? internalOpen
   const setOpen = onOpenChange ?? setInternalOpen
   const [categoryManagementOpen, setCategoryManagementOpen] = React.useState(false)
-  const [kind, setKind] = React.useState<SupportedTransactionKind>("expense")
+  const [kind, setKind] = React.useState<SupportedTransactionKind>(initialKind)
 
   return (
     <>

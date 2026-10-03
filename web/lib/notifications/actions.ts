@@ -26,7 +26,7 @@ export async function getNotificationStateAction(expectedUid: string) {
 
 export async function saveNotificationSettingsAction(input: unknown, expectedUid: string) {
   const result = await mutate(expectedUid, (uid) => saveNotificationSettings(uid, input))
-  // The overview's getting-started card ticks off the reminder step.
+  // The missions on the overview tick off the reminder.
   if (result.success) revalidatePath("/overview")
   return result
 }

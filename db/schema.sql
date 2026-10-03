@@ -220,6 +220,20 @@ CREATE TABLE public.debts (
 
 
 --
+-- Name: mission_rewards; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.mission_rewards (
+    user_id text NOT NULL,
+    mission text NOT NULL,
+    credits integer NOT NULL,
+    claimed_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT mission_rewards_credits_check CHECK ((credits > 0)),
+    CONSTRAINT mission_rewards_mission_check CHECK (((char_length(mission) >= 1) AND (char_length(mission) <= 40)))
+);
+
+
+--
 -- Name: notification_browsers; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -405,7 +419,8 @@ CREATE TABLE public.users (
     categories_initialized_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     onboarding_seen_at timestamp with time zone,
-    checklist_hidden_at timestamp with time zone,
+    ai_credits integer DEFAULT 0 NOT NULL,
+    CONSTRAINT users_ai_credits_check CHECK ((ai_credits >= 0)),
     CONSTRAINT users_id_check CHECK ((id ~ '^[A-Za-z0-9_-]{1,128}$'::text))
 );
 
@@ -543,6 +558,14 @@ ALTER TABLE ONLY public.debts
 
 ALTER TABLE ONLY public.debts
     ADD CONSTRAINT debts_user_id_id_key UNIQUE (user_id, id);
+
+
+--
+-- Name: mission_rewards mission_rewards_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mission_rewards
+    ADD CONSTRAINT mission_rewards_pkey PRIMARY KEY (user_id, mission);
 
 
 --
@@ -932,6 +955,14 @@ ALTER TABLE ONLY public.debts
 
 
 --
+-- Name: mission_rewards mission_rewards_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mission_rewards
+    ADD CONSTRAINT mission_rewards_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: notification_browsers notification_browsers_device_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1081,4 +1112,5 @@ INSERT INTO dbmate.schema_migrations (version) VALUES
     ('20261002000002'),
     ('20261002000003'),
     ('20261003000001'),
-    ('20261003000002');
+    ('20261003000002'),
+    ('20261003000004');

@@ -99,8 +99,8 @@ export async function deleteTransactionAction(
   }
 }
 
-/** This month's AI requests after the one just made, and the plan's limit. */
-export type AiQuota = { used: number; limit: number }
+/** This month's AI requests after the one just made, the plan's limit, and AI credits left. */
+export type AiQuota = { used: number; limit: number; credits: number }
 
 export type AiTransactionParseResult =
   | { success: true; draft: AiTransactionDraft; quota: AiQuota }
@@ -124,7 +124,7 @@ export async function parseTransactionWithAiAction(
   }
 
   const reservation = await reserveAiRequest(user.uid)
-  const quota = { used: reservation.used, limit: reservation.limit }
+  const quota = { used: reservation.used, limit: reservation.limit, credits: reservation.credits }
   if (!reservation.allowed) {
     return {
       success: false,
@@ -148,10 +148,13 @@ export async function parseTransactionWithAiAction(
     reply = await ollamaJson(messages, transactionReplySchema)
   } catch (error) {
     console.error("AI transaction parse failed", error)
-    await releaseAiRequest(user.uid, reservation.month)
+    await releaseAiRequest(user.uid, reservation.source)
     return {
       success: false,
-      quota: { ...quota, used: quota.used - 1 },
+      quota:
+        reservation.source === "credit"
+          ? { ...quota, credits: quota.credits + 1 }
+          : { ...quota, used: quota.used - 1 },
       error: "AI đang không phản hồi. Thử lại sau ít phút nhé.",
     }
   }
