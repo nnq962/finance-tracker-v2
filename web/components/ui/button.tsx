@@ -21,6 +21,9 @@ const buttonVariants = cva(
           `[--button-face-border:2px] aria-expanded:[--button-face:#d6f4ff] aria-pressed:[--button-face:#d6f4ff] [--button-face:#fff] [--button-shade:#e7e4dd] [--button-text:#0083c4] dark:[--button-face:#201e26] dark:[--button-shade:#35323e] dark:[--button-text:#78d0ff] dark:aria-expanded:[--button-face:#113950] dark:aria-pressed:[--button-face:#113950] dark:disabled:[--button-face:#2c2a33] dark:disabled:[--button-shade:#211f27] dark:disabled:[--button-text:#66626f] ${pressEffect}`,
         secondary:
           `[--button-face:#38b8f6] [--button-shade:#0083c4] [--button-text:#fff] ${pressEffect}`,
+        // The kit's grape, kept for premium: upgrading to Pro.
+        grape:
+          `[--button-face:#a376e9] [--button-shade:#7a4aba] [--button-text:#fff] ${pressEffect}`,
         ghost:
           "text-[#0083c4] hover:bg-[#d6f4ff] aria-expanded:bg-[#d6f4ff] disabled:opacity-50 dark:text-[#38b8f6] dark:hover:bg-[#d6f4ff]/15 dark:aria-expanded:bg-[#d6f4ff]/15",
         destructive:
