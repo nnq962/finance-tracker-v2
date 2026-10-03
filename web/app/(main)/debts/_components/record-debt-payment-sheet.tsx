@@ -5,6 +5,8 @@ import { CheckIcon } from "lucide-react"
 import { toast } from "sonner"
 import { AccountSelectGroups } from "@/components/account-select-groups"
 import { CurrencyInput } from "@/components/forms/currency-input"
+import { RequiredMark } from "@/components/forms/required-mark"
+import { useFieldErrors } from "@/components/forms/use-field-errors"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -43,6 +45,7 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
   const [pending, setPending] = React.useState(false)
   const submitting = React.useRef(false)
   const id = React.useId()
+  const { errors, clear, report, reset: resetErrors } = useFieldErrors<"amount" | "accountId" | "paidAt">()
   const baseDebt = payment ? { ...debt, paidAmount: debt.paidAmount - payment.amount, payments: debt.payments?.filter((item) => item.id !== payment.id) } : debt
   const { remainingAmount } = getPaymentMetrics(baseDebt, paidAt || todayDate())
   const isCollection = debt.direction === "lent"
@@ -58,6 +61,7 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
         setPaidAt(payment?.paidAt ?? todayDate())
         setAccountId(payment?.accountId ?? "")
         setErrorMessage(null)
+        resetErrors()
       }
   }
 
@@ -74,12 +78,18 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
           title={actionLabel}
           disabled={pending}
         />
-        <form className="flex min-h-0 flex-1 flex-col" aria-busy={pending} onSubmit={async (event) => {
+        <form noValidate className="flex min-h-0 flex-1 flex-col" aria-busy={pending} onSubmit={async (event) => {
           event.preventDefault()
           if (submitting.current) return
           const data = new FormData(event.currentTarget)
           const account = eligibleAccounts.find((item) => item.id === accountId)
-          if (!account) { setErrorMessage("Vui lòng chọn tài khoản."); return }
+          const found: Partial<Record<"amount" | "accountId" | "paidAt", string>> = {}
+          if (!(amount && amount > 0)) found.amount = "Nhập số tiền."
+          if (!account) found.accountId = "Chọn tài khoản."
+          if (!paidAt || !data.get("paidTime")) found.paidAt = "Chọn ngày và giờ."
+          else if (paidAt > todayDate()) found.paidAt = "Không thể chọn ngày sau hôm nay."
+          else if (paidAt < debt.recordedAt) found.paidAt = "Không thể chọn ngày trước ngày ghi khoản nợ."
+          if (report(found, ["amount", "accountId", "paidAt"], (name) => ({ amount: `${id}-amount`, accountId: `${id}-account`, paidAt: `${id}-date` })[name]) || !account) return
           submitting.current = true
           setPending(true)
           setErrorMessage(null)
@@ -96,12 +106,12 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
         }}>
           <fieldset disabled={pending} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
             <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor={`${id}-amount`}>Số tiền</FieldLabel>
-                <CurrencyInput id={`${id}-amount`} name="amount" value={amount} required onValueChange={(value) => { setAmount(value); setErrorMessage(null) }} />
+              <Field data-invalid={Boolean(errors.amount) || undefined}>
+                <FieldLabel htmlFor={`${id}-amount`}>Số tiền <RequiredMark /></FieldLabel>
+                <CurrencyInput id={`${id}-amount`} name="amount" value={amount} required invalid={Boolean(errors.amount)} onValueChange={(value) => { setAmount(value); setErrorMessage(null); clear("amount") }} />
                 <div className="flex flex-wrap gap-2" aria-label="Nhập nhanh số tiền còn lại">
                   {[{ label: "1/3 còn lại", divisor: 3 }, { label: "1/2 còn lại", divisor: 2 }, { label: "Toàn bộ", divisor: 1 }].map((choice) => (
-                    <Button key={choice.divisor} type="button" variant="outline" size="sm" disabled={pending || remainingAmount < 1} onClick={() => { setAmount(Math.max(1, Math.floor(remainingAmount / choice.divisor))); setErrorMessage(null) }}>{choice.label}</Button>
+                    <Button key={choice.divisor} type="button" variant="outline" size="sm" disabled={pending || remainingAmount < 1} onClick={() => { setAmount(Math.max(1, Math.floor(remainingAmount / choice.divisor))); setErrorMessage(null); clear("amount") }}>{choice.label}</Button>
                   ))}
                 </div>
                 <dl className="grid grid-cols-2 gap-4 text-sm">
@@ -114,21 +124,21 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
                     <dd className="font-bold tabular-nums">{formatCurrency(Math.max(0, remainingAmount - (amount ?? 0)))}</dd>
                   </div>
                 </dl>
-                {payment ? <p className="text-xs text-muted-foreground">Các lần thanh toán sau ngày này sẽ được kiểm tra lại khi lưu.</p> : null}
+                {errors.amount ? <FieldError>{errors.amount}</FieldError> : null}
               </Field>
-              <Field>
-                <FieldLabel htmlFor={`${id}-account`}>{isCollection ? "Tài khoản nhận tiền" : "Nguồn tiền trả nợ"}</FieldLabel>
-                <Select value={accountId} onValueChange={setAccountId} required disabled={pending}>
-                  <SelectTrigger id={`${id}-account`} className="w-full"><SelectValue placeholder="Chọn tài khoản" /></SelectTrigger>
+              <Field data-invalid={Boolean(errors.accountId) || undefined}>
+                <FieldLabel htmlFor={`${id}-account`}>{isCollection ? "Tài khoản nhận tiền" : "Nguồn tiền trả nợ"} <RequiredMark /></FieldLabel>
+                <Select value={accountId} onValueChange={(value) => { setAccountId(value); clear("accountId") }} required disabled={pending}>
+                  <SelectTrigger id={`${id}-account`} className="w-full" aria-invalid={Boolean(errors.accountId) || undefined}><SelectValue placeholder="Chọn tài khoản" /></SelectTrigger>
                   <SelectContent>
                     <AccountSelectGroups accounts={eligibleAccounts} />
                   </SelectContent>
                 </Select>
-                {eligibleAccounts.length === 0 ? <FieldError>Hãy thêm tài khoản trước khi ghi nhận thanh toán.</FieldError> : null}
+                {errors.accountId ? <FieldError>{errors.accountId}</FieldError> : eligibleAccounts.length === 0 ? <FieldError>Cần có tài khoản trước</FieldError> : null}
               </Field>
               <DateTimeFields
                 idPrefix={id}
-                label="Thời gian"
+                label={<>Thời gian <RequiredMark /></>}
                 dateName="paidAt"
                 timeName="paidTime"
                 dateValue={paidAt}
@@ -138,15 +148,18 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
                 onDateChange={(event) => {
                   setPaidAt(event.target.value)
                   setErrorMessage(null)
+                  clear("paidAt")
                 }}
+                onTimeChange={() => clear("paidAt")}
+                error={errors.paidAt}
                 required
               />
               <Field><FieldLabel htmlFor={`${id}-note`}>Ghi chú</FieldLabel><Textarea id={`${id}-note`} name="note" defaultValue={payment?.note} maxLength={500} /></Field>
-              {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
             </FieldGroup>
           </fieldset>
           <SheetFooter>
-            <Button type="submit" className="w-full" disabled={pending || !amount || amount <= 0 || !accountId || !paidAt}><CheckIcon />{pending ? "Đang lưu…" : payment ? "Lưu thay đổi" : isCollection ? "Xác nhận đã thu" : "Xác nhận đã trả"}</Button>
+            {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
+            <Button type="submit" className="w-full" disabled={pending}><CheckIcon />{pending ? "Đang lưu…" : payment ? "Lưu thay đổi" : isCollection ? "Xác nhận đã thu" : "Xác nhận đã trả"}</Button>
           </SheetFooter>
         </form>
       </SheetContent>

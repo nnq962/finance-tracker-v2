@@ -4,6 +4,7 @@ import * as React from "react"
 import { PencilIcon, PlusIcon, SaveIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { RequiredMark } from "@/components/forms/required-mark"
 import { Input } from "@/components/ui/input"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
@@ -31,11 +32,15 @@ export function AddContactSheet({ contact, onAddContact, open: controlledOpen, o
   const open = controlledOpen ?? internalOpen
   const setOpen = onOpenChange ?? setInternalOpen
   const id = React.useId()
+  const [nameError, setNameError] = React.useState<string | null>(null)
 
   return (
     <Sheet open={open} onOpenChange={(nextOpen) => {
       if (submitting.current) return
-      if (nextOpen) setErrorMessage(null)
+      if (nextOpen) {
+        setErrorMessage(null)
+        setNameError(null)
+      }
       setOpen(nextOpen)
     }}>
       {controlledOpen === undefined ? <SheetTrigger asChild>
@@ -53,16 +58,16 @@ export function AddContactSheet({ contact, onAddContact, open: controlledOpen, o
           title={contact ? "Sửa người liên hệ" : "Thêm người vào danh bạ"}
           disabled={pending}
         />
-        <form className="flex min-h-0 flex-1 flex-col" aria-busy={pending} onSubmit={async (event) => {
+        <form noValidate className="flex min-h-0 flex-1 flex-col" aria-busy={pending} onSubmit={async (event) => {
           event.preventDefault()
           if (submitting.current) return
           const form = event.currentTarget
           const data = new FormData(form)
           const name = String(data.get("name") || "").trim()
           if (!name) {
+            setNameError("Nhập họ và tên.")
             const input = form.elements.namedItem("name") as HTMLInputElement
-            input.setCustomValidity("Vui lòng nhập tên người liên hệ.")
-            input.reportValidity()
+            input.focus()
             return
           }
           submitting.current = true
@@ -83,9 +88,10 @@ export function AddContactSheet({ contact, onAddContact, open: controlledOpen, o
         }}>
           <fieldset disabled={pending} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
             <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor={`${id}-name`}>Họ và tên</FieldLabel>
-                <Input id={`${id}-name`} name="name" defaultValue={contact?.name} required maxLength={80} autoComplete="name" onInput={(event) => event.currentTarget.setCustomValidity("")} />
+              <Field data-invalid={Boolean(nameError) || undefined}>
+                <FieldLabel htmlFor={`${id}-name`}>Họ và tên <RequiredMark /></FieldLabel>
+                <Input id={`${id}-name`} name="name" defaultValue={contact?.name} required maxLength={80} autoComplete="name" aria-invalid={Boolean(nameError) || undefined} onInput={() => setNameError(null)} />
+                {nameError ? <FieldError>{nameError}</FieldError> : null}
               </Field>
               <Field>
                 <FieldLabel htmlFor={`${id}-relationship`}>Mối quan hệ</FieldLabel>
