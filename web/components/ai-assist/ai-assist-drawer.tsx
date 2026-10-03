@@ -109,7 +109,8 @@ export function AiAssistDrawer<Result>({
   }
 
   const showTyping = typing || !speech.supported
-  const hint = useRotatingHint(["Bấm micro và nói tự nhiên.", ...examples.map((example) => `“${example}”`)])
+  const hints = ["Bấm micro và nói tự nhiên.", ...examples.map((example) => `“${example}”`)]
+  const hintIndex = useRotatingIndex(hints.length)
 
   return (
     <AiDrawer open={open} onOpenChange={handleOpenChange}>
@@ -206,18 +207,10 @@ export function AiAssistDrawer<Result>({
                                 ))}
                               </p>
                             ) : (
-                              <AnimatePresence mode="wait" initial={false}>
-                                <motion.p
-                                  key={speech.listening ? "listening" : hint}
-                                  className="text-sm text-muted-foreground"
-                                  initial={{ opacity: 0, y: 6, filter: "blur(3px)" }}
-                                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                                  exit={{ opacity: 0, y: -6, filter: "blur(3px)" }}
-                                  transition={{ duration: 0.3, ease: EASE_OUT }}
-                                >
-                                  {speech.listening ? "Đang nghe… nói xong thì bấm dừng." : hint}
-                                </motion.p>
-                              </AnimatePresence>
+                              <TurningLines
+                                lines={[...hints, "Đang nghe… nói xong thì bấm dừng."]}
+                                active={speech.listening ? hints.length : hintIndex}
+                              />
                             )}
                           </CardContent>
                         </Card>
@@ -312,15 +305,42 @@ function heardWords(transcript: string, interim: string) {
   return [...words(transcript, true), ...words(interim, false)]
 }
 
-/** Cycles through `hints`, one every few seconds. */
-function useRotatingHint(hints: string[]) {
+/** Counts through `count` places, one every few seconds. */
+function useRotatingIndex(count: number) {
   const [index, setIndex] = React.useState(0)
   React.useEffect(() => {
-    if (hints.length < 2) return
-    const timer = window.setInterval(() => setIndex((current) => (current + 1) % hints.length), 3000)
+    if (count < 2) return
+    const timer = window.setInterval(() => setIndex((current) => (current + 1) % count), 3000)
     return () => window.clearInterval(timer)
-  }, [hints.length])
-  return hints[index % hints.length]
+  }, [count])
+  return index % count
+}
+
+/**
+ * Shows `lines[active]`, the old line drifting up and out as the new one
+ * rises in over it. Every line sits hidden in the same cell, so the tallest
+ * sets the height and a turn never moves the drawer.
+ */
+function TurningLines({ lines, active }: { lines: string[]; active: number }) {
+  return (
+    <div className="grid w-full items-center text-sm text-muted-foreground [&>*]:col-start-1 [&>*]:row-start-1">
+      {lines.map((line, index) => (
+        <p key={index} className="invisible" aria-hidden="true">
+          {line}
+        </p>
+      ))}
+      <AnimatePresence initial={false}>
+        <motion.p
+          key={active}
+          initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.7, ease: EASE_OUT } }}
+          exit={{ opacity: 0, y: -8, filter: "blur(4px)", transition: { duration: 0.5, ease: [0.4, 0, 1, 1] } }}
+        >
+          {lines[active]}
+        </motion.p>
+      </AnimatePresence>
+    </div>
+  )
 }
 
 /** What was asked, quoted above the answer. */
