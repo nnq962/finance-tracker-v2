@@ -163,7 +163,7 @@ export function SettingsView({
                 ) : null}
               </span>
             }
-            description={user.email || "Chưa cập nhật email"}
+            description={user.email || undefined}
             value={<Badge variant={isPro ? "grape" : "outline"}>{plans[planState.plan].label}</Badge>}
             onClick={() => setPlanOpen(true)}
           />
@@ -180,6 +180,13 @@ export function SettingsView({
               title="Người dùng & gói"
               value={String(adminData.users.length)}
               onClick={() => open("admin")}
+            />
+            {/* A tool for checking speech recognition on a device, not for users. */}
+            <SettingsRow
+              icon={MicIcon}
+              color="rose"
+              title="Thử giọng nói"
+              onClick={() => open("voice")}
             />
           </SettingsGroup>
         ) : null}
@@ -218,24 +225,6 @@ export function SettingsView({
           />
         </SettingsGroup>
 
-        <SettingsGroup title="Tiện ích">
-          <SettingsRow
-            icon={CalculatorIcon}
-            color="emerald"
-            title="Tính lương"
-            onClick={() => open("salary")}
-          />
-        </SettingsGroup>
-
-        <SettingsGroup title="Thử nghiệm">
-          <SettingsRow
-            icon={MicIcon}
-            color="rose"
-            title="Thử giọng nói"
-            onClick={() => open("voice")}
-          />
-        </SettingsGroup>
-
         <SettingsGroup
           title="Ứng dụng"
           footer={
@@ -245,6 +234,12 @@ export function SettingsView({
             </span>
           }
         >
+          <SettingsRow
+            icon={CalculatorIcon}
+            color="emerald"
+            title="Tính lương"
+            onClick={() => open("salary")}
+          />
           <SettingsRow
             icon={CircleHelpIcon}
             color="cyan"

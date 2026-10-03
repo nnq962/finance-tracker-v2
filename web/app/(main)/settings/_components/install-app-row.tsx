@@ -19,7 +19,7 @@ export function InstallAppRow() {
         icon={DownloadIcon}
         color="emerald"
         title="Cài ứng dụng"
-        description="Mở từ Màn hình chính như một app và nhận thông báo."
+        description="Mở nhanh từ Màn hình chính"
         onClick={() => (isIOS ? setGuideOpen(true) : void install())}
       />
       {isIOS ? <IosInstallDialog open={guideOpen} onOpenChange={setGuideOpen} /> : null}

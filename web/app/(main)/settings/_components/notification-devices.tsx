@@ -66,10 +66,10 @@ export function NotificationDevices({ uid, initialState, onChange }: {
   }, [deviceState, onChange])
 
   const status = permission === null ? "Đang kiểm tra quyền thông báo…"
-    : permission === "denied" ? "Thông báo đang bị chặn. Bật lại trong cài đặt của trình duyệt hoặc iPhone (Cài đặt → Thông báo)."
-      : permission === "unsupported" ? "Trình duyệt này chưa hỗ trợ thông báo. Trên iPhone, hãy cài app ra Màn hình chính."
+    : permission === "denied" ? "Thông báo đang bị chặn trong cài đặt của thiết bị."
+      : permission === "unsupported" ? "Trình duyệt chưa hỗ trợ. Trên iPhone, hãy cài ứng dụng ra Màn hình chính."
         : permission === "granted" && deviceId ? "Thiết bị này đang nhận thông báo."
-          : "Bật Nhắc ghi chi tiêu để kết nối thiết bị này."
+          : "Bật Nhắc ghi chi tiêu để nhận trên thiết bị này."
 
   return (
     <SettingsGroup footer={status}>
@@ -77,7 +77,6 @@ export function NotificationDevices({ uid, initialState, onChange }: {
         <SettingsRow
           icon={BellOffIcon}
           title="Chưa có thiết bị nào"
-          description="Thiết bị được thêm khi bạn bật nhắc trên nó."
         />
       ) : deviceState.devices.map((device) => (
         <SettingsRow

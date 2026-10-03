@@ -38,7 +38,7 @@ export function ThemeOptions() {
   const { choice, choose } = useThemeChoice()
 
   return (
-    <SettingsGroup footer="Theo hệ thống: tự đổi sáng/tối theo cài đặt của thiết bị.">
+    <SettingsGroup>
       {themeOptions.map(({ value, label, icon }) => (
         <SettingsRow
           key={value}

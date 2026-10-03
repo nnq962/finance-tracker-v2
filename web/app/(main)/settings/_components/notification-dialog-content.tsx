@@ -60,7 +60,7 @@ export function NotificationDialogContent({
 
   return (
     <div className="space-y-6">
-      <SettingsGroup footer="Mỗi ngày một lời nhắc, theo giờ Việt Nam, tới mọi thiết bị đã kết nối.">
+      <SettingsGroup footer="Gửi tới mọi thiết bị đã kết nối, theo giờ Việt Nam.">
         <SettingsRow
           icon={BellRingIcon}
           color="amber"
