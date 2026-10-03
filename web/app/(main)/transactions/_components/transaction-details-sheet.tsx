@@ -85,10 +85,8 @@ export function TransactionDetailsSheet({
     onDeleted()
     scheduleUndoableDelete({
       key: `transaction:${transaction.id}`,
-      title: `Sắp xoá giao dịch ${transaction.title}`,
-      description: "Giao dịch và tác động số dư sẽ bị xoá sau 6 giây.",
+      title: `Đã xoá “${transaction.title}”`,
       pendingMessage: "Đang xoá giao dịch…",
-      successMessage: "Đã xoá giao dịch.",
       undoMessage: "Đã giữ lại giao dịch.",
       errorMessage: "Không thể xoá giao dịch. Vui lòng thử lại.",
       onCommit: async () => {
@@ -133,18 +131,20 @@ export function TransactionDetailsSheet({
           {details.map((detail) => (
             <SettingsRow key={detail.label} title={detail.label} value={detail.value} />
           ))}
-          <SettingsRow
-            title="Ghi chú"
-            description={transaction.note ? <span className="whitespace-pre-wrap">{transaction.note}</span> : undefined}
-            value={transaction.note ? undefined : "Không có"}
-          />
+          {transaction.note ? (
+            <SettingsRow
+              title="Ghi chú"
+              description={<span className="whitespace-pre-wrap">{transaction.note}</span>}
+            />
+          ) : null}
         </SettingsGroup>
 
         {/* Edit and delete as rows at the end, like the other detail sheets. */}
         {isDebt ? (
-          <SettingsGroup footer="Giao dịch này tạo từ một khoản vay nợ, nên được sửa hoặc xoá ở đó.">
+          // A loan is changed on the debts page.
+          <SettingsGroup>
             <SettingsRow
-              title="Quản lý tại vay nợ"
+              title="Mở trong Vay nợ"
               onClick={() => router.push(`/debts?debt=${encodeURIComponent(transaction.debtId ?? "")}`)}
             />
           </SettingsGroup>

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ReceiptTextIcon } from "lucide-react"
+import { ReceiptTextIcon, Settings2Icon } from "lucide-react"
 
 import { AccountSelectGroups } from "@/components/account-select-groups"
 import { RequiredMark } from "@/components/forms/required-mark"
@@ -113,8 +113,14 @@ export function CashFlowFields({
             Hạng mục <RequiredMark />
           </FieldLabel>
           {onManageCategories ? (
-            <Button type="button" variant="ghost" onClick={onManageCategories}>
-              Quản lý hạng mục
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Quản lý hạng mục"
+              onClick={onManageCategories}
+            >
+              <Settings2Icon />
             </Button>
           ) : null}
         </div>
@@ -151,10 +157,7 @@ export function CashFlowFields({
           </ToggleGroup>
         ) : null}
         {availableGroups.length === 0 && !defaultCategoryIsMissing ? (
-          <p className="text-sm text-muted-foreground">
-            Chưa có hạng mục {kind === "expense" ? "chi" : "thu"} nào.
-            {onManageCategories ? " Bấm “Quản lý hạng mục” để thêm." : " Thêm hạng mục trong Cài đặt."}
-          </p>
+          <p className="text-sm text-muted-foreground">Chưa có hạng mục</p>
         ) : (
           <Select
             name="categoryId"

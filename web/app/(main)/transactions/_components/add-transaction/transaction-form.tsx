@@ -30,12 +30,6 @@ import { validateTransactionForm } from "./validate-transaction-form"
 
 const transactionKinds: SupportedTransactionKind[] = ["expense", "income", "transfer"]
 
-const notePlaceholders: Record<SupportedTransactionKind, string> = {
-  expense: "Thêm ghi chú cho khoản chi...",
-  income: "Thêm ghi chú cho khoản thu...",
-  transfer: "Thêm ghi chú cho giao dịch chuyển khoản...",
-}
-
 /** Where each field's error sends the focus, in the order they appear. */
 const fieldOrder: TransactionFieldName[] = ["amount", "accountId", "fromAccountId", "toAccountId", "categoryId", "date"]
 
@@ -236,7 +230,6 @@ export function TransactionForm({
               id="transaction-note"
               name="note"
               defaultValue={defaultValues?.note}
-              placeholder={notePlaceholders[kind]}
             />
           </Field>
         </FieldGroup>

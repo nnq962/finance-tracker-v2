@@ -31,11 +31,9 @@ function shiftMonth(month: string, offset: number) {
 
 function CashFlowStat({
   amount,
-  count,
   kind,
 }: {
   amount: number
-  count: number
   kind: "income" | "expense"
 }) {
   return (
@@ -51,7 +49,6 @@ function CashFlowStat({
       >
         {formatCurrency(amount)}
       </p>
-      <p className="mt-0.5 text-xs text-muted-foreground">{count} giao dịch</p>
     </div>
   )
 }
@@ -67,9 +64,6 @@ export function TransactionsHero({
 }: TransactionsHeroProps) {
   const monthInput = React.useRef<HTMLInputElement>(null)
   const { income, expense, netBalance } = getTransactionSummary(transactions)
-  // Loans are listed but are not income or spending.
-  const incomeCount = transactions.filter((item) => item.kind === "income" && !item.source).length
-  const expenseCount = transactions.filter((item) => item.kind === "expense" && !item.source).length
 
   const openMonthPicker = () => {
     const input = monthInput.current
@@ -142,8 +136,8 @@ export function TransactionsHero({
             </Button>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <CashFlowStat amount={income} count={incomeCount} kind="income" />
-            <CashFlowStat amount={expense} count={expenseCount} kind="expense" />
+            <CashFlowStat amount={income} kind="income" />
+            <CashFlowStat amount={expense} kind="expense" />
           </div>
           <Separator variant="chunky" />
           <div className="flex items-center justify-between gap-3 text-sm">

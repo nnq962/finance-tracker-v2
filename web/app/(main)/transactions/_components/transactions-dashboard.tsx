@@ -165,7 +165,6 @@ export function TransactionsDashboard({
           filter={filter}
           searchFilters={searchFilters}
           transactionCount={visibleTransactions.length}
-          rangeLabel={periodData.rangeLabel}
           onFilterChange={setFilter}
           onSearchFiltersChange={setSearchFilters}
           onReset={resetFilters}

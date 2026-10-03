@@ -144,7 +144,9 @@ export function TransactionFilterFields({
         <FieldLegend variant="label">Khoảng số tiền</FieldLegend>
         <div className="grid grid-cols-2 gap-3">
           <Field data-invalid={amountRangeReversed || undefined}>
-            <FieldLabel htmlFor={`${idPrefix}-min-amount`}>Từ</FieldLabel>
+            <FieldLabel htmlFor={`${idPrefix}-min-amount`} className="sr-only">
+              Từ
+            </FieldLabel>
             <CurrencyInput
               id={`${idPrefix}-min-amount`}
               name="minAmount"
@@ -152,11 +154,14 @@ export function TransactionFilterFields({
               onValueChange={(value) =>
                 onSearchFiltersChange({ ...searchFilters, minAmount: value })
               }
+              placeholder="Từ"
               invalid={amountRangeReversed}
             />
           </Field>
           <Field data-invalid={amountRangeReversed || undefined}>
-            <FieldLabel htmlFor={`${idPrefix}-max-amount`}>Đến</FieldLabel>
+            <FieldLabel htmlFor={`${idPrefix}-max-amount`} className="sr-only">
+              Đến
+            </FieldLabel>
             <CurrencyInput
               id={`${idPrefix}-max-amount`}
               name="maxAmount"
@@ -164,7 +169,7 @@ export function TransactionFilterFields({
               onValueChange={(value) =>
                 onSearchFiltersChange({ ...searchFilters, maxAmount: value })
               }
-              placeholder="Không giới hạn"
+              placeholder="Đến"
               invalid={amountRangeReversed}
             />
           </Field>

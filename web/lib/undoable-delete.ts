@@ -8,12 +8,13 @@ const UNDO_DELAY_MS = 6000
 const pendingDeletes = new Set<string>()
 
 type UndoableDeleteOptions = {
-  description: string
+  description?: string
   errorMessage: string
   key: string
   onCommit: () => Promise<unknown>
   pendingMessage: string
-  successMessage: string
+  /** Left out when the first toast already said it is deleted. */
+  successMessage?: string
   title: string
   undoMessage: string
 }
@@ -65,7 +66,8 @@ export function scheduleUndoableDelete({
 
     try {
       await onCommit()
-      toast.success(successMessage, { id: pendingToastId })
+      if (successMessage) toast.success(successMessage, { id: pendingToastId })
+      else toast.dismiss(pendingToastId)
     } catch (error) {
       toast.error(actionErrorMessage(error, errorMessage), {
         id: pendingToastId,

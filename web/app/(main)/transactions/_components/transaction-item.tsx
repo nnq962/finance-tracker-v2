@@ -39,7 +39,12 @@ export function TransactionItem({
         icon={icon}
         color={color}
         title={transaction.title}
-        description={transaction.description}
+        // The account; the icon already shows the category's group.
+        description={
+          transaction.kind === "transfer"
+            ? transaction.description
+            : (transaction.accountName ?? transaction.description)
+        }
         chevron={false}
         onClick={() => setDetailsOpen(true)}
         action={
