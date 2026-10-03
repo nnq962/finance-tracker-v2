@@ -3,23 +3,29 @@
 import type * as React from "react"
 import { SparklesIcon } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
 /**
- * The way into the AI assistant on any page: an outline button inside a
- * turning ring of colour (`.ai-glow` in globals.css), so it reads as special
- * next to the page's ordinary actions.
+ * The way into the AI assistant on any page: a button with a sparkle and,
+ * given `remaining`, how many requests are left today. Its colour is set
+ * where it is used, so it stands out from the page's ordinary actions.
  */
 export function AiAssistButton({
   children = "Hỏi AI",
+  remaining,
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: React.ComponentProps<typeof Button> & { remaining?: number }) {
   return (
-    <span className="ai-glow">
-      <Button type="button" variant="outline" {...props}>
-        <SparklesIcon className="text-[#a78bfa]" aria-hidden="true" />
-        {children}
-      </Button>
-    </span>
+    <Button type="button" {...props}>
+      <SparklesIcon aria-hidden="true" />
+      {children}
+      {remaining === undefined ? null : (
+        <Badge variant="grape">
+          {remaining}
+          <span className="sr-only"> lượt còn lại hôm nay</span>
+        </Badge>
+      )}
+    </Button>
   )
 }

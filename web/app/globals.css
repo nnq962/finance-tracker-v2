@@ -379,11 +379,7 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   }
 }
 
-/*
- * AI entry points: a raised button framed by a slowly turning ring of
- * colour with a soft glow behind it. Wrap the button in `.ai-glow`; the ring
- * covers the button's lower edge too (--button-edge, 3px by default).
- */
+/* The AI microphone's ripples: rings of turning colour spreading out. */
 @property --ai-angle {
   syntax: "<angle>";
   inherits: false;
@@ -408,32 +404,6 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
 }
 
 @layer components {
-  .ai-glow {
-    position: relative;
-    isolation: isolate;
-    display: inline-flex;
-    border-radius: calc(var(--radius-lg) + 2px);
-  }
-
-  .ai-glow::before,
-  .ai-glow::after {
-    content: "";
-    position: absolute;
-    inset: calc(-1.5px - var(--ai-edge, 3px)) -1.5px -1.5px;
-    z-index: -1;
-    border-radius: inherit;
-    background: conic-gradient(from var(--ai-angle), #38b8f6, #a78bfa, #f472b6, #fbbf24, #6ecc49, #38b8f6);
-    opacity: 0.8;
-    animation: ai-spin 6s linear infinite;
-    pointer-events: none;
-  }
-
-  .ai-glow::after {
-    filter: blur(8px);
-    opacity: 0.25;
-    z-index: -2;
-  }
-
   /* Rings spreading from the microphone while it listens. */
   .ai-ripple {
     position: absolute;
@@ -449,19 +419,9 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .ai-glow::before,
-    .ai-glow::after,
     .ai-ripple {
       animation: none;
     }
-  }
-
-  /* Held still while the AI drawer is open: the turning ring repaints every
-     frame, and the overlay's backdrop blur over it with it, which kept the
-     main thread busy enough to make the drawer's scrollbar thumbs lag. */
-  body:has([data-slot="ai-drawer-content"][data-state="open"]) .ai-glow::before,
-  body:has([data-slot="ai-drawer-content"][data-state="open"]) .ai-glow::after {
-    animation-play-state: paused;
   }
 }
 

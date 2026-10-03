@@ -20,6 +20,9 @@ type AiTransactionDrawerProps = {
   accounts: Account[]
   categoryGroups: CategoryGroup[]
   todayDateKey: string
+  quota: { remaining: number; limit: number }
+  /** Called as each request goes to the AI, to count it against the quota. */
+  onRequest: () => void
 }
 
 /** Records a transaction from a sentence. Not yet connected to the AI: a rule-based stand-in reads the request. */
@@ -29,6 +32,8 @@ export function AiTransactionDrawer({
   accounts,
   categoryGroups,
   todayDateKey,
+  quota,
+  onRequest,
 }: AiTransactionDrawerProps) {
   return (
     <AiAssistDrawer
@@ -36,9 +41,11 @@ export function AiTransactionDrawer({
       onOpenChange={onOpenChange}
       prompt="Nói một câu về khoản thu chi, AI sẽ điền giúp bạn."
       examples={examples}
-      onSubmit={(text) =>
-        mockParseTransaction(text, { accounts, categoryGroups, today: todayDateKey })
-      }
+      quota={quota}
+      onSubmit={(text) => {
+        onRequest()
+        return mockParseTransaction(text, { accounts, categoryGroups, today: todayDateKey })
+      }}
       renderResult={(draft, { retry, close }) => (
         <TransactionMadLibs
           draft={draft}

@@ -10,6 +10,7 @@ import type { CategoryGroup } from "@/lib/categories/types"
 
 import { filterTransactions } from "../_lib/filter-transactions"
 import { getTransactionPeriod } from "../_lib/get-transaction-period"
+import { useMockAiQuota } from "../_lib/mock-ai-quota"
 import type {
   Transaction,
   TransactionFilter,
@@ -33,6 +34,9 @@ type TransactionsDashboardProps = {
   transactions: Transaction[]
 }
 
+// The AI button in the assistant's violet, set apart from the green add button.
+const aiButtonClassName = "[--button-face:#a78bfa] [--button-shade:#7c5bd6] [--button-text:#fff]"
+
 const initialSearchFilters: TransactionSearchFilters = {
   query: "",
   minAmount: null,
@@ -54,6 +58,7 @@ export function TransactionsDashboard({
   const period = "month" as const
   const [filter, setFilter] = React.useState<TransactionFilter>("all")
   const [aiOpen, setAiOpen] = React.useState(false)
+  const aiQuota = useMockAiQuota()
   const [searchFilters, setSearchFilters] =
     React.useState<TransactionSearchFilters>(() => ({
       ...initialSearchFilters,
@@ -87,7 +92,9 @@ export function TransactionsDashboard({
         title="Giao dịch"
         actions={
           <>
-            <AiAssistButton onClick={() => setAiOpen(true)}>Nhập bằng AI</AiAssistButton>
+            <AiAssistButton className={aiButtonClassName} remaining={aiQuota.remaining} onClick={() => setAiOpen(true)}>
+              Nhập bằng AI
+            </AiAssistButton>
             <AddTransactionButton
               accounts={accounts}
               categoryGroups={categoryGroups}
@@ -150,7 +157,9 @@ export function TransactionsDashboard({
           phone's width. */}
       <div className="pointer-events-none sticky bottom-4 z-20 flex justify-end md:hidden">
         <div className="pointer-events-auto flex flex-col items-end gap-4">
-          <AiAssistButton onClick={() => setAiOpen(true)}>AI</AiAssistButton>
+          <AiAssistButton className={aiButtonClassName} remaining={aiQuota.remaining} onClick={() => setAiOpen(true)}>
+            AI
+          </AiAssistButton>
           <AddTransactionButton
             accounts={accounts}
             categoryGroups={categoryGroups}
@@ -163,6 +172,8 @@ export function TransactionsDashboard({
         accounts={accounts}
         categoryGroups={categoryGroups}
         todayDateKey={todayDateKey}
+        quota={aiQuota}
+        onRequest={aiQuota.record}
       />
     </TransactionHistoryProvider>
   )

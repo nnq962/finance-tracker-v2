@@ -45,6 +45,8 @@ type AiAssistDrawerProps<Result> = {
   prompt: string
   /** Sample requests, faded in turn inside the empty input before anything is said. */
   examples: string[]
+  /** Requests left today out of the daily limit, shown under the title. */
+  quota?: { remaining: number; limit: number }
   /** Turns what was said into a result; rejects with a message to show. */
   onSubmit: (text: string) => Promise<Result>
   renderResult: (result: Result, actions: { retry: () => void; close: () => void }) => React.ReactNode
@@ -60,6 +62,7 @@ export function AiAssistDrawer<Result>({
   onOpenChange,
   prompt,
   examples,
+  quota,
   onSubmit,
   renderResult,
 }: AiAssistDrawerProps<Result>) {
@@ -130,6 +133,13 @@ export function AiAssistDrawer<Result>({
               Trợ lý AI
             </AiDrawerTitle>
             <AiDrawerDescription className="sr-only">{prompt}</AiDrawerDescription>
+            {quota ? (
+              <p className="text-sm text-muted-foreground">
+                {quota.remaining > 0
+                  ? `Còn ${quota.remaining}/${quota.limit} lượt hôm nay`
+                  : `Đã dùng hết ${quota.limit} lượt hôm nay`}
+              </p>
+            ) : null}
             <AiDrawerClose asChild>
               <Button type="button" variant="ghost" size="icon-sm" className="absolute top-3 right-3" aria-label="Đóng">
                 <XIcon />
