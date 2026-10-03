@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react"
 
-import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { SettingsGroup } from "@/components/settings-list"
 import { Progress } from "@/components/ui/progress"
 import { getAccountDistribution } from "@/lib/accounts/distribution"
 import type { Account, BalanceSummary } from "@/lib/accounts/types"
@@ -12,11 +12,11 @@ type BalanceHeroProps = {
 }
 
 /**
- * The total and one bar split by account type, then a row per type in its
- * colour in the bar, as the legend.
+ * The total and one bar split by account type, with a one-line legend of
+ * each type's colour and share; the amounts per type head the list below.
  */
 export function BalanceHero({ summary, accounts }: BalanceHeroProps) {
-  const { distribution, groups, accountsTotal } = getAccountDistribution(accounts)
+  const { groups, accountsTotal } = getAccountDistribution(accounts)
   const gradientStops: string[] = []
   let gradientOffset = 0
 
@@ -53,22 +53,19 @@ export function BalanceHero({ summary, accounts }: BalanceHeroProps) {
               style={distributionProgressStyle}
             />
           ) : null}
-          <p className="text-xs text-muted-foreground">
-            {distribution.length} tài khoản
-          </p>
+          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            {groups.map((group) => (
+              <li key={group.type} className="flex items-center gap-1.5">
+                <span aria-hidden="true" className="size-2 rounded-full" style={{ backgroundColor: group.fill }} />
+                {group.label}
+                <span className="font-medium text-foreground tabular-nums">{group.percentageLabel}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       }
     >
-      {groups.map((group) => (
-        <SettingsRow
-          key={group.type}
-          icon={group.icon}
-          color={group.color}
-          title={group.label}
-          description={group.percentageLabel}
-          value={formatCurrency(group.total)}
-        />
-      ))}
+      {null}
     </SettingsGroup>
   )
 }

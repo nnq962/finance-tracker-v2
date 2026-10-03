@@ -30,7 +30,7 @@ function Progress({
       data-tone={tone}
       value={typeof value === "number" ? progress : value}
       className={cn(
-        "relative h-[18px] w-full overflow-hidden rounded-full bg-[#e7e4dd] dark:bg-[#494750]",
+        "relative h-[17px] w-full overflow-hidden rounded-full bg-[#e7e4dd] dark:bg-[#494750]",
         className
       )}
       {...props}
