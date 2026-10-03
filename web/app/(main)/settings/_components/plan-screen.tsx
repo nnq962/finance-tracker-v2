@@ -206,6 +206,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
             <CardFooter className="flex-col gap-2">
               <Button
                 type="button"
+                variant="grape"
                 size="lg"
                 className="w-full"
                 disabled={!checkoutEnabled || opening}

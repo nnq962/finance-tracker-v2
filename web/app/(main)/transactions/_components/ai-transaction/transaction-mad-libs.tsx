@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { CalendarIcon, CheckIcon, PlusIcon, RotateCcwIcon } from "lucide-react"
+import { CalendarIcon, CheckIcon, LoaderCircleIcon, PlusIcon, RotateCcwIcon } from "lucide-react"
 import { AnimatePresence, motion, type Variants } from "motion/react"
 import { toast } from "sonner"
 
@@ -24,6 +24,7 @@ import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { cn } from "@/lib/utils"
 
 import { shiftDate, type AiTransactionDraft } from "../../_lib/ai-transaction-draft"
+import { createTransactionAction } from "../../actions"
 import type { TransactionKind } from "../../_types/transaction"
 import { TransactionKindSelector } from "../add-transaction/transaction-kind-selector"
 
@@ -152,6 +153,9 @@ export function TransactionMadLibs({
   const [created, setCreated] = React.useState<{ id: string; name: string } | null>(null)
   const [creating, startCreating] = React.useTransition()
   const [managingCategories, setManagingCategories] = React.useState(false)
+  const [saving, startSaving] = React.useTransition()
+  // Kept across retries of this draft so the server records it only once.
+  const [requestId] = React.useState(() => crypto.randomUUID())
 
   const activeAccounts = accounts.filter((account) => account.status === "active")
   const findAccount = (id: string | undefined) => activeAccounts.find((item) => item.id === id)
@@ -219,6 +223,40 @@ export function TransactionMadLibs({
       setCreated(made)
       setDraft(next)
       setEditing(firstMissing(next, made))
+    })
+  }
+
+  /** Saves the checked draft as the add-transaction form would. */
+  const save = () => {
+    if (draft.amount === null) return
+    const formData = new FormData()
+    formData.set("requestId", requestId)
+    formData.set("kind", draft.kind)
+    formData.set("amount", String(draft.amount))
+    formData.set("date", draft.date)
+    formData.set("time", draft.time)
+    formData.set("note", draft.note.trim())
+    if (draft.kind === "transfer") {
+      formData.set("fromAccountId", draft.accountId ?? "")
+      formData.set("toAccountId", draft.toAccountId ?? "")
+      formData.set("fee", "0")
+    } else {
+      formData.set("accountId", draft.accountId ?? "")
+      formData.set("categoryId", draft.categoryId ?? "")
+    }
+
+    startSaving(async () => {
+      try {
+        const result = await createTransactionAction(formData)
+        if (!result.success) {
+          toast.error(result.error)
+          return
+        }
+        toast.success("Đã lưu giao dịch.")
+        onDone()
+      } catch {
+        toast.error("Không thể lưu giao dịch. Vui lòng thử lại.")
+      }
     })
   }
 
@@ -350,19 +388,12 @@ export function TransactionMadLibs({
               )}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Button type="button" variant="outline" onClick={onRetry}>
+              <Button type="button" variant="outline" disabled={saving} onClick={onRetry}>
                 <RotateCcwIcon />
                 Nói lại
               </Button>
-              <Button
-                type="button"
-                disabled={!complete}
-                onClick={() => {
-                  toast.info("Bản xem trước: chưa lưu giao dịch.")
-                  onDone()
-                }}
-              >
-                <CheckIcon />
+              <Button type="button" disabled={!complete || saving} onClick={save}>
+                {saving ? <LoaderCircleIcon className="animate-spin" aria-hidden="true" /> : <CheckIcon />}
                 Lưu
               </Button>
             </div>

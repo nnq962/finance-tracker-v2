@@ -110,7 +110,8 @@ const MAX_AI_REQUEST_LENGTH = 300
 
 /**
  * Reads a sentence about a transaction with the local model into a draft
- * for the user to check. Nothing is saved. Each request counts against the
+ * for the user to check. Nothing is saved here: the checked draft is saved
+ * with createTransactionAction. Each request counts against the
  * plan's monthly limit; one the model could not answer is given back.
  */
 export async function parseTransactionWithAiAction(
