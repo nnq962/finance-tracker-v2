@@ -37,7 +37,7 @@ export function ContactRow({ contact, hasDebts, onEdit, onDelete }: ContactRowPr
       <SettingsRow
         media={<Avatar><AvatarFallback>{contact.initials}</AvatarFallback></Avatar>}
         title={contact.name}
-        description={contact.relationship || "Chưa cập nhật quan hệ"}
+        description={contact.relationship || undefined}
         action={
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -64,7 +64,7 @@ export function ContactRow({ contact, hasDebts, onEdit, onDelete }: ContactRowPr
             <AlertDialogDescription>
               {hasDebts
                 ? `${contact.name} đang có lịch sử khoản nợ. Giữ người liên hệ để không mất thông tin của các khoản này.`
-                : `Xoá ${contact.name} khỏi danh bạ? Sau khi xác nhận, bạn có 6 giây để hoàn tác.`}
+                : `${contact.name} sẽ bị xoá khỏi danh bạ.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}

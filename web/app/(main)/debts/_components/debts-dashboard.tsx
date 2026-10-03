@@ -63,10 +63,8 @@ export function DebtsDashboard({
     const contact = contacts.find((item) => item.id === id)
     scheduleUndoableDelete({
       key: `contact:${id}`,
-      title: `Sắp xoá ${contact?.name ?? "người liên hệ"}`,
-      description: "Người liên hệ sẽ bị xoá khỏi danh bạ sau 6 giây.",
+      title: `Đã xoá “${contact?.name ?? "người liên hệ"}”`,
       pendingMessage: "Đang xoá người liên hệ…",
-      successMessage: "Đã xoá người liên hệ.",
       undoMessage: "Đã giữ lại người liên hệ.",
       errorMessage: "Không thể xoá người liên hệ.",
       onCommit: () =>
@@ -75,17 +73,14 @@ export function DebtsDashboard({
   }
   const addDebt = async (values: NewDebt) => {
     await execute(JSON.stringify(["debt", values]), (id) => createDebtAction(values, id))
-    toast.success(values.recordingMode === "opening" ? "Đã ghi nhận nợ có sẵn. Số dư tài khoản giữ nguyên." : "Đã tạo khoản nợ và cập nhật số dư.")
+    toast.success("Đã thêm khoản nợ")
   }
   const changePayment = async (debtId: string, paymentId: string | undefined, values: NewDebtPayment | null) => {
     if (values === null && paymentId) {
       scheduleUndoableDelete({
         key: `debt-payment:${debtId}:${paymentId}`,
-        title: "Sắp xoá lần thanh toán",
-        description:
-          "Lần thanh toán và tác động số dư sẽ bị xoá sau 6 giây.",
+        title: "Đã xoá lần thanh toán",
         pendingMessage: "Đang xoá lần thanh toán…",
-        successMessage: "Đã xoá lần thanh toán.",
         undoMessage: "Đã giữ lại lần thanh toán.",
         errorMessage: "Không thể xoá lần thanh toán.",
         onCommit: () =>
@@ -108,7 +103,7 @@ export function DebtsDashboard({
     <Page>
       <PageHeader title="Nợ & Cho vay" actions={addDebtSheet} />
       <DebtsView
-        summary={<DebtSummary debts={debts} summary={summary} />}
+        summary={<DebtSummary summary={summary} />}
         initialSelectedDebtId={selectedDebtId}
         contacts={contacts}
         debts={debts}
@@ -118,11 +113,8 @@ export function DebtsDashboard({
             const debt = debts.find((item) => item.id === debtId)
             scheduleUndoableDelete({
               key: `debt:${debtId}`,
-              title: `Sắp xoá khoản nợ${debt?.note ? ` “${debt.note}”` : ""}`,
-              description:
-                "Khoản nợ, lịch sử thanh toán và tác động số dư sẽ bị xoá sau 6 giây.",
+              title: `Đã xoá khoản nợ${debt?.note ? ` “${debt.note}”` : ""}`,
               pendingMessage: "Đang xoá khoản nợ…",
-              successMessage: "Đã xoá khoản nợ và hoàn lại ảnh hưởng lên số dư.",
               undoMessage: "Đã giữ lại khoản nợ.",
               errorMessage: "Không thể xoá khoản nợ.",
               onCommit: () =>
@@ -136,13 +128,12 @@ export function DebtsDashboard({
           }
 
           await execute(JSON.stringify(["change-debt", debtId, values]), (operationId) => changeDebtAction(debtId, values, operationId))
-          toast.success(values.recordingMode === "opening" ? "Đã cập nhật khoản nợ có sẵn. Số dư tài khoản giữ nguyên." : "Đã cập nhật khoản nợ và số dư.")
+          toast.success("Đã cập nhật khoản nợ")
         }}
         onRecordPayment={(id, values) => changePayment(id, undefined, values)}
         onEditPayment={(id, paymentId, values) => changePayment(id, paymentId, values)}
         onDeletePayment={(id, paymentId) => changePayment(id, paymentId, null)}
         onOpenContacts={() => setContactsOpen(true)}
-        emptyAction={addDebtSheet}
       />
       <ContactsSheet
         open={contactsOpen}

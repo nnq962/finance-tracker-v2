@@ -66,7 +66,7 @@ function PaymentEntry({ payment, debt, contact, accounts, onEdit, onDelete }: Pr
         <AlertDialogContent onCloseAutoFocus={(event) => { event.preventDefault(); menuButton.current?.focus() }}>
           <AlertDialogHeader>
             <AlertDialogTitle>Xoá giao dịch {collecting ? "thu nợ" : "trả nợ"}?</AlertDialogTitle>
-            <AlertDialogDescription>Xoá lần thanh toán {formatCurrency(payment.amount)}. Số tiền còn lại và trạng thái khoản nợ sẽ được tính lại. Sau khi xác nhận, bạn có 6 giây để hoàn tác.</AlertDialogDescription>
+            <AlertDialogDescription>Số tiền còn lại của khoản nợ sẽ được tính lại.</AlertDialogDescription>
           </AlertDialogHeader>
           {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
           <AlertDialogFooter>

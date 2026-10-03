@@ -8,7 +8,6 @@ import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Button } from "@/components/ui/button"
 import {
   Empty,
-  EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
@@ -47,8 +46,7 @@ export function ContactsSheet({ open, onOpenChange, contacts, debts, onAdd, onEd
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon"><BookUserIcon /></EmptyMedia>
-                <EmptyTitle>Danh bạ đang trống</EmptyTitle>
-                <EmptyDescription>Thêm tên và mối quan hệ để gắn khoản vay với đúng người.</EmptyDescription>
+                <EmptyTitle>Chưa có người liên hệ</EmptyTitle>
               </EmptyHeader>
             </Empty>
           ) : (

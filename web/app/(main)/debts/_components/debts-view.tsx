@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/collapsible"
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -72,7 +71,6 @@ type DebtsViewProps = {
   debts: Debt[]
   onRecordPayment: (debtId: string, payment: NewDebtPayment) => Promise<void>
   onOpenContacts: () => void
-  emptyAction?: React.ReactNode
   /** The totals, at the top of the list column. */
   summary: React.ReactNode
 }
@@ -96,7 +94,6 @@ export function DebtsView({
   onEditPayment,
   onDeletePayment,
   onOpenContacts,
-  emptyAction,
   summary,
 }: DebtsViewProps) {
   const router = useRouter()
@@ -192,11 +189,8 @@ export function DebtsView({
                 <HandCoinsIcon />
               </EmptyMedia>
               <EmptyTitle>Chưa có khoản nợ</EmptyTitle>
-              <EmptyDescription>
-                Ghi lại khoản cho vay hoặc đi vay để theo dõi số còn lại, hạn trả và lịch sử thu trả.
-              </EmptyDescription>
+              <EmptyDescription>Thêm khoản vay đầu tiên để bắt đầu theo dõi.</EmptyDescription>
             </EmptyHeader>
-            {emptyAction ? <EmptyContent>{emptyAction}</EmptyContent> : null}
           </Empty>
         </Card>
         {contactsRow}

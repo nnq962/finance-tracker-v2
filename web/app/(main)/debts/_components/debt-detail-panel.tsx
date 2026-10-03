@@ -80,7 +80,7 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
 
       <SettingsGroup
         footer={debt.hasInterest
-          ? `Lãi đơn trên gốc ban đầu, ${debt.interestPeriod === "year" ? "365 ngày/năm" : "30 ngày/tháng"}, tính đến ${formatDebtDate(interestDate)}. Dừng tính lãi khi tất toán.`
+          ? `Lãi đơn, tính đến ${formatDebtDate(interestDate)}`
           : undefined}
       >
         <SettingsRow title="Loại" value={collecting ? "Cho vay" : "Đi vay"} />
@@ -95,12 +95,7 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
             <SettingsRow title="Tổng gốc và lãi" value={formatCurrency(totalAmount)} />
           </>
         ) : null}
-        <SettingsRow title={paidLabel} value={formatCurrency(paidAmount, { signDisplay: "never" })} />
-        <SettingsRow
-          title="Ghi chú"
-          description={debt.note || undefined}
-          value={debt.note ? undefined : "Không có"}
-        />
+        {debt.note ? <SettingsRow title="Ghi chú" description={debt.note} /> : null}
       </SettingsGroup>
 
       <SettingsGroup>
@@ -108,11 +103,13 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
           title={debt.recordingMode === "opening" ? "Ngày bắt đầu theo dõi" : "Ngày ghi"}
           value={formatDebtDate(debt.recordedAt)}
         />
-        <SettingsRow
-          title="Hẹn trả"
-          description={debt.dueAt && debt.status !== "settled" ? deadline.label : undefined}
-          value={debt.dueAt ? formatDebtDate(debt.dueAt) : "Không có"}
-        />
+        {debt.dueAt ? (
+          <SettingsRow
+            title="Hẹn trả"
+            description={debt.status !== "settled" ? deadline.label : undefined}
+            value={formatDebtDate(debt.dueAt)}
+          />
+        ) : null}
         <SettingsRow
           title="Cách ghi nhận"
           value={debt.recordingMode === "opening" ? "Nợ có sẵn" : "Khoản vay mới"}
@@ -194,8 +191,6 @@ function DebtManageRows({
             <AlertDialogTitle>Xoá khoản {debt.direction === "lent" ? "cho vay" : "đi vay"}?</AlertDialogTitle>
             <AlertDialogDescription>
               Xoá {debt.note ? `“${debt.note}”` : "khoản này"} cùng toàn bộ {debt.payments?.length ?? 0} lần thu/trả.
-              {debt.recordingMode === "opening" ? " Chỉ hoàn tác tác động số dư của các lần thu/trả đã ghi nhận; tiền gốc không ảnh hưởng số dư." : " Xoá giao dịch ban đầu và điều chỉnh số dư các tài khoản như chưa từng có khoản nợ này."}
-              {" "}Sau khi xác nhận, bạn có 6 giây để hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           {error ? <FieldError role="alert">{error}</FieldError> : null}

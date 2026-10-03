@@ -3,10 +3,9 @@ import { Separator } from "@/components/ui/separator"
 import { formatCurrency } from "@/lib/format-currency"
 import { cn } from "@/lib/utils"
 
-import type { Debt, DebtDirection, DebtSummaryData } from "../_types/debt"
+import type { DebtDirection, DebtSummaryData } from "../_types/debt"
 
 type DebtSummaryProps = {
-  debts: Debt[]
   summary: DebtSummaryData
 }
 
@@ -15,11 +14,9 @@ const borrowedClassName = "text-[#c8393a] dark:text-[#ff9b93]"
 
 function DirectionStat({
   amount,
-  count,
   direction,
 }: {
   amount: number
-  count: number
   direction: DebtDirection
 }) {
   return (
@@ -35,16 +32,13 @@ function DirectionStat({
       >
         {formatCurrency(amount)}
       </p>
-      <p className="mt-0.5 text-xs text-muted-foreground">{count} khoản đang mở</p>
     </div>
   )
 }
 
 /** Totals owed each way, then the net balance on one line. */
-export function DebtSummary({ debts, summary }: DebtSummaryProps) {
+export function DebtSummary({ summary }: DebtSummaryProps) {
   const { netBalance, totalBorrowed, totalLent } = summary
-  const openCount = (direction: DebtDirection) =>
-    debts.filter((debt) => debt.direction === direction && debt.status !== "settled").length
 
   return (
     <section aria-labelledby="debt-summary-title" className="space-y-2">
@@ -61,8 +55,8 @@ export function DebtSummary({ debts, summary }: DebtSummaryProps) {
       <Card>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <DirectionStat amount={totalLent} count={openCount("lent")} direction="lent" />
-            <DirectionStat amount={totalBorrowed} count={openCount("borrowed")} direction="borrowed" />
+            <DirectionStat amount={totalLent} direction="lent" />
+            <DirectionStat amount={totalBorrowed} direction="borrowed" />
           </div>
           <Separator variant="chunky" />
           <div className="flex items-center justify-between gap-3 text-sm">
