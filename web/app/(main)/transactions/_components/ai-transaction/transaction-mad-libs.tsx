@@ -20,7 +20,7 @@ import { formatDayLabel } from "@/lib/format-date"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { cn } from "@/lib/utils"
 
-import { shiftDate, type AiTransactionDraft } from "../../_lib/mock-ai-parse"
+import { shiftDate, type AiTransactionDraft } from "../../_lib/ai-transaction-draft"
 import type { TransactionKind } from "../../_types/transaction"
 import { TransactionKindSelector } from "../add-transaction/transaction-kind-selector"
 

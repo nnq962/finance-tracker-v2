@@ -68,7 +68,8 @@ Cần NVIDIA Container Toolkit trên máy chủ.
 
 Model nằm trong volume `finance-ollama`, volume này nằm ngoài compose nên
 `down -v` không xoá model. `deploy.sh` chỉ tải model khi chưa có. Muốn đổi model
-thì đặt `OLLAMA_MODEL` trong `deploy/.env`, rồi xoá model cũ:
+thì đặt `OLLAMA_MODEL` trong `deploy/.env` (web cũng đọc biến này để gọi đúng
+model), rồi xoá model cũ:
 
 ```sh
 docker exec finance-ollama-1 ollama list

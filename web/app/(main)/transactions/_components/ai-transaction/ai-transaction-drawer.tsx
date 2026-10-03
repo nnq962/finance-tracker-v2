@@ -4,7 +4,7 @@ import { AiAssistDrawer } from "@/components/ai-assist/ai-assist-drawer"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 
-import { mockParseTransaction } from "../../_lib/mock-ai-parse"
+import { parseTransactionWithAiAction } from "../../actions"
 import { TransactionMadLibs } from "./transaction-mad-libs"
 
 const examples = [
@@ -25,7 +25,7 @@ type AiTransactionDrawerProps = {
   onRequest: () => void
 }
 
-/** Records a transaction from a sentence. Not yet connected to the AI: a rule-based stand-in reads the request. */
+/** Records a transaction from a sentence, read by the local model on the server. */
 export function AiTransactionDrawer({
   open,
   onOpenChange,
@@ -42,9 +42,11 @@ export function AiTransactionDrawer({
       prompt="Nói một câu về khoản thu chi, AI sẽ điền giúp bạn."
       examples={examples}
       quota={quota}
-      onSubmit={(text) => {
+      onSubmit={async (text) => {
         onRequest()
-        return mockParseTransaction(text, { accounts, categoryGroups, today: todayDateKey })
+        const result = await parseTransactionWithAiAction(text)
+        if (!result.success) throw new Error(result.error)
+        return result.draft
       }}
       renderResult={(draft, { retry, close }) => (
         <TransactionMadLibs
