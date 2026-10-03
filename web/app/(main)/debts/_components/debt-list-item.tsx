@@ -50,7 +50,17 @@ export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemPr
         </Avatar>
       }
       title={contact.name}
-      description={debt.note || undefined}
+      // The rate shows on open debts, so a loan with interest reads apart.
+      description={
+        [
+          debt.note,
+          debt.hasInterest && !status.isSettled
+            ? `Lãi ${debt.interestRate}%/${debt.interestPeriod === "year" ? "năm" : "tháng"}`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(" · ") || undefined
+      }
       action={
         <span className="flex flex-col items-end">
           <span

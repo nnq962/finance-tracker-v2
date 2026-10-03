@@ -22,6 +22,7 @@ import {
 } from "../_lib/debt-presentation"
 import type { Contact, Debt, NewDebt, NewDebtPayment } from "../_types/debt"
 import { RecordDebtPaymentSheet } from "./record-debt-payment-sheet"
+import { todayDate } from "../_lib/debt-payments"
 
 type DebtDetailPanelProps = {
   contacts: Contact[]
@@ -75,12 +76,17 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
           <p className="text-xs text-muted-foreground">
             {paidLabel} {formatCurrency(paidAmount, { signDisplay: "never" })} / {formatCurrency(totalAmount, { signDisplay: "never" })} · {Math.round(paymentProgress)}%
           </p>
+          {debt.hasInterest ? (
+            <p className="text-xs text-muted-foreground">
+              Gốc {formatCurrency(debt.amount, { signDisplay: "never" })} + lãi {formatCurrency(interestAmount)}
+            </p>
+          ) : null}
         </CardContent>
       </Card>
 
       <SettingsGroup
         footer={debt.hasInterest
-          ? `Lãi đơn, tính đến ${formatDebtDate(interestDate)}`
+          ? "Lãi đơn trên tiền gốc, cộng dồn theo ngày"
           : undefined}
       >
         <SettingsRow title="Loại" value={collecting ? "Cho vay" : "Đi vay"} />
@@ -91,7 +97,16 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
         />
         {debt.hasInterest ? (
           <>
-            <SettingsRow title={`Tiền lãi · ${days} ngày`} value={formatCurrency(interestAmount)} />
+            {/* What a full period adds, so a loan opened today still shows its interest. */}
+            <SettingsRow
+              title={`Lãi mỗi ${debt.interestPeriod === "year" ? "năm" : "tháng"}`}
+              value={formatCurrency(Math.round((debt.amount * (debt.interestRate ?? 0)) / 100))}
+            />
+            <SettingsRow
+              title={`Lãi đến ${interestDate === todayDate() ? "hôm nay" : formatDebtDate(interestDate)}`}
+              description={`${days} ngày`}
+              value={formatCurrency(interestAmount)}
+            />
             <SettingsRow title="Tổng gốc và lãi" value={formatCurrency(totalAmount)} />
           </>
         ) : null}
