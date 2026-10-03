@@ -1,13 +1,17 @@
 "use client"
 
+import { CurrencyInput } from "@/components/forms/currency-input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
 import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group"
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "@/components/ui/field"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 
@@ -16,19 +20,12 @@ import type {
   TransactionSearchFilters,
 } from "../_types/transaction"
 
-const filters: { label: string; value: Exclude<TransactionFilter, "all"> }[] = [
+const filters: { label: string; value: TransactionFilter }[] = [
+  { label: "Tất cả", value: "all" },
   { label: "Chi tiền", value: "expense" },
   { label: "Thu tiền", value: "income" },
   { label: "Chuyển khoản", value: "transfer" },
 ]
-
-function parseAmount(value: string) {
-  const digits = value.replace(/\D/g, "")
-  if (!digits) return null
-
-  const amount = Number(digits)
-  return Number.isSafeInteger(amount) ? amount : null
-}
 
 /** How many conditions narrow the list, not counting the search text. */
 export function countActiveFilters(
@@ -72,6 +69,33 @@ export function TransactionFilterFields({
   const incomeCategoryGroups = categoryGroups.filter(
     (group) => group.type === "income",
   )
+  // Active accounts first; archived ones still have their old transactions.
+  const sortedAccounts = [...accounts].sort(
+    (left, right) =>
+      Number(left.status === "archived") - Number(right.status === "archived"),
+  )
+  const { minAmount, maxAmount } = searchFilters
+  const amountRangeReversed =
+    minAmount !== null && maxAmount !== null && minAmount > maxAmount
+
+  /** Changes the kind, dropping categories that cannot match it (transfers have none). */
+  function changeFilter(next: TransactionFilter) {
+    onFilterChange(next)
+    if (next === "all") return
+    const keep = new Set(
+      next === "transfer"
+        ? []
+        : categoryGroups
+            .filter((group) => group.type === next)
+            .map((group) => group.id),
+    )
+    const categoryGroupIds = searchFilters.categoryGroupIds.filter((id) =>
+      keep.has(id),
+    )
+    if (categoryGroupIds.length !== searchFilters.categoryGroupIds.length) {
+      onSearchFiltersChange({ ...searchFilters, categoryGroupIds })
+    }
+  }
 
   function updateCategoryGroupSelection(
     type: CategoryGroup["type"],
@@ -100,10 +124,10 @@ export function TransactionFilterFields({
         <ToggleGroup
           type="single"
           size="sm"
-          value={filter === "all" ? "" : filter}
-          onValueChange={(value) =>
-            onFilterChange(value ? (value as TransactionFilter) : "all")
-          }
+          value={filter}
+          onValueChange={(value) => {
+            if (value) changeFilter(value as TransactionFilter)
+          }}
           className="flex-wrap"
           aria-label="Lọc loại giao dịch"
         >
@@ -115,42 +139,39 @@ export function TransactionFilterFields({
         </ToggleGroup>
       </Field>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field>
-          <FieldLabel htmlFor={`${idPrefix}-min-amount`}>Số tiền từ</FieldLabel>
-          <Input
-            id={`${idPrefix}-min-amount`}
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={searchFilters.minAmount?.toString() ?? ""}
-            onChange={(event) =>
-              onSearchFiltersChange({
-                ...searchFilters,
-                minAmount: parseAmount(event.target.value),
-              })
-            }
-            placeholder="0"
-          />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor={`${idPrefix}-max-amount`}>Đến</FieldLabel>
-          <Input
-            id={`${idPrefix}-max-amount`}
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={searchFilters.maxAmount?.toString() ?? ""}
-            onChange={(event) =>
-              onSearchFiltersChange({
-                ...searchFilters,
-                maxAmount: parseAmount(event.target.value),
-              })
-            }
-            placeholder="Không giới hạn"
-          />
-        </Field>
-      </div>
+      <FieldSet>
+        <FieldLegend variant="label">Khoảng số tiền</FieldLegend>
+        <div className="grid grid-cols-2 gap-3">
+          <Field data-invalid={amountRangeReversed || undefined}>
+            <FieldLabel htmlFor={`${idPrefix}-min-amount`}>Từ</FieldLabel>
+            <CurrencyInput
+              id={`${idPrefix}-min-amount`}
+              name="minAmount"
+              value={minAmount}
+              onValueChange={(value) =>
+                onSearchFiltersChange({ ...searchFilters, minAmount: value })
+              }
+              invalid={amountRangeReversed}
+            />
+          </Field>
+          <Field data-invalid={amountRangeReversed || undefined}>
+            <FieldLabel htmlFor={`${idPrefix}-max-amount`}>Đến</FieldLabel>
+            <CurrencyInput
+              id={`${idPrefix}-max-amount`}
+              name="maxAmount"
+              value={maxAmount}
+              onValueChange={(value) =>
+                onSearchFiltersChange({ ...searchFilters, maxAmount: value })
+              }
+              placeholder="Không giới hạn"
+              invalid={amountRangeReversed}
+            />
+          </Field>
+        </div>
+        {amountRangeReversed ? (
+          <FieldError>Số tiền đến phải lớn hơn số tiền từ.</FieldError>
+        ) : null}
+      </FieldSet>
 
       <Field aria-label="Lọc theo tài khoản">
         <FieldLabel>Tài khoản</FieldLabel>
@@ -164,57 +185,64 @@ export function TransactionFilterFields({
           className="flex-wrap"
           aria-label="Lọc theo tài khoản"
         >
-          {accounts.map((account) => (
+          {sortedAccounts.map((account) => (
             <ToggleGroupItem key={account.id} value={account.id}>
               {account.name}
+              {account.status === "archived" ? " (đã lưu trữ)" : ""}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
       </Field>
 
-      <Field aria-label="Lọc theo hạng mục chi">
-        <FieldLabel>Hạng mục chi</FieldLabel>
-        <ToggleGroup
-          type="multiple"
-          size="sm"
-          value={searchFilters.categoryGroupIds.filter((groupId) =>
-            expenseCategoryGroups.some((group) => group.id === groupId),
-          )}
-          onValueChange={(categoryGroupIds) =>
-            updateCategoryGroupSelection("expense", categoryGroupIds)
-          }
-          className="flex-wrap"
-          aria-label="Lọc theo hạng mục chi"
-        >
-          {expenseCategoryGroups.map((group) => (
-            <ToggleGroupItem key={group.id} value={group.id}>
-              {group.name}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </Field>
+      {(filter === "all" || filter === "expense") &&
+      expenseCategoryGroups.length > 0 ? (
+        <Field aria-label="Lọc theo hạng mục chi">
+          <FieldLabel>Hạng mục chi</FieldLabel>
+          <ToggleGroup
+            type="multiple"
+            size="sm"
+            value={searchFilters.categoryGroupIds.filter((groupId) =>
+              expenseCategoryGroups.some((group) => group.id === groupId),
+            )}
+            onValueChange={(categoryGroupIds) =>
+              updateCategoryGroupSelection("expense", categoryGroupIds)
+            }
+            className="flex-wrap"
+            aria-label="Lọc theo hạng mục chi"
+          >
+            {expenseCategoryGroups.map((group) => (
+              <ToggleGroupItem key={group.id} value={group.id}>
+                {group.name}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </Field>
+      ) : null}
 
-      <Field aria-label="Lọc theo hạng mục thu">
-        <FieldLabel>Hạng mục thu</FieldLabel>
-        <ToggleGroup
-          type="multiple"
-          size="sm"
-          value={searchFilters.categoryGroupIds.filter((groupId) =>
-            incomeCategoryGroups.some((group) => group.id === groupId),
-          )}
-          onValueChange={(categoryGroupIds) =>
-            updateCategoryGroupSelection("income", categoryGroupIds)
-          }
-          className="flex-wrap"
-          aria-label="Lọc theo hạng mục thu"
-        >
-          {incomeCategoryGroups.map((group) => (
-            <ToggleGroupItem key={group.id} value={group.id}>
-              {group.name}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </Field>
+      {(filter === "all" || filter === "income") &&
+      incomeCategoryGroups.length > 0 ? (
+        <Field aria-label="Lọc theo hạng mục thu">
+          <FieldLabel>Hạng mục thu</FieldLabel>
+          <ToggleGroup
+            type="multiple"
+            size="sm"
+            value={searchFilters.categoryGroupIds.filter((groupId) =>
+              incomeCategoryGroups.some((group) => group.id === groupId),
+            )}
+            onValueChange={(categoryGroupIds) =>
+              updateCategoryGroupSelection("income", categoryGroupIds)
+            }
+            className="flex-wrap"
+            aria-label="Lọc theo hạng mục thu"
+          >
+            {incomeCategoryGroups.map((group) => (
+              <ToggleGroupItem key={group.id} value={group.id}>
+                {group.name}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </Field>
+      ) : null}
     </FieldGroup>
   )
 }
@@ -227,7 +255,10 @@ export function TransactionFilterPanel({
   onReset,
   ...props
 }: TransactionFilterFieldsProps & { onReset: () => void }) {
-  const activeFilterCount = countActiveFilters(props.filter, props.searchFilters)
+  const activeFilterCount = countActiveFilters(
+    props.filter,
+    props.searchFilters,
+  )
 
   return (
     <section aria-labelledby="transaction-filters-title" className="space-y-2">
