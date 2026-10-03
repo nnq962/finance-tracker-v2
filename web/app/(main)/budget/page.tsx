@@ -26,8 +26,7 @@ export default async function AccountsPage() {
     <Page>
       <PageHeader
         title="Ngân sách"
-        // With no account yet, the empty state holds the only add button.
-        actions={accounts.length > 0 ? <AddAccountButton /> : undefined}
+        actions={<AddAccountButton />}
       />
       {accounts.length > 0 ? (
         <BudgetLayout
@@ -39,14 +38,12 @@ export default async function AccountsPage() {
         <AccountList accounts={accounts} recentTransactions={recentTransactions} categoryGroups={categoryGroups} />
       )}
       {/* On mobile the action floats above the bottom nav so it stays within
-          thumb reach while scrolling. The empty state carries its own button. */}
-      {accounts.length > 0 ? (
-        <div className="pointer-events-none sticky bottom-4 z-20 flex justify-end md:hidden">
-          <div className="pointer-events-auto">
-            <AddAccountButton />
-          </div>
+          thumb reach while scrolling, also over the empty state. */}
+      <div className="pointer-events-none sticky bottom-4 z-20 flex justify-end md:hidden">
+        <div className="pointer-events-auto">
+          <AddAccountButton />
         </div>
-      ) : null}
+      </div>
     </Page>
   )
 }

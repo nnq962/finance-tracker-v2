@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/collapsible"
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -29,7 +28,6 @@ import type { Transaction } from "@/lib/transactions/types"
 import { cn } from "@/lib/utils"
 
 import { AccountSheet, getAccountKind } from "./account-sheet"
-import { AddAccountButton } from "./add-account-button"
 
 type AccountListProps = {
   accounts: Account[]
@@ -102,9 +100,6 @@ export function AccountList({ accounts, recentTransactions, categoryGroups }: Ac
             <EmptyTitle>Chưa có tài khoản</EmptyTitle>
             <EmptyDescription>Thêm tài khoản đầu tiên để bắt đầu.</EmptyDescription>
           </EmptyHeader>
-          <EmptyContent>
-            <AddAccountButton />
-          </EmptyContent>
         </Empty>
       </Card>
     )

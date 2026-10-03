@@ -123,15 +123,40 @@ export function AccountForm({
   const selectedInstitution = institutionOptions?.find(
     (institution) => institution.id === institutionId,
   )
+  // Missing fields, named under each one before anything is sent.
+  const [errors, setErrors] = React.useState<Partial<Record<"institutionId" | "name" | "balance", string>>>({})
+  const clearError = (field: keyof typeof errors) =>
+    setErrors((current) => {
+      if (!current[field]) return current
+      const next = { ...current }
+      delete next[field]
+      return next
+    })
 
   return (
     <form
       ref={formRef}
+      noValidate
       className="flex min-h-0 flex-1 flex-col"
       onSubmit={(event) => {
         event.preventDefault()
         const formData = new FormData(event.currentTarget)
         setErrorMessage(null)
+
+        const found: typeof errors = {}
+        if (institutionOptions && !institutionId) found.institutionId = `Chọn ${institutionLabel.toLowerCase()}.`
+        if (!name.trim()) found.name = "Nhập tên tài khoản."
+        if (balancePick.amount === null) found.balance = "Nhập số dư."
+        setErrors(found)
+        const first = (["institutionId", "name", "balance"] as const).find((field) => found[field])
+        if (first) {
+          const element = document.getElementById(
+            { institutionId: "account-institution", name: "account-name", balance: "account-balance" }[first],
+          )
+          element?.focus({ preventScroll: true })
+          element?.scrollIntoView({ block: "center", behavior: "smooth" })
+          return
+        }
 
         startTransition(async () => {
           try {
@@ -145,11 +170,8 @@ export function AccountForm({
             }
 
             setErrorMessage(result.error)
-            toast.error(result.error)
           } catch {
-            const message = "Không thể lưu tài khoản. Vui lòng thử lại."
-            setErrorMessage(message)
-            toast.error(message)
+            setErrorMessage("Không thể lưu tài khoản. Vui lòng thử lại.")
           }
         })
       }}
@@ -169,6 +191,7 @@ export function AccountForm({
                   setAccountType(value as AccountType)
                   setInstitutionId("")
                   if (!nameEdited) setName("")
+                  clearError("institutionId")
                 }
               }}
               className="grid w-full grid-cols-3"
@@ -188,7 +211,7 @@ export function AccountForm({
           </Field>
 
           {institutionOptions && (
-            <Field>
+            <Field data-invalid={Boolean(errors.institutionId) || undefined}>
               <FieldLabel htmlFor="account-institution">
                 {institutionLabel} <RequiredMark />
               </FieldLabel>
@@ -199,6 +222,8 @@ export function AccountForm({
                 value={selectedInstitution ?? null}
                 onValueChange={(institution) => {
                   setInstitutionId(institution?.id ?? "")
+                  clearError("institutionId")
+                  if (institution && !nameEdited) clearError("name")
                   // Name the account after its institution until the
                   // user types a name of their own.
                   if (institution && !nameEdited) {
@@ -222,6 +247,7 @@ export function AccountForm({
                     className="w-full"
                     placeholder="Tìm kiếm"
                     autoComplete="off"
+                    aria-invalid={Boolean(errors.institutionId) || undefined}
                   >
                     {selectedInstitution ? (
                       <InputGroupAddon align="inline-start">
@@ -276,9 +302,10 @@ export function AccountForm({
                   </ComboboxList>
                 </ComboboxContent>
               </Combobox>
+              {errors.institutionId ? <FieldError>{errors.institutionId}</FieldError> : null}
             </Field>
           )}
-          <Field>
+          <Field data-invalid={Boolean(errors.name) || undefined}>
             <FieldLabel htmlFor="account-name">
               Tên tài khoản <RequiredMark />
             </FieldLabel>
@@ -289,14 +316,17 @@ export function AccountForm({
               onChange={(event) => {
                 setName(event.target.value)
                 setNameEdited(event.target.value.trim().length > 0)
+                clearError("name")
               }}
               placeholder="Ví dụ: Lương, Tiết kiệm"
               autoComplete="off"
               required
+              aria-invalid={Boolean(errors.name) || undefined}
             />
+            {errors.name ? <FieldError>{errors.name}</FieldError> : null}
           </Field>
 
-          <Field>
+          <Field data-invalid={Boolean(errors.balance) || undefined}>
             <FieldLabel htmlFor="account-balance">
               {expectedBalance === undefined ? "Số dư ban đầu" : "Số dư hiện tại"} <RequiredMark />
             </FieldLabel>
@@ -307,7 +337,11 @@ export function AccountForm({
               id="account-balance"
               name="balance"
               value={balancePick.amount}
-              onValueChange={balancePick.onType}
+              onValueChange={(value) => {
+                balancePick.onType(value)
+                clearError("balance")
+              }}
+              invalid={Boolean(errors.balance)}
               negative={balanceNegative}
               onNegativeChange={setBalanceNegative}
               required
@@ -315,8 +349,12 @@ export function AccountForm({
             <AmountSuggestions
               suggestions={balancePick.suggestions}
               value={balancePick.amount}
-              onSelect={balancePick.onPick}
+              onSelect={(value) => {
+                balancePick.onPick(value)
+                clearError("balance")
+              }}
             />
+            {errors.balance ? <FieldError>{errors.balance}</FieldError> : null}
           </Field>
 
           <Field>
