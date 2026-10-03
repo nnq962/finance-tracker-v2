@@ -56,9 +56,12 @@ export function DateTimeFields({
 
   return (
     <Field data-disabled={disabled || undefined}>
-      <FieldLabel htmlFor={showDate ? undefined : `${idPrefix}-time`}>
-        {label}
-      </FieldLabel>
+      {/* An empty label leaves the caption to the surroundings. */}
+      {label ? (
+        <FieldLabel htmlFor={showDate ? undefined : `${idPrefix}-time`}>
+          {label}
+        </FieldLabel>
+      ) : null}
       {description ? <FieldDescription>{description}</FieldDescription> : null}
       <div
         className={cn(

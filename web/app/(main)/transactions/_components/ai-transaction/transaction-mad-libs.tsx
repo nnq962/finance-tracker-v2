@@ -310,10 +310,8 @@ export function TransactionMadLibs({
             transition={{ duration: 0.22, ease: EASE_OUT }}
           >
             <div className="flex items-center justify-between gap-2">
-              {/* The time field has a label of its own; its empty caption
-                  still keeps Xong to the right. */}
               <p className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                {editing === "time" ? null : fieldCaptions[editing]}
+                {fieldCaptions[editing]}
               </p>
               <Button type="submit" variant="ghost" size="sm">
                 <CheckIcon />
@@ -432,6 +430,8 @@ function BlankEditor({
       return (
         <DateTimeFields
           idPrefix="ai"
+          // Captioned "Giờ" above, like every blank's editor.
+          label=""
           showDate={false}
           timeValue={draft.time}
           // Cleared, it keeps the last time rather than none.
