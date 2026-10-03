@@ -212,10 +212,13 @@ export async function getTransactionsInRange(
   userId: string,
   start: Date,
   end: Date,
+  // A loan's money moving in or out is kept with the loan, not with spending.
+  { excludeDebts = false }: { excludeDebts?: boolean } = {},
 ): Promise<Transaction[]> {
   const rows = await selectTransactions(userId)
     .where("t.occurredAt", ">=", start)
     .where("t.occurredAt", "<", end)
+    .$if(excludeDebts, (query) => query.where("t.debtId", "is", null))
     .execute()
 
   return rows.map(toTransaction)

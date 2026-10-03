@@ -24,7 +24,8 @@ export default async function TransactionsPage({
     data: [transactions, accounts, categoryGroups],
   } = await loadWithSession((user) =>
     Promise.all([
-      getTransactionsInRange(user.uid, range.start, range.end),
+      // Loans live on the debts page.
+      getTransactionsInRange(user.uid, range.start, range.end, { excludeDebts: true }),
       getAccounts(user.uid),
       getCategoryGroups(user.uid),
     ]),
