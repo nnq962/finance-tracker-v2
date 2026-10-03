@@ -10,6 +10,7 @@ import { toast } from "sonner"
 
 import { AmountSuggestions, useAmountQuickPick } from "@/components/forms/amount-suggestions"
 import { CurrencyInput } from "@/components/forms/currency-input"
+import { DateTimeFields } from "@/components/forms/date-time-fields"
 import { RequiredMark } from "@/components/forms/required-mark"
 import { Button } from "@/components/ui/button"
 import {
@@ -41,6 +42,8 @@ import type {
   AccountFormValues,
   AccountType,
 } from "@/lib/accounts/types"
+import { getLocalDateTime } from "@/lib/date-time"
+import { toDateKey } from "@/lib/format-date"
 import {
   getInstitutionsByType,
   type FinancialInstitution,
@@ -124,8 +127,10 @@ export function AccountForm({
   const selectedInstitution = institutionOptions?.find(
     (institution) => institution.id === institutionId,
   )
+  // A new account starts now; an edited one keeps its date.
+  const defaultOpenedAt = defaultValues?.openedAt ? getLocalDateTime(defaultValues.openedAt) : undefined
   // Missing fields, named under each one before anything is sent.
-  const [errors, setErrors] = React.useState<Partial<Record<"institutionId" | "name" | "balance", string>>>({})
+  const [errors, setErrors] = React.useState<Partial<Record<"institutionId" | "name" | "balance" | "openedAt", string>>>({})
   const clearError = (field: keyof typeof errors) =>
     setErrors((current) => {
       if (!current[field]) return current
@@ -148,11 +153,20 @@ export function AccountForm({
         if (institutionOptions && !institutionId) found.institutionId = `Chọn ${institutionLabel.toLowerCase()}.`
         if (!name.trim()) found.name = "Nhập tên tài khoản."
         if (balancePick.amount === null) found.balance = "Nhập số dư."
+        const date = String(formData.get("date") ?? "")
+        if (!date || !formData.get("time")) found.openedAt = "Chọn ngày và giờ."
+        else if (date > toDateKey(new Date())) found.openedAt = "Không thể chọn ngày sau hôm nay."
+        else if (date < "2000-01-01") found.openedAt = "Chọn ngày từ năm 2000 trở đi."
         setErrors(found)
-        const first = (["institutionId", "name", "balance"] as const).find((field) => found[field])
+        const first = (["institutionId", "name", "balance", "openedAt"] as const).find((field) => found[field])
         if (first) {
           const element = document.getElementById(
-            { institutionId: "account-institution", name: "account-name", balance: "account-balance" }[first],
+            {
+              institutionId: "account-institution",
+              name: "account-name",
+              balance: "account-balance",
+              openedAt: "account-opened-date",
+            }[first],
           )
           element?.focus({ preventScroll: true })
           element?.scrollIntoView({ block: "center", behavior: "smooth" })
@@ -346,6 +360,20 @@ export function AccountForm({
             />
             {errors.balance ? <FieldError>{errors.balance}</FieldError> : null}
           </Field>
+
+          <DateTimeFields
+            idPrefix="account-opened"
+            label={<>Thời gian tạo <RequiredMark /></>}
+            // As for transactions: 2000 through today (Vietnam time).
+            minDate="2000-01-01"
+            maxDate={toDateKey(new Date())}
+            defaultDate={defaultOpenedAt?.date}
+            defaultTime={defaultOpenedAt?.time}
+            onDateChange={() => clearError("openedAt")}
+            onTimeChange={() => clearError("openedAt")}
+            error={errors.openedAt}
+            required
+          />
 
           <Field>
             <FieldLabel htmlFor="account-note">Ghi chú</FieldLabel>

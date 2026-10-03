@@ -3,6 +3,7 @@ import "server-only"
 import type { AccountFormValues, AccountType } from "@/lib/accounts/types"
 import { isUuid } from "@/lib/db/ids"
 import { getInstitution } from "@/lib/institutions"
+import { toDateKey } from "@/lib/format-date"
 import { MAX_MONEY } from "@/lib/money"
 
 const accountTypes = new Set<AccountType>(["cash", "bank", "e-wallet"])
@@ -57,6 +58,29 @@ function getMoney(formData: FormData, name: string, label: string, allowNegative
   return value
 }
 
+/** The opening date and time, in Vietnam time, from 2000 through today. */
+function getOpenedAt(formData: FormData) {
+  const date = getText(formData, "date")
+  const time = getText(formData, "time")
+  const openedAt = new Date(`${date}T${time}:00+07:00`)
+
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+    !/^([01]\d|2[0-3]):[0-5]\d$/.test(time) ||
+    Number.isNaN(openedAt.getTime()) ||
+    openedAt.toLocaleDateString("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }) !== date
+  ) {
+    throw new AccountValidationError("Thời gian tạo không hợp lệ.")
+  }
+  if (date > toDateKey(new Date())) {
+    throw new AccountValidationError("Thời gian tạo không được sau hôm nay.")
+  }
+  if (date < "2000-01-01") {
+    throw new AccountValidationError("Thời gian tạo phải từ năm 2000 trở đi.")
+  }
+  return openedAt
+}
+
 export function parseAccountFormData(formData: FormData) {
   const type = getText(formData, "type") as AccountType
   const institutionId = getText(formData, "institutionId")
@@ -79,6 +103,7 @@ export function parseAccountFormData(formData: FormData) {
     type,
     // An account may be below zero.
     balance: getMoney(formData, "balance", "Số dư", true),
+    openedAt: getOpenedAt(formData),
   }
   const note = getBoundedText(formData, "note", "Ghi chú", 500)
 

@@ -33,6 +33,7 @@ export function EditAccountSheet({ account, onOpenChange, open }: EditAccountShe
             institutionId: account.institutionId,
             balance: account.balance,
             note: account.note,
+            openedAt: new Date(account.openedAt),
           }}
           expectedBalance={account.balance}
           submitLabel="Lưu thay đổi"

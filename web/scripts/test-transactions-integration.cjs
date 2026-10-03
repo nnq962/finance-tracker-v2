@@ -80,13 +80,19 @@ async function run() {
     // The account form sends a signed balance.
     const accountForm = (fields) => {
       const data = new FormData()
-      for (const [key, value] of Object.entries({ name: 'Thẻ', type: 'cash', balance: '50000', ...fields })) data.set(key, value)
+      for (const [key, value] of Object.entries({ name: 'Thẻ', type: 'cash', balance: '50000', date: '2026-01-05', time: '08:30', ...fields })) data.set(key, value)
       return data
     }
     assert.equal(accountValidation.parseAccountFormData(accountForm({ balance: '-50000' })).balance, -50_000)
     assert.equal(accountValidation.parseAccountFormData(accountForm({})).balance, 50_000)
     assert.equal(accountValidation.parseExpectedBalance(accountForm({ expectedBalance: '-50000' })), -50_000)
     assert.throws(() => accountValidation.parseAccountFormData(accountForm({ balance: '-1000000000000000' })))
+    // The opening time is read in Vietnam time and cannot be after today.
+    assert.equal(accountValidation.parseAccountFormData(accountForm({})).openedAt.toISOString(), '2026-01-05T01:30:00.000Z')
+    assert.throws(() => accountValidation.parseAccountFormData(accountForm({ date: toDateKey(new Date(Date.now() + 86_400_000)) })), /sau hôm nay/)
+    const opened = randomUUID()
+    await accounts.createAccount(userId, { name: 'Mở cũ', type: 'cash', balance: 0, openedAt: new Date('2026-01-05T01:30:00Z') }, opened)
+    assert.equal((await accounts.getAccounts(userId)).find((item) => item.id === opened).openedAt, '2026-01-05T01:30:00.000Z')
 
     // Dates run from 2000 through today in Vietnam time.
     const form = (date) => {

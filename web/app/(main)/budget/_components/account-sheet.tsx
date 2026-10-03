@@ -11,7 +11,7 @@ import { accountTypeLabels } from "@/lib/accounts/distribution"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
-import { formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
+import { formatDate, formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
 import type { Transaction } from "@/lib/transactions/types"
 import { cn } from "@/lib/utils"
 
@@ -103,6 +103,7 @@ export function AccountSheet({ account, share, transactions, categoryGroups, onO
                 title={shown.institutionName ? accountTypeLabels[shown.type] : "Loại"}
                 value={shown.institutionName ?? accountTypeLabels[shown.type]}
               />
+              <SettingsRow title="Ngày tạo" value={formatDate(toDateKey(shown.openedAt))} />
               <SettingsRow title="Số dư ban đầu" value={formatCurrency(shown.openingBalance)} />
               {share ? <SettingsRow title="Tỉ trọng" value={share.percentageLabel} /> : null}
               {shown.note ? <SettingsRow title="Ghi chú" description={shown.note} /> : null}

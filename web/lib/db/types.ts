@@ -18,6 +18,7 @@ export interface Accounts {
   institutionId: string | null;
   name: string;
   note: string | null;
+  openedAt: Generated<Timestamp>;
   openingBalance: number;
   status: Generated<string>;
   type: string;

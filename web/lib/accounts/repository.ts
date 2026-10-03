@@ -50,6 +50,7 @@ export async function getAccounts(userId: string): Promise<Account[]> {
       logoUrl: institution?.logoPath,
       logoFallback: getLogoFallback(row.name, institutionName),
       status: row.status as AccountStatus,
+      openedAt: row.openedAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
     }
   })
@@ -72,6 +73,7 @@ export async function createAccount(
       openingBalance: values.balance,
       balance: values.balance,
       note: values.note ?? null,
+      openedAt: values.openedAt,
     })
     .onConflict((conflict) => conflict.column("id").doNothing())
     .returning("id")
@@ -116,6 +118,7 @@ export async function updateAccount(
         type: values.type,
         institutionId: values.institutionId ?? null,
         note: values.note ?? null,
+        openedAt: values.openedAt,
       })
       .where("id", "=", accountId)
       .execute()

@@ -8,6 +8,8 @@ export type AccountFormValues = {
   institutionId?: string
   balance: number
   note?: string
+  /** When the account was opened, as the user says. */
+  openedAt: Date
 }
 
 export type Account = {
@@ -22,6 +24,8 @@ export type Account = {
   logoUrl?: string
   logoFallback: string
   status: AccountStatus
+  /** When the account was opened, as the user says. */
+  openedAt: string
   updatedAt: string
 }
 

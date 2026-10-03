@@ -65,6 +65,7 @@ CREATE TABLE public.accounts (
     status text DEFAULT 'active'::text NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    opened_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT accounts_balance_check CHECK (((balance >= '-999999999999999'::bigint) AND (balance <= '999999999999999'::bigint))),
     CONSTRAINT accounts_check CHECK (((type = 'cash'::text) = (institution_id IS NULL))),
     CONSTRAINT accounts_institution_id_check CHECK (((char_length(institution_id) >= 1) AND (char_length(institution_id) <= 64))),
@@ -1114,4 +1115,5 @@ INSERT INTO dbmate.schema_migrations (version) VALUES
     ('20261003000001'),
     ('20261003000002'),
     ('20261003000004'),
-    ('20261003000005');
+    ('20261003000005'),
+    ('20261004000001');
