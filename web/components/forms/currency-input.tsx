@@ -19,6 +19,8 @@ type CurrencyInputProps = {
   onValueChange?: (value: number | null) => void
   placeholder?: string
   required?: boolean
+  /** Marks the amount as wrong, e.g. left empty, for the field's error below it. */
+  invalid?: boolean
   /**
    * With `onNegativeChange`, the amount can be below zero: a +/− button
    * flips its sign (phone keypads have no minus) and a typed "-" works too.
@@ -42,6 +44,7 @@ export function CurrencyInput({
   onValueChange,
   placeholder = "0",
   required = false,
+  invalid = false,
   negative = false,
   onNegativeChange,
 }: CurrencyInputProps) {
@@ -87,6 +90,7 @@ export function CurrencyInput({
           }}
           placeholder={placeholder}
           required={required}
+          aria-invalid={invalid || undefined}
         />
         <InputGroupAddon align="inline-end">
           <InputGroupText>đ</InputGroupText>

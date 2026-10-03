@@ -19,8 +19,6 @@ import { createTransactionAction } from "../../actions"
 import { TransactionForm } from "./transaction-form"
 import { TransactionKindSelector } from "./transaction-kind-selector"
 
-const transactionKinds: SupportedTransactionKind[] = ["expense", "income", "transfer"]
-
 type AddTransactionSheetProps = {
   accounts: Account[]
   categoryGroups: CategoryGroup[]
@@ -60,23 +58,17 @@ export function AddTransactionSheet({
           <div className="px-4 pb-4">
             <TransactionKindSelector value={kind} onValueChange={setKind} />
           </div>
-          {/* One form per kind, all kept: switching tabs hides the others
-              rather than clearing what was half filled in. Closing the sheet
-              starts them over. */}
-          {transactionKinds.map((formKind) => (
-            <div key={formKind} className={formKind === kind ? "flex min-h-0 flex-1 flex-col" : "hidden"}>
-              <TransactionForm
-                accounts={accounts}
-                action={createTransactionAction}
-                categoryGroups={categoryGroups}
-                isCreating
-                kind={formKind}
-                onManageCategories={() => setCategoryManagementOpen(true)}
-                onSuccess={() => setOpen(false)}
-                successMessage="Đã thêm giao dịch."
-              />
-            </div>
-          ))}
+          {/* Switching tabs keeps what was filled in; closing the sheet starts over. */}
+          <TransactionForm
+            accounts={accounts}
+            action={createTransactionAction}
+            categoryGroups={categoryGroups}
+            isCreating
+            kind={kind}
+            onManageCategories={() => setCategoryManagementOpen(true)}
+            onSuccess={() => setOpen(false)}
+            successMessage="Đã thêm giao dịch."
+          />
         </SheetContent>
       </Sheet>
       <CategoryManagementSheet

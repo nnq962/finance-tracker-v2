@@ -3,7 +3,7 @@
 import * as React from "react"
 
 import { DatePreview } from "@/components/forms/date-preview"
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { getCurrentLocalDateTime } from "@/lib/date-time"
 import { cn } from "@/lib/utils"
@@ -15,8 +15,10 @@ type DateTimeFieldsProps = {
   dateName?: string
   description?: string
   disabled?: boolean
+  /** Shown under the inputs, which are marked as wrong. */
+  error?: string
   idPrefix: string
-  label?: string
+  label?: React.ReactNode
   maxDate?: string
   minDate?: string
   onDateChange?: React.ChangeEventHandler<HTMLInputElement>
@@ -35,6 +37,7 @@ export function DateTimeFields({
   dateName = "date",
   description,
   disabled = false,
+  error,
   idPrefix,
   label = "Thời gian",
   maxDate,
@@ -55,7 +58,7 @@ export function DateTimeFields({
   const previewTime = timeValue ?? shownTime
 
   return (
-    <Field data-disabled={disabled || undefined}>
+    <Field data-disabled={disabled || undefined} data-invalid={Boolean(error) || undefined}>
       {/* An empty label leaves the caption to the surroundings. */}
       {label ? (
         <FieldLabel htmlFor={showDate ? undefined : `${idPrefix}-time`}>
@@ -90,6 +93,7 @@ export function DateTimeFields({
               }}
               required={required}
               disabled={disabled}
+              aria-invalid={Boolean(error) || undefined}
               className="w-auto min-w-0 max-w-full flex-1"
             />
           </div>
@@ -113,11 +117,13 @@ export function DateTimeFields({
             onBlur={onTimeBlur}
             required={required}
             disabled={disabled}
+            aria-invalid={Boolean(error) || undefined}
             className="w-auto min-w-0 max-w-full flex-1"
           />
         </div>
       </div>
       <DatePreview date={showDate ? previewDate : undefined} time={previewTime} />
+      {error ? <FieldError>{error}</FieldError> : null}
     </Field>
   )
 }
