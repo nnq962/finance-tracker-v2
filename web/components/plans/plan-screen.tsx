@@ -176,10 +176,21 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
           </ToggleGroupItem>
         </ToggleGroup>
 
-        {/* Pro first on a phone; side by side from md up in the dialog, free on the left. */}
-        <div className={cn("grid gap-3", page && "md:mx-auto md:max-w-4xl md:grid-cols-2 md:gap-6")}>
+        {/* Pro first on a phone; side by side from md up in the dialog, free on the left. There the
+            cards share rows (subgrid), so headers, prices and footers line up and the buttons align. */}
+        <div
+          className={cn(
+            "grid gap-3",
+            page && "md:mx-auto md:max-w-4xl md:grid-cols-2 md:grid-rows-[auto_1fr_auto] md:gap-x-6 md:gap-y-0",
+          )}
+        >
           {/* The recommended plan stands out with a grape outline, the colour the kit keeps for premium. */}
-          <Card className="border-[#a376e9] ring-[#a376e9] dark:border-[#a376e9] dark:ring-[#a376e9]">
+          <Card
+            className={cn(
+              "border-[#a376e9] ring-[#a376e9] dark:border-[#a376e9] dark:ring-[#a376e9]",
+              page && "md:row-span-3 md:grid md:grid-rows-subgrid",
+            )}
+          >
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 {plans.pro.label}
@@ -227,7 +238,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
             </CardFooter>
           </Card>
 
-          <Card className={cn(page && "md:order-first")}>
+          <Card className={cn(page && "md:order-first md:row-span-3 md:grid md:grid-rows-subgrid")}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 {plans.free.label}
