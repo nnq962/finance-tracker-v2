@@ -21,7 +21,7 @@ import {
  */
 export function NeedAccountState({
   title = "Cần có tài khoản trước",
-  description = "Mỗi giao dịch đều ghi vào một tài khoản: tiền mặt, ngân hàng hoặc ví điện tử. Thêm tài khoản đầu tiên để bắt đầu ghi chép.",
+  description = "Thêm tài khoản đầu tiên để bắt đầu ghi chép.",
 }: {
   title?: string
   description?: string

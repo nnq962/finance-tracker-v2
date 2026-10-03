@@ -193,7 +193,7 @@ export function TransactionsDashboard({
         >
           <SheetNavHeader title="Nhập bằng AI" />
           <div className="flex min-h-0 flex-1 flex-col justify-center overflow-y-auto px-4 pb-8">
-            <NeedAccountState description="Trợ lý AI ghi giao dịch vào một tài khoản của bạn: tiền mặt, ngân hàng hoặc ví điện tử. Thêm tài khoản đầu tiên rồi quay lại nhé." />
+            <NeedAccountState />
           </div>
         </SheetContent>
       </Sheet>

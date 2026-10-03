@@ -93,7 +93,7 @@ export function TransferFields({
     return (
       <NeedAccountState
         title="Cần ít nhất 2 tài khoản"
-        description="Chuyển khoản là chuyển tiền giữa hai tài khoản của bạn, ví dụ rút tiền từ ngân hàng ra ví. Thêm một tài khoản nữa để dùng."
+        description="Thêm một tài khoản nữa để chuyển tiền."
       />
     )
   }
