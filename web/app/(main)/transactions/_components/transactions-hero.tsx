@@ -67,8 +67,9 @@ export function TransactionsHero({
 }: TransactionsHeroProps) {
   const monthInput = React.useRef<HTMLInputElement>(null)
   const { income, expense, netBalance } = getTransactionSummary(transactions)
-  const incomeCount = transactions.filter((item) => item.kind === "income").length
-  const expenseCount = transactions.filter((item) => item.kind === "expense").length
+  // Loans are listed but are not income or spending.
+  const incomeCount = transactions.filter((item) => item.kind === "income" && !item.source).length
+  const expenseCount = transactions.filter((item) => item.kind === "expense" && !item.source).length
 
   const openMonthPicker = () => {
     const input = monthInput.current

@@ -31,6 +31,8 @@ type TransactionToolbarProps = {
   filter: TransactionFilter
   searchFilters: TransactionSearchFilters
   transactionCount: number
+  /** The month the list covers, e.g. "Tháng 10, 2026": search and filters stay within it. */
+  rangeLabel: string
   onFilterChange: (filter: TransactionFilter) => void
   onSearchFiltersChange: (filters: TransactionSearchFilters) => void
   onReset: () => void
@@ -42,6 +44,7 @@ export function TransactionToolbar({
   filter,
   searchFilters,
   transactionCount,
+  rangeLabel,
   onFilterChange,
   onSearchFiltersChange,
   onReset,
@@ -106,7 +109,8 @@ export function TransactionToolbar({
 
       {isFiltering ? (
         <p className="text-sm text-muted-foreground" aria-live="polite">
-          Đang lọc · {transactionCount} giao dịch
+          Đang lọc · {transactionCount} giao dịch trong{" "}
+          {rangeLabel.charAt(0).toLocaleLowerCase("vi-VN") + rangeLabel.slice(1)}
         </p>
       ) : null}
 

@@ -1,19 +1,7 @@
 "use client"
 
-import * as React from "react"
-import { Trash2Icon } from "lucide-react"
 import { useRouter } from "next/navigation"
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/animate-ui/components/radix/alert-dialog"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { SheetContent } from "@/components/ui/sheet"
@@ -42,7 +30,7 @@ export function TransactionDetailsSheet({
   transaction,
 }: TransactionDetailsSheetProps) {
   const router = useRouter()
-  const [deleteOpen, setDeleteOpen] = React.useState(false)
+  const isDebt = transaction.source === "debt"
   const presentation = transactionPresentation[transaction.kind]
   const Icon = category
     ? categoryIconRegistry[category.iconName]
@@ -62,30 +50,38 @@ export function TransactionDetailsSheet({
             label: "Đến tài khoản",
             value: transaction.toAccountName ?? "Không xác định",
           },
-          {
-            label: "Phí chuyển khoản",
-            value: formatCurrency(transaction.fee ?? 0, {
-              signDisplay: "never",
-            }),
-          },
+          // A transfer without a fee does not mention one.
+          ...(transaction.fee
+            ? [
+                {
+                  label: "Phí chuyển khoản",
+                  value: formatCurrency(transaction.fee, {
+                    signDisplay: "never",
+                  }),
+                },
+              ]
+            : []),
         ]
       : [
           {
             label: "Tài khoản",
             value: transaction.accountName ?? "Không xác định",
           },
-          {
-            label: "Nhóm hạng mục",
-            value: transaction.categoryGroupName ?? "Không xác định",
-          },
-          {
-            label: "Hạng mục",
-            value: transaction.categoryName ?? "Không xác định",
-          },
+          // A loan is named in the title above; a category reads group › item.
+          ...(isDebt
+            ? []
+            : [
+                {
+                  label: "Hạng mục",
+                  value: [transaction.categoryGroupName, transaction.categoryName]
+                    .filter(Boolean)
+                    .join(" › ") || "Không xác định",
+                },
+              ]),
         ]
 
+  // Deleting waits six seconds with an undo, so it needs no confirmation first.
   const handleDelete = () => {
-    setDeleteOpen(false)
     onDeleted()
     scheduleUndoableDelete({
       key: `transaction:${transaction.id}`,
@@ -117,6 +113,8 @@ export function TransactionDetailsSheet({
           <p
             className={`mt-5 text-[2rem] font-semibold tracking-tight tabular-nums ${presentation.amountClassName}`}
           >
+            {/* Signed as in the list, so spending and income read apart without colour. */}
+            {transaction.kind === "expense" ? "−" : transaction.kind === "income" ? "+" : ""}
             {formatCurrency(Math.abs(transaction.amount), {
               signDisplay: "never",
             })}
@@ -131,7 +129,7 @@ export function TransactionDetailsSheet({
         </div>
 
         <SettingsGroup>
-          <SettingsRow title="Loại giao dịch" value={presentation.label} />
+          <SettingsRow title="Loại giao dịch" value={isDebt ? "Vay nợ" : presentation.label} />
           {details.map((detail) => (
             <SettingsRow key={detail.label} title={detail.label} value={detail.value} />
           ))}
@@ -143,7 +141,7 @@ export function TransactionDetailsSheet({
         </SettingsGroup>
 
         {/* Edit and delete as rows at the end, like the other detail sheets. */}
-        {transaction.source === "debt" ? (
+        {isDebt ? (
           <SettingsGroup footer="Giao dịch này tạo từ một khoản vay nợ, nên được sửa hoặc xoá ở đó.">
             <SettingsRow
               title="Quản lý tại vay nợ"
@@ -156,30 +154,11 @@ export function TransactionDetailsSheet({
               <SettingsRow title="Sửa giao dịch" onClick={onEdit} />
             </SettingsGroup>
             <SettingsGroup>
-              <SettingsRow destructive title="Xoá giao dịch" onClick={() => setDeleteOpen(true)} />
+              <SettingsRow destructive title="Xoá giao dịch" onClick={handleDelete} />
             </SettingsGroup>
           </>
         )}
       </div>
-
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Xoá giao dịch?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Giao dịch “{transaction.title}” sẽ bị xoá và số dư liên quan được
-              đối soát lại. Sau khi xác nhận, bạn có 6 giây để hoàn tác.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Huỷ</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>
-              <Trash2Icon />
-              Xoá giao dịch
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </SheetContent>
   )
 }

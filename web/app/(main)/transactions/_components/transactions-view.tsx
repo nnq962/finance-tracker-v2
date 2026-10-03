@@ -9,6 +9,8 @@ type TransactionsViewProps = {
   categoryGroups: CategoryGroup[]
   todayDateKey: string
   transactions: Transaction[]
+  isFiltering: boolean
+  onClearFilters: () => void
 }
 
 export function TransactionsView({
@@ -16,6 +18,8 @@ export function TransactionsView({
   categoryGroups,
   todayDateKey,
   transactions,
+  isFiltering,
+  onClearFilters,
 }: TransactionsViewProps) {
   return (
     <section>
@@ -24,6 +28,8 @@ export function TransactionsView({
         categoryGroups={categoryGroups}
         todayDateKey={todayDateKey}
         transactions={transactions}
+        isFiltering={isFiltering}
+        onClearFilters={onClearFilters}
       />
     </section>
   )

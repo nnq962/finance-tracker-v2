@@ -19,7 +19,12 @@ export function filterTransactions(
   const normalizedQuery = normalizeSearchValue(searchFilters.query.trim())
 
   return transactions.filter((transaction) => {
-    const matchesFilter = filter === "all" || transaction.kind === filter
+    // Loans move money but are not income or spending.
+    const matchesFilter =
+      filter === "all" ||
+      (filter === "debt"
+        ? transaction.source === "debt"
+        : !transaction.source && transaction.kind === filter)
     const amount = Math.abs(transaction.amount)
     const matchesAmount =
       (searchFilters.minAmount === null ||

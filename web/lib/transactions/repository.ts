@@ -222,6 +222,49 @@ export async function getTransactionsInRange(
 }
 
 /**
+ * Repayments of loans in a range, shaped as transactions so the transactions
+ * page lists them beside the loans themselves: money back from a loan made
+ * comes in, money paid back on a loan taken goes out. They are kept as debt
+ * payments, so they are changed on the debts page.
+ */
+export async function getDebtPaymentsInRange(userId: string, start: Date, end: Date): Promise<Transaction[]> {
+  // A payment is dated by its Vietnam day and time.
+  const paidAt = sql<Date>`(p.paid_at + p.paid_time) AT TIME ZONE 'Asia/Ho_Chi_Minh'`
+  const rows = await getDb()
+    .selectFrom("debtPayments as p")
+    .innerJoin("debts as d", "d.id", "p.debtId")
+    .leftJoin("contacts as c", "c.id", "d.contactId")
+    .leftJoin("accounts as a", "a.id", "p.accountId")
+    .select(["p.id", "p.debtId", "p.amount", "p.accountId", "p.note", "d.direction", "c.name as contactName", "a.name as accountName"])
+    .select(paidAt.as("occurredAt"))
+    .where("p.userId", "=", userId)
+    .where(paidAt, ">=", start)
+    .where(paidAt, "<", end)
+    .execute()
+
+  return rows.map((row) => {
+    const comesIn = row.direction === "lent"
+    const accountName = row.accountName ?? undefined
+    const title = `${comesIn ? "Thu nợ" : "Trả nợ"} · ${row.contactName ?? "Người liên hệ"}`
+    return {
+      id: row.id,
+      source: "debt" as const,
+      debtId: row.debtId,
+      kind: comesIn ? ("income" as const) : ("expense" as const),
+      title,
+      description: `Vay & nợ · ${accountName ?? "Tài khoản"}`,
+      amount: comesIn ? row.amount : -row.amount,
+      accountId: row.accountId,
+      accountName,
+      categoryName: title,
+      categoryGroupName: "Vay & nợ",
+      ...(row.note ? { note: row.note } : {}),
+      occurredAt: new Date(row.occurredAt).toISOString(),
+    }
+  })
+}
+
+/**
  * Locks and checks the accounts and category of a new or edited transaction.
  * When editing, the accounts and category it already uses may be archived.
  */

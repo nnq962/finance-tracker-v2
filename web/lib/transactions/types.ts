@@ -2,7 +2,8 @@ export type TransactionKind = "expense" | "income" | "transfer"
 
 export type SupportedTransactionKind = TransactionKind
 
-export type TransactionFilter = "all" | TransactionKind
+/** "debt" is loans and their repayments, kept apart from income and spending. */
+export type TransactionFilter = "all" | TransactionKind | "debt"
 
 export type TransactionPeriod = "week" | "month"
 

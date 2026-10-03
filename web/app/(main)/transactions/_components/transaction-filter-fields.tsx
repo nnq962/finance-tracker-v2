@@ -25,6 +25,7 @@ const filters: { label: string; value: TransactionFilter }[] = [
   { label: "Chi tiền", value: "expense" },
   { label: "Thu tiền", value: "income" },
   { label: "Chuyển khoản", value: "transfer" },
+  { label: "Vay nợ", value: "debt" },
 ]
 
 /** How many conditions narrow the list, not counting the search text. */
@@ -83,7 +84,7 @@ export function TransactionFilterFields({
     onFilterChange(next)
     if (next === "all") return
     const keep = new Set(
-      next === "transfer"
+      next === "transfer" || next === "debt"
         ? []
         : categoryGroups
             .filter((group) => group.type === next)

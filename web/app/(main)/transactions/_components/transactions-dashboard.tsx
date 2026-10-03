@@ -23,7 +23,7 @@ import { AddTransactionButton } from "./add-transaction-button"
 import { AiTransactionDrawer } from "./ai-transaction/ai-transaction-drawer"
 import { NeedAccountState } from "./add-transaction/need-account-state"
 import { TransactionHistoryProvider } from "./add-transaction/transaction-history-context"
-import { TransactionFilterPanel } from "./transaction-filter-fields"
+import { countActiveFilters, TransactionFilterPanel } from "./transaction-filter-fields"
 import { TransactionsHero } from "./transactions-hero"
 import { TransactionsLayout } from "./transactions-layout"
 import { TransactionsView } from "./transactions-view"
@@ -103,6 +103,13 @@ export function TransactionsDashboard({
     setFilter("all")
     setSearchFilters({ ...initialSearchFilters, query: searchFilters.query })
   }
+  // From an empty result: the search goes too.
+  const clearFilters = () => {
+    setFilter("all")
+    setSearchFilters(initialSearchFilters)
+  }
+  const isFiltering =
+    countActiveFilters(filter, searchFilters) > 0 || searchFilters.query.trim() !== ""
 
   return (
     <TransactionHistoryProvider transactions={transactions}>
@@ -158,6 +165,7 @@ export function TransactionsDashboard({
           filter={filter}
           searchFilters={searchFilters}
           transactionCount={visibleTransactions.length}
+          rangeLabel={periodData.rangeLabel}
           onFilterChange={setFilter}
           onSearchFiltersChange={setSearchFilters}
           onReset={resetFilters}
@@ -167,6 +175,8 @@ export function TransactionsDashboard({
           categoryGroups={categoryGroups}
           todayDateKey={todayDateKey}
           transactions={visibleTransactions}
+          isFiltering={isFiltering}
+          onClearFilters={clearFilters}
         />
       </TransactionsLayout>
       {/* On mobile the action floats above the bottom nav so it stays within

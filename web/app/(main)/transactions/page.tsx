@@ -3,7 +3,7 @@ import { getAccounts } from "@/lib/accounts/repository"
 import { loadWithSession } from "@/lib/auth/session"
 import { getCategoryGroups } from "@/lib/categories/repository"
 import { getPlanState } from "@/lib/plans/repository"
-import { getTransactionsInRange } from "@/lib/transactions/repository"
+import { getDebtPaymentsInRange, getTransactionsInRange } from "@/lib/transactions/repository"
 
 import { TransactionsDashboard } from "./_components/transactions-dashboard"
 import {
@@ -25,8 +25,14 @@ export default async function TransactionsPage({
     data: [transactions, accounts, categoryGroups, planState],
   } = await loadWithSession((user) =>
     Promise.all([
-      // Loans live on the debts page.
-      getTransactionsInRange(user.uid, range.start, range.end, { excludeDebts: true }),
+      // Loans and their repayments are listed too, so every change to a
+      // balance shows here; they are edited on the debts page.
+      Promise.all([
+        getTransactionsInRange(user.uid, range.start, range.end),
+        getDebtPaymentsInRange(user.uid, range.start, range.end),
+      ]).then(([own, repayments]) =>
+        [...own, ...repayments].sort((left, right) => right.occurredAt.localeCompare(left.occurredAt)),
+      ),
       getAccounts(user.uid),
       getCategoryGroups(user.uid),
       getPlanState(user.uid),

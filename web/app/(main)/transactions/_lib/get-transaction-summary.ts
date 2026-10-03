@@ -8,6 +8,9 @@ export function getTransactionSummary(
 ): TransactionSummaryData {
   const summary = transactions.reduce(
     (totals, transaction) => {
+      // Loans and repayments move money without being income or spending.
+      if (transaction.source === "debt") return totals
+
       if (transaction.kind === "income") {
         totals.income += Math.abs(transaction.amount)
       }

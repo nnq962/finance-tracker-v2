@@ -24,14 +24,14 @@ export function TransactionDateGroup({
 }: TransactionDateGroupProps) {
   const income = group.transactions.reduce(
     (total, transaction) =>
-      transaction.kind === "income"
+      transaction.kind === "income" && !transaction.source
         ? total + Math.abs(transaction.amount)
         : total,
     0,
   )
   const expense = group.transactions.reduce(
     (total, transaction) =>
-      transaction.kind === "expense"
+      transaction.kind === "expense" && !transaction.source
         ? total + Math.abs(transaction.amount)
         : total,
     0,

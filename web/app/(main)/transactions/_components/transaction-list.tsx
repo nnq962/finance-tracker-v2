@@ -1,10 +1,20 @@
-import { ReceiptTextIcon } from "lucide-react"
+import { ReceiptTextIcon, SearchXIcon } from "lucide-react"
 
+import { Button } from "@/components/ui/button"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 
 import { groupTransactionsByDate } from "../_lib/group-transactions-by-date"
 import type { Transaction } from "../_types/transaction"
+import { AddTransactionButton } from "./add-transaction-button"
 import { TransactionDateGroup } from "./transaction-date-group"
 
 type TransactionListProps = {
@@ -12,6 +22,9 @@ type TransactionListProps = {
   categoryGroups: CategoryGroup[]
   todayDateKey: string
   transactions: Transaction[]
+  /** A search or filter narrows the list, so an empty one means nothing matched. */
+  isFiltering: boolean
+  onClearFilters: () => void
 }
 
 export function TransactionList({
@@ -19,20 +32,40 @@ export function TransactionList({
   categoryGroups,
   todayDateKey,
   transactions,
+  isFiltering,
+  onClearFilters,
 }: TransactionListProps) {
   const groups = groupTransactionsByDate(transactions)
 
   if (groups.length === 0) {
-    return (
-      <div className="flex min-h-56 flex-col items-center justify-center gap-3 text-center">
-        <ReceiptTextIcon className="size-8 text-muted-foreground" />
-        <div>
-          <p className="font-medium">Không tìm thấy giao dịch</p>
-          <p className="text-sm text-muted-foreground">
-            Hãy thử từ khoá hoặc loại giao dịch khác.
-          </p>
-        </div>
-      </div>
+    return isFiltering ? (
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <SearchXIcon />
+          </EmptyMedia>
+          <EmptyTitle>Không có giao dịch phù hợp</EmptyTitle>
+          <EmptyDescription>Thử từ khoá khác hoặc bỏ bớt điều kiện lọc.</EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button type="button" variant="outline" onClick={onClearFilters}>
+            Xoá bộ lọc
+          </Button>
+        </EmptyContent>
+      </Empty>
+    ) : (
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <ReceiptTextIcon />
+          </EmptyMedia>
+          <EmptyTitle>Chưa có giao dịch trong tháng này</EmptyTitle>
+          <EmptyDescription>Ghi khoản thu chi đầu tiên để theo dõi tiền của bạn.</EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <AddTransactionButton accounts={accounts} categoryGroups={categoryGroups} />
+        </EmptyContent>
+      </Empty>
     )
   }
 
