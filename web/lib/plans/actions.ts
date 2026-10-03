@@ -4,9 +4,17 @@ import { revalidatePath } from "next/cache"
 
 import { requireSession } from "@/lib/auth/session"
 import { requireAdmin } from "@/lib/plans/admin"
+import {
+  createCoupon,
+  findUsableCoupon,
+  grantWithCoupon,
+  setCouponActive,
+  type Coupon,
+} from "@/lib/plans/coupons"
+import { getDb } from "@/lib/db/client"
 import { attachCheckout, createPayment } from "@/lib/plans/payments"
 import { getPayOS } from "@/lib/plans/payos"
-import { proPrices, type PlanPeriod } from "@/lib/plans/plans"
+import { MIN_CHECKOUT_AMOUNT, priceWithCoupon, proPrices, type PlanPeriod } from "@/lib/plans/plans"
 import { grantPro, listGrants, PlanError, revokePro, type SubscriptionGrant } from "@/lib/plans/repository"
 import { MAX_MONEY } from "@/lib/money"
 import { SITE_URL } from "@/lib/site"
@@ -91,16 +99,40 @@ export async function getGrantsAction(
 export async function startProCheckoutAction(
   period: unknown,
   from: unknown = "/settings",
-): Promise<{ success: true; checkoutUrl: string } | { success: false; error: string }> {
+  couponCode?: unknown,
+): Promise<
+  | { success: true; checkoutUrl: string }
+  | { success: true; granted: true }
+  | { success: false; error: string }
+> {
   const user = await requireSession()
   if (period !== "month" && period !== "year") return { success: false, error: "Gói không hợp lệ." }
+
+  // The price comes from the code here, never from the page.
+  let coupon: Coupon | undefined
+  if (couponCode) {
+    try {
+      coupon = await findUsableCoupon(getDb(), user.uid, couponCode)
+      // Nothing (or next to nothing) left to pay: Pro at once, without payOS.
+      if (priceWithCoupon(period, coupon.percentOff).amount < MIN_CHECKOUT_AMOUNT) {
+        await grantWithCoupon(user.uid, period, couponCode)
+        revalidatePath("/settings")
+        revalidatePath("/overview")
+        revalidatePath("/transactions")
+        return { success: true, granted: true }
+      }
+    } catch (error) {
+      return failure(error)
+    }
+  }
+
   const payos = getPayOS()
   if (!payos) {
     return { success: false, error: "Thanh toán tự động chưa được bật. Liên hệ quản trị viên để nâng cấp." }
   }
 
   try {
-    const payment = await createPayment(user.uid, period)
+    const payment = await createPayment(user.uid, period, coupon)
     // Back to the page the plans were opened over, which opens them again.
     const page = from === "/overview" ? from : "/settings"
     const back = `${SITE_URL}${page}?screen=plan&order=${payment.orderCode}`
@@ -119,5 +151,61 @@ export async function startProCheckoutAction(
   } catch (error) {
     console.error("payOS checkout failed", error)
     return { success: false, error: "Không tạo được thanh toán. Vui lòng thử lại." }
+  }
+}
+
+// A user may try a few codes, not guess them: at most this many checks an hour.
+const COUPON_CHECKS_PER_HOUR = 10
+const couponChecks = new Map<string, number[]>()
+
+/** Whether a code can be used now, and how much it takes off, for the plans to show the new price. */
+export async function checkCouponAction(
+  code: unknown,
+): Promise<{ success: true; code: string; percentOff: number } | { success: false; error: string }> {
+  const user = await requireSession()
+  const now = Date.now()
+  const recent = (couponChecks.get(user.uid) ?? []).filter((time) => now - time < 3_600_000)
+  if (recent.length >= COUPON_CHECKS_PER_HOUR) {
+    return { success: false, error: "Bạn đã thử quá nhiều mã. Vui lòng thử lại sau." }
+  }
+  couponChecks.set(user.uid, [...recent, now])
+
+  try {
+    const coupon = await findUsableCoupon(getDb(), user.uid, code)
+    return { success: true, code: coupon.code, percentOff: coupon.percentOff }
+  } catch (error) {
+    return failure(error)
+  }
+}
+
+/** A new code. Admins only. */
+export async function createCouponAction(values: {
+  code: unknown
+  percentOff: unknown
+  maxRedemptions?: unknown
+  expiresOn?: unknown
+}): Promise<PlanActionResult> {
+  const admin = await requireAdmin()
+  try {
+    await createCoupon(admin.uid, values)
+    revalidatePath("/settings")
+    return { success: true }
+  } catch (error) {
+    return failure(error)
+  }
+}
+
+/** Turns a code on or off. Admins only. */
+export async function setCouponActiveAction(couponId: unknown, active: unknown): Promise<PlanActionResult> {
+  await requireAdmin()
+  try {
+    if (typeof couponId !== "string" || !/^[0-9a-f-]{36}$/.test(couponId) || typeof active !== "boolean") {
+      throw new PlanError("Mã giảm giá không hợp lệ.")
+    }
+    await setCouponActive(couponId, active)
+    revalidatePath("/settings")
+    return { success: true }
+  } catch (error) {
+    return failure(error)
   }
 }

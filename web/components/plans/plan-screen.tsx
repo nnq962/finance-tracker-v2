@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -11,6 +11,8 @@ import {
   LoaderCircleIcon,
   ShieldCheckIcon,
   SparklesIcon,
+  TicketPercentIcon,
+  XIcon,
   type LucideIcon,
 } from "lucide-react"
 import { toast } from "sonner"
@@ -20,12 +22,21 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Field, FieldError } from "@/components/ui/field"
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
 import { Item, ItemActions, ItemContent, ItemTitle } from "@/components/ui/item"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDate, toDateKey } from "@/lib/format-date"
-import { startProCheckoutAction } from "@/lib/plans/actions"
-import { plans, proPrices, type PlanPeriod, type PlanState } from "@/lib/plans/plans"
+import { checkCouponAction, startProCheckoutAction } from "@/lib/plans/actions"
+import {
+  MIN_CHECKOUT_AMOUNT,
+  plans,
+  priceWithCoupon,
+  proPrices,
+  type PlanPeriod,
+  type PlanState,
+} from "@/lib/plans/plans"
 import type { PaymentOutcome } from "@/lib/plans/payos"
 import { cn } from "@/lib/utils"
 
@@ -101,17 +112,31 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
   const [opening, setOpening] = React.useState(false)
   const [, startTransition] = React.useTransition()
   const pathname = usePathname()
+  const router = useRouter()
   const isPro = planState.plan === "pro"
   const outcome = paymentOutcome ? outcomeMessages[paymentOutcome] : undefined
   const price = proPrices[period]
+  // A code checked by the server; the price at checkout is worked out there again.
+  const [coupon, setCoupon] = React.useState<{ code: string; percentOff: number } | null>(null)
+  const discounted = coupon ? priceWithCoupon(period, coupon.percentOff) : null
+  const payAmount = discounted?.amount ?? price.amount
+  // A code that leaves (next to) nothing to pay grants Pro without payOS.
+  const free = payAmount < MIN_CHECKOUT_AMOUNT
 
   const checkout = () => {
     setOpening(true)
     startTransition(async () => {
-      const result = await startProCheckoutAction(period, pathname)
+      const result = await startProCheckoutAction(period, pathname, coupon?.code)
       if (!result.success) {
         toast.error(result.error)
         setOpening(false)
+        return
+      }
+      if ("granted" in result) {
+        toast.success("Đã nâng cấp Pro", { description: `Mã ${coupon?.code} đã được áp dụng.` })
+        setCoupon(null)
+        setOpening(false)
+        router.refresh()
         return
       }
       // payOS's page shows the QR and opens the bank app, then sends the user back here.
@@ -185,11 +210,17 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
             </CardHeader>
             <CardContent className="flex-1 space-y-4">
               <div>
-                <PriceTag amount={price.amount} unit={period === "year" ? "năm" : "tháng"} />
+                <PriceTag
+                  amount={payAmount}
+                  listAmount={discounted ? price.amount : undefined}
+                  unit={period === "year" ? "năm" : "tháng"}
+                />
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {period === "year"
-                    ? `Tương đương ${formatCurrency(Math.round(price.amount / 12))}/tháng · Tiết kiệm ${formatCurrency(yearSaving)}`
-                    : `Tiết kiệm ${yearSavingPercent}% khi thanh toán theo năm`}
+                  {coupon
+                    ? `Mã ${coupon.code} · Giảm ${coupon.percentOff}%`
+                    : period === "year"
+                      ? `Tương đương ${formatCurrency(Math.round(price.amount / 12))}/tháng · Tiết kiệm ${formatCurrency(yearSaving)}`
+                      : `Tiết kiệm ${yearSavingPercent}% khi thanh toán theo năm`}
                 </p>
               </div>
               <FeatureList
@@ -207,11 +238,15 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
                 variant="grape"
                 size="lg"
                 className="w-full"
-                disabled={!checkoutEnabled || opening}
+                disabled={(!checkoutEnabled && !free) || opening}
                 onClick={checkout}
               >
                 {opening ? <LoaderCircleIcon className="animate-spin" aria-hidden="true" /> : null}
-                {isPro ? `Gia hạn thêm ${price.label}` : `Nâng cấp Pro · ${formatCurrency(price.amount)}`}
+                {free
+                  ? `Nhận Pro ${price.label} miễn phí`
+                  : isPro
+                    ? `Gia hạn thêm ${price.label} · ${formatCurrency(payAmount)}`
+                    : `Nâng cấp Pro · ${formatCurrency(payAmount)}`}
               </Button>
               <p className="text-center text-xs text-muted-foreground">
                 {checkoutEnabled
@@ -249,6 +284,8 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
           </Card>
         </div>
 
+        <CouponEntry coupon={coupon} onApply={setCoupon} onRemove={() => setCoupon(null)} />
+
         <p className="flex items-center justify-center gap-1.5 px-3 text-center text-xs text-muted-foreground">
           <ShieldCheckIcon className="size-4 shrink-0" aria-hidden="true" />
           Thanh toán bảo mật qua payOS, hỗ trợ mọi ngân hàng
@@ -283,12 +320,19 @@ function OutcomeCard({ tone, title, description }: { tone: OutcomeTone; title: s
   )
 }
 
-function PriceTag({ amount, unit }: { amount: number; unit: string }) {
+function PriceTag({ amount, listAmount, unit }: { amount: number; listAmount?: number; unit: string }) {
   return (
-    <p className="flex items-baseline gap-1">
+    <p className="flex flex-wrap items-baseline gap-1">
       <span className="font-heading text-4xl leading-none font-extrabold tracking-tight tabular-nums">
         {formatCurrency(amount)}
       </span>
+      {/* The price before a coupon, struck through. */}
+      {listAmount !== undefined ? (
+        <s className="text-sm text-muted-foreground tabular-nums">
+          <span className="sr-only">Giá gốc </span>
+          {formatCurrency(listAmount)}
+        </s>
+      ) : null}
       <span className="text-sm text-muted-foreground">/{unit}</span>
     </p>
   )
@@ -340,5 +384,108 @@ function FaqRow({ question, answer }: { question: string; answer: string }) {
         </CollapsibleContent>
       </Collapsible>
     </li>
+  )
+}
+
+/** "Có mã giảm giá?" opening a field for the code, checked with the server, then the code applied. */
+function CouponEntry({
+  coupon,
+  onApply,
+  onRemove,
+}: {
+  coupon: { code: string; percentOff: number } | null
+  onApply: (coupon: { code: string; percentOff: number }) => void
+  onRemove: () => void
+}) {
+  const [open, setOpen] = React.useState(false)
+  const [code, setCode] = React.useState("")
+  const [error, setError] = React.useState<string | null>(null)
+  const [checking, setChecking] = React.useState(false)
+
+  if (coupon) {
+    return (
+      <div className="flex items-center justify-center gap-2">
+        <Badge variant="grape">
+          <TicketPercentIcon data-icon="inline-start" aria-hidden="true" />
+          {coupon.code} · −{coupon.percentOff}%
+        </Badge>
+        <Button type="button" variant="ghost" size="xs" onClick={onRemove}>
+          Bỏ mã
+        </Button>
+      </div>
+    )
+  }
+
+  if (!open) {
+    return (
+      <div className="flex justify-center">
+        <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(true)}>
+          <TicketPercentIcon />
+          Có mã giảm giá?
+        </Button>
+      </div>
+    )
+  }
+
+  const apply = async () => {
+    if (!code.trim()) {
+      setError("Nhập mã giảm giá.")
+      return
+    }
+    setChecking(true)
+    const result = await checkCouponAction(code)
+    setChecking(false)
+    if (!result.success) {
+      setError(result.error)
+      return
+    }
+    onApply({ code: result.code, percentOff: result.percentOff })
+    setOpen(false)
+    setCode("")
+  }
+
+  return (
+    <Field data-invalid={Boolean(error) || undefined} className="mx-auto max-w-xs">
+      <InputGroup>
+        <InputGroupInput
+          aria-label="Mã giảm giá"
+          placeholder="Nhập mã"
+          value={code}
+          autoCapitalize="characters"
+          autoComplete="off"
+          maxLength={20}
+          aria-invalid={Boolean(error) || undefined}
+          onChange={(event) => {
+            setCode(event.target.value.toUpperCase())
+            setError(null)
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault()
+              void apply()
+            }
+          }}
+          autoFocus
+        />
+        <InputGroupAddon align="inline-end">
+          <InputGroupButton disabled={checking} onClick={() => void apply()}>
+            {checking ? <LoaderCircleIcon className="animate-spin" aria-hidden="true" /> : null}
+            Áp dụng
+          </InputGroupButton>
+          <InputGroupButton
+            size="icon-xs"
+            aria-label="Đóng"
+            onClick={() => {
+              setOpen(false)
+              setCode("")
+              setError(null)
+            }}
+          >
+            <XIcon />
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
+      {error ? <FieldError>{error}</FieldError> : null}
+    </Field>
   )
 }

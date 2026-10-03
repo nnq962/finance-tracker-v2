@@ -12,6 +12,8 @@ const { PayOS } = require('@payos/node')
 const payments = require('../lib/plans/payments.ts')
 const plans = require('../lib/plans/repository.ts')
 const { proPrices } = require('../lib/plans/plans.ts')
+const coupons = require('../lib/plans/coupons.ts')
+const { getDb } = require('../lib/db/client.ts')
 const { POST } = require('../app/api/payos/webhook/route.ts')
 
 const signer = new PayOS({ clientId: 'x', apiKey: 'x', checksumKey: process.env.PAYOS_CHECKSUM_KEY })
@@ -102,7 +104,51 @@ async function run() {
     assert.equal(await send(await webhookBody({ orderCode: other.orderCode, amount: price, code: '01' })), 200)
     assert.equal((await payments.getPayment(other.orderCode)).status, 'pending')
 
-    console.log('Payment checks passed: signatures, settling once, races, underpaid, late payment, test pings.')
+    // Coupons: a shared percentage off, once per user, counted when Pro is granted.
+    const tag = String(Date.now()).slice(-8)
+    const admin = 'coupon-admin'
+    const code = `T${tag}`
+    await coupons.createCoupon(admin, { code: code.toLowerCase(), percentOff: 30, maxRedemptions: 2 })
+    await assert.rejects(coupons.createCoupon(admin, { code, percentOff: 30 }), /đã tồn tại/)
+    await assert.rejects(coupons.createCoupon(admin, { code: 'X', percentOff: 30 }))
+    await assert.rejects(coupons.createCoupon(admin, { code: `B${tag}`, percentOff: 101 }))
+    const buyer = await createUser('pay_test')
+    const coupon = await coupons.findUsableCoupon(getDb(), buyer, ` ${code.toLowerCase()} `)
+    assert.equal(coupon.percentOff, 30)
+    await assert.rejects(coupons.findUsableCoupon(getDb(), buyer, 'NOPE123'), /không hợp lệ/)
+
+    // The checkout costs less; settling grants at that price and counts the use.
+    const discounted = await payments.createPayment(buyer, 'month', coupon)
+    assert.equal(discounted.amount, price - Math.round(price * 0.3))
+    assert.equal(await send(await webhookBody({ orderCode: discounted.orderCode, amount: discounted.amount })), 200)
+    assert.equal(await grantCount(buyer), 1)
+    await assert.rejects(coupons.findUsableCoupon(getDb(), buyer, code), /đã dùng/)
+
+    // The limit: a second user uses the last one, a third finds none left.
+    const second = await createUser('pay_test')
+    const third = await createUser('pay_test')
+    const secondPayment = await payments.createPayment(second, 'year', await coupons.findUsableCoupon(getDb(), second, code))
+    assert.equal(await send(await webhookBody({ orderCode: secondPayment.orderCode, amount: secondPayment.amount })), 200)
+    await assert.rejects(coupons.findUsableCoupon(getDb(), third, code), /hết lượt/)
+
+    // Off or past its date, a code is refused.
+    await sql('UPDATE coupons SET active = false WHERE code = $1', [code])
+    await assert.rejects(coupons.findUsableCoupon(getDb(), third, code), /không hợp lệ/)
+    const expired = `E${tag}`
+    await coupons.createCoupon(admin, { code: expired, percentOff: 10 })
+    await sql(`UPDATE coupons SET expires_at = now() - interval '1 minute' WHERE code = $1`, [expired])
+    await assert.rejects(coupons.findUsableCoupon(getDb(), third, expired), /hết hạn/)
+
+    // 100% off grants Pro at once, without payOS, for a single last use even when asked twice together.
+    const free = `F${tag}`
+    await coupons.createCoupon(admin, { code: free, percentOff: 100, maxRedemptions: 1 })
+    const freeGrants = await Promise.allSettled([coupons.grantWithCoupon(third, 'month', free), coupons.grantWithCoupon(buyer, 'month', free)])
+    assert.equal(freeGrants.filter((result) => result.status === 'fulfilled').length, 1)
+    assert.equal(Number((await sql('SELECT count(*) FROM coupon_redemptions r JOIN coupons c ON c.id = r.coupon_id WHERE c.code = $1', [free])).rows[0].count), 1)
+    await assert.rejects(coupons.grantWithCoupon(third, 'month', code), /không hợp lệ/)
+    await sql('DELETE FROM coupons WHERE code = ANY($1)', [[code, expired, free]])
+
+    console.log('Payment checks passed: signatures, settling once, races, underpaid, late payment, test pings, coupons.')
   } finally {
     await cleanup()
   }

@@ -1,6 +1,7 @@
 import "server-only"
 
 import { getFirebaseAdminAuth } from "@/lib/firebase/admin"
+import { listCouponsForAdmin, type AdminCoupon } from "@/lib/plans/coupons"
 import { getMonthTakings, listUsersForAdmin } from "@/lib/plans/repository"
 
 export type AdminUser = {
@@ -15,6 +16,7 @@ export type AdminUser = {
 export type AdminData = {
   users: AdminUser[]
   takings: { total: number; count: number }
+  coupons: AdminCoupon[]
 }
 
 /**
@@ -22,7 +24,7 @@ export type AdminData = {
  * Auth, which keeps them, rather than a copy in the database.
  */
 export async function getAdminData(): Promise<AdminData> {
-  const [rows, takings] = await Promise.all([listUsersForAdmin(), getMonthTakings()])
+  const [rows, takings, coupons] = await Promise.all([listUsersForAdmin(), getMonthTakings(), listCouponsForAdmin()])
   const auth = getFirebaseAdminAuth()
   const profiles = new Map<string, { email: string; name: string }>()
   // Firebase looks up at most 100 users per call.
@@ -35,5 +37,6 @@ export async function getAdminData(): Promise<AdminData> {
   return {
     users: rows.map((row) => ({ ...row, ...(profiles.get(row.id) ?? { email: "", name: "" }) })),
     takings,
+    coupons,
   }
 }

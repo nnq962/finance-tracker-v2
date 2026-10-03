@@ -14,6 +14,19 @@ export const proPrices = {
   year: { label: "1 năm", amount: 249_000, months: 12 },
 } as const satisfies Record<PlanPeriod, { label: string; amount: number; months: number }>
 
+/**
+ * Below this payOS is not worth opening (and a payment must be above 0), so
+ * a coupon that brings the price this low grants Pro at once instead.
+ */
+export const MIN_CHECKOUT_AMOUNT = 2_000
+
+/** The price of a period after a coupon: what is taken off, rounded to the đồng, and what is left. */
+export function priceWithCoupon(period: PlanPeriod, percentOff: number) {
+  const listAmount = proPrices[period].amount
+  const discount = Math.round((listAmount * percentOff) / 100)
+  return { listAmount, discount, amount: listAmount - discount }
+}
+
 /** A user's plan now: Pro until `proEndsAt` (ISO), else free. */
 export type PlanState = {
   plan: PlanName

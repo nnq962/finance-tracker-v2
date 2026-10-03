@@ -158,6 +158,38 @@ CREATE TABLE public.contacts (
 
 
 --
+-- Name: coupon_redemptions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.coupon_redemptions (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    coupon_id uuid NOT NULL,
+    user_id text NOT NULL,
+    subscription_id uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: coupons; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.coupons (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    code text NOT NULL,
+    percent_off integer NOT NULL,
+    expires_at timestamp with time zone,
+    max_redemptions integer,
+    active boolean DEFAULT true NOT NULL,
+    created_by text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT coupons_code_check CHECK ((code ~ '^[A-Z0-9]{3,20}$'::text)),
+    CONSTRAINT coupons_max_redemptions_check CHECK ((max_redemptions > 0)),
+    CONSTRAINT coupons_percent_off_check CHECK (((percent_off >= 1) AND (percent_off <= 100)))
+);
+
+
+--
 -- Name: debt_operations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -318,8 +350,11 @@ CREATE TABLE public.payments (
     paid_at timestamp with time zone,
     subscription_id uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
+    coupon_id uuid,
+    discount bigint DEFAULT 0 NOT NULL,
     CONSTRAINT payments_amount_check CHECK ((amount > 0)),
     CONSTRAINT payments_check CHECK (((status = 'paid'::text) = (paid_at IS NOT NULL))),
+    CONSTRAINT payments_discount_check CHECK ((discount >= 0)),
     CONSTRAINT payments_period_check CHECK ((period = ANY (ARRAY['month'::text, 'year'::text]))),
     CONSTRAINT payments_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'paid'::text, 'cancelled'::text, 'expired'::text])))
 );
@@ -527,6 +562,38 @@ ALTER TABLE ONLY public.contacts
 
 ALTER TABLE ONLY public.contacts
     ADD CONSTRAINT contacts_user_id_id_key UNIQUE (user_id, id);
+
+
+--
+-- Name: coupon_redemptions coupon_redemptions_coupon_id_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.coupon_redemptions
+    ADD CONSTRAINT coupon_redemptions_coupon_id_user_id_key UNIQUE (coupon_id, user_id);
+
+
+--
+-- Name: coupon_redemptions coupon_redemptions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.coupon_redemptions
+    ADD CONSTRAINT coupon_redemptions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: coupons coupons_code_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.coupons
+    ADD CONSTRAINT coupons_code_key UNIQUE (code);
+
+
+--
+-- Name: coupons coupons_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.coupons
+    ADD CONSTRAINT coupons_pkey PRIMARY KEY (id);
 
 
 --
@@ -908,6 +975,30 @@ ALTER TABLE ONLY public.contacts
 
 
 --
+-- Name: coupon_redemptions coupon_redemptions_coupon_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.coupon_redemptions
+    ADD CONSTRAINT coupon_redemptions_coupon_id_fkey FOREIGN KEY (coupon_id) REFERENCES public.coupons(id) ON DELETE CASCADE;
+
+
+--
+-- Name: coupon_redemptions coupon_redemptions_subscription_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.coupon_redemptions
+    ADD CONSTRAINT coupon_redemptions_subscription_id_fkey FOREIGN KEY (subscription_id) REFERENCES public.subscriptions(id) ON DELETE SET NULL;
+
+
+--
+-- Name: coupon_redemptions coupon_redemptions_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.coupon_redemptions
+    ADD CONSTRAINT coupon_redemptions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: debt_operations debt_operations_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1001,6 +1092,14 @@ ALTER TABLE ONLY public.notification_logs
 
 ALTER TABLE ONLY public.notification_settings
     ADD CONSTRAINT notification_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: payments payments_coupon_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payments
+    ADD CONSTRAINT payments_coupon_id_fkey FOREIGN KEY (coupon_id) REFERENCES public.coupons(id) ON DELETE SET NULL;
 
 
 --
@@ -1116,4 +1215,5 @@ INSERT INTO dbmate.schema_migrations (version) VALUES
     ('20261003000002'),
     ('20261003000004'),
     ('20261003000005'),
-    ('20261004000001');
+    ('20261004000001'),
+    ('20261004000002');

@@ -26,7 +26,8 @@ async function run() {
     assert.equal((await plans.getPlanState(userId)).aiUsed, free)
 
     // A request the AI could not answer is given back.
-    await plans.releaseAiRequest(userId, results[0].source)
+    // (The first allowed one: requests sent together may come back in any order.)
+    await plans.releaseAiRequest(userId, results.find((result) => result.allowed).source)
     assert.equal((await plans.getPlanState(userId)).aiUsed, free - 1)
     assert.equal((await plans.reserveAiRequest(userId)).allowed, true)
     assert.equal((await plans.reserveAiRequest(userId)).allowed, false)

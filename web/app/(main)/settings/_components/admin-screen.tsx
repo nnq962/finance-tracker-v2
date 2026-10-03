@@ -30,6 +30,8 @@ import type { AdminData, AdminUser } from "@/lib/plans/admin-data"
 import { paymentReference, plans, proPrices, type PlanPeriod } from "@/lib/plans/plans"
 import type { SubscriptionGrant } from "@/lib/plans/repository"
 
+import { AdminCoupons } from "./admin-coupons"
+
 const dateOf = (iso: string) => formatDate(toDateKey(iso))
 
 /** Lower case without Vietnamese marks, for searching names. */
@@ -62,6 +64,8 @@ export function AdminScreen({ data }: { data: AdminData }) {
         <SettingsRow title="Người dùng" value={String(data.users.length)} />
         <SettingsRow title="Đang dùng Pro" value={String(proCount)} />
       </SettingsGroup>
+
+      <AdminCoupons coupons={data.coupons} />
 
       <Input
         type="search"

@@ -1,7 +1,8 @@
 import "server-only"
 
 import { getDb } from "@/lib/db/client"
-import { proPrices, type PlanPeriod } from "@/lib/plans/plans"
+import { recordRedemption, type Coupon } from "@/lib/plans/coupons"
+import { priceWithCoupon, proPrices, type PlanPeriod } from "@/lib/plans/plans"
 import { insertGrant } from "@/lib/plans/repository"
 
 export type PaymentStatus = "pending" | "paid" | "cancelled" | "expired"
@@ -9,11 +10,18 @@ export type PaymentStatus = "pending" | "paid" | "cancelled" | "expired"
 /** Who grants Pro bought through payOS, in place of an admin's id. */
 export const PAYOS_GRANTOR = "payos"
 
-/** Opens a payment for Pro at the period's price; payOS knows it by the order code. */
-export async function createPayment(userId: string, period: PlanPeriod) {
+/**
+ * Opens a payment for Pro at the period's price, less a coupon's share when
+ * one is given; payOS knows it by the order code. The use of the coupon is
+ * counted when the payment settles.
+ */
+export async function createPayment(userId: string, period: PlanPeriod, coupon?: Coupon) {
+  const { amount, discount } = coupon
+    ? priceWithCoupon(period, coupon.percentOff)
+    : { amount: proPrices[period].amount, discount: 0 }
   return getDb()
     .insertInto("payments")
-    .values({ userId, period, amount: proPrices[period].amount })
+    .values({ userId, period, amount, discount, couponId: coupon?.id ?? null })
     .returning(["id", "orderCode", "amount"])
     .executeTakeFirstOrThrow()
 }
@@ -50,7 +58,7 @@ export async function settlePaidPayment(
   return getDb().transaction().execute(async (trx) => {
     const payment = await trx
       .selectFrom("payments")
-      .select(["id", "userId", "period", "amount", "status"])
+      .select(["id", "userId", "period", "amount", "status", "couponId"])
       .where("orderCode", "=", orderCode)
       .forUpdate()
       .executeTakeFirst()
@@ -67,6 +75,10 @@ export async function settlePaidPayment(
       note: `payOS #${orderCode}`,
       grantedBy: PAYOS_GRANTOR,
     })
+    // Paid with a code: its use counts now, even past its limit, as the money came in.
+    if (payment.couponId) {
+      await recordRedemption(trx, { couponId: payment.couponId, userId: payment.userId, subscriptionId })
+    }
     // A payment marked cancelled or expired that was paid after all still counts.
     await trx
       .updateTable("payments")

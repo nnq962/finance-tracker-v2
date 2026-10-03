@@ -70,6 +70,25 @@ export interface Contacts {
   userId: string;
 }
 
+export interface CouponRedemptions {
+  couponId: string;
+  createdAt: Generated<Timestamp>;
+  id: Generated<string>;
+  subscriptionId: string | null;
+  userId: string;
+}
+
+export interface Coupons {
+  active: Generated<boolean>;
+  code: string;
+  createdAt: Generated<Timestamp>;
+  createdBy: string;
+  expiresAt: Timestamp | null;
+  id: Generated<string>;
+  maxRedemptions: number | null;
+  percentOff: number;
+}
+
 export interface DebtOperations {
   createdAt: Generated<Timestamp>;
   fingerprint: string;
@@ -157,7 +176,9 @@ export interface NotificationSettings {
 export interface Payments {
   amount: number;
   checkoutUrl: string | null;
+  couponId: string | null;
   createdAt: Generated<Timestamp>;
+  discount: Generated<number>;
   id: Generated<string>;
   orderCode: Generated<number>;
   paidAt: Timestamp | null;
@@ -223,6 +244,8 @@ export interface DB {
   categoryGroups: CategoryGroups;
   categoryItems: CategoryItems;
   contacts: Contacts;
+  couponRedemptions: CouponRedemptions;
+  coupons: Coupons;
   debtOperations: DebtOperations;
   debtPayments: DebtPayments;
   debts: Debts;
