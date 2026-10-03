@@ -66,7 +66,8 @@ export function CashFlowCalendar({
   // the totals change (an edit or delete in the sheet revalidates the page).
   const [loaded, setLoaded] = React.useState<{ key: string; items: Transaction[] } | null>(null)
   React.useEffect(() => {
-    if (!openDay) return
+    // A day without totals has nothing to load.
+    if (!openDay || !days[openDay]) return
     let cancelled = false
     void getDayTransactionsAction(openDay).then((result) => {
       if (cancelled) return
@@ -77,7 +78,7 @@ export function CashFlowCalendar({
       cancelled = true
     }
   }, [openDay, days])
-  const dayItems = loaded && loaded.key === openDay ? loaded.items : null
+  const dayItems = openDay && !days[openDay] ? [] : loaded && loaded.key === openDay ? loaded.items : null
 
   const [year, monthNumber] = month.split("-").map(Number)
   const daysInMonth = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate()
@@ -90,7 +91,7 @@ export function CashFlowCalendar({
   const monthIncome = monthDays.reduce((sum, day) => sum + (day.totals?.income ?? 0), 0)
   const monthExpense = monthDays.reduce((sum, day) => sum + (day.totals?.expense ?? 0), 0)
 
-  const openTotals = openDay ? days[openDay] : undefined
+  const openTotals = openDay ? (days[openDay] ?? { income: 0, expense: 0 }) : undefined
   // Keeps the last day's title while the sheet slides closed.
   const [shownDay, setShownDay] = React.useState(openDay)
   if (openDay && openDay !== shownDay) setShownDay(openDay)
@@ -174,8 +175,8 @@ export function CashFlowCalendar({
               const cellClassName =
                 "flex min-h-14 min-w-0 flex-col items-center gap-0.5 rounded-lg pt-1 @lg:min-h-20 @lg:pt-2"
 
-              // Only days with transactions open a sheet.
-              return totals ? (
+              // Every day up to today opens its sheet, also one without transactions.
+              return key <= today ? (
                 <button
                   key={key}
                   type="button"
@@ -183,7 +184,11 @@ export function CashFlowCalendar({
                     cellClassName,
                     "outline-none hover:bg-[#f3f1ec] focus-visible:ring-3 focus-visible:ring-ring/50 active:bg-[#d6f4ff] dark:hover:bg-[#2c2a33] dark:active:bg-[#113950]",
                   )}
-                  aria-label={`Ngày ${day}: thu ${formatCurrency(totals.income)}, chi ${formatCurrency(totals.expense)}`}
+                  aria-label={
+                    totals
+                      ? `Ngày ${day}: thu ${formatCurrency(totals.income)}, chi ${formatCurrency(totals.expense)}`
+                      : `Ngày ${day}: chưa có giao dịch`
+                  }
                   onClick={() => setOpenDay(key)}
                 >
                   {content}
@@ -236,7 +241,9 @@ export function CashFlowCalendar({
                       </p>
                     </div>
                   </div>
-                  {dayItems ? (
+                  {dayItems && dayItems.length === 0 ? (
+                    <p className="px-3 text-sm text-muted-foreground">Chưa có giao dịch</p>
+                  ) : dayItems ? (
                     <SettingsGroup title={`${dayItems.length} giao dịch`}>
                       {dayItems.map((transaction) => (
                         <TransactionItem
