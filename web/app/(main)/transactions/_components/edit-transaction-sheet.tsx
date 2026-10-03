@@ -18,6 +18,8 @@ import { updateTransactionAction } from "../actions"
 import { TransactionForm } from "./add-transaction/transaction-form"
 import { TransactionKindSelector } from "./add-transaction/transaction-kind-selector"
 
+const transactionKinds: SupportedTransactionKind[] = ["expense", "income", "transfer"]
+
 type EditTransactionSheetProps = {
   accounts: Account[]
   categoryGroups: CategoryGroup[]
@@ -50,17 +52,22 @@ export function EditTransactionSheet({
         <div className="px-4 pb-4">
           <TransactionKindSelector value={kind} onValueChange={setKind} />
         </div>
-        <TransactionForm
-          key={`${transaction.id}-${kind}`}
-          accounts={accounts}
-          action={updateTransactionAction.bind(null, transaction.id)}
-          categoryGroups={categoryGroups}
-          defaultValues={kind === transaction.kind ? transaction : undefined}
-          kind={kind}
-          onSuccess={() => onOpenChange(false)}
-          submitLabel="Lưu thay đổi"
-          successMessage="Đã cập nhật giao dịch."
-        />
+        {/* One form per kind, all kept, as in the add sheet: switching tabs
+            hides the others rather than undoing the changes made in them. */}
+        {transactionKinds.map((formKind) => (
+          <div key={`${transaction.id}-${formKind}`} className={formKind === kind ? "flex min-h-0 flex-1 flex-col" : "hidden"}>
+            <TransactionForm
+              accounts={accounts}
+              action={updateTransactionAction.bind(null, transaction.id)}
+              categoryGroups={categoryGroups}
+              defaultValues={formKind === transaction.kind ? transaction : undefined}
+              kind={formKind}
+              onSuccess={() => onOpenChange(false)}
+              submitLabel="Lưu thay đổi"
+              successMessage="Đã cập nhật giao dịch."
+            />
+          </div>
+        ))}
       </SheetContent>
     </Sheet>
   )
