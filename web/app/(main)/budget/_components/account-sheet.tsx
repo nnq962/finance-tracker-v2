@@ -13,6 +13,7 @@ import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
 import type { Transaction } from "@/lib/transactions/types"
+import { cn } from "@/lib/utils"
 
 import { getTransactionVisual } from "../../transactions/_lib/transaction-presentation"
 import { setAccountArchivedAction } from "../actions"
@@ -86,7 +87,12 @@ export function AccountSheet({ account, share, transactions, categoryGroups, onO
               <p className="text-sm text-muted-foreground">
                 {isLocked ? "Số dư đã khoá" : "Số dư hiện tại"}
               </p>
-              <p className="font-heading text-3xl leading-tight font-extrabold tabular-nums [overflow-wrap:anywhere]">
+              <p
+                className={cn(
+                  "font-heading text-3xl leading-tight font-extrabold tabular-nums [overflow-wrap:anywhere]",
+                  shown.balance < 0 && "text-[#c8393a] dark:text-[#ff9b93]",
+                )}
+              >
                 {formatCurrency(shown.balance)}
               </p>
             </div>

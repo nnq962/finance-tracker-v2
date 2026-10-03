@@ -29,7 +29,10 @@ export function formatCurrency(
  * 1,5tỷ. `extraDigits` keeps more decimals where there is a little more room
  * (128,5tr rather than 128tr).
  */
-export function formatCompactCurrency(value: number, extraDigits = 0) {
+export function formatCompactCurrency(value: number, extraDigits = 0): string {
+  // A balance below zero reads -1,2tr.
+  if (value < 0) return `-${formatCompactCurrency(-value, extraDigits)}`
+
   const format = (amount: number, unit: string) =>
     `${Number(amount.toFixed((amount < 10 ? 1 : 0) + extraDigits)).toLocaleString("vi-VN")}${unit}`
 

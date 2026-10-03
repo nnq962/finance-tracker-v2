@@ -120,7 +120,10 @@ async function run() {
     equal((await getTransactionsInRange(uid, ...august)).length, 1)
     equal((await getTransactionsInRange(uid, ...august, { excludeDebts: true })).length, 0)
     await rejects(() => repository.createDebt(uid, {...values, amount:4000000}, operation))
-    await rejects(() => repository.createDebt(uid, {...values, amount:8000000}, randomUUID()))
+    // Lending more than the account holds takes it below zero; removing the loan puts it back.
+    const overdrawn = await repository.createDebt(uid, {...values, amount:8000000}, randomUUID())
+    equal(await balance('a'), -1000000)
+    await repository.changeDebt(uid, overdrawn.id, null, randomUUID())
     equal(await balance('a'), 7000000)
     equal((await repository.getDebts(uid)).length, 1)
     await rejects(() => repository.deleteContact(uid, contact.id))
@@ -221,8 +224,8 @@ async function run() {
     const noPayments = await repository.createDebt(uid, {...values, amount:100000, hasInterest:false}, randomUUID())
     await repository.changeDebt(uid, noPayments.id, {...values, amount:200000, direction:'borrowed', hasInterest:false}, randomUUID())
     equal(await balance('a'), oldA + 200000)
-    // An unfundable reversal must leave the loan and its ledger intact.
-    await setAccount('a', 'balance', 0)
+    // A reversal past the lowest balance allowed must leave the loan and its ledger intact.
+    await setAccount('a', 'balance', -999999999899999)
     await rejects(() => repository.changeDebt(uid, noPayments.id, null, randomUUID()))
     equal((await repository.getDebts(uid)).some(item => item.id === noPayments.id), true)
     equal((await getTransactions(uid)).some(item => item.debtId === noPayments.id), true)

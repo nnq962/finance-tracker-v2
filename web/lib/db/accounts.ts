@@ -43,10 +43,10 @@ export async function lockAccounts(
   return accounts
 }
 
-/** Balance after applying delta, or null when it leaves 0..MAX_MONEY. */
+/** Balance after applying delta, or null when it leaves -MAX_MONEY..MAX_MONEY. Accounts may go below zero. */
 export function shiftBalance(balance: number, delta: number) {
   const next = balance + delta
-  return Number.isSafeInteger(next) && next >= 0 && next <= MAX_MONEY
+  return Number.isSafeInteger(next) && next >= -MAX_MONEY && next <= MAX_MONEY
     ? next
     : null
 }

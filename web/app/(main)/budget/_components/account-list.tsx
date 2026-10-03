@@ -63,7 +63,9 @@ function AccountRow({
           <span
             className={cn(
               "font-heading text-sm font-extrabold tabular-nums",
-              isLocked && "text-muted-foreground",
+              isLocked
+                ? "text-muted-foreground"
+                : account.balance < 0 && "text-[#c8393a] dark:text-[#ff9b93]",
             )}
           >
             {formatCurrency(account.balance)}

@@ -65,12 +65,12 @@ CREATE TABLE public.accounts (
     status text DEFAULT 'active'::text NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT accounts_balance_check CHECK (((balance >= 0) AND (balance <= '999999999999999'::bigint))),
+    CONSTRAINT accounts_balance_check CHECK (((balance >= '-999999999999999'::bigint) AND (balance <= '999999999999999'::bigint))),
     CONSTRAINT accounts_check CHECK (((type = 'cash'::text) = (institution_id IS NULL))),
     CONSTRAINT accounts_institution_id_check CHECK (((char_length(institution_id) >= 1) AND (char_length(institution_id) <= 64))),
     CONSTRAINT accounts_name_check CHECK (((char_length(name) >= 1) AND (char_length(name) <= 80))),
     CONSTRAINT accounts_note_check CHECK ((char_length(note) <= 500)),
-    CONSTRAINT accounts_opening_balance_check CHECK (((opening_balance >= 0) AND (opening_balance <= '999999999999999'::bigint))),
+    CONSTRAINT accounts_opening_balance_check CHECK (((opening_balance >= '-999999999999999'::bigint) AND (opening_balance <= '999999999999999'::bigint))),
     CONSTRAINT accounts_status_check CHECK ((status = ANY (ARRAY['active'::text, 'archived'::text]))),
     CONSTRAINT accounts_type_check CHECK ((type = ANY (ARRAY['cash'::text, 'bank'::text, 'e-wallet'::text])))
 );
@@ -1113,4 +1113,5 @@ INSERT INTO dbmate.schema_migrations (version) VALUES
     ('20261002000003'),
     ('20261003000001'),
     ('20261003000002'),
-    ('20261003000004');
+    ('20261003000004'),
+    ('20261003000005');

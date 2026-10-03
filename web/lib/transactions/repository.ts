@@ -68,12 +68,9 @@ async function applyImpacts(
     const account = accounts.get(accountId)
     const balance = account ? shiftBalance(account.balance, delta) : null
 
+    // Accounts may go below zero; only the bound either way stops a transaction.
     if (balance === null) {
-      throw new TransactionValidationError(
-        delta < 0
-          ? "Tài khoản không đủ số dư để thực hiện giao dịch."
-          : "Số dư tài khoản vượt quá giới hạn cho phép.",
-      )
+      throw new TransactionValidationError("Số dư tài khoản vượt quá giới hạn cho phép.")
     }
 
     await setBalance(trx, accountId, balance)

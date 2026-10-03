@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/combobox"
 import {
   Field,
+  FieldContent,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -32,6 +34,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { InputGroupAddon } from "@/components/ui/input-group"
 import { SheetFooter } from "@/components/ui/sheet"
+import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type {
@@ -107,7 +110,14 @@ export function AccountForm({
   )
   const [name, setName] = React.useState(defaultValues?.name ?? "")
   const [nameEdited, setNameEdited] = React.useState(Boolean(defaultValues?.name))
-  const balancePick = useAmountQuickPick(defaultValues?.balance ?? null, NO_HISTORY)
+  // The amount is typed without a sign; a switch puts it below zero.
+  const balancePick = useAmountQuickPick(
+    defaultValues?.balance === undefined ? null : Math.abs(defaultValues.balance),
+    NO_HISTORY,
+  )
+  const [balanceNegative, setBalanceNegative] = React.useState(
+    (defaultValues?.balance ?? 0) < 0,
+  )
   const institutionOptions =
     accountType === "cash" ? null : getInstitutionsByType(accountType)
   const institutionLabel =
@@ -304,6 +314,21 @@ export function AccountForm({
               suggestions={balancePick.suggestions}
               value={balancePick.amount}
               onSelect={balancePick.onPick}
+            />
+          </Field>
+
+          <Field orientation="horizontal">
+            <FieldContent>
+              <FieldLabel htmlFor="account-balance-negative">Số dư âm</FieldLabel>
+              <FieldDescription>
+                Khi tài khoản đang thiếu tiền, ví dụ thẻ tín dụng hoặc thấu chi.
+              </FieldDescription>
+            </FieldContent>
+            <Switch
+              id="account-balance-negative"
+              name="balanceNegative"
+              checked={balanceNegative}
+              onCheckedChange={setBalanceNegative}
             />
           </Field>
 

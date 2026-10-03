@@ -212,7 +212,8 @@ function assertAccount(account: LockedAccount | undefined, allowArchived = false
 async function applyBalance(trx: Trx, account: LockedAccount, delta: number) {
   if (delta === 0) return
   const balance = shiftBalance(account.balance, delta)
-  if (balance === null) throw new DebtValidationError(delta < 0 ? "Tài khoản không đủ số dư để thực hiện thay đổi này." : "Số dư tài khoản vượt giới hạn cho phép.")
+  // Accounts may go below zero; only the bound either way stops a change.
+  if (balance === null) throw new DebtValidationError("Số dư tài khoản vượt giới hạn cho phép.")
   await setBalance(trx, account.id, balance)
   account.balance = balance
 }

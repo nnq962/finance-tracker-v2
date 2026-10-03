@@ -6,6 +6,7 @@ const { sql, createUser, cleanup } = require('./lib/db-harness.cjs')
 const accounts = require('../lib/accounts/repository.ts')
 const transactions = require('../lib/transactions/repository.ts')
 const validation = require('../lib/transactions/validation.ts')
+const accountValidation = require('../lib/accounts/validation.ts')
 const { toDateKey } = require('../lib/format-date.ts')
 
 const count = async (text, params) => Number((await sql(text, params)).rows[0].count)
@@ -68,6 +69,25 @@ async function run() {
     assert.deepEqual([...times].sort().reverse(), times)
     assert.deepEqual(await transactions.getRecentTransactionsByAccount(otherId), {})
 
+    // Spending more than an account holds takes it below zero.
+    assert.equal(await balance(bank), 5_000)
+    await transactions.createTransaction(userId, { ...expense, amount: 20_000, accountId: bank })
+    assert.equal(await balance(bank), -15_000)
+    await transactions.createTransaction(userId, {
+      kind: 'transfer', amount: 15_000, fee: 0, fromAccountId: wallet, toAccountId: bank, occurredAt: new Date(),
+    })
+    assert.equal(await balance(bank), 0)
+    // The account form sends the amount and, apart, whether it is below zero.
+    const accountForm = (fields) => {
+      const data = new FormData()
+      for (const [key, value] of Object.entries({ name: 'Thẻ', type: 'cash', balance: '50000', ...fields })) data.set(key, value)
+      return data
+    }
+    assert.equal(accountValidation.parseAccountFormData(accountForm({ balanceNegative: 'on' })).balance, -50_000)
+    assert.equal(accountValidation.parseAccountFormData(accountForm({})).balance, 50_000)
+    assert.equal(accountValidation.parseExpectedBalance(accountForm({ expectedBalance: '-50000' })), -50_000)
+    assert.throws(() => accountValidation.parseAccountFormData(accountForm({ balance: '-50000' })))
+
     // Dates run from 2000 through today in Vietnam time.
     const form = (date) => {
       const data = new FormData()
@@ -80,7 +100,7 @@ async function run() {
     assert.throws(() => validation.parseTransactionFormData(form(tomorrow)), /sau hôm nay/)
     assert.throws(() => validation.parseTransactionFormData(form('1999-12-31')), /năm 2000/)
 
-    console.log('Transaction checks passed: request ids, balances, recent per account, date range.')
+    console.log('Transaction checks passed: request ids, balances, negative balances, recent per account, date range.')
   } finally {
     await cleanup()
   }

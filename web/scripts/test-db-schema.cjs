@@ -68,7 +68,9 @@ async function run() {
     const bobFood = await item(bob, await group(bob, 'expense'), 'expense')
 
     // Money and accounts
-    await rejects(`UPDATE accounts SET balance = -1 WHERE id = $1`, [aliceCash], CHECK, 'negative balance')
+    // A balance may go below zero, as far as it may go above.
+    await client.query(`UPDATE accounts SET balance = -1 WHERE id = $1`, [aliceCash])
+    await rejects(`UPDATE accounts SET balance = -1000000000000000 WHERE id = $1`, [aliceCash], CHECK, 'balance below the floor')
     await rejects(`UPDATE accounts SET balance = 1000000000000000 WHERE id = $1`, [aliceCash], CHECK, 'balance above the ceiling')
     await rejects(`INSERT INTO accounts (user_id, name, type, opening_balance, balance)
       VALUES ($1, 'VCB', 'bank', 0, 0)`, [alice], CHECK, 'bank account without institution')

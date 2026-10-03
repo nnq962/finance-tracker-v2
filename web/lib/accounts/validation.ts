@@ -41,14 +41,14 @@ function getBoundedText(
   return value
 }
 
-function getMoney(formData: FormData, name: string, label: string) {
+function getMoney(formData: FormData, name: string, label: string, allowNegative = false) {
   const rawValue = getText(formData, name)
   const value = Number(rawValue)
 
   if (
     !rawValue ||
     !Number.isSafeInteger(value) ||
-    value < 0 ||
+    value < (allowNegative ? -MAX_MONEY : 0) ||
     value > MAX_MONEY
   ) {
     throw new AccountValidationError(`${label} không hợp lệ.`)
@@ -74,10 +74,12 @@ export function parseAccountFormData(formData: FormData) {
     )
   }
 
+  // The form takes the amount and, apart, whether it is below zero (phone keypads have no minus).
+  const balance = getMoney(formData, "balance", "Số dư")
   const values: AccountFormValues = {
     name: getBoundedText(formData, "name", "Tên tài khoản", 80, true),
     type,
-    balance: getMoney(formData, "balance", "Số dư"),
+    balance: formData.get("balanceNegative") === "on" && balance > 0 ? -balance : balance,
   }
   const note = getBoundedText(formData, "note", "Ghi chú", 500)
 
@@ -89,7 +91,7 @@ export function parseAccountFormData(formData: FormData) {
 
 /** Balance the edit form was opened with, to detect concurrent changes. */
 export function parseExpectedBalance(formData: FormData) {
-  return getMoney(formData, "expectedBalance", "Số dư hiện tại")
+  return getMoney(formData, "expectedBalance", "Số dư hiện tại", true)
 }
 
 export function assertAccountId(accountId: string) {
