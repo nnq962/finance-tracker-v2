@@ -3,11 +3,8 @@
 import * as React from "react"
 import Image from "next/image"
 import {
-  BanknoteIcon,
-  LandmarkIcon,
   LoaderCircleIcon,
   SaveIcon,
-  WalletCardsIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -34,7 +31,11 @@ import { Input } from "@/components/ui/input"
 import { InputGroupAddon } from "@/components/ui/input-group"
 import { SheetFooter } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from "@/components/animate-ui/components/radix/tabs"
 import type {
   AccountActionResult,
   AccountFormValues,
@@ -48,9 +49,9 @@ import {
 const NO_HISTORY: number[] = []
 
 const accountTypeOptions = [
-  { value: "cash", label: "Tiền mặt", icon: BanknoteIcon },
-  { value: "bank", label: "Ngân hàng", icon: LandmarkIcon },
-  { value: "e-wallet", label: "Ví điện tử", icon: WalletCardsIcon },
+  { value: "cash", label: "Tiền mặt" },
+  { value: "bank", label: "Ngân hàng" },
+  { value: "e-wallet", label: "Ví điện tử" },
 ] as const
 
 function normalizeSearchText(value: string) {
@@ -179,36 +180,26 @@ export function AccountForm({
       {!defaultValues ? <input type="hidden" name="requestId" value={requestId} /> : null}
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
         <FieldGroup>
-          <Field>
-            <FieldLabel>Loại tài khoản</FieldLabel>
-            <input type="hidden" name="type" value={accountType} />
-            <ToggleGroup
-              type="single"
-              variant="outline"
-              value={accountType}
-              onValueChange={(value) => {
-                if (value) {
-                  setAccountType(value as AccountType)
-                  setInstitutionId("")
-                  if (!nameEdited) setName("")
-                  clearError("institutionId")
-                }
-              }}
-              className="grid w-full grid-cols-3"
-              aria-label="Chọn loại tài khoản"
-            >
-              {accountTypeOptions.map(({ value, label, icon: Icon }) => (
-                <ToggleGroupItem
-                  key={value}
-                  value={value}
-                  className="w-full"
-                >
-                  <Icon />
+          {/* Tabs, as for a transaction's kind. */}
+          <input type="hidden" name="type" value={accountType} />
+          <Tabs
+            value={accountType}
+            onValueChange={(value) => {
+              setAccountType(value as AccountType)
+              setInstitutionId("")
+              if (!nameEdited) setName("")
+              clearError("institutionId")
+            }}
+            className="w-full"
+          >
+            <TabsList className="w-full" aria-label="Loại tài khoản">
+              {accountTypeOptions.map(({ value, label }) => (
+                <TabsTrigger key={value} value={value}>
                   {label}
-                </ToggleGroupItem>
+                </TabsTrigger>
               ))}
-            </ToggleGroup>
-          </Field>
+            </TabsList>
+          </Tabs>
 
           {institutionOptions && (
             <Field data-invalid={Boolean(errors.institutionId) || undefined}>
