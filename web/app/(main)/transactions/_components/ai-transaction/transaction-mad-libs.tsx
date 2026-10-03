@@ -428,28 +428,38 @@ function BlankEditor({
       const suggestion = draft.suggestedCategory
       return (
         <div className="space-y-2">
+          {/* None of the user's fits: the assistant asks to make what it
+              suggests, above the list so it is always in view. */}
+          {suggestion ? (
+            <div className="space-y-3 pb-1">
+              <p className="px-3 text-sm">
+                Bạn chưa có hạng mục phù hợp.{" "}
+                {suggestion.groupId
+                  ? `Tạo hạng mục “${suggestion.name}” trong nhóm “${suggestion.groupName}” nhé?`
+                  : `Tạo nhóm “${suggestion.groupName}” và hạng mục “${suggestion.name}” nhé?`}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={creatingCategory}
+                  onClick={() => onChange({ suggestedCategory: undefined })}
+                >
+                  Không, chọn khác
+                </Button>
+                <Button type="button" disabled={creatingCategory} onClick={onCreateCategory}>
+                  <PlusIcon />
+                  Tạo
+                </Button>
+              </div>
+            </div>
+          ) : null}
           {/* Long catalogs scroll inside the drawer, natively: ScrollArea's
               thumb, moved by script, lagged behind on iOS. vaul takes a swipe
               up at the top of a list for closing the drawer, which made it jolt
               on the first swipe; this list is left to scroll. */}
           <div data-vaul-no-drag className="max-h-64 overflow-y-auto overscroll-contain">
             <div className="space-y-3">
-              {/* None of the user's fits: the assistant's suggestion comes
-                  first, made with one tap. */}
-              {suggestion ? (
-                <div className="space-y-2">
-                  <p className="px-3 text-xs text-muted-foreground">
-                    Chưa có hạng mục phù hợp · tạo mới trong{" "}
-                    {suggestion.groupId ? `nhóm ${suggestion.groupName}` : `nhóm mới “${suggestion.groupName}”`}
-                  </p>
-                  <div className="p-1">
-                    <Button type="button" variant="outline" size="sm" disabled={creatingCategory} onClick={onCreateCategory}>
-                      <PlusIcon />
-                      {suggestion.name}
-                    </Button>
-                  </div>
-                </div>
-              ) : null}
               {groups.map((group) => {
                 const color = getCategoryColor(group.colorName)
                 return (
