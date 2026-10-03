@@ -32,13 +32,13 @@ export function PlanInvite({ planState, checkoutEnabled, paymentOutcome, initial
               <SparklesIcon className="size-5" aria-hidden="true" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-heading text-base leading-snug font-extrabold">Mở khoá {plans.pro.label}</p>
+              <p className="font-heading text-base leading-snug font-extrabold">Nâng cấp lên {plans.pro.label}</p>
               <p className="text-sm text-muted-foreground">
-                {plans.pro.aiMonthlyLimit} lượt AI/tháng, dùng sớm AI mới
+                {plans.pro.aiMonthlyLimit} lượt trợ lý AI mỗi tháng và dùng sớm tính năng mới
               </p>
             </div>
             <Button type="button" variant="grape" className="shrink-0" onClick={() => setOpen(true)}>
-              Nâng cấp
+              Xem gói
             </Button>
           </CardContent>
         </Card>

@@ -4,7 +4,7 @@ import * as React from "react"
 import {
   ArrowLeftRightIcon,
   BellRingIcon,
-  CheckIcon,
+  ChevronDownIcon,
   DownloadIcon,
   GiftIcon,
   HandCoinsIcon,
@@ -75,10 +75,12 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
   // Claimed here before the page reloads with them.
   const [claimedNow, setClaimedNow] = React.useState<MissionKey[]>([])
   const [claiming, setClaiming] = React.useState<MissionKey | null>(null)
+  // Folded by default: the progress shows, and rewards waiting to be claimed.
+  const [expanded, setExpanded] = React.useState(false)
   const { available, isStandalone, isIOS, install } = usePwaInstall()
 
   const hasAccount = accounts.length > 0
-  const needAccount = "Cần có tài khoản trước."
+  const needAccount = "Cần có tài khoản trước"
   const sheetProps = (name: Exclude<OpenSheet, null>) => ({
     open: sheet === name,
     onOpenChange: (open: boolean) => {
@@ -94,7 +96,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       icon: WalletCardsIcon,
       color: "blue",
       title: "Thêm tài khoản đầu tiên",
-      description: "Tiền mặt, ngân hàng hoặc ví điện tử.",
+      description: "Tiền mặt, ngân hàng hoặc ví điện tử",
       done: state.done.account,
       start: () => setSheet("account"),
     },
@@ -103,7 +105,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       icon: ReceiptTextIcon,
       color: "orange",
       title: "Ghi giao dịch đầu tiên",
-      description: hasAccount ? "Một khoản chi hoặc thu bất kỳ." : needAccount,
+      description: hasAccount ? "Một khoản thu hoặc chi bất kỳ" : needAccount,
       done: state.done.transaction,
       start: () => setSheet(hasAccount ? "transaction" : "account"),
     },
@@ -112,7 +114,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       icon: SparklesIcon,
       color: "violet",
       title: "Ghi giao dịch bằng trợ lý AI",
-      description: hasAccount ? "Gõ hoặc nói một câu, AI điền giúp bạn." : needAccount,
+      description: hasAccount ? "Chỉ cần gõ hoặc nói một câu" : needAccount,
       done: state.done.ai,
       start: () => (hasAccount ? router.push("/transactions?ai=1") : setSheet("account")),
     },
@@ -121,7 +123,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       icon: ArrowLeftRightIcon,
       color: "cyan",
       title: "Chuyển tiền giữa hai tài khoản",
-      description: accounts.length >= 2 ? "Ví dụ rút tiền từ ngân hàng ra ví." : "Cần có ít nhất 2 tài khoản.",
+      description: accounts.length >= 2 ? "Ví dụ: rút tiền từ ngân hàng ra ví" : "Cần ít nhất 2 tài khoản",
       done: state.done.transfer,
       start: () => setSheet(accounts.length >= 2 ? "transfer" : "account"),
     },
@@ -129,8 +131,8 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       key: "contact",
       icon: UserPlusIcon,
       color: "pink",
-      title: "Thêm một người vào danh bạ",
-      description: "Người bạn hay cho vay hoặc vay tiền.",
+      title: "Thêm người vào danh bạ",
+      description: "Người bạn thường vay hoặc cho vay",
       done: state.done.contact,
       start: () => setSheet("contact"),
     },
@@ -139,7 +141,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       icon: HandCoinsIcon,
       color: "rose",
       title: "Ghi một khoản vay hoặc cho vay",
-      description: "Theo dõi ai nợ bạn và bạn nợ ai.",
+      description: "Theo dõi các khoản nợ",
       done: state.done.debt,
       start: () => setSheet("debt"),
     },
@@ -147,8 +149,8 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       key: "category",
       icon: TagsIcon,
       color: "lime",
-      title: "Tạo một hạng mục riêng",
-      description: "Phân loại chi tiêu theo cách của bạn.",
+      title: "Tạo hạng mục riêng",
+      description: "Phân loại chi tiêu theo cách của bạn",
       done: state.done.category,
       start: () => setSheet("category"),
     },
@@ -157,7 +159,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       icon: BellRingIcon,
       color: "amber",
       title: "Bật nhắc ghi chi tiêu",
-      description: "Một lời nhắc mỗi tối.",
+      description: "Nhận lời nhắc mỗi tối",
       done: state.done.reminder,
       start: () => router.push("/settings?screen=notifications"),
     },
@@ -167,8 +169,8 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
           key: "install" as const,
           icon: DownloadIcon,
           color: "emerald" as const,
-          title: "Cài app lên màn hình chính",
-          description: "Mở nhanh như một ứng dụng.",
+          title: "Cài ứng dụng lên màn hình chính",
+          description: "Mở nhanh như ứng dụng điện thoại",
           done: isStandalone,
           start: () => (isIOS ? setInstallGuideOpen(true) : void install()),
         }]
@@ -180,9 +182,11 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
   const claimedCount = missions.filter(isClaimed).length
   if (claimedCount === missions.length) return null
 
-  // Rewards waiting first, then what is left in order, then what is finished.
-  const rank = (mission: Mission) => (isClaimed(mission) ? 2 : mission.done ? 0 : 1)
-  const ordered = [...missions].sort((a, b) => rank(a) - rank(b))
+  // Claimed missions leave the list; rewards waiting come first and always
+  // show, the rest only when unfolded.
+  const claimable = missions.filter((mission) => mission.done && !isClaimed(mission))
+  const remaining = missions.filter((mission) => !mission.done && !isClaimed(mission))
+  const shown = expanded ? [...claimable, ...remaining] : claimable
 
   const claim = async (mission: Mission) => {
     setClaiming(mission.key)
@@ -194,7 +198,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
     }
     setClaimedNow((keys) => [...keys, mission.key])
     toast.success(`+${MISSION_REWARD} lượt AI`, {
-      description: `Bạn đang có ${result.aiCredits} lượt thưởng, dùng khi hết lượt của tháng.`,
+      description: `Hiện có ${result.aiCredits} lượt thưởng`,
     })
     router.refresh()
   }
@@ -204,16 +208,32 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       <SettingsGroup
         title={`Nhiệm vụ · ${claimedCount}/${missions.length}`}
         action={
-          <Badge variant="sun">
-            <GiftIcon data-icon="inline-start" aria-hidden="true" />
-            {claimedCount * MISSION_REWARD}/{missions.length * MISSION_REWARD} lượt AI
-          </Badge>
+          remaining.length > 0 ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              aria-expanded={expanded}
+              onClick={() => setExpanded((open) => !open)}
+            >
+              {expanded ? "Thu gọn" : "Xem nhiệm vụ"}
+              <ChevronDownIcon
+                data-icon="inline-end"
+                className={expanded ? "rotate-180" : undefined}
+                aria-hidden="true"
+              />
+            </Button>
+          ) : undefined
         }
         header={
-          <div className="space-y-2.5 px-4 pt-3.5 pb-2">
-            <p className="text-sm text-muted-foreground">
-              Làm quen với app, mỗi nhiệm vụ hoàn thành được tặng {MISSION_REWARD} lượt trợ lý AI.
-            </p>
+          <div className={shown.length > 0 ? "space-y-2.5 px-4 pt-3.5 pb-2" : "space-y-2.5 px-4 py-3.5"}>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm text-muted-foreground">Hoàn thành nhiệm vụ để nhận thêm lượt AI</p>
+              <Badge variant="sun" className="shrink-0">
+                <GiftIcon data-icon="inline-start" aria-hidden="true" />
+                {claimedCount * MISSION_REWARD}/{missions.length * MISSION_REWARD} lượt
+              </Badge>
+            </div>
             <Progress
               value={(claimedCount / missions.length) * 100}
               tone="sun"
@@ -221,26 +241,15 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
             />
           </div>
         }
-        // Two columns from lg up (three on very wide screens), so the list stays short;
-        // the top row has no separators above it and the same padding.
-        listClassName="lg:grid lg:grid-cols-2 lg:gap-x-6 lg:[&>li:nth-child(2)]:pt-1 lg:[&>li:nth-child(2)]:before:hidden 2xl:grid-cols-3 2xl:[&>li:nth-child(3)]:pt-1 2xl:[&>li:nth-child(3)]:before:hidden"
       >
-        {ordered.map((mission) =>
-          isClaimed(mission) ? (
-            <SettingsRow
-              key={mission.key}
-              icon={CheckIcon}
-              color="emerald"
-              title={mission.title}
-              description={`Đã nhận ${MISSION_REWARD} lượt AI`}
-            />
-          ) : mission.done ? (
+        {shown.map((mission) =>
+          mission.done ? (
             <SettingsRow
               key={mission.key}
               icon={mission.icon}
               color={mission.color}
               title={mission.title}
-              description="Đã xong, nhận thưởng nhé!"
+              description="Đã hoàn thành"
               action={
                 <Button type="button" size="sm" disabled={claiming !== null} onClick={() => void claim(mission)}>
                   {claiming === mission.key ? (
