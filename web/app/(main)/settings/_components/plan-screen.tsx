@@ -70,7 +70,7 @@ const yearSavingPercent = Math.round((yearSaving / (proPrices.month.amount * 12)
 
 /** Everything but the AI assistant is the same on both plans. */
 const comparison: { feature: string; free: string | boolean; pro: string | boolean }[] = [
-  { feature: "Lượt trợ lý AI", free: `${plans.free.aiMonthlyLimit} lượt/tháng`, pro: `${plans.pro.aiMonthlyLimit} lượt/tháng` },
+  { feature: "Trợ lý AI", free: `${plans.free.aiMonthlyLimit} lượt/tháng`, pro: `${plans.pro.aiMonthlyLimit} lượt/tháng` },
   { feature: "Dùng sớm tính năng AI mới", free: false, pro: true },
   { feature: "Ghi chép thu chi", free: true, pro: true },
   { feature: "Tài khoản & ví", free: true, pro: true },
@@ -149,8 +149,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
             {isPro ? "Bạn đang dùng Pro" : "Làm được nhiều hơn với trợ lý AI"}
           </h2>
           <p className={cn("text-sm leading-relaxed text-muted-foreground", page && "md:text-base")}>
-            Nhờ trợ lý AI bằng tiếng Việt đời thường, gõ hay nói đều được. Hôm nay trợ lý ghi giao dịch giúp bạn; sắp tới
-            sẽ sửa, xoá và trả lời câu hỏi về chi tiêu của bạn.
+            Chỉ cần gõ hoặc nói, trợ lý AI lo phần còn lại.
           </p>
         </div>
       </header>
