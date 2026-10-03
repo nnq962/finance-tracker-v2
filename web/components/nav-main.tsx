@@ -49,7 +49,8 @@ export function NavMain({ items }: { items: NavItem[] }) {
           const hasActiveChild = item.items?.some(
             (subItem) => pathname === subItem.url,
           )
-          const isActive = pathname === item.url || hasActiveChild
+          // Pages under a section, such as /settings/plan, keep it lit.
+          const isActive = pathname === item.url || pathname.startsWith(`${item.url}/`) || hasActiveChild
 
           if (!item.items?.length) {
             return (

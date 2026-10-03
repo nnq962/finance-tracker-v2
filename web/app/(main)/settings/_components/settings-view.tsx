@@ -1,11 +1,12 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import {
+  BadgeCheckIcon,
   BellRingIcon,
   CalculatorIcon,
   CircleHelpIcon,
-  CrownIcon,
   MicIcon,
   PaletteIcon,
   ShieldCheckIcon,
@@ -17,11 +18,13 @@ import { CategoryManagementSheet } from "@/components/categories/category-manage
 import { useWelcome } from "@/components/onboarding/welcome"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
   Sheet,
   SheetContent,
 } from "@/components/ui/sheet"
+import { useIsMobile } from "@/hooks/use-mobile"
 import type { SessionUser } from "@/lib/auth/session"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { NotificationState } from "@/lib/notifications/types"
@@ -100,6 +103,11 @@ export function SettingsView({
   const { openWelcome } = useWelcome()
 
   const open = (screen: Screen) => setSheetScreen(screen)
+  const router = useRouter()
+  const isMobile = useIsMobile()
+  const isPro = planState.plan === "pro"
+  // A phone gets the plans in the sheet; wider screens get the full pricing page.
+  const openPlan = () => (isMobile ? open("plan") : router.push("/settings/plan"))
 
   const renderScreen = (screen: Screen) => {
     switch (screen) {
@@ -154,15 +162,17 @@ export function SettingsView({
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
             }
-            title={user.name}
+            title={
+              <span className="flex min-w-0 items-center gap-1">
+                <span className="truncate">{user.name}</span>
+                {isPro ? (
+                  <BadgeCheckIcon className="size-4 shrink-0 fill-blue-500 text-white" role="img" aria-label="Pro" />
+                ) : null}
+              </span>
+            }
             description={user.email || "Chưa cập nhật email"}
-          />
-          <SettingsRow
-            icon={CrownIcon}
-            color="violet"
-            title="Gói của bạn"
-            value={plans[planState.plan].label}
-            onClick={() => open("plan")}
+            value={<Badge variant={isPro ? "grape" : "outline"}>{plans[planState.plan].label}</Badge>}
+            onClick={openPlan}
           />
           <SignOutRow />
         </SettingsGroup>
@@ -233,7 +243,12 @@ export function SettingsView({
 
         <SettingsGroup
           title="Ứng dụng"
-          footer={`Finance Tracker · v${process.env.NEXT_PUBLIC_APP_VERSION}`}
+          footer={
+            <span className="flex items-center justify-center gap-2">
+              Finance Tracker · v{process.env.NEXT_PUBLIC_APP_VERSION}
+              <Badge variant="secondary" className="px-1.5 tracking-normal">Beta</Badge>
+            </span>
+          }
         >
           <SettingsRow
             icon={CircleHelpIcon}

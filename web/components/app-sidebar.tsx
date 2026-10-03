@@ -6,12 +6,10 @@ import Image from "next/image"
 import { FlaskConicalIcon, SettingsIcon } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
 import { Badge } from "@/components/ui/badge"
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -19,7 +17,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { appNavigationItems } from "@/lib/app-navigation"
-import type { SessionUser } from "@/lib/auth/session"
 
 const navMain = [
   ...appNavigationItems.map(({ title, url, icon: Icon }) => ({
@@ -43,10 +40,7 @@ const navMain = [
     : []),
 ]
 
-export function AppSidebar({
-  user,
-  ...props
-}: React.ComponentProps<typeof Sidebar> & { user: SessionUser }) {
+export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { isMobile, setOpenMobile } = useSidebar()
 
   return (
@@ -80,9 +74,6 @@ export function AppSidebar({
       <SidebarContent>
         <NavMain items={navMain} />
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={user} />
-      </SidebarFooter>
     </Sidebar>
   )
 }

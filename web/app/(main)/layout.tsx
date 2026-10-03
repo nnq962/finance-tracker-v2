@@ -44,7 +44,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
             className="h-dvh min-h-0 flex-col overflow-hidden bg-[#fbfaf7] dark:bg-background md:h-auto md:min-h-svh md:flex-row md:overflow-visible md:bg-sidebar dark:md:bg-sidebar"
           >
             <PwaThemeColor />
-            <AppSidebar user={user} />
+            <AppSidebar />
             <SidebarInset
               data-main-scroll-viewport
               className="min-h-0 min-w-0 overflow-y-auto overscroll-y-contain bg-[#fbfaf7] [--main-content-px:--spacing(4)] [-webkit-overflow-scrolling:touch] dark:bg-background md:min-h-svh md:overflow-visible md:border-l-2 md:border-l-[#e7e4dd] md:peer-data-[variant=inset]:m-0 md:peer-data-[variant=inset]:rounded-none md:peer-data-[variant=inset]:shadow-none md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0 md:[--main-content-px:--spacing(6)] dark:md:border-l-[#35323e]"

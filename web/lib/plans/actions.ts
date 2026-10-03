@@ -90,6 +90,7 @@ export async function getGrantsAction(
  */
 export async function startProCheckoutAction(
   period: unknown,
+  from: unknown = "sheet",
 ): Promise<{ success: true; checkoutUrl: string } | { success: false; error: string }> {
   const user = await requireSession()
   if (period !== "month" && period !== "year") return { success: false, error: "Gói không hợp lệ." }
@@ -100,7 +101,11 @@ export async function startProCheckoutAction(
 
   try {
     const payment = await createPayment(user.uid, period)
-    const back = `${SITE_URL}/settings?screen=plan&order=${payment.orderCode}`
+    // Back to where checkout started: the pricing page (desktop) or the sheet in settings (mobile).
+    const back =
+      from === "page"
+        ? `${SITE_URL}/settings/plan?order=${payment.orderCode}`
+        : `${SITE_URL}/settings?screen=plan&order=${payment.orderCode}`
     const link = await payos.paymentRequests.create({
       orderCode: payment.orderCode,
       amount: payment.amount,

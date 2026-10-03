@@ -8,6 +8,7 @@ import {
   CircleCheckIcon,
   ClockIcon,
   LoaderCircleIcon,
+  MinusIcon,
   ShieldCheckIcon,
   SparklesIcon,
   type LucideIcon,
@@ -35,6 +36,8 @@ type PlanScreenProps = {
   checkoutEnabled: boolean
   /** How the payment the user just came back from stands. */
   paymentOutcome?: PaymentOutcome
+  /** In the settings sheet (one column), or as the full pricing page, which spreads out from md up. */
+  layout?: "sheet" | "page"
 }
 
 type OutcomeTone = "success" | "waiting" | "problem"
@@ -67,8 +70,9 @@ const yearSaving = proPrices.month.amount * 12 - proPrices.year.amount
 const yearSavingPercent = Math.round((yearSaving / (proPrices.month.amount * 12)) * 100)
 
 /** Everything but the AI assistant is the same on both plans. */
-const comparison: { feature: string; free: string | true; pro: string | true }[] = [
+const comparison: { feature: string; free: string | boolean; pro: string | boolean }[] = [
   { feature: "Trợ lý AI ghi giao dịch", free: `${plans.free.aiMonthlyLimit} lượt/tháng`, pro: `${plans.pro.aiMonthlyLimit} lượt/tháng` },
+  { feature: "Dùng sớm tính năng AI mới", free: false, pro: true },
   { feature: "Ghi chép thu chi", free: true, pro: true },
   { feature: "Tài khoản & ví", free: true, pro: true },
   { feature: "Ngân sách", free: true, pro: true },
@@ -101,7 +105,8 @@ const faqs = [
 ]
 
 /** The user's plan and this month's AI requests, the plans side by side and buying Pro through payOS. */
-export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanScreenProps) {
+export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout = "sheet" }: PlanScreenProps) {
+  const page = layout === "page"
   const [period, setPeriod] = React.useState<PlanPeriod>("year")
   const [opening, setOpening] = React.useState(false)
   const [, startTransition] = React.useTransition()
@@ -112,7 +117,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanS
   const checkout = () => {
     setOpening(true)
     startTransition(async () => {
-      const result = await startProCheckoutAction(period)
+      const result = await startProCheckoutAction(period, layout)
       if (!result.success) {
         toast.error(result.error)
         setOpening(false)
@@ -124,26 +129,32 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanS
   }
 
   return (
-    <div className="space-y-6 pt-2">
-      {outcome ? <OutcomeCard {...outcome} /> : null}
+    <div className={cn("space-y-6 pt-2", page && "md:space-y-10")}>
+      {outcome ? (
+        <div className={cn(page && "mx-auto max-w-xl")}>
+          <OutcomeCard {...outcome} />
+        </div>
+      ) : null}
 
-      <header className="flex flex-col items-center gap-3 px-3 pt-2 text-center">
+      <header className={cn("flex flex-col items-center gap-3 px-3 pt-2 text-center", page && "mx-auto max-w-2xl")}>
         <div className="flex size-14 items-center justify-center rounded-2xl bg-[#f2e9ff] text-[#7a4aba] dark:bg-[#3b2c54] dark:text-[#d0b2ff]">
           <SparklesIcon className="size-7" aria-hidden="true" />
         </div>
         <div className="space-y-1.5">
-          <h2 className="font-heading text-2xl leading-tight font-extrabold">
+          <h2 className={cn("font-heading text-2xl leading-tight font-extrabold", page && "md:text-4xl")}>
             {isPro ? "Bạn đang dùng Pro" : "Ghi chép nhanh hơn với Pro"}
           </h2>
-          <p className="text-sm leading-relaxed text-muted-foreground">
+          <p className={cn("text-sm leading-relaxed text-muted-foreground", page && "md:text-base")}>
             Gõ hoặc nói một câu như “trưa nay ăn phở 45 cành”, trợ lý AI điền sẵn số tiền, hạng mục và thời gian cho bạn.
           </p>
         </div>
       </header>
 
-      <UsageCard planState={planState} />
+      <div className={cn(page && "mx-auto max-w-md")}>
+        <UsageCard planState={planState} />
+      </div>
 
-      <section aria-labelledby="plan-options" className="space-y-3">
+      <section aria-labelledby="plan-options" className={cn("space-y-3", page && "md:space-y-5")}>
         <h2 id="plan-options" className="sr-only">
           Chọn gói
         </h2>
@@ -153,7 +164,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanS
           onValueChange={(value) => {
             if (value === "month" || value === "year") setPeriod(value)
           }}
-          className="grid w-full grid-cols-2"
+          className={cn("grid w-full grid-cols-2", page && "md:mx-auto md:max-w-xs")}
           aria-label="Kỳ thanh toán"
         >
           <ToggleGroupItem value="month">Theo tháng</ToggleGroupItem>
@@ -163,72 +174,81 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanS
           </ToggleGroupItem>
         </ToggleGroup>
 
-        {/* The recommended plan stands out with a grape outline, the colour the kit keeps for premium. */}
-        <Card className="border-[#a376e9] ring-[#a376e9] dark:border-[#a376e9] dark:ring-[#a376e9]">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {plans.pro.label}
-              <Badge variant="grape">{isPro ? "Đang dùng" : "Khuyên dùng"}</Badge>
-            </CardTitle>
-            <CardDescription>Cho người ghi chép mỗi ngày</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <PriceTag amount={price.amount} unit={period === "year" ? "năm" : "tháng"} />
-              <p className="mt-1 text-sm text-muted-foreground">
-                {period === "year"
-                  ? `Chỉ ${formatCurrency(Math.round(price.amount / 12))}/tháng, tiết kiệm ${formatCurrency(yearSaving)}`
-                  : `Hoặc ${formatCurrency(proPrices.year.amount)}/năm, tiết kiệm ${yearSavingPercent}%`}
+        {/* Pro first on a phone; side by side from md up on the page, free on the left. */}
+        <div className={cn("grid gap-3", page && "md:mx-auto md:max-w-4xl md:grid-cols-2 md:gap-6")}>
+          {/* The recommended plan stands out with a grape outline, the colour the kit keeps for premium. */}
+          <Card className="border-[#a376e9] ring-[#a376e9] dark:border-[#a376e9] dark:ring-[#a376e9]">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {plans.pro.label}
+                <Badge variant="grape">{isPro ? "Đang dùng" : "Khuyên dùng"}</Badge>
+              </CardTitle>
+              <CardDescription>Cho người ghi chép mỗi ngày</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 space-y-4">
+              <div>
+                <PriceTag amount={price.amount} unit={period === "year" ? "năm" : "tháng"} />
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {period === "year"
+                    ? `Chỉ ${formatCurrency(Math.round(price.amount / 12))}/tháng, tiết kiệm ${formatCurrency(yearSaving)}`
+                    : `Hoặc ${formatCurrency(proPrices.year.amount)}/năm, tiết kiệm ${yearSavingPercent}%`}
+                </p>
+              </div>
+              <FeatureList
+                features={[
+                  `${plans.pro.aiMonthlyLimit} lượt trợ lý AI mỗi tháng`,
+                  "Dùng sớm các tính năng AI mới",
+                  "Mọi tính năng của gói Miễn phí",
+                  "Thanh toán một lần, không tự động gia hạn",
+                ]}
+              />
+            </CardContent>
+            <CardFooter className="flex-col gap-2">
+              <Button
+                type="button"
+                size="lg"
+                className="w-full"
+                disabled={!checkoutEnabled || opening}
+                onClick={checkout}
+              >
+                {opening ? <LoaderCircleIcon className="animate-spin" aria-hidden="true" /> : null}
+                {isPro ? `Gia hạn thêm ${price.label}` : `Nâng cấp Pro · ${formatCurrency(price.amount)}`}
+              </Button>
+              <p className="text-center text-xs text-muted-foreground">
+                {checkoutEnabled
+                  ? isPro && planState.proEndsAt
+                    ? `Pro hiện có hạn đến ${formatDate(toDateKey(planState.proEndsAt))}, thời hạn mới được cộng nối vào sau.`
+                    : "Kích hoạt ngay khi thanh toán thành công."
+                  : "Liên hệ quản trị viên để nâng cấp Pro."}
               </p>
-            </div>
-            <FeatureList
-              features={[
-                `${plans.pro.aiMonthlyLimit} lượt trợ lý AI mỗi tháng`,
-                "Mọi tính năng của gói Miễn phí",
-                "Thanh toán một lần, không tự động gia hạn",
-              ]}
-            />
-          </CardContent>
-          <CardFooter className="flex-col gap-2">
-            <Button
-              type="button"
-              size="lg"
-              className="w-full"
-              disabled={!checkoutEnabled || opening}
-              onClick={checkout}
-            >
-              {opening ? <LoaderCircleIcon className="animate-spin" aria-hidden="true" /> : null}
-              {isPro ? `Gia hạn thêm ${price.label}` : `Nâng cấp Pro · ${formatCurrency(price.amount)}`}
-            </Button>
-            <p className="text-center text-xs text-muted-foreground">
-              {checkoutEnabled
-                ? isPro && planState.proEndsAt
-                  ? `Pro hiện có hạn đến ${formatDate(toDateKey(planState.proEndsAt))}, thời hạn mới được cộng nối vào sau.`
-                  : "Kích hoạt ngay khi thanh toán thành công."
-                : "Liên hệ quản trị viên để nâng cấp Pro."}
-            </p>
-          </CardFooter>
-        </Card>
+            </CardFooter>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {plans.free.label}
-              {isPro ? null : <Badge variant="outline">Đang dùng</Badge>}
-            </CardTitle>
-            <CardDescription>Đủ để bắt đầu quản lý chi tiêu</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <PriceTag amount={0} unit="mãi mãi" />
-            <FeatureList
-              features={[
-                `${plans.free.aiMonthlyLimit} lượt trợ lý AI mỗi tháng`,
-                "Giao dịch, tài khoản, ngân sách và vay nợ không giới hạn",
-                "Nhắc ghi chi tiêu hằng ngày",
-              ]}
-            />
-          </CardContent>
-        </Card>
+          <Card className={cn(page && "md:order-first")}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {plans.free.label}
+                {isPro ? null : <Badge variant="outline">Đang dùng</Badge>}
+              </CardTitle>
+              <CardDescription>Đủ để bắt đầu quản lý chi tiêu</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 space-y-4">
+              <PriceTag amount={0} unit="mãi mãi" />
+              <FeatureList
+                features={[
+                  `${plans.free.aiMonthlyLimit} lượt trợ lý AI mỗi tháng`,
+                  "Giao dịch, tài khoản, ngân sách và vay nợ không giới hạn",
+                  "Nhắc ghi chi tiêu hằng ngày",
+                ]}
+              />
+            </CardContent>
+            <CardFooter className="flex-col gap-2">
+              <Button type="button" variant="outline" size="lg" className="w-full" disabled>
+                {isPro ? "Dùng lại khi Pro hết hạn" : "Gói hiện tại"}
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
 
         <p className="flex items-center justify-center gap-1.5 px-3 text-center text-xs text-muted-foreground">
           <ShieldCheckIcon className="size-4 shrink-0" aria-hidden="true" />
@@ -236,13 +256,15 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanS
         </p>
       </section>
 
-      <ComparisonTable />
+      <div className={cn("space-y-6", page && "mx-auto max-w-3xl md:space-y-10")}>
+        <ComparisonTable />
 
-      <SettingsGroup title="Câu hỏi thường gặp">
-        {faqs.map((faq) => (
-          <FaqRow key={faq.question} {...faq} />
-        ))}
-      </SettingsGroup>
+        <SettingsGroup title="Câu hỏi thường gặp">
+          {faqs.map((faq) => (
+            <FaqRow key={faq.question} {...faq} />
+          ))}
+        </SettingsGroup>
+      </div>
     </div>
   )
 }
@@ -355,10 +377,16 @@ function ComparisonTable() {
   )
 }
 
-function ComparisonCell({ value }: { value: string | true }) {
+function ComparisonCell({ value }: { value: string | boolean }) {
   return (
     <span className="flex justify-center text-center text-xs font-medium text-muted-foreground">
-      {value === true ? <CheckMark /> : value}
+      {value === true ? (
+        <CheckMark />
+      ) : value === false ? (
+        <MinusIcon className="size-4" aria-label="Không có" />
+      ) : (
+        value
+      )}
     </span>
   )
 }

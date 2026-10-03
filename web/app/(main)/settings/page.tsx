@@ -7,30 +7,13 @@ import { getNotificationState } from "@/lib/notifications/repository"
 import { getPushContext } from "@/lib/notifications/context"
 import { isAdmin } from "@/lib/plans/admin"
 import { getAdminData } from "@/lib/plans/admin-data"
-import { getPayment } from "@/lib/plans/payments"
-import { getPayOS, syncPayment, type PaymentOutcome } from "@/lib/plans/payos"
+import { checkReturningPayment, getPayOS } from "@/lib/plans/payos"
 import { getPlanState } from "@/lib/plans/repository"
 
 import { SettingsView } from "./_components/settings-view"
 
 export const metadata: Metadata = {
   title: "Cài đặt",
-}
-
-/**
- * Where the user's payment stands on coming back from payOS: asked of payOS
- * when the webhook has not settled it yet, so Pro shows at once. Only the
- * user's own payment; any trouble just reads as still pending.
- */
-async function checkReturningPayment(userId: string, order: string | undefined): Promise<PaymentOutcome | undefined> {
-  const orderCode = Number(order)
-  if (!order || !Number.isSafeInteger(orderCode)) return undefined
-  const payment = await getPayment(orderCode).catch(() => undefined)
-  if (payment?.userId !== userId) return undefined
-  return syncPayment(orderCode).catch((error) => {
-    console.error("payOS payment check failed", { orderCode }, error)
-    return "pending" as const
-  })
 }
 
 export default async function SettingsPage({
