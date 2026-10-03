@@ -7,6 +7,8 @@ import { getAccounts } from "@/lib/accounts/repository"
 import { requireSession } from "@/lib/auth/session"
 import { getCategoryGroups } from "@/lib/categories/repository"
 import { getCurrentLocalDateTime } from "@/lib/date-time"
+import { plans } from "@/lib/plans/plans"
+import { releaseAiRequest, reserveAiRequest } from "@/lib/plans/repository"
 import {
   createTransaction,
   deleteTransaction,
@@ -97,15 +99,19 @@ export async function deleteTransactionAction(
   }
 }
 
+/** This month's AI requests after the one just made, and the plan's limit. */
+export type AiQuota = { used: number; limit: number }
+
 export type AiTransactionParseResult =
-  | { success: true; draft: AiTransactionDraft }
-  | { success: false; error: string }
+  | { success: true; draft: AiTransactionDraft; quota: AiQuota }
+  | { success: false; error: string; quota?: AiQuota }
 
 const MAX_AI_REQUEST_LENGTH = 300
 
 /**
  * Reads a sentence about a transaction with the local model into a draft
- * for the user to check. Nothing is saved.
+ * for the user to check. Nothing is saved. Each request counts against the
+ * plan's monthly limit; one the model could not answer is given back.
  */
 export async function parseTransactionWithAiAction(
   request: string,
@@ -115,6 +121,19 @@ export async function parseTransactionWithAiAction(
   if (!text) return { success: false, error: "Hãy nói hoặc gõ một khoản thu chi." }
   if (text.length > MAX_AI_REQUEST_LENGTH) {
     return { success: false, error: "Câu dài quá, hãy nói gọn một khoản thôi nhé." }
+  }
+
+  const reservation = await reserveAiRequest(user.uid)
+  const quota = { used: reservation.used, limit: reservation.limit }
+  if (!reservation.allowed) {
+    return {
+      success: false,
+      quota,
+      error:
+        reservation.limit < plans.pro.aiMonthlyLimit
+          ? `Bạn đã dùng hết ${reservation.limit} lượt AI của tháng này. Nâng cấp Pro để có ${plans.pro.aiMonthlyLimit} lượt mỗi tháng.`
+          : `Bạn đã dùng hết ${reservation.limit} lượt AI của tháng này.`,
+    }
   }
 
   const [accounts, categoryGroups] = await Promise.all([
@@ -129,11 +148,16 @@ export async function parseTransactionWithAiAction(
     reply = await ollamaJson(messages, transactionReplySchema)
   } catch (error) {
     console.error("AI transaction parse failed", error)
-    return { success: false, error: "AI đang không phản hồi. Thử lại sau ít phút nhé." }
+    await releaseAiRequest(user.uid, reservation.month)
+    return {
+      success: false,
+      quota: { ...quota, used: quota.used - 1 },
+      error: "AI đang không phản hồi. Thử lại sau ít phút nhé.",
+    }
   }
 
   const draft = readTransactionReply(reply, { request: text, lists, today, now })
   return draft
-    ? { success: true, draft }
-    : { success: false, error: "AI chưa hiểu yêu cầu này, thử nói rõ hơn nhé." }
+    ? { success: true, draft, quota }
+    : { success: false, quota, error: "AI chưa hiểu yêu cầu này, thử nói rõ hơn nhé." }
 }

@@ -77,6 +77,19 @@ CREATE TABLE public.accounts (
 
 
 --
+-- Name: ai_usage; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.ai_usage (
+    user_id text NOT NULL,
+    month date NOT NULL,
+    count integer DEFAULT 0 NOT NULL,
+    CONSTRAINT ai_usage_count_check CHECK ((count >= 0)),
+    CONSTRAINT ai_usage_month_check CHECK ((EXTRACT(day FROM month) = (1)::numeric))
+);
+
+
+--
 -- Name: category_groups; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -292,6 +305,28 @@ CREATE TABLE public.push_devices (
 
 
 --
+-- Name: subscriptions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.subscriptions (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    user_id text NOT NULL,
+    plan text NOT NULL,
+    starts_at timestamp with time zone NOT NULL,
+    ends_at timestamp with time zone NOT NULL,
+    amount bigint DEFAULT 0 NOT NULL,
+    note text,
+    granted_by text NOT NULL,
+    revoked_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT subscriptions_amount_check CHECK ((amount >= 0)),
+    CONSTRAINT subscriptions_check CHECK ((ends_at > starts_at)),
+    CONSTRAINT subscriptions_note_check CHECK ((char_length(note) <= 200)),
+    CONSTRAINT subscriptions_plan_check CHECK ((plan = 'pro'::text))
+);
+
+
+--
 -- Name: transactions; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -354,6 +389,14 @@ ALTER TABLE ONLY public.accounts
 
 ALTER TABLE ONLY public.accounts
     ADD CONSTRAINT accounts_user_id_id_key UNIQUE (user_id, id);
+
+
+--
+-- Name: ai_usage ai_usage_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ai_usage
+    ADD CONSTRAINT ai_usage_pkey PRIMARY KEY (user_id, month);
 
 
 --
@@ -493,6 +536,14 @@ ALTER TABLE ONLY public.push_devices
 
 
 --
+-- Name: subscriptions subscriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.subscriptions
+    ADD CONSTRAINT subscriptions_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: transactions transactions_debt_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -608,6 +659,13 @@ CREATE INDEX push_devices_user_idx ON public.push_devices USING btree (user_id);
 
 
 --
+-- Name: subscriptions_user_id_ends_at_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX subscriptions_user_id_ends_at_idx ON public.subscriptions USING btree (user_id, ends_at);
+
+
+--
 -- Name: transactions_account_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -718,6 +776,14 @@ CREATE TRIGGER transactions_set_updated_at BEFORE UPDATE ON public.transactions 
 
 ALTER TABLE ONLY public.accounts
     ADD CONSTRAINT accounts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: ai_usage ai_usage_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ai_usage
+    ADD CONSTRAINT ai_usage_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -849,6 +915,14 @@ ALTER TABLE ONLY public.push_devices
 
 
 --
+-- Name: subscriptions subscriptions_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.subscriptions
+    ADD CONSTRAINT subscriptions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: transactions transactions_user_id_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -916,4 +990,5 @@ INSERT INTO dbmate.schema_migrations (version) VALUES
     ('20261001000006'),
     ('20261002000001'),
     ('20261002000002'),
-    ('20261002000003');
+    ('20261002000003'),
+    ('20261003000001');

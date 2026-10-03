@@ -8,9 +8,10 @@ import { PageHeader } from "@/components/page"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 
+import type { AiQuota } from "../actions"
+
 import { filterTransactions } from "../_lib/filter-transactions"
 import { getTransactionPeriod } from "../_lib/get-transaction-period"
-import { useMockAiQuota } from "../_lib/mock-ai-quota"
 import type {
   Transaction,
   TransactionFilter,
@@ -32,6 +33,8 @@ type TransactionsDashboardProps = {
   selectedMonth: string
   todayDateKey: string
   transactions: Transaction[]
+  /** This month's AI requests and the plan's limit, as the page loaded. */
+  aiQuota: AiQuota
 }
 
 // The AI button in the assistant's violet, set apart from the green add button.
@@ -52,13 +55,16 @@ export function TransactionsDashboard({
   selectedMonth,
   todayDateKey,
   transactions,
+  aiQuota: initialAiQuota,
 }: TransactionsDashboardProps) {
   const router = useRouter()
   const [isNavigating, startNavigation] = React.useTransition()
   const period = "month" as const
   const [filter, setFilter] = React.useState<TransactionFilter>("all")
   const [aiOpen, setAiOpen] = React.useState(false)
-  const aiQuota = useMockAiQuota()
+  // Follows each request's answer, which carries the count after it.
+  const [aiQuota, setAiQuota] = React.useState(initialAiQuota)
+  const aiRemaining = Math.max(0, aiQuota.limit - aiQuota.used)
   const [searchFilters, setSearchFilters] =
     React.useState<TransactionSearchFilters>(() => ({
       ...initialSearchFilters,
@@ -92,7 +98,7 @@ export function TransactionsDashboard({
         title="Giao dịch"
         actions={
           <>
-            <AiAssistButton className={aiButtonClassName} remaining={aiQuota.remaining} onClick={() => setAiOpen(true)}>
+            <AiAssistButton className={aiButtonClassName} remaining={aiRemaining} onClick={() => setAiOpen(true)}>
               Nhập bằng AI
             </AiAssistButton>
             <AddTransactionButton
@@ -157,7 +163,7 @@ export function TransactionsDashboard({
           phone's width. */}
       <div className="pointer-events-none sticky bottom-4 z-20 flex justify-end md:hidden">
         <div className="pointer-events-auto flex flex-col items-end gap-4">
-          <AiAssistButton className={aiButtonClassName} remaining={aiQuota.remaining} onClick={() => setAiOpen(true)}>
+          <AiAssistButton className={aiButtonClassName} remaining={aiRemaining} onClick={() => setAiOpen(true)}>
             AI
           </AiAssistButton>
           <AddTransactionButton
@@ -172,8 +178,8 @@ export function TransactionsDashboard({
         accounts={accounts}
         categoryGroups={categoryGroups}
         todayDateKey={todayDateKey}
-        quota={aiQuota}
-        onRequest={aiQuota.record}
+        quota={{ remaining: aiRemaining, limit: aiQuota.limit }}
+        onQuotaChange={setAiQuota}
       />
     </TransactionHistoryProvider>
   )

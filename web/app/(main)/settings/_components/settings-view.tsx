@@ -5,8 +5,10 @@ import {
   BellRingIcon,
   CalculatorIcon,
   CircleHelpIcon,
+  CrownIcon,
   MicIcon,
   PaletteIcon,
+  ShieldCheckIcon,
   SmartphoneIcon,
   TagsIcon,
 } from "lucide-react"
@@ -23,10 +25,14 @@ import {
 import type { SessionUser } from "@/lib/auth/session"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { NotificationState } from "@/lib/notifications/types"
+import type { AdminData } from "@/lib/plans/admin-data"
+import { plans, type PlanState } from "@/lib/plans/plans"
 
+import { AdminScreen } from "./admin-screen"
 import { InstallAppRow } from "./install-app-row"
 import { NotificationDevices } from "./notification-devices"
 import { NotificationPreferences } from "./notification-preferences"
+import { PlanScreen, type PaymentInfo } from "./plan-screen"
 import { SalaryCalculator } from "./salary-calculator"
 import { SignOutRow } from "./sign-out-row"
 import { ThemeOptions, themeOptions, useThemeChoice } from "./theme-options"
@@ -34,6 +40,12 @@ import { VoiceLab } from "./voice-lab"
 
 /** Screens opened from the list, in a sheet that slides in from the side. */
 const screens = {
+  plan: {
+    title: "Gói của bạn",
+  },
+  admin: {
+    title: "Quản trị",
+  },
   appearance: {
     title: "Giao diện",
   },
@@ -57,11 +69,25 @@ type SettingsViewProps = {
   user: SessionUser
   notifications: NotificationState
   categoryGroups: CategoryGroup[]
+  planState: PlanState
+  paymentInfo?: PaymentInfo
+  paymentReference: string
+  /** Only for admins: every user and the month's takings. */
+  adminData?: AdminData
   /** Opens this screen straight away, e.g. from the getting-started checklist. */
   initialScreen?: Screen
 }
 
-export function SettingsView({ user, notifications, categoryGroups, initialScreen }: SettingsViewProps) {
+export function SettingsView({
+  user,
+  notifications,
+  categoryGroups,
+  planState,
+  paymentInfo,
+  paymentReference,
+  adminData,
+  initialScreen,
+}: SettingsViewProps) {
   const [sheetScreen, setSheetScreen] = React.useState<Screen | null>(initialScreen ?? null)
   const [categoriesOpen, setCategoriesOpen] = React.useState(false)
   // Summaries on the list follow changes made in the screens.
@@ -74,6 +100,10 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
 
   const renderScreen = (screen: Screen) => {
     switch (screen) {
+      case "plan":
+        return <PlanScreen planState={planState} paymentInfo={paymentInfo} reference={paymentReference} />
+      case "admin":
+        return adminData ? <AdminScreen data={adminData} /> : null
       case "appearance":
         return <ThemeOptions />
       case "notifications":
@@ -124,8 +154,27 @@ export function SettingsView({ user, notifications, categoryGroups, initialScree
             title={user.name}
             description={user.email || "Chưa cập nhật email"}
           />
+          <SettingsRow
+            icon={CrownIcon}
+            color="violet"
+            title="Gói của bạn"
+            value={plans[planState.plan].label}
+            onClick={() => open("plan")}
+          />
           <SignOutRow />
         </SettingsGroup>
+
+        {adminData ? (
+          <SettingsGroup title="Quản trị">
+            <SettingsRow
+              icon={ShieldCheckIcon}
+              color="slate"
+              title="Người dùng & gói"
+              value={String(adminData.users.length)}
+              onClick={() => open("admin")}
+            />
+          </SettingsGroup>
+        ) : null}
 
         <SettingsGroup title="Chung">
           <SettingsRow

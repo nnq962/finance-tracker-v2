@@ -25,6 +25,12 @@ export interface Accounts {
   userId: string;
 }
 
+export interface AiUsage {
+  count: Generated<number>;
+  month: string;
+  userId: string;
+}
+
 export interface CategoryGroups {
   colorName: string;
   createdAt: Generated<Timestamp>;
@@ -150,6 +156,19 @@ export interface PushDevices {
   userId: string;
 }
 
+export interface Subscriptions {
+  amount: Generated<number>;
+  createdAt: Generated<Timestamp>;
+  endsAt: Timestamp;
+  grantedBy: string;
+  id: Generated<string>;
+  note: string | null;
+  plan: string;
+  revokedAt: Timestamp | null;
+  startsAt: Timestamp;
+  userId: string;
+}
+
 export interface Transactions {
   accountId: string | null;
   amount: number;
@@ -177,6 +196,7 @@ export interface Users {
 
 export interface DB {
   accounts: Accounts;
+  aiUsage: AiUsage;
   categoryGroups: CategoryGroups;
   categoryItems: CategoryItems;
   contacts: Contacts;
@@ -188,6 +208,7 @@ export interface DB {
   notificationLogs: NotificationLogs;
   notificationSettings: NotificationSettings;
   pushDevices: PushDevices;
+  subscriptions: Subscriptions;
   transactions: Transactions;
   users: Users;
 }

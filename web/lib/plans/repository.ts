@@ -1,0 +1,213 @@
+import "server-only"
+
+import { sql } from "kysely"
+
+import { getDb } from "@/lib/db/client"
+import { toDateKey } from "@/lib/format-date"
+import { plans, proPrices, type PlanPeriod, type PlanState } from "@/lib/plans/plans"
+
+export class PlanError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = "PlanError"
+  }
+}
+
+/** The first day of the Vietnam calendar month, the key AI usage is counted under. */
+function currentMonth() {
+  return `${toDateKey(new Date()).slice(0, 7)}-01`
+}
+
+/**
+ * When the user's Pro ends. Grants follow one another without gaps and a
+ * revocation ends all that are left, so the latest end not revoked is it;
+ * Pro is on while that is still to come.
+ */
+async function getProEndsAt(userId: string) {
+  const row = await getDb()
+    .selectFrom("subscriptions")
+    .select((eb) => eb.fn.max("endsAt").as("endsAt"))
+    .where("userId", "=", userId)
+    .where("revokedAt", "is", null)
+    .executeTakeFirst()
+  const endsAt = row?.endsAt ? new Date(row.endsAt) : null
+  return endsAt && endsAt > new Date() ? endsAt : null
+}
+
+export async function getPlanState(userId: string): Promise<PlanState> {
+  const [proEndsAt, usage] = await Promise.all([
+    getProEndsAt(userId),
+    getDb()
+      .selectFrom("aiUsage")
+      .select("count")
+      .where("userId", "=", userId)
+      .where("month", "=", currentMonth())
+      .executeTakeFirst(),
+  ])
+  const plan = proEndsAt ? "pro" : "free"
+  return {
+    plan,
+    ...(proEndsAt ? { proEndsAt: proEndsAt.toISOString() } : {}),
+    aiUsed: usage?.count ?? 0,
+    aiLimit: plans[plan].aiMonthlyLimit,
+  }
+}
+
+export type AiReservation = {
+  allowed: boolean
+  used: number
+  limit: number
+  /** The month the request was counted in, to give it back to. */
+  month: string
+}
+
+/**
+ * Counts one AI request against this month's limit, before it is made. The
+ * count only rises while under the limit, in one statement, so requests at
+ * the same moment cannot pass it together.
+ */
+export async function reserveAiRequest(userId: string): Promise<AiReservation> {
+  const month = currentMonth()
+  const limit = plans[(await getProEndsAt(userId)) ? "pro" : "free"].aiMonthlyLimit
+  const result = await sql<{ count: number }>`
+    INSERT INTO ai_usage (user_id, month, count) VALUES (${userId}, ${month}, 1)
+    ON CONFLICT (user_id, month) DO UPDATE SET count = ai_usage.count + 1
+    WHERE ai_usage.count < ${limit}
+    RETURNING count
+  `.execute(getDb())
+  const counted = result.rows[0]?.count
+  return counted === undefined
+    ? { allowed: false, used: limit, limit, month }
+    : { allowed: true, used: counted, limit, month }
+}
+
+/** Gives back a request the AI could not answer. */
+export async function releaseAiRequest(userId: string, month: string) {
+  await getDb()
+    .updateTable("aiUsage")
+    .set((eb) => ({ count: sql<number>`greatest(${eb.ref("count")} - 1, 0)` }))
+    .where("userId", "=", userId)
+    .where("month", "=", month)
+    .execute()
+}
+
+/**
+ * Gives a user Pro for a period, starting now or where their Pro ends. The
+ * user's row is locked so two grants at once still follow one another.
+ */
+export async function grantPro(
+  adminId: string,
+  userId: string,
+  { period, amount, note }: { period: PlanPeriod; amount: number; note?: string },
+) {
+  await getDb().transaction().execute(async (trx) => {
+    const user = await trx.selectFrom("users").select("id").where("id", "=", userId).forUpdate().executeTakeFirst()
+    if (!user) throw new PlanError("Người dùng không tồn tại.")
+
+    const last = await trx
+      .selectFrom("subscriptions")
+      .select((eb) => eb.fn.max("endsAt").as("endsAt"))
+      .where("userId", "=", userId)
+      .where("revokedAt", "is", null)
+      .executeTakeFirst()
+    const now = new Date()
+    const startsAt = last?.endsAt && new Date(last.endsAt) > now ? new Date(last.endsAt) : now
+
+    await trx
+      .insertInto("subscriptions")
+      .values({
+        userId,
+        plan: "pro",
+        startsAt,
+        endsAt: sql<Date>`${startsAt}::timestamptz + make_interval(months => ${proPrices[period].months})`,
+        amount,
+        note: note || null,
+        grantedBy: adminId,
+      })
+      .execute()
+  })
+}
+
+/** Ends a user's Pro now: every grant not yet over is revoked. */
+export async function revokePro(userId: string) {
+  await getDb()
+    .updateTable("subscriptions")
+    .set({ revokedAt: new Date() })
+    .where("userId", "=", userId)
+    .where("revokedAt", "is", null)
+    .where("endsAt", ">", new Date())
+    .execute()
+}
+
+export type AdminUserRow = {
+  id: string
+  createdAt: string
+  proEndsAt?: string
+  aiUsed: number
+}
+
+export type SubscriptionGrant = {
+  id: string
+  startsAt: string
+  endsAt: string
+  amount: number
+  note?: string
+  revoked: boolean
+  createdAt: string
+}
+
+/** Every user with their Pro end and this month's AI requests, newest first. */
+export async function listUsersForAdmin(): Promise<AdminUserRow[]> {
+  const month = currentMonth()
+  const rows = await getDb()
+    .selectFrom("users as u")
+    .leftJoin("aiUsage as a", (join) => join.onRef("a.userId", "=", "u.id").on("a.month", "=", month))
+    .select(["u.id", "u.createdAt", "a.count as aiUsed"])
+    .select((eb) =>
+      eb
+        .selectFrom("subscriptions as s")
+        .select((inner) => inner.fn.max("s.endsAt").as("endsAt"))
+        .whereRef("s.userId", "=", "u.id")
+        .where("s.revokedAt", "is", null)
+        .as("proEndsAt"),
+    )
+    .orderBy("u.createdAt", "desc")
+    .execute()
+  const now = new Date()
+  return rows.map((row) => ({
+    id: row.id,
+    createdAt: new Date(row.createdAt).toISOString(),
+    ...(row.proEndsAt && new Date(row.proEndsAt) > now ? { proEndsAt: new Date(row.proEndsAt).toISOString() } : {}),
+    aiUsed: row.aiUsed ?? 0,
+  }))
+}
+
+/** A user's grants, newest first. */
+export async function listGrants(userId: string): Promise<SubscriptionGrant[]> {
+  const rows = await getDb()
+    .selectFrom("subscriptions")
+    .select(["id", "startsAt", "endsAt", "amount", "note", "revokedAt", "createdAt"])
+    .where("userId", "=", userId)
+    .orderBy("createdAt", "desc")
+    .execute()
+  return rows.map((row) => ({
+    id: row.id,
+    startsAt: new Date(row.startsAt).toISOString(),
+    endsAt: new Date(row.endsAt).toISOString(),
+    amount: row.amount,
+    ...(row.note ? { note: row.note } : {}),
+    revoked: row.revokedAt !== null,
+    createdAt: new Date(row.createdAt).toISOString(),
+  }))
+}
+
+/** What grants made this Vietnam month took in, not counting revoked ones. */
+export async function getMonthTakings() {
+  const row = await getDb()
+    .selectFrom("subscriptions")
+    .select((eb) => [eb.fn.coalesce(eb.fn.sum<number>("amount"), sql<number>`0`).as("total"), eb.fn.countAll<number>().as("count")])
+    .where("revokedAt", "is", null)
+    .where(sql<boolean>`date_trunc('month', created_at AT TIME ZONE 'Asia/Ho_Chi_Minh') = ${currentMonth()}::date`)
+    .executeTakeFirstOrThrow()
+  return { total: Number(row.total), count: Number(row.count) }
+}

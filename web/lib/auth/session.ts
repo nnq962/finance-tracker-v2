@@ -10,6 +10,8 @@ export type SessionUser = {
   uid: string
   name: string
   email: string
+  /** Firebase confirmed the address belongs to this user (always so with Google). */
+  emailVerified: boolean
   avatar: string
 }
 
@@ -27,6 +29,7 @@ function toSessionUser(decodedToken: DecodedIdToken): SessionUser {
       decodedToken.email?.split("@")[0] ??
       "Người dùng",
     email: decodedToken.email ?? "",
+    emailVerified: decodedToken.email_verified === true,
     avatar: decodedToken.picture ?? "",
   }
 }

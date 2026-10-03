@@ -76,6 +76,22 @@ docker exec finance-ollama-1 ollama list
 docker exec finance-ollama-1 ollama rm <model-cũ>
 ```
 
+## Gói Pro và quản trị
+
+Pro được cấp bằng tay: người dùng chuyển khoản với nội dung `FT <mã>` (xem trong
+Cài đặt → Gói của bạn), admin thấy tiền về thì cấp trong Cài đặt → Quản trị.
+Đặt trong `deploy/.env`:
+
+```sh
+ADMIN_EMAILS=email-admin@example.com          # email Google đã xác minh, cách nhau bằng dấu phẩy
+PAYMENT_BANK_NAME=Vietcombank
+PAYMENT_ACCOUNT_NUMBER=0123456789
+PAYMENT_ACCOUNT_NAME=NGUYEN VAN A
+```
+
+Chưa đặt thông tin chuyển khoản thì màn hình Gói chỉ ghi "Liên hệ quản trị viên".
+Giá và hạn mức AI nằm trong `web/lib/plans/plans.ts`.
+
 ## Cloudflare Tunnel
 
 Có hai cách, chọn một:

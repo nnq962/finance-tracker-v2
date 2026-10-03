@@ -4,7 +4,7 @@ import { AiAssistDrawer } from "@/components/ai-assist/ai-assist-drawer"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 
-import { parseTransactionWithAiAction } from "../../actions"
+import { parseTransactionWithAiAction, type AiQuota } from "../../actions"
 import { TransactionMadLibs } from "./transaction-mad-libs"
 
 const examples = [
@@ -21,8 +21,8 @@ type AiTransactionDrawerProps = {
   categoryGroups: CategoryGroup[]
   todayDateKey: string
   quota: { remaining: number; limit: number }
-  /** Called as each request goes to the AI, to count it against the quota. */
-  onRequest: () => void
+  /** The count after each request, as the server keeps it. */
+  onQuotaChange: (quota: AiQuota) => void
 }
 
 /** Records a transaction from a sentence, read by the local model on the server. */
@@ -33,7 +33,7 @@ export function AiTransactionDrawer({
   categoryGroups,
   todayDateKey,
   quota,
-  onRequest,
+  onQuotaChange,
 }: AiTransactionDrawerProps) {
   return (
     <AiAssistDrawer
@@ -43,8 +43,8 @@ export function AiTransactionDrawer({
       examples={examples}
       quota={quota}
       onSubmit={async (text) => {
-        onRequest()
         const result = await parseTransactionWithAiAction(text)
+        if (result.quota) onQuotaChange(result.quota)
         if (!result.success) throw new Error(result.error)
         return result.draft
       }}
