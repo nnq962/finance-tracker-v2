@@ -61,7 +61,7 @@ export function AccountSheet({ account, share, transactions, categoryGroups, onO
         const result = await setAccountArchivedAction(shown.id, !isLocked)
 
         if (result.success) {
-          toast.success(isLocked ? "Đã kích hoạt lại tài khoản." : "Đã ngừng sử dụng tài khoản.")
+          toast.success(isLocked ? "Đã dùng lại tài khoản" : "Đã ngừng sử dụng tài khoản")
           return
         }
 
@@ -85,7 +85,7 @@ export function AccountSheet({ account, share, transactions, categoryGroups, onO
           <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-px pb-4">
             <div className="px-3">
               <p className="text-sm text-muted-foreground">
-                {isLocked ? "Số dư đã khoá" : "Số dư hiện tại"}
+                Số dư
               </p>
               <p
                 className={cn(
@@ -98,16 +98,14 @@ export function AccountSheet({ account, share, transactions, categoryGroups, onO
             </div>
 
             <SettingsGroup>
-              <SettingsRow title="Loại" value={accountTypeLabels[shown.type]} />
-              {shown.institutionName ? (
-                <SettingsRow
-                  title={shown.type === "bank" ? "Ngân hàng" : "Ví"}
-                  value={shown.institutionName}
-                />
-              ) : null}
+              {/* "Ngân hàng: Vietcombank", or just the type for cash. */}
+              <SettingsRow
+                title={shown.institutionName ? accountTypeLabels[shown.type] : "Loại"}
+                value={shown.institutionName ?? accountTypeLabels[shown.type]}
+              />
               <SettingsRow title="Số dư ban đầu" value={formatCurrency(shown.openingBalance)} />
               {share ? <SettingsRow title="Tỉ trọng" value={share.percentageLabel} /> : null}
-              <SettingsRow title="Ghi chú" description={shown.note || undefined} value={shown.note ? undefined : "—"} />
+              {shown.note ? <SettingsRow title="Ghi chú" description={shown.note} /> : null}
             </SettingsGroup>
 
             <SettingsGroup title="Giao dịch gần đây">
@@ -142,7 +140,6 @@ export function AccountSheet({ account, share, transactions, categoryGroups, onO
             <SettingsGroup>
               <SettingsRow
                 title="Chỉnh sửa"
-                description={isLocked ? "Tiếp tục sử dụng để chỉnh sửa." : undefined}
                 disabled={isLocked || isPending}
                 onClick={() => setEditOpen(true)}
               />

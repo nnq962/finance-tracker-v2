@@ -39,11 +39,8 @@ export function DeleteAccountAlert({
     onConfirmed?.()
     scheduleUndoableDelete({
       key: `account:${account.id}`,
-      title: `Sắp xoá tài khoản ${account.name}`,
-      description:
-        "Tài khoản và toàn bộ dữ liệu liên quan sẽ bị xoá sau 6 giây.",
+      title: `Đã xoá “${account.name}”`,
       pendingMessage: "Đang xoá tài khoản…",
-      successMessage: "Đã xoá tài khoản.",
       undoMessage: "Đã giữ lại tài khoản.",
       errorMessage: "Không thể xoá tài khoản. Vui lòng thử lại.",
       onCommit: async () => {
@@ -60,11 +57,7 @@ export function DeleteAccountAlert({
         <AlertDialogHeader>
           <AlertDialogTitle>Xoá tài khoản?</AlertDialogTitle>
           <AlertDialogDescription>
-            Xoá tài khoản {account.name} sẽ xoá vĩnh viễn mọi giao dịch và
-            khoản vay nợ có liên quan, kể cả lịch sử thanh
-            toán. Số dư của các tài khoản khác trong giao dịch hoặc khoản nợ
-            liên quan sẽ được đối soát lại. Sau khi xác nhận, bạn có 6 giây để
-            hoàn tác.
+            Mọi giao dịch và khoản vay nợ của {account.name} cũng sẽ bị xoá.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

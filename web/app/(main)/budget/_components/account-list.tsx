@@ -99,11 +99,8 @@ export function AccountList({ accounts, recentTransactions, categoryGroups }: Ac
             <EmptyMedia variant="icon">
               <WalletCardsIcon />
             </EmptyMedia>
-            <EmptyTitle>Bắt đầu với tài khoản đầu tiên</EmptyTitle>
-            <EmptyDescription>
-              Thêm tiền mặt, tài khoản ngân hàng hoặc ví điện tử để theo dõi
-              số dư của bạn.
-            </EmptyDescription>
+            <EmptyTitle>Chưa có tài khoản</EmptyTitle>
+            <EmptyDescription>Thêm tài khoản đầu tiên để bắt đầu.</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <AddAccountButton />
@@ -141,7 +138,7 @@ export function AccountList({ accounts, recentTransactions, categoryGroups }: Ac
         <Collapsible defaultOpen={distribution.length === 0}>
           <CollapsibleTrigger asChild>
             <Button type="button" variant="ghost" className="group/archived">
-              Đã khoá
+              Ngừng sử dụng
               <Badge variant="outline">{archivedAccounts.length}</Badge>
               <ChevronDownIcon
                 className="transition-transform group-data-[state=open]/archived:rotate-180"
@@ -150,7 +147,7 @@ export function AccountList({ accounts, recentTransactions, categoryGroups }: Ac
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-2">
-            <SettingsGroup footer="Không dùng cho giao dịch mới và không tính vào tổng số dư.">
+            <SettingsGroup footer="Không tính vào tổng số dư">
               {archivedAccounts.map((account) => (
                 <AccountRow
                   key={account.id}

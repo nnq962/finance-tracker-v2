@@ -26,7 +26,8 @@ export default async function AccountsPage() {
     <Page>
       <PageHeader
         title="Ngân sách"
-        actions={<AddAccountButton />}
+        // With no account yet, the empty state holds the only add button.
+        actions={accounts.length > 0 ? <AddAccountButton /> : undefined}
       />
       {accounts.length > 0 ? (
         <BudgetLayout

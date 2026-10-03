@@ -54,7 +54,7 @@ export function BalanceHero({ summary, accounts }: BalanceHeroProps) {
             />
           ) : null}
           <p className="text-xs text-muted-foreground">
-            {distribution.length} tài khoản · cập nhật {summary.updatedAt}
+            {distribution.length} tài khoản
           </p>
         </div>
       }
@@ -65,7 +65,7 @@ export function BalanceHero({ summary, accounts }: BalanceHeroProps) {
           icon={group.icon}
           color={group.color}
           title={group.label}
-          description={`${group.percentageLabel} · ${group.accounts.length} tài khoản`}
+          description={group.percentageLabel}
           value={formatCurrency(group.total)}
         />
       ))}

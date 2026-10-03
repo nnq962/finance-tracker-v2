@@ -13,6 +13,7 @@ import { toast } from "sonner"
 
 import { AmountSuggestions, useAmountQuickPick } from "@/components/forms/amount-suggestions"
 import { CurrencyInput } from "@/components/forms/currency-input"
+import { RequiredMark } from "@/components/forms/required-mark"
 import { Button } from "@/components/ui/button"
 import {
   Combobox,
@@ -189,7 +190,7 @@ export function AccountForm({
           {institutionOptions && (
             <Field>
               <FieldLabel htmlFor="account-institution">
-                {institutionLabel}
+                {institutionLabel} <RequiredMark />
               </FieldLabel>
               <Combobox
                 key={accountType}
@@ -278,7 +279,9 @@ export function AccountForm({
             </Field>
           )}
           <Field>
-            <FieldLabel htmlFor="account-name">Tên tài khoản</FieldLabel>
+            <FieldLabel htmlFor="account-name">
+              Tên tài khoản <RequiredMark />
+            </FieldLabel>
             <Input
               id="account-name"
               name="name"
@@ -295,7 +298,7 @@ export function AccountForm({
 
           <Field>
             <FieldLabel htmlFor="account-balance">
-              {expectedBalance === undefined ? "Số dư ban đầu" : "Số dư hiện tại"}
+              {expectedBalance === undefined ? "Số dư ban đầu" : "Số dư hiện tại"} <RequiredMark />
             </FieldLabel>
             {expectedBalance === undefined ? null : (
               <input type="hidden" name="expectedBalance" value={expectedBalance} />
