@@ -11,7 +11,7 @@ type Context = { accounts: Account[]; categoryGroups: CategoryGroup[]; today: st
 /** The user's lists as the model sees them, under short keys ("g2", "c3", "a1"). */
 type Lists = {
   groups: { key: string; group: CategoryGroup }[]
-  categories: { key: string; item: CategoryItem; label: string }[]
+  categories: { key: string; item: CategoryItem; group: CategoryGroup; label: string }[]
   accounts: { key: string; account: Account }[]
 }
 
@@ -25,7 +25,13 @@ type When = {
   weeksAgo: number | null
   day: number | null
   month: number | null
+  hour: number | null
+  minute: number | null
+  /** "sáng", "trưa", "chiều", "tối", "đêm", or "" when no part of the day was said. */
+  dayPeriod: string
 }
+
+const dayPeriods = ["", "sáng", "trưa", "chiều", "tối", "đêm"]
 
 /** What the model answers, held to `transactionReplySchema`. */
 type Reply = When & {
@@ -55,6 +61,9 @@ export const transactionReplySchema = {
     weeksAgo: { type: ["integer", "null"] },
     day: { type: ["integer", "null"] },
     month: { type: ["integer", "null"] },
+    hour: { type: ["integer", "null"] },
+    minute: { type: ["integer", "null"] },
+    dayPeriod: { type: "string", enum: dayPeriods },
     categoryId: { type: ["string", "null"] },
     newCategoryName: { type: "string" },
     newCategoryGroupId: { type: ["string", "null"] },
@@ -65,7 +74,7 @@ export const transactionReplySchema = {
     note: { type: "string" },
     isTransaction: { type: "boolean" },
   },
-  required: ["kind", "amountSaid", "amount", "daysAgo", "weekday", "weeksAgo", "day", "month", "categoryId", "newCategoryName", "newCategoryGroupId", "newGroupName", "accountId", "toAccountId", "note", "isTransaction"],
+  required: ["kind", "amountSaid", "amount", "daysAgo", "weekday", "weeksAgo", "day", "month", "hour", "minute", "dayPeriod", "categoryId", "newCategoryName", "newCategoryGroupId", "newGroupName", "accountId", "toAccountId", "note", "isTransaction"],
 }
 
 const weekdays = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"]
@@ -89,7 +98,7 @@ function buildLists({ accounts, categoryGroups }: Context): Lists {
   return {
     groups: categoryGroups.map((group, index) => ({ key: `g${index + 1}`, group })),
     categories: categoryGroups
-      .flatMap((group) => group.items.map((item) => ({ item, label: `${group.name} › ${item.name}` })))
+      .flatMap((group) => group.items.map((item) => ({ item, group, label: `${group.name} › ${item.name}` })))
       .map((category, index) => ({ key: `c${index + 1}`, ...category })),
     accounts: accounts
       .filter((account) => account.status === "active")
@@ -103,6 +112,17 @@ function describeAccount(account: Account) {
       ? `, ${account.institutionName}`
       : ""
   return `${account.name} (${accountTypeLabels[account.type]}${institution})`
+}
+
+/** Expense and income entries apart, so the model does not reach across. */
+function listByKind(title: string, entries: { key: string; type: "expense" | "income"; label: string }[]) {
+  return (["expense", "income"] as const)
+    .map((type) => {
+      const lines = entries.filter((entry) => entry.type === type).map(({ key, label }) => `${key}: ${label}`)
+      const heading = `${title} ${type === "expense" ? "CHI (chỉ cho expense)" : "THU (chỉ cho income)"}:`
+      return `${heading}\n${lines.join("\n") || "(chưa có)"}`
+    })
+    .join("\n")
 }
 
 function systemPrompt(lists: Lists, today: string) {
@@ -123,15 +143,17 @@ Ngày: KHÔNG tự tính ra ngày, chỉ ghi lại người nói đã nói gì; 
 - weekday: thứ hai = 2, thứ ba = 3, thứ tư = 4, thứ năm = 5, thứ sáu = 6, thứ bảy = 7, chủ nhật = 8. weeksAgo: tuần này = 0, tuần trước = 1; không nói tuần thì null.
 - day, month: "ngày 5" là day 5; "mùng 2 tháng 9" là day 2, month 9. "Lương tháng 9" là tên khoản, không phải ngày.
 
-note: ghi chú, CHỈ gồm chi tiết mà danh mục chưa nói lên: nơi chốn, người đi cùng, món hay đồ cụ thể, tháng của khoản lương... Giữ gần lời người nói, viết hoa chữ đầu, bỏ số tiền, ngày và thời gian ("tháng này", "hôm qua"), tài khoản và những gì tên danh mục đã nói. Danh mục là nhóm chung (Quần áo, Đồ gia dụng...) thì ghi tên món cụ thể ("Áo khoác"). Phần lớn câu không có chi tiết thêm: khi đó note = "".
+Giờ: cũng chỉ ghi lại lời nói, không nói thì null.
+- hour, minute: "9h" là hour 9; "8 giờ rưỡi" là hour 8, minute 30; "7h15" là hour 7, minute 15. Đừng nhầm giờ với số tiền.
+- dayPeriod: buổi được nói: "sáng", "trưa", "chiều", "tối" hoặc "đêm" ("sáng nay" là sáng, "tối qua" là tối, "ăn khuya" là đêm); không nói buổi thì "".
+
+note: ghi chú, hầu hết các câu để note = "". CHỈ ghi khi người nói nêu nơi chốn ("ở quán cô Ba", "tại siêu thị"), người đi cùng ("với đồng nghiệp"), hoặc nói rõ "ghi chú ...". Giữ gần lời người nói, viết hoa chữ đầu. Không ghi tên món, đồ vật, người nhận, tháng, giờ hay bất cứ gì khác.
 
 categoryId: id danh mục cụ thể nhất CÙNG loại (chi cho expense, thu cho income); chọn theo nghĩa, không chỉ theo chữ (mẹ, bố, anh chị em là gia đình); mục "khác" chỉ khi không mục nào hợp; null nếu là transfer.
-Danh mục:
-${lists.categories.map(({ key, item, label }) => `${key} (${item.type === "expense" ? "chi" : "thu"}): ${label}`).join("\n") || "(chưa có)"}
+${listByKind("Danh mục", lists.categories.map(({ key, item, label }) => ({ key, type: item.type, label })))}
 
 Không có danh mục nào thật sự hợp thì categoryId = null (để trống tốt hơn chọn sai) và gợi ý một danh mục mới: newCategoryName là tên ngắn, chung để dùng lại được ("Xem phim", "Sách", "Cắt tóc"); newCategoryGroupId là id nhóm CÙNG loại hợp với nó, không nhóm nào hợp thì null và newGroupName là tên nhóm mới ("Giải trí", "Làm đẹp"). Đã có categoryId, hoặc là transfer, thì newCategoryName = "", newCategoryGroupId = null, newGroupName = "".
-Nhóm:
-${lists.groups.map(({ key, group }) => `${key} (${group.type === "expense" ? "chi" : "thu"}): ${group.name}`).join("\n") || "(chưa có)"}
+${listByKind("Nhóm", lists.groups.map(({ key, group }) => ({ key, type: group.type, label: group.name })))}
 
 accountId: tài khoản tiền đi ra (với income là tài khoản nhận tiền); toAccountId: tài khoản nhận của transfer, ngoài ra null. Quẹt thẻ/chuyển khoản ngân hàng X là tài khoản X. Không nói rõ tài khoản thì null, đừng đoán.
 Tài khoản:
@@ -167,7 +189,8 @@ function findGroup(lists: Lists, kind: TransactionKind, keywords: string[]) {
  */
 function examples(lists: Lists): OllamaMessage[] {
   const when = (said: Partial<When> = {}): When => ({
-    daysAgo: null, weekday: null, weeksAgo: null, day: null, month: null, ...said,
+    daysAgo: null, weekday: null, weeksAgo: null, day: null, month: null,
+    hour: null, minute: null, dayPeriod: "", ...said,
   })
   const ofType = (type: Account["type"]) => lists.accounts.filter(({ account }) => account.type === type)
   const wallet = ofType("e-wallet")[0]
@@ -183,7 +206,7 @@ function examples(lists: Lists): OllamaMessage[] {
     [
       `cà phê sáng 25 cành${wallet ? ` ${wallet.account.name}` : ""}`,
       {
-        kind: "expense", amountSaid: "25 cành", amount: 25_000, note: "", ...when(),
+        kind: "expense", amountSaid: "25 cành", amount: 25_000, note: "", ...when({ dayPeriod: "sáng" }),
         categoryId: findCategory(lists, "expense", ["ca phe", "an sang", "an uong"]),
         accountId: wallet?.key ?? null, toAccountId: null, ...noNewCategory,
       },
@@ -191,7 +214,7 @@ function examples(lists: Lists): OllamaMessage[] {
     [
       `hôm qua nhận lương tháng 9 18 củ${bank ? ` vào ${bank.account.name}` : ""}`,
       {
-        kind: "income", amountSaid: "18 củ", amount: 18_000_000, note: "Tháng 9", ...when({ daysAgo: 1 }),
+        kind: "income", amountSaid: "18 củ", amount: 18_000_000, note: "", ...when({ daysAgo: 1 }),
         categoryId: findCategory(lists, "income", ["luong"]),
         accountId: bank?.key ?? null, toAccountId: null, ...noNewCategory,
       },
@@ -205,9 +228,9 @@ function examples(lists: Lists): OllamaMessage[] {
       },
     ],
     [
-      "đổ xăng 1 lít",
+      "8h tối đổ xăng 1 lít",
       {
-        kind: "expense", amountSaid: "1 lít", amount: 100_000, note: "", ...when(),
+        kind: "expense", amountSaid: "1 lít", amount: 100_000, note: "", ...when({ hour: 8, dayPeriod: "tối" }),
         categoryId: findCategory(lists, "expense", ["xang", "di lai"]),
         accountId: null, toAccountId: null, ...noNewCategory,
       },
@@ -223,15 +246,23 @@ function examples(lists: Lists): OllamaMessage[] {
     [
       "mua đôi giày 800k",
       {
-        kind: "expense", amountSaid: "800k", amount: 800_000, note: "Đôi giày", ...when(),
+        kind: "expense", amountSaid: "800k", amount: 800_000, note: "", ...when(),
         categoryId: findCategory(lists, "expense", ["giay", "quan ao", "mua sam"]),
+        accountId: null, toAccountId: null, ...noNewCategory,
+      },
+    ],
+    [
+      "mua sữa 32k ghi chú cho con",
+      {
+        kind: "expense", amountSaid: "32k", amount: 32_000, note: "Cho con", ...when(),
+        categoryId: findCategory(lists, "expense", ["sua", "di cho", "thuc pham", "an uong"]),
         accountId: null, toAccountId: null, ...noNewCategory,
       },
     ],
     [
       "mua thuốc cảm 45k",
       {
-        kind: "expense", amountSaid: "45k", amount: 45_000, note: "Thuốc cảm", ...when(),
+        kind: "expense", amountSaid: "45k", amount: 45_000, note: "", ...when(),
         categoryId: medicine,
         newCategoryName: medicine ? "" : "Thuốc men",
         newCategoryGroupId: healthGroup,
@@ -320,6 +351,27 @@ function cleanName(value: unknown) {
   return name ? name[0].toLocaleUpperCase("vi-VN") + name.slice(1) : ""
 }
 
+// The hour a part of the day said on its own stands for ("tối qua ăn lẩu").
+const periodHours: Record<string, number> = { sáng: 8, trưa: 12, chiều: 15, tối: 19, đêm: 22 }
+
+/**
+ * The time meant by what was said, 24-hour: "4h chiều" is 16:00, "11h đêm"
+ * 23:00 but "2h đêm" 02:00. A part of the day alone takes its usual hour;
+ * nothing said is now.
+ */
+function resolveTime(said: Partial<Record<keyof When, unknown>>, now: string) {
+  const period = typeof said.dayPeriod === "string" ? said.dayPeriod : ""
+  const hour = wholeIn(said.hour, 0, 24)
+  const pad = (value: number) => String(value).padStart(2, "0")
+  if (hour === null) return period in periodHours ? `${pad(periodHours[period])}:00` : now
+
+  const afternoon =
+    ((period === "chiều" || period === "tối") && hour < 12) ||
+    (period === "trưa" && hour < 11) ||
+    (period === "đêm" && hour >= 6 && hour < 12)
+  return `${pad((afternoon ? hour + 12 : hour) % 24)}:${pad(wholeIn(said.minute, 0, 59) ?? 0)}`
+}
+
 /**
  * The category to create when none fits, unless the user already has it
  * under that name (then it is picked). Its group is the one the model
@@ -357,7 +409,7 @@ function readNewCategory(
  */
 export function readTransactionReply(
   reply: unknown,
-  { request, lists, today }: { request: string; lists: Lists; today: string },
+  { request, lists, today, now }: { request: string; lists: Lists; today: string; now: string },
 ): AiTransactionDraft | null {
   const value = (typeof reply === "object" && reply !== null ? reply : {}) as Partial<Record<keyof Reply, unknown>>
   const kind = value.kind
@@ -365,8 +417,14 @@ export function readTransactionReply(
   if (kind !== "expense" && kind !== "income" && kind !== "transfer") return null
 
   const accountId = (key: unknown) => lists.accounts.find((entry) => entry.key === key)?.account.id
-  const found = lists.categories.find((entry) => entry.key === value.categoryId)?.item
-  const category = kind !== "transfer" && found?.type === kind ? found : undefined
+  const found = lists.categories.find((entry) => entry.key === value.categoryId)
+  const category = kind !== "transfer" && found?.item.type === kind ? found.item : undefined
+  // A category of the other kind ("Quà tặng" kept for income, picked for a
+  // gift bought) is not one to use, but its group names what to make.
+  const crossed =
+    kind !== "transfer" && found && !category && !cleanName(value.newCategoryName)
+      ? { newCategoryName: found.group.name, newGroupName: found.group.name }
+      : {}
   const fromId = accountId(value.accountId)
   // A withdrawal that does not say where to goes into cash, which the model
   // knows but does not always tie to a cash account under another name ("Ví").
@@ -377,12 +435,11 @@ export function readTransactionReply(
       : undefined
   const amount = value.amount
   const said = typeof value.note === "string" ? value.note.trim().slice(0, 200) : ""
-  // A note that only repeats the category, or the day ("Tháng này"), says nothing.
-  const note =
-    (category && normalize(said) === normalize(category.name)) ||
-    /^(thang|tuan|hom|sang|trua|chieu|toi) (nay|qua|kia|truoc)$/.test(normalize(said))
-      ? ""
-      : said
+  // Notes are kept for a place, a companion or a note asked for: the
+  // request must say one ("ở", "tại", "với", "cùng", "ghi chú"), and a note
+  // that only repeats the category says nothing.
+  const asked = /\b(o|tai|voi|cung|ghi chu)\b/.test(normalize(request))
+  const note = asked && !(category && normalize(said) === normalize(category.name)) ? said : ""
 
   return {
     kind,
@@ -392,10 +449,11 @@ export function readTransactionReply(
       ? {}
       : category
         ? { categoryId: category.id }
-        : readNewCategory(value, kind, lists)),
+        : readNewCategory({ ...value, ...crossed }, kind, lists)),
     // Unsaid, the money comes from the first account, as the add sheet starts.
     accountId: fromId ?? lists.accounts[0]?.account.id,
     toAccountId: toId !== fromId ? toId : undefined,
     date: resolveDay(value, today),
+    time: resolveTime(value, now),
   }
 }

@@ -6,6 +6,7 @@ import { ollamaJson } from "@/lib/ai/ollama"
 import { getAccounts } from "@/lib/accounts/repository"
 import { requireSession } from "@/lib/auth/session"
 import { getCategoryGroups } from "@/lib/categories/repository"
+import { getCurrentLocalDateTime } from "@/lib/date-time"
 import {
   createTransaction,
   deleteTransaction,
@@ -24,7 +25,6 @@ import {
   readTransactionReply,
   transactionReplySchema,
 } from "./_lib/ai-transaction-prompt"
-import { getTransactionDateKey } from "./_lib/get-transaction-period"
 
 function failure(error: unknown): TransactionActionResult {
   if (!(error instanceof TransactionValidationError)) {
@@ -121,7 +121,7 @@ export async function parseTransactionWithAiAction(
     getAccounts(user.uid),
     getCategoryGroups(user.uid),
   ])
-  const today = getTransactionDateKey(new Date())
+  const { date: today, time: now } = getCurrentLocalDateTime()
   const { messages, lists } = buildTransactionPrompt(text, { accounts, categoryGroups, today })
 
   let reply: unknown
@@ -132,7 +132,7 @@ export async function parseTransactionWithAiAction(
     return { success: false, error: "AI đang không phản hồi. Thử lại sau ít phút nhé." }
   }
 
-  const draft = readTransactionReply(reply, { request: text, lists, today })
+  const draft = readTransactionReply(reply, { request: text, lists, today, now })
   return draft
     ? { success: true, draft }
     : { success: false, error: "AI chưa hiểu yêu cầu này, thử nói rõ hơn nhé." }

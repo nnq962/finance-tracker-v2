@@ -32,12 +32,13 @@ const kindWords: Record<TransactionKind, string> = {
   transfer: "chuyển",
 }
 
-type BlankField = "kind" | "amount" | "date" | "category" | "accountId" | "toAccountId" | "note"
+type BlankField = "kind" | "amount" | "date" | "time" | "category" | "accountId" | "toAccountId" | "note"
 
 const fieldCaptions: Record<BlankField, string> = {
   kind: "Loại giao dịch",
   amount: "Số tiền",
   date: "Ngày",
+  time: "Giờ",
   category: "Hạng mục",
   accountId: "Tài khoản",
   toAccountId: "Tài khoản nhận",
@@ -239,8 +240,8 @@ export function TransactionMadLibs({
             animate="shown"
           >
             <motion.span variants={phrase}>
-              {blank("date", { placeholder: "", filled: true, valueKey: draft.date, children: formatDayLabel(draft.date, today) })}
-              , bạn đã{" "}
+              {blank("date", { placeholder: "", filled: true, valueKey: draft.date, children: formatDayLabel(draft.date, today) })}{" "}
+              lúc {blank("time", { placeholder: "", filled: true, valueKey: draft.time, children: draft.time })}, bạn đã{" "}
             </motion.span>
             <motion.span variants={phrase}>
               {blank("kind", { placeholder: "", filled: true, valueKey: draft.kind, children: kindWords[draft.kind] })}{" "}
@@ -424,6 +425,17 @@ function BlankEditor({
       return <AmountEditor amount={draft.amount} onChange={(amount) => onChange({ amount })} />
     case "date":
       return <DateEditor date={draft.date} today={today} onPick={(date) => onPick({ date })} />
+    case "time":
+      return (
+        <Input
+          id="ai-time"
+          type="time"
+          aria-label="Giờ"
+          value={draft.time}
+          // Cleared, it keeps the last time rather than none.
+          onChange={(event) => event.target.value && onChange({ time: event.target.value })}
+        />
+      )
     case "category": {
       const suggestion = draft.suggestedCategory
       return (

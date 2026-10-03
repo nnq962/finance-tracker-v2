@@ -17,6 +17,8 @@ export type AiTransactionDraft = {
   toAccountId?: string
   /** "YYYY-MM-DD" */
   date: string
+  /** "HH:mm", 24-hour */
+  time: string
 }
 
 /** The day `days` after (or before) a "YYYY-MM-DD" key. */
