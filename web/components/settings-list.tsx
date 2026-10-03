@@ -177,4 +177,4 @@ function SettingsRow({
   )
 }
 
-export { SettingsGroup, SettingsRow }
+export { SettingsGroup, SettingsRow, pressableRow }
