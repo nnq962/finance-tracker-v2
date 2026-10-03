@@ -22,7 +22,7 @@
     "class-variance-authority": "^0.7.1",
     "cn": "^0.2.6",
     "firebase": "^12.19.0",
-    "firebase-admin": "13.10.0",
+    "firebase-admin": "14.5.0",
     "kysely": "^0.29.6",
     "lucide-react": "^1.45.0",
     "motion": "^13.2.0",

@@ -50,8 +50,10 @@ async function main() {
     const phone = await open(a)
     const laptop = await open(a)
     assert.deepEqual(await open(a, phone.browserId, phone.sessionId), phone)
-    await repository.registerPushDevice(a, phone, fids[0], 'iPhone · PWA')
+    assert.equal((await repository.registerPushDevice(a, phone, fids[0], 'iPhone · PWA')).isNew, true)
     await repository.registerPushDevice(a, laptop, fids[1], 'macOS · Chrome')
+    // Registering a linked device again is not new: it is greeted only once.
+    assert.equal((await repository.registerPushDevice(a, phone, fids[0], 'iPhone · PWA')).isNew, false)
     assert.equal((await repository.getNotificationState(a, phone)).devices.length, 2)
     assert.equal(await repository.getCurrentPushFid(a, phone), fids[0])
     await assert.rejects(repository.getCurrentPushFid(b, phone))
@@ -68,7 +70,8 @@ async function main() {
     assert.notEqual(switched.sessionId, phone.sessionId)
     assert.equal((await repository.getNotificationState(a, laptop)).devices.length, 1)
     await assert.rejects(repository.registerPushDevice(a, phone, fids[2], 'Late callback'))
-    await repository.registerPushDevice(b, switched, fids[2], 'iPhone · PWA')
+    // A device taken over from another account is new to this one.
+    assert.equal((await repository.registerPushDevice(b, switched, fids[2], 'iPhone · PWA')).isNew, true)
     await repository.closePushSession(phone.browserId, phone.sessionId)
     assert.equal(await repository.getCurrentPushFid(b, switched), fids[2])
 

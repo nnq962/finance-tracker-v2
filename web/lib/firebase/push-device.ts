@@ -28,9 +28,9 @@ function stillCurrent(uid: string, version: number) {
   return generation === version && firebaseAuth.currentUser?.uid === uid
 }
 
-async function persist(fid: string, uid: string, version: number) {
+async function persist(fid: string, uid: string, version: number, welcome = false) {
   if (!stillCurrent(uid, version)) throw new Error("Tài khoản đã thay đổi. Đăng ký thiết bị lại.")
-  const result = await registerPushDeviceAction(fid, deviceName(), uid)
+  const result = await registerPushDeviceAction(fid, deviceName(), uid, welcome)
   if (!result.success) throw new Error(result.error)
   if (!stillCurrent(uid, version)) throw new Error("Phiên đăng ký đã kết thúc.")
   notifyPushDeviceChanged()
@@ -61,7 +61,7 @@ export async function registerAccountPushDevice(uid: string) {
   try {
     // This call must remain directly in the button event to retain the permission gesture.
     const fid = await registerFcmDevice()
-    return await persist(fid, uid, version)
+    return await persist(fid, uid, version, true)
   } finally { registering-- }
 }
 

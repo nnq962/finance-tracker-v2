@@ -135,13 +135,18 @@ export async function getNotificationState(uid: string, context?: PushContext): 
   }
 }
 
+/**
+ * Links the browser's FCM registration to the user and returns its device id,
+ * and whether the device was not linked to this user before.
+ */
 export async function registerPushDevice(uid: string, context: PushContext, fid: unknown, name: unknown) {
   assertFid(fid)
   if (typeof name !== "string" || !name.trim() || name.length > 100) throw new NotificationValidationError("Tên thiết bị không hợp lệ.")
   const id = deviceIdFor(fid)
-  await getDb().transaction().execute(async (trx) => {
+  return getDb().transaction().execute(async (trx) => {
     const data = await lockBrowser(trx, context.browserId)
     assertBrowser(data, uid, context)
+    const previous = await trx.selectFrom("pushDevices").select("userId").where("id", "=", id).executeTakeFirst()
     if (data!.deviceId && data!.deviceId !== id) await unlink(trx, context.browserId, data!)
     // One FCM registration has one owner: take it over from any other browser or user.
     await trx
@@ -157,8 +162,8 @@ export async function registerPushDevice(uid: string, context: PushContext, fid:
       .onConflict((conflict) => conflict.column("id").doUpdateSet(device))
       .execute()
     await trx.updateTable("notificationBrowsers").set({ deviceId: id }).where("id", "=", context.browserId).execute()
+    return { id, isNew: previous?.userId !== uid }
   })
-  return id
 }
 
 export async function detachPushDevice(uid: string, context: PushContext) {
