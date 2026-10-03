@@ -8,6 +8,7 @@ import { toast } from "sonner"
 import { CategoryManagementSheet } from "@/components/categories/category-management-sheet"
 import { AmountSuggestions } from "@/components/forms/amount-suggestions"
 import { CurrencyInput } from "@/components/forms/currency-input"
+import { DateTimeFields } from "@/components/forms/date-time-fields"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -427,13 +428,12 @@ function BlankEditor({
       return <DateEditor date={draft.date} today={today} onPick={(date) => onPick({ date })} />
     case "time":
       return (
-        <Input
-          id="ai-time"
-          type="time"
-          aria-label="Giờ"
-          value={draft.time}
+        <DateTimeFields
+          idPrefix="ai"
+          showDate={false}
+          timeValue={draft.time}
           // Cleared, it keeps the last time rather than none.
-          onChange={(event) => event.target.value && onChange({ time: event.target.value })}
+          onTimeChange={(event) => event.target.value && onChange({ time: event.target.value })}
         />
       )
     case "category": {
