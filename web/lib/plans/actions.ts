@@ -90,6 +90,7 @@ export async function getGrantsAction(
  */
 export async function startProCheckoutAction(
   period: unknown,
+  from: unknown = "/settings",
 ): Promise<{ success: true; checkoutUrl: string } | { success: false; error: string }> {
   const user = await requireSession()
   if (period !== "month" && period !== "year") return { success: false, error: "Gói không hợp lệ." }
@@ -100,8 +101,9 @@ export async function startProCheckoutAction(
 
   try {
     const payment = await createPayment(user.uid, period)
-    // Back to the plans in settings: the sheet on a phone, the dialog on wider screens.
-    const back = `${SITE_URL}/settings?screen=plan&order=${payment.orderCode}`
+    // Back to the page the plans were opened over, which opens them again.
+    const page = from === "/overview" ? from : "/settings"
+    const back = `${SITE_URL}${page}?screen=plan&order=${payment.orderCode}`
     const link = await payos.paymentRequests.create({
       orderCode: payment.orderCode,
       amount: payment.amount,

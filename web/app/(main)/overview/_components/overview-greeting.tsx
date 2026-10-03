@@ -1,13 +1,13 @@
-import Link from "next/link"
-import { BadgeCheckIcon, SparklesIcon } from "lucide-react"
+import { BadgeCheckIcon } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { SessionUser } from "@/lib/auth/session"
 import { formatTime } from "@/lib/format-date"
-import { plans, type PlanName } from "@/lib/plans/plans"
+import type { PaymentOutcome } from "@/lib/plans/payos"
+import type { PlanState } from "@/lib/plans/plans"
+
+import { PlanInvite } from "./plan-invite"
 
 /** By the hour in Vietnam. */
 function greetingFor(now: Date) {
@@ -33,7 +33,20 @@ function initialsOf(name: string) {
  * name, the blue tick on Pro. On Free, a card invites them to Pro: below on
  * a phone, so the name keeps the whole row, and beside the greeting from lg up.
  */
-export function OverviewGreeting({ user, plan }: { user: SessionUser; plan: PlanName }) {
+export function OverviewGreeting({
+  user,
+  planState,
+  checkoutEnabled,
+  paymentOutcome,
+  openPlan,
+}: {
+  user: SessionUser
+  planState: PlanState
+  checkoutEnabled: boolean
+  paymentOutcome?: PaymentOutcome
+  /** Back from payOS: the plans open again. */
+  openPlan: boolean
+}) {
   const name = user.name.trim()
 
   return (
@@ -47,7 +60,7 @@ export function OverviewGreeting({ user, plan }: { user: SessionUser; plan: Plan
           <p className="text-sm text-muted-foreground">{greetingFor(new Date())},</p>
           <h1 className="text-2xl leading-tight font-semibold tracking-tight [overflow-wrap:anywhere] md:text-3xl">
             {name || "bạn"}
-            {plan === "pro" ? (
+            {planState.plan === "pro" ? (
               <BadgeCheckIcon
                 className="ml-1.5 inline-block size-5 fill-blue-500 align-[-0.15em] text-white"
                 role="img"
@@ -58,24 +71,12 @@ export function OverviewGreeting({ user, plan }: { user: SessionUser; plan: Plan
         </div>
       </header>
 
-      {plan === "free" ? (
-        <Card size="sm" className="lg:w-md lg:shrink-0">
-          <CardContent className="flex items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#f2e9ff] text-[#7a4aba] dark:bg-[#3b2c54] dark:text-[#d0b2ff]">
-              <SparklesIcon className="size-5" aria-hidden="true" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-heading text-base leading-snug font-extrabold">Mở khoá {plans.pro.label}</p>
-              <p className="text-sm text-muted-foreground">
-                {plans.pro.aiMonthlyLimit} lượt AI/tháng, dùng sớm AI mới
-              </p>
-            </div>
-            <Button asChild variant="grape" className="shrink-0">
-              <Link href="/settings?screen=plan">Nâng cấp</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      ) : null}
+      <PlanInvite
+        planState={planState}
+        checkoutEnabled={checkoutEnabled}
+        paymentOutcome={paymentOutcome}
+        initialOpen={openPlan}
+      />
     </div>
   )
 }

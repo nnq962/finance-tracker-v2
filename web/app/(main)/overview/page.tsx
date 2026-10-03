@@ -7,6 +7,7 @@ import { getContacts, getDebts } from "@/lib/debts/repository"
 import { summarizeAllocation, summarizeDays } from "@/lib/overview/month-data"
 import { getOverviewSummary } from "@/lib/overview/summary"
 import { getMissionState } from "@/lib/onboarding/repository"
+import { checkReturningPayment, getPayOS } from "@/lib/plans/payos"
 import { getPlanState } from "@/lib/plans/repository"
 import { getTransactionsInRange } from "@/lib/transactions/repository"
 
@@ -38,14 +39,21 @@ function getOverviewTransactionRange(today: string) {
   }
 }
 
-export default async function OverviewPage() {
+export default async function OverviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ screen?: string; order?: string }>
+}) {
+  const { screen, order } = await searchParams
   const today = todayDate()
   const transactionRange = getOverviewTransactionRange(today)
   const {
     user,
-    data: [accounts, debts, contacts, transactions, categoryGroups, missions, planState],
-  } = await loadWithSession((user) =>
-    Promise.all([
+    data: [accounts, debts, contacts, transactions, categoryGroups, missions, planState, paymentOutcome],
+  } = await loadWithSession(async (user) => {
+    // Back from payOS: settled first, so the plan read next already shows it.
+    const paymentOutcome = await checkReturningPayment(user.uid, order)
+    return Promise.all([
       getAccounts(user.uid),
       getDebts(user.uid),
       getContacts(user.uid),
@@ -57,8 +65,9 @@ export default async function OverviewPage() {
       getCategoryGroups(user.uid),
       getMissionState(user.uid),
       getPlanState(user.uid),
-    ]),
-  )
+      paymentOutcome,
+    ])
+  })
   const summary = getOverviewSummary(
     accounts,
     debts,
@@ -69,7 +78,13 @@ export default async function OverviewPage() {
 
   return (
     <Page>
-      <OverviewGreeting user={user} plan={planState.plan} />
+      <OverviewGreeting
+        user={user}
+        planState={planState}
+        checkoutEnabled={getPayOS() !== null}
+        paymentOutcome={paymentOutcome}
+        openPlan={screen === "plan"}
+      />
       <Missions state={missions} accounts={accounts} contacts={contacts} categoryGroups={categoryGroups} />
       <OverviewMonth
         accounts={accounts}

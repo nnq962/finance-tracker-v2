@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { usePathname } from "next/navigation"
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -114,6 +115,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
   const [period, setPeriod] = React.useState<PlanPeriod>("year")
   const [opening, setOpening] = React.useState(false)
   const [, startTransition] = React.useTransition()
+  const pathname = usePathname()
   const isPro = planState.plan === "pro"
   const outcome = paymentOutcome ? outcomeMessages[paymentOutcome] : undefined
   const price = proPrices[period]
@@ -121,7 +123,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
   const checkout = () => {
     setOpening(true)
     startTransition(async () => {
-      const result = await startProCheckoutAction(period)
+      const result = await startProCheckoutAction(period, pathname)
       if (!result.success) {
         toast.error(result.error)
         setOpening(false)
