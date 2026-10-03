@@ -91,7 +91,7 @@ export function NetWorth({ data }: { data: OverviewSummary["netWorth"] }) {
             <NetWorthTile
               icon={ArrowDownLeftIcon}
               color="emerald"
-              label="Được nợ"
+              label="Cho vay"
               value={data.receivable}
               onClick={() => router.push("/debts")}
             />
