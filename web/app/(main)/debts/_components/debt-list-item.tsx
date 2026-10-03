@@ -1,8 +1,9 @@
 import { SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { formatCurrency } from "@/lib/format-currency"
+import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
 import { cn } from "@/lib/utils"
 
+import { getDueProjection } from "../_lib/debt-payments"
 import { getDebtDeadline, getDebtMetrics } from "../_lib/debt-presentation"
 import type { Contact, Debt } from "../_types/debt"
 
@@ -36,7 +37,9 @@ function getDebtStatus(debt: Debt) {
 }
 
 export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemProps) {
-  const { remainingAmount, totalAmount } = getDebtMetrics(debt)
+  const { remainingAmount, totalAmount, paidAmount } = getDebtMetrics(debt)
+  // With interest and a due date ahead: what it will come to then.
+  const projection = getDueProjection(debt, paidAmount)
   const status = getDebtStatus(debt)
   const amount = formatCurrency(status.isSettled ? totalAmount : remainingAmount, {
     signDisplay: "never",
@@ -54,9 +57,11 @@ export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemPr
       description={
         [
           debt.note,
-          debt.hasInterest && !status.isSettled
-            ? `Lãi ${debt.interestRate}%/${debt.interestPeriod === "year" ? "năm" : "tháng"}`
-            : null,
+          projection
+            ? `Đến hạn: ${formatCompactCurrency(projection.remainingAmount, 1)}`
+            : debt.hasInterest && !status.isSettled
+              ? `Lãi ${debt.interestRate}%/${debt.interestPeriod === "year" ? "năm" : "tháng"}`
+              : null,
         ]
           .filter(Boolean)
           .join(" · ") || undefined

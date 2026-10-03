@@ -51,7 +51,9 @@ import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import type { Account } from "@/lib/accounts/types"
 import { actionErrorMessage } from "@/lib/stale-deploy"
-import { todayDate } from "../_lib/debt-payments"
+import { getInterest, todayDate } from "../_lib/debt-payments"
+import { formatDebtDate } from "../_lib/debt-presentation"
+import { formatCurrency } from "@/lib/format-currency"
 
 import type {
   Contact,
@@ -123,6 +125,9 @@ export function AddDebtSheet({
   const [dueAt, setDueAt] = React.useState(debt?.dueAt ?? "")
   const [addingContact, setAddingContact] = React.useState(false)
   const { errors, clear, report, reset: resetErrors } = useFieldErrors<DebtField>()
+  // Tracked for the preview of principal plus interest.
+  const [interestRate, setInterestRate] = React.useState(debt?.interestRate?.toString() ?? "")
+  const [interestPeriod, setInterestPeriod] = React.useState<InterestPeriod>(debt?.interestPeriod ?? "month")
 
   // A controlled open never passes through onOpenChange, so reset the form
   // fields here whenever the sheet opens.
@@ -137,6 +142,8 @@ export function AddDebtSheet({
       setContactId(debt?.contactId ?? "")
       setRecordedAt(debt?.recordedAt ?? todayDate())
       setDueAt(debt?.dueAt ?? "")
+      setInterestRate(debt?.interestRate?.toString() ?? "")
+      setInterestPeriod(debt?.interestPeriod ?? "month")
       amountPick.reset(debt?.amount ?? null)
     }
   }
@@ -474,7 +481,10 @@ export function AddDebtSheet({
                         placeholder="0"
                         required
                         aria-invalid={Boolean(errors.interestRate) || undefined}
-                        onInput={() => clear("interestRate")}
+                        onInput={(event) => {
+                          setInterestRate(event.currentTarget.value)
+                          clear("interestRate")
+                        }}
                       />
                       <InputGroupAddon align="inline-end">
                         <InputGroupText>%</InputGroupText>
@@ -489,7 +499,8 @@ export function AddDebtSheet({
                     <Select
                       disabled={pending}
                       name="interestPeriod"
-                      defaultValue={debt?.interestPeriod ?? "month"}
+                      value={interestPeriod}
+                      onValueChange={(value) => setInterestPeriod(value as InterestPeriod)}
                       required
                     >
                       <SelectTrigger
@@ -508,6 +519,15 @@ export function AddDebtSheet({
                     </Select>
                   </Field>
                 </div>
+              ) : null}
+              {hasInterest ? (
+                <InterestPreview
+                  amount={amountPick.amount}
+                  rate={Number(interestRate.replace(",", "."))}
+                  period={interestPeriod}
+                  recordedAt={recordedAt}
+                  dueAt={dueAt}
+                />
               ) : null}
             </FieldGroup>
           </fieldset>
@@ -529,5 +549,47 @@ export function AddDebtSheet({
         ) : null}
       </SheetContent>
     </Sheet>
+  )
+}
+
+/**
+ * Principal plus interest on the due date, as the form is filled in, or
+ * what a month or year adds when there is no due date.
+ */
+function InterestPreview({
+  amount,
+  rate,
+  period,
+  recordedAt,
+  dueAt,
+}: {
+  amount: number | null
+  rate: number
+  period: InterestPeriod
+  recordedAt: string
+  dueAt: string
+}) {
+  if (!amount || !(rate > 0 && rate <= 100)) return null
+  const periodInterest = Math.round((amount * rate) / 100)
+
+  if (!dueAt || !recordedAt || dueAt < recordedAt) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Lãi mỗi {period === "year" ? "năm" : "tháng"}:{" "}
+        <span className="font-medium text-foreground tabular-nums">{formatCurrency(periodInterest)}</span>
+      </p>
+    )
+  }
+
+  const { days, interestAmount, totalAmount } = getInterest(
+    { amount, hasInterest: true, interestRate: rate, interestPeriod: period, recordedAt } as Debt,
+    dueAt,
+  )
+  return (
+    <p className="text-sm text-muted-foreground">
+      Đến hạn {formatDebtDate(dueAt)} ({days} ngày): gốc {formatCurrency(amount)} + lãi{" "}
+      {formatCurrency(interestAmount)} ={" "}
+      <span className="font-medium text-foreground tabular-nums">{formatCurrency(totalAmount)}</span>
+    </p>
   )
 }

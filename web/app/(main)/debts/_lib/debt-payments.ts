@@ -1,1 +1,1 @@
-export { todayDate, getInterest, getOpeningPaidAmount, getPaymentMetrics, updateDebtPayment } from "@/lib/debts/calculations"
+export { todayDate, getDueProjection, getInterest, getOpeningPaidAmount, getPaymentMetrics, updateDebtPayment } from "@/lib/debts/calculations"

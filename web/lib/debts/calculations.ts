@@ -14,6 +14,17 @@ export function getInterest(debt: Debt, date: string) {
   return { days, interestAmount, totalAmount: debt.amount + interestAmount }
 }
 
+/**
+ * What an open debt with interest will come to on its due date, less what
+ * is already paid: interest keeps accruing by the day until then. None once
+ * settled, without interest or a due date, or when the due date has passed.
+ */
+export function getDueProjection(debt: Debt, paidAmount: number, today = todayDate()) {
+  if (!debt.hasInterest || !debt.dueAt || debt.dueAt <= today || debt.status === "settled") return null
+  const { days, interestAmount, totalAmount } = getInterest(debt, debt.dueAt)
+  return { dueAt: debt.dueAt, days, interestAmount, totalAmount, remainingAmount: Math.max(0, totalAmount - paidAmount) }
+}
+
 // Older records can contain an opening paid amount without payment history.
 export function getOpeningPaidAmount(debt: Debt) {
   return Math.max(0, debt.paidAmount - (debt.payments ?? []).reduce((sum, payment) => sum + payment.amount, 0))

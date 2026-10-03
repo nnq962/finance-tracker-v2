@@ -22,7 +22,7 @@ import {
 } from "../_lib/debt-presentation"
 import type { Contact, Debt, NewDebt, NewDebtPayment } from "../_types/debt"
 import { RecordDebtPaymentSheet } from "./record-debt-payment-sheet"
-import { todayDate } from "../_lib/debt-payments"
+import { getDueProjection, todayDate } from "../_lib/debt-payments"
 
 type DebtDetailPanelProps = {
   contacts: Contact[]
@@ -63,12 +63,13 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
   const deadline = getDebtDeadline(debt)
   const collecting = debt.direction === "lent"
   const paidLabel = collecting ? "Đã thu" : "Đã trả"
+  const projection = getDueProjection(debt, paidAmount)
 
   return (
     <div className="space-y-6">
       <Card>
         <CardContent className="space-y-2">
-          <p className="text-sm text-muted-foreground">Còn lại</p>
+          <p className="text-sm text-muted-foreground">{debt.hasInterest ? "Còn lại hôm nay" : "Còn lại"}</p>
           <p className="font-heading text-3xl leading-tight font-extrabold tabular-nums [overflow-wrap:anywhere]">
             {formatCurrency(remainingAmount, { signDisplay: "never" })}
           </p>
@@ -79,6 +80,15 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
           {debt.hasInterest ? (
             <p className="text-xs text-muted-foreground">
               Gốc {formatCurrency(debt.amount, { signDisplay: "never" })} + lãi {formatCurrency(interestAmount)}
+            </p>
+          ) : null}
+          {projection ? (
+            // What it comes to on the due date, as interest keeps accruing until then.
+            <p className="text-sm text-muted-foreground">
+              Đến hạn {formatDebtDate(projection.dueAt)}:{" "}
+              <span className="font-heading font-extrabold text-foreground tabular-nums">
+                {formatCurrency(projection.remainingAmount)}
+              </span>
             </p>
           ) : null}
         </CardContent>

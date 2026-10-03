@@ -8,7 +8,7 @@ const { sql, createUser, cleanup } = require('./lib/db-harness.cjs')
 const repository = require('../lib/debts/repository.ts')
 const { getTransactions, getTransactionsInRange, getDebtPaymentsInRange, createTransaction, updateTransaction, deleteTransaction } = require('../lib/transactions/repository.ts')
 const { deleteAccount, updateAccount } = require('../lib/accounts/repository.ts')
-const { todayDate, getPaymentMetrics } = require('../lib/debts/calculations.ts')
+const { todayDate, getPaymentMetrics, getDueProjection } = require('../lib/debts/calculations.ts')
 const { getDaysUntilDue, getDebtDeadline } = require('../app/(main)/debts/_lib/debt-presentation.ts')
 let uid
 let otherUid
@@ -107,6 +107,11 @@ async function run() {
       equal(await count('debts', 'id', cascade.id), 0)
     }
     await rejects(() => repository.createDebt(uid, {recordingMode:'invalid'}, randomUUID()))
+    // A due date ahead shows principal plus the interest accrued by then, less what is paid.
+    const projected = {amount:10000000, hasInterest:true, interestRate:2, interestPeriod:'month', recordedAt:'2026-08-05', dueAt:'2026-11-05', status:'active'}
+    equal(getDueProjection(projected, 1000000, '2026-10-04'), {dueAt:'2026-11-05', days:92, interestAmount:613333, totalAmount:10613333, remainingAmount:9613333})
+    equal(getDueProjection({...projected, dueAt:'2026-10-01'}, 0, '2026-10-04'), null)
+    equal(getDueProjection({...projected, hasInterest:false}, 0, '2026-10-04'), null)
     const values = {contactId:contact.id, accountId:acc.a, direction:'lent', amount:3000000, paidAmount:0, hasInterest:true, interestRate:1, interestPeriod:'month', recordedAt:'2026-08-01', note:'test debt'}
     const operation = randomUUID()
     const debt = await repository.createDebt(uid, values, operation)
