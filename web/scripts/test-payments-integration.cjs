@@ -11,7 +11,7 @@ const { sql, createUser, cleanup } = require('./lib/db-harness.cjs')
 const { PayOS } = require('@payos/node')
 const payments = require('../lib/plans/payments.ts')
 const plans = require('../lib/plans/repository.ts')
-const { proPrices } = require('../lib/plans/plans.ts')
+const { proPrices, priceWithCoupon } = require('../lib/plans/plans.ts')
 const coupons = require('../lib/plans/coupons.ts')
 const { getDb } = require('../lib/db/client.ts')
 const { POST } = require('../app/api/payos/webhook/route.ts')
@@ -119,7 +119,10 @@ async function run() {
 
     // The checkout costs less; settling grants at that price and counts the use.
     const discounted = await payments.createPayment(buyer, 'month', coupon)
-    assert.equal(discounted.amount, price - Math.round(price * 0.3))
+    // Prices after a code round to the nearest 1.000đ: 29.000đ less 30% is 20.000đ, less 35% is 19.000đ.
+    assert.equal(discounted.amount, 20_000)
+    assert.deepEqual(priceWithCoupon('month', 35), { listAmount: 29_000, discount: 10_000, amount: 19_000 })
+    assert.equal(priceWithCoupon('year', 100).amount, 0)
     assert.equal(await send(await webhookBody({ orderCode: discounted.orderCode, amount: discounted.amount })), 200)
     assert.equal(await grantCount(buyer), 1)
     await assert.rejects(coupons.findUsableCoupon(getDb(), buyer, code), /đã dùng/)
@@ -146,7 +149,14 @@ async function run() {
     assert.equal(freeGrants.filter((result) => result.status === 'fulfilled').length, 1)
     assert.equal(Number((await sql('SELECT count(*) FROM coupon_redemptions r JOIN coupons c ON c.id = r.coupon_id WHERE c.code = $1', [free])).rows[0].count), 1)
     await assert.rejects(coupons.grantWithCoupon(third, 'month', code), /không hợp lệ/)
-    await sql('DELETE FROM coupons WHERE code = ANY($1)', [[code, expired, free]])
+    // An admin changes a code's limits, or deletes it with its uses.
+    const editable = (await sql('SELECT id FROM coupons WHERE code = $1', [expired])).rows[0].id
+    await coupons.updateCoupon(editable, { percentOff: 35, maxRedemptions: null, expiresOn: '' })
+    assert.equal((await coupons.findUsableCoupon(getDb(), third, expired)).percentOff, 35)
+    await assert.rejects(coupons.updateCoupon(editable, { percentOff: 0 }), /Mức giảm/)
+    await coupons.deleteCoupon(editable)
+    await assert.rejects(coupons.findUsableCoupon(getDb(), third, expired), /không hợp lệ/)
+    await sql('DELETE FROM coupons WHERE code = ANY($1)', [[code, free]])
 
     console.log('Payment checks passed: signatures, settling once, races, underpaid, late payment, test pings, coupons.')
   } finally {

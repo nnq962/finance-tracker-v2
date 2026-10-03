@@ -136,13 +136,8 @@ export async function listCouponsForAdmin(): Promise<AdminCoupon[]> {
   }))
 }
 
-/** A new code, made by an admin. */
-export async function createCoupon(
-  adminId: string,
-  values: { code: unknown; percentOff: unknown; maxRedemptions?: unknown; expiresOn?: unknown },
-) {
-  const code = normalizeCouponCode(values.code)
-  if (!/^[A-Z0-9]{3,20}$/.test(code)) throw new PlanError("Mã gồm 3–20 chữ cái hoặc số, không dấu.")
+/** The limits an admin sets on a code, checked: percentage, uses and last day. */
+function parseCouponLimits(values: { percentOff: unknown; maxRedemptions?: unknown; expiresOn?: unknown }) {
   const percentOff = values.percentOff
   if (typeof percentOff !== "number" || !Number.isInteger(percentOff) || percentOff < 1 || percentOff > 100) {
     throw new PlanError("Mức giảm từ 1 đến 100%.")
@@ -152,23 +147,52 @@ export async function createCoupon(
     throw new PlanError("Số lượt phải là số nguyên lớn hơn 0.")
   }
   const expiresOn = values.expiresOn
-  if (expiresOn !== undefined && expiresOn !== "" && (typeof expiresOn !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(expiresOn))) {
+  if (expiresOn !== undefined && expiresOn !== null && expiresOn !== "" && (typeof expiresOn !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(expiresOn))) {
     throw new PlanError("Ngày hết hạn không hợp lệ.")
   }
+  return {
+    percentOff,
+    maxRedemptions: typeof max === "number" ? max : null,
+    // To the end of that day in Vietnam.
+    expiresAt: typeof expiresOn === "string" && expiresOn ? sql<Date>`(${expiresOn}::date + 1)::timestamp AT TIME ZONE 'Asia/Ho_Chi_Minh'` : null,
+  }
+}
+
+/** A new code, made by an admin. */
+export async function createCoupon(
+  adminId: string,
+  values: { code: unknown; percentOff: unknown; maxRedemptions?: unknown; expiresOn?: unknown },
+) {
+  const code = normalizeCouponCode(values.code)
+  if (!/^[A-Z0-9]{3,20}$/.test(code)) throw new PlanError("Mã gồm 3–20 chữ cái hoặc số, không dấu.")
   const inserted = await getDb()
     .insertInto("coupons")
-    .values({
-      code,
-      percentOff,
-      maxRedemptions: typeof max === "number" ? max : null,
-      // To the end of that day in Vietnam.
-      expiresAt: typeof expiresOn === "string" && expiresOn ? sql<Date>`(${expiresOn}::date + 1)::timestamp AT TIME ZONE 'Asia/Ho_Chi_Minh'` : null,
-      createdBy: adminId,
-    })
+    .values({ code, ...parseCouponLimits(values), createdBy: adminId })
     .onConflict((conflict) => conflict.column("code").doNothing())
     .returning("id")
     .executeTakeFirst()
   if (!inserted) throw new PlanError("Mã này đã tồn tại.")
+}
+
+/** New limits for a code; the code itself stays, as people may have it already. */
+export async function updateCoupon(
+  couponId: string,
+  values: { percentOff: unknown; maxRedemptions?: unknown; expiresOn?: unknown },
+) {
+  const updated = await getDb()
+    .updateTable("coupons")
+    .set(parseCouponLimits(values))
+    .where("id", "=", couponId)
+    .executeTakeFirst()
+  if (!updated.numUpdatedRows) throw new PlanError("Mã giảm giá không còn tồn tại.")
+}
+
+/**
+ * Removes a code with its record of who used it, so they could use one by
+ * the same name again; payments made with it keep their discount.
+ */
+export async function deleteCoupon(couponId: string) {
+  await getDb().deleteFrom("coupons").where("id", "=", couponId).execute()
 }
 
 /** Turns a code on or off; uses already made stay. */

@@ -1,39 +1,55 @@
 "use client"
 
 import * as React from "react"
-import { LoaderCircleIcon, PlusIcon, SaveIcon, TicketPercentIcon } from "lucide-react"
+import { LoaderCircleIcon, PlusIcon, SaveIcon, TicketPercentIcon, Trash2Icon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/animate-ui/components/radix/alert-dialog"
 import { RequiredMark } from "@/components/forms/required-mark"
 import { useFieldErrors } from "@/components/forms/use-field-errors"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Button } from "@/components/ui/button"
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group"
 import { Sheet, SheetContent, SheetFooter } from "@/components/ui/sheet"
 import { Switch } from "@/components/ui/switch"
+import { formatCurrency } from "@/lib/format-currency"
 import { formatDate, toDateKey } from "@/lib/format-date"
-import { createCouponAction, setCouponActiveAction } from "@/lib/plans/actions"
+import {
+  createCouponAction,
+  deleteCouponAction,
+  setCouponActiveAction,
+  updateCouponAction,
+} from "@/lib/plans/actions"
 import type { AdminCoupon } from "@/lib/plans/coupons"
+import { priceWithCoupon } from "@/lib/plans/plans"
+
+/** The last day a code works, from its end (the start of the next day in Vietnam). */
+const lastDayOf = (expiresAt: string) => toDateKey(new Date(new Date(expiresAt).getTime() - 1))
 
 /** The coupons with their uses, each switched on or off, and a sheet to make a new one. */
 export function AdminCoupons({ coupons }: { coupons: AdminCoupon[] }) {
   const router = useRouter()
-  const [creating, setCreating] = React.useState(false)
-  const [toggling, setToggling] = React.useState<string | null>(null)
+  // "new", a coupon's id, or nothing; kept while the sheet slides away.
+  const [editing, setEditing] = React.useState<string | null>(null)
+  const [open, setOpen] = React.useState(false)
+  const coupon = coupons.find((item) => item.id === editing)
 
-  const toggle = async (coupon: AdminCoupon, active: boolean) => {
-    setToggling(coupon.id)
-    const result = await setCouponActiveAction(coupon.id, active)
-    setToggling(null)
-    if (!result.success) {
-      toast.error(result.error)
-      return
-    }
-    router.refresh()
+  const openSheet = (id: string) => {
+    setEditing(id)
+    setOpen(true)
   }
 
   return (
@@ -41,33 +57,27 @@ export function AdminCoupons({ coupons }: { coupons: AdminCoupon[] }) {
       <SettingsGroup
         title="Mã giảm giá"
         action={
-          <Button type="button" variant="ghost" size="xs" onClick={() => setCreating(true)}>
+          <Button type="button" variant="ghost" size="xs" onClick={() => openSheet("new")}>
             <PlusIcon />
             Tạo mã
           </Button>
         }
       >
         {coupons.length > 0 ? (
-          coupons.map((coupon) => (
+          coupons.map((item) => (
             <SettingsRow
-              key={coupon.id}
+              key={item.id}
               icon={TicketPercentIcon}
-              color="violet"
-              title={`${coupon.code} · −${coupon.percentOff}%`}
+              color={item.active ? "violet" : "slate"}
+              title={`${item.code} · −${item.percentOff}%`}
               description={[
-                `Đã dùng ${coupon.used}${coupon.maxRedemptions ? `/${coupon.maxRedemptions}` : ""}`,
-                coupon.expiresAt ? `Hết hạn ${formatDate(toDateKey(new Date(new Date(coupon.expiresAt).getTime() - 1)))}` : null,
+                `Đã dùng ${item.used}${item.maxRedemptions ? `/${item.maxRedemptions}` : ""}`,
+                item.expiresAt ? `Hết hạn ${formatDate(lastDayOf(item.expiresAt))}` : null,
               ]
                 .filter(Boolean)
                 .join(" · ")}
-              action={
-                <Switch
-                  checked={coupon.active}
-                  disabled={toggling === coupon.id}
-                  aria-label={`${coupon.active ? "Tắt" : "Bật"} mã ${coupon.code}`}
-                  onCheckedChange={(active) => void toggle(coupon, active)}
-                />
-              }
+              value={item.active ? undefined : "Đã tắt"}
+              onClick={() => openSheet(item.id)}
             />
           ))
         ) : (
@@ -75,19 +85,21 @@ export function AdminCoupons({ coupons }: { coupons: AdminCoupon[] }) {
         )}
       </SettingsGroup>
 
-      <Sheet open={creating} onOpenChange={setCreating}>
+      <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           showCloseButton={false}
           aria-describedby={undefined}
           className="gap-0 data-[side=right]:w-full sm:max-w-md!"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
-          <SheetNavHeader title="Tạo mã giảm giá" />
-          {/* Mounted per opening, so each starts empty. */}
-          {creating ? (
+          <SheetNavHeader title={coupon ? `Mã ${coupon.code}` : "Tạo mã giảm giá"} />
+          {/* Keyed, so each opening starts from the code's saved values. */}
+          {editing && (editing === "new" || coupon) ? (
             <CouponForm
-              onCreated={() => {
-                setCreating(false)
+              key={editing}
+              coupon={coupon}
+              onDone={() => {
+                setOpen(false)
                 router.refresh()
               }}
             />
@@ -100,11 +112,13 @@ export function AdminCoupons({ coupons }: { coupons: AdminCoupon[] }) {
 
 type CouponField = "code" | "percentOff" | "maxRedemptions" | "expiresOn"
 
-function CouponForm({ onCreated }: { onCreated: () => void }) {
-  const [code, setCode] = React.useState("")
-  const [percentOff, setPercentOff] = React.useState("")
-  const [maxRedemptions, setMaxRedemptions] = React.useState("")
-  const [expiresOn, setExpiresOn] = React.useState("")
+function CouponForm({ coupon, onDone }: { coupon?: AdminCoupon; onDone: () => void }) {
+  const [code, setCode] = React.useState(coupon?.code ?? "")
+  const [percentOff, setPercentOff] = React.useState(coupon ? String(coupon.percentOff) : "")
+  const [maxRedemptions, setMaxRedemptions] = React.useState(coupon?.maxRedemptions ? String(coupon.maxRedemptions) : "")
+  const [expiresOn, setExpiresOn] = React.useState(coupon?.expiresAt ? lastDayOf(coupon.expiresAt) : "")
+  const [active, setActive] = React.useState(coupon?.active ?? true)
+  const [deleteOpen, setDeleteOpen] = React.useState(false)
   const [pending, setPending] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   const { errors, clear, report } = useFieldErrors<CouponField>()
@@ -122,7 +136,9 @@ function CouponForm({ onCreated }: { onCreated: () => void }) {
         if (!Number.isInteger(percent) || percent < 1 || percent > 100) found.percentOff = "Nhập mức giảm từ 1 đến 100%."
         const max = maxRedemptions ? Number(maxRedemptions) : undefined
         if (max !== undefined && (!Number.isInteger(max) || max < 1)) found.maxRedemptions = "Nhập số nguyên lớn hơn 0."
-        if (expiresOn && expiresOn < toDateKey(new Date())) found.expiresOn = "Không thể chọn ngày đã qua."
+        if (expiresOn && expiresOn < toDateKey(new Date()) && expiresOn !== (coupon?.expiresAt ? lastDayOf(coupon.expiresAt) : "")) {
+          found.expiresOn = "Không thể chọn ngày đã qua."
+        }
         const ids: Record<CouponField, string> = {
           code: "coupon-code",
           percentOff: "coupon-percent",
@@ -132,14 +148,25 @@ function CouponForm({ onCreated }: { onCreated: () => void }) {
         if (report(found, ["code", "percentOff", "maxRedemptions", "expiresOn"], (name) => ids[name])) return
 
         setPending(true)
-        const result = await createCouponAction({ code, percentOff: percent, maxRedemptions: max, expiresOn })
+        const limits = { percentOff: percent, maxRedemptions: max ?? null, expiresOn }
+        const result = coupon
+          ? await updateCouponAction(coupon.id, limits)
+          : await createCouponAction({ code, ...limits })
+        if (result.success && coupon && active !== coupon.active) {
+          const toggled = await setCouponActiveAction(coupon.id, active)
+          if (!toggled.success) {
+            setPending(false)
+            setErrorMessage(toggled.error)
+            return
+          }
+        }
         setPending(false)
         if (!result.success) {
           setErrorMessage(result.error)
           return
         }
-        toast.success(`Đã tạo mã ${code}`)
-        onCreated()
+        toast.success(coupon ? `Đã lưu mã ${code}` : `Đã tạo mã ${code}`)
+        onDone()
       }}
     >
       <fieldset disabled={pending} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
@@ -150,6 +177,8 @@ function CouponForm({ onCreated }: { onCreated: () => void }) {
             </FieldLabel>
             <Input
               id="coupon-code"
+              // The code stays once made: people may already have it.
+              disabled={Boolean(coupon)}
               value={code}
               maxLength={20}
               autoCapitalize="characters"
@@ -181,7 +210,15 @@ function CouponForm({ onCreated }: { onCreated: () => void }) {
                 <InputGroupText>%</InputGroupText>
               </InputGroupAddon>
             </InputGroup>
-            {errors.percentOff ? <FieldError>{errors.percentOff}</FieldError> : null}
+            {errors.percentOff ? (
+              <FieldError>{errors.percentOff}</FieldError>
+            ) : Number(percentOff) >= 1 && Number(percentOff) <= 100 ? (
+              // The prices it gives, rounded as checkout rounds them.
+              <FieldDescription>
+                Gói tháng {formatCurrency(priceWithCoupon("month", Number(percentOff)).amount)} · Gói năm{" "}
+                {formatCurrency(priceWithCoupon("year", Number(percentOff)).amount)}
+              </FieldDescription>
+            ) : null}
           </Field>
           <Field data-invalid={Boolean(errors.maxRedemptions) || undefined}>
             <FieldLabel htmlFor="coupon-max">Số lượt tối đa</FieldLabel>
@@ -216,15 +253,62 @@ function CouponForm({ onCreated }: { onCreated: () => void }) {
             </div>
             {errors.expiresOn ? <FieldError>{errors.expiresOn}</FieldError> : null}
           </Field>
+          {coupon ? (
+            <Field orientation="horizontal">
+              <FieldContent>
+                <FieldLabel htmlFor="coupon-active">Đang hoạt động</FieldLabel>
+                <FieldDescription>Tắt để ngừng nhận mã, lượt đã dùng vẫn giữ.</FieldDescription>
+              </FieldContent>
+              <Switch id="coupon-active" checked={active} onCheckedChange={setActive} />
+            </Field>
+          ) : null}
+          {coupon ? (
+            <Button type="button" variant="outline" className="w-full" onClick={() => setDeleteOpen(true)}>
+              <Trash2Icon />
+              Xoá mã
+            </Button>
+          ) : null}
         </FieldGroup>
       </fieldset>
       <SheetFooter>
         {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
         <Button type="submit" className="w-full" disabled={pending}>
           {pending ? <LoaderCircleIcon className="animate-spin" /> : <SaveIcon />}
-          Tạo mã
+          {coupon ? "Lưu thay đổi" : "Tạo mã"}
         </Button>
       </SheetFooter>
+
+      {coupon ? (
+        <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Xoá mã {coupon.code}?</AlertDialogTitle>
+              <AlertDialogDescription>
+                {coupon.used > 0
+                  ? `Lịch sử ${coupon.used} lượt dùng sẽ mất. Muốn giữ lịch sử, hãy tắt mã thay vì xoá.`
+                  : "Mã sẽ bị xoá vĩnh viễn."}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Huỷ</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  const result = await deleteCouponAction(coupon.id)
+                  if (!result.success) {
+                    toast.error(result.error)
+                    return
+                  }
+                  toast.success(`Đã xoá mã ${coupon.code}`)
+                  onDone()
+                }}
+              >
+                <Trash2Icon />
+                Xoá mã
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      ) : null}
     </form>
   )
 }

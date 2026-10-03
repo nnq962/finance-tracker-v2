@@ -6,9 +6,11 @@ import { requireSession } from "@/lib/auth/session"
 import { requireAdmin } from "@/lib/plans/admin"
 import {
   createCoupon,
+  deleteCoupon,
   findUsableCoupon,
   grantWithCoupon,
   setCouponActive,
+  updateCoupon,
   type Coupon,
 } from "@/lib/plans/coupons"
 import { getDb } from "@/lib/db/client"
@@ -188,6 +190,39 @@ export async function createCouponAction(values: {
   const admin = await requireAdmin()
   try {
     await createCoupon(admin.uid, values)
+    revalidatePath("/settings")
+    return { success: true }
+  } catch (error) {
+    return failure(error)
+  }
+}
+
+function assertCouponId(couponId: unknown): asserts couponId is string {
+  if (typeof couponId !== "string" || !/^[0-9a-f-]{36}$/.test(couponId)) throw new PlanError("Mã giảm giá không hợp lệ.")
+}
+
+/** New limits for a code. Admins only. */
+export async function updateCouponAction(
+  couponId: unknown,
+  values: { percentOff: unknown; maxRedemptions?: unknown; expiresOn?: unknown },
+): Promise<PlanActionResult> {
+  await requireAdmin()
+  try {
+    assertCouponId(couponId)
+    await updateCoupon(couponId, values)
+    revalidatePath("/settings")
+    return { success: true }
+  } catch (error) {
+    return failure(error)
+  }
+}
+
+/** Removes a code. Admins only. */
+export async function deleteCouponAction(couponId: unknown): Promise<PlanActionResult> {
+  await requireAdmin()
+  try {
+    assertCouponId(couponId)
+    await deleteCoupon(couponId)
     revalidatePath("/settings")
     return { success: true }
   } catch (error) {

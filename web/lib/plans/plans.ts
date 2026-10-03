@@ -20,11 +20,15 @@ export const proPrices = {
  */
 export const MIN_CHECKOUT_AMOUNT = 2_000
 
-/** The price of a period after a coupon: what is taken off, rounded to the đồng, and what is left. */
+/**
+ * The price of a period after a coupon, rounded to the nearest 1.000đ so it
+ * reads cleanly (35% off 29.000đ is 19.000đ, not 18.850đ), and what that
+ * takes off.
+ */
 export function priceWithCoupon(period: PlanPeriod, percentOff: number) {
   const listAmount = proPrices[period].amount
-  const discount = Math.round((listAmount * percentOff) / 100)
-  return { listAmount, discount, amount: listAmount - discount }
+  const amount = Math.round((listAmount * (100 - percentOff)) / 100 / 1_000) * 1_000
+  return { listAmount, discount: listAmount - amount, amount }
 }
 
 /** A user's plan now: Pro until `proEndsAt` (ISO), else free. */
