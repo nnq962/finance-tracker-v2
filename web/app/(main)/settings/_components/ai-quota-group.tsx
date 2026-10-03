@@ -11,7 +11,9 @@ export function AiQuotaGroup({ planState }: { planState: PlanState }) {
   const isPro = planState.plan === "pro"
   const used = Math.min(planState.aiUsed, planState.aiLimit)
   const percent = planState.aiLimit > 0 ? (used / planState.aiLimit) * 100 : 0
-  const remaining = Math.max(0, planState.aiLimit - planState.aiUsed)
+  // The first of next month, Vietnam time, when the count starts over.
+  const month = Number(toDateKey(new Date()).slice(5, 7))
+  const renewsOn = `01/${String((month % 12) + 1).padStart(2, "0")}`
   const hasCredits = planState.aiCredits > 0
 
   return (
@@ -29,7 +31,7 @@ export function AiQuotaGroup({ planState }: { planState: PlanState }) {
           </div>
           <Progress value={percent} tone={percent >= 90 ? "coral" : isPro ? "grape" : "sky"} aria-label="Lượt AI đã dùng" />
           <p className="text-xs text-muted-foreground">
-            Còn {remaining} lượt, làm mới vào ngày 1 hằng tháng
+            Làm mới {renewsOn}
             {planState.proEndsAt ? ` · Pro đến ${formatDate(toDateKey(planState.proEndsAt))}` : ""}
           </p>
         </div>
@@ -40,7 +42,7 @@ export function AiQuotaGroup({ planState }: { planState: PlanState }) {
           icon={GiftIcon}
           color="amber"
           title="Lượt thưởng"
-          description="Dùng khi hết lượt tháng, không hết hạn"
+          description="Dùng khi hết lượt tháng"
           value={String(planState.aiCredits)}
         />
       ) : null}
