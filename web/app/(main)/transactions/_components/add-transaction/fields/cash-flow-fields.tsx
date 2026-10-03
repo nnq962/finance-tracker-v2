@@ -92,13 +92,15 @@ export function CashFlowFields({
           defaultValue={defaultValues?.accountId ?? lastUsedAccountId}
           onValueChange={() => onFieldChange("accountId")}
           required
+          // Editing with every account archived: an empty list would open as a stray box.
+          disabled={availableAccounts.length === 0}
         >
           <SelectTrigger
             id={`${kind}-account`}
             className="w-full"
             aria-invalid={Boolean(errors.accountId) || undefined}
           >
-            <SelectValue placeholder="Chọn tài khoản" />
+            <SelectValue placeholder={availableAccounts.length === 0 ? "Chưa có tài khoản" : "Chọn tài khoản"} />
           </SelectTrigger>
           <SelectContent>
             <AccountSelectGroups accounts={availableAccounts} />
