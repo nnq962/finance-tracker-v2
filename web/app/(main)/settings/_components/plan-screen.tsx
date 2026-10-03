@@ -1,44 +1,64 @@
 "use client"
 
-import { CopyIcon } from "lucide-react"
+import * as React from "react"
+import { LoaderCircleIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDate, toDateKey } from "@/lib/format-date"
-import { plans, proPrices, type PlanState } from "@/lib/plans/plans"
-
-/** Where to send money for Pro, from the server's settings; none until it is set. */
-export type PaymentInfo = {
-  bankName: string
-  accountNumber: string
-  accountName: string
-}
+import { startProCheckoutAction } from "@/lib/plans/actions"
+import { plans, proPrices, type PlanPeriod, type PlanState } from "@/lib/plans/plans"
+import type { PaymentOutcome } from "@/lib/plans/payos"
 
 type PlanScreenProps = {
   planState: PlanState
-  paymentInfo?: PaymentInfo
-  /** What to write on the transfer, so the payment is matched to this user. */
-  reference: string
+  /** payOS is set up, so Pro can be bought here. */
+  checkoutEnabled: boolean
+  /** How the payment the user just came back from stands. */
+  paymentOutcome?: PaymentOutcome
 }
 
-async function copy(text: string, label: string) {
-  try {
-    await navigator.clipboard.writeText(text)
-    toast.success(`Đã sao chép ${label}.`)
-  } catch {
-    toast.error("Không sao chép được, hãy chép tay nhé.")
-  }
+const outcomeMessages: Partial<Record<PaymentOutcome, string>> = {
+  granted: "Thanh toán thành công. Cảm ơn bạn đã nâng cấp Pro!",
+  settled: "Thanh toán thành công. Cảm ơn bạn đã nâng cấp Pro!",
+  pending: "Đang chờ xác nhận thanh toán. Pro sẽ được kích hoạt ngay khi nhận được tiền.",
+  underpaid: "Số tiền nhận được chưa đủ. Quản trị viên sẽ kiểm tra và liên hệ với bạn.",
+  cancelled: "Bạn đã huỷ thanh toán.",
+  expired: "Phiên thanh toán đã hết hạn. Hãy thử lại nhé.",
 }
 
-/** The user's plan, this month's AI requests, the plans side by side and how to pay for Pro. */
-export function PlanScreen({ planState, paymentInfo, reference }: PlanScreenProps) {
+/** The user's plan, this month's AI requests, the plans side by side and buying Pro through payOS. */
+export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanScreenProps) {
+  const [opening, setOpening] = React.useState<PlanPeriod | null>(null)
+  const [, startTransition] = React.useTransition()
   const isPro = planState.plan === "pro"
   const aiRemaining = Math.max(0, planState.aiLimit - planState.aiUsed)
+  const outcome = paymentOutcome ? outcomeMessages[paymentOutcome] : undefined
+
+  const checkout = (period: PlanPeriod) => {
+    setOpening(period)
+    startTransition(async () => {
+      const result = await startProCheckoutAction(period)
+      if (!result.success) {
+        toast.error(result.error)
+        setOpening(null)
+        return
+      }
+      // payOS's page shows the QR and opens the bank app, then sends the user back here.
+      window.location.assign(result.checkoutUrl)
+    })
+  }
 
   return (
     <div className="space-y-6">
+      {outcome ? (
+        <SettingsGroup>
+          <SettingsRow title={outcome} />
+        </SettingsGroup>
+      ) : null}
+
       <SettingsGroup title="Gói hiện tại">
         <SettingsRow
           title="Gói"
@@ -73,37 +93,24 @@ export function PlanScreen({ planState, paymentInfo, reference }: PlanScreenProp
       <SettingsGroup
         title={isPro ? "Gia hạn Pro" : "Nâng cấp Pro"}
         footer={
-          paymentInfo
-            ? "Chuyển khoản đúng nội dung bên dưới. Pro được kích hoạt trong vòng 24 giờ sau khi nhận được tiền; gia hạn sớm sẽ cộng nối vào hạn hiện tại."
+          checkoutEnabled
+            ? "Thanh toán bằng QR chuyển khoản qua payOS. Pro được kích hoạt ngay khi nhận được tiền; gia hạn sớm sẽ cộng nối vào hạn hiện tại."
             : "Liên hệ quản trị viên để nâng cấp Pro."
         }
       >
-        <SettingsRow title={`Pro ${proPrices.month.label}`} value={formatCurrency(proPrices.month.amount)} />
-        <SettingsRow
-          title={`Pro ${proPrices.year.label}`}
-          description={`Chỉ ${formatCurrency(Math.round(proPrices.year.amount / 12))} mỗi tháng`}
-          value={formatCurrency(proPrices.year.amount)}
-        />
-        {paymentInfo ? (
-          <>
-            <SettingsRow title="Ngân hàng" value={paymentInfo.bankName} />
-            <SettingsRow
-              title="Số tài khoản"
-              value={paymentInfo.accountNumber}
-              action={<CopyIcon className="size-4 text-muted-foreground" aria-hidden="true" />}
-              chevron={false}
-              onClick={() => copy(paymentInfo.accountNumber, "số tài khoản")}
-            />
-            <SettingsRow title="Chủ tài khoản" value={paymentInfo.accountName} />
-            <SettingsRow
-              title="Nội dung chuyển khoản"
-              value={reference}
-              action={<CopyIcon className="size-4 text-muted-foreground" aria-hidden="true" />}
-              chevron={false}
-              onClick={() => copy(reference, "nội dung chuyển khoản")}
-            />
-          </>
-        ) : null}
+        {(["month", "year"] as const).map((period) => (
+          <SettingsRow
+            key={period}
+            title={`Pro ${proPrices[period].label}`}
+            description={
+              period === "year" ? `Chỉ ${formatCurrency(Math.round(proPrices.year.amount / 12))} mỗi tháng` : undefined
+            }
+            value={formatCurrency(proPrices[period].amount)}
+            action={opening === period ? <LoaderCircleIcon className="size-4 animate-spin text-muted-foreground" aria-hidden="true" /> : undefined}
+            disabled={opening !== null}
+            onClick={checkoutEnabled ? () => checkout(period) : undefined}
+          />
+        ))}
       </SettingsGroup>
     </div>
   )

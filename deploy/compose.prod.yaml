@@ -23,12 +23,12 @@ services:
       # The AI assistant's model, the one deploy.sh pulls.
       OLLAMA_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-gemma4:e4b}
-      # Who grants Pro by hand (verified emails, comma separated), and where
-      # users send the money; the plan screen says to ask the admin until set.
+      # Who grants Pro by hand (verified emails, comma separated), and payOS,
+      # which sells it; checkout stays off until all three keys are set.
       ADMIN_EMAILS: ${ADMIN_EMAILS:-}
-      PAYMENT_BANK_NAME: ${PAYMENT_BANK_NAME:-}
-      PAYMENT_ACCOUNT_NUMBER: ${PAYMENT_ACCOUNT_NUMBER:-}
-      PAYMENT_ACCOUNT_NAME: ${PAYMENT_ACCOUNT_NAME:-}
+      PAYOS_CLIENT_ID: ${PAYOS_CLIENT_ID:-}
+      PAYOS_API_KEY: ${PAYOS_API_KEY:-}
+      PAYOS_CHECKSUM_KEY: ${PAYOS_CHECKSUM_KEY:-}
     volumes:
       - type: bind
         source: ${FIREBASE_CREDENTIALS_FILE:?Set the absolute path to the Firebase Admin credentials JSON}

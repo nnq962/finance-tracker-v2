@@ -146,6 +146,21 @@ export interface NotificationSettings {
   userId: string;
 }
 
+export interface Payments {
+  amount: number;
+  checkoutUrl: string | null;
+  createdAt: Generated<Timestamp>;
+  id: Generated<string>;
+  orderCode: Generated<number>;
+  paidAt: Timestamp | null;
+  paymentLinkId: string | null;
+  period: string;
+  reference: string | null;
+  status: Generated<string>;
+  subscriptionId: string | null;
+  userId: string;
+}
+
 export interface PushDevices {
   browserId: string;
   createdAt: Generated<Timestamp>;
@@ -207,6 +222,7 @@ export interface DB {
   notificationLogDevices: NotificationLogDevices;
   notificationLogs: NotificationLogs;
   notificationSettings: NotificationSettings;
+  payments: Payments;
   pushDevices: PushDevices;
   subscriptions: Subscriptions;
   transactions: Transactions;

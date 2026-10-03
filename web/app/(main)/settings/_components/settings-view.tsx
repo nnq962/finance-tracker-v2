@@ -26,13 +26,14 @@ import type { SessionUser } from "@/lib/auth/session"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { NotificationState } from "@/lib/notifications/types"
 import type { AdminData } from "@/lib/plans/admin-data"
+import type { PaymentOutcome } from "@/lib/plans/payos"
 import { plans, type PlanState } from "@/lib/plans/plans"
 
 import { AdminScreen } from "./admin-screen"
 import { InstallAppRow } from "./install-app-row"
 import { NotificationDevices } from "./notification-devices"
 import { NotificationPreferences } from "./notification-preferences"
-import { PlanScreen, type PaymentInfo } from "./plan-screen"
+import { PlanScreen } from "./plan-screen"
 import { SalaryCalculator } from "./salary-calculator"
 import { SignOutRow } from "./sign-out-row"
 import { ThemeOptions, themeOptions, useThemeChoice } from "./theme-options"
@@ -70,8 +71,10 @@ type SettingsViewProps = {
   notifications: NotificationState
   categoryGroups: CategoryGroup[]
   planState: PlanState
-  paymentInfo?: PaymentInfo
-  paymentReference: string
+  /** payOS is set up, so Pro can be bought here. */
+  checkoutEnabled: boolean
+  /** How the payment the user just came back from stands. */
+  paymentOutcome?: PaymentOutcome
   /** Only for admins: every user and the month's takings. */
   adminData?: AdminData
   /** Opens this screen straight away, e.g. from the getting-started checklist. */
@@ -83,8 +86,8 @@ export function SettingsView({
   notifications,
   categoryGroups,
   planState,
-  paymentInfo,
-  paymentReference,
+  checkoutEnabled,
+  paymentOutcome,
   adminData,
   initialScreen,
 }: SettingsViewProps) {
@@ -101,7 +104,7 @@ export function SettingsView({
   const renderScreen = (screen: Screen) => {
     switch (screen) {
       case "plan":
-        return <PlanScreen planState={planState} paymentInfo={paymentInfo} reference={paymentReference} />
+        return <PlanScreen planState={planState} checkoutEnabled={checkoutEnabled} paymentOutcome={paymentOutcome} />
       case "admin":
         return adminData ? <AdminScreen data={adminData} /> : null
       case "appearance":

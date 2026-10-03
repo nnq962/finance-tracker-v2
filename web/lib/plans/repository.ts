@@ -1,8 +1,9 @@
 import "server-only"
 
-import { sql } from "kysely"
+import { sql, type Transaction } from "kysely"
 
 import { getDb } from "@/lib/db/client"
+import type { DB } from "@/lib/db/types"
 import { toDateKey } from "@/lib/format-date"
 import { plans, proPrices, type PlanPeriod, type PlanState } from "@/lib/plans/plans"
 
@@ -92,40 +93,52 @@ export async function releaseAiRequest(userId: string, month: string) {
 }
 
 /**
- * Gives a user Pro for a period, starting now or where their Pro ends. The
- * user's row is locked so two grants at once still follow one another.
+ * Adds a grant of Pro inside `trx`, starting now or where the user's Pro
+ * ends, and returns its id. The user's row is locked so two grants at once
+ * still follow one another.
  */
+export async function insertGrant(
+  trx: Transaction<DB>,
+  userId: string,
+  { period, amount, note, grantedBy }: { period: PlanPeriod; amount: number; note?: string; grantedBy: string },
+) {
+  const user = await trx.selectFrom("users").select("id").where("id", "=", userId).forUpdate().executeTakeFirst()
+  if (!user) throw new PlanError("Người dùng không tồn tại.")
+
+  const last = await trx
+    .selectFrom("subscriptions")
+    .select((eb) => eb.fn.max("endsAt").as("endsAt"))
+    .where("userId", "=", userId)
+    .where("revokedAt", "is", null)
+    .executeTakeFirst()
+  const now = new Date()
+  const startsAt = last?.endsAt && new Date(last.endsAt) > now ? new Date(last.endsAt) : now
+
+  const { id } = await trx
+    .insertInto("subscriptions")
+    .values({
+      userId,
+      plan: "pro",
+      startsAt,
+      endsAt: sql<Date>`${startsAt}::timestamptz + make_interval(months => ${proPrices[period].months})`,
+      amount,
+      note: note || null,
+      grantedBy,
+    })
+    .returning("id")
+    .executeTakeFirstOrThrow()
+  return id
+}
+
+/** Gives a user Pro for a period by hand, from an admin who saw the payment arrive. */
 export async function grantPro(
   adminId: string,
   userId: string,
   { period, amount, note }: { period: PlanPeriod; amount: number; note?: string },
 ) {
-  await getDb().transaction().execute(async (trx) => {
-    const user = await trx.selectFrom("users").select("id").where("id", "=", userId).forUpdate().executeTakeFirst()
-    if (!user) throw new PlanError("Người dùng không tồn tại.")
-
-    const last = await trx
-      .selectFrom("subscriptions")
-      .select((eb) => eb.fn.max("endsAt").as("endsAt"))
-      .where("userId", "=", userId)
-      .where("revokedAt", "is", null)
-      .executeTakeFirst()
-    const now = new Date()
-    const startsAt = last?.endsAt && new Date(last.endsAt) > now ? new Date(last.endsAt) : now
-
-    await trx
-      .insertInto("subscriptions")
-      .values({
-        userId,
-        plan: "pro",
-        startsAt,
-        endsAt: sql<Date>`${startsAt}::timestamptz + make_interval(months => ${proPrices[period].months})`,
-        amount,
-        note: note || null,
-        grantedBy: adminId,
-      })
-      .execute()
-  })
+  return getDb()
+    .transaction()
+    .execute((trx) => insertGrant(trx, userId, { period, amount, note, grantedBy: adminId }))
 }
 
 /** Ends a user's Pro now: every grant not yet over is revoked. */

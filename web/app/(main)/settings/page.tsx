@@ -7,7 +7,8 @@ import { getNotificationState } from "@/lib/notifications/repository"
 import { getPushContext } from "@/lib/notifications/context"
 import { isAdmin } from "@/lib/plans/admin"
 import { getAdminData } from "@/lib/plans/admin-data"
-import { paymentReference } from "@/lib/plans/plans"
+import { getPayment } from "@/lib/plans/payments"
+import { getPayOS, syncPayment, type PaymentOutcome } from "@/lib/plans/payos"
 import { getPlanState } from "@/lib/plans/repository"
 
 import { SettingsView } from "./_components/settings-view"
@@ -16,27 +17,44 @@ export const metadata: Metadata = {
   title: "Cài đặt",
 }
 
-export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ screen?: string }> }) {
-  const { screen } = await searchParams
+/**
+ * Where the user's payment stands on coming back from payOS: asked of payOS
+ * when the webhook has not settled it yet, so Pro shows at once. Only the
+ * user's own payment; any trouble just reads as still pending.
+ */
+async function checkReturningPayment(userId: string, order: string | undefined): Promise<PaymentOutcome | undefined> {
+  const orderCode = Number(order)
+  if (!order || !Number.isSafeInteger(orderCode)) return undefined
+  const payment = await getPayment(orderCode).catch(() => undefined)
+  if (payment?.userId !== userId) return undefined
+  return syncPayment(orderCode).catch((error) => {
+    console.error("payOS payment check failed", { orderCode }, error)
+    return "pending" as const
+  })
+}
+
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ screen?: string; order?: string }>
+}) {
+  const { screen, order } = await searchParams
   const {
     user,
-    data: [notifications, categoryGroups, planState, adminData],
-  } = await loadWithSession((user) =>
-    Promise.all([
+    data: [notifications, categoryGroups, planState, adminData, paymentOutcome],
+  } = await loadWithSession(async (user) => {
+    // Settled first, so the plan read next already shows it.
+    const paymentOutcome = await checkReturningPayment(user.uid, order)
+    return Promise.all([
       getPushContext()
         .catch(() => undefined)
         .then((context) => getNotificationState(user.uid, context)),
       getCategoryGroups(user.uid),
       getPlanState(user.uid),
       isAdmin(user) ? getAdminData() : undefined,
-    ]),
-  )
-  // Where to pay for Pro, set on the server; the plan screen says to ask the admin until it is.
-  const { PAYMENT_BANK_NAME, PAYMENT_ACCOUNT_NUMBER, PAYMENT_ACCOUNT_NAME } = process.env
-  const paymentInfo =
-    PAYMENT_BANK_NAME && PAYMENT_ACCOUNT_NUMBER && PAYMENT_ACCOUNT_NAME
-      ? { bankName: PAYMENT_BANK_NAME, accountNumber: PAYMENT_ACCOUNT_NUMBER, accountName: PAYMENT_ACCOUNT_NAME }
-      : undefined
+      paymentOutcome,
+    ])
+  })
 
   return (
     <Page>
@@ -50,11 +68,11 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         notifications={notifications}
         categoryGroups={categoryGroups}
         planState={planState}
-        paymentInfo={paymentInfo}
-        paymentReference={paymentReference(user.uid)}
+        checkoutEnabled={getPayOS() !== null}
+        paymentOutcome={paymentOutcome}
         adminData={adminData}
-        // Deep link from the getting-started checklist.
-        initialScreen={screen === "notifications" ? "notifications" : undefined}
+        // Deep links: the getting-started checklist, and the way back from payOS.
+        initialScreen={screen === "notifications" || screen === "plan" ? screen : undefined}
       />
     </Page>
   )

@@ -287,6 +287,49 @@ CREATE TABLE public.notification_settings (
 
 
 --
+-- Name: payments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.payments (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    user_id text NOT NULL,
+    order_code bigint NOT NULL,
+    period text NOT NULL,
+    amount bigint NOT NULL,
+    status text DEFAULT 'pending'::text NOT NULL,
+    payment_link_id text,
+    checkout_url text,
+    reference text,
+    paid_at timestamp with time zone,
+    subscription_id uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT payments_amount_check CHECK ((amount > 0)),
+    CONSTRAINT payments_check CHECK (((status = 'paid'::text) = (paid_at IS NOT NULL))),
+    CONSTRAINT payments_period_check CHECK ((period = ANY (ARRAY['month'::text, 'year'::text]))),
+    CONSTRAINT payments_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'paid'::text, 'cancelled'::text, 'expired'::text])))
+);
+
+
+--
+-- Name: payment_order_code_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.payment_order_code_seq
+    START WITH 100001
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: payment_order_code_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.payment_order_code_seq OWNED BY public.payments.order_code;
+
+
+--
 -- Name: push_devices; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -365,6 +408,13 @@ CREATE TABLE public.users (
     checklist_hidden_at timestamp with time zone,
     CONSTRAINT users_id_check CHECK ((id ~ '^[A-Za-z0-9_-]{1,128}$'::text))
 );
+
+
+--
+-- Name: payments order_code; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payments ALTER COLUMN order_code SET DEFAULT nextval('public.payment_order_code_seq'::regclass);
 
 
 --
@@ -528,6 +578,22 @@ ALTER TABLE ONLY public.notification_settings
 
 
 --
+-- Name: payments payments_order_code_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payments
+    ADD CONSTRAINT payments_order_code_key UNIQUE (order_code);
+
+
+--
+-- Name: payments payments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payments
+    ADD CONSTRAINT payments_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: push_devices push_devices_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -649,6 +715,13 @@ CREATE INDEX notification_logs_date_idx ON public.notification_logs USING btree 
 --
 
 CREATE INDEX notification_settings_due_idx ON public.notification_settings USING btree (next_reminder_at) WHERE notifications_enabled;
+
+
+--
+-- Name: payments_user_id_created_at_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX payments_user_id_created_at_idx ON public.payments USING btree (user_id, created_at);
 
 
 --
@@ -899,6 +972,22 @@ ALTER TABLE ONLY public.notification_settings
 
 
 --
+-- Name: payments payments_subscription_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payments
+    ADD CONSTRAINT payments_subscription_id_fkey FOREIGN KEY (subscription_id) REFERENCES public.subscriptions(id) ON DELETE SET NULL;
+
+
+--
+-- Name: payments payments_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payments
+    ADD CONSTRAINT payments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: push_devices push_devices_browser_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -991,4 +1080,5 @@ INSERT INTO dbmate.schema_migrations (version) VALUES
     ('20261002000001'),
     ('20261002000002'),
     ('20261002000003'),
-    ('20261003000001');
+    ('20261003000001'),
+    ('20261003000002');
