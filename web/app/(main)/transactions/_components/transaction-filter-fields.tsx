@@ -197,8 +197,8 @@ export function TransactionFilterFields({
 
       {(filter === "all" || filter === "expense") &&
       expenseCategoryGroups.length > 0 ? (
-        <Field aria-label="Lọc theo hạng mục chi">
-          <FieldLabel>Hạng mục chi</FieldLabel>
+        <Field aria-label="Lọc theo nhóm chi">
+          <FieldLabel>Nhóm chi</FieldLabel>
           <ToggleGroup
             type="multiple"
             size="sm"
@@ -209,7 +209,7 @@ export function TransactionFilterFields({
               updateCategoryGroupSelection("expense", categoryGroupIds)
             }
             className="flex-wrap"
-            aria-label="Lọc theo hạng mục chi"
+            aria-label="Lọc theo nhóm chi"
           >
             {expenseCategoryGroups.map((group) => (
               <ToggleGroupItem key={group.id} value={group.id}>
@@ -222,8 +222,8 @@ export function TransactionFilterFields({
 
       {(filter === "all" || filter === "income") &&
       incomeCategoryGroups.length > 0 ? (
-        <Field aria-label="Lọc theo hạng mục thu">
-          <FieldLabel>Hạng mục thu</FieldLabel>
+        <Field aria-label="Lọc theo nhóm thu">
+          <FieldLabel>Nhóm thu</FieldLabel>
           <ToggleGroup
             type="multiple"
             size="sm"
@@ -234,7 +234,7 @@ export function TransactionFilterFields({
               updateCategoryGroupSelection("income", categoryGroupIds)
             }
             className="flex-wrap"
-            aria-label="Lọc theo hạng mục thu"
+            aria-label="Lọc theo nhóm thu"
           >
             {incomeCategoryGroups.map((group) => (
               <ToggleGroupItem key={group.id} value={group.id}>

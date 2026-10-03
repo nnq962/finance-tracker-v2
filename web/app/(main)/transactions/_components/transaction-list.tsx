@@ -14,7 +14,6 @@ import type { CategoryGroup } from "@/lib/categories/types"
 
 import { groupTransactionsByDate } from "../_lib/group-transactions-by-date"
 import type { Transaction } from "../_types/transaction"
-import { AddTransactionButton } from "./add-transaction-button"
 import { TransactionDateGroup } from "./transaction-date-group"
 
 type TransactionListProps = {
@@ -62,9 +61,6 @@ export function TransactionList({
           <EmptyTitle>Chưa có giao dịch trong tháng này</EmptyTitle>
           <EmptyDescription>Ghi khoản thu chi đầu tiên để theo dõi tiền của bạn.</EmptyDescription>
         </EmptyHeader>
-        <EmptyContent>
-          <AddTransactionButton accounts={accounts} categoryGroups={categoryGroups} />
-        </EmptyContent>
       </Empty>
     )
   }
