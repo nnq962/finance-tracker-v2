@@ -66,6 +66,12 @@ export function AiAssistDrawer<Result>({
   const [phase, setPhase] = React.useState<Phase<Result>>({ name: "input" })
   const [typing, setTyping] = React.useState(false)
   const [text, setText] = React.useState("")
+  // A request answered after the drawer was closed is dropped, so the
+  // content stays as it was while the drawer slides away.
+  const openRef = React.useRef(open)
+  React.useEffect(() => {
+    openRef.current = open
+  }, [open])
   const submit = (value: string) => {
     const trimmed = value.trim()
     if (!trimmed) return
@@ -73,7 +79,7 @@ export function AiAssistDrawer<Result>({
     // Only the request still awaited moves on; after a reset its answer is dropped.
     const settle = (next: Phase<Result>) =>
       setPhase((current) =>
-        current.name === "thinking" && current.token === token ? next : current,
+        openRef.current && current.name === "thinking" && current.token === token ? next : current,
       )
     setPhase({ name: "thinking", text: trimmed, token })
     onSubmit(trimmed).then(
@@ -95,8 +101,10 @@ export function AiAssistDrawer<Result>({
     setText("")
   }
 
+  // Closing only stops the microphone; the content stays put while the
+  // drawer slides away and is cleared once it is gone (see onAnimationEnd).
   const handleOpenChange = (next: boolean) => {
-    if (!next) reset()
+    if (!next) speech.cancel()
     onOpenChange(next)
   }
 
@@ -105,7 +113,12 @@ export function AiAssistDrawer<Result>({
 
   return (
     <AiDrawer open={open} onOpenChange={handleOpenChange}>
-      <AiDrawerContent>
+      <AiDrawerContent
+        onAnimationEnd={(event) => {
+          // The drawer's own closing slide, not one bubbling from inside it.
+          if (event.target === event.currentTarget && !open) reset()
+        }}
+      >
         {/* The drawer spans the screen like shadcn's; its content keeps a
             phone's width, centred. */}
         <div className="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col">
