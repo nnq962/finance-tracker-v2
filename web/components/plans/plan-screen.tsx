@@ -9,7 +9,6 @@ import {
   CircleCheckIcon,
   ClockIcon,
   LoaderCircleIcon,
-  MinusIcon,
   ShieldCheckIcon,
   SparklesIcon,
   type LucideIcon,
@@ -43,20 +42,20 @@ type PlanScreenProps = {
 type OutcomeTone = "success" | "waiting" | "problem"
 
 const outcomeMessages: Partial<Record<PaymentOutcome, { tone: OutcomeTone; title: string; description?: string }>> = {
-  granted: { tone: "success", title: "Đã nâng cấp Pro", description: "Cảm ơn bạn đã ủng hộ Finance Tracker!" },
-  settled: { tone: "success", title: "Đã nâng cấp Pro", description: "Cảm ơn bạn đã ủng hộ Finance Tracker!" },
+  granted: { tone: "success", title: "Đã nâng cấp Pro", description: "Cảm ơn bạn đã tin dùng Finance Tracker." },
+  settled: { tone: "success", title: "Đã nâng cấp Pro", description: "Cảm ơn bạn đã tin dùng Finance Tracker." },
   pending: {
     tone: "waiting",
     title: "Đang chờ xác nhận thanh toán",
-    description: "Pro sẽ được kích hoạt ngay khi nhận được tiền.",
+    description: "Gói Pro sẽ được kích hoạt ngay khi nhận được thanh toán.",
   },
   underpaid: {
     tone: "problem",
     title: "Số tiền nhận được chưa đủ",
     description: "Quản trị viên sẽ kiểm tra và liên hệ với bạn.",
   },
-  cancelled: { tone: "problem", title: "Bạn đã huỷ thanh toán" },
-  expired: { tone: "problem", title: "Phiên thanh toán đã hết hạn", description: "Hãy thử lại nhé." },
+  cancelled: { tone: "problem", title: "Thanh toán đã bị huỷ" },
+  expired: { tone: "problem", title: "Phiên thanh toán đã hết hạn", description: "Vui lòng thử lại." },
 }
 
 const outcomeTones: Record<OutcomeTone, { icon: LucideIcon; className: string }> = {
@@ -69,43 +68,29 @@ const outcomeTones: Record<OutcomeTone, { icon: LucideIcon; className: string }>
 const yearSaving = proPrices.month.amount * 12 - proPrices.year.amount
 const yearSavingPercent = Math.round((yearSaving / (proPrices.month.amount * 12)) * 100)
 
-/** Everything but the AI assistant is the same on both plans. */
-const comparison: { feature: string; free: string | boolean; pro: string | boolean }[] = [
-  { feature: "Trợ lý AI", free: `${plans.free.aiMonthlyLimit} lượt/tháng`, pro: `${plans.pro.aiMonthlyLimit} lượt/tháng` },
-  { feature: "Dùng sớm tính năng AI mới", free: false, pro: true },
-  { feature: "Ghi chép thu chi", free: true, pro: true },
-  { feature: "Tài khoản & ví", free: true, pro: true },
-  { feature: "Ngân sách", free: true, pro: true },
-  { feature: "Vay nợ", free: true, pro: true },
-  { feature: "Nhắc ghi chi tiêu", free: true, pro: true },
-]
-
 const faqs = [
   {
     question: "Trợ lý AI làm được gì?",
     answer:
-      "Hiện tại trợ lý ghi giao dịch từ một câu bạn gõ hoặc nói, hiểu cả cách nói quen thuộc như “trưa nay ăn phở 45 cành”. Sửa, xoá giao dịch và hỏi đáp về chi tiêu là những việc tiếp theo, đến với Pro trước.",
+      "Trợ lý AI ghi giao dịch từ câu bạn nhập hoặc nói, kể cả cách nói thông dụng. Các tính năng mới như chỉnh sửa giao dịch và hỏi đáp về chi tiêu sẽ ra mắt trước cho người dùng Pro.",
   },
   {
     question: "Thanh toán như thế nào?",
     answer:
-      "Bạn quét mã QR chuyển khoản trên trang của payOS bằng ứng dụng ngân hàng bất kỳ. Pro được kích hoạt ngay khi tiền về, không cần chờ duyệt.",
+      "Quét mã QR trên trang payOS bằng ứng dụng ngân hàng bất kỳ. Gói Pro được kích hoạt ngay khi giao dịch thành công.",
   },
   {
-    question: "Pro có tự động gia hạn không?",
-    answer: `Không. Mỗi lần thanh toán dùng cho đúng thời hạn bạn chọn; hết hạn, tài khoản tự về gói ${plans.free.label}.`,
+    question: "Gói Pro có tự động gia hạn không?",
+    answer: `Không. Mỗi lần thanh toán áp dụng cho thời hạn đã chọn; gia hạn sớm được cộng nối tiếp, không mất ngày còn lại. Khi hết hạn, tài khoản chuyển về gói ${plans.free.label}.`,
   },
   {
-    question: "Gia hạn sớm có bị mất ngày còn lại không?",
-    answer: "Không. Thời hạn mới được cộng nối vào sau hạn hiện tại.",
-  },
-  {
-    question: "Hết Pro thì dữ liệu của tôi thế nào?",
-    answer: `Giữ nguyên toàn bộ. Chỉ số lượt trợ lý AI mỗi tháng quay về mức của gói ${plans.free.label}.`,
+    question: "Dữ liệu có bị ảnh hưởng khi hết Pro không?",
+    answer: `Không. Toàn bộ dữ liệu được giữ nguyên, chỉ hạn mức trợ lý AI trở về mức của gói ${plans.free.label}.`,
   },
   {
     question: "Lượt AI được tính thế nào?",
-    answer: "Mỗi yêu cầu gửi trợ lý AI, gõ hay nói, tính là một lượt; yêu cầu trợ lý không xử lý được thì không bị tính. Lượt được làm mới vào ngày 1 hằng tháng; khi hết, lượt thưởng từ nhiệm vụ được dùng tiếp và không hết hạn.",
+    answer:
+      "Mỗi yêu cầu gửi trợ lý AI tính là một lượt; yêu cầu không xử lý được sẽ không bị tính. Hạn mức được làm mới vào ngày 1 hằng tháng. Khi hết, hệ thống dùng lượt thưởng từ nhiệm vụ, loại lượt không có thời hạn.",
   },
 ]
 
@@ -148,10 +133,10 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
         </div>
         <div className="space-y-1.5">
           <h2 className={cn("font-heading text-2xl leading-tight font-extrabold", page && "md:text-4xl")}>
-            {isPro ? "Bạn đang dùng Pro" : "Làm được nhiều hơn với trợ lý AI"}
+            {isPro ? "Bạn đang dùng Pro" : `Finance Tracker ${plans.pro.label}`}
           </h2>
           <p className={cn("text-sm leading-relaxed text-muted-foreground", page && "md:text-base")}>
-            Chỉ cần gõ hoặc nói, trợ lý AI lo phần còn lại.
+            Trợ lý AI thông minh, tài chính trong tầm tay.
           </p>
         </div>
       </header>
@@ -196,23 +181,23 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
                 {plans.pro.label}
                 <Badge variant="grape">{isPro ? "Đang dùng" : "Khuyên dùng"}</Badge>
               </CardTitle>
-              <CardDescription>Cho người ghi chép mỗi ngày</CardDescription>
+              <CardDescription>Đầy đủ sức mạnh của trợ lý AI</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 space-y-4">
               <div>
                 <PriceTag amount={price.amount} unit={period === "year" ? "năm" : "tháng"} />
                 <p className="mt-1 text-sm text-muted-foreground">
                   {period === "year"
-                    ? `Chỉ ${formatCurrency(Math.round(price.amount / 12))}/tháng, tiết kiệm ${formatCurrency(yearSaving)}`
-                    : `Hoặc ${formatCurrency(proPrices.year.amount)}/năm, tiết kiệm ${yearSavingPercent}%`}
+                    ? `Tương đương ${formatCurrency(Math.round(price.amount / 12))}/tháng · Tiết kiệm ${formatCurrency(yearSaving)}`
+                    : `Tiết kiệm ${yearSavingPercent}% khi thanh toán theo năm`}
                 </p>
               </div>
               <FeatureList
                 features={[
                   `${plans.pro.aiMonthlyLimit} lượt trợ lý AI mỗi tháng`,
-                  "Dùng sớm các tính năng AI mới",
-                  `Mọi tính năng của gói ${plans.free.label}`,
-                  "Thanh toán một lần, không tự động gia hạn",
+                  "Truy cập sớm tính năng AI mới",
+                  `Bao gồm toàn bộ gói ${plans.free.label}`,
+                  "Không tự động gia hạn",
                 ]}
               />
             </CardContent>
@@ -231,9 +216,9 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
               <p className="text-center text-xs text-muted-foreground">
                 {checkoutEnabled
                   ? isPro && planState.proEndsAt
-                    ? `Pro hiện có hạn đến ${formatDate(toDateKey(planState.proEndsAt))}, thời hạn mới được cộng nối vào sau.`
-                    : "Kích hoạt ngay khi thanh toán thành công."
-                  : "Liên hệ quản trị viên để nâng cấp Pro."}
+                    ? `Còn hạn đến ${formatDate(toDateKey(planState.proEndsAt))}, thời hạn mới được cộng thêm`
+                    : "Kích hoạt ngay sau khi thanh toán"
+                  : "Vui lòng liên hệ quản trị viên để nâng cấp"}
               </p>
             </CardFooter>
           </Card>
@@ -244,21 +229,21 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
                 {plans.free.label}
                 {isPro ? null : <Badge variant="outline">Đang dùng</Badge>}
               </CardTitle>
-              <CardDescription>Đủ để bắt đầu quản lý chi tiêu</CardDescription>
+              <CardDescription>Các tính năng cơ bản</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 space-y-4">
-              <PriceTag amount={0} unit="mãi mãi" />
+              <PriceTag amount={0} unit="tháng" />
               <FeatureList
                 features={[
                   `${plans.free.aiMonthlyLimit} lượt trợ lý AI mỗi tháng`,
-                  "Giao dịch, tài khoản, ngân sách và vay nợ không giới hạn",
-                  "Nhắc ghi chi tiêu hằng ngày",
+                  "Không giới hạn giao dịch, tài khoản, ngân sách và vay nợ",
+                  "Nhắc ghi chép hằng ngày",
                 ]}
               />
             </CardContent>
             <CardFooter className="flex-col gap-2">
               <Button type="button" variant="outline" size="lg" className="w-full" disabled>
-                {isPro ? "Dùng lại khi Pro hết hạn" : "Gói hiện tại"}
+                {isPro ? "Gói cơ bản" : "Gói hiện tại"}
               </Button>
             </CardFooter>
           </Card>
@@ -266,13 +251,11 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
 
         <p className="flex items-center justify-center gap-1.5 px-3 text-center text-xs text-muted-foreground">
           <ShieldCheckIcon className="size-4 shrink-0" aria-hidden="true" />
-          Thanh toán an toàn qua payOS bằng QR mọi ngân hàng
+          Thanh toán bảo mật qua payOS, hỗ trợ mọi ngân hàng
         </p>
       </section>
 
       <div className={cn("space-y-6", page && "mx-auto max-w-3xl md:space-y-10")}>
-        <ComparisonTable />
-
         <SettingsGroup title="Câu hỏi thường gặp">
           {faqs.map((faq) => (
             <FaqRow key={faq.question} {...faq} />
@@ -329,49 +312,6 @@ function CheckMark() {
     <span className="mt-px flex size-4.5 shrink-0 items-center justify-center rounded-full bg-[#dbf9d2] text-[#3e9727] dark:bg-[#203e1a] dark:text-[#94e379]">
       <CheckIcon className="size-3" strokeWidth={3} aria-hidden="true" />
       <span className="sr-only">Có</span>
-    </span>
-  )
-}
-
-function ComparisonTable() {
-  return (
-    <SettingsGroup
-      title="So sánh các gói"
-      header={
-        <div className="grid grid-cols-[1fr_5.5rem_5.5rem] gap-2 px-4 pt-3 pb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-          <span>Tính năng</span>
-          <span className="text-center">{plans.free.label}</span>
-          <span className="text-center">{plans.pro.label}</span>
-        </div>
-      }
-    >
-      {comparison.map((row) => (
-        <li
-          key={row.feature}
-          className={cn(
-            "grid grid-cols-[1fr_5.5rem_5.5rem] items-center gap-2 px-3 py-2.5 text-sm",
-            settingsSeparatorClassName(false),
-          )}
-        >
-          <span className="font-medium">{row.feature}</span>
-          <ComparisonCell value={row.free} />
-          <ComparisonCell value={row.pro} />
-        </li>
-      ))}
-    </SettingsGroup>
-  )
-}
-
-function ComparisonCell({ value }: { value: string | boolean }) {
-  return (
-    <span className="flex justify-center text-center text-xs font-medium text-muted-foreground">
-      {value === true ? (
-        <CheckMark />
-      ) : value === false ? (
-        <MinusIcon className="size-4" aria-label="Không có" />
-      ) : (
-        value
-      )}
     </span>
   )
 }
