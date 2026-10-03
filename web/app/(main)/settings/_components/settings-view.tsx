@@ -33,6 +33,7 @@ import type { PaymentOutcome } from "@/lib/plans/payos"
 import { plans, type PlanState } from "@/lib/plans/plans"
 
 import { AdminScreen } from "./admin-screen"
+import { AiQuotaGroup } from "./ai-quota-group"
 import { InstallAppRow } from "./install-app-row"
 import { NotificationDevices } from "./notification-devices"
 import { NotificationPreferences } from "./notification-preferences"
@@ -175,6 +176,8 @@ export function SettingsView({
           />
           <SignOutRow />
         </SettingsGroup>
+
+        <AiQuotaGroup planState={planState} />
 
         {adminData ? (
           <SettingsGroup title="Quản trị">

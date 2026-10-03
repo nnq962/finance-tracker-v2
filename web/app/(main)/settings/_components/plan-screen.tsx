@@ -21,7 +21,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Item, ItemActions, ItemContent, ItemTitle } from "@/components/ui/item"
-import { Progress } from "@/components/ui/progress"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDate, toDateKey } from "@/lib/format-date"
@@ -71,7 +70,7 @@ const yearSavingPercent = Math.round((yearSaving / (proPrices.month.amount * 12)
 
 /** Everything but the AI assistant is the same on both plans. */
 const comparison: { feature: string; free: string | boolean; pro: string | boolean }[] = [
-  { feature: "Trợ lý AI ghi giao dịch", free: `${plans.free.aiMonthlyLimit} lượt/tháng`, pro: `${plans.pro.aiMonthlyLimit} lượt/tháng` },
+  { feature: "Lượt trợ lý AI", free: `${plans.free.aiMonthlyLimit} lượt/tháng`, pro: `${plans.pro.aiMonthlyLimit} lượt/tháng` },
   { feature: "Dùng sớm tính năng AI mới", free: false, pro: true },
   { feature: "Ghi chép thu chi", free: true, pro: true },
   { feature: "Tài khoản & ví", free: true, pro: true },
@@ -81,6 +80,11 @@ const comparison: { feature: string; free: string | boolean; pro: string | boole
 ]
 
 const faqs = [
+  {
+    question: "Trợ lý AI làm được gì?",
+    answer:
+      "Hiện tại trợ lý ghi giao dịch từ một câu bạn gõ hoặc nói, hiểu cả cách nói quen thuộc như “trưa nay ăn phở 45 cành”. Sửa, xoá giao dịch và hỏi đáp về chi tiêu là những việc tiếp theo, đến với Pro trước.",
+  },
   {
     question: "Thanh toán như thế nào?",
     answer:
@@ -100,7 +104,7 @@ const faqs = [
   },
   {
     question: "Lượt AI được tính thế nào?",
-    answer: "Mỗi lần nhờ trợ lý AI đọc một câu (gõ hoặc nói) tính là một lượt; lần AI không đọc được thì không bị tính. Lượt được làm mới vào ngày 1 hằng tháng; khi hết, lượt thưởng từ nhiệm vụ được dùng tiếp và không hết hạn.",
+    answer: "Mỗi yêu cầu gửi trợ lý AI, gõ hay nói, tính là một lượt; yêu cầu trợ lý không xử lý được thì không bị tính. Lượt được làm mới vào ngày 1 hằng tháng; khi hết, lượt thưởng từ nhiệm vụ được dùng tiếp và không hết hạn.",
   },
 ]
 
@@ -142,17 +146,14 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
         </div>
         <div className="space-y-1.5">
           <h2 className={cn("font-heading text-2xl leading-tight font-extrabold", page && "md:text-4xl")}>
-            {isPro ? "Bạn đang dùng Pro" : "Ghi chép nhanh hơn với Pro"}
+            {isPro ? "Bạn đang dùng Pro" : "Làm được nhiều hơn với trợ lý AI"}
           </h2>
           <p className={cn("text-sm leading-relaxed text-muted-foreground", page && "md:text-base")}>
-            Gõ hoặc nói một câu như “trưa nay ăn phở 45 cành”, trợ lý AI điền sẵn số tiền, hạng mục và thời gian cho bạn.
+            Nhờ trợ lý AI bằng tiếng Việt đời thường, gõ hay nói đều được. Hôm nay trợ lý ghi giao dịch giúp bạn; sắp tới
+            sẽ sửa, xoá và trả lời câu hỏi về chi tiêu của bạn.
           </p>
         </div>
       </header>
-
-      <div className={cn(page && "mx-auto max-w-md")}>
-        <UsageCard planState={planState} />
-      </div>
 
       <section aria-labelledby="plan-options" className={cn("space-y-3", page && "md:space-y-5")}>
         <h2 id="plan-options" className="sr-only">
@@ -282,36 +283,6 @@ function OutcomeCard({ tone, title, description }: { tone: OutcomeTone; title: s
           <p className="font-heading text-base leading-snug font-extrabold">{title}</p>
           {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
         </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function UsageCard({ planState }: { planState: PlanState }) {
-  const isPro = planState.plan === "pro"
-  const used = Math.min(planState.aiUsed, planState.aiLimit)
-  const percent = planState.aiLimit > 0 ? (used / planState.aiLimit) * 100 : 0
-  const remaining = Math.max(0, planState.aiLimit - planState.aiUsed)
-
-  return (
-    <Card size="sm">
-      <CardContent className="space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Lượt AI tháng này</p>
-            <p className="font-heading text-xl leading-tight font-extrabold tabular-nums">
-              {planState.aiUsed}
-              <span className="text-base text-muted-foreground">/{planState.aiLimit}</span>
-            </p>
-          </div>
-          <Badge variant={isPro ? "grape" : "outline"}>{plans[planState.plan].label}</Badge>
-        </div>
-        <Progress value={percent} tone={percent >= 90 ? "coral" : isPro ? "grape" : "sky"} aria-label="Lượt AI đã dùng" />
-        <p className="text-xs text-muted-foreground">
-          Còn {remaining} lượt, làm mới vào ngày 1 hằng tháng
-          {planState.aiCredits > 0 ? ` · ${planState.aiCredits} lượt thưởng` : ""}
-          {planState.proEndsAt ? ` · Pro đến ${formatDate(toDateKey(planState.proEndsAt))}` : ""}
-        </p>
       </CardContent>
     </Card>
   )
