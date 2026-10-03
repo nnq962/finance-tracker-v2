@@ -426,42 +426,26 @@ function CheckoutDialog({
 
   return (
     <Dialog open={open} onOpenChange={changeOpen}>
-      <DialogContent aria-describedby={undefined} className="sm:max-w-sm">
+      <DialogContent
+        aria-describedby={undefined}
+        className="sm:max-w-sm"
+        // No keyboard popping up for a code most people do not have.
+        onOpenAutoFocus={(event) => event.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Xác nhận thanh toán</DialogTitle>
         </DialogHeader>
 
-        <dl className="space-y-2 text-sm">
-          <div className="flex justify-between gap-3">
-            <dt className="text-muted-foreground">{renewing ? "Gia hạn" : "Gói"}</dt>
-            <dd className="font-medium">
-              {plans.pro.label} · {price.label}
-            </dd>
-          </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-muted-foreground">Giá</dt>
-            <dd className="tabular-nums">{formatCurrency(price.amount)}</dd>
-          </div>
-          {priced ? (
-            <div className="flex justify-between gap-3">
-              <dt className="flex items-center gap-1.5 text-muted-foreground">
-                Giảm giá
-                <Badge variant="grape">
-                  <TicketPercentIcon data-icon="inline-start" aria-hidden="true" />
-                  {coupon?.code}
-                </Badge>
-              </dt>
-              <dd className="tabular-nums text-[#3e9727] dark:text-[#94e379]">
-                −{formatCurrency(priced.discount)}
-              </dd>
-            </div>
-          ) : null}
-        </dl>
-
         {coupon ? (
-          <Button type="button" variant="ghost" size="xs" className="justify-self-start" onClick={() => setCoupon(null)}>
-            Bỏ mã giảm giá
-          </Button>
+          <div className="flex items-center justify-between gap-3">
+            <Badge variant="grape">
+              <TicketPercentIcon data-icon="inline-start" aria-hidden="true" />
+              {coupon.code} · −{coupon.percentOff}%
+            </Badge>
+            <Button type="button" variant="ghost" size="xs" disabled={paying} onClick={() => setCoupon(null)}>
+              Bỏ mã
+            </Button>
+          </div>
         ) : (
           <Field data-invalid={Boolean(codeError) || undefined}>
             <FieldLabel htmlFor="checkout-coupon">Mã giảm giá</FieldLabel>
@@ -495,11 +479,32 @@ function CheckoutDialog({
           </Field>
         )}
 
-        <Separator />
-        <div className="flex items-baseline justify-between gap-3">
-          <span className="font-medium">Tổng thanh toán</span>
-          <span className="font-heading text-2xl font-extrabold tabular-nums">{formatCurrency(total)}</span>
-        </div>
+        {/* The order, as a receipt. */}
+        <Card size="sm">
+          <CardContent className="space-y-3">
+            <dl className="space-y-2 text-sm">
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">
+                  {renewing ? "Gia hạn" : "Gói"} {plans.pro.label} · {price.label}
+                </dt>
+                <dd className="tabular-nums">{formatCurrency(price.amount)}</dd>
+              </div>
+              {priced ? (
+                <div className="flex justify-between gap-3">
+                  <dt className="text-muted-foreground">Giảm giá ({coupon?.percentOff}%)</dt>
+                  <dd className="tabular-nums text-[#3e9727] dark:text-[#94e379]">
+                    −{formatCurrency(priced.discount)}
+                  </dd>
+                </div>
+              ) : null}
+            </dl>
+            <Separator />
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="font-medium">Tổng thanh toán</span>
+              <span className="font-heading text-2xl font-extrabold tabular-nums">{formatCurrency(total)}</span>
+            </div>
+          </CardContent>
+        </Card>
 
         <DialogFooter className="flex-col sm:flex-col">
           {error ? <FieldError role="alert">{error}</FieldError> : null}
