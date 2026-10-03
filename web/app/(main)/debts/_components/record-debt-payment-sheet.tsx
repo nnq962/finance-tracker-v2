@@ -128,7 +128,7 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
               </Field>
               <Field data-invalid={Boolean(errors.accountId) || undefined}>
                 <FieldLabel htmlFor={`${id}-account`}>{isCollection ? "Tài khoản nhận tiền" : "Nguồn tiền trả nợ"} <RequiredMark /></FieldLabel>
-                <Select value={accountId} onValueChange={(value) => { setAccountId(value); clear("accountId") }} required disabled={pending}>
+                <Select value={accountId} onValueChange={(value) => { setAccountId(value); clear("accountId") }} required disabled={pending || eligibleAccounts.length === 0}>
                   <SelectTrigger id={`${id}-account`} className="w-full" aria-invalid={Boolean(errors.accountId) || undefined}><SelectValue placeholder="Chọn tài khoản" /></SelectTrigger>
                   <SelectContent>
                     <AccountSelectGroups accounts={eligibleAccounts} />

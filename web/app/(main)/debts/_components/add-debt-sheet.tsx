@@ -315,10 +315,11 @@ export function AddDebtSheet({
                   }}
                   name="contactId"
                   required
-                  disabled={pending}
+                  // An empty list would open as a stray box in the corner; add a person instead.
+                  disabled={pending || contacts.length === 0}
                 >
                   <SelectTrigger id="debt-contact" className="w-full" aria-invalid={Boolean(errors.contactId) || undefined}>
-                    <SelectValue placeholder="Chọn từ danh bạ" />
+                    <SelectValue placeholder={contacts.length === 0 ? "Chưa có người liên hệ" : "Chọn từ danh bạ"} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
@@ -368,7 +369,7 @@ export function AddDebtSheet({
                   defaultValue={debt?.accountId}
                   name="accountId"
                   required
-                  disabled={pending}
+                  disabled={pending || activeAccounts.length === 0}
                   onValueChange={() => clear("accountId")}
                 >
                   <SelectTrigger id="debt-account" className="w-full" aria-invalid={Boolean(errors.accountId) || undefined}>
