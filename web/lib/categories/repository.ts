@@ -237,7 +237,7 @@ export async function createCategoryItem(
   groupId: string,
   values: CategoryItemFormValues,
 ) {
-  await getDb().transaction().execute(async (trx) => {
+  return getDb().transaction().execute(async (trx) => {
     // Locking the group serialises item creation against archiving it and
     // against other creates, so the per-group limit holds.
     const group = await trx
@@ -266,7 +266,7 @@ export async function createCategoryItem(
       )
     }
 
-    await trx
+    const { id } = await trx
       .insertInto("categoryItems")
       .values({
         userId,
@@ -275,7 +275,10 @@ export async function createCategoryItem(
         ...values,
         sortOrder: Date.now(),
       })
-      .execute()
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    return id
   })
 }
 

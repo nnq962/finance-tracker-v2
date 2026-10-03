@@ -7,6 +7,11 @@ export type AiTransactionDraft = {
   /** Detail the category does not say ("Ở quán cô Ba"); empty when none was given. */
   note: string
   categoryId?: string
+  /**
+   * With no category that fits, the one the assistant suggests creating: in
+   * the group `groupId`, or in a new group `groupName` when there is none.
+   */
+  suggestedCategory?: { name: string; groupName: string; groupId?: string }
   accountId?: string
   /** The receiving account of a transfer. */
   toAccountId?: string

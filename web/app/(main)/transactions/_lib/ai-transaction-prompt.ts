@@ -8,8 +8,9 @@ import { shiftDate, type AiTransactionDraft } from "./ai-transaction-draft"
 
 type Context = { accounts: Account[]; categoryGroups: CategoryGroup[]; today: string }
 
-/** The user's lists as the model sees them, under short keys ("c3", "a1"). */
+/** The user's lists as the model sees them, under short keys ("g2", "c3", "a1"). */
 type Lists = {
+  groups: { key: string; group: CategoryGroup }[]
   categories: { key: string; item: CategoryItem; label: string }[]
   accounts: { key: string; account: Account }[]
 }
@@ -33,6 +34,10 @@ type Reply = When & {
   amountSaid: string
   amount: number | null
   categoryId: string | null
+  /** With no category that fits, one to create: in a group of the list, or a new one. */
+  newCategoryName: string
+  newCategoryGroupId: string | null
+  newGroupName: string
   accountId: string | null
   toAccountId: string | null
   note: string
@@ -51,13 +56,16 @@ export const transactionReplySchema = {
     day: { type: ["integer", "null"] },
     month: { type: ["integer", "null"] },
     categoryId: { type: ["string", "null"] },
+    newCategoryName: { type: "string" },
+    newCategoryGroupId: { type: ["string", "null"] },
+    newGroupName: { type: "string" },
     accountId: { type: ["string", "null"] },
     toAccountId: { type: ["string", "null"] },
     // After the category, so it holds only what the category leaves out.
     note: { type: "string" },
     isTransaction: { type: "boolean" },
   },
-  required: ["kind", "amountSaid", "amount", "daysAgo", "weekday", "weeksAgo", "day", "month", "categoryId", "accountId", "toAccountId", "note", "isTransaction"],
+  required: ["kind", "amountSaid", "amount", "daysAgo", "weekday", "weeksAgo", "day", "month", "categoryId", "newCategoryName", "newCategoryGroupId", "newGroupName", "accountId", "toAccountId", "note", "isTransaction"],
 }
 
 const weekdays = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"]
@@ -79,6 +87,7 @@ function normalize(text: string) {
 
 function buildLists({ accounts, categoryGroups }: Context): Lists {
   return {
+    groups: categoryGroups.map((group, index) => ({ key: `g${index + 1}`, group })),
     categories: categoryGroups
       .flatMap((group) => group.items.map((item) => ({ item, label: `${group.name} › ${item.name}` })))
       .map((category, index) => ({ key: `c${index + 1}`, ...category })),
@@ -116,9 +125,13 @@ Ngày: KHÔNG tự tính ra ngày, chỉ ghi lại người nói đã nói gì; 
 
 note: ghi chú, CHỈ gồm chi tiết mà danh mục chưa nói lên: nơi chốn, người đi cùng, món hay đồ cụ thể, tháng của khoản lương... Giữ gần lời người nói, viết hoa chữ đầu, bỏ số tiền, ngày và thời gian ("tháng này", "hôm qua"), tài khoản và những gì tên danh mục đã nói. Danh mục là nhóm chung (Quần áo, Đồ gia dụng...) thì ghi tên món cụ thể ("Áo khoác"). Phần lớn câu không có chi tiết thêm: khi đó note = "".
 
-categoryId: id danh mục cụ thể nhất CÙNG loại (chi cho expense, thu cho income); chọn theo nghĩa, không chỉ theo chữ (mẹ, bố, anh chị em là gia đình); mục "khác" chỉ khi không mục nào hợp; null nếu là transfer hoặc không có gì hợp.
+categoryId: id danh mục cụ thể nhất CÙNG loại (chi cho expense, thu cho income); chọn theo nghĩa, không chỉ theo chữ (mẹ, bố, anh chị em là gia đình); mục "khác" chỉ khi không mục nào hợp; null nếu là transfer.
 Danh mục:
 ${lists.categories.map(({ key, item, label }) => `${key} (${item.type === "expense" ? "chi" : "thu"}): ${label}`).join("\n") || "(chưa có)"}
+
+Không có danh mục nào thật sự hợp thì categoryId = null (để trống tốt hơn chọn sai) và gợi ý một danh mục mới: newCategoryName là tên ngắn, chung để dùng lại được ("Xem phim", "Sách", "Cắt tóc"); newCategoryGroupId là id nhóm CÙNG loại hợp với nó, không nhóm nào hợp thì null và newGroupName là tên nhóm mới ("Giải trí", "Làm đẹp"). Đã có categoryId, hoặc là transfer, thì newCategoryName = "", newCategoryGroupId = null, newGroupName = "".
+Nhóm:
+${lists.groups.map(({ key, group }) => `${key} (${group.type === "expense" ? "chi" : "thu"}): ${group.name}`).join("\n") || "(chưa có)"}
 
 accountId: tài khoản tiền đi ra (với income là tài khoản nhận tiền); toAccountId: tài khoản nhận của transfer, ngoài ra null. Quẹt thẻ/chuyển khoản ngân hàng X là tài khoản X. Không nói rõ tài khoản thì null, đừng đoán.
 Tài khoản:
@@ -132,6 +145,16 @@ function findCategory(lists: Lists, kind: TransactionKind, keywords: string[]) {
   const ofKind = lists.categories.filter(({ item }) => item.type === kind)
   for (const keyword of keywords) {
     const found = ofKind.find(({ label }) => normalize(label).includes(keyword))
+    if (found) return found.key
+  }
+  return null
+}
+
+/** The first group of `kind` whose name holds one of `keywords`, tried in order. */
+function findGroup(lists: Lists, kind: TransactionKind, keywords: string[]) {
+  const ofKind = lists.groups.filter(({ group }) => group.type === kind)
+  for (const keyword of keywords) {
+    const found = ofKind.find(({ group }) => normalize(group.name).includes(keyword))
     if (found) return found.key
   }
   return null
@@ -151,13 +174,18 @@ function examples(lists: Lists): OllamaMessage[] {
   const [bank, secondBank = bank] = ofType("bank")
   const transferFrom = bank ?? lists.accounts[0]
   const transferTo = (wallet ?? lists.accounts.find((entry) => entry !== transferFrom))
+  const noNewCategory = { newCategoryName: "", newCategoryGroupId: null, newGroupName: "" }
+  // Medicine: picked when the user has a category for it, else suggested,
+  // in a health group when there is one.
+  const medicine = findCategory(lists, "expense", ["thuoc", "suc khoe", "y te"])
+  const healthGroup = medicine ? null : findGroup(lists, "expense", ["suc khoe", "y te"])
   const shots: [string, Omit<Reply, "isTransaction">][] = [
     [
       `cà phê sáng 25 cành${wallet ? ` ${wallet.account.name}` : ""}`,
       {
         kind: "expense", amountSaid: "25 cành", amount: 25_000, note: "", ...when(),
         categoryId: findCategory(lists, "expense", ["ca phe", "an sang", "an uong"]),
-        accountId: wallet?.key ?? null, toAccountId: null,
+        accountId: wallet?.key ?? null, toAccountId: null, ...noNewCategory,
       },
     ],
     [
@@ -165,7 +193,7 @@ function examples(lists: Lists): OllamaMessage[] {
       {
         kind: "income", amountSaid: "18 củ", amount: 18_000_000, note: "Tháng 9", ...when({ daysAgo: 1 }),
         categoryId: findCategory(lists, "income", ["luong"]),
-        accountId: bank?.key ?? null, toAccountId: null,
+        accountId: bank?.key ?? null, toAccountId: null, ...noNewCategory,
       },
     ],
     [
@@ -173,7 +201,7 @@ function examples(lists: Lists): OllamaMessage[] {
       {
         kind: "expense", amountSaid: "4 triệu rưỡi", amount: 4_500_000, note: "", ...when(),
         categoryId: findCategory(lists, "expense", ["thue nha", "tien nha", "nha"]),
-        accountId: secondBank?.key ?? null, toAccountId: null,
+        accountId: secondBank?.key ?? null, toAccountId: null, ...noNewCategory,
       },
     ],
     [
@@ -181,7 +209,7 @@ function examples(lists: Lists): OllamaMessage[] {
       {
         kind: "expense", amountSaid: "1 lít", amount: 100_000, note: "", ...when(),
         categoryId: findCategory(lists, "expense", ["xang", "di lai"]),
-        accountId: null, toAccountId: null,
+        accountId: null, toAccountId: null, ...noNewCategory,
       },
     ],
     [
@@ -189,7 +217,7 @@ function examples(lists: Lists): OllamaMessage[] {
       {
         kind: "expense", amountSaid: "60 cành", amount: 60_000, note: "Ở quán cô Ba", ...when(),
         categoryId: findCategory(lists, "expense", ["an trua", "com", "an uong"]),
-        accountId: null, toAccountId: null,
+        accountId: null, toAccountId: null, ...noNewCategory,
       },
     ],
     [
@@ -197,6 +225,17 @@ function examples(lists: Lists): OllamaMessage[] {
       {
         kind: "expense", amountSaid: "800k", amount: 800_000, note: "Đôi giày", ...when(),
         categoryId: findCategory(lists, "expense", ["giay", "quan ao", "mua sam"]),
+        accountId: null, toAccountId: null, ...noNewCategory,
+      },
+    ],
+    [
+      "mua thuốc cảm 45k",
+      {
+        kind: "expense", amountSaid: "45k", amount: 45_000, note: "Thuốc cảm", ...when(),
+        categoryId: medicine,
+        newCategoryName: medicine ? "" : "Thuốc men",
+        newCategoryGroupId: healthGroup,
+        newGroupName: medicine || healthGroup ? "" : "Sức khoẻ",
         accountId: null, toAccountId: null,
       },
     ],
@@ -206,7 +245,7 @@ function examples(lists: Lists): OllamaMessage[] {
       `chuyển 3 xị từ ${transferFrom.account.name} sang ${transferTo.account.name}`,
       {
         kind: "transfer", amountSaid: "3 xị", amount: 300_000, note: "", ...when(),
-        categoryId: null, accountId: transferFrom.key, toAccountId: transferTo.key,
+        categoryId: null, accountId: transferFrom.key, toAccountId: transferTo.key, ...noNewCategory,
       },
     ])
   }
@@ -275,6 +314,42 @@ function resolveDay(said: Partial<Record<keyof When, unknown>>, today: string) {
   return daysAgo === null ? today : shiftDate(today, -daysAgo)
 }
 
+/** A category or group name as given: one line, capitalised, within the 80 characters a name may have. */
+function cleanName(value: unknown) {
+  const name = typeof value === "string" ? value.trim().replace(/\s+/g, " ").slice(0, 80) : ""
+  return name ? name[0].toLocaleUpperCase("vi-VN") + name.slice(1) : ""
+}
+
+/**
+ * The category to create when none fits, unless the user already has it
+ * under that name (then it is picked). Its group is the one the model
+ * named, or one of the user's under the new group's name, or a new one.
+ */
+function readNewCategory(
+  value: Partial<Record<keyof Reply, unknown>>,
+  kind: "expense" | "income",
+  lists: Lists,
+): Pick<AiTransactionDraft, "categoryId" | "suggestedCategory"> {
+  const name = cleanName(value.newCategoryName)
+  if (!name) return {}
+
+  const existing = lists.categories.find(
+    ({ item }) => item.type === kind && normalize(item.name) === normalize(name),
+  )
+  if (existing) return { categoryId: existing.item.id }
+
+  const groupName = cleanName(value.newGroupName)
+  const ofKind = lists.groups.filter(({ group }) => group.type === kind)
+  const group =
+    ofKind.find(({ key }) => key === value.newCategoryGroupId)?.group ??
+    ofKind.find(({ group }) => normalize(group.name) === normalize(groupName))?.group
+  return {
+    suggestedCategory: group
+      ? { name, groupName: group.name, groupId: group.id }
+      : { name, groupName: groupName || name },
+  }
+}
+
 /**
  * The model's answer as a draft, trusting none of it: unknown keys, a
  * category of the other kind, an amount out of range all come back empty,
@@ -290,8 +365,8 @@ export function readTransactionReply(
   if (kind !== "expense" && kind !== "income" && kind !== "transfer") return null
 
   const accountId = (key: unknown) => lists.accounts.find((entry) => entry.key === key)?.account.id
-  const category =
-    kind === "transfer" ? undefined : lists.categories.find((entry) => entry.key === value.categoryId)?.item
+  const found = lists.categories.find((entry) => entry.key === value.categoryId)?.item
+  const category = kind !== "transfer" && found?.type === kind ? found : undefined
   const fromId = accountId(value.accountId)
   // A withdrawal that does not say where to goes into cash, which the model
   // knows but does not always tie to a cash account under another name ("Ví").
@@ -313,7 +388,11 @@ export function readTransactionReply(
     kind,
     amount: typeof amount === "number" && Number.isSafeInteger(amount) && amount > 0 && amount <= MAX_MONEY ? amount : null,
     note: note ? note[0].toLocaleUpperCase("vi-VN") + note.slice(1) : "",
-    categoryId: category?.type === kind ? category.id : undefined,
+    ...(kind === "transfer"
+      ? {}
+      : category
+        ? { categoryId: category.id }
+        : readNewCategory(value, kind, lists)),
     // Unsaid, the money comes from the first account, as the add sheet starts.
     accountId: fromId ?? lists.accounts[0]?.account.id,
     toAccountId: toId !== fromId ? toId : undefined,

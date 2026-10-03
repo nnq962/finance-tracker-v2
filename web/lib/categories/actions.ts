@@ -4,11 +4,13 @@ import { revalidatePath, updateTag } from "next/cache"
 
 import { requireSession } from "@/lib/auth/session"
 import { categoryGroupsCacheTag } from "@/lib/cache-tags"
+import { categoryColorOptions } from "@/lib/categories/category-colors"
 import {
   archiveCategoryGroup,
   archiveCategoryItem,
   createCategoryGroup,
   createCategoryItem,
+  getCategoryGroups,
   updateCategoryGroup,
   updateCategoryItem,
 } from "@/lib/categories/repository"
@@ -22,6 +24,7 @@ import {
   CategoryValidationError,
   parseCategoryFormValues,
   parseCategoryItemFormValues,
+  parseCategoryName,
   parseCategoryType,
 } from "@/lib/categories/validation"
 
@@ -152,6 +155,55 @@ export async function deleteCategoryItemAction(
     await archiveCategoryItem(user.uid, itemId as string)
     revalidateCategoryData(user.uid)
     return { success: true }
+  } catch (error) {
+    return failure(error)
+  }
+}
+
+export type CreateSuggestedCategoryResult =
+  | { success: true; itemId: string }
+  | { success: false; error: string }
+
+/**
+ * Creates the category the AI assistant suggested, when the user takes it:
+ * in one of their groups, or in a new group with a colour not yet used for
+ * that kind. The item takes its group's icon; both can be changed later.
+ */
+export async function createSuggestedCategoryAction(suggestion: {
+  type: unknown
+  name: unknown
+  groupId?: unknown
+  groupName?: unknown
+}): Promise<CreateSuggestedCategoryResult> {
+  const user = await requireSession()
+
+  try {
+    const type = parseCategoryType(suggestion.type)
+    const name = parseCategoryName(suggestion.name)
+    const groups = (await getCategoryGroups(user.uid)).filter((group) => group.type === type)
+
+    const group = await (async () => {
+      if (suggestion.groupId !== undefined) {
+        const existing = groups.find((item) => item.id === suggestion.groupId)
+        if (!existing) throw new CategoryValidationError("Nhóm hạng mục không tồn tại.")
+        return existing
+      }
+      const usedColors = new Set(groups.map((item) => item.colorName))
+      const values = parseCategoryFormValues({
+        name: suggestion.groupName,
+        colorName: categoryColorOptions.find((option) => !usedColors.has(option.name))?.name ?? "blue",
+        iconName: "receipt",
+      })
+      return { id: await createCategoryGroup(user.uid, type, values), ...values }
+    })()
+
+    const itemId = await createCategoryItem(
+      user.uid,
+      group.id,
+      parseCategoryItemFormValues({ name, iconName: group.iconName }),
+    )
+    revalidateCategoryData(user.uid)
+    return { success: true, itemId }
   } catch (error) {
     return failure(error)
   }

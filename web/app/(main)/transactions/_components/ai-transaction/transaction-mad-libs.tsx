@@ -5,6 +5,7 @@ import { CalendarIcon, CheckIcon, PlusIcon, RotateCcwIcon } from "lucide-react"
 import { AnimatePresence, motion, type Variants } from "motion/react"
 import { toast } from "sonner"
 
+import { CategoryManagementSheet } from "@/components/categories/category-management-sheet"
 import { AmountSuggestions } from "@/components/forms/amount-suggestions"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { Button } from "@/components/ui/button"
@@ -12,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { Account } from "@/lib/accounts/types"
+import { createSuggestedCategoryAction } from "@/lib/categories/actions"
 import { getAmountSuggestions } from "@/lib/amount-suggestions"
 import { getCategoryColor } from "@/lib/categories/category-colors"
 import type { CategoryGroup } from "@/lib/categories/types"
@@ -143,24 +145,33 @@ export function TransactionMadLibs({
   const [edited, setEdited] = React.useState(false)
   const advanceTimer = React.useRef<number | undefined>(undefined)
   React.useEffect(() => () => window.clearTimeout(advanceTimer.current), [])
+  // A category made from the suggestion counts as there before the page's
+  // lists catch up with it.
+  const [created, setCreated] = React.useState<{ id: string; name: string } | null>(null)
+  const [creating, startCreating] = React.useTransition()
+  const [managingCategories, setManagingCategories] = React.useState(false)
 
   const activeAccounts = accounts.filter((account) => account.status === "active")
   const findAccount = (id: string | undefined) => activeAccounts.find((item) => item.id === id)
   const account = findAccount(draft.accountId)
   const toAccount = findAccount(draft.toAccountId)
   const groups = categoryGroups.filter((group) => group.type === draft.kind && group.items.length > 0)
-  const category = groups.flatMap((group) => group.items).find((item) => item.id === draft.categoryId)
+  const findCategory = (kind: TransactionKind, id: string | undefined, also = created) =>
+    categoryGroups
+      .filter((group) => group.type === kind)
+      .flatMap((group) => group.items)
+      .find((item) => item.id === id) ?? (also && also.id === id ? also : undefined)
+  const category = findCategory(draft.kind, draft.categoryId)
 
   /** The first blank, in reading order, still needed to save. */
-  const firstMissing = (next: AiTransactionDraft): BlankField | null => {
+  const firstMissing = (next: AiTransactionDraft, also = created): BlankField | null => {
     if (next.amount === null) return "amount"
     if (next.kind === "transfer") {
       if (!findAccount(next.accountId)) return "accountId"
       if (!findAccount(next.toAccountId) || next.toAccountId === next.accountId) return "toAccountId"
       return null
     }
-    const categories = categoryGroups.filter((group) => group.type === next.kind).flatMap((group) => group.items)
-    if (!categories.some((item) => item.id === next.categoryId)) return "category"
+    if (!findCategory(next.kind, next.categoryId, also)) return "category"
     if (!findAccount(next.accountId)) return "accountId"
     return null
   }
@@ -190,6 +201,24 @@ export function TransactionMadLibs({
 
   const update = (values: Partial<AiTransactionDraft>) =>
     setDraft((current) => ({ ...current, ...values }))
+
+  /** Makes the suggested category, picks it and moves on. */
+  const createSuggested = () => {
+    const suggestion = draft.suggestedCategory
+    if (!suggestion || draft.kind === "transfer") return
+    startCreating(async () => {
+      const result = await createSuggestedCategoryAction({ type: draft.kind, ...suggestion })
+      if (!result.success) {
+        toast.error(result.error)
+        return
+      }
+      const made = { id: result.itemId, name: suggestion.name }
+      const next = { ...draft, categoryId: made.id, suggestedCategory: undefined }
+      setCreated(made)
+      setDraft(next)
+      setEditing(firstMissing(next, made))
+    })
+  }
 
   const blank = (field: BlankField, props: Omit<BlankProps, "active" | "onClick">) => (
     <Blank {...props} active={editing === field} onClick={() => open(field)} />
@@ -231,7 +260,8 @@ export function TransactionMadLibs({
                 <motion.span variants={phrase}>
                   {draft.kind === "expense" ? "cho" : "từ"}{" "}
                   {blank("category", {
-                    placeholder: "hạng mục nào",
+                    // A suggested new one shows as a question, still to be made.
+                    placeholder: draft.suggestedCategory ? `${draft.suggestedCategory.name} (mới)?` : "hạng mục nào",
                     filled: category !== undefined,
                     valueKey: category?.id ?? "",
                     children: category?.name,
@@ -294,6 +324,9 @@ export function TransactionMadLibs({
               accounts={activeAccounts}
               onPick={pick}
               onChange={update}
+              creatingCategory={creating}
+              onCreateCategory={createSuggested}
+              onManageCategories={() => setManagingCategories(true)}
             />
           </motion.form>
         ) : (
@@ -334,6 +367,15 @@ export function TransactionMadLibs({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {draft.kind === "transfer" ? null : (
+        <CategoryManagementSheet
+          groups={categoryGroups}
+          initialType={draft.kind}
+          open={managingCategories}
+          onOpenChange={setManagingCategories}
+        />
+      )}
     </div>
   )
 }
@@ -349,60 +391,100 @@ type BlankEditorProps = {
   onPick: (values: Partial<AiTransactionDraft>) => void
   /** Typing, which stays in the editor. */
   onChange: (values: Partial<AiTransactionDraft>) => void
+  creatingCategory: boolean
+  /** Makes the category the assistant suggested, when none fits. */
+  onCreateCategory: () => void
+  onManageCategories: () => void
 }
 
-function BlankEditor({ field, draft, today, groups, accounts, onPick, onChange }: BlankEditorProps) {
+function BlankEditor({
+  field,
+  draft,
+  today,
+  groups,
+  accounts,
+  onPick,
+  onChange,
+  creatingCategory,
+  onCreateCategory,
+  onManageCategories,
+}: BlankEditorProps) {
   switch (field) {
     case "kind":
       return (
         <TransactionKindSelector
           value={draft.kind}
           // A category or receiving account of the other kind no longer fits.
-          onValueChange={(kind) => onPick({ kind, categoryId: undefined, toAccountId: undefined })}
+          onValueChange={(kind) =>
+            onPick({ kind, categoryId: undefined, suggestedCategory: undefined, toAccountId: undefined })
+          }
         />
       )
     case "amount":
       return <AmountEditor amount={draft.amount} onChange={(amount) => onChange({ amount })} />
     case "date":
       return <DateEditor date={draft.date} today={today} onPick={(date) => onPick({ date })} />
-    case "category":
+    case "category": {
+      const suggestion = draft.suggestedCategory
       return (
-        // Long catalogs scroll inside the drawer, natively: ScrollArea's
-        // thumb, moved by script, lagged behind on iOS. vaul takes a swipe up
-        // at the top of a list for closing the drawer, which made it jolt on
-        // the first swipe; this list is left to scroll.
-        <div data-vaul-no-drag className="max-h-64 overflow-y-auto overscroll-contain">
-          <div className="space-y-3">
-            {groups.map((group) => {
-              const color = getCategoryColor(group.colorName)
-              return (
-                <div key={group.id} className="space-y-2">
-                  <p className="px-3 text-xs text-muted-foreground">{group.name}</p>
-                  <ToggleGroup
-                    type="single"
-                    size="sm"
-                    value={draft.categoryId ?? ""}
-                    // Tapping the picked one again keeps it and moves on.
-                    onValueChange={(categoryId) => onPick(categoryId ? { categoryId } : {})}
-                    className="flex-wrap p-1"
-                    aria-label={group.name}
-                  >
-                    {group.items.map((item) => {
-                      const ItemIcon = categoryIconRegistry[item.iconName]
-                      return (
-                        <ToggleGroupItem key={item.id} value={item.id}>
-                          <ItemIcon className={color.iconClassName} />
-                          {item.name}
-                        </ToggleGroupItem>
-                      )
-                    })}
-                  </ToggleGroup>
+        <div className="space-y-2">
+          {/* Long catalogs scroll inside the drawer, natively: ScrollArea's
+              thumb, moved by script, lagged behind on iOS. vaul takes a swipe
+              up at the top of a list for closing the drawer, which made it jolt
+              on the first swipe; this list is left to scroll. */}
+          <div data-vaul-no-drag className="max-h-64 overflow-y-auto overscroll-contain">
+            <div className="space-y-3">
+              {/* None of the user's fits: the assistant's suggestion comes
+                  first, made with one tap. */}
+              {suggestion ? (
+                <div className="space-y-2">
+                  <p className="px-3 text-xs text-muted-foreground">
+                    Chưa có hạng mục phù hợp · tạo mới trong{" "}
+                    {suggestion.groupId ? `nhóm ${suggestion.groupName}` : `nhóm mới “${suggestion.groupName}”`}
+                  </p>
+                  <div className="p-1">
+                    <Button type="button" variant="outline" size="sm" disabled={creatingCategory} onClick={onCreateCategory}>
+                      <PlusIcon />
+                      {suggestion.name}
+                    </Button>
+                  </div>
                 </div>
-              )
-            })}
+              ) : null}
+              {groups.map((group) => {
+                const color = getCategoryColor(group.colorName)
+                return (
+                  <div key={group.id} className="space-y-2">
+                    <p className="px-3 text-xs text-muted-foreground">{group.name}</p>
+                    <ToggleGroup
+                      type="single"
+                      size="sm"
+                      value={draft.categoryId ?? ""}
+                      // Tapping the picked one again keeps it and moves on.
+                      onValueChange={(categoryId) => onPick(categoryId ? { categoryId } : {})}
+                      className="flex-wrap p-1"
+                      aria-label={group.name}
+                    >
+                      {group.items.map((item) => {
+                        const ItemIcon = categoryIconRegistry[item.iconName]
+                        return (
+                          <ToggleGroupItem key={item.id} value={item.id}>
+                            <ItemIcon className={color.iconClassName} />
+                            {item.name}
+                          </ToggleGroupItem>
+                        )
+                      })}
+                    </ToggleGroup>
+                  </div>
+                )
+              })}
+            </div>
           </div>
+          <Button type="button" variant="ghost" size="sm" onClick={onManageCategories}>
+            Quản lý hạng mục
+          </Button>
         </div>
       )
+    }
     case "accountId":
     case "toAccountId": {
       // A transfer cannot land in the account it leaves.

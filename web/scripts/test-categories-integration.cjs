@@ -54,6 +54,10 @@ async function run() {
     assert.equal(meal.categoryGroupName, 'Ăn uống')
     await assert.rejects(() => categories.updateCategoryGroup(newUserId, food, { name: 'Not mine', iconName: 'utensils', colorName: 'orange' }), validation.CategoryValidationError)
 
+    // Creating an item gives back its id, as the AI assistant picks it next.
+    const itemId = await categories.createCategoryItem(userId, food, { name: 'Mục từ gợi ý', iconName: 'coffee' })
+    assert.equal((await sql('SELECT name FROM category_items WHERE id = $1', [itemId])).rows[0].name, 'Mục từ gợi ý')
+
     // Creating an item races with archiving its group: either may win, but no
     // active item may remain in an archived group.
     for (let index = 0; index < 3; index++) {
