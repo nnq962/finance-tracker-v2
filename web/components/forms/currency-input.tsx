@@ -5,6 +5,7 @@ import * as React from "react"
 import {
   InputGroup,
   InputGroupAddon,
+  InputGroupButton,
   InputGroupInput,
   InputGroupText,
 } from "@/components/ui/input-group"
@@ -18,6 +19,13 @@ type CurrencyInputProps = {
   onValueChange?: (value: number | null) => void
   placeholder?: string
   required?: boolean
+  /**
+   * With `onNegativeChange`, the amount can be below zero: a +/− button
+   * flips its sign (phone keypads have no minus) and a typed "-" works too.
+   * `value` stays the amount without its sign; the submitted field is signed.
+   */
+  negative?: boolean
+  onNegativeChange?: (negative: boolean) => void
 }
 
 function formatInputValue(value: string) {
@@ -34,23 +42,42 @@ export function CurrencyInput({
   onValueChange,
   placeholder = "0",
   required = false,
+  negative = false,
+  onNegativeChange,
 }: CurrencyInputProps) {
   const [internalValue, setValue] = React.useState(
     defaultValue === undefined ? "" : String(defaultValue),
   )
 
   const value = controlledValue === undefined ? internalValue : controlledValue === null ? "" : String(controlledValue)
+  const signed = Boolean(onNegativeChange)
+  const minus = signed && negative ? "-" : ""
 
   return (
     <>
       <InputGroup>
+        {signed ? (
+          <InputGroupAddon align="inline-start">
+            <InputGroupButton
+              aria-label="Đổi dấu âm, dương"
+              aria-pressed={negative}
+              onClick={() => onNegativeChange?.(!negative)}
+            >
+              +/−
+            </InputGroupButton>
+          </InputGroupAddon>
+        ) : null}
         <InputGroupInput
           id={id}
           type="text"
           inputMode="numeric"
           autoComplete="off"
-          value={formatInputValue(value)}
+          value={minus + formatInputValue(value)}
           onChange={(event) => {
+            if (signed) {
+              const typedNegative = event.target.value.trimStart().startsWith("-")
+              if (typedNegative !== negative) onNegativeChange?.(typedNegative)
+            }
             const digits = event.target.value
               .replace(/\D/g, "")
               .replace(/^0+(?=\d)/, "")
@@ -65,7 +92,7 @@ export function CurrencyInput({
           <InputGroupText>đ</InputGroupText>
         </InputGroupAddon>
       </InputGroup>
-      <input type="hidden" name={name} value={value} />
+      <input type="hidden" name={name} value={value && minus + value} />
     </>
   )
 }

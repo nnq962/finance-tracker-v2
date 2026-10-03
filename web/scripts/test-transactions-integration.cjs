@@ -77,16 +77,16 @@ async function run() {
       kind: 'transfer', amount: 15_000, fee: 0, fromAccountId: wallet, toAccountId: bank, occurredAt: new Date(),
     })
     assert.equal(await balance(bank), 0)
-    // The account form sends the amount and, apart, whether it is below zero.
+    // The account form sends a signed balance.
     const accountForm = (fields) => {
       const data = new FormData()
       for (const [key, value] of Object.entries({ name: 'Thẻ', type: 'cash', balance: '50000', ...fields })) data.set(key, value)
       return data
     }
-    assert.equal(accountValidation.parseAccountFormData(accountForm({ balanceNegative: 'on' })).balance, -50_000)
+    assert.equal(accountValidation.parseAccountFormData(accountForm({ balance: '-50000' })).balance, -50_000)
     assert.equal(accountValidation.parseAccountFormData(accountForm({})).balance, 50_000)
     assert.equal(accountValidation.parseExpectedBalance(accountForm({ expectedBalance: '-50000' })), -50_000)
-    assert.throws(() => accountValidation.parseAccountFormData(accountForm({ balance: '-50000' })))
+    assert.throws(() => accountValidation.parseAccountFormData(accountForm({ balance: '-1000000000000000' })))
 
     // Dates run from 2000 through today in Vietnam time.
     const form = (date) => {

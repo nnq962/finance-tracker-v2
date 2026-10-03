@@ -74,12 +74,11 @@ export function parseAccountFormData(formData: FormData) {
     )
   }
 
-  // The form takes the amount and, apart, whether it is below zero (phone keypads have no minus).
-  const balance = getMoney(formData, "balance", "Số dư")
   const values: AccountFormValues = {
     name: getBoundedText(formData, "name", "Tên tài khoản", 80, true),
     type,
-    balance: formData.get("balanceNegative") === "on" && balance > 0 ? -balance : balance,
+    // An account may be below zero.
+    balance: getMoney(formData, "balance", "Số dư", true),
   }
   const note = getBoundedText(formData, "note", "Ghi chú", 500)
 
