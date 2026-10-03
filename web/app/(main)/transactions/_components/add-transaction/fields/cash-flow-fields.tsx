@@ -150,53 +150,60 @@ export function CashFlowFields({
             })}
           </ToggleGroup>
         ) : null}
-        <Select
-          name="categoryId"
-          value={categoryId}
-          onValueChange={chooseCategory}
-          required
-        >
-          <SelectTrigger
-            id={`${kind}-category`}
-            className="w-full"
-            aria-invalid={Boolean(errors.categoryId) || undefined}
+        {availableGroups.length === 0 && !defaultCategoryIsMissing ? (
+          <p className="text-sm text-muted-foreground">
+            Chưa có hạng mục {kind === "expense" ? "chi" : "thu"} nào.
+            {onManageCategories ? " Bấm “Quản lý hạng mục” để thêm." : " Thêm hạng mục trong Cài đặt."}
+          </p>
+        ) : (
+          <Select
+            name="categoryId"
+            value={categoryId}
+            onValueChange={chooseCategory}
+            required
           >
-            <SelectValue placeholder="Chọn hạng mục" />
-          </SelectTrigger>
-          <SelectContent
-            position="popper"
-            showScrollButtons={false}
-            className="max-h-[min(16rem,var(--radix-select-content-available-height))]"
-          >
-            {defaultCategoryIsMissing && defaultValues?.categoryId ? (
-              <SelectGroup>
-                <SelectLabel>
-                  {defaultValues.categoryGroupName ??
-                    "Hạng mục đã ngừng sử dụng"}
-                </SelectLabel>
-                <SelectItem value={defaultValues.categoryId}>
-                  <ReceiptTextIcon />
-                  {defaultValues.categoryName ?? "Hạng mục cũ"}
-                </SelectItem>
-              </SelectGroup>
-            ) : null}
-            {availableGroups.map((group) => (
-              <SelectGroup key={group.id}>
-                <SelectLabel>{group.name}</SelectLabel>
-                {group.items.map((item) => {
-                  const ItemIcon = categoryIconRegistry[item.iconName]
+            <SelectTrigger
+              id={`${kind}-category`}
+              className="w-full"
+              aria-invalid={Boolean(errors.categoryId) || undefined}
+            >
+              <SelectValue placeholder="Chọn hạng mục" />
+            </SelectTrigger>
+            <SelectContent
+              position="popper"
+              showScrollButtons={false}
+              className="max-h-[min(16rem,var(--radix-select-content-available-height))]"
+            >
+              {defaultCategoryIsMissing && defaultValues?.categoryId ? (
+                <SelectGroup>
+                  <SelectLabel>
+                    {defaultValues.categoryGroupName ??
+                      "Hạng mục đã ngừng sử dụng"}
+                  </SelectLabel>
+                  <SelectItem value={defaultValues.categoryId}>
+                    <ReceiptTextIcon />
+                    {defaultValues.categoryName ?? "Hạng mục cũ"}
+                  </SelectItem>
+                </SelectGroup>
+              ) : null}
+              {availableGroups.map((group) => (
+                <SelectGroup key={group.id}>
+                  <SelectLabel>{group.name}</SelectLabel>
+                  {group.items.map((item) => {
+                    const ItemIcon = categoryIconRegistry[item.iconName]
 
-                  return (
-                    <SelectItem key={item.id} value={item.id}>
-                      <ItemIcon />
-                      {item.name}
-                    </SelectItem>
-                  )
-                })}
-              </SelectGroup>
-            ))}
-          </SelectContent>
-        </Select>
+                    return (
+                      <SelectItem key={item.id} value={item.id}>
+                        <ItemIcon />
+                        {item.name}
+                      </SelectItem>
+                    )
+                  })}
+                </SelectGroup>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         {errors.categoryId ? <FieldError>{errors.categoryId}</FieldError> : null}
       </Field>
     </>

@@ -23,7 +23,7 @@ import type {
 } from "@/lib/transactions/types"
 
 import { CashFlowFields } from "./fields/cash-flow-fields"
-import { TransferFields } from "./fields/transfer-fields"
+import { canTransfer, TransferFields } from "./fields/transfer-fields"
 import type { TransactionFieldErrors, TransactionFieldName } from "./form-types"
 import { useTransactionHistory } from "./transaction-history-context"
 import { validateTransactionForm } from "./validate-transaction-form"
@@ -118,6 +118,10 @@ export function TransactionForm({
   const defaultDateTime = defaultValues
     ? getLocalDateTime(defaultValues.occurredAt)
     : undefined
+  // Without two accounts the transfer tab shows how to add one instead, and cannot be saved.
+  const blocked =
+    kind === "transfer" &&
+    !canTransfer(accounts, defaultValues?.kind === "transfer" ? defaultValues : undefined)
 
   return (
     <form
@@ -240,7 +244,7 @@ export function TransactionForm({
       <SheetFooter>
         {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
         {/* Back is in the header, so the footer only saves. */}
-        <Button type="submit" className="w-full" disabled={isPending}>
+        <Button type="submit" className="w-full" disabled={isPending || blocked}>
           {isPending ? (
             <LoaderCircleIcon className="animate-spin" />
           ) : (

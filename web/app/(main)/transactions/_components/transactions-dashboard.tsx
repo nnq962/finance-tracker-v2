@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 
 import { AiAssistButton } from "@/components/ai-assist/ai-assist-button"
 import { PageHeader } from "@/components/page"
+import { SheetNavHeader } from "@/components/sheet-nav-header"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 
@@ -19,6 +21,7 @@ import type {
 } from "../_types/transaction"
 import { AddTransactionButton } from "./add-transaction-button"
 import { AiTransactionDrawer } from "./ai-transaction/ai-transaction-drawer"
+import { NeedAccountState } from "./add-transaction/need-account-state"
 import { TransactionHistoryProvider } from "./add-transaction/transaction-history-context"
 import { TransactionFilterPanel } from "./transaction-filter-fields"
 import { TransactionsHero } from "./transactions-hero"
@@ -64,7 +67,11 @@ export function TransactionsDashboard({
   const [isNavigating, startNavigation] = React.useTransition()
   const period = "month" as const
   const [filter, setFilter] = React.useState<TransactionFilter>("all")
-  const [aiOpen, setAiOpen] = React.useState(initialAiOpen)
+  const hasAccount = accounts.some((account) => account.status === "active")
+  const [aiOpen, setAiOpen] = React.useState(initialAiOpen && hasAccount)
+  // Without an account the AI could not save what it reads, so it asks for one first.
+  const [needAccountOpen, setNeedAccountOpen] = React.useState(initialAiOpen && !hasAccount)
+  const openAi = () => (hasAccount ? setAiOpen(true) : setNeedAccountOpen(true))
   // Follows each request's answer, which carries the count after it.
   const [aiQuota, setAiQuota] = React.useState(initialAiQuota)
   const aiMonthRemaining = Math.max(0, aiQuota.limit - aiQuota.used)
@@ -103,7 +110,7 @@ export function TransactionsDashboard({
         title="Giao dịch"
         actions={
           <>
-            <AiAssistButton className={aiButtonClassName} remaining={aiRemaining} onClick={() => setAiOpen(true)}>
+            <AiAssistButton className={aiButtonClassName} remaining={aiRemaining} onClick={openAi}>
               Nhập bằng AI
             </AiAssistButton>
             <AddTransactionButton
@@ -168,7 +175,7 @@ export function TransactionsDashboard({
           phone's width. */}
       <div className="pointer-events-none sticky bottom-4 z-20 flex justify-end md:hidden">
         <div className="pointer-events-auto flex flex-col items-end gap-4">
-          <AiAssistButton className={aiButtonClassName} remaining={aiRemaining} onClick={() => setAiOpen(true)}>
+          <AiAssistButton className={aiButtonClassName} remaining={aiRemaining} onClick={openAi}>
             AI
           </AiAssistButton>
           <AddTransactionButton
@@ -177,6 +184,19 @@ export function TransactionsDashboard({
           />
         </div>
       </div>
+      <Sheet open={needAccountOpen && !hasAccount} onOpenChange={setNeedAccountOpen}>
+        <SheetContent
+          showCloseButton={false}
+          aria-describedby={undefined}
+          className="gap-0 data-[side=right]:w-full sm:max-w-md!"
+          onOpenAutoFocus={(event) => event.preventDefault()}
+        >
+          <SheetNavHeader title="Nhập bằng AI" />
+          <div className="flex min-h-0 flex-1 flex-col justify-center overflow-y-auto px-4 pb-8">
+            <NeedAccountState description="Trợ lý AI ghi giao dịch vào một tài khoản của bạn: tiền mặt, ngân hàng hoặc ví điện tử. Thêm tài khoản đầu tiên rồi quay lại nhé." />
+          </div>
+        </SheetContent>
+      </Sheet>
       <AiTransactionDrawer
         open={aiOpen}
         onOpenChange={setAiOpen}

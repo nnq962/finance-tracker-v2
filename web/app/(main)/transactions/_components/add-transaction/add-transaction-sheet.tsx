@@ -16,6 +16,7 @@ import type { CategoryGroup } from "@/lib/categories/types"
 import type { SupportedTransactionKind } from "@/lib/transactions/types"
 
 import { createTransactionAction } from "../../actions"
+import { NeedAccountState } from "./need-account-state"
 import { TransactionForm } from "./transaction-form"
 import { TransactionKindSelector } from "./transaction-kind-selector"
 
@@ -41,6 +42,7 @@ export function AddTransactionSheet({
   const setOpen = onOpenChange ?? setInternalOpen
   const [categoryManagementOpen, setCategoryManagementOpen] = React.useState(false)
   const [kind, setKind] = React.useState<SupportedTransactionKind>(initialKind)
+  const hasAccount = accounts.some((account) => account.status === "active")
 
   return (
     <>
@@ -55,20 +57,28 @@ export function AddTransactionSheet({
         ) : null}
         <SheetContent showCloseButton={false} aria-describedby={undefined} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
           <SheetNavHeader title="Giao dịch mới" />
-          <div className="px-4 pb-4">
-            <TransactionKindSelector value={kind} onValueChange={setKind} />
-          </div>
-          {/* Switching tabs keeps what was filled in; closing the sheet starts over. */}
-          <TransactionForm
-            accounts={accounts}
-            action={createTransactionAction}
-            categoryGroups={categoryGroups}
-            isCreating
-            kind={kind}
-            onManageCategories={() => setCategoryManagementOpen(true)}
-            onSuccess={() => setOpen(false)}
-            successMessage="Đã thêm giao dịch."
-          />
+          {hasAccount ? (
+            <>
+              <div className="px-4 pb-4">
+                <TransactionKindSelector value={kind} onValueChange={setKind} />
+              </div>
+              {/* Switching tabs keeps what was filled in; closing the sheet starts over. */}
+              <TransactionForm
+                accounts={accounts}
+                action={createTransactionAction}
+                categoryGroups={categoryGroups}
+                isCreating
+                kind={kind}
+                onManageCategories={() => setCategoryManagementOpen(true)}
+                onSuccess={() => setOpen(false)}
+                successMessage="Đã thêm giao dịch."
+              />
+            </>
+          ) : (
+            <div className="flex min-h-0 flex-1 flex-col justify-center overflow-y-auto px-4 pb-8">
+              <NeedAccountState />
+            </div>
+          )}
         </SheetContent>
       </Sheet>
       <CategoryManagementSheet

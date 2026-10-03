@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select"
 
 import type { TransactionFieldProps } from "../form-types"
+import { NeedAccountState } from "../need-account-state"
 import { useTransactionHistory } from "../transaction-history-context"
 
 function AccountSelect({
@@ -49,6 +50,19 @@ function AccountSelect({
   )
 }
 
+/** A transfer needs two accounts it can use: active ones, or those of the transfer being edited. */
+export function canTransfer(
+  accounts: TransactionFieldProps["accounts"],
+  defaultValues?: TransactionFieldProps["defaultValues"],
+) {
+  return accounts.filter(
+    (account) =>
+      account.status === "active" ||
+      account.id === defaultValues?.fromAccountId ||
+      account.id === defaultValues?.toAccountId,
+  ).length >= 2
+}
+
 /** The two accounts of a transfer, then its fee, which is seldom set. */
 export function TransferFields({
   accounts,
@@ -74,6 +88,15 @@ export function TransferFields({
       ? ""
       : (defaultValues?.toAccountId ?? ""),
   )
+
+  if (!canTransfer(accounts, defaultValues)) {
+    return (
+      <NeedAccountState
+        title="Cần ít nhất 2 tài khoản"
+        description="Chuyển khoản là chuyển tiền giữa hai tài khoản của bạn, ví dụ rút tiền từ ngân hàng ra ví. Thêm một tài khoản nữa để dùng."
+      />
+    )
+  }
 
   return (
     <>
