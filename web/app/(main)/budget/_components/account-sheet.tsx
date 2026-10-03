@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { ArrowDownLeftIcon, ArrowUpRightIcon, Repeat2Icon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
@@ -10,19 +9,15 @@ import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { accountTypeLabels } from "@/lib/accounts/distribution"
 import type { Account } from "@/lib/accounts/types"
+import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
 import type { Transaction } from "@/lib/transactions/types"
 
+import { getTransactionVisual } from "../../transactions/_lib/transaction-presentation"
 import { setAccountArchivedAction } from "../actions"
 import { DeleteAccountAlert } from "./account-actions/delete-account-alert"
 import { EditAccountSheet } from "./account-actions/edit-account-sheet"
-
-const kindRows = {
-  expense: { icon: ArrowUpRightIcon, color: "rose" },
-  income: { icon: ArrowDownLeftIcon, color: "emerald" },
-  transfer: { icon: Repeat2Icon, color: "blue" },
-} as const
 
 export function getAccountKind(account: Account) {
   return account.institutionName ?? accountTypeLabels[account.type]
@@ -41,10 +36,12 @@ type AccountSheetProps = {
   account?: Account
   share?: { percentageLabel: string }
   transactions: Transaction[]
+  /** For the transactions' category icons. */
+  categoryGroups: CategoryGroup[]
   onOpenChange: (open: boolean) => void
 }
 
-export function AccountSheet({ account, share, transactions, onOpenChange }: AccountSheetProps) {
+export function AccountSheet({ account, share, transactions, categoryGroups, onOpenChange }: AccountSheetProps) {
   const router = useRouter()
   const [isPending, startTransition] = React.useTransition()
   const [editOpen, setEditOpen] = React.useState(false)
@@ -111,14 +108,15 @@ export function AccountSheet({ account, share, transactions, onOpenChange }: Acc
               {transactions.length > 0 ? (
                 <>
                   {transactions.map((transaction) => {
-                    const row = kindRows[transaction.kind]
+                    // The category's icon, as in the transactions list.
+                    const { icon, color } = getTransactionVisual(transaction, categoryGroups)
                     const amount = getAccountAmount(transaction, shown.id)
 
                     return (
                       <SettingsRow
                         key={transaction.id}
-                        icon={row.icon}
-                        color={row.color}
+                        icon={icon}
+                        color={color}
                         title={transaction.title}
                         description={`${formatShortDate(toDateKey(transaction.occurredAt))} · ${formatTime(transaction.occurredAt)}`}
                         value={formatCurrency(amount, { signDisplay: "always" })}

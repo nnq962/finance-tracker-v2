@@ -24,6 +24,7 @@ import {
 import { getAccountDistribution } from "@/lib/accounts/distribution"
 import type { Account } from "@/lib/accounts/types"
 import { formatCurrency } from "@/lib/format-currency"
+import type { CategoryGroup } from "@/lib/categories/types"
 import type { Transaction } from "@/lib/transactions/types"
 import { cn } from "@/lib/utils"
 
@@ -33,6 +34,7 @@ import { AddAccountButton } from "./add-account-button"
 type AccountListProps = {
   accounts: Account[]
   recentTransactions: Record<string, Transaction[]>
+  categoryGroups: CategoryGroup[]
 }
 
 type AccountShare = { percentageLabel: string }
@@ -78,7 +80,7 @@ function AccountRow({
   )
 }
 
-export function AccountList({ accounts, recentTransactions }: AccountListProps) {
+export function AccountList({ accounts, recentTransactions, categoryGroups }: AccountListProps) {
   const [openAccountId, setOpenAccountId] = React.useState<string | null>(null)
   // Grouped by type, largest total first, the same order as the bar.
   const { distribution, groups } = getAccountDistribution(accounts)
@@ -163,6 +165,7 @@ export function AccountList({ accounts, recentTransactions }: AccountListProps) 
         account={openAccount}
         share={openShare}
         transactions={openAccount ? recentTransactions[openAccount.id] ?? [] : []}
+        categoryGroups={categoryGroups}
         onOpenChange={(open) => {
           if (!open) setOpenAccountId(null)
         }}

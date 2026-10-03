@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { HandCoinsIcon } from "lucide-react"
 
 import { SettingsRow } from "@/components/settings-list"
 import { Sheet } from "@/components/ui/sheet"
@@ -9,10 +8,9 @@ import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatTime } from "@/lib/format-date"
-import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { cn } from "@/lib/utils"
 
-import { transactionPresentation } from "../_lib/transaction-presentation"
+import { getTransactionVisual, transactionPresentation } from "../_lib/transaction-presentation"
 import type { Transaction } from "../_types/transaction"
 import { EditTransactionSheet } from "./edit-transaction-sheet"
 import { TransactionDetailsSheet } from "./transaction-details-sheet"
@@ -33,28 +31,7 @@ export function TransactionItem({
   const [detailsOpen, setDetailsOpen] = React.useState(false)
   const [editOpen, setEditOpen] = React.useState(false)
   const presentation = transactionPresentation[transaction.kind]
-  const category = transaction.categoryId
-    ? categoryGroups
-        .find((group) => group.id === transaction.categoryGroupId)
-        ?.items.find((item) => item.id === transaction.categoryId) ??
-      categoryGroups
-        .flatMap((group) => group.items)
-        .find((item) => item.id === transaction.categoryId)
-    : undefined
-  // The category's own icon and colour; loans, transfers and unknown
-  // categories fall back to an icon for their kind.
-  const icon = category
-    ? categoryIconRegistry[category.iconName]
-    : transaction.source === "debt"
-      ? HandCoinsIcon
-      : presentation.icon
-  const color = category
-    ? category.colorName
-    : transaction.kind === "transfer"
-      ? "blue"
-      : transaction.kind === "income"
-        ? "emerald"
-        : "rose"
+  const { category, icon, color } = getTransactionVisual(transaction, categoryGroups)
 
   return (
     <>

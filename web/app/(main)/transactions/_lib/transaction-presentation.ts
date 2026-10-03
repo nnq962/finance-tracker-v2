@@ -1,10 +1,15 @@
 import {
   ArrowDownLeftIcon,
   ArrowUpRightIcon,
+  HandCoinsIcon,
   Repeat2Icon,
 } from "lucide-react"
 
-import type { TransactionKind } from "../_types/transaction"
+import type { CategoryColorName } from "@/lib/categories/category-colors"
+import type { CategoryGroup } from "@/lib/categories/types"
+import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
+
+import type { Transaction, TransactionKind } from "../_types/transaction"
 
 export const cashFlowColors = {
   income: {
@@ -47,3 +52,32 @@ export const transactionPresentation = {
     amountClassName: string
   }
 >
+
+/**
+ * A transaction's category, with the icon and colour it shows in a list:
+ * the category's own; loans, transfers and unknown categories fall back to
+ * an icon for their kind.
+ */
+export function getTransactionVisual(transaction: Transaction, categoryGroups: CategoryGroup[]) {
+  const category = transaction.categoryId
+    ? categoryGroups
+        .find((group) => group.id === transaction.categoryGroupId)
+        ?.items.find((item) => item.id === transaction.categoryId) ??
+      categoryGroups
+        .flatMap((group) => group.items)
+        .find((item) => item.id === transaction.categoryId)
+    : undefined
+  const icon = category
+    ? categoryIconRegistry[category.iconName]
+    : transaction.source === "debt"
+      ? HandCoinsIcon
+      : transactionPresentation[transaction.kind].icon
+  const color: CategoryColorName = category
+    ? category.colorName
+    : transaction.kind === "transfer"
+      ? "blue"
+      : transaction.kind === "income"
+        ? "emerald"
+        : "rose"
+  return { category, icon, color }
+}

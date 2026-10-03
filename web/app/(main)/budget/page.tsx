@@ -2,6 +2,7 @@ import { Page, PageHeader } from "@/components/page"
 import { loadWithSession } from "@/lib/auth/session"
 import { getAccounts } from "@/lib/accounts/repository"
 import { getBalanceSummary } from "@/lib/accounts/summary"
+import { getCategoryGroups } from "@/lib/categories/repository"
 import { getRecentTransactionsByAccount } from "@/lib/transactions/repository"
 
 import { AccountList } from "./_components/account-list"
@@ -10,11 +11,13 @@ import { BalanceHero } from "./_components/balance-hero"
 import { BudgetLayout } from "./_components/budget-layout"
 
 export default async function AccountsPage() {
-  const { data: [accounts, recentTransactions] } = await loadWithSession((user) =>
+  const { data: [accounts, recentTransactions, categoryGroups] } = await loadWithSession((user) =>
     Promise.all([
       getAccounts(user.uid),
       // A few per account, shown when its sheet opens without another round trip.
       getRecentTransactionsByAccount(user.uid),
+      // Their categories' icons.
+      getCategoryGroups(user.uid),
     ]),
   )
   const balanceSummary = getBalanceSummary(accounts)
@@ -29,10 +32,10 @@ export default async function AccountsPage() {
         <BudgetLayout
           summary={<BalanceHero summary={balanceSummary} accounts={accounts} />}
         >
-          <AccountList accounts={accounts} recentTransactions={recentTransactions} />
+          <AccountList accounts={accounts} recentTransactions={recentTransactions} categoryGroups={categoryGroups} />
         </BudgetLayout>
       ) : (
-        <AccountList accounts={accounts} recentTransactions={recentTransactions} />
+        <AccountList accounts={accounts} recentTransactions={recentTransactions} categoryGroups={categoryGroups} />
       )}
       {/* On mobile the action floats above the bottom nav so it stays within
           thumb reach while scrolling. The empty state carries its own button. */}
