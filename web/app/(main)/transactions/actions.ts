@@ -132,7 +132,7 @@ export async function parseTransactionWithAiAction(
     return { success: false, error: "AI đang không phản hồi. Thử lại sau ít phút nhé." }
   }
 
-  const draft = readTransactionReply(reply, lists, today)
+  const draft = readTransactionReply(reply, { request: text, lists, today })
   return draft
     ? { success: true, draft }
     : { success: false, error: "AI chưa hiểu yêu cầu này, thử nói rõ hơn nhé." }

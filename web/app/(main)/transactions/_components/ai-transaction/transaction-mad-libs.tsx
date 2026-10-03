@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { CalendarIcon, CheckIcon, RotateCcwIcon } from "lucide-react"
+import { CalendarIcon, CheckIcon, PlusIcon, RotateCcwIcon } from "lucide-react"
 import { AnimatePresence, motion, type Variants } from "motion/react"
 import { toast } from "sonner"
 
@@ -30,7 +30,7 @@ const kindWords: Record<TransactionKind, string> = {
   transfer: "chuyển",
 }
 
-type BlankField = "kind" | "amount" | "date" | "category" | "accountId" | "toAccountId" | "title"
+type BlankField = "kind" | "amount" | "date" | "category" | "accountId" | "toAccountId" | "note"
 
 const fieldCaptions: Record<BlankField, string> = {
   kind: "Loại giao dịch",
@@ -39,7 +39,7 @@ const fieldCaptions: Record<BlankField, string> = {
   category: "Hạng mục",
   accountId: "Tài khoản",
   toAccountId: "Tài khoản nhận",
-  title: "Nội dung",
+  note: "Ghi chú",
 }
 
 const EDITOR_ID = "ai-blank-editor"
@@ -166,6 +166,7 @@ export function TransactionMadLibs({
   }
 
   const complete = firstMissing(draft) === null
+  const hasNote = draft.note.trim() !== ""
 
   const open = (field: BlankField) => {
     window.clearTimeout(advanceTimer.current)
@@ -241,16 +242,22 @@ export function TransactionMadLibs({
                 </motion.span>
               </>
             )}
-            <motion.span variants={phrase}>
-              , ghi là{" "}
-              {blank("title", {
-                placeholder: "nội dung gì",
-                filled: draft.title.trim() !== "",
-                valueKey: draft.title.trim() ? "title" : "",
-                children: draft.title,
-              })}
-              .
-            </motion.span>
+            {/* The note is optional: it closes the sentence only when there
+                is one, or while one is being written. */}
+            {hasNote || editing === "note" ? (
+              <motion.span variants={phrase}>
+                , ghi chú “
+                {blank("note", {
+                  placeholder: "gì",
+                  filled: hasNote,
+                  valueKey: hasNote ? "note" : "",
+                  children: draft.note,
+                })}
+                ”.
+              </motion.span>
+            ) : (
+              "."
+            )}
           </motion.p>
         </CardContent>
       </Card>
@@ -296,9 +303,17 @@ export function TransactionMadLibs({
             {...panelMotion}
             transition={{ duration: 0.3, ease: EASE_OUT, delay: edited ? 0 : 0.45 }}
           >
-            <p className="px-3 text-xs text-muted-foreground">
-              {complete ? "Bấm vào từ được gạch chân để sửa." : "Điền các ô còn trống trước khi lưu."}
-            </p>
+            <div className="flex min-h-7 items-center justify-between gap-2 pl-3">
+              <p className="text-xs text-muted-foreground">
+                {complete ? "Bấm vào từ được gạch chân để sửa." : "Điền các ô còn trống trước khi lưu."}
+              </p>
+              {hasNote ? null : (
+                <Button type="button" variant="ghost" size="sm" onClick={() => open("note")}>
+                  <PlusIcon />
+                  Ghi chú
+                </Button>
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-2">
               <Button type="button" variant="outline" onClick={onRetry}>
                 <RotateCcwIcon />
@@ -409,15 +424,15 @@ function BlankEditor({ field, draft, today, groups, accounts, onPick, onChange }
         </ToggleGroup>
       )
     }
-    case "title":
+    case "note":
       return (
         <Input
-          id="ai-title"
-          aria-label="Nội dung"
-          value={draft.title}
-          maxLength={100}
-          placeholder="Ví dụ: trà sữa"
-          onChange={(event) => onChange({ title: event.target.value })}
+          id="ai-note"
+          aria-label="Ghi chú"
+          value={draft.note}
+          maxLength={200}
+          placeholder="Ví dụ: ở quán cô Ba"
+          onChange={(event) => onChange({ note: event.target.value })}
         />
       )
   }

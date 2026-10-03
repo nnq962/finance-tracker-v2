@@ -4,7 +4,8 @@ import type { TransactionKind } from "../_types/transaction"
 export type AiTransactionDraft = {
   kind: TransactionKind
   amount: number | null
-  title: string
+  /** Detail the category does not say ("Ở quán cô Ba"); empty when none was given. */
+  note: string
   categoryId?: string
   accountId?: string
   /** The receiving account of a transfer. */
