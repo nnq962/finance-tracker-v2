@@ -12,7 +12,6 @@ import {
   ShieldCheckIcon,
   SparklesIcon,
   TicketPercentIcon,
-  XIcon,
   type LucideIcon,
 } from "lucide-react"
 import { toast } from "sonner"
@@ -22,9 +21,11 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Field, FieldError } from "@/components/ui/field"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
 import { Item, ItemActions, ItemContent, ItemTitle } from "@/components/ui/item"
+import { Separator } from "@/components/ui/separator"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDate, toDateKey } from "@/lib/format-date"
@@ -109,40 +110,11 @@ const faqs = [
 export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout = "sheet" }: PlanScreenProps) {
   const page = layout === "page"
   const [period, setPeriod] = React.useState<PlanPeriod>("month")
-  const [opening, setOpening] = React.useState(false)
-  const [, startTransition] = React.useTransition()
-  const pathname = usePathname()
-  const router = useRouter()
   const isPro = planState.plan === "pro"
   const outcome = paymentOutcome ? outcomeMessages[paymentOutcome] : undefined
   const price = proPrices[period]
-  // A code checked by the server; the price at checkout is worked out there again.
-  const [coupon, setCoupon] = React.useState<{ code: string; percentOff: number } | null>(null)
-  const discounted = coupon ? priceWithCoupon(period, coupon.percentOff) : null
-  const payAmount = discounted?.amount ?? price.amount
-  // A code that leaves (next to) nothing to pay grants Pro without payOS.
-  const free = payAmount < MIN_CHECKOUT_AMOUNT
-
-  const checkout = () => {
-    setOpening(true)
-    startTransition(async () => {
-      const result = await startProCheckoutAction(period, pathname, coupon?.code)
-      if (!result.success) {
-        toast.error(result.error)
-        setOpening(false)
-        return
-      }
-      if ("granted" in result) {
-        toast.success("Đã nâng cấp Pro", { description: `Mã ${coupon?.code} đã được áp dụng.` })
-        setCoupon(null)
-        setOpening(false)
-        router.refresh()
-        return
-      }
-      // payOS's page shows the QR and opens the bank app, then sends the user back here.
-      window.location.assign(result.checkoutUrl)
-    })
-  }
+  // The order is confirmed, with a coupon if any, in a dialog before payOS.
+  const [confirmOpen, setConfirmOpen] = React.useState(false)
 
   return (
     <div className={cn("space-y-6 pt-2", page && "md:space-y-10")}>
@@ -210,17 +182,11 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
             </CardHeader>
             <CardContent className="flex-1 space-y-4">
               <div>
-                <PriceTag
-                  amount={payAmount}
-                  listAmount={discounted ? price.amount : undefined}
-                  unit={period === "year" ? "năm" : "tháng"}
-                />
+                <PriceTag amount={price.amount} unit={period === "year" ? "năm" : "tháng"} />
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {coupon
-                    ? `Mã ${coupon.code} · Giảm ${coupon.percentOff}%`
-                    : period === "year"
-                      ? `Tương đương ${formatCurrency(Math.round(price.amount / 12))}/tháng · Tiết kiệm ${formatCurrency(yearSaving)}`
-                      : `Tiết kiệm ${yearSavingPercent}% khi thanh toán theo năm`}
+                  {period === "year"
+                    ? `Tương đương ${formatCurrency(Math.round(price.amount / 12))}/tháng · Tiết kiệm ${formatCurrency(yearSaving)}`
+                    : `Tiết kiệm ${yearSavingPercent}% khi thanh toán theo năm`}
                 </p>
               </div>
               <FeatureList
@@ -238,15 +204,10 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
                 variant="grape"
                 size="lg"
                 className="w-full"
-                disabled={(!checkoutEnabled && !free) || opening}
-                onClick={checkout}
+                disabled={!checkoutEnabled}
+                onClick={() => setConfirmOpen(true)}
               >
-                {opening ? <LoaderCircleIcon className="animate-spin" aria-hidden="true" /> : null}
-                {free
-                  ? `Nhận Pro ${price.label} miễn phí`
-                  : isPro
-                    ? `Gia hạn thêm ${price.label} · ${formatCurrency(payAmount)}`
-                    : `Nâng cấp Pro · ${formatCurrency(payAmount)}`}
+                {isPro ? `Gia hạn thêm ${price.label}` : `Nâng cấp Pro · ${formatCurrency(price.amount)}`}
               </Button>
               <p className="text-center text-xs text-muted-foreground">
                 {checkoutEnabled
@@ -284,8 +245,6 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
           </Card>
         </div>
 
-        <CouponEntry coupon={coupon} onApply={setCoupon} onRemove={() => setCoupon(null)} />
-
         <p className="flex items-center justify-center gap-1.5 px-3 text-center text-xs text-muted-foreground">
           <ShieldCheckIcon className="size-4 shrink-0" aria-hidden="true" />
           Thanh toán bảo mật qua payOS, hỗ trợ mọi ngân hàng
@@ -299,6 +258,13 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
           ))}
         </SettingsGroup>
       </div>
+
+      <CheckoutDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        period={period}
+        renewing={isPro}
+      />
     </div>
   )
 }
@@ -320,19 +286,12 @@ function OutcomeCard({ tone, title, description }: { tone: OutcomeTone; title: s
   )
 }
 
-function PriceTag({ amount, listAmount, unit }: { amount: number; listAmount?: number; unit: string }) {
+function PriceTag({ amount, unit }: { amount: number; unit: string }) {
   return (
-    <p className="flex flex-wrap items-baseline gap-1">
+    <p className="flex items-baseline gap-1">
       <span className="font-heading text-4xl leading-none font-extrabold tracking-tight tabular-nums">
         {formatCurrency(amount)}
       </span>
-      {/* The price before a coupon, struck through. */}
-      {listAmount !== undefined ? (
-        <s className="text-sm text-muted-foreground tabular-nums">
-          <span className="sr-only">Giá gốc </span>
-          {formatCurrency(listAmount)}
-        </s>
-      ) : null}
       <span className="text-sm text-muted-foreground">/{unit}</span>
     </p>
   )
@@ -387,105 +346,175 @@ function FaqRow({ question, answer }: { question: string; answer: string }) {
   )
 }
 
-/** "Có mã giảm giá?" opening a field for the code, checked with the server, then the code applied. */
-function CouponEntry({
-  coupon,
-  onApply,
-  onRemove,
+/**
+ * The order before payOS, as a checkout page has it: the plan and its
+ * price, a field for a coupon code (checked by the server, which prices the
+ * checkout again), the discount and what is paid.
+ */
+function CheckoutDialog({
+  open,
+  onOpenChange,
+  period,
+  renewing,
 }: {
-  coupon: { code: string; percentOff: number } | null
-  onApply: (coupon: { code: string; percentOff: number }) => void
-  onRemove: () => void
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  period: PlanPeriod
+  renewing: boolean
 }) {
-  const [open, setOpen] = React.useState(false)
+  const pathname = usePathname()
+  const router = useRouter()
   const [code, setCode] = React.useState("")
-  const [error, setError] = React.useState<string | null>(null)
+  const [coupon, setCoupon] = React.useState<{ code: string; percentOff: number } | null>(null)
+  const [codeError, setCodeError] = React.useState<string | null>(null)
   const [checking, setChecking] = React.useState(false)
+  const [paying, setPaying] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
-  if (coupon) {
-    return (
-      <div className="flex items-center justify-center gap-2">
-        <Badge variant="grape">
-          <TicketPercentIcon data-icon="inline-start" aria-hidden="true" />
-          {coupon.code} · −{coupon.percentOff}%
-        </Badge>
-        <Button type="button" variant="ghost" size="xs" onClick={onRemove}>
-          Bỏ mã
-        </Button>
-      </div>
-    )
-  }
+  const price = proPrices[period]
+  const priced = coupon ? priceWithCoupon(period, coupon.percentOff) : null
+  const total = priced?.amount ?? price.amount
+  // A code that leaves (next to) nothing to pay grants Pro without payOS.
+  const free = total < MIN_CHECKOUT_AMOUNT
 
-  if (!open) {
-    return (
-      <div className="flex justify-center">
-        <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(true)}>
-          <TicketPercentIcon />
-          Có mã giảm giá?
-        </Button>
-      </div>
-    )
+  const changeOpen = (next: boolean) => {
+    if (paying) return
+    if (!next) {
+      setCode("")
+      setCoupon(null)
+      setCodeError(null)
+      setError(null)
+    }
+    onOpenChange(next)
   }
 
   const apply = async () => {
     if (!code.trim()) {
-      setError("Nhập mã giảm giá.")
+      setCodeError("Nhập mã giảm giá.")
       return
     }
     setChecking(true)
     const result = await checkCouponAction(code)
     setChecking(false)
     if (!result.success) {
-      setError(result.error)
+      setCodeError(result.error)
       return
     }
-    onApply({ code: result.code, percentOff: result.percentOff })
-    setOpen(false)
+    setCoupon({ code: result.code, percentOff: result.percentOff })
     setCode("")
   }
 
+  const pay = async () => {
+    setPaying(true)
+    setError(null)
+    const result = await startProCheckoutAction(period, pathname, coupon?.code)
+    if (!result.success) {
+      setPaying(false)
+      setError(result.error)
+      return
+    }
+    if ("granted" in result) {
+      setPaying(false)
+      toast.success("Đã nâng cấp Pro", { description: `Mã ${coupon?.code} đã được áp dụng.` })
+      changeOpen(false)
+      router.refresh()
+      return
+    }
+    // payOS's page shows the QR and opens the bank app, then sends the user back here.
+    window.location.assign(result.checkoutUrl)
+  }
+
   return (
-    <Field data-invalid={Boolean(error) || undefined} className="mx-auto max-w-xs">
-      <InputGroup>
-        <InputGroupInput
-          aria-label="Mã giảm giá"
-          placeholder="Nhập mã"
-          value={code}
-          autoCapitalize="characters"
-          autoComplete="off"
-          maxLength={20}
-          aria-invalid={Boolean(error) || undefined}
-          onChange={(event) => {
-            setCode(event.target.value.toUpperCase())
-            setError(null)
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              event.preventDefault()
-              void apply()
-            }
-          }}
-          autoFocus
-        />
-        <InputGroupAddon align="inline-end">
-          <InputGroupButton disabled={checking} onClick={() => void apply()}>
-            {checking ? <LoaderCircleIcon className="animate-spin" aria-hidden="true" /> : null}
-            Áp dụng
-          </InputGroupButton>
-          <InputGroupButton
-            size="icon-xs"
-            aria-label="Đóng"
-            onClick={() => {
-              setOpen(false)
-              setCode("")
-              setError(null)
-            }}
-          >
-            <XIcon />
-          </InputGroupButton>
-        </InputGroupAddon>
-      </InputGroup>
-      {error ? <FieldError>{error}</FieldError> : null}
-    </Field>
+    <Dialog open={open} onOpenChange={changeOpen}>
+      <DialogContent aria-describedby={undefined} className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Xác nhận thanh toán</DialogTitle>
+        </DialogHeader>
+
+        <dl className="space-y-2 text-sm">
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted-foreground">{renewing ? "Gia hạn" : "Gói"}</dt>
+            <dd className="font-medium">
+              {plans.pro.label} · {price.label}
+            </dd>
+          </div>
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted-foreground">Giá</dt>
+            <dd className="tabular-nums">{formatCurrency(price.amount)}</dd>
+          </div>
+          {priced ? (
+            <div className="flex justify-between gap-3">
+              <dt className="flex items-center gap-1.5 text-muted-foreground">
+                Giảm giá
+                <Badge variant="grape">
+                  <TicketPercentIcon data-icon="inline-start" aria-hidden="true" />
+                  {coupon?.code}
+                </Badge>
+              </dt>
+              <dd className="tabular-nums text-[#3e9727] dark:text-[#94e379]">
+                −{formatCurrency(priced.discount)}
+              </dd>
+            </div>
+          ) : null}
+        </dl>
+
+        {coupon ? (
+          <Button type="button" variant="ghost" size="xs" className="justify-self-start" onClick={() => setCoupon(null)}>
+            Bỏ mã giảm giá
+          </Button>
+        ) : (
+          <Field data-invalid={Boolean(codeError) || undefined}>
+            <FieldLabel htmlFor="checkout-coupon">Mã giảm giá</FieldLabel>
+            <InputGroup>
+              <InputGroupInput
+                id="checkout-coupon"
+                value={code}
+                autoCapitalize="characters"
+                autoComplete="off"
+                maxLength={20}
+                aria-invalid={Boolean(codeError) || undefined}
+                onChange={(event) => {
+                  setCode(event.target.value.replace(/\s+/g, "").toUpperCase())
+                  setCodeError(null)
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault()
+                    void apply()
+                  }
+                }}
+              />
+              <InputGroupAddon align="inline-end">
+                <InputGroupButton disabled={checking || paying} onClick={() => void apply()}>
+                  {checking ? <LoaderCircleIcon className="animate-spin" aria-hidden="true" /> : null}
+                  Áp dụng
+                </InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
+            {codeError ? <FieldError>{codeError}</FieldError> : null}
+          </Field>
+        )}
+
+        <Separator />
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="font-medium">Tổng thanh toán</span>
+          <span className="font-heading text-2xl font-extrabold tabular-nums">{formatCurrency(total)}</span>
+        </div>
+
+        <DialogFooter className="flex-col sm:flex-col">
+          {error ? <FieldError role="alert">{error}</FieldError> : null}
+          <Button type="button" variant="grape" size="lg" className="w-full" disabled={paying || checking} onClick={() => void pay()}>
+            {paying ? <LoaderCircleIcon className="animate-spin" aria-hidden="true" /> : null}
+            {free ? "Nhận Pro miễn phí" : `Thanh toán ${formatCurrency(total)}`}
+          </Button>
+          {free ? null : (
+            <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
+              <ShieldCheckIcon className="size-4 shrink-0" aria-hidden="true" />
+              Thanh toán bảo mật qua payOS
+            </p>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
