@@ -71,7 +71,7 @@ export function OverviewGreeting({ user, plan }: { user: SessionUser; plan: Plan
               </p>
             </div>
             <Button asChild variant="grape" className="shrink-0">
-              <Link href="/settings/plan">Nâng cấp</Link>
+              <Link href="/settings?screen=plan">Nâng cấp</Link>
             </Button>
           </CardContent>
         </Card>

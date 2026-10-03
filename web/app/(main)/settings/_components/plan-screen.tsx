@@ -36,7 +36,7 @@ type PlanScreenProps = {
   checkoutEnabled: boolean
   /** How the payment the user just came back from stands. */
   paymentOutcome?: PaymentOutcome
-  /** In the settings sheet (one column), or as the full pricing page, which spreads out from md up. */
+  /** In the settings sheet (one column), or as the full pricing in a dialog, which spreads out from md up. */
   layout?: "sheet" | "page"
 }
 
@@ -117,7 +117,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
   const checkout = () => {
     setOpening(true)
     startTransition(async () => {
-      const result = await startProCheckoutAction(period, layout)
+      const result = await startProCheckoutAction(period)
       if (!result.success) {
         toast.error(result.error)
         setOpening(false)
@@ -174,7 +174,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
           </ToggleGroupItem>
         </ToggleGroup>
 
-        {/* Pro first on a phone; side by side from md up on the page, free on the left. */}
+        {/* Pro first on a phone; side by side from md up in the dialog, free on the left. */}
         <div className={cn("grid gap-3", page && "md:mx-auto md:max-w-4xl md:grid-cols-2 md:gap-6")}>
           {/* The recommended plan stands out with a grape outline, the colour the kit keeps for premium. */}
           <Card className="border-[#a376e9] ring-[#a376e9] dark:border-[#a376e9] dark:ring-[#a376e9]">

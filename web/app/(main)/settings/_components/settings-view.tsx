@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { useRouter } from "next/navigation"
 import {
   BadgeCheckIcon,
   BellRingIcon,
@@ -20,6 +19,7 @@ import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import {
   Sheet,
   SheetContent,
@@ -103,11 +103,10 @@ export function SettingsView({
   const { openWelcome } = useWelcome()
 
   const open = (screen: Screen) => setSheetScreen(screen)
-  const router = useRouter()
   const isMobile = useIsMobile()
   const isPro = planState.plan === "pro"
-  // A phone gets the plans in the sheet; wider screens get the full pricing page.
-  const openPlan = () => (isMobile ? open("plan") : router.push("/settings/plan"))
+  // A phone gets the plans in the sheet; wider screens get the full pricing in a dialog.
+  const planInDialog = sheetScreen === "plan" && !isMobile
 
   const renderScreen = (screen: Screen) => {
     switch (screen) {
@@ -172,7 +171,7 @@ export function SettingsView({
             }
             description={user.email || "Chưa cập nhật email"}
             value={<Badge variant={isPro ? "grape" : "outline"}>{plans[planState.plan].label}</Badge>}
-            onClick={openPlan}
+            onClick={() => open("plan")}
           />
           <SignOutRow />
         </SettingsGroup>
@@ -261,14 +260,14 @@ export function SettingsView({
       </div>
 
       {/* Screens slide in like native navigation. */}
-      <Sheet open={sheetScreen !== null} onOpenChange={(next) => !next && setSheetScreen(null)}>
+      <Sheet open={sheetScreen !== null && !planInDialog} onOpenChange={(next) => !next && setSheetScreen(null)}>
         <SheetContent
           showCloseButton={false}
           aria-describedby={undefined}
           className="gap-0 data-[side=right]:w-full sm:max-w-md!"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
-          {sheetScreen ? (
+          {sheetScreen && !planInDialog ? (
             <>
               <SheetNavHeader
                 backLabel="Cài đặt"
@@ -281,6 +280,25 @@ export function SettingsView({
           ) : null}
         </SheetContent>
       </Sheet>
+
+      <Dialog open={planInDialog} onOpenChange={(next) => !next && setSheetScreen(null)}>
+        {/* The plans scroll inside, so the close button stays in reach. */}
+        <DialogContent
+          aria-describedby={undefined}
+          className="max-h-[calc(100dvh-4rem)] grid-rows-[minmax(0,1fr)] p-0 sm:max-w-5xl"
+          onOpenAutoFocus={(event) => event.preventDefault()}
+        >
+          <DialogTitle className="sr-only">{screens.plan.title}</DialogTitle>
+          <div className="overflow-y-auto px-6 pt-6 pb-8">
+            <PlanScreen
+              layout="page"
+              planState={planState}
+              checkoutEnabled={checkoutEnabled}
+              paymentOutcome={paymentOutcome}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <CategoryManagementSheet
         groups={categoryGroups}
