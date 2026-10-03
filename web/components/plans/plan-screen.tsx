@@ -97,7 +97,7 @@ const faqs = [
 /** The user's plan and this month's AI requests, the plans side by side and buying Pro through payOS. */
 export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout = "sheet" }: PlanScreenProps) {
   const page = layout === "page"
-  const [period, setPeriod] = React.useState<PlanPeriod>("year")
+  const [period, setPeriod] = React.useState<PlanPeriod>("month")
   const [opening, setOpening] = React.useState(false)
   const [, startTransition] = React.useTransition()
   const pathname = usePathname()
