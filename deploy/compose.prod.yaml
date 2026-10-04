@@ -29,6 +29,8 @@ services:
       PAYOS_CLIENT_ID: ${PAYOS_CLIENT_ID:-}
       PAYOS_API_KEY: ${PAYOS_API_KEY:-}
       PAYOS_CHECKSUM_KEY: ${PAYOS_CHECKSUM_KEY:-}
+      # Dictation through Whisper on Groq; the browser's recogniser until set.
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
     volumes:
       - type: bind
         source: ${FIREBASE_CREDENTIALS_FILE:?Set the absolute path to the Firebase Admin credentials JSON}

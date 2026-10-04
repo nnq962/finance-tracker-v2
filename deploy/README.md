@@ -88,7 +88,10 @@ ADMIN_EMAILS=email-admin@example.com   # email Google đã xác minh, cách nhau
 PAYOS_CLIENT_ID=...                    # my.payos.vn → Kênh thanh toán
 PAYOS_API_KEY=...
 PAYOS_CHECKSUM_KEY=...
+GROQ_API_KEY=...                       # console.groq.com → API Keys; nhận dạng giọng nói bằng Whisper
 ```
+
+Thiếu `GROQ_API_KEY` thì trợ lý AI dùng nhận dạng giọng nói của trình duyệt như cũ.
 
 Thiếu một trong ba khoá payOS thì nút thanh toán tắt, màn hình Gói ghi "Liên hệ
 quản trị viên". Webhook của kênh thanh toán trên payOS trỏ về

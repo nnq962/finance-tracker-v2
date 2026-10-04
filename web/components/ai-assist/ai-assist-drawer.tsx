@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { AnimatePresence, motion, MotionConfig } from "motion/react"
-import { EraserIcon, KeyboardIcon, MicIcon, SendHorizontalIcon, SparklesIcon, SquareIcon, XIcon } from "lucide-react"
+import { EraserIcon, KeyboardIcon, LoaderCircleIcon, MicIcon, SendHorizontalIcon, SparklesIcon, SquareIcon, XIcon } from "lucide-react"
 
 import { AutoHeight } from "@/components/animate-ui/primitives/effects/auto-height"
 import { Button } from "@/components/ui/button"
@@ -219,8 +219,8 @@ export function AiAssistDrawer<Result>({
                               </p>
                             ) : (
                               <TurningLines
-                                lines={[...hints, "Đang nghe… nói xong thì bấm dừng."]}
-                                active={speech.listening ? hints.length : hintIndex}
+                                lines={[...hints, "Đang nghe… nói xong thì bấm dừng.", "Đang nhận dạng giọng nói…"]}
+                                active={speech.transcribing ? hints.length + 1 : speech.listening ? hints.length : hintIndex}
                               />
                             )}
                           </CardContent>
@@ -238,7 +238,7 @@ export function AiAssistDrawer<Result>({
                             className="justify-self-start"
                             aria-label={showTyping ? "Nói thay vì gõ" : "Gõ thay vì nói"}
                             aria-pressed={typing}
-                            disabled={speech.listening}
+                            disabled={speech.listening || speech.transcribing}
                             onClick={() => setTyping((value) => !value)}
                           >
                             {showTyping ? <MicIcon /> : <KeyboardIcon />}
@@ -265,10 +265,17 @@ export function AiAssistDrawer<Result>({
                               type="button"
                               size="icon-lg"
                               className="size-12 rounded-full [&_svg:not([class*='size-'])]:size-5"
-                              aria-label={speech.listening ? "Dừng nghe" : "Bắt đầu nói"}
+                              aria-label={speech.transcribing ? "Đang nhận dạng" : speech.listening ? "Dừng nghe" : "Bắt đầu nói"}
+                              disabled={speech.transcribing}
                               onClick={speech.listening ? speech.stop : speech.start}
                             >
-                              {speech.listening ? <SquareIcon /> : <MicIcon />}
+                              {speech.transcribing ? (
+                                <LoaderCircleIcon className="animate-spin" />
+                              ) : speech.listening ? (
+                                <SquareIcon />
+                              ) : (
+                                <MicIcon />
+                              )}
                             </Button>
                           </span>
                         )}
