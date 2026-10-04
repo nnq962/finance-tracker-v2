@@ -1,7 +1,9 @@
 "use server"
 
 import { getAccounts } from "@/lib/accounts/repository"
+import type { Account } from "@/lib/accounts/types"
 import { requireSession } from "@/lib/auth/session"
+import { getInstitution } from "@/lib/institutions"
 import { requireAdmin } from "@/lib/plans/admin"
 import {
   GroqError,
@@ -20,6 +22,19 @@ const TRANSCRIPTIONS_PER_HOUR = 60
 /** Past the 30 seconds a recording may run, in any format a browser records; server actions take 1 MB. */
 const MAX_AUDIO_BYTES = 1_000_000
 const transcriptions = new Map<string, number[]>()
+
+/** The names a user's accounts go by: each account's own, and its bank's or wallet's brand. */
+function accountNames(accounts: Account[]) {
+  return accounts
+    .filter((account) => account.status === "active")
+    .flatMap((account) => [
+      account.name,
+      account.institutionId && account.type !== "cash"
+        ? getInstitution(account.type, account.institutionId)?.shortName
+        : undefined,
+    ])
+    .filter((name): name is string => Boolean(name))
+}
 
 /** Which recogniser dictation uses: Whisper on the server, or the browser's own. */
 export async function speechEngineAction(): Promise<"whisper" | "browser"> {
@@ -47,7 +62,7 @@ export async function transcribeAction(
 
   try {
     const accounts = await getAccounts(user.uid)
-    const text = await transcribe(audio, transcriptionPrompt(accounts.map((account) => account.name)))
+    const text = await transcribe(audio, transcriptionPrompt(accountNames(accounts)))
     return text ? { success: true, text } : { success: false, error: "Không nghe thấy tiếng nói." }
   } catch (error) {
     console.error("Transcription failed", error instanceof GroqError ? error.message : (error as Error).name)
@@ -85,7 +100,7 @@ export async function transcribeLabAction(formData: FormData): Promise<
   try {
     const accounts = await getAccounts(admin.uid)
     const accountsMs = Math.round(performance.now() - startedAt)
-    const prompt = transcriptionPrompt(accounts.map((account) => account.name))
+    const prompt = transcriptionPrompt(accountNames(accounts))
     const detail = await transcribeDetailed(audio, prompt, model as WhisperModel)
     const serverMs = Math.round(performance.now() - startedAt)
     const pingMs = await pingGroq().catch(() => undefined)

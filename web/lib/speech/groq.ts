@@ -12,38 +12,52 @@ export function groqEnabled() {
   return Boolean(process.env.GROQ_API_KEY)
 }
 
-/** Banks and wallets people name when they talk money, spelled as their brands are. */
-const KNOWN_NAMES = [
-  "MB Bank",
-  "TPBank",
-  "VPBank",
+/**
+ * Banks and wallets from lib/institutions.ts that most people have, to fill
+ * the prompt after the user's own: the whole list would not fit.
+ */
+const POPULAR_NAMES = [
   "Vietcombank",
   "Techcombank",
+  "MB Bank",
   "BIDV",
   "VietinBank",
-  "ACB",
   "Agribank",
+  "ACB",
+  "VPBank",
+  "TPBank",
   "Sacombank",
+  "VIB",
+  "HDBank",
+  "SHB",
   "MoMo",
   "ZaloPay",
+  "ShopeePay",
+  "Viettel Money",
 ]
+
+/** Said just before the audio, in the way people talk money here. */
+const SAMPLE =
+  "Ăn sáng 35k tiền mặt. Đi siêu thị hết 500k, trả bằng Sacombank. Nhận lương 15 củ vào Vietcombank. Chuyển 2 triệu từ MB Bank sang TPBank. Nạp 200k vào MoMo."
 
 /**
  * What Whisper is told before the audio. It reads as the text spoken just
  * before, so it is written the way people say money here, with amounts in
- * "k" and "củ" and banks spelled as their brands are; the user's own
- * accounts lead the list of names. Kept well under the 224 tokens Groq takes.
+ * "k" and "củ" and banks spelled as their brands are. Then the names to
+ * spell as written: the user's own accounts and their banks or wallets
+ * first, then the most common others, as many as fit well under the 224
+ * tokens Groq takes.
  */
-export function transcriptionPrompt(accountNames: string[]) {
-  const sample =
-    "Ăn sáng 35k tiền mặt. Đi siêu thị hết 500k, trả bằng Sacombank. Nhận lương 15 củ vào Vietcombank. Chuyển 2 triệu từ MB Bank sang TPBank. Nạp 200k vào MoMo."
-  const names = [...new Set([...accountNames.map((name) => name.trim()).filter(Boolean), ...KNOWN_NAMES])]
+export function transcriptionPrompt(ownNames: string[]) {
+  const names = [...new Set([...ownNames.map((name) => name.trim()).filter(Boolean), ...POPULAR_NAMES])]
+    // Already spelled in the sample.
+    .filter((name) => !SAMPLE.includes(name))
   let list = ""
   for (const name of names) {
-    if (`${list}, ${name}`.length > 160) break
+    if (`${list}, ${name}`.length > 170) break
     list = list ? `${list}, ${name}` : name
   }
-  return `${sample} Tài khoản: ${list}.`
+  return list ? `${SAMPLE} Tài khoản: ${list}.` : SAMPLE
 }
 
 export type VerboseSegment = { text: string; no_speech_prob: number; avg_logprob: number }
