@@ -1,13 +1,10 @@
 import "server-only"
 
+import type { ChatMessage } from "@/lib/ai/llm"
+
 // Ollama runs beside the web service on the compose network, never published.
 const OLLAMA_URL = process.env.OLLAMA_URL ?? "http://ollama:11434"
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL ?? "gemma4:e4b"
-
-export type OllamaMessage = {
-  role: "system" | "user" | "assistant"
-  content: string
-}
 
 /** The model could not be reached, timed out, or did not answer in JSON. */
 export class OllamaError extends Error {
@@ -22,7 +19,7 @@ export class OllamaError extends Error {
  * parsed. Deterministic (temperature 0), with no thinking step.
  */
 export async function ollamaJson(
-  messages: OllamaMessage[],
+  messages: ChatMessage[],
   format: object,
   { timeoutMs = 15_000 }: { timeoutMs?: number } = {},
 ): Promise<unknown> {

@@ -1,4 +1,4 @@
-import type { OllamaMessage } from "@/lib/ai/ollama"
+import type { ChatMessage } from "@/lib/ai/llm"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup, CategoryItem } from "@/lib/categories/types"
 import { MAX_MONEY } from "@/lib/money"
@@ -187,7 +187,7 @@ function findGroup(lists: Lists, kind: TransactionKind, keywords: string[]) {
  * lists: a sample names an account or a category only when the user has
  * one of that kind, so every key in them is real.
  */
-function examples(lists: Lists): OllamaMessage[] {
+function examples(lists: Lists): ChatMessage[] {
   const when = (said: Partial<When> = {}): When => ({
     daysAgo: null, weekday: null, weeksAgo: null, day: null, month: null,
     hour: null, minute: null, dayPeriod: "", ...said,
@@ -296,7 +296,7 @@ function examples(lists: Lists): OllamaMessage[] {
 /** The conversation that asks the model to read `request`, and its keys to read the answer back with. */
 export function buildTransactionPrompt(request: string, context: Context) {
   const lists = buildLists(context)
-  const messages: OllamaMessage[] = [
+  const messages: ChatMessage[] = [
     { role: "system", content: systemPrompt(lists, context.today) },
     ...examples(lists),
     { role: "user", content: request },

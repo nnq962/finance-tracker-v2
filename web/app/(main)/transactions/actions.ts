@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 
-import { ollamaJson } from "@/lib/ai/ollama"
+import { aiJson } from "@/lib/ai/llm"
 import { getAccounts } from "@/lib/accounts/repository"
 import { requireSession } from "@/lib/auth/session"
 import { getCategoryGroups } from "@/lib/categories/repository"
@@ -146,7 +146,7 @@ export async function parseTransactionWithAiAction(
 
   let reply: unknown
   try {
-    reply = await ollamaJson(messages, transactionReplySchema)
+    reply = await aiJson(messages, transactionReplySchema)
   } catch (error) {
     console.error("AI transaction parse failed", error)
     await releaseAiRequest(user.uid, reservation.source)

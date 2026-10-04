@@ -89,9 +89,12 @@ PAYOS_CLIENT_ID=...                    # my.payos.vn → Kênh thanh toán
 PAYOS_API_KEY=...
 PAYOS_CHECKSUM_KEY=...
 GROQ_API_KEY=...                       # console.groq.com → API Keys; nhận dạng giọng nói bằng Whisper
+GEMINI_API_KEY=...                     # aistudio.google.com → Get API key; trợ lý AI dùng Gemini
 ```
 
 Thiếu `GROQ_API_KEY` thì trợ lý AI dùng nhận dạng giọng nói của trình duyệt như cũ.
+Thiếu `GEMINI_API_KEY` thì trợ lý AI dùng gemma trên Ollama; có key mà Gemini lỗi
+thì cũng tự chuyển sang gemma. `GEMINI_MODEL` đổi model (mặc định `gemini-3.5-flash-lite`).
 
 Thiếu một trong ba khoá payOS thì nút thanh toán tắt, màn hình Gói ghi "Liên hệ
 quản trị viên". Webhook của kênh thanh toán trên payOS trỏ về
