@@ -16,6 +16,7 @@ import type { CategoryGroup } from "@/lib/categories/types"
 import type { SupportedTransactionKind } from "@/lib/transactions/types"
 
 import { createTransactionAction } from "../../actions"
+import type { TransactionDraft } from "./form-types"
 import { NeedAccountState } from "./need-account-state"
 import { TransactionForm } from "./transaction-form"
 import { TransactionKindSelector } from "./transaction-kind-selector"
@@ -28,6 +29,8 @@ type AddTransactionSheetProps = {
   onOpenChange?: (open: boolean) => void
   /** The tab it opens on, e.g. transfer for the transfer mission. */
   initialKind?: SupportedTransactionKind
+  /** Opens filled in, on the draft's kind. */
+  draft?: TransactionDraft
 }
 
 export function AddTransactionSheet({
@@ -36,12 +39,13 @@ export function AddTransactionSheet({
   open: controlledOpen,
   onOpenChange,
   initialKind = "expense",
+  draft,
 }: AddTransactionSheetProps) {
   const [internalOpen, setInternalOpen] = React.useState(false)
   const open = controlledOpen ?? internalOpen
   const setOpen = onOpenChange ?? setInternalOpen
   const [categoryManagementOpen, setCategoryManagementOpen] = React.useState(false)
-  const [kind, setKind] = React.useState<SupportedTransactionKind>(initialKind)
+  const [kind, setKind] = React.useState<SupportedTransactionKind>(draft?.kind ?? initialKind)
   const hasAccount = accounts.some((account) => account.status === "active")
 
   return (
@@ -67,6 +71,7 @@ export function AddTransactionSheet({
                 accounts={accounts}
                 action={createTransactionAction}
                 categoryGroups={categoryGroups}
+                draft={draft}
                 isCreating
                 kind={kind}
                 onManageCategories={() => setCategoryManagementOpen(true)}

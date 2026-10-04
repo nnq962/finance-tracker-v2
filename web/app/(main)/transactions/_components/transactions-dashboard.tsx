@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 import { AiAssistButton } from "@/components/ai-assist/ai-assist-button"
 import { PageHeader } from "@/components/page"
@@ -9,6 +10,7 @@ import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
+import type { PurchaseDraft } from "@/lib/plans/purchase-draft"
 
 import type { AiQuota } from "../actions"
 
@@ -20,6 +22,7 @@ import type {
   TransactionSearchFilters,
 } from "../_types/transaction"
 import { AddTransactionButton } from "./add-transaction-button"
+import { AddTransactionSheet } from "./add-transaction/add-transaction-sheet"
 import { AiTransactionDrawer } from "./ai-transaction/ai-transaction-drawer"
 import { NeedAccountState } from "./add-transaction/need-account-state"
 import { TransactionHistoryProvider } from "./add-transaction/transaction-history-context"
@@ -40,6 +43,8 @@ type TransactionsDashboardProps = {
   aiQuota: AiQuota
   /** Opens the AI assistant straight away. */
   initialAiOpen?: boolean
+  /** A Pro purchase to write down, opened from the plan screen or an admin's sale notice. */
+  purchaseDraft?: PurchaseDraft
 }
 
 // The AI button in the assistant's violet, set apart from the green add button.
@@ -62,6 +67,7 @@ export function TransactionsDashboard({
   transactions,
   aiQuota: initialAiQuota,
   initialAiOpen = false,
+  purchaseDraft,
 }: TransactionsDashboardProps) {
   const router = useRouter()
   const [isNavigating, startNavigation] = React.useTransition()
@@ -71,6 +77,17 @@ export function TransactionsDashboard({
   const [aiOpen, setAiOpen] = React.useState(initialAiOpen && hasAccount)
   // Without an account the AI could not save what it reads, so it asks for one first.
   const [needAccountOpen, setNeedAccountOpen] = React.useState(initialAiOpen && !hasAccount)
+  // Kept after the link's address is cleared, so the sheet stays filled in.
+  const [draft] = React.useState(purchaseDraft)
+  const [draftOpen, setDraftOpen] = React.useState(Boolean(purchaseDraft && !purchaseDraft.recorded))
+  const draftHandled = React.useRef(false)
+  React.useEffect(() => {
+    if (!draft || draftHandled.current) return
+    draftHandled.current = true
+    if (draft.recorded) toast.info("Khoản này đã được ghi.")
+    // Reloading the page should not open the draft again.
+    window.history.replaceState(null, "", "/transactions")
+  }, [draft])
   const openAi = () => (hasAccount ? setAiOpen(true) : setNeedAccountOpen(true))
   // Follows each request's answer, which carries the count after it.
   const [aiQuota, setAiQuota] = React.useState(initialAiQuota)
@@ -206,6 +223,15 @@ export function TransactionsDashboard({
           </div>
         </SheetContent>
       </Sheet>
+      {draft && !draft.recorded ? (
+        <AddTransactionSheet
+          accounts={accounts}
+          categoryGroups={categoryGroups}
+          draft={draft}
+          open={draftOpen}
+          onOpenChange={setDraftOpen}
+        />
+      ) : null}
       <AiTransactionDrawer
         open={aiOpen}
         onOpenChange={setAiOpen}

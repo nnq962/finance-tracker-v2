@@ -24,7 +24,7 @@ import type {
 
 import { CashFlowFields } from "./fields/cash-flow-fields"
 import { canTransfer, TransferFields } from "./fields/transfer-fields"
-import type { TransactionFieldErrors, TransactionFieldName } from "./form-types"
+import type { TransactionDraft, TransactionFieldErrors, TransactionFieldName } from "./form-types"
 import { useTransactionHistory } from "./transaction-history-context"
 import { validateTransactionForm } from "./validate-transaction-form"
 
@@ -55,6 +55,8 @@ type TransactionFormProps = {
   action: (formData: FormData) => Promise<TransactionActionResult>
   categoryGroups: CategoryGroup[]
   defaultValues?: Transaction
+  /** A new transaction filled in ahead: amount, time and note. */
+  draft?: TransactionDraft
   isCreating?: boolean
   kind: SupportedTransactionKind
   onManageCategories?: () => void
@@ -75,6 +77,7 @@ export function TransactionForm({
   action,
   categoryGroups,
   defaultValues,
+  draft,
   isCreating,
   kind,
   onManageCategories,
@@ -84,7 +87,7 @@ export function TransactionForm({
 }: TransactionFormProps) {
   const [isPending, startTransition] = React.useTransition()
   // Kept across retries of one entry so the server records it only once.
-  const [requestId, setRequestId] = React.useState(() => crypto.randomUUID())
+  const [requestId, setRequestId] = React.useState(() => draft?.requestId ?? crypto.randomUUID())
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   // Errors belong to the kind they were found on; another kind starts clean.
   const [checked, setChecked] = React.useState<{ kind: SupportedTransactionKind; errors: TransactionFieldErrors }>({
@@ -106,11 +109,12 @@ export function TransactionForm({
     [history],
   )
   const amountPick = useAmountQuickPick(
-    defaultValues ? Math.abs(defaultValues.amount) : null,
+    defaultValues ? Math.abs(defaultValues.amount) : (draft?.amount ?? null),
     historyAmounts,
   )
-  const defaultDateTime = defaultValues
-    ? getLocalDateTime(defaultValues.occurredAt)
+  const defaultOccurredAt = defaultValues?.occurredAt ?? draft?.occurredAt
+  const defaultDateTime = defaultOccurredAt
+    ? getLocalDateTime(defaultOccurredAt)
     : undefined
   // Without two accounts the transfer tab shows how to add one instead, and cannot be saved.
   const blocked =
@@ -229,7 +233,7 @@ export function TransactionForm({
             <Textarea
               id="transaction-note"
               name="note"
-              defaultValue={defaultValues?.note}
+              defaultValue={defaultValues?.note ?? draft?.note}
             />
           </Field>
         </FieldGroup>

@@ -3,6 +3,7 @@ import "server-only"
 import { PayOS } from "@payos/node"
 
 import { closePayment, getPayment, settlePaidPayment, type SettleResult } from "@/lib/plans/payments"
+import { noticeSale } from "@/lib/plans/sale-notice"
 
 let client: PayOS | null | undefined
 
@@ -37,11 +38,14 @@ export async function syncPayment(orderCode: number): Promise<PaymentOutcome> {
   if (!payos) return "pending"
   const link = await payos.paymentRequests.get(orderCode)
   switch (link.status) {
-    case "PAID":
-      return settlePaidPayment(orderCode, {
+    case "PAID": {
+      const result = await settlePaidPayment(orderCode, {
         amountPaid: link.amountPaid,
         reference: link.transactions[0]?.reference,
       })
+      if (result === "granted") noticeSale(orderCode)
+      return result
+    }
     case "CANCELLED":
       await closePayment(orderCode, "cancelled")
       return "cancelled"

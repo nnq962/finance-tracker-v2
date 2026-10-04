@@ -15,7 +15,9 @@ self.addEventListener("notificationclick", (event) => {
   if (!event.notification.data?.FCM_MSG) return;
   event.stopImmediatePropagation();
   event.notification.close();
-  const url = new URL("/transactions", self.location.origin).href;
+  // A notice may name its page (a sale opens the income to write down); same site only.
+  const path = event.notification.data.FCM_MSG.data?.url;
+  const url = new URL(typeof path === "string" && path.startsWith("/") && !path.startsWith("//") ? path : "/transactions", self.location.origin).href;
   event.waitUntil((async () => {
     const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
     const existing = windows.find((client) => new URL(client.url).origin === self.location.origin);

@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { usePathname, useRouter } from "next/navigation"
+import Link from "next/link"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -9,6 +10,7 @@ import {
   CircleCheckIcon,
   ClockIcon,
   LoaderCircleIcon,
+  ReceiptTextIcon,
   ShieldCheckIcon,
   SparklesIcon,
   TicketPercentIcon,
@@ -112,6 +114,12 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
   const [period, setPeriod] = React.useState<PlanPeriod>("month")
   const isPro = planState.plan === "pro"
   const outcome = paymentOutcome ? outcomeMessages[paymentOutcome] : undefined
+  // Paid through payOS: the order the user came back with writes the payment down as an expense.
+  const order = useSearchParams().get("order")
+  const recordHref =
+    order && (paymentOutcome === "granted" || paymentOutcome === "settled")
+      ? `/transactions?order=${encodeURIComponent(order)}`
+      : undefined
   const price = proPrices[period]
   // The order is confirmed, with a coupon if any, in a dialog before payOS.
   const [confirmOpen, setConfirmOpen] = React.useState(false)
@@ -120,7 +128,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
     <div className={cn("space-y-6 pt-2", page && "md:space-y-10")}>
       {outcome ? (
         <div className={cn(page && "mx-auto max-w-xl")}>
-          <OutcomeCard {...outcome} />
+          <OutcomeCard {...outcome} recordHref={recordHref} />
         </div>
       ) : null}
 
@@ -269,7 +277,18 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
   )
 }
 
-function OutcomeCard({ tone, title, description }: { tone: OutcomeTone; title: string; description?: string }) {
+function OutcomeCard({
+  tone,
+  title,
+  description,
+  recordHref,
+}: {
+  tone: OutcomeTone
+  title: string
+  description?: string
+  /** Where the payment is written down as an expense. */
+  recordHref?: string
+}) {
   const { icon: Icon, className } = outcomeTones[tone]
   return (
     <Card size="sm" role="status">
@@ -282,6 +301,16 @@ function OutcomeCard({ tone, title, description }: { tone: OutcomeTone; title: s
           {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
         </div>
       </CardContent>
+      {recordHref ? (
+        <CardFooter>
+          <Button asChild variant="outline" className="w-full">
+            <Link href={recordHref}>
+              <ReceiptTextIcon />
+              Ghi khoản chi
+            </Link>
+          </Button>
+        </CardFooter>
+      ) : null}
     </Card>
   )
 }

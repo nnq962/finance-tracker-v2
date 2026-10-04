@@ -3,6 +3,7 @@ import type { Webhook } from "@payos/node"
 
 import { settlePaidPayment } from "@/lib/plans/payments"
 import { getPayOS } from "@/lib/plans/payos"
+import { noticeSale } from "@/lib/plans/sale-notice"
 
 export const runtime = "nodejs"
 
@@ -32,7 +33,8 @@ export async function POST(request: Request) {
 
   if (data.code === "00") {
     try {
-      await settlePaidPayment(data.orderCode, { amountPaid: data.amount, reference: data.reference })
+      const result = await settlePaidPayment(data.orderCode, { amountPaid: data.amount, reference: data.reference })
+      if (result === "granted") noticeSale(data.orderCode)
     } catch (error) {
       // Not acknowledged, so payOS sends it again.
       console.error("payOS webhook could not settle", { orderCode: data.orderCode }, error)

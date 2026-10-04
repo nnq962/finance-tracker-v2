@@ -31,12 +31,17 @@ export function PushMessageListener() {
           })
           return
         }
+        const saleUrl = payload.data?.type === "sale" ? payload.data.url : undefined
         toast(title, {
           description: payload.notification?.body,
-          // Daily reminders ask to log spending, so offer the Transactions page.
+          // Daily reminders ask to log spending, so offer the Transactions page;
+          // a sale offers its income to write down.
           action: payload.data?.type === "daily-reminder" ? {
             label: "Mở giao dịch",
             onClick: () => { router.push("/transactions") },
+          } : saleUrl?.startsWith("/") ? {
+            label: "Ghi khoản thu",
+            onClick: () => { router.push(saleUrl) },
           } : undefined,
         })
       })

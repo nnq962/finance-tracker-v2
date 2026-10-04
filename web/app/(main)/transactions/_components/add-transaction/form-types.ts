@@ -24,3 +24,14 @@ export type TransactionFieldProps = {
   onFieldChange: (name: TransactionFieldName) => void
   onManageCategories?: () => void
 }
+
+/** A new transaction filled in ahead, e.g. a Pro purchase to write down. */
+export type TransactionDraft = {
+  kind: "expense" | "income"
+  amount: number
+  note: string
+  /** ISO time the money moved. */
+  occurredAt: string
+  /** Fixed per draft, so writing it down twice keeps one transaction. */
+  requestId: string
+}

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { CrownIcon, LoaderCircleIcon } from "lucide-react"
 import { toast } from "sonner"
 
@@ -118,6 +119,7 @@ export function AdminScreen({ data }: { data: AdminData }) {
 }
 
 function AdminUserDetail({ user }: { user: AdminUser }) {
+  const router = useRouter()
   const [period, setPeriod] = React.useState<PlanPeriod>("month")
   const [amount, setAmount] = React.useState<number | null>(proPrices.month.amount)
   const [note, setNote] = React.useState("")
@@ -223,7 +225,10 @@ function AdminUserDetail({ user }: { user: AdminUser }) {
         </li>
       </SettingsGroup>
 
-      <SettingsGroup title="Lịch sử cấp Pro">
+      <SettingsGroup
+        title="Lịch sử cấp Pro"
+        footer={grants?.some((item) => item.amount > 0 && !item.revoked) ? "Chạm lần cấp có thu tiền để ghi khoản thu." : undefined}
+      >
         {grants === null ? (
           <SettingsRow title="Đang tải…" />
         ) : grants.length > 0 ? (
@@ -233,6 +238,8 @@ function AdminUserDetail({ user }: { user: AdminUser }) {
               title={`${dateOf(item.startsAt)} → ${dateOf(item.endsAt)}`}
               description={[item.note, item.revoked ? "Đã thu hồi" : null].filter(Boolean).join(" · ") || undefined}
               value={formatCurrency(item.amount)}
+              // Money came in: open it as an income to write down.
+              onClick={item.amount > 0 && !item.revoked ? () => router.push(`/transactions?grant=${item.id}`) : undefined}
             />
           ))
         ) : (

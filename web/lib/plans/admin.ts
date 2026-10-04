@@ -9,11 +9,15 @@ import { requireSession, type SessionUser } from "@/lib/auth/session"
  * on the server: they grant Pro by hand and see every user.
  */
 export function isAdmin(user: SessionUser) {
-  const admins = (process.env.ADMIN_EMAILS ?? "")
+  return user.emailVerified && adminEmails().includes(user.email.toLowerCase())
+}
+
+/** The addresses in ADMIN_EMAILS, lower case. */
+export function adminEmails() {
+  return (process.env.ADMIN_EMAILS ?? "")
     .split(",")
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean)
-  return user.emailVerified && admins.includes(user.email.toLowerCase())
 }
 
 /** The signed-in admin; anyone else gets a 404, as if nothing were here. */
