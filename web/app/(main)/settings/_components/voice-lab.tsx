@@ -18,6 +18,8 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 
+import { WhisperLab, type WhisperRun } from "./whisper-lab"
+
 // The Web Speech API's recogniser; TypeScript's DOM types lack its constructor.
 type Recognition = EventTarget & {
   lang: string
@@ -101,6 +103,7 @@ export function VoiceLab() {
   const [level, setLevel] = React.useState<number | null>(null)
   const [micInfo, setMicInfo] = React.useState("")
   const [dictation, setDictation] = React.useState("")
+  const [whisperRuns, setWhisperRuns] = React.useState<WhisperRun[]>([])
   const recognition = React.useRef<Recognition | null>(null)
   const startedAt = React.useRef(0)
   const meter = React.useRef<{ stop: () => void } | null>(null)
@@ -235,6 +238,7 @@ export function VoiceLab() {
       log,
       microphone: micInfo,
       dictation,
+      whisper: whisperRuns,
     }
     try {
       await navigator.clipboard.writeText(JSON.stringify(report, null, 2))
@@ -263,6 +267,8 @@ export function VoiceLab() {
         <SettingsRow title="Quyền micro" value={environment?.permission ?? "…"} />
         <SettingsRow title="Trình duyệt" description={environment?.userAgent} />
       </SettingsGroup>
+
+      <WhisperLab onRun={(run) => setWhisperRuns((runs) => [...runs, run])} />
 
       <section className="space-y-3">
         <h3 className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">

@@ -39,7 +39,7 @@ export function transcriptionPrompt(accountNames: string[]) {
   return `Ăn sáng 35k tiền mặt. Chuyển 2 triệu từ MB Bank sang TPBank. Tài khoản: ${list}.`
 }
 
-type VerboseSegment = { text: string; no_speech_prob: number; avg_logprob: number }
+export type VerboseSegment = { text: string; no_speech_prob: number; avg_logprob: number }
 
 /**
  * Lines Whisper is known to make up from silence or noise in Vietnamese,
@@ -47,12 +47,29 @@ type VerboseSegment = { text: string; no_speech_prob: number; avg_logprob: numbe
  */
 const HALLUCINATIONS = [/subscribe/i, /ghiền mì gõ/i, /cảm ơn các bạn đã (theo dõi|xem)/i, /hẹn gặp lại các bạn/i, /la la school/i]
 
+/** A transcription with what it took: Groq's segments and the time the call ran. */
+export type TranscriptionDetail = {
+  text: string
+  /** Everything Whisper returned, before silence and made-up lines were left out. */
+  rawText: string
+  segments: VerboseSegment[]
+  /** From sending the audio to Groq until its answer was read. */
+  groqMs: number
+  /** Groq's own processing time, from its usage report, when given. */
+  groqProcessingMs?: number
+  region?: string
+}
+
 /**
  * The words in a recording, through Whisper on Groq, in Vietnamese. Segments
  * that are most likely silence, and the lines Whisper makes up from it, are
  * left out.
  */
 export async function transcribe(audio: File, prompt: string) {
+  return (await transcribeDetailed(audio, prompt)).text
+}
+
+export async function transcribeDetailed(audio: File, prompt: string): Promise<TranscriptionDetail> {
   const body = new FormData()
   body.append("file", audio, audio.name || "speech.webm")
   body.append("model", MODEL)
@@ -61,6 +78,7 @@ export async function transcribe(audio: File, prompt: string) {
   body.append("response_format", "verbose_json")
   body.append("prompt", prompt)
 
+  const startedAt = performance.now()
   const response = await fetch(ENDPOINT, {
     method: "POST",
     headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
@@ -70,14 +88,38 @@ export async function transcribe(audio: File, prompt: string) {
   if (!response.ok) {
     throw new GroqError(response.status, await response.text().catch(() => ""))
   }
-  const result = (await response.json()) as { text?: string; segments?: VerboseSegment[] }
+  const result = (await response.json()) as {
+    text?: string
+    segments?: VerboseSegment[]
+    x_groq?: { usage?: { total_time?: number } }
+  }
+  const groqMs = Math.round(performance.now() - startedAt)
   const segments = result.segments ?? [{ text: result.text ?? "", no_speech_prob: 0, avg_logprob: 0 }]
-  return segments
+  const text = segments
     .filter((segment) => !(segment.no_speech_prob > 0.6 && segment.avg_logprob < -0.7))
     .map((segment) => segment.text.trim())
-    .filter((text) => text && !HALLUCINATIONS.some((pattern) => pattern.test(text)))
+    .filter((part) => part && !HALLUCINATIONS.some((pattern) => pattern.test(part)))
     .join(" ")
     .trim()
+  const totalTime = result.x_groq?.usage?.total_time
+  return {
+    text,
+    rawText: (result.text ?? "").trim(),
+    segments: segments.map(({ text: part, no_speech_prob, avg_logprob }) => ({ text: part, no_speech_prob, avg_logprob })),
+    groqMs,
+    ...(typeof totalTime === "number" ? { groqProcessingMs: Math.round(totalTime * 1000) } : {}),
+    ...(response.headers.get("x-groq-region") ? { region: response.headers.get("x-groq-region")! } : {}),
+  }
+}
+
+/** How long a request to Groq that carries nothing takes: the network to it and back. */
+export async function pingGroq() {
+  const startedAt = performance.now()
+  await fetch(`https://api.groq.com/openai/v1/models/${MODEL}`, {
+    headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
+    signal: AbortSignal.timeout(10_000),
+  })
+  return Math.round(performance.now() - startedAt)
 }
 
 export class GroqError extends Error {

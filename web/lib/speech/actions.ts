@@ -2,7 +2,16 @@
 
 import { getAccounts } from "@/lib/accounts/repository"
 import { requireSession } from "@/lib/auth/session"
-import { GroqError, groqEnabled, transcribe, transcriptionPrompt } from "@/lib/speech/groq"
+import { requireAdmin } from "@/lib/plans/admin"
+import {
+  GroqError,
+  groqEnabled,
+  pingGroq,
+  transcribe,
+  transcribeDetailed,
+  transcriptionPrompt,
+  type TranscriptionDetail,
+} from "@/lib/speech/groq"
 
 /** Recordings per user per hour; Groq's free tier allows 20 a minute and 2,000 a day for everyone. */
 const TRANSCRIPTIONS_PER_HOUR = 60
@@ -44,5 +53,40 @@ export async function transcribeAction(
       return { success: false, error: "Nhận dạng giọng nói đang quá tải. Vui lòng thử lại sau ít phút." }
     }
     return { success: false, error: "Không nhận dạng được giọng nói. Vui lòng thử lại." }
+  }
+}
+
+/**
+ * A recording through Whisper with the time each step took on the server,
+ * and the bare network time to Groq measured after it. Admins only, for the
+ * voice lab.
+ */
+export async function transcribeLabAction(formData: FormData): Promise<
+  | {
+      success: true
+      detail: TranscriptionDetail
+      prompt: string
+      accountsMs: number
+      serverMs: number
+      pingMs?: number
+    }
+  | { success: false; error: string }
+> {
+  const admin = await requireAdmin()
+  if (!groqEnabled()) return { success: false, error: "Chưa có GROQ_API_KEY trên máy chủ." }
+  const audio = formData.get("audio")
+  if (!(audio instanceof File) || audio.size === 0) return { success: false, error: "Không nhận được âm thanh." }
+
+  const startedAt = performance.now()
+  try {
+    const accounts = await getAccounts(admin.uid)
+    const accountsMs = Math.round(performance.now() - startedAt)
+    const prompt = transcriptionPrompt(accounts.map((account) => account.name))
+    const detail = await transcribeDetailed(audio, prompt)
+    const serverMs = Math.round(performance.now() - startedAt)
+    const pingMs = await pingGroq().catch(() => undefined)
+    return { success: true, detail, prompt, accountsMs, serverMs, ...(pingMs !== undefined ? { pingMs } : {}) }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : "Không nhận dạng được." }
   }
 }
