@@ -31,6 +31,9 @@ export type WhisperRun = {
   error?: string
 }
 
+/** Bits per second a recording is made at; Whisper hears speech as well at this as at ten times more. */
+const SPEECH_BITRATE = 24_000
+
 function recordingFormat() {
   const type = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((candidate) =>
     MediaRecorder.isTypeSupported(candidate),
@@ -109,7 +112,11 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
       return
     }
     const format = recordingFormat()
-    const current = new MediaRecorder(stream, format.type ? { mimeType: format.type } : undefined)
+    // Speech needs little: at 24 kbps a sentence is tens of KB, quick to send on a phone's uplink.
+    const current = new MediaRecorder(stream, {
+      ...(format.type ? { mimeType: format.type } : {}),
+      audioBitsPerSecond: SPEECH_BITRATE,
+    })
     const chunks: Blob[] = []
     const startedAt = performance.now()
     let stoppedAt = 0

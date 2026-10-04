@@ -165,6 +165,9 @@ function recorderSupported() {
 }
 
 /** The first format this browser records in: Opus in WebM, or AAC in MP4 on Apple's. */
+/** Bits per second a recording is made at; Whisper hears speech as well at this as at ten times more. */
+const SPEECH_BITRATE = 24_000
+
 function recordingFormat() {
   const type = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((candidate) =>
     MediaRecorder.isTypeSupported(candidate),
@@ -231,7 +234,11 @@ function useWhisperRecognition({ onEnd }: { onEnd: (transcript: string) => void 
     }
 
     const format = recordingFormat()
-    const current = new MediaRecorder(stream, format.type ? { mimeType: format.type } : undefined)
+    // Speech needs little: at 24 kbps a sentence is tens of KB, quick to send on a phone's uplink.
+    const current = new MediaRecorder(stream, {
+      ...(format.type ? { mimeType: format.type } : {}),
+      audioBitsPerSecond: SPEECH_BITRATE,
+    })
     const chunks: Blob[] = []
     const startedAt = Date.now()
     const limit = window.setTimeout(() => {
