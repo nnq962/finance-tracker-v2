@@ -3,6 +3,10 @@ import "server-only"
 const ENDPOINT = "https://api.groq.com/openai/v1/audio/transcriptions"
 const MODEL = "whisper-large-v3-turbo"
 
+/** Whisper models on Groq: turbo is the faster and cheaper, large-v3 the more accurate. */
+export const WHISPER_MODELS = ["whisper-large-v3-turbo", "whisper-large-v3"] as const
+export type WhisperModel = (typeof WHISPER_MODELS)[number]
+
 /** Whisper on Groq is used once GROQ_API_KEY is set on the server; until then the browser's own recogniser is. */
 export function groqEnabled() {
   return Boolean(process.env.GROQ_API_KEY)
@@ -25,18 +29,21 @@ const KNOWN_NAMES = [
 ]
 
 /**
- * What Whisper is told before the audio: a sentence or two in the style of
- * what is said here, and the names it should spell as written (the user's
- * own accounts first). Kept well under the 224 tokens Groq takes.
+ * What Whisper is told before the audio. It reads as the text spoken just
+ * before, so it is written the way people say money here, with amounts in
+ * "k" and "củ" and banks spelled as their brands are; the user's own
+ * accounts lead the list of names. Kept well under the 224 tokens Groq takes.
  */
 export function transcriptionPrompt(accountNames: string[]) {
+  const sample =
+    "Ăn sáng 35k tiền mặt. Đi siêu thị hết 500k, trả bằng Sacombank. Nhận lương 15 củ vào Vietcombank. Chuyển 2 triệu từ MB Bank sang TPBank. Nạp 200k vào MoMo."
   const names = [...new Set([...accountNames.map((name) => name.trim()).filter(Boolean), ...KNOWN_NAMES])]
   let list = ""
   for (const name of names) {
-    if (`${list}, ${name}`.length > 200) break
+    if (`${list}, ${name}`.length > 160) break
     list = list ? `${list}, ${name}` : name
   }
-  return `Ăn sáng 35k tiền mặt. Chuyển 2 triệu từ MB Bank sang TPBank. Tài khoản: ${list}.`
+  return `${sample} Tài khoản: ${list}.`
 }
 
 export type VerboseSegment = { text: string; no_speech_prob: number; avg_logprob: number }
@@ -69,10 +76,14 @@ export async function transcribe(audio: File, prompt: string) {
   return (await transcribeDetailed(audio, prompt)).text
 }
 
-export async function transcribeDetailed(audio: File, prompt: string): Promise<TranscriptionDetail> {
+export async function transcribeDetailed(
+  audio: File,
+  prompt: string,
+  model: WhisperModel = MODEL,
+): Promise<TranscriptionDetail> {
   const body = new FormData()
   body.append("file", audio, audio.name || "speech.webm")
-  body.append("model", MODEL)
+  body.append("model", model)
   body.append("language", "vi")
   body.append("temperature", "0")
   body.append("response_format", "verbose_json")

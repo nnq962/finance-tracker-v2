@@ -7,10 +7,12 @@ import { toast } from "sonner"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { Field, FieldLabel } from "@/components/ui/field"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { transcribeLabAction } from "@/lib/speech/actions"
 
 /** One run through Whisper, timed at each step. */
 export type WhisperRun = {
+  model: string
   format: string
   bytes: number
   recordMs: number
@@ -51,6 +53,7 @@ const ms = (value?: number) => (value === undefined ? "—" : `${value.toLocaleS
  */
 export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
   const [state, setState] = React.useState<"idle" | "recording" | "sending">("idle")
+  const [model, setModel] = React.useState<string>("whisper-large-v3-turbo")
   const [run, setRun] = React.useState<WhisperRun | null>(null)
   const recorder = React.useRef<MediaRecorder | null>(null)
   const [last, setLast] = React.useState<{ file: File; recordMs: number; flushMs: number } | null>(null)
@@ -67,8 +70,9 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
     setState("sending")
     const formData = new FormData()
     formData.append("audio", file)
+    formData.append("model", model)
     const sentAt = performance.now()
-    const base = { format: file.type, bytes: file.size, recordMs, flushMs }
+    const base = { model, format: file.type, bytes: file.size, recordMs, flushMs }
     let next: WhisperRun
     try {
       const result = await transcribeLabAction(formData)
@@ -155,6 +159,19 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
       <h3 className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
         Nhận dạng giọng nói (Whisper · Groq)
       </h3>
+      <ToggleGroup
+        type="single"
+        value={model}
+        onValueChange={(value) => {
+          if (value) setModel(value)
+        }}
+        className="flex-wrap"
+        aria-label="Model"
+        disabled={state !== "idle"}
+      >
+        <ToggleGroupItem value="whisper-large-v3-turbo">large-v3-turbo</ToggleGroupItem>
+        <ToggleGroupItem value="whisper-large-v3">large-v3</ToggleGroupItem>
+      </ToggleGroup>
       <div className="grid grid-cols-[1fr_auto] gap-2">
         <Button
           type="button"
@@ -204,6 +221,7 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
             <SettingsRow title="Thời lượng" value={ms(run.recordMs)} />
             <SettingsRow title="Kích thước" value={`${(run.bytes / 1024).toFixed(1)} KB`} />
             <SettingsRow title="Định dạng" value={run.format || "—"} />
+            <SettingsRow title="Model" value={run.model} />
           </SettingsGroup>
 
           {run.segments && run.segments.length > 0 ? (

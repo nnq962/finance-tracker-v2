@@ -10,7 +10,9 @@ import {
   transcribe,
   transcribeDetailed,
   transcriptionPrompt,
+  WHISPER_MODELS,
   type TranscriptionDetail,
+  type WhisperModel,
 } from "@/lib/speech/groq"
 
 /** Recordings per user per hour; Groq's free tier allows 20 a minute and 2,000 a day for everyone. */
@@ -76,13 +78,15 @@ export async function transcribeLabAction(formData: FormData): Promise<
   if (!groqEnabled()) return { success: false, error: "Chưa có GROQ_API_KEY trên máy chủ." }
   const audio = formData.get("audio")
   if (!(audio instanceof File) || audio.size === 0) return { success: false, error: "Không nhận được âm thanh." }
+  const requested = formData.get("model")
+  const model = WHISPER_MODELS.find((name) => name === requested) ?? WHISPER_MODELS[0]
 
   const startedAt = performance.now()
   try {
     const accounts = await getAccounts(admin.uid)
     const accountsMs = Math.round(performance.now() - startedAt)
     const prompt = transcriptionPrompt(accounts.map((account) => account.name))
-    const detail = await transcribeDetailed(audio, prompt)
+    const detail = await transcribeDetailed(audio, prompt, model as WhisperModel)
     const serverMs = Math.round(performance.now() - startedAt)
     const pingMs = await pingGroq().catch(() => undefined)
     return { success: true, detail, prompt, accountsMs, serverMs, ...(pingMs !== undefined ? { pingMs } : {}) }
