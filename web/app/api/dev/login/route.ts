@@ -13,8 +13,7 @@ export const runtime = "nodejs"
  * isDevLoginEnabled.
  */
 export async function GET(request: NextRequest) {
-  const host = request.headers.get("host")
-  if (!isDevLoginEnabled(host)) {
+  if (!(await isDevLoginEnabled(request.headers))) {
     return new NextResponse(null, { status: 404 })
   }
 
@@ -23,8 +22,11 @@ export async function GET(request: NextRequest) {
   // Only paths on this site, never another origin.
   const next = request.nextUrl.searchParams.get("next") ?? "/overview"
   const target = next.startsWith("/") && !next.startsWith("//") ? next : "/overview"
-  // request.url carries the bind address in dev; the Host header is what the browser used.
-  const response = NextResponse.redirect(new URL(target, `http://${host}`))
+  // request.url carries the bind address in dev; the Host header is what the
+  // browser used, over https when it came through the tunnel.
+  const host = request.headers.get("host")
+  const protocol = request.headers.get("x-forwarded-proto") === "https" ? "https" : "http"
+  const response = NextResponse.redirect(new URL(target, `${protocol}://${host}`))
   response.cookies.set(SESSION_COOKIE_NAME, DEV_SESSION_VALUE, {
     httpOnly: true,
     sameSite: "lax",

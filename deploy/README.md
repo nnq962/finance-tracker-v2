@@ -117,6 +117,31 @@ Có hai cách, chọn một:
 **B. Dùng tunnel `cloudflared` đã có sẵn trên máy**: thêm public hostname
 `finance.nnqlab.dev` → `http://127.0.0.1:3010`, để trống `CLOUDFLARE_TUNNEL_TOKEN`.
 
+## Tunnel cho dev server (thử trên điện thoại)
+
+`https://dev.nnqlab.dev` trỏ vào dev server (`npm run dev`, cổng 3000) qua tunnel
+riêng `finance-dev`, tách khỏi tunnel production. Cloudflare Access chặn ở ngoài: chỉ email
+được cho phép mới vào được (mã gửi qua mail).
+
+Mỗi lần thử: trong `web/`, chạy `npm run dev` và (ở terminal khác) `npm run tunnel`, rồi
+mở `https://dev.nnqlab.dev/api/dev/login?next=/overview` trên điện thoại để đăng nhập
+bằng người dùng dev.
+
+Đăng nhập dev qua tunnel chỉ bật khi `web/.env.local` có `DEV_LOGIN=1`,
+`DEV_TUNNEL_HOST=dev.nnqlab.dev`, `DEV_ACCESS_TEAM_DOMAIN` và `DEV_ACCESS_AUD`, và
+request mang token Access hợp lệ (kiểm tra chữ ký); thiếu một thứ là chỉ còn localhost.
+
+Dựng lần đầu (đã làm 2026-10-05):
+
+1. Cài `cloudflared` vào `~/.local/bin` (bản `cloudflared-linux-amd64` trên GitHub).
+2. `cloudflared tunnel login` (chọn zone `nnqlab.dev`), `cloudflared tunnel create
+   finance-dev`, `cloudflared tunnel route dns finance-dev dev.nnqlab.dev`. Chứng chỉ và
+   khoá của tunnel nằm trong `~/.cloudflared/`.
+3. Zero Trust → Access → Applications → *Add an application* → Self-hosted, domain
+   `dev.nnqlab.dev`, policy *Allow* với email của mình, đăng nhập bằng One-time PIN.
+4. Chép *Application Audience (AUD) Tag* của app và team domain
+   (`<team>.cloudflareaccess.com`) vào `web/.env.local`, rồi khởi động lại `npm run dev`.
+
 ## Chuyển domain sang server (đã làm 2026-10-01)
 
 Domain giữ nguyên nên cấu hình Firebase Auth (authorized domain, OAuth redirect)

@@ -6,7 +6,7 @@ const firebaseProjectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 const nextConfig: NextConfig = {
   // Self-contained server for the Docker image (see Dockerfile).
   output: "standalone",
-  allowedDevOrigins: ["10.70.22.33"],
+  allowedDevOrigins: ["10.70.22.33", ...(process.env.DEV_TUNNEL_HOST ? [process.env.DEV_TUNNEL_HOST] : [])],
   experimental: {
     staleTimes: {
       dynamic: 300,

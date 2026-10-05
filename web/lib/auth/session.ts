@@ -48,7 +48,7 @@ const getVerifiedSession = cache(async (): Promise<VerifiedSession | null> => {
   }
 
   if (sessionCookie === DEV_SESSION_VALUE) {
-    return isDevLoginEnabled((await headers()).get("host"))
+    return (await isDevLoginEnabled(await headers()))
       ? { user: DEV_USER, notRevoked: Promise.resolve(true) }
       : null
   }
