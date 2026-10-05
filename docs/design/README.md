@@ -17,3 +17,7 @@ preset shadcn `b27GcrRo` với font Be Vietnam Pro. Bảng màu: [`colors.md`](c
   khỏi màn hình, một thanh mờ 44px với tiêu đề nhỏ hiện ở đầu, như iOS.
 - **Nút nổi** (`FloatingActions`): hành động chính của trang, ở góc phải dưới ngay trên thanh
   tab; nút chính ở dưới cùng. Từ md trở lên, hành động nằm ở tiêu đề trang.
+- **Ô icon** (`IconTile`): icon trên ô nền nhạt, mặc định tròn 40px; `tone` là màu hạng mục
+  hoặc màu ý nghĩa (`income`, `expense`, `transfer`, `ai`, `warning`, `neutral`). Là điểm
+  nhìn đầu tiên của một dòng list: mắt nhận ra hạng mục bằng màu trước khi đọc chữ. Dùng ở
+  dòng giao dịch (bước 1, phương án A được duyệt 2026-10-05).

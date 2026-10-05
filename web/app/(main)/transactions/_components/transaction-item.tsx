@@ -2,6 +2,7 @@
 
 import * as React from "react"
 
+import { IconTile } from "@/components/app/icon-tile"
 import { SettingsRow } from "@/components/settings-list"
 import { Sheet } from "@/components/ui/sheet"
 import type { Account } from "@/lib/accounts/types"
@@ -36,8 +37,7 @@ export function TransactionItem({
   return (
     <>
       <SettingsRow
-        icon={icon}
-        color={color}
+        media={<IconTile icon={icon} tone={color} />}
         title={transaction.title}
         // The account; the icon already shows the category's group.
         description={
