@@ -4,7 +4,6 @@ import * as React from "react"
 import { AnimatePresence, motion, MotionConfig } from "motion/react"
 import { EraserIcon, KeyboardIcon, LoaderCircleIcon, MicIcon, SendHorizontalIcon, SparklesIcon, SquareIcon, XIcon } from "lucide-react"
 
-import { AutoHeight } from "@/components/animate-ui/primitives/effects/auto-height"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -155,7 +154,7 @@ export function AiAssistDrawer<Result>({
                   for the cards' rings and the microphone's ripples, and pads
                   the content back to 16px from those edges. Above, the
                   scroll area clips, so the rings get 4px below the header. */}
-              <AutoHeight className="-mx-3 -mb-3 px-3 pt-1 pb-3" deps={[phase.name, showTyping]}>
+              <div className="-mx-3 -mb-3 px-3 pt-1 pb-3">
                 <AnimatePresence mode="wait" initial={false}>
                   {phase.name === "result" ? (
                     <motion.div key="result" className="space-y-4" {...stepMotion}>
@@ -307,7 +306,7 @@ export function AiAssistDrawer<Result>({
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </AutoHeight>
+              </div>
             </MotionConfig>
           </div>
         </div>

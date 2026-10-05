@@ -12,7 +12,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/animate-ui/components/radix/alert-dialog"
+} from "@/components/ui/alert-dialog"
 import type { Account } from "@/lib/accounts/types"
 import { scheduleUndoableDelete } from "@/lib/undoable-delete"
 

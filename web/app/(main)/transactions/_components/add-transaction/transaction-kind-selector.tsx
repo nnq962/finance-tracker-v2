@@ -2,7 +2,7 @@ import {
   Tabs,
   TabsList,
   TabsTrigger,
-} from "@/components/animate-ui/components/radix/tabs"
+} from "@/components/ui/tabs"
 
 import type { TransactionKind } from "../../_types/transaction"
 import type { SupportedTransactionKind } from "@/lib/transactions/types"

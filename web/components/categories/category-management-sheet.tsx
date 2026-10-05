@@ -19,8 +19,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/animate-ui/components/radix/alert-dialog"
-import { Tabs, TabsList, TabsTrigger } from "@/components/animate-ui/components/radix/tabs"
+} from "@/components/ui/alert-dialog"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ColorPicker } from "@/components/forms/color-picker"
 import { IconPicker } from "@/components/forms/icon-picker"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"

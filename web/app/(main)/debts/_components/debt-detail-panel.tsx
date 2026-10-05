@@ -3,7 +3,7 @@
 import * as React from "react"
 import { AddDebtSheet } from "./add-debt-sheet"
 import { FieldError } from "@/components/ui/field"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/animate-ui/components/radix/alert-dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { CheckIcon } from "lucide-react"
 
 import type { Account } from "@/lib/accounts/types"

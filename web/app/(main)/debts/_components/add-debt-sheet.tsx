@@ -13,7 +13,7 @@ import {
   Tabs,
   TabsList,
   TabsTrigger,
-} from "@/components/animate-ui/components/radix/tabs"
+} from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import {
   Field,

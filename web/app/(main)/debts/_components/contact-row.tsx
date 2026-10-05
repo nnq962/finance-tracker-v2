@@ -13,7 +13,7 @@ import {
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/animate-ui/components/radix/alert-dialog"
+} from "@/components/ui/alert-dialog"
 import { actionErrorMessage } from "@/lib/stale-deploy"
 import type { Contact, NewContact } from "../_types/debt"
 import { AddContactSheet } from "./add-contact-sheet"

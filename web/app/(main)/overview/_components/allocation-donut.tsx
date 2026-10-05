@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Cell, Label, Pie, PieChart } from "recharts"
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/animate-ui/components/radix/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card } from "@/components/ui/card"
 import {
   ChartContainer,

@@ -14,7 +14,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/animate-ui/components/radix/alert-dialog"
+} from "@/components/ui/alert-dialog"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"

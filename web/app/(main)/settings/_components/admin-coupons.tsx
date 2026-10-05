@@ -14,7 +14,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/animate-ui/components/radix/alert-dialog"
+} from "@/components/ui/alert-dialog"
 import { RequiredMark } from "@/components/forms/required-mark"
 import { useFieldErrors } from "@/components/forms/use-field-errors"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
