@@ -8,7 +8,6 @@ import {
   DownloadIcon,
   GiftIcon,
   HandCoinsIcon,
-  LoaderCircleIcon,
   ReceiptTextIcon,
   SparklesIcon,
   TagsIcon,
@@ -29,6 +28,7 @@ import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
+import { Spinner } from "@/components/ui/spinner"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryColorName } from "@/lib/categories/category-colors"
 import type { CategoryGroup } from "@/lib/categories/types"
@@ -252,7 +252,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
               action={
                 <Button type="button" size="sm" disabled={claiming !== null} onClick={() => void claim(mission)}>
                   {claiming === mission.key ? (
-                    <LoaderCircleIcon className="animate-spin" aria-hidden="true" />
+                    <Spinner />
                   ) : null}
                   Nhận +{MISSION_REWARD}
                 </Button>

@@ -3,7 +3,6 @@
 import * as React from "react"
 import Image from "next/image"
 import {
-  LoaderCircleIcon,
   SaveIcon,
 } from "lucide-react"
 import { toast } from "sonner"
@@ -37,6 +36,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
+import { Spinner } from "@/components/ui/spinner"
 import type {
   AccountActionResult,
   AccountFormValues,
@@ -392,7 +392,7 @@ export function AccountForm({
         {/* Back is in the header, so the footer only saves. */}
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending ? (
-            <LoaderCircleIcon className="animate-spin" />
+            <Spinner />
           ) : (
             <SaveIcon />
           )}

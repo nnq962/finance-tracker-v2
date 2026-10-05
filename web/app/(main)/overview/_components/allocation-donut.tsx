@@ -4,13 +4,14 @@ import * as React from "react"
 import { Cell, Label, Pie, PieChart } from "recharts"
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
+import { Empty, EmptyDescription, EmptyHeader } from "@/components/ui/empty"
 import { getCategoryColor, type CategoryColorName } from "@/lib/categories/category-colors"
 import type { CategoryGroup, CategoryType } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
@@ -84,14 +85,14 @@ export function AllocationDonut({ categoryGroups, allocation, month }: Allocatio
     <section aria-labelledby="allocation-title" className="space-y-2">
       <h2
         id="allocation-title"
-        className="px-3 text-xs font-semibold text-muted-foreground"
+        className="px-3 text-sm font-medium text-muted-foreground"
       >
         Phân bổ · Tháng {monthNumber}/{year}
       </h2>
       {/* One card: the chart, then its legend, where each row's icon has
           its slice's colour. */}
-      <Card size="sm" className="gap-0 py-0">
-        <div className="space-y-4 p-4">
+      <Card size="sm">
+        <CardContent className="space-y-4">
           <Tabs value={type} onValueChange={(value) => setType(value as CategoryType)}>
             <TabsList className="w-full">
               <TabsTrigger value="expense">Chi tiền</TabsTrigger>
@@ -163,27 +164,31 @@ export function AllocationDonut({ categoryGroups, allocation, month }: Allocatio
               </PieChart>
             </ChartContainer>
           ) : (
-            <p className="py-10 text-center text-sm text-muted-foreground">
-              Chưa có khoản {typeLabel} trong tháng này.
-            </p>
+            <Empty>
+              <EmptyHeader>
+                <EmptyDescription>Chưa có khoản {typeLabel} trong tháng này.</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           )}
-        </div>
+        </CardContent>
         {/* Dot legend as in the landing page's spending donut: each dot
             has its slice's colour, the share on the right. */}
         {slices.length > 0 ? (
-          <ul className="grid grid-cols-2 gap-x-4 gap-y-2.5 px-4 pb-4 text-sm">
-            {slices.map((slice) => (
-              <li key={slice.key} className="flex items-center gap-2">
-                <span
-                  className="size-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: slice.fill }}
-                  aria-hidden="true"
-                />
-                <span className="flex-1 truncate text-muted-foreground">{slice.name}</span>
-                <span className="tabular-nums">{slice.share}%</span>
-              </li>
-            ))}
-          </ul>
+          <CardContent>
+            <ul className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm">
+              {slices.map((slice) => (
+                <li key={slice.key} className="flex items-center gap-2">
+                  <span
+                    className="size-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: slice.fill }}
+                    aria-hidden="true"
+                  />
+                  <span className="flex-1 truncate text-muted-foreground">{slice.name}</span>
+                  <span className="tabular-nums">{slice.share}%</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
         ) : null}
       </Card>
     </section>

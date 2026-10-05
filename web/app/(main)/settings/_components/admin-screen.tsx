@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { CrownIcon, LoaderCircleIcon } from "lucide-react"
+import { CrownIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import {
@@ -24,6 +24,7 @@ import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { Spinner } from "@/components/ui/spinner"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDate, toDateKey } from "@/lib/format-date"
 import { getGrantsAction, grantProAction, revokeProAction } from "@/lib/plans/actions"
@@ -219,7 +220,7 @@ function AdminUserDetail({ user }: { user: AdminUser }) {
             />
           </Field>
           <Button type="button" className="w-full" disabled={isPending} onClick={grant}>
-            {isPending ? <LoaderCircleIcon className="animate-spin" /> : <CrownIcon />}
+            {isPending ? <Spinner /> : <CrownIcon />}
             Cấp Pro {proPrices[period].label}
           </Button>
         </li>

@@ -10,29 +10,21 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item"
-import {
-  getCategoryColor,
-  type CategoryColorName,
-} from "@/lib/categories/category-colors"
+import type { CategoryColorName } from "@/lib/categories/category-colors"
 import { cn } from "@/lib/utils"
 
 /**
- * Separator above every row but the first, as in iOS: it starts where the
- * row's text starts (after the 32px icon, or at the text when there is none)
- * and runs to the card's right edge. Exported for loading skeletons.
+ * Divider above every row but the first, the full width of the list.
+ * Exported for loading skeletons; `hasMedia` is kept for their calls.
  */
-export function settingsSeparatorClassName(hasMedia: boolean) {
-  return cn(
-    // -right-1 crosses the list's 4px side padding to reach the card's edge.
-    "relative before:absolute before:top-0 before:-right-1 before:h-px before:bg-border first:before:hidden",
-    // Row padding (12px), plus the icon (32px) and gap (10px) when present.
-    hasMedia ? "before:left-[3.375rem]" : "before:left-3",
-  )
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function settingsSeparatorClassName(hasMedia?: boolean) {
+  return "border-t first:border-t-0"
 }
 
 /**
- * Grouped list in the style of native settings screens: an optional caption,
- * a flat card of rows separated by dividers, and an optional footnote.
+ * Grouped list: an optional caption, a card of rows separated by dividers,
+ * and an optional footnote.
  */
 function SettingsGroup({
   title,
@@ -55,25 +47,24 @@ function SettingsGroup({
   return (
     <section className="space-y-2">
       {title || action ? (
-        <div className="flex min-h-6 items-center justify-between gap-3 px-3">
+        <div className="flex min-h-6 items-center justify-between gap-3 px-4">
           {title ? (
-            <h2 className="flex min-w-0 items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+            <h2 className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-muted-foreground">
               {title}
             </h2>
           ) : null}
           {action}
         </div>
       ) : null}
-      {/* Rows carry their own, equal padding, so the card only frames them:
-          first and last rows match the ones in between. */}
-      <Card size="sm" className="gap-0 py-0">
+      {/* Rows carry their own padding, so the card only frames them. */}
+      <Card className="gap-0 py-0">
         {header}
-        <ul className={cn("px-1", listClassName)}>
+        <ul className={listClassName}>
           {children}
         </ul>
       </Card>
       {footer ? (
-        <p className="px-3 text-xs leading-relaxed text-muted-foreground">
+        <p className="px-4 text-sm text-muted-foreground">
           {footer}
         </p>
       ) : null}
@@ -83,8 +74,9 @@ function SettingsGroup({
 
 type SettingsRowProps = {
   icon?: LucideIcon
-  /** Leading content in place of the icon tile, e.g. an avatar. */
+  /** Leading content in place of the icon, e.g. an avatar. */
   media?: React.ReactNode
+  /** Kept for callers; the icon renders in the default colour. */
   color?: CategoryColorName
   title: React.ReactNode
   description?: React.ReactNode
@@ -103,15 +95,14 @@ type SettingsRowProps = {
   destructive?: boolean
 }
 
-// Item has no pressed state for button rows; these reuse the ghost button
-// colour for hover, pressed and selected.
+// Item only gives links a hover state; button rows get the same one, plus
+// the selected state of the row whose screen is shown beside the list.
 const pressableRow =
-  "text-left hover:bg-muted active:bg-muted disabled:pointer-events-none disabled:opacity-50 md:data-[active=true]:bg-muted"
+  "text-left hover:bg-muted disabled:pointer-events-none disabled:opacity-50 md:data-[active=true]:bg-muted"
 
 function SettingsRow({
   icon: Icon,
   media,
-  color = "slate",
   title,
   description,
   value,
@@ -125,18 +116,14 @@ function SettingsRow({
   const content = (
     <>
       {Icon ? (
-        <ItemMedia
-          className={cn("size-8 rounded-lg", getCategoryColor(color).surfaceClassName)}
-        >
-          <Icon className="size-4" aria-hidden="true" />
+        <ItemMedia variant="icon">
+          <Icon aria-hidden="true" />
         </ItemMedia>
       ) : media ? (
         <ItemMedia>{media}</ItemMedia>
       ) : null}
       <ItemContent className={cn("min-w-0", destructive && "items-center")}>
-        <ItemTitle
-          className={cn(destructive && "text-destructive")}
-        >
+        <ItemTitle className={cn(destructive && "text-destructive")}>
           {title}
         </ItemTitle>
         {description ? <ItemDescription>{description}</ItemDescription> : null}
@@ -144,12 +131,11 @@ function SettingsRow({
       {value || action || (chevron && !destructive) ? (
         <ItemActions className="shrink-0">
           {value ? (
-            // Same weight as ItemTitle, so the title still leads the row.
-            <span className="text-sm font-medium text-muted-foreground">{value}</span>
+            <span className="text-sm text-muted-foreground">{value}</span>
           ) : null}
           {action}
           {chevron && !destructive ? (
-            <ChevronRightIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+            <ChevronRightIcon className="size-4" aria-hidden="true" />
           ) : null}
         </ItemActions>
       ) : null}
@@ -157,9 +143,7 @@ function SettingsRow({
   )
 
   return (
-    // Rows after the first get 2px more on top for the separator, so the
-    // pressed background keeps the same 4px all round on every row.
-    <li className={cn("py-1 not-first:pt-1.5", settingsSeparatorClassName(Boolean(Icon || media)))}>
+    <li className={settingsSeparatorClassName()}>
       {onClick ? (
         <Item asChild>
           <button

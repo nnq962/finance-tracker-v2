@@ -41,13 +41,13 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
         <WelcomeProvider firstRun={firstRun}>
           <SidebarProvider
             data-app-shell="main"
-            className="h-dvh min-h-0 flex-col overflow-hidden bg-background md:h-auto md:min-h-svh md:flex-row md:overflow-visible md:bg-sidebar dark:md:bg-sidebar"
+            className="h-dvh min-h-0 flex-col overflow-hidden md:h-auto md:min-h-svh md:flex-row md:overflow-visible"
           >
             <PwaThemeColor />
             <AppSidebar />
             <SidebarInset
               data-main-scroll-viewport
-              className="min-h-0 min-w-0 overflow-y-auto overscroll-y-contain bg-background [--main-content-px:--spacing(4)] [-webkit-overflow-scrolling:touch] md:min-h-svh md:overflow-visible md:border-l md:peer-data-[variant=inset]:m-0 md:peer-data-[variant=inset]:rounded-none md:peer-data-[variant=inset]:shadow-none md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0 md:[--main-content-px:--spacing(6)]"
+              className="min-h-0 min-w-0 overflow-y-auto overscroll-y-contain [--main-content-px:--spacing(4)] [-webkit-overflow-scrolling:touch] md:min-h-svh md:overflow-visible md:[--main-content-px:--spacing(6)]"
             >
               <div
                 aria-hidden="true"

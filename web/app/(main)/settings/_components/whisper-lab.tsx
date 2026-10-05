@@ -1,13 +1,15 @@
 "use client"
 
 import * as React from "react"
-import { LoaderCircleIcon, MicIcon, RotateCcwIcon, SquareIcon } from "lucide-react"
+import { MicIcon, RotateCcwIcon, SquareIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { Field, FieldLabel } from "@/components/ui/field"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { Spinner } from "@/components/ui/spinner"
 import { transcribeLabAction } from "@/lib/speech/actions"
 
 /** One run through Whisper, timed at each step. */
@@ -156,7 +158,7 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
 
   return (
     <section className="space-y-3">
-      <h3 className="px-3 text-xs font-semibold text-muted-foreground">
+      <h3 className="px-3 text-sm font-medium text-muted-foreground">
         Nhận dạng giọng nói (Whisper · Groq)
       </h3>
       <ToggleGroup
@@ -179,7 +181,7 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
           disabled={state === "sending"}
           onClick={() => (state === "recording" ? recorder.current?.stop() : void start())}
         >
-          {state === "sending" ? <LoaderCircleIcon className="animate-spin" /> : state === "recording" ? <SquareIcon /> : <MicIcon />}
+          {state === "sending" ? <Spinner /> : state === "recording" ? <SquareIcon /> : <MicIcon />}
           {state === "sending" ? "Đang nhận dạng…" : state === "recording" ? "Dừng và gửi" : "Ghi âm"}
         </Button>
         <Button
@@ -198,9 +200,11 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
         <>
           <Field>
             <FieldLabel>Văn bản nhận được</FieldLabel>
-            <p className="min-h-16 rounded-lg border p-3 text-base">
-              {run.error ? <span className="text-destructive">{run.error}</span> : run.text || "—"}
-            </p>
+            <Card size="sm">
+              <CardContent>
+                <p>{run.error ? <span className="text-destructive">{run.error}</span> : run.text || "—"}</p>
+              </CardContent>
+            </Card>
           </Field>
 
           <SettingsGroup

@@ -60,7 +60,7 @@ function AccountRow({
         <span className="flex flex-col items-end">
           <span
             className={cn(
-              "text-sm font-semibold tabular-nums",
+              "text-sm font-medium tabular-nums",
               isLocked
                 ? "text-muted-foreground"
                 : account.balance < 0 && "text-expense",
@@ -112,7 +112,7 @@ export function AccountList({ accounts, recentTransactions, categoryGroups }: Ac
           key={group.type}
           title={group.label}
           action={
-            <span className="shrink-0 text-xs font-semibold tabular-nums">
+            <span className="shrink-0 text-xs font-medium tabular-nums">
               {formatCurrency(group.total)}
             </span>
           }

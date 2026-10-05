@@ -23,9 +23,9 @@ export function AiQuotaGroup({ planState }: { planState: PlanState }) {
         <div className={cn("space-y-3 px-4 pt-3", hasCredits ? "pb-2" : "pb-3")}>
           <div className="flex items-baseline justify-between gap-3">
             <p className="text-sm font-medium">Lượt trợ lý AI tháng này</p>
-            <p className="text-xl leading-tight font-semibold tabular-nums">
+            <p className="text-lg font-semibold tabular-nums">
               {planState.aiUsed}
-              <span className="text-base text-muted-foreground">/{planState.aiLimit}</span>
+              <span className="text-sm font-normal text-muted-foreground">/{planState.aiLimit}</span>
             </p>
           </div>
           <Progress value={percent} aria-label="Lượt AI đã dùng" />
@@ -39,7 +39,6 @@ export function AiQuotaGroup({ planState }: { planState: PlanState }) {
       {hasCredits ? (
         <SettingsRow
           icon={GiftIcon}
-          color="amber"
           title="Lượt thưởng"
           description="Dùng khi hết lượt tháng"
           value={String(planState.aiCredits)}

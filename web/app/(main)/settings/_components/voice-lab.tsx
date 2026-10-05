@@ -6,6 +6,7 @@ import { toast } from "sonner"
 
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Progress } from "@/components/ui/progress"
 import {
@@ -271,7 +272,7 @@ export function VoiceLab() {
       <WhisperLab onRun={(run) => setWhisperRuns((runs) => [...runs, run])} />
 
       <section className="space-y-3">
-        <h3 className="px-3 text-xs font-semibold text-muted-foreground">
+        <h3 className="px-3 text-sm font-medium text-muted-foreground">
           Nhận dạng giọng nói (Web Speech)
         </h3>
         <FieldGroup>
@@ -306,13 +307,17 @@ export function VoiceLab() {
           </Button>
           <Field>
             <FieldLabel>Văn bản nhận được</FieldLabel>
-            <p className="min-h-16 rounded-lg border p-3 text-base" aria-live="polite">
-              {finalText}
-              {interimText ? <span className="text-muted-foreground"> {interimText}</span> : null}
-              {!finalText && !interimText ? (
-                <span className="text-muted-foreground">Thử nói: “ăn phở 45 nghìn ví tiền mặt”.</span>
-              ) : null}
-            </p>
+            <Card size="sm">
+              <CardContent>
+                <p aria-live="polite">
+                  {finalText}
+                  {interimText ? <span className="text-muted-foreground"> {interimText}</span> : null}
+                  {!finalText && !interimText ? (
+                    <span className="text-muted-foreground">Thử nói: “ăn phở 45 nghìn ví tiền mặt”.</span>
+                  ) : null}
+                </p>
+              </CardContent>
+            </Card>
             {finalText ? (
               <Button type="button" variant="ghost" size="sm" className="self-start" onClick={() => setFinalText("")}>
                 Xoá văn bản
@@ -346,7 +351,7 @@ export function VoiceLab() {
       </section>
 
       <section className="space-y-3">
-        <h3 className="px-3 text-xs font-semibold text-muted-foreground">
+        <h3 className="px-3 text-sm font-medium text-muted-foreground">
           Micro (mức âm thanh)
         </h3>
         <FieldGroup>
@@ -364,7 +369,7 @@ export function VoiceLab() {
       </section>
 
       <section className="space-y-3">
-        <h3 className="px-3 text-xs font-semibold text-muted-foreground">
+        <h3 className="px-3 text-sm font-medium text-muted-foreground">
           Đọc chính tả bằng bàn phím
         </h3>
         <Field>

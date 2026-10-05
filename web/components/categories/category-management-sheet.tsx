@@ -4,7 +4,6 @@ import * as React from "react"
 import {
   ArrowDownLeftIcon,
   ArrowUpRightIcon,
-  LoaderCircleIcon,
   PlusIcon,
   Trash2Icon,
 } from "lucide-react"
@@ -36,6 +35,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { TabsContent } from "@/components/ui/tabs"
+import { Spinner } from "@/components/ui/spinner"
 import {
   createCategoryGroupAction,
   createCategoryItemAction,
@@ -256,7 +256,6 @@ export function CategoryManagementSheet({
                     }}
                     maxLength={80}
                     disabled={isPending}
-                   
                     aria-invalid={Boolean(error)}
                   />
                   {error ? <FieldError>{error}</FieldError> : null}
@@ -289,7 +288,7 @@ export function CategoryManagementSheet({
             </div>
             <SheetFooter>
               <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? <LoaderCircleIcon className="animate-spin" /> : null}
+                {isPending ? <Spinner /> : null}
                 {isPending ? "Đang lưu..." : "Lưu"}
               </Button>
             </SheetFooter>
@@ -319,7 +318,7 @@ export function CategoryManagementSheet({
                       handleDelete()
                     }}
                   >
-                    {isPending ? <LoaderCircleIcon className="animate-spin" /> : <Trash2Icon />}
+                    {isPending ? <Spinner /> : <Trash2Icon />}
                     {isPending ? "Đang xoá..." : "Xoá"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -336,7 +335,7 @@ export function CategoryManagementSheet({
               <TabsList className="w-full">
                 {sections.map(({ type, label, icon: Icon }) => (
                   <TabsTrigger key={type} value={type}>
-                    <Icon className="size-3" />
+                    <Icon />
                     {label}
                   </TabsTrigger>
                 ))}

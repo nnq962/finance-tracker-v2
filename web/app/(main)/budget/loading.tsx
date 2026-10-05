@@ -44,8 +44,8 @@ function BalanceHeroSkeleton() {
       <CaptionSkeleton />
       <Card size="sm" className="gap-0 py-0">
         <div className="space-y-3 p-4">
-          <Skeleton className="h-9 w-52 max-w-full" />
-          <Skeleton className="h-[18px] w-full rounded-full" />
+          <Skeleton className="h-8 w-52 max-w-full" />
+          <Skeleton className="h-2 w-full" />
           <Skeleton className="h-3 w-44 max-w-full" />
         </div>
         <RowsSkeleton rows={3} />

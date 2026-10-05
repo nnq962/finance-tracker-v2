@@ -9,7 +9,6 @@ import {
   CircleAlertIcon,
   CircleCheckIcon,
   ClockIcon,
-  LoaderCircleIcon,
   ReceiptTextIcon,
   ShieldCheckIcon,
   SparklesIcon,
@@ -18,7 +17,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
-import { SettingsGroup, pressableRow, settingsSeparatorClassName } from "@/components/settings-list"
+import { SettingsGroup } from "@/components/settings-list"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -28,7 +27,8 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
 import { Item, ItemActions, ItemContent, ItemTitle } from "@/components/ui/item"
 import { Separator } from "@/components/ui/separator"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Spinner } from "@/components/ui/spinner"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDate, toDateKey } from "@/lib/format-date"
 import { checkCouponAction, startProCheckoutAction } from "@/lib/plans/actions"
@@ -73,9 +73,9 @@ const outcomeMessages: Partial<Record<PaymentOutcome, { tone: OutcomeTone; title
 }
 
 const outcomeTones: Record<OutcomeTone, { icon: LucideIcon; className: string }> = {
-  success: { icon: CircleCheckIcon, className: "bg-income/10 text-income" },
-  waiting: { icon: ClockIcon, className: "bg-warning/15 text-warning" },
-  problem: { icon: CircleAlertIcon, className: "bg-expense/10 text-expense" },
+  success: { icon: CircleCheckIcon, className: "text-income" },
+  waiting: { icon: ClockIcon, className: "text-warning" },
+  problem: { icon: CircleAlertIcon, className: "text-expense" },
 }
 
 /** What a year costs against twelve single months. */
@@ -133,14 +133,12 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
       ) : null}
 
       <header className={cn("flex flex-col items-center gap-3 px-3 pt-2 text-center", page && "mx-auto max-w-2xl")}>
-        <div className="flex size-14 items-center justify-center rounded-2xl bg-ai/15 text-ai">
-          <SparklesIcon className="size-7" aria-hidden="true" />
-        </div>
+        <SparklesIcon className="size-8 text-ai" aria-hidden="true" />
         <div className="space-y-1.5">
-          <h2 className={cn("text-2xl leading-tight font-semibold", page && "md:text-4xl")}>
+          <h2 className="text-xl font-semibold">
             {isPro ? "Bạn đang dùng Pro" : `Finance Tracker ${plans.pro.label}`}
           </h2>
-          <p className={cn("text-sm leading-relaxed text-muted-foreground", page && "md:text-base")}>
+          <p className="text-sm text-muted-foreground">
             Trợ lý AI thông minh, tài chính trong tầm tay.
           </p>
         </div>
@@ -150,21 +148,21 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
         <h2 id="plan-options" className="sr-only">
           Chọn gói
         </h2>
-        <ToggleGroup
-          type="single"
+        <Tabs
           value={period}
           onValueChange={(value) => {
             if (value === "month" || value === "year") setPeriod(value)
           }}
-          className={cn("grid w-full grid-cols-2", page && "md:mx-auto md:max-w-xs")}
-          aria-label="Kỳ thanh toán"
+          className={cn(page && "md:mx-auto md:w-full md:max-w-xs")}
         >
-          <ToggleGroupItem value="month">Theo tháng</ToggleGroupItem>
-          <ToggleGroupItem value="year">
-            Theo năm
-            <Badge variant="secondary">-{yearSavingPercent}%</Badge>
-          </ToggleGroupItem>
-        </ToggleGroup>
+          <TabsList className="w-full" aria-label="Kỳ thanh toán">
+            <TabsTrigger value="month">Theo tháng</TabsTrigger>
+            <TabsTrigger value="year">
+              Theo năm
+              <Badge variant="secondary">-{yearSavingPercent}%</Badge>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         {/* Pro first on a phone; side by side from md up in the dialog, free on the left. There the
             cards share rows (subgrid), so headers, prices and footers line up and the buttons align. */}
@@ -174,13 +172,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
             page && "md:mx-auto md:max-w-4xl md:grid-cols-2 md:grid-rows-[auto_1fr_auto] md:gap-x-6 md:gap-y-0",
           )}
         >
-          {/* The recommended plan stands out with an outline in the AI colour, which marks Pro. */}
-          <Card
-            className={cn(
-              "ring-ai dark:ring-ai",
-              page && "md:row-span-3 md:grid md:grid-rows-subgrid",
-            )}
-          >
+          <Card className={cn(page && "md:row-span-3 md:grid md:grid-rows-subgrid")}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 {plans.pro.label}
@@ -209,7 +201,6 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
             <CardFooter className="flex-col gap-2">
               <Button
                 type="button"
-               
                 size="lg"
                 className="w-full"
                 disabled={!checkoutEnabled}
@@ -261,8 +252,8 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
 
       <div className={cn("space-y-6", page && "mx-auto max-w-3xl md:space-y-10")}>
         <SettingsGroup title="Câu hỏi thường gặp">
-          {faqs.map((faq) => (
-            <FaqRow key={faq.question} {...faq} />
+          {faqs.map((faq, index) => (
+            <FaqRow key={faq.question} {...faq} first={index === 0} />
           ))}
         </SettingsGroup>
       </div>
@@ -292,15 +283,13 @@ function OutcomeCard({
   const { icon: Icon, className } = outcomeTones[tone]
   return (
     <Card size="sm" role="status">
-      <CardContent className="flex items-start gap-3">
-        <div className={cn("flex size-9 shrink-0 items-center justify-center rounded-lg", className)}>
-          <Icon className="size-5" aria-hidden="true" />
-        </div>
-        <div className="min-w-0 space-y-0.5">
-          <p className="text-base leading-snug font-semibold">{title}</p>
-          {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
-        </div>
-      </CardContent>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Icon className={cn("size-4 shrink-0", className)} aria-hidden="true" />
+          {title}
+        </CardTitle>
+        {description ? <CardDescription>{description}</CardDescription> : null}
+      </CardHeader>
       {recordHref ? (
         <CardFooter>
           <Button asChild variant="outline" className="w-full">
@@ -318,7 +307,7 @@ function OutcomeCard({
 function PriceTag({ amount, unit }: { amount: number; unit: string }) {
   return (
     <p className="flex items-baseline gap-1">
-      <span className="text-4xl leading-none font-bold tracking-tight tabular-nums">
+      <span className="text-2xl font-semibold tabular-nums">
         {formatCurrency(amount)}
       </span>
       <span className="text-sm text-muted-foreground">/{unit}</span>
@@ -331,30 +320,23 @@ function FeatureList({ features }: { features: string[] }) {
     <ul className="space-y-2">
       {features.map((feature) => (
         <li key={feature} className="flex items-start gap-2">
-          <CheckMark />
-          <span className="leading-snug">{feature}</span>
+          <CheckIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <span className="sr-only">Có</span>
+          <span>{feature}</span>
         </li>
       ))}
     </ul>
   )
 }
 
-function CheckMark() {
+function FaqRow({ question, answer, first }: { question: string; answer: string; first: boolean }) {
   return (
-    <span className="mt-px flex size-4.5 shrink-0 items-center justify-center rounded-full bg-income/10 text-income">
-      <CheckIcon className="size-3" strokeWidth={3} aria-hidden="true" />
-      <span className="sr-only">Có</span>
-    </span>
-  )
-}
-
-function FaqRow({ question, answer }: { question: string; answer: string }) {
-  return (
-    <li className={cn("py-1 not-first:pt-1.5", settingsSeparatorClassName(false))}>
+    <li>
+      {first ? null : <Separator />}
       <Collapsible>
         <CollapsibleTrigger asChild>
           <Item asChild>
-            <button type="button" className={cn("group/faq", pressableRow)}>
+            <button type="button" className="group/faq text-left">
               <ItemContent>
                 <ItemTitle>{question}</ItemTitle>
               </ItemContent>
@@ -367,7 +349,7 @@ function FaqRow({ question, answer }: { question: string; answer: string }) {
             </button>
           </Item>
         </CollapsibleTrigger>
-        <CollapsibleContent className="px-3 pb-2.5 text-sm leading-relaxed text-muted-foreground">
+        <CollapsibleContent className="px-4 pb-3.5 text-sm text-muted-foreground">
           {answer}
         </CollapsibleContent>
       </Collapsible>
@@ -499,7 +481,7 @@ function CheckoutDialog({
               />
               <InputGroupAddon align="inline-end">
                 <InputGroupButton disabled={checking || paying} onClick={() => void apply()}>
-                  {checking ? <LoaderCircleIcon className="animate-spin" aria-hidden="true" /> : null}
+                  {checking ? <Spinner /> : null}
                   Áp dụng
                 </InputGroupButton>
               </InputGroupAddon>
@@ -530,7 +512,7 @@ function CheckoutDialog({
             <Separator />
             <div className="flex items-baseline justify-between gap-3">
               <span className="font-medium">Tổng thanh toán</span>
-              <span className="text-2xl font-bold tabular-nums">{formatCurrency(total)}</span>
+              <span className="text-lg font-semibold tabular-nums">{formatCurrency(total)}</span>
             </div>
           </CardContent>
         </Card>
@@ -538,7 +520,7 @@ function CheckoutDialog({
         <DialogFooter className="flex-col sm:flex-col">
           {error ? <FieldError role="alert">{error}</FieldError> : null}
           <Button type="button" size="lg" className="w-full" disabled={paying || checking} onClick={() => void pay()}>
-            {paying ? <LoaderCircleIcon className="animate-spin" aria-hidden="true" /> : null}
+            {paying ? <Spinner /> : null}
             {free ? "Nhận Pro miễn phí" : `Thanh toán ${formatCurrency(total)}`}
           </Button>
           {free ? null : (

@@ -58,7 +58,7 @@ export function OverviewGreeting({
         </Avatar>
         <div className="min-w-0 flex-1">
           <p className="text-sm text-muted-foreground">{greetingFor(new Date())},</p>
-          <h1 className="text-2xl leading-tight font-semibold tracking-tight [overflow-wrap:anywhere] md:text-3xl">
+          <h1 className="text-2xl font-semibold tracking-tight [overflow-wrap:anywhere]">
             {name || "bạn"}
             {planState.plan === "pro" ? (
               <BadgeCheckIcon
@@ -88,7 +88,7 @@ export function OverviewGreetingSkeleton() {
       <Skeleton className="size-10 shrink-0 rounded-full" />
       <div className="space-y-1.5">
         <Skeleton className="h-4 w-28" />
-        <Skeleton className="h-7 w-20" />
+        <Skeleton className="h-8 w-20" />
       </div>
     </div>
   )

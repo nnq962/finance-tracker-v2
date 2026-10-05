@@ -11,6 +11,14 @@ import {
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
+import { Empty, EmptyDescription, EmptyHeader } from "@/components/ui/empty"
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+} from "@/components/ui/item"
 import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
 import type { OverviewSummary } from "@/lib/overview/summary"
 import { cn } from "@/lib/utils"
@@ -21,9 +29,9 @@ const overdueClassName = "text-expense"
 
 // Accounts stay neutral; what is owed to or by the user takes the money colours.
 const tileToneClassName = {
-  neutral: "bg-muted",
-  income: "bg-income/10 text-income",
-  expense: "bg-expense/10 text-expense",
+  neutral: undefined,
+  income: "text-income",
+  expense: "text-expense",
 } as const
 
 type NetWorthTileProps = {
@@ -35,30 +43,31 @@ type NetWorthTileProps = {
 }
 
 /**
- * One of the amounts behind the total, as a tinted tile that opens its page.
- * Three share the card's width, so the amount is shortened; the full one is
- * in the tooltip and the accessible name.
+ * One of the amounts behind the total, as a tile that opens its page. Three
+ * share the card's width, so the amount is shortened; the full one is in the
+ * tooltip and the accessible name.
  */
 function NetWorthTile({ icon: Icon, tone, label, value, onClick }: NetWorthTileProps) {
   return (
-    <button
-      type="button"
-      title={formatCurrency(value)}
-      aria-label={`${label}: ${formatCurrency(value)}`}
-      onClick={onClick}
-      className={cn(
-        "flex min-w-0 flex-col items-start gap-2 rounded-xl p-3 text-left outline-none transition-[filter] hover:brightness-95 focus-visible:ring-3 focus-visible:ring-ring/50 active:brightness-90",
-        tileToneClassName[tone],
-      )}
-    >
-      <Icon className="size-4" aria-hidden="true" />
-      <span className="space-y-0.5">
-        <span className="block text-xs font-semibold text-muted-foreground">{label}</span>
-        <span className="block text-base leading-tight font-semibold text-foreground tabular-nums">
-          {formatCompactCurrency(value, 1)}
-        </span>
-      </span>
-    </button>
+    <Item asChild variant="outline" size="sm">
+      <button
+        type="button"
+        title={formatCurrency(value)}
+        aria-label={`${label}: ${formatCurrency(value)}`}
+        onClick={onClick}
+        className="min-w-0 flex-col items-start text-left"
+      >
+        <ItemMedia variant="icon" className={tileToneClassName[tone]}>
+          <Icon aria-hidden="true" />
+        </ItemMedia>
+        <ItemContent className="min-w-0">
+          <ItemDescription>{label}</ItemDescription>
+          <ItemTitle className={cn("tabular-nums", tileToneClassName[tone])}>
+            {formatCompactCurrency(value, 1)}
+          </ItemTitle>
+        </ItemContent>
+      </button>
+    </Item>
   )
 }
 
@@ -71,7 +80,7 @@ export function NetWorth({ data }: { data: OverviewSummary["netWorth"] }) {
           both desktop columns start on one line. */}
       <h2
         id="net-worth-title"
-        className="px-3 text-xs font-semibold text-muted-foreground"
+        className="px-3 text-sm font-medium text-muted-foreground"
       >
         Tài sản ròng
       </h2>
@@ -80,7 +89,7 @@ export function NetWorth({ data }: { data: OverviewSummary["netWorth"] }) {
         <CardContent className="space-y-4">
           <p
             className={cn(
-              "text-4xl leading-tight font-bold tracking-tight tabular-nums [overflow-wrap:anywhere]",
+              "text-2xl font-semibold tabular-nums [overflow-wrap:anywhere]",
               data.total < 0 && overdueClassName,
             )}
           >
@@ -121,7 +130,7 @@ export function CashFlowTrend({ summary }: { summary: OverviewSummary }) {
     <section aria-labelledby="cash-flow-trend-title" className="space-y-2">
       <h2
         id="cash-flow-trend-title"
-        className="px-3 text-xs font-semibold text-muted-foreground"
+        className="px-3 text-sm font-medium text-muted-foreground"
       >
         Thu chi 6 tháng
       </h2>
@@ -130,7 +139,11 @@ export function CashFlowTrend({ summary }: { summary: OverviewSummary }) {
           {summary.cashFlow.hasActivity ? (
             <CashFlowChart data={summary.cashFlow} />
           ) : (
-            <p className="py-6 text-center text-sm text-muted-foreground">Chưa có thu chi.</p>
+            <Empty>
+              <EmptyHeader>
+                <EmptyDescription>Chưa có thu chi.</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           )}
         </CardContent>
       </Card>
@@ -171,7 +184,7 @@ export function DueDebts({ debts }: { debts: OverviewSummary["dueDebts"] }) {
           description={debt.direction === "lent" ? "Cho vay" : "Đi vay"}
           action={
             <span className="flex flex-col items-end">
-              <span className="text-sm font-semibold tabular-nums">
+              <span className="text-sm font-medium tabular-nums">
                 {formatCurrency(debt.remainingAmount)}
               </span>
               <span

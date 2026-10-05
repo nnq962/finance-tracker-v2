@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { LoaderCircleIcon, PlusIcon, SaveIcon, TicketPercentIcon, Trash2Icon } from "lucide-react"
+import { PlusIcon, SaveIcon, TicketPercentIcon, Trash2Icon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input"
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group"
 import { Sheet, SheetContent, SheetFooter } from "@/components/ui/sheet"
 import { Switch } from "@/components/ui/switch"
+import { Spinner } from "@/components/ui/spinner"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDate, toDateKey } from "@/lib/format-date"
 import {
@@ -68,7 +69,6 @@ export function AdminCoupons({ coupons }: { coupons: AdminCoupon[] }) {
             <SettingsRow
               key={item.id}
               icon={TicketPercentIcon}
-              color={item.active ? "violet" : "slate"}
               title={`${item.code} · −${item.percentOff}%`}
               description={[
                 `Đã dùng ${item.used}${item.maxRedemptions ? `/${item.maxRedemptions}` : ""}`,
@@ -273,7 +273,7 @@ function CouponForm({ coupon, onDone }: { coupon?: AdminCoupon; onDone: () => vo
       <SheetFooter>
         {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
         <Button type="submit" className="w-full" disabled={pending}>
-          {pending ? <LoaderCircleIcon className="animate-spin" /> : <SaveIcon />}
+          {pending ? <Spinner /> : <SaveIcon />}
           {coupon ? "Lưu thay đổi" : "Tạo mã"}
         </Button>
       </SheetFooter>

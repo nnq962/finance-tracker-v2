@@ -1,6 +1,7 @@
 "use client"
 
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { getCategoryColor } from "@/lib/categories/category-colors"
 import {
   categoryIconOptions,
@@ -24,37 +25,33 @@ export function IconPicker({
   const selectedColor = getCategoryColor(color)
 
   return (
-    <div className="rounded-lg border">
-      <ScrollArea className="h-52">
-        <div
-          role="radiogroup"
-          aria-label="Biểu tượng"
-          className="grid w-full grid-cols-6 p-2 sm:grid-cols-8"
-        >
-          {categoryIconOptions.map((option) => {
-            const Icon = categoryIconRegistry[option.name]
-            const isSelected = option.name === value
+    <ScrollArea className="h-52">
+      <ToggleGroup
+        type="single"
+        value={value}
+        onValueChange={(next) => {
+          // A second tap on the chosen icon keeps it chosen.
+          if (next) onValueChange(next as CategoryIconName)
+        }}
+        aria-label="Biểu tượng"
+        className="grid w-full grid-cols-6 sm:grid-cols-8"
+      >
+        {categoryIconOptions.map((option) => {
+          const Icon = categoryIconRegistry[option.name]
 
-            return (
-              <button
-                key={option.name}
-                type="button"
-                role="radio"
-                aria-checked={isSelected}
-                aria-label={option.label}
-                onClick={() => onValueChange(option.name)}
-                className={`flex size-8 items-center justify-center justify-self-center rounded-md transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 ${
-                  isSelected
-                    ? selectedColor.selectedClassName
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                <Icon className="size-4" />
-              </button>
-            )
-          })}
-        </div>
-      </ScrollArea>
-    </div>
+          return (
+            <ToggleGroupItem
+              key={option.name}
+              value={option.name}
+              aria-label={option.label}
+              className="justify-self-center"
+            >
+              {/* The chosen icon shows in the category's colour, as it will appear. */}
+              <Icon className={option.name === value ? selectedColor.iconClassName : undefined} />
+            </ToggleGroupItem>
+          )
+        })}
+      </ToggleGroup>
+    </ScrollArea>
   )
 }

@@ -18,6 +18,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+} from "@/components/ui/item"
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>
@@ -142,42 +149,40 @@ export function IosInstallDialog({
             lập từ Màn hình chính.
           </DialogDescription>
         </DialogHeader>
-        <ol className="space-y-3">
-          <li className="flex gap-3">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
-              <ExternalLinkIcon className="size-4" aria-hidden="true" />
-            </span>
-            <div>
-              <p className="font-semibold">Mở bằng Safari</p>
-              <p className="text-muted-foreground">
-                Truy cập finance.nnqlab.dev trong Safari.
-              </p>
-            </div>
-          </li>
-          <li className="flex gap-3">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
-              <Share2Icon className="size-4" aria-hidden="true" />
-            </span>
-            <div>
-              <p className="font-semibold">Chạm nút Chia sẻ</p>
-              <p className="text-muted-foreground">
-                Nút Chia sẻ nằm trên thanh công cụ của Safari.
-              </p>
-            </div>
-          </li>
-          <li className="flex gap-3">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
-              <SquarePlusIcon className="size-4" aria-hidden="true" />
-            </span>
-            <div>
-              <p className="font-semibold">
-                Chọn Thêm vào Màn hình chính
-              </p>
-              <p className="text-muted-foreground">
-                Bật “Mở dưới dạng ứng dụng web”, sau đó chọn Thêm.
-              </p>
-            </div>
-          </li>
+        <ol className="flex flex-col gap-2">
+          <Item asChild size="xs">
+            <li>
+              <ItemMedia variant="icon">
+                <ExternalLinkIcon aria-hidden="true" />
+              </ItemMedia>
+              <ItemContent>
+                <ItemTitle>Mở bằng Safari</ItemTitle>
+                <ItemDescription>Truy cập finance.nnqlab.dev trong Safari.</ItemDescription>
+              </ItemContent>
+            </li>
+          </Item>
+          <Item asChild size="xs">
+            <li>
+              <ItemMedia variant="icon">
+                <Share2Icon aria-hidden="true" />
+              </ItemMedia>
+              <ItemContent>
+                <ItemTitle>Chạm nút Chia sẻ</ItemTitle>
+                <ItemDescription>Nút Chia sẻ nằm trên thanh công cụ của Safari.</ItemDescription>
+              </ItemContent>
+            </li>
+          </Item>
+          <Item asChild size="xs">
+            <li>
+              <ItemMedia variant="icon">
+                <SquarePlusIcon aria-hidden="true" />
+              </ItemMedia>
+              <ItemContent>
+                <ItemTitle>Chọn Thêm vào Màn hình chính</ItemTitle>
+                <ItemDescription>Bật “Mở dưới dạng ứng dụng web”, sau đó chọn Thêm.</ItemDescription>
+              </ItemContent>
+            </li>
+          </Item>
         </ol>
       </DialogContent>
     </Dialog>

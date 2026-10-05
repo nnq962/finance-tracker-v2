@@ -49,7 +49,7 @@ function PageHeaderSkeleton({ action = false }: { action?: boolean }) {
     >
       <Skeleton className="h-9 w-40" />
       {action ? (
-        <Skeleton className="hidden h-8 w-36 shrink-0 rounded-lg md:block" />
+        <Skeleton className="hidden h-8 w-36 shrink-0 md:block" />
       ) : null}
     </div>
   )

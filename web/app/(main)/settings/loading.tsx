@@ -1,8 +1,6 @@
 import { Card } from "@/components/ui/card"
 import { Page, PageHeaderSkeleton } from "@/components/page"
 import { Skeleton } from "@/components/ui/skeleton"
-import { settingsSeparatorClassName } from "@/components/settings-list"
-import { cn } from "@/lib/utils"
 
 /** Same footprint as a SettingsGroup caption. */
 function CaptionSkeleton() {
@@ -21,8 +19,8 @@ function GroupSkeleton({ rows }: { rows: number }) {
       <Card size="sm" className="gap-0 py-0">
         <div className="px-1">
           {Array.from({ length: rows }, (_, row) => (
-            <div key={row} className={cn("flex items-center gap-2.5 px-3 py-3.5 not-first:pt-4", settingsSeparatorClassName(true))}>
-              <Skeleton className="size-8 shrink-0 rounded-lg" />
+            <div key={row} className="flex items-center gap-3.5 px-4 py-3.5">
+              <Skeleton className="size-8 shrink-0" />
               <Skeleton className="h-4 w-32" />
               <Skeleton className="ml-auto h-4 w-14" />
             </div>

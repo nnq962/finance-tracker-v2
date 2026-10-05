@@ -43,11 +43,10 @@ export function ThemeOptions() {
         <SettingsRow
           key={value}
           icon={icon}
-          color="violet"
           title={label}
           action={
             value === choice ? (
-              <CheckIcon className="size-4 text-primary" aria-label="Đang chọn" />
+              <CheckIcon className="size-4" aria-label="Đang chọn" />
             ) : null
           }
           chevron={false}

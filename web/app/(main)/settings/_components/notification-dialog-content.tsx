@@ -63,7 +63,6 @@ export function NotificationDialogContent({
       <SettingsGroup footer="Gửi tới mọi thiết bị đã kết nối, theo giờ Việt Nam.">
         <SettingsRow
           icon={BellRingIcon}
-          color="amber"
           title="Nhắc hằng ngày"
           action={
             <Switch
@@ -79,7 +78,6 @@ export function NotificationDialogContent({
         />
         <SettingsRow
           icon={ClockIcon}
-          color="blue"
           title="Giờ nhắc"
           action={
             <div className="flex items-center gap-1.5">
@@ -99,7 +97,7 @@ export function NotificationDialogContent({
                   </SelectGroup>
                 </SelectContent>
               </Select>
-              <span aria-hidden="true" className="font-semibold text-muted-foreground">:</span>
+              <span aria-hidden="true" className="text-muted-foreground">:</span>
               <Select
                 value={reminderMinute}
                 onValueChange={(minute) => updateReminderTime(reminderHour, minute)}

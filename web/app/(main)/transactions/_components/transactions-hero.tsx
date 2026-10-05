@@ -43,7 +43,7 @@ function CashFlowStat({
       </p>
       <p
         className={cn(
-          "text-xl leading-tight font-semibold tabular-nums [overflow-wrap:anywhere]",
+          "text-xl font-semibold tabular-nums [overflow-wrap:anywhere]",
           cashFlowColors[kind].text,
         )}
       >
@@ -80,7 +80,7 @@ export function TransactionsHero({
       {/* A caption above the card, as on the overview's sections. */}
       <h2
         id="transactions-summary-title"
-        className="px-3 text-xs font-semibold text-muted-foreground"
+        className="px-3 text-sm font-medium text-muted-foreground"
       >
         Thu chi trong tháng
       </h2>

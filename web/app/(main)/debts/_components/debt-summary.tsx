@@ -26,7 +26,7 @@ function DirectionStat({
       </p>
       <p
         className={cn(
-          "text-xl leading-tight font-bold tabular-nums [overflow-wrap:anywhere]",
+          "text-xl font-semibold tabular-nums [overflow-wrap:anywhere]",
           direction === "lent" ? lentClassName : borrowedClassName,
         )}
       >
@@ -47,7 +47,7 @@ export function DebtSummary({ summary }: DebtSummaryProps) {
       <div className="flex min-h-6 items-center px-3">
         <h2
           id="debt-summary-title"
-          className="text-xs font-semibold text-muted-foreground"
+          className="text-sm font-medium text-muted-foreground"
         >
           Tổng quan
         </h2>

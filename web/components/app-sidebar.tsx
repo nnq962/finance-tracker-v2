@@ -35,7 +35,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { isMobile, setOpenMobile } = useSidebar()
 
   return (
-    <Sidebar collapsible="icon" variant="inset" {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -51,7 +51,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="truncate font-medium">Finance Tracker</span>
-                    <Badge variant="secondary" className="px-1.5">Beta</Badge>
+                    <Badge variant="secondary">Beta</Badge>
                   </div>
                   <span className="truncate text-xs">
                     Tài chính cá nhân · v{process.env.NEXT_PUBLIC_APP_VERSION}

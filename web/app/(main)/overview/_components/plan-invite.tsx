@@ -5,7 +5,14 @@ import { SparklesIcon } from "lucide-react"
 
 import { PlanOverlay } from "@/components/plans/plan-overlay"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+} from "@/components/ui/item"
 import type { PaymentOutcome } from "@/lib/plans/payos"
 import { plans, type PlanState } from "@/lib/plans/plans"
 
@@ -19,29 +26,29 @@ type PlanInviteProps = {
   initialOpen: boolean
 }
 
-/** On Free, a card inviting the user to Pro; the plans open over the overview. */
+/** On Free, a row inviting the user to Pro; the plans open over the overview. */
 export function PlanInvite({ planState, checkoutEnabled, paymentOutcome, initialOpen }: PlanInviteProps) {
   const [open, setOpen] = React.useState(initialOpen)
 
   return (
     <>
       {planState.plan === "free" ? (
-        <Card size="sm" className="lg:w-md lg:shrink-0">
-          <CardContent className="flex items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-ai/10 text-ai">
-              <SparklesIcon className="size-5" aria-hidden="true" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-base leading-snug font-semibold">Nâng cấp lên {plans.pro.label}</p>
-              <p className="text-sm text-muted-foreground">
-                {plans.pro.aiMonthlyLimit} lượt trợ lý AI mỗi tháng và dùng sớm tính năng mới
-              </p>
-            </div>
-            <Button type="button" className="shrink-0" onClick={() => setOpen(true)}>
+        <Item variant="outline" className="lg:w-md lg:shrink-0">
+          <ItemMedia variant="icon" className="text-ai">
+            <SparklesIcon aria-hidden="true" />
+          </ItemMedia>
+          <ItemContent className="min-w-0">
+            <ItemTitle>Nâng cấp lên {plans.pro.label}</ItemTitle>
+            <ItemDescription>
+              {plans.pro.aiMonthlyLimit} lượt trợ lý AI mỗi tháng và dùng sớm tính năng mới
+            </ItemDescription>
+          </ItemContent>
+          <ItemActions>
+            <Button type="button" onClick={() => setOpen(true)}>
               Xem gói
             </Button>
-          </CardContent>
-        </Card>
+          </ItemActions>
+        </Item>
       ) : null}
 
       {/* Rendered on Pro too: back from payOS, it shows the payment went through. */}

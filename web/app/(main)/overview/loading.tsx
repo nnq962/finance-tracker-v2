@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardAction, CardContent, CardHeader } from "@/components/ui/card"
 import { Page } from "@/components/page"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -14,10 +14,10 @@ function NetWorthSkeleton() {
       <Skeleton className="mx-3 h-3 w-24" />
       <Card>
         <CardContent className="space-y-4">
-          <Skeleton className="h-11 w-56 max-w-full" />
+          <Skeleton className="h-8 w-56 max-w-full" />
           <div className="grid grid-cols-3 gap-2">
             {Array.from({ length: 3 }, (_, index) => (
-              <Skeleton key={index} className="h-[5.375rem] rounded-xl" />
+              <Skeleton key={index} className="h-24" />
             ))}
           </div>
         </CardContent>
@@ -31,14 +31,14 @@ function CalendarSkeleton() {
     <div className="space-y-2">
       <Skeleton className="mx-3 h-3 w-24" />
       <Card>
+        <CardHeader>
+          <Skeleton className="h-5 w-32" />
+          <CardAction className="flex gap-1">
+            <Skeleton className="size-8" />
+            <Skeleton className="size-8" />
+          </CardAction>
+        </CardHeader>
         <CardContent className="@container space-y-4">
-          <div className="flex items-center justify-between">
-            <Skeleton className="mx-1 h-5 w-32" />
-            <div className="flex gap-1">
-              <Skeleton className="size-8 rounded-lg" />
-              <Skeleton className="size-8 rounded-lg" />
-            </div>
-          </div>
           <div className="grid grid-cols-7 gap-1">
             {Array.from({ length: 35 }, (_, index) => (
               <div key={index} className="flex min-h-14 flex-col items-center gap-1 pt-1 @lg:min-h-20 @lg:pt-2">
@@ -65,7 +65,7 @@ function ChartSkeleton({ className }: { className: string }) {
       <Skeleton className="mx-3 h-3 w-28" />
       <Card>
         <CardContent>
-          <Skeleton className={cn("w-full rounded-lg", className)} />
+          <Skeleton className={cn("w-full", className)} />
         </CardContent>
       </Card>
     </div>

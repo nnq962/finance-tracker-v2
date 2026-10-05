@@ -7,7 +7,7 @@ import { toast } from "sonner"
 import { SettingsGroup } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -27,7 +27,7 @@ const weekdays = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
 
 // Tiny on a phone-sized card, where seven days share the width; larger once
 // the card is wide (32rem and up).
-const amountClassName = "text-[10px] leading-tight font-bold tabular-nums @lg:text-xs"
+const amountClassName = "text-[10px] font-medium tabular-nums @lg:text-xs"
 
 function shiftMonth(month: string, offset: number) {
   const [year, monthIndex] = month.split("-").map(Number)
@@ -101,46 +101,45 @@ export function CashFlowCalendar({
     <section aria-labelledby="cash-flow-calendar-title" className="space-y-2">
       <h2
         id="cash-flow-calendar-title"
-        className="px-3 text-xs font-semibold text-muted-foreground"
+        className="px-3 text-sm font-medium text-muted-foreground"
       >
         Lịch thu chi
       </h2>
       <Card>
+        {/* The month on the left and both arrows together on the right, so
+            they stay close on a wide card. */}
+        <CardHeader>
+          <CardTitle>
+            Tháng {monthNumber}, {year}
+          </CardTitle>
+          <CardAction className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Tháng trước"
+              disabled={month <= minMonth}
+              onClick={() => onMonthChange(shiftMonth(month, -1))}
+            >
+              <ChevronLeftIcon />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Tháng sau"
+              disabled={month >= maxMonth}
+              onClick={() => onMonthChange(shiftMonth(month, 1))}
+            >
+              <ChevronRightIcon />
+            </Button>
+          </CardAction>
+        </CardHeader>
         {/* A container, so the days grow with the card rather than the screen. */}
         <CardContent className="@container space-y-4">
-          {/* The month on the left and both arrows together on the right, so
-              they stay close on a wide card. */}
-          <div className="flex items-center justify-between gap-2">
-            <p className="px-1 text-base font-semibold">
-              Tháng {monthNumber}, {year}
-            </p>
-            <div className="flex items-center gap-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label="Tháng trước"
-                disabled={month <= minMonth}
-                onClick={() => onMonthChange(shiftMonth(month, -1))}
-              >
-                <ChevronLeftIcon />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label="Tháng sau"
-                disabled={month >= maxMonth}
-                onClick={() => onMonthChange(shiftMonth(month, 1))}
-              >
-                <ChevronRightIcon />
-              </Button>
-            </div>
-          </div>
-
           <div className="grid grid-cols-7 gap-1 text-center">
             {weekdays.map((weekday) => (
-              <span key={weekday} className="pb-1 text-xs font-semibold text-muted-foreground">
+              <span key={weekday} className="pb-1 text-xs text-muted-foreground">
                 {weekday}
               </span>
             ))}
@@ -153,9 +152,9 @@ export function CashFlowCalendar({
                 <>
                   <span
                     className={cn(
-                      "flex size-6 items-center justify-center rounded-full text-xs font-semibold",
+                      "flex size-6 items-center justify-center rounded-full text-xs font-medium",
                       isToday && "bg-primary text-primary-foreground",
-                      key > today && "text-muted-foreground/50",
+                      key > today && "text-muted-foreground",
                     )}
                   >
                     {day}
@@ -173,7 +172,7 @@ export function CashFlowCalendar({
                 </>
               )
               const cellClassName =
-                "flex min-h-14 min-w-0 flex-col items-center gap-0.5 rounded-lg pt-1 @lg:min-h-20 @lg:pt-2"
+                "flex min-h-14 min-w-0 flex-col items-center gap-0.5 rounded-2xl pt-1 @lg:min-h-20 @lg:pt-2"
 
               // Every day up to today opens its sheet, also one without transactions.
               return key <= today ? (
@@ -182,7 +181,7 @@ export function CashFlowCalendar({
                   type="button"
                   className={cn(
                     cellClassName,
-                    "outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 active:bg-accent",
+                    "outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/30",
                   )}
                   aria-label={
                     totals
@@ -205,13 +204,13 @@ export function CashFlowCalendar({
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground">Thu trong tháng</p>
-              <p className={cn("font-semibold tabular-nums", cashFlowColors.income.text)}>
+              <p className={cn("font-medium tabular-nums", cashFlowColors.income.text)}>
                 {formatCurrency(monthIncome)}
               </p>
             </div>
             <div>
               <p className="text-muted-foreground">Chi trong tháng</p>
-              <p className={cn("font-semibold tabular-nums", cashFlowColors.expense.text)}>
+              <p className={cn("font-medium tabular-nums", cashFlowColors.expense.text)}>
                 {formatCurrency(monthExpense)}
               </p>
             </div>
@@ -230,13 +229,13 @@ export function CashFlowCalendar({
                   <div className="grid grid-cols-2 gap-4 px-3 text-sm">
                     <div>
                       <p className="text-muted-foreground">Đã thu</p>
-                      <p className={cn("text-lg font-semibold tabular-nums", cashFlowColors.income.text)}>
+                      <p className={cn("text-lg font-medium tabular-nums", cashFlowColors.income.text)}>
                         {formatCurrency(openTotals.income)}
                       </p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Đã chi</p>
-                      <p className={cn("text-lg font-semibold tabular-nums", cashFlowColors.expense.text)}>
+                      <p className={cn("text-lg font-medium tabular-nums", cashFlowColors.expense.text)}>
                         {formatCurrency(openTotals.expense)}
                       </p>
                     </div>
@@ -257,7 +256,7 @@ export function CashFlowCalendar({
                   ) : (
                     <div className="space-y-2" role="status" aria-label="Đang tải giao dịch">
                       <Skeleton className="mx-3 h-3 w-24" />
-                      <Skeleton className="h-36 w-full rounded-xl" />
+                      <Skeleton className="h-36 w-full" />
                     </div>
                   )}
                 </div>

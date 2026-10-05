@@ -109,7 +109,7 @@ export function TransactionDetailsSheet({
             <Icon className="size-7" aria-hidden="true" />
           </div>
           <p
-            className={`mt-5 text-[2rem] font-semibold tracking-tight tabular-nums ${presentation.amountClassName}`}
+            className={`mt-5 text-3xl font-semibold tabular-nums ${presentation.amountClassName}`}
           >
             {/* Signed as in the list, so spending and income read apart without colour. */}
             {transaction.kind === "expense" ? "−" : transaction.kind === "income" ? "+" : ""}

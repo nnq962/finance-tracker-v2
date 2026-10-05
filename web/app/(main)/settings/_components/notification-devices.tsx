@@ -82,7 +82,6 @@ export function NotificationDevices({ uid, initialState, onChange }: {
         <SettingsRow
           key={device.id}
           icon={/iphone|ipad|android|pwa/i.test(device.name) ? SmartphoneIcon : MonitorIcon}
-          color="blue"
           title={device.name}
           description={`Cập nhật ${formatUpdatedAt(device.updatedAt)}`}
           action={device.id === deviceId ? <Badge variant="secondary">Thiết bị này</Badge> : null}

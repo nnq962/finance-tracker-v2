@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { LoaderCircleIcon, SaveIcon } from "lucide-react"
+import { SaveIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { AmountSuggestions, useAmountQuickPick } from "@/components/forms/amount-suggestions"
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { SheetFooter } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
+import { Spinner } from "@/components/ui/spinner"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { getLocalDateTime } from "@/lib/date-time"
@@ -243,7 +244,7 @@ export function TransactionForm({
         {/* Back is in the header, so the footer only saves. */}
         <Button type="submit" className="w-full" disabled={isPending || blocked}>
           {isPending ? (
-            <LoaderCircleIcon className="animate-spin" />
+            <Spinner />
           ) : (
             <SaveIcon />
           )}

@@ -178,7 +178,7 @@ function FormSection({
   return (
     <section className="space-y-2">
       <div className="flex min-h-6 items-center px-3">
-        <h3 className="text-xs font-semibold text-muted-foreground">
+        <h3 className="text-sm font-medium text-muted-foreground">
           {title}
         </h3>
       </div>
@@ -225,7 +225,7 @@ export function SalaryCalculator() {
         <CardContent className="space-y-4">
           <div>
             <p className="text-sm text-muted-foreground">Thực nhận</p>
-            <p className="text-3xl leading-tight font-bold tracking-tight tabular-nums [overflow-wrap:anywhere]">
+            <p className="text-3xl font-semibold tabular-nums [overflow-wrap:anywhere]">
               {formatCurrency(result.netIncome)}
             </p>
           </div>
@@ -233,19 +233,19 @@ export function SalaryCalculator() {
           <div className="grid grid-cols-3 gap-3 text-sm">
             <div className="min-w-0">
               <p className="text-xs text-muted-foreground">Tổng thu nhập</p>
-              <p className="font-semibold tabular-nums [overflow-wrap:anywhere]">
+              <p className="font-medium tabular-nums [overflow-wrap:anywhere]">
                 {formatCurrency(result.grossIncome)}
               </p>
             </div>
             <div className="min-w-0">
               <p className="text-xs text-muted-foreground">Bảo hiểm</p>
-              <p className="font-semibold tabular-nums [overflow-wrap:anywhere]">
+              <p className="font-medium tabular-nums [overflow-wrap:anywhere]">
                 {formatCurrency(result.insurance.total)}
               </p>
             </div>
             <div className="min-w-0">
               <p className="text-xs text-muted-foreground">Thuế TNCN</p>
-              <p className="font-semibold tabular-nums [overflow-wrap:anywhere]">
+              <p className="font-medium tabular-nums [overflow-wrap:anywhere]">
                 {formatCurrency(result.tax)}
               </p>
             </div>
@@ -435,7 +435,7 @@ export function SalaryCalculator() {
                       <SettingsRow
                         key={kind}
                         icon={overLimit ? TriangleAlertIcon : icon}
-                        color={overLimit ? "rose" : "blue"}
+                        color={overLimit ? "rose" : undefined}
                         title={`${label} · ${overtimeRates[kind] * 100}%`}
                         description={
                           hours === null
@@ -452,7 +452,6 @@ export function SalaryCalculator() {
                 <SettingsGroup title="Hoặc không tăng ca">
                   <SettingsRow
                     icon={BriefcaseIcon}
-                    color="emerald"
                     title="Lương hợp đồng cần"
                     description={`Cao hơn hiện tại ${formatCurrency(targetSalary - input.baseSalary)}`}
                     value={formatCurrency(targetSalary)}

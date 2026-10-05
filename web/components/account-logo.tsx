@@ -1,6 +1,7 @@
 import Image from "next/image"
 import { BanknoteIcon } from "lucide-react"
 
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import type { Account } from "@/lib/accounts/types"
 import { cn } from "@/lib/utils"
 
@@ -15,39 +16,28 @@ type AccountLogoProps = {
 export function AccountLogo({ account, className }: AccountLogoProps) {
   if (account.type === "cash") {
     return (
-      <span
-        role="img"
-        aria-label="Tiền mặt"
-        className={cn(
-          "flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground",
-          className,
-        )}
-      >
-        <BanknoteIcon className="size-5" aria-hidden="true" />
-      </span>
+      <Avatar size="lg" role="img" aria-label="Tiền mặt" className={className}>
+        <AvatarFallback>
+          <BanknoteIcon className="size-1/2" aria-hidden="true" />
+        </AvatarFallback>
+      </Avatar>
     )
   }
 
   return (
-    <span
-      className={cn(
-        "flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-white p-1.5",
-        className,
-      )}
-    >
+    // Bank logos are drawn for a white ground, so they keep one in dark mode.
+    <Avatar size="lg" className={cn(account.logoUrl && "bg-white", className)}>
       {account.logoUrl ? (
         <Image
           src={account.logoUrl}
           alt={account.institutionName ?? account.name}
           width={40}
           height={40}
-          className="size-full object-contain"
+          className="size-full rounded-full object-contain p-[15%]"
         />
       ) : (
-        <span className="text-xs font-medium text-muted-foreground">
-          {account.logoFallback}
-        </span>
+        <AvatarFallback>{account.logoFallback}</AvatarFallback>
       )}
-    </span>
+    </Avatar>
   )
 }

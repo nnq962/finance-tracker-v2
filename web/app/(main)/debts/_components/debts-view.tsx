@@ -295,9 +295,9 @@ export function DebtsView({
               role="status"
               aria-label="Đang tải chi tiết khoản nợ"
             >
-              <Skeleton className="h-36 w-full rounded-xl" />
-              <Skeleton className="h-48 w-full rounded-xl" />
-              <Skeleton className="h-36 w-full rounded-xl" />
+              <Skeleton className="h-36 w-full" />
+              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-36 w-full" />
             </div>
           )}
         </SheetContent>

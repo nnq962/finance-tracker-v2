@@ -72,9 +72,9 @@ function DetailSkeleton() {
     <div className="space-y-2">
       <CaptionSkeleton />
       <div className="space-y-6">
-        <Skeleton className="h-36 w-full rounded-xl" />
-        <Skeleton className="h-48 w-full rounded-xl" />
-        <Skeleton className="h-36 w-full rounded-xl" />
+        <Skeleton className="h-36 w-full" />
+        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-36 w-full" />
       </div>
     </div>
   )

@@ -4,15 +4,14 @@ import * as React from "react"
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
-import { buttonVariants } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const subscribe = () => () => {}
 
@@ -31,61 +30,49 @@ export function ThemeSelect() {
   }, [mounted, value])
 
   return (
-    <Select
-      value={value}
-      onValueChange={(nextTheme) => {
-        document.documentElement.dataset.themeSelection = nextTheme
-        setTheme(nextTheme)
-      }}
-    >
-      <SelectTrigger
-        aria-label={`Giao diện: ${currentLabel}`}
-        title={`Giao diện: ${currentLabel}`}
-        className={buttonVariants({
-          variant: "ghost",
-          size: "icon",
-          className:
-            "gap-0 bg-transparent p-0 data-[state=open]:bg-muted [&>svg]:hidden",
-        })}
-      >
-        <span aria-hidden="true" className="flex size-4 items-center justify-center">
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={`Giao diện: ${currentLabel}`}
+          title={`Giao diện: ${currentLabel}`}
+        >
           {/* The provider sets this CSS selector before paint, before hydration knows the theme. */}
           <span data-theme-icon="light">
-            <SunIcon className="size-4" />
+            <SunIcon />
           </span>
           <span data-theme-icon="dark">
-            <MoonIcon className="size-4" />
+            <MoonIcon />
           </span>
           <span data-theme-icon="system">
-            <MonitorIcon className="size-4" />
+            <MonitorIcon />
           </span>
-        </span>
-        <span className="sr-only">
-          <SelectValue />
-        </span>
-      </SelectTrigger>
-      <SelectContent position="popper" align="end" showScrollButtons={false}>
-        <SelectGroup>
-          <SelectItem value="light">
-            <span className="flex items-center gap-2">
-              <SunIcon className="size-4" />
-              Sáng
-            </span>
-          </SelectItem>
-          <SelectItem value="dark">
-            <span className="flex items-center gap-2">
-              <MoonIcon className="size-4" />
-              Tối
-            </span>
-          </SelectItem>
-          <SelectItem value="system">
-            <span className="flex items-center gap-2">
-              <MonitorIcon className="size-4" />
-              Theo hệ thống
-            </span>
-          </SelectItem>
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuRadioGroup
+          value={value}
+          onValueChange={(nextTheme) => {
+            document.documentElement.dataset.themeSelection = nextTheme
+            setTheme(nextTheme)
+          }}
+        >
+          <DropdownMenuRadioItem value="light">
+            <SunIcon />
+            Sáng
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="dark">
+            <MoonIcon />
+            Tối
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="system">
+            <MonitorIcon />
+            Theo hệ thống
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

@@ -159,7 +159,7 @@ export function SettingsView({
               <span className="flex min-w-0 items-center gap-1">
                 <span className="truncate">{user.name}</span>
                 {isPro ? (
-                  <BadgeCheckIcon className="size-4 shrink-0 fill-ai text-background" role="img" aria-label="Pro" />
+                  <BadgeCheckIcon className="size-4 shrink-0 text-ai" role="img" aria-label="Pro" />
                 ) : null}
               </span>
             }
@@ -176,7 +176,6 @@ export function SettingsView({
           <SettingsGroup title="Quản trị">
             <SettingsRow
               icon={ShieldCheckIcon}
-              color="slate"
               title="Người dùng & gói"
               value={String(adminData.users.length)}
               onClick={() => open("admin")}
@@ -184,7 +183,6 @@ export function SettingsView({
             {/* A tool for checking speech recognition on a device, not for users. */}
             <SettingsRow
               icon={MicIcon}
-              color="rose"
               title="Thử giọng nói"
               onClick={() => open("voice")}
             />
@@ -194,14 +192,12 @@ export function SettingsView({
         <SettingsGroup title="Chung">
           <SettingsRow
             icon={PaletteIcon}
-            color="violet"
             title="Giao diện"
             value={themeOptions.find((option) => option.value === choice)?.label}
             onClick={() => open("appearance")}
           />
           <SettingsRow
             icon={TagsIcon}
-            color="orange"
             title="Hạng mục"
             value={`${categoryCount} mục`}
             onClick={() => setCategoriesOpen(true)}
@@ -211,14 +207,12 @@ export function SettingsView({
         <SettingsGroup title="Thông báo">
           <SettingsRow
             icon={BellRingIcon}
-            color="amber"
             title="Nhắc ghi chi tiêu"
             value={reminder.notificationsEnabled ? `Bật · ${reminder.dailyReminderTime}` : "Tắt"}
             onClick={() => open("notifications")}
           />
           <SettingsRow
             icon={SmartphoneIcon}
-            color="blue"
             title="Thiết bị nhận thông báo"
             value={String(devices.devices.length)}
             onClick={() => open("devices")}
@@ -230,19 +224,17 @@ export function SettingsView({
           footer={
             <span className="flex items-center justify-center gap-2">
               Finance Tracker · v{process.env.NEXT_PUBLIC_APP_VERSION}
-              <Badge variant="secondary" className="px-1.5 tracking-normal">Beta</Badge>
+              <Badge variant="secondary">Beta</Badge>
             </span>
           }
         >
           <SettingsRow
             icon={CalculatorIcon}
-            color="emerald"
             title="Tính lương"
             onClick={() => open("salary")}
           />
           <SettingsRow
             icon={CircleHelpIcon}
-            color="cyan"
             title="Hướng dẫn sử dụng"
             onClick={openWelcome}
           />

@@ -11,14 +11,13 @@ import {
 
 import { AddAccountSheet } from "@/app/(main)/budget/_components/add-account/add-account-sheet"
 import { Button } from "@/components/ui/button"
+import { EmptyMedia } from "@/components/ui/empty"
 import { Sheet, SheetContent, SheetFooter, SheetTitle } from "@/components/ui/sheet"
-import { getCategoryColor, type CategoryColorName } from "@/lib/categories/category-colors"
 import { markOnboardingSeenAction } from "@/lib/onboarding/actions"
 import { cn } from "@/lib/utils"
 
 type Slide = {
   icon: LucideIcon
-  color: CategoryColorName
   title: string
   body: string
 }
@@ -26,25 +25,21 @@ type Slide = {
 const slides: Slide[] = [
   {
     icon: WalletCardsIcon,
-    color: "blue",
     title: "Chào mừng đến với Finance Tracker",
     body: "Theo dõi số dư, thu chi và các khoản vay nợ của bạn ở một nơi.",
   },
   {
     icon: ReceiptTextIcon,
-    color: "orange",
     title: "Ghi thu chi trong vài giây",
     body: "Bấm “Thêm giao dịch”, chọn hạng mục và nhập số tiền. Số dư tài khoản tự cập nhật.",
   },
   {
     icon: CalendarDaysIcon,
-    color: "emerald",
     title: "Biết mỗi ngày tiêu bao nhiêu",
     body: "Lịch và biểu đồ phân bổ ở trang Tổng quan cho thấy tiền đi đâu, vào ngày nào.",
   },
   {
     icon: BellRingIcon,
-    color: "violet",
     title: "Vay nợ và lời nhắc",
     body: "Ghi lại khoản cho vay, đi vay kèm hạn trả, và bật lời nhắc mỗi tối để không quên ghi chi tiêu.",
   },
@@ -124,17 +119,12 @@ export function WelcomeProvider({
               if (Math.abs(delta) > 50) go(index + (delta < 0 ? 1 : -1))
             }}
           >
-            <span
-              className={cn(
-                "flex size-24 items-center justify-center rounded-3xl",
-                getCategoryColor(slide.color).surfaceClassName,
-              )}
-            >
-              <Icon className="size-12" aria-hidden="true" />
-            </span>
+            <EmptyMedia variant="icon">
+              <Icon aria-hidden="true" />
+            </EmptyMedia>
             <div className="space-y-2">
-              <SheetTitle className="text-xl">{slide.title}</SheetTitle>
-              <p className="text-muted-foreground" aria-live="polite">{slide.body}</p>
+              <SheetTitle>{slide.title}</SheetTitle>
+              <p className="text-sm text-muted-foreground" aria-live="polite">{slide.body}</p>
             </div>
           </div>
           {/* SheetFooter keeps the button clear of the Home indicator, as in other sheets. */}

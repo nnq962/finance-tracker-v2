@@ -2,44 +2,51 @@
 
 import { CheckIcon } from "lucide-react"
 
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import {
   categoryColorOptions,
   type CategoryColorName,
 } from "@/lib/categories/category-colors"
+import { cn } from "@/lib/utils"
 
 type ColorPickerProps = {
   onValueChange: (value: CategoryColorName) => void
   value: CategoryColorName
 }
 
-/** Picks one of the category colours; same radio pattern as IconPicker. */
+/** Picks one of the category colours; same single-choice pattern as IconPicker. */
 export function ColorPicker({ onValueChange, value }: ColorPickerProps) {
   return (
-    <div
-      role="radiogroup"
+    <ToggleGroup
+      type="single"
+      size="lg"
+      value={value}
+      onValueChange={(next) => {
+        // A second tap on the chosen colour keeps it chosen.
+        if (next) onValueChange(next as CategoryColorName)
+      }}
       aria-label="Màu"
-      className="grid grid-cols-5 gap-3 rounded-lg border p-3"
+      className="grid w-full grid-cols-5"
     >
-      {categoryColorOptions.map((option) => {
-        const isSelected = option.name === value
-
-        return (
-          <button
-            key={option.name}
-            type="button"
-            role="radio"
-            aria-checked={isSelected}
-            aria-label={option.label}
-            title={option.label}
-            onClick={() => onValueChange(option.name)}
-            className={`flex size-9 items-center justify-center justify-self-center rounded-full text-white outline-none transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 ${option.dotClassName} ${
-              isSelected ? "ring-3 ring-offset-2 ring-offset-background ring-primary" : "hover:scale-110"
-            }`}
+      {categoryColorOptions.map((option) => (
+        <ToggleGroupItem
+          key={option.name}
+          value={option.name}
+          aria-label={option.label}
+          title={option.label}
+          className="justify-self-center"
+        >
+          {/* The swatch is the colour itself, which the user is choosing. */}
+          <span
+            className={cn(
+              "flex size-5 items-center justify-center rounded-full text-white",
+              option.dotClassName,
+            )}
           >
-            {isSelected ? <CheckIcon className="size-4" aria-hidden="true" /> : null}
-          </button>
-        )
-      })}
-    </div>
+            {option.name === value ? <CheckIcon className="size-3" aria-hidden="true" /> : null}
+          </span>
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
   )
 }

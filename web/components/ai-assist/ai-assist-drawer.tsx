@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { AnimatePresence, motion, MotionConfig } from "motion/react"
-import { EraserIcon, KeyboardIcon, LoaderCircleIcon, MicIcon, SendHorizontalIcon, SparklesIcon, SquareIcon, XIcon } from "lucide-react"
+import { EraserIcon, KeyboardIcon, MicIcon, SendHorizontalIcon, SparklesIcon, SquareIcon, XIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -16,6 +16,7 @@ import {
   AiDrawerTitle,
 } from "@/components/ui/ai-drawer"
 import { Textarea } from "@/components/ui/textarea"
+import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
 
 import { useSpeechRecognition } from "./use-speech-recognition"
@@ -151,7 +152,7 @@ export function AiAssistDrawer<Result>({
             <MotionConfig reducedMotion="user">
               {/* The drawer's height follows each step. It clips, so it
                   reaches 12px into the padding at the sides and bottom, room
-                  for the cards' rings and the microphone's ripples, and pads
+                  for the cards' rings and the microphone's pulse, and pads
                   the content back to 16px from those edges. Above, the
                   scroll area clips, so the rings get 4px below the header. */}
               <div className="-mx-3 -mb-3 px-3 pt-1 pb-3">
@@ -195,7 +196,7 @@ export function AiAssistDrawer<Result>({
                         <Card>
                           <CardContent className="flex min-h-14 items-center justify-center text-center">
                             {heard ? (
-                              <p className="text-base leading-snug font-semibold" aria-live="polite">
+                              <p className="text-base font-medium" aria-live="polite">
                                 {/* Each word rises in as it is heard, muted until the
                                     recogniser settles on it, then darkens in place:
                                     keyed by position, a settled word keeps its box. */}
@@ -204,7 +205,7 @@ export function AiAssistDrawer<Result>({
                                     {index > 0 ? " " : null}
                                     <motion.span
                                       className={cn(
-                                        "inline-block transition-colors duration-300",
+                                        "inline-block transition-colors",
                                         !settled && "text-muted-foreground",
                                       )}
                                       initial={{ opacity: 0, y: 4, filter: "blur(3px)" }}
@@ -252,24 +253,23 @@ export function AiAssistDrawer<Result>({
                             Gửi
                           </Button>
                         ) : (
-                          <span className="relative inline-flex">
+                          <span className="relative isolate inline-flex">
+                            {/* Spreads from behind the microphone while it listens. */}
                             {speech.listening ? (
-                              <>
-                                <span className="ai-ripple" aria-hidden="true" />
-                                <span className="ai-ripple" aria-hidden="true" />
-                              </>
+                              <span
+                                className="pointer-events-none absolute inset-0 -z-10 animate-ping rounded-2xl bg-ai/40 motion-reduce:animate-none"
+                                aria-hidden="true"
+                              />
                             ) : null}
-                            {/* Round and a size up from the icon buttons beside it. */}
                             <Button
                               type="button"
                               size="icon-lg"
-                              className="size-12 rounded-full [&_svg:not([class*='size-'])]:size-5"
                               aria-label={speech.transcribing ? "Đang nhận dạng" : speech.listening ? "Dừng nghe" : "Bắt đầu nói"}
                               disabled={speech.transcribing}
                               onClick={speech.listening ? speech.stop : speech.start}
                             >
                               {speech.transcribing ? (
-                                <LoaderCircleIcon className="animate-spin" />
+                                <Spinner />
                               ) : speech.listening ? (
                                 <SquareIcon />
                               ) : (

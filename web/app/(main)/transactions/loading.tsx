@@ -16,9 +16,9 @@ function TransactionsHeroSkeleton() {
       <Card>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between gap-2">
-            <Skeleton className="size-8 rounded-lg" />
+            <Skeleton className="size-8" />
             <Skeleton className="h-5 w-32" />
-            <Skeleton className="size-8 rounded-lg" />
+            <Skeleton className="size-8" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             {[0, 1].map((index) => (
@@ -54,7 +54,7 @@ function FilterPanelSkeleton() {
               <Skeleton className="h-4 w-24" />
               <div className="flex flex-wrap gap-2">
                 {Array.from({ length: chips }, (_, chip) => (
-                  <Skeleton key={chip} className="h-7 w-20 rounded-lg" />
+                  <Skeleton key={chip} className="h-7 w-20" />
                 ))}
               </div>
             </div>
@@ -77,7 +77,7 @@ function DayGroupSkeleton({ rows }: { rows: number }) {
         <div className="px-1">
           {Array.from({ length: rows }, (_, row) => (
             <div key={row} className={cn("flex items-center gap-2.5 px-3 py-3.5 not-first:pt-4", settingsSeparatorClassName(true))}>
-              <Skeleton className="size-8 shrink-0 rounded-lg" />
+              <Skeleton className="size-8 shrink-0" />
               <div className="min-w-0 flex-1 space-y-1.5">
                 <Skeleton className="h-4 w-32 max-w-full" />
                 <Skeleton className="h-3.5 w-40 max-w-full" />
@@ -108,8 +108,8 @@ export default function TransactionsLoading() {
           filters={<FilterPanelSkeleton />}
         >
           <div className="flex gap-2">
-            <Skeleton className="h-8 max-w-md flex-1 rounded-lg lg:max-w-none" />
-            <Skeleton className="h-8 w-20 rounded-lg lg:hidden" />
+            <Skeleton className="h-8 max-w-md flex-1 lg:max-w-none" />
+            <Skeleton className="h-8 w-20 lg:hidden" />
           </div>
           <div className="space-y-6">
             <DayGroupSkeleton rows={3} />

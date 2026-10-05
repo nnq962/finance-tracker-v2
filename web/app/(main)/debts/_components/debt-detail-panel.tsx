@@ -43,7 +43,7 @@ export function DebtDetailPanel(props: DebtDetailPanelProps) {
       <div className="flex min-h-6 items-center px-3">
         <h2
           id="debt-detail-title"
-          className="truncate text-xs font-semibold text-muted-foreground"
+          className="truncate text-sm font-medium text-muted-foreground"
         >
           {props.contact.name}
         </h2>
@@ -70,7 +70,7 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
       <Card>
         <CardContent className="space-y-2">
           <p className="text-sm text-muted-foreground">{debt.hasInterest ? "Còn lại hôm nay" : "Còn lại"}</p>
-          <p className="text-3xl leading-tight font-bold tabular-nums [overflow-wrap:anywhere]">
+          <p className="text-3xl font-semibold tabular-nums [overflow-wrap:anywhere]">
             {formatCurrency(remainingAmount, { signDisplay: "never" })}
           </p>
           <Progress value={paymentProgress} />

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { CalendarIcon, CheckIcon, LoaderCircleIcon, PlusIcon, RotateCcwIcon } from "lucide-react"
+import { CalendarIcon, CheckIcon, PlusIcon, RotateCcwIcon } from "lucide-react"
 import { AnimatePresence, motion, type Variants } from "motion/react"
 import { toast } from "sonner"
 
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { Spinner } from "@/components/ui/spinner"
 import type { Account } from "@/lib/accounts/types"
 import { createSuggestedCategoryAction } from "@/lib/categories/actions"
 import { getAmountSuggestions } from "@/lib/amount-suggestions"
@@ -80,9 +81,8 @@ type BlankProps = React.ComponentProps<"button"> & {
 
 /**
  * One blank of the sentence: the filled-in word stands out from the muted
- * sentence with a light underline, and a soft background when hovered or
- * being edited; a missing one shows its question with a dashed amber
- * underline.
+ * sentence with an underline, and a muted background when hovered or being
+ * edited; a missing one shows its question with a dashed amber underline.
  */
 function Blank({ placeholder, filled, active, valueKey, className, children, ...props }: BlankProps) {
   return (
@@ -91,9 +91,7 @@ function Blank({ placeholder, filled, active, valueKey, className, children, ...
       aria-expanded={active}
       aria-controls={active ? EDITOR_ID : undefined}
       className={cn(
-        // The padding gives the background room; the negative margin
-        // keeps it out of the spacing, so no gap shows before a comma.
-        "group/blank -mx-1 inline rounded-md px-1 py-0.5 font-semibold text-foreground transition-colors outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring aria-expanded:bg-muted",
+        "inline rounded-sm font-medium text-foreground transition-colors outline-none hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-expanded:bg-muted",
         !filled && "font-normal text-muted-foreground italic",
         className,
       )}
@@ -105,8 +103,8 @@ function Blank({ placeholder, filled, active, valueKey, className, children, ...
           // The underline sits on this word, as a box of its own does not
           // inherit the button's.
           className={cn(
-            "inline-block underline decoration-foreground/25 decoration-1 underline-offset-[6px] transition-colors group-hover/blank:decoration-foreground/60 group-aria-expanded/blank:decoration-primary",
-            !filled && "decoration-warning/70 decoration-dashed",
+            "inline-block underline underline-offset-4",
+            !filled && "decoration-warning decoration-dashed",
           )}
           initial={{ opacity: 0, y: -6, filter: "blur(3px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -271,9 +269,9 @@ export function TransactionMadLibs({
     <div className="space-y-4">
       <Card>
         <CardContent>
-          {/* Loose leading leaves room for the blanks' underline and background. */}
+          {/* Loose leading leaves room for the blanks' underline. */}
           <motion.p
-            className="text-lg leading-[2.2] text-muted-foreground"
+            className="text-lg leading-loose text-muted-foreground"
             variants={sentence}
             initial="hidden"
             animate="shown"
@@ -348,7 +346,7 @@ export function TransactionMadLibs({
             transition={{ duration: 0.22, ease: EASE_OUT }}
           >
             <div className="flex items-center justify-between gap-2">
-              <p className="px-3 text-xs font-semibold text-muted-foreground">
+              <p className="px-3 text-sm font-medium text-muted-foreground">
                 {fieldCaptions[editing]}
               </p>
               <Button type="submit" variant="ghost" size="sm">
@@ -393,7 +391,7 @@ export function TransactionMadLibs({
                 Nói lại
               </Button>
               <Button type="button" disabled={!complete || saving} onClick={save}>
-                {saving ? <LoaderCircleIcon className="animate-spin" aria-hidden="true" /> : <CheckIcon />}
+                {saving ? <Spinner /> : <CheckIcon />}
                 Lưu
               </Button>
             </div>
