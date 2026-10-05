@@ -3,20 +3,17 @@
 import * as React from "react"
 
 import { IconTile } from "@/components/app/icon-tile"
+import { Money } from "@/components/app/money"
 import { SettingsRow } from "@/components/settings-list"
 import { Sheet } from "@/components/ui/sheet"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
-import { formatCurrency } from "@/lib/format-currency"
 import { formatTime } from "@/lib/format-date"
-import { cn } from "@/lib/utils"
 
-import { getTransactionVisual, transactionPresentation } from "../_lib/transaction-presentation"
+import { getTransactionVisual } from "../_lib/transaction-presentation"
 import type { Transaction } from "../_types/transaction"
 import { EditTransactionSheet } from "./edit-transaction-sheet"
 import { TransactionDetailsSheet } from "./transaction-details-sheet"
-
-const amountSigns = { expense: "−", income: "+", transfer: "" } as const
 
 type TransactionItemProps = {
   accounts: Account[]
@@ -31,7 +28,6 @@ export function TransactionItem({
 }: TransactionItemProps) {
   const [detailsOpen, setDetailsOpen] = React.useState(false)
   const [editOpen, setEditOpen] = React.useState(false)
-  const presentation = transactionPresentation[transaction.kind]
   const { category, icon, color } = getTransactionVisual(transaction, categoryGroups)
 
   return (
@@ -57,17 +53,12 @@ export function TransactionItem({
               </span>
             ) : null}
             <span className="flex flex-col items-end">
-              <span
-                className={cn(
-                  "text-sm font-semibold tabular-nums",
-                  presentation.amountClassName,
-                )}
-              >
-                {amountSigns[transaction.kind]}
-                {formatCurrency(Math.abs(transaction.amount), {
-                  signDisplay: "never",
-                })}
-              </span>
+              <Money
+                amount={transaction.kind === "expense" ? -Math.abs(transaction.amount) : Math.abs(transaction.amount)}
+                sign={transaction.kind === "transfer" ? "never" : "always"}
+                size="sm"
+                tone={transaction.kind}
+              />
               <time
                 className="text-xs text-muted-foreground"
                 dateTime={transaction.occurredAt}

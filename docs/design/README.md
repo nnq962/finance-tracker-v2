@@ -21,3 +21,7 @@ preset shadcn `b27GcrRo` với font Be Vietnam Pro. Bảng màu: [`colors.md`](c
   hoặc màu ý nghĩa (`income`, `expense`, `transfer`, `ai`, `warning`, `neutral`). Là điểm
   nhìn đầu tiên của một dòng list: mắt nhận ra hạng mục bằng màu trước khi đọc chữ. Dùng ở
   dòng giao dịch (bước 1, phương án A được duyệt 2026-10-05).
+- **Số tiền** (`Money`): con số đậm, `tabular-nums`, chữ "đ" nhỏ (0.7em) và nhạt; dấu − / +
+  theo `sign`, màu theo `tone` (`income`, `expense`, `transfer`). Cỡ `sm` cho dòng list, `lg`
+  cho số thống kê, `xl` cho số tổng. Dùng ở Thu chi trong tháng, Tổng số dư và dòng giao
+  dịch (bước 2, phương án A được duyệt 2026-10-05).

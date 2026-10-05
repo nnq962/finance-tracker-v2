@@ -1,10 +1,10 @@
 import type { CSSProperties } from "react"
 
+import { Money } from "@/components/app/money"
 import { SettingsGroup } from "@/components/settings-list"
 import { Progress } from "@/components/ui/progress"
 import { getAccountDistribution } from "@/lib/accounts/distribution"
 import type { Account, BalanceSummary } from "@/lib/accounts/types"
-import { formatCurrency } from "@/lib/format-currency"
 
 type BalanceHeroProps = {
   summary: BalanceSummary
@@ -42,9 +42,7 @@ export function BalanceHero({ summary, accounts }: BalanceHeroProps) {
       header={
         // 16px all round, where the rows' content starts.
         <div className="space-y-3 p-4">
-          <p className="text-2xl font-semibold tabular-nums [overflow-wrap:anywhere]">
-            {formatCurrency(summary.totalBalance)}
-          </p>
+          <Money amount={summary.totalBalance} size="xl" />
           {accountsTotal > 0 ? (
             <Progress
               value={100}

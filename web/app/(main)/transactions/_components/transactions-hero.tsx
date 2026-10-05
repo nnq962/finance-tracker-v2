@@ -3,14 +3,12 @@
 import * as React from "react"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 
+import { Money } from "@/components/app/money"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { formatCurrency } from "@/lib/format-currency"
-import { cn } from "@/lib/utils"
 
 import { getTransactionSummary } from "../_lib/get-transaction-summary"
-import { cashFlowColors } from "../_lib/transaction-presentation"
 import type { Transaction } from "../_types/transaction"
 
 type TransactionsHeroProps = {
@@ -41,14 +39,7 @@ function CashFlowStat({
       <p className="text-sm text-muted-foreground">
         {kind === "income" ? "Đã thu" : "Đã chi"}
       </p>
-      <p
-        className={cn(
-          "text-xl font-semibold tabular-nums [overflow-wrap:anywhere]",
-          cashFlowColors[kind].text,
-        )}
-      >
-        {formatCurrency(amount)}
-      </p>
+      <Money amount={amount} size="lg" tone={kind} />
     </div>
   )
 }
@@ -142,17 +133,12 @@ export function TransactionsHero({
           <Separator />
           <div className="flex items-center justify-between gap-3 text-sm">
             <span className="text-muted-foreground">Chênh lệch</span>
-            <span
-              className={cn(
-                "font-semibold tabular-nums",
-                netBalance > 0 && cashFlowColors.income.text,
-                netBalance < 0 && cashFlowColors.expense.text,
-              )}
-            >
-              {formatCurrency(netBalance, {
-                signDisplay: netBalance === 0 ? "auto" : "always",
-              })}
-            </span>
+            <Money
+              amount={netBalance}
+              size="sm"
+              sign={netBalance === 0 ? "auto" : "always"}
+              tone={netBalance > 0 ? "income" : netBalance < 0 ? "expense" : "default"}
+            />
           </div>
         </CardContent>
       </Card>
