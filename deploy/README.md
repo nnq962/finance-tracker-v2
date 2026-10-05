@@ -120,11 +120,14 @@ Có hai cách, chọn một:
 ## Tunnel cho dev server (thử trên điện thoại)
 
 `https://finance-dev.nnqlab.dev` trỏ vào dev server (`npm run dev`, cổng 3000) qua tunnel
-riêng `finance-dev`, tách khỏi tunnel production.
+riêng `finance-dev`, tách khỏi tunnel production. Tunnel chạy luôn trong Docker
+(`deploy/compose.dev-tunnel.yaml`, tự bật lại cả sau khi khởi động máy); chỉ cần dev server
+đang chạy là thử được, không thì trang báo 502.
 
-Mỗi lần thử: trong `web/`, chạy `npm run dev` và (ở terminal khác) `npm run tunnel`. Trên
-điện thoại mở một lần `https://finance-dev.nnqlab.dev/api/dev/login?key=<DEV_TUNNEL_KEY>&next=/overview`;
-trình duyệt giữ khoá trong cookie 90 ngày.
+Trong `web/`: `npm run tunnel` bật (hoặc kiểm tra) tunnel, `npm run tunnel -- stop` tắt,
+`npm run tunnel -- logs` xem log. Trên điện thoại mở một lần
+`https://finance-dev.nnqlab.dev/api/dev/login?key=<DEV_TUNNEL_KEY>&next=/overview`; trình duyệt
+giữ khoá trong cookie 90 ngày.
 
 Ai cũng mở được địa chỉ này, nhưng chỉ người có khoá mới đăng nhập được người dùng dev:
 đăng nhập dev qua tunnel cần `DEV_LOGIN=1`, `DEV_TUNNEL_HOST=finance-dev.nnqlab.dev` và

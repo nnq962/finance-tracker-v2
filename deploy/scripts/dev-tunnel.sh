@@ -1,13 +1,22 @@
 #!/usr/bin/env bash
-# Opens the dev server (npm run dev, port 3000) at https://finance-dev.nnqlab.dev
-# through the Cloudflare tunnel `finance-dev`, so it can be tried on a phone.
-# Cloudflare Access guards the hostname; see "Tunnel cho dev server" in
-# deploy/README.md. Usually run from web/ as `npm run tunnel`; Ctrl+C closes it.
+# The always-on tunnel to the dev server: https://finance-dev.nnqlab.dev →
+# localhost:3000 (npm run dev). Runs in Docker and restarts on its own, also
+# after a reboot. See "Tunnel cho dev server" in deploy/README.md.
+#
+#   npm run tunnel            start it (or make sure it runs)
+#   npm run tunnel -- stop    stop it
+#   npm run tunnel -- logs    follow its log
+#
+# Run the npm scripts from web/.
 set -euo pipefail
 
-if ! command -v cloudflared >/dev/null; then
-  echo "cloudflared not found: install it into ~/.local/bin (see deploy/README.md)." >&2
-  exit 1
-fi
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+compose=(docker compose -f "$root/deploy/compose.dev-tunnel.yaml")
+export DEV_UID="$(id -u)" DEV_GID="$(id -g)"
 
-exec cloudflared tunnel --no-autoupdate run --url http://localhost:3000 finance-dev
+case "${1:-up}" in
+  up) "${compose[@]}" up -d ;;
+  stop) "${compose[@]}" down ;;
+  logs) "${compose[@]}" logs -f ;;
+  *) echo "usage: dev-tunnel.sh [up|stop|logs]" >&2; exit 1 ;;
+esac
