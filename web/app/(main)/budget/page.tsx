@@ -1,4 +1,5 @@
 import { Page, PageHeader } from "@/components/page"
+import { FloatingActions } from "@/components/app/floating-actions"
 import { loadWithSession } from "@/lib/auth/session"
 import { getAccounts } from "@/lib/accounts/repository"
 import { getBalanceSummary } from "@/lib/accounts/summary"
@@ -37,13 +38,9 @@ export default async function AccountsPage() {
       ) : (
         <AccountList accounts={accounts} recentTransactions={recentTransactions} categoryGroups={categoryGroups} />
       )}
-      {/* On mobile the action floats above the bottom nav so it stays within
-          thumb reach while scrolling, also over the empty state. */}
-      <div className="pointer-events-none sticky bottom-4 z-20 flex justify-end md:hidden">
-        <div className="pointer-events-auto">
-          <AddAccountButton />
-        </div>
-      </div>
+      <FloatingActions>
+        <AddAccountButton />
+      </FloatingActions>
     </Page>
   )
 }

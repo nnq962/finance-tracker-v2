@@ -133,18 +133,31 @@ export function MobileBottomNav() {
     requestNavigation(requestedPathname)
   }
 
+  const activeIndex = mobileNavigationItems.findIndex((item) => item.url === activePathname)
+
   return (
+    // Floats over the page, clear of the screen's edges; the shell reserves
+    // its height in --tab-bar-space so the end of a page can scroll above it.
     <nav
       aria-label="Điều hướng chính trên di động"
-      className="relative z-40 w-full shrink-0 border-t bg-background px-1 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] md:hidden"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:hidden"
     >
-      <ul className="mx-auto grid max-w-md grid-cols-5">
+      <ul className="pointer-events-auto relative mx-auto grid max-w-md grid-cols-5 rounded-full bg-card/80 p-1 shadow-lg ring-1 ring-foreground/5 backdrop-blur-xl backdrop-saturate-150 dark:ring-foreground/10">
+        {/* The pill behind the current tab slides from tab to tab. */}
+        <li
+          aria-hidden="true"
+          className={cn(
+            "absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/5)] rounded-full bg-muted transition-[translate,opacity] duration-300 ease-out motion-reduce:transition-none",
+            activeIndex < 0 && "opacity-0",
+          )}
+          style={{ translate: `${Math.max(activeIndex, 0) * 100}% 0` }}
+        />
         {mobileNavigationItems.map((item) => {
           const isActive = activePathname === item.url
           const Icon = item.icon
 
           return (
-            <li key={item.url} className="min-w-0">
+            <li key={item.url} className="relative min-w-0">
               <Link
                 href={item.url}
                 aria-label={item.mobileTitle}
@@ -168,7 +181,7 @@ export function MobileBottomNav() {
                 onClick={(event) => navigateTo(event, item.url)}
                 aria-current={pathname === item.url ? "page" : undefined}
                 className={cn(
-                  "flex min-h-12 min-w-0 touch-manipulation flex-col items-center justify-center gap-1 rounded-md py-1 text-muted-foreground outline-none select-none [-webkit-tap-highlight-color:transparent] focus-visible:ring-3 focus-visible:ring-ring/50",
+                  "flex min-h-14 min-w-0 touch-manipulation flex-col items-center justify-center gap-1 rounded-full text-muted-foreground transition-colors outline-none select-none [-webkit-tap-highlight-color:transparent] focus-visible:ring-3 focus-visible:ring-ring/50",
                   isActive && "text-foreground",
                 )}
               >

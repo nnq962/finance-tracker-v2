@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { AiAssistButton } from "@/components/ai-assist/ai-assist-button"
+import { FloatingActions } from "@/components/app/floating-actions"
 import { PageHeader } from "@/components/page"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
@@ -192,21 +193,17 @@ export function TransactionsDashboard({
           onClearFilters={clearFilters}
         />
       </TransactionsLayout>
-      {/* On mobile the action floats above the bottom nav so it stays within
-          thumb reach while scrolling a long list. */}
       {/* The AI button sits above the add button, so the two stay within a
           phone's width. */}
-      <div className="pointer-events-none sticky bottom-4 z-20 flex justify-end md:hidden">
-        <div className="pointer-events-auto flex flex-col items-end gap-4">
-          <AiAssistButton variant="secondary" remaining={aiRemaining} onClick={openAi}>
-            AI
-          </AiAssistButton>
-          <AddTransactionButton
-            accounts={accounts}
-            categoryGroups={categoryGroups}
-          />
-        </div>
-      </div>
+      <FloatingActions>
+        <AiAssistButton variant="secondary" remaining={aiRemaining} onClick={openAi}>
+          AI
+        </AiAssistButton>
+        <AddTransactionButton
+          accounts={accounts}
+          categoryGroups={categoryGroups}
+        />
+      </FloatingActions>
       <Sheet open={needAccountOpen && !hasAccount} onOpenChange={setNeedAccountOpen}>
         <SheetContent
           showCloseButton={false}
