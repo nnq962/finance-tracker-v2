@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { FloatingActions } from "@/components/app/floating-actions"
 import { Page, PageHeader } from "@/components/page"
 import type { Account } from "@/lib/accounts/types"
 
@@ -144,11 +145,7 @@ export function DebtsDashboard({
         onEdit={editContact}
         onDelete={deleteContact}
       />
-      {/* On mobile the action floats above the bottom nav so it stays within
-          thumb reach. */}
-      <div className="pointer-events-none sticky bottom-4 z-20 flex justify-end md:hidden">
-        <div className="pointer-events-auto">{addDebtSheet}</div>
-      </div>
+      <FloatingActions>{addDebtSheet}</FloatingActions>
     </Page>
   )
 }

@@ -152,14 +152,20 @@ export function MobileBottomNav() {
   }
 
   return (
+    // A floating pill over the content, clear of the screen's edges, as in
+    // the minimal design; --tab-bar-space (set on the app shell) reserves
+    // its height plus the gap below it.
     <nav
       aria-label="Điều hướng chính trên di động"
-      className="relative z-40 w-full shrink-0 isolate border-t border-border bg-card px-3 pt-2 [padding-bottom:max(0.5rem,env(safe-area-inset-bottom,0px))] md:hidden"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 isolate px-4 [padding-bottom:max(0.75rem,env(safe-area-inset-bottom,0px))] md:hidden"
     >
-      <ul ref={listRef} className="relative mx-auto grid max-w-md grid-cols-5">
+      <ul
+        ref={listRef}
+        className="pointer-events-auto relative mx-auto grid max-w-md grid-cols-5 rounded-full bg-card/85 p-1.5 shadow-[0_10px_30px_-8px_rgb(0_0_0/0.22),0_0_0_1px_rgb(0_0_0/0.04)] backdrop-blur-xl backdrop-saturate-150 dark:bg-[#1c1c1e]/85 dark:shadow-[0_10px_30px_-8px_rgb(0_0_0/0.8),0_0_0_1px_rgb(255_255_255/0.08)]"
+      >
         <li
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 left-0 z-0 w-1/5 px-0.5 transition-transform duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] [backface-visibility:hidden] [contain:paint] [will-change:transform] motion-reduce:duration-0"
+          className="pointer-events-none absolute inset-y-1.5 left-1.5 z-0 w-[calc((100%-0.75rem)/5)] transition-transform duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] [backface-visibility:hidden] [contain:paint] [will-change:transform] motion-reduce:duration-0"
           style={{
             // Whole-pixel offsets: a percentage of a fractional slot width
             // ends between device pixels, and iOS snaps the composited layer
@@ -178,7 +184,7 @@ export function MobileBottomNav() {
           const Icon = item.icon
 
           return (
-            <li key={item.url} className="min-w-0 px-0.5">
+            <li key={item.url} className="min-w-0">
               <Link
                 href={item.url}
                 aria-label={item.mobileTitle}
@@ -202,7 +208,7 @@ export function MobileBottomNav() {
                 onClick={(event) => navigateTo(event, item.url)}
                 aria-current={pathname === item.url ? "page" : undefined}
                 className={cn(
-                  "relative z-10 flex min-h-12 min-w-0 touch-manipulation flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 text-muted-foreground outline-none select-none [-webkit-tap-highlight-color:transparent] transition-[color,transform] duration-150 ease-out active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:ring-3 focus-visible:ring-ring/40",
+                  "relative z-10 flex h-14 min-w-0 touch-manipulation flex-col items-center justify-center gap-1 rounded-full px-1 text-muted-foreground outline-none select-none [-webkit-tap-highlight-color:transparent] transition-[color,transform] duration-150 ease-out active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:ring-3 focus-visible:ring-ring/40",
                   isActive && "text-foreground",
                 )}
               >

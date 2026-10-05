@@ -1,5 +1,6 @@
 import type * as React from "react"
 
+import { CompactTitleBar } from "@/components/app/compact-title-bar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
@@ -32,7 +33,11 @@ function PageHeader({ title, actions }: PageHeaderProps) {
       data-slot="page-header"
       className="flex flex-col gap-5 pt-1 sm:flex-row sm:items-center sm:justify-between"
     >
-      <h1 className="min-w-0 text-3xl font-semibold tracking-tight">{title}</h1>
+      <div className="min-w-0">
+        <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
+        {/* On phones the title moves to a small bar once scrolled away. */}
+        {typeof title === "string" ? <CompactTitleBar title={title} /> : null}
+      </div>
       {actions ? (
         <div className="hidden shrink-0 flex-wrap gap-2 md:flex">{actions}</div>
       ) : null}

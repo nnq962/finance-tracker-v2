@@ -41,7 +41,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
         <WelcomeProvider firstRun={firstRun}>
           <SidebarProvider
             data-app-shell="main"
-            className="h-dvh min-h-0 flex-col overflow-hidden bg-background md:h-auto md:min-h-svh md:flex-row md:overflow-visible md:bg-sidebar dark:md:bg-sidebar"
+            className="h-dvh min-h-0 flex-col overflow-hidden bg-background [--tab-bar-space:calc(4.25rem+max(0.75rem,env(safe-area-inset-bottom,0px)))] md:h-auto md:min-h-svh md:flex-row md:overflow-visible md:bg-sidebar dark:md:bg-sidebar"
           >
             <PwaThemeColor />
             <AppSidebar />
@@ -67,8 +67,9 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
                 </div>
               </header>
               {/* A 1px scroll range keeps iOS bounce inside this pane on short pages. */}
-              {/* Vertical rhythm and bottom padding come from each page's <Page>. */}
-              <div className="flex min-h-[calc(100%+1px)] flex-1 flex-col px-(--main-content-px) pt-4 transition-[padding] duration-200 ease-linear md:min-h-0 md:pt-0">
+              {/* Vertical rhythm and bottom padding come from each page's <Page>; on
+                  phones the floating tab bar's space is added below it. */}
+              <div className="flex min-h-[calc(100%+1px)] flex-1 flex-col px-(--main-content-px) pt-4 pb-(--tab-bar-space) transition-[padding] duration-200 ease-linear md:min-h-0 md:pt-0 md:pb-0">
                 {children}
               </div>
             </SidebarInset>

@@ -66,3 +66,13 @@ Tiêu đề nhóm phía trên thẻ: `text-[13px] font-medium text-muted-foregro
 - **Badge**: viên thuốc chữ thường, nền nhạt theo ý nghĩa; `onFill` cho badge nằm trên nút đặc.
 - **Switch**: kiểu iOS, bật thì màu chính.
 - **Input / Select / Textarea**: nền `surface-2`, không viền, sáng lên khi focus.
+
+## Khung app trên điện thoại (`web/components/app`)
+
+- **Thanh điều hướng dưới** (`components/mobile-bottom-nav.tsx`): viên thuốc nổi cách mép
+  16px, nền thẻ mờ có blur, bóng mềm; viên chỉ báo xám trượt theo mục đang chọn. Khoảng
+  nó chiếm được giữ trong biến `--tab-bar-space` trên khung app.
+- **Nút nổi** (`FloatingActions`): góc phải dưới, ngay trên thanh điều hướng; nút chính
+  ở dưới cùng. Từ md trở lên, nút nằm ở tiêu đề trang.
+- **Tiêu đề lớn thu gọn** (`CompactTitleBar`, tự gắn trong `PageHeader`): khi tiêu đề lớn
+  cuộn khỏi màn hình, một thanh mờ 44px với tiêu đề nhỏ hiện ở đầu, như iOS.
