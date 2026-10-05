@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Opens the dev server (npm run dev, port 3000) at https://dev.nnqlab.dev
+# Opens the dev server (npm run dev, port 3000) at https://finance-dev.nnqlab.dev
 # through the Cloudflare tunnel `finance-dev`, so it can be tried on a phone.
 # Cloudflare Access guards the hostname; see "Tunnel cho dev server" in
 # deploy/README.md. Usually run from web/ as `npm run tunnel`; Ctrl+C closes it.

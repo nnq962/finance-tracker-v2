@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
   // Self-contained server for the Docker image (see Dockerfile).
   output: "standalone",
   // The LAN address, and the dev tunnel (deploy/scripts/dev-tunnel.sh).
-  allowedDevOrigins: ["10.70.22.33", "dev.nnqlab.dev"],
+  allowedDevOrigins: ["10.70.22.33", "finance-dev.nnqlab.dev"],
   experimental: {
     staleTimes: {
       dynamic: 300,

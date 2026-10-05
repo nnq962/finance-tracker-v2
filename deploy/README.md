@@ -119,21 +119,22 @@ Có hai cách, chọn một:
 
 ## Tunnel cho dev server (thử trên điện thoại)
 
-`https://dev.nnqlab.dev` trỏ vào dev server (`npm run dev`, cổng 3000) qua tunnel
+`https://finance-dev.nnqlab.dev` trỏ vào dev server (`npm run dev`, cổng 3000) qua tunnel
 riêng `finance-dev`, tách khỏi tunnel production.
 
 Mỗi lần thử: trong `web/`, chạy `npm run dev` và (ở terminal khác) `npm run tunnel`. Trên
-điện thoại mở một lần `https://dev.nnqlab.dev/api/dev/login?key=<DEV_TUNNEL_KEY>&next=/overview`;
+điện thoại mở một lần `https://finance-dev.nnqlab.dev/api/dev/login?key=<DEV_TUNNEL_KEY>&next=/overview`;
 trình duyệt giữ khoá trong cookie 90 ngày.
 
 Ai cũng mở được địa chỉ này, nhưng chỉ người có khoá mới đăng nhập được người dùng dev:
-đăng nhập dev qua tunnel cần `DEV_LOGIN=1`, `DEV_TUNNEL_HOST=dev.nnqlab.dev` và
+đăng nhập dev qua tunnel cần `DEV_LOGIN=1`, `DEV_TUNNEL_HOST=finance-dev.nnqlab.dev` và
 `DEV_TUNNEL_KEY` (từ 32 ký tự) trong `web/.env.local`. Đổi khoá là đăng xuất mọi máy.
 
 Dựng lần đầu (đã làm 2026-10-05): cài `cloudflared` vào `~/.local/bin` (bản
 `cloudflared-linux-amd64` trên GitHub), `cloudflared tunnel login` (chọn zone `nnqlab.dev`;
 nếu trình duyệt tải về `cert.pem` thì chép nó vào `~/.cloudflared/`), `cloudflared tunnel
-create finance-dev`, `cloudflared tunnel route dns finance-dev dev.nnqlab.dev`.
+create finance-dev`, `cloudflared tunnel route dns finance-dev finance-dev.nnqlab.dev`. (Bản ghi `dev.nnqlab.dev`
+cũng trỏ vào tunnel này nhưng đã có Cloudflare Access chặn sẵn từ trước, nên không dùng.)
 
 ## Chuyển domain sang server (đã làm 2026-10-01)
 
