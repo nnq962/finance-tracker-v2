@@ -4,28 +4,20 @@ import { cn } from "cn"
 import { Slot } from "radix-ui"
 
 const badgeVariants = cva(
-  "group/badge inline-flex w-fit shrink-0 items-center justify-center gap-1.5 overflow-hidden rounded-full px-[11px] pt-[5px] pb-1 font-heading text-xs leading-[1.2] font-extrabold tracking-[0.06em] uppercase whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38b8f6] has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 aria-invalid:ring-2 aria-invalid:ring-[#ff645f] [&>svg]:pointer-events-none [&>svg]:size-3!",
+  "group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-2xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
   {
     variants: {
       variant: {
-        default:
-          "bg-[oklch(0.95_0.06_138)] text-[oklch(0.60_0.17_140)] dark:bg-[oklch(0.30_0.07_138)] dark:text-[oklch(0.82_0.15_138)]",
+        default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
         secondary:
-          "bg-[oklch(0.95_0.04_235)] text-[oklch(0.58_0.14_240)] dark:bg-[oklch(0.30_0.06_235)] dark:text-[oklch(0.82_0.10_235)]",
+          "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
         destructive:
-          "bg-[oklch(0.95_0.04_25)] text-[oklch(0.56_0.18_25)] dark:bg-[oklch(0.30_0.07_25)] dark:text-[oklch(0.82_0.13_25)]",
+          "bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20",
         outline:
-          "bg-[#f3f1ec] text-[#686470] dark:bg-[#34323a] dark:text-[#d4d0d9]",
+          "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         ghost:
-          "text-[oklch(0.58_0.14_240)] hover:bg-[oklch(0.95_0.04_235)] dark:text-[oklch(0.82_0.10_235)] dark:hover:bg-[oklch(0.30_0.06_235)]",
-        link:
-          "text-[oklch(0.58_0.14_240)] underline-offset-4 hover:underline dark:text-[oklch(0.82_0.10_235)]",
-        sun:
-          "bg-[oklch(0.96_0.06_85)] text-[oklch(0.70_0.15_70)] dark:bg-[oklch(0.32_0.07_85)] dark:text-[oklch(0.88_0.13_85)]",
-        grape:
-          "bg-[oklch(0.95_0.04_300)] text-[oklch(0.52_0.17_300)] dark:bg-[oklch(0.30_0.07_300)] dark:text-[oklch(0.80_0.13_300)]",
-        solid:
-          "bg-[oklch(0.70_0.19_25)] text-white dark:bg-[oklch(0.70_0.19_25)]",
+          "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
+        link: "text-primary underline-offset-4 hover:underline",
       },
     },
     defaultVariants: {

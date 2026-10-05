@@ -37,7 +37,7 @@ export function PlanInvite({ planState, checkoutEnabled, paymentOutcome, initial
                 {plans.pro.aiMonthlyLimit} lượt trợ lý AI mỗi tháng và dùng sớm tính năng mới
               </p>
             </div>
-            <Button type="button" variant="grape" className="shrink-0" onClick={() => setOpen(true)}>
+            <Button type="button" className="shrink-0" onClick={() => setOpen(true)}>
               Xem gói
             </Button>
           </CardContent>

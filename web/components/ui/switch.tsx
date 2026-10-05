@@ -7,82 +7,23 @@ import { Switch as SwitchPrimitive } from "radix-ui"
 function Switch({
   className,
   size = "default",
-  onPointerDown,
-  onPointerUp,
-  onPointerCancel,
-  onPointerLeave,
-  onClick,
-  onBlur,
   ...props
 }: React.ComponentProps<typeof SwitchPrimitive.Root> & {
   size?: "sm" | "default"
 }) {
-  const [pressed, setPressed] = React.useState(false)
-  const releaseTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const clearReleaseTimer = () => {
-    if (releaseTimer.current !== null) {
-      clearTimeout(releaseTimer.current)
-      releaseTimer.current = null
-    }
-  }
-
-  const releasePress = () => {
-    clearReleaseTimer()
-    setPressed(false)
-  }
-
-  React.useEffect(() => () => {
-    if (releaseTimer.current !== null) clearTimeout(releaseTimer.current)
-  }, [])
-
   return (
     <SwitchPrimitive.Root
       data-slot="switch"
       data-size={size}
-      data-pressed={pressed && !props.disabled ? "true" : undefined}
       className={cn(
-        "chunky-switch peer relative inline-flex shrink-0 cursor-pointer rounded-full border-0 outline-none after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#38b8f6] aria-invalid:outline-3 aria-invalid:outline-destructive disabled:cursor-not-allowed disabled:opacity-50",
+        "peer group/switch relative inline-flex shrink-0 items-center rounded-2xl border-2 transition-all outline-none group-has-[:focus-visible]/field-label:ring-0 after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-[size=default]:h-5 data-[size=default]:w-8 data-[size=sm]:h-4 data-[size=sm]:w-6 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 data-checked:border-primary data-checked:bg-primary group-has-[:focus-visible]/field-label:data-checked:border-primary data-unchecked:border-transparent data-unchecked:bg-input/90 group-has-[:focus-visible]/field-label:data-unchecked:border-transparent data-disabled:cursor-not-allowed data-disabled:opacity-50",
         className
       )}
       {...props}
-      onPointerDown={(event) => {
-        onPointerDown?.(event)
-        if (!event.defaultPrevented && !props.disabled && event.button === 0) {
-          clearReleaseTimer()
-          setPressed(true)
-        }
-      }}
-      onPointerUp={(event) => {
-        onPointerUp?.(event)
-        // iOS may dispatch click after pointerup. Release with that click,
-        // with a fallback for gestures that end without activating the switch.
-        clearReleaseTimer()
-        releaseTimer.current = setTimeout(() => {
-          releaseTimer.current = null
-          setPressed(false)
-        }, 500)
-      }}
-      onClick={(event) => {
-        onClick?.(event)
-        releasePress()
-      }}
-      onPointerCancel={(event) => {
-        onPointerCancel?.(event)
-        releasePress()
-      }}
-      onPointerLeave={(event) => {
-        onPointerLeave?.(event)
-        if (event.pointerType === "mouse") releasePress()
-      }}
-      onBlur={(event) => {
-        onBlur?.(event)
-        releasePress()
-      }}
     >
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
-        className="pointer-events-none absolute block rounded-full"
+        className="pointer-events-none block rounded-2xl bg-background shadow-sm ring-0 transition-transform not-dark:bg-clip-padding group-data-[size=default]/switch:size-4 group-data-[size=sm]/switch:size-3 data-checked:translate-x-[calc(100%-4px)] dark:data-checked:bg-primary-foreground data-unchecked:translate-x-0 dark:data-unchecked:bg-foreground"
       />
     </SwitchPrimitive.Root>
   )

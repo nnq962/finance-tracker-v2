@@ -47,7 +47,7 @@ function CalendarSkeleton() {
               </div>
             ))}
           </div>
-          <Separator variant="chunky" />
+          <Separator />
           <div className="grid grid-cols-2 gap-4">
             <Skeleton className="h-9 w-28" />
             <Skeleton className="h-9 w-28" />

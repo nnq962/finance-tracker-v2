@@ -68,17 +68,14 @@ const badgeSamples = [
   { variant: "default", label: "Đã thu", dot: true },
   { variant: "destructive", label: "Đã chi", dot: true },
   { variant: "secondary", label: "Mới", dot: false },
-  { variant: "sun", label: "7 ngày liên tiếp", dot: false },
-  { variant: "grape", label: "Pro", dot: false },
-  { variant: "solid", label: "3", dot: false },
   { variant: "outline", label: "Tùy chọn", dot: false },
 ] as const
 
 const progressSamples = [
-  { label: "Quỹ du lịch", detail: "1,8 / 3 triệu", value: 60, tone: "leaf" },
-  { label: "Ăn uống", detail: "82% hạn mức", value: 82, tone: "sun" },
-  { label: "Mua sắm", detail: "Vượt 12%", value: 100, tone: "coral" },
-  { label: "Mục tiêu đặc biệt", detail: "45%", value: 45, tone: "grape" },
+  { label: "Quỹ du lịch", detail: "1,8 / 3 triệu", value: 60 },
+  { label: "Ăn uống", detail: "82% hạn mức", value: 82 },
+  { label: "Mua sắm", detail: "Vượt 12%", value: 100 },
+  { label: "Mục tiêu đặc biệt", detail: "45%", value: 45 },
 ] as const
 
 const colors = [
@@ -457,8 +454,8 @@ export default function UiLabPage() {
             </CardHeader>
             <CardContent>Đây là nội dung chỉ để xem.</CardContent>
           </Card>
-          <Card pressable asChild>
-            <Link href="#button-sizes">
+          <Link href="#button-sizes">
+            <Card>
               <CardHeader>
                 <CardTitle>Thẻ có thể bấm</CardTitle>
                 <CardDescription>Có cạnh nổi và lún xuống khi nhấn.</CardDescription>
@@ -466,8 +463,8 @@ export default function UiLabPage() {
               <CardContent className="flex items-center gap-2">
                 Xem kích thước button <ArrowRightIcon className="size-4" />
               </CardContent>
-            </Link>
-          </Card>
+            </Card>
+          </Link>
         </div>
       </section>
 
@@ -499,13 +496,13 @@ export default function UiLabPage() {
         </div>
         <Card>
           <CardContent className="grid gap-5 sm:grid-cols-2">
-            {progressSamples.map(({ label, detail, value, tone }) => (
-              <div key={tone} className="space-y-2">
+            {progressSamples.map(({ label, detail, value }) => (
+              <div key={label} className="space-y-2">
                 <div className="flex items-center justify-between gap-3 text-sm">
                   <span className="font-semibold">{label}</span>
                   <span className="text-muted-foreground">{detail}</span>
                 </div>
-                <Progress value={value} tone={tone} aria-label={`${label}: ${value}%`} />
+                <Progress value={value} aria-label={`${label}: ${value}%`} />
               </div>
             ))}
           </CardContent>

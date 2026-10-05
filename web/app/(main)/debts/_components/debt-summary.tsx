@@ -58,7 +58,7 @@ export function DebtSummary({ summary }: DebtSummaryProps) {
             <DirectionStat amount={totalLent} direction="lent" />
             <DirectionStat amount={totalBorrowed} direction="borrowed" />
           </div>
-          <Separator variant="chunky" />
+          <Separator />
           <div className="flex items-center justify-between gap-3 text-sm">
             <span className="text-muted-foreground">Cân đối</span>
             <span

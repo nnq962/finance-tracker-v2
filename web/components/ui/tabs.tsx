@@ -14,9 +14,8 @@ function Tabs({
     <TabsPrimitive.Root
       data-slot="tabs"
       data-orientation={orientation}
-      orientation={orientation}
       className={cn(
-        "group/tabs flex gap-2 data-[orientation=horizontal]:flex-col",
+        "group/tabs flex gap-2 data-horizontal:flex-col",
         className
       )}
       {...props}
@@ -25,12 +24,12 @@ function Tabs({
 }
 
 const tabsListVariants = cva(
-  "group/tabs-list inline-flex w-fit items-center justify-center group-data-[orientation=vertical]/tabs:flex-col",
+  "group/tabs-list inline-flex w-fit items-center justify-center rounded-2xl p-[3px] text-muted-foreground group-data-horizontal/tabs:h-8 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col group-data-vertical/tabs:p-1 data-[variant=line]:rounded-none",
   {
     variants: {
       variant: {
-        default: "gap-1 rounded-[14px] bg-[#e7e4dd] p-1 dark:bg-[#44424a]",
-        line: "gap-1.5 border-b-2 border-[#e7e4dd] bg-transparent dark:border-[#44424a] group-data-[orientation=vertical]/tabs:border-r-2 group-data-[orientation=vertical]/tabs:border-b-0",
+        default: "bg-muted",
+        line: "gap-1 bg-transparent",
       },
     },
     defaultVariants: {
@@ -63,9 +62,10 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "relative inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap border-0 font-heading font-extrabold uppercase text-[#8f8b98] transition-colors duration-150 hover:text-[#2b2a33] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[oklch(0.74_0.14_235)] disabled:pointer-events-none disabled:opacity-50 dark:text-[#a6a1af] dark:hover:text-white group-data-[orientation=vertical]/tabs:w-full group-data-[orientation=vertical]/tabs:justify-start [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "group-data-[variant=default]/tabs-list:rounded-[10px] group-data-[variant=default]/tabs-list:px-4 group-data-[variant=default]/tabs-list:pt-[11px] group-data-[variant=default]/tabs-list:pb-[9px] group-data-[variant=default]/tabs-list:text-xs group-data-[variant=default]/tabs-list:leading-none group-data-[variant=default]/tabs-list:tracking-[0.06em] group-data-[variant=default]/tabs-list:data-[state=active]:bg-white group-data-[variant=default]/tabs-list:data-[state=active]:text-[oklch(0.58_0.14_240)] group-data-[variant=default]/tabs-list:data-[state=active]:shadow-[0_3px_0_#d6d2c8] dark:group-data-[variant=default]/tabs-list:data-[state=active]:bg-[#36333d] dark:group-data-[variant=default]/tabs-list:data-[state=active]:text-[#71caff] dark:group-data-[variant=default]/tabs-list:data-[state=active]:shadow-[0_3px_0_#25232b]",
-        "group-data-[variant=line]/tabs-list:-mb-0.5 group-data-[variant=line]/tabs-list:rounded-t-[10px] group-data-[variant=line]/tabs-list:border-b-4 group-data-[variant=line]/tabs-list:border-transparent group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:px-3.5 group-data-[variant=line]/tabs-list:py-3 group-data-[variant=line]/tabs-list:text-sm group-data-[variant=line]/tabs-list:leading-none group-data-[variant=line]/tabs-list:tracking-[0.05em] group-data-[variant=line]/tabs-list:hover:bg-[#f3f1ec] group-data-[variant=line]/tabs-list:data-[state=active]:border-b-[oklch(0.74_0.14_235)] group-data-[variant=line]/tabs-list:data-[state=active]:text-[oklch(0.58_0.14_240)] dark:group-data-[variant=line]/tabs-list:hover:bg-[#36333d] dark:group-data-[variant=line]/tabs-list:data-[state=active]:text-[#71caff] group-data-[orientation=vertical]/tabs:group-data-[variant=line]/tabs-list:mb-0 group-data-[orientation=vertical]/tabs:group-data-[variant=line]/tabs-list:-mr-0.5 group-data-[orientation=vertical]/tabs:group-data-[variant=line]/tabs-list:border-r-4 group-data-[orientation=vertical]/tabs:group-data-[variant=line]/tabs-list:border-b-0 group-data-[orientation=vertical]/tabs:group-data-[variant=line]/tabs-list:data-[state=active]:border-r-[oklch(0.74_0.14_235)]",
+        "relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-2xl border border-transparent! px-1.5 py-0.5 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start group-data-vertical/tabs:px-3 group-data-vertical/tabs:py-0.5 hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 dark:text-muted-foreground dark:hover:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent",
+        "data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground",
+        "after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
         className
       )}
       {...props}

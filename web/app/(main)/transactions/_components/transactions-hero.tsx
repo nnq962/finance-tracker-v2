@@ -139,7 +139,7 @@ export function TransactionsHero({
             <CashFlowStat amount={income} kind="income" />
             <CashFlowStat amount={expense} kind="expense" />
           </div>
-          <Separator variant="chunky" />
+          <Separator />
           <div className="flex items-center justify-between gap-3 text-sm">
             <span className="text-muted-foreground">Chênh lệch</span>
             <span

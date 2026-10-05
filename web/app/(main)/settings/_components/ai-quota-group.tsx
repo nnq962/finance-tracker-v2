@@ -8,7 +8,6 @@ import type { PlanState } from "@/lib/plans/plans"
 
 /** This month's AI requests against the plan's limit, and the credits from missions on top while any are left. */
 export function AiQuotaGroup({ planState }: { planState: PlanState }) {
-  const isPro = planState.plan === "pro"
   const used = Math.min(planState.aiUsed, planState.aiLimit)
   const percent = planState.aiLimit > 0 ? (used / planState.aiLimit) * 100 : 0
   // The first of next month, Vietnam time, when the count starts over.
@@ -29,7 +28,7 @@ export function AiQuotaGroup({ planState }: { planState: PlanState }) {
               <span className="text-base text-muted-foreground">/{planState.aiLimit}</span>
             </p>
           </div>
-          <Progress value={percent} tone={percent >= 90 ? "coral" : isPro ? "grape" : "sky"} aria-label="Lượt AI đã dùng" />
+          <Progress value={percent} aria-label="Lượt AI đã dùng" />
           <p className="text-xs text-muted-foreground">
             Làm mới {renewsOn}
             {planState.proEndsAt ? ` · Pro đến ${formatDate(toDateKey(planState.proEndsAt))}` : ""}

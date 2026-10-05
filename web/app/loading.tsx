@@ -5,7 +5,7 @@ import { SITE_NAME } from "@/lib/site"
 export default function RootLoading() {
   return (
     <div
-      className="min-h-svh bg-[#fbfaf7] px-6 pt-[34svh] text-[#2b2a33] dark:bg-[#0a0a0a] dark:text-[#f2f0f6]"
+      className="min-h-svh bg-background px-6 pt-[34svh] text-foreground"
       role="status"
       aria-label="Đang khởi động Finance Tracker"
       aria-busy="true"

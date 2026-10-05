@@ -48,7 +48,7 @@ export function CtaSection() {
             ))}
           </div>
 
-          <Badge variant="sun">Sẵn sàng bắt đầu?</Badge>
+          <Badge variant="secondary">Sẵn sàng bắt đầu?</Badge>
           <h2 className="mx-auto mt-5 max-w-3xl text-3xl tracking-tight sm:text-5xl">
             Đưa mọi con số về một nơi dễ hiểu.
           </h2>

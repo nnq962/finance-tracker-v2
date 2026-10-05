@@ -229,7 +229,7 @@ export function SalaryCalculator() {
               {formatCurrency(result.netIncome)}
             </p>
           </div>
-          <Separator variant="chunky" />
+          <Separator />
           <div className="grid grid-cols-3 gap-3 text-sm">
             <div className="min-w-0">
               <p className="text-xs text-muted-foreground">Tổng thu nhập</p>

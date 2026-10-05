@@ -51,7 +51,7 @@ export function PrivacySection() {
     >
       <div className="mx-auto grid w-full max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
         <Reveal className="flex flex-col items-start">
-          <Badge variant="grape">
+          <Badge variant="secondary">
             <LockKeyholeIcon />
             Khu vực cá nhân
           </Badge>

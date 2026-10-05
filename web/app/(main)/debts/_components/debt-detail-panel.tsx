@@ -73,7 +73,7 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
           <p className="font-heading text-3xl leading-tight font-extrabold tabular-nums [overflow-wrap:anywhere]">
             {formatCurrency(remainingAmount, { signDisplay: "never" })}
           </p>
-          <Progress value={paymentProgress} tone={collecting ? "leaf" : "coral"} />
+          <Progress value={paymentProgress} />
           <p className="text-xs text-muted-foreground">
             {paidLabel} {formatCurrency(paidAmount, { signDisplay: "never" })} / {formatCurrency(totalAmount, { signDisplay: "never" })} · {Math.round(paymentProgress)}%
           </p>

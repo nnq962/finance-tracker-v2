@@ -201,7 +201,7 @@ export function CashFlowCalendar({
             })}
           </div>
 
-          <Separator variant="chunky" />
+          <Separator />
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground">Thu trong tháng</p>

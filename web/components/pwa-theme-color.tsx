@@ -4,7 +4,7 @@ import * as React from "react"
 import { useTheme } from "next-themes"
 
 const APP_BACKGROUND = {
-  light: "#fbfaf7",
+  light: "#ffffff",
   dark: "#0a0a0a",
 } as const
 

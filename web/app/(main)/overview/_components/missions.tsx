@@ -229,14 +229,13 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
           <div className={shown.length > 0 ? "space-y-2.5 px-4 pt-3.5 pb-2" : "space-y-2.5 px-4 py-3.5"}>
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm text-muted-foreground">Hoàn thành nhiệm vụ để nhận thêm lượt AI</p>
-              <Badge variant="sun" className="shrink-0">
+              <Badge variant="secondary" className="shrink-0">
                 <GiftIcon data-icon="inline-start" aria-hidden="true" />
                 {claimedCount * MISSION_REWARD}/{missions.length * MISSION_REWARD} lượt
               </Badge>
             </div>
             <Progress
               value={(claimedCount / missions.length) * 100}
-              tone="sun"
               aria-label="Nhiệm vụ đã hoàn thành"
             />
           </div>
@@ -266,7 +265,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
               color={mission.color}
               title={mission.title}
               description={mission.description}
-              value={<Badge variant="sun">+{MISSION_REWARD}</Badge>}
+              value={<Badge variant="secondary">+{MISSION_REWARD}</Badge>}
               onClick={mission.start}
             />
           ),

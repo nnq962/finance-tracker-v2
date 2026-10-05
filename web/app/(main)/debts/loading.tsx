@@ -30,7 +30,7 @@ function SummarySkeleton() {
               </div>
             ))}
           </div>
-          <Separator variant="chunky" />
+          <Separator />
           <div className="flex justify-between gap-3">
             <Skeleton className="h-4 w-16" />
             <Skeleton className="h-4 w-28" />

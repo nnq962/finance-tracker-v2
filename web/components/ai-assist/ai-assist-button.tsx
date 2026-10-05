@@ -21,7 +21,7 @@ export function AiAssistButton({
       <SparklesIcon aria-hidden="true" />
       {children}
       {remaining === undefined ? null : (
-        <Badge variant="grape">
+        <Badge variant="secondary">
           {remaining}
           <span className="sr-only"> lượt còn lại</span>
         </Badge>

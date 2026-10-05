@@ -83,7 +83,7 @@ export function AdminScreen({ data }: { data: AdminData }) {
               key={user.id}
               title={user.email || user.name || user.id}
               description={`${paymentReference(user.id)} · AI ${user.aiUsed}/${plans[user.proEndsAt ? "pro" : "free"].aiMonthlyLimit}`}
-              value={user.proEndsAt ? <Badge variant="grape">Pro · {dateOf(user.proEndsAt)}</Badge> : plans.free.label}
+              value={user.proEndsAt ? <Badge variant="secondary">Pro · {dateOf(user.proEndsAt)}</Badge> : plans.free.label}
               onClick={() => {
                 setSelectedId(user.id)
                 setDetailOpen(true)
@@ -176,7 +176,7 @@ function AdminUserDetail({ user }: { user: AdminUser }) {
         <SettingsRow title="Mã chuyển khoản" value={paymentReference(user.id)} />
         <SettingsRow
           title="Gói"
-          value={user.proEndsAt ? <Badge variant="grape">Pro · đến {dateOf(user.proEndsAt)}</Badge> : plans.free.label}
+          value={user.proEndsAt ? <Badge variant="secondary">Pro · đến {dateOf(user.proEndsAt)}</Badge> : plans.free.label}
         />
         <SettingsRow title="Lượt AI tháng này" value={String(user.aiUsed)} />
         <SettingsRow title="Tham gia" value={dateOf(user.createdAt)} />

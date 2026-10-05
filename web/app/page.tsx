@@ -62,7 +62,7 @@ export default function HomePage() {
   return (
     <div
       data-landing-shell
-      className="min-h-svh overflow-x-clip bg-[#fbfaf7] dark:bg-background"
+      className="min-h-svh overflow-x-clip bg-background"
     >
       <script
         type="application/ld+json"

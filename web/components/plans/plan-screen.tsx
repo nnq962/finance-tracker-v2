@@ -162,7 +162,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
           <ToggleGroupItem value="month">Theo tháng</ToggleGroupItem>
           <ToggleGroupItem value="year">
             Theo năm
-            <Badge variant="sun">-{yearSavingPercent}%</Badge>
+            <Badge variant="secondary">-{yearSavingPercent}%</Badge>
           </ToggleGroupItem>
         </ToggleGroup>
 
@@ -184,7 +184,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 {plans.pro.label}
-                <Badge variant="grape">{isPro ? "Đang dùng" : "Khuyên dùng"}</Badge>
+                <Badge variant="secondary">{isPro ? "Đang dùng" : "Khuyên dùng"}</Badge>
               </CardTitle>
               <CardDescription>Đầy đủ sức mạnh của trợ lý AI</CardDescription>
             </CardHeader>
@@ -209,7 +209,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
             <CardFooter className="flex-col gap-2">
               <Button
                 type="button"
-                variant="grape"
+               
                 size="lg"
                 className="w-full"
                 disabled={!checkoutEnabled}
@@ -467,7 +467,7 @@ function CheckoutDialog({
 
         {coupon ? (
           <div className="flex items-center justify-between gap-3">
-            <Badge variant="grape">
+            <Badge variant="secondary">
               <TicketPercentIcon data-icon="inline-start" aria-hidden="true" />
               {coupon.code} · −{coupon.percentOff}%
             </Badge>
@@ -537,7 +537,7 @@ function CheckoutDialog({
 
         <DialogFooter className="flex-col sm:flex-col">
           {error ? <FieldError role="alert">{error}</FieldError> : null}
-          <Button type="button" variant="grape" size="lg" className="w-full" disabled={paying || checking} onClick={() => void pay()}>
+          <Button type="button" size="lg" className="w-full" disabled={paying || checking} onClick={() => void pay()}>
             {paying ? <LoaderCircleIcon className="animate-spin" aria-hidden="true" /> : null}
             {free ? "Nhận Pro miễn phí" : `Thanh toán ${formatCurrency(total)}`}
           </Button>

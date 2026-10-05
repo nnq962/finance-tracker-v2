@@ -164,7 +164,7 @@ export function SettingsView({
               </span>
             }
             description={user.email || undefined}
-            value={<Badge variant={isPro ? "grape" : "outline"}>{plans[planState.plan].label}</Badge>}
+            value={<Badge variant={isPro ? "secondary" : "outline"}>{plans[planState.plan].label}</Badge>}
             onClick={() => setPlanOpen(true)}
           />
           <SignOutRow />

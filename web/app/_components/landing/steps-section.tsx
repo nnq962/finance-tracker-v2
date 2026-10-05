@@ -45,7 +45,7 @@ export function StepsSection() {
     >
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <Badge variant="sun">3 bước đơn giản</Badge>
+          <Badge variant="secondary">3 bước đơn giản</Badge>
           <h2 id="steps-title" className="mt-4 text-3xl tracking-tight sm:text-5xl">
             Bắt đầu trong chưa đầy một phút
           </h2>
