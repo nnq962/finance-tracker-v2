@@ -13,7 +13,6 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group"
 import { Sheet, SheetContent, SheetFooter } from "@/components/ui/sheet"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 
@@ -24,8 +23,6 @@ import type {
 import {
   countActiveFilters,
   TransactionFilterFields,
-  transactionKindFilters,
-  withKindFilter,
 } from "./transaction-filter-fields"
 
 type TransactionToolbarProps = {
@@ -105,31 +102,6 @@ export function TransactionToolbar({
             <Badge variant="secondary">{activeFilterCount}</Badge>
           ) : null}
         </Button>
-      </div>
-
-      {/* The kind as chips that scroll sideways, edge to edge, as in a phone
-          app; from lg up it is in the filter panel beside the list. */}
-      <div className="mx-[calc(var(--main-content-px)*-1)] overflow-x-auto px-(--main-content-px) [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden">
-        <ToggleGroup
-          type="single"
-          variant="outline"
-          size="sm"
-          value={filter}
-          onValueChange={(value) => {
-            if (!value) return
-            const next = value as TransactionFilter
-            onFilterChange(next)
-            const nextSearchFilters = withKindFilter(next, searchFilters, categoryGroups)
-            if (nextSearchFilters !== searchFilters) onSearchFiltersChange(nextSearchFilters)
-          }}
-          aria-label="Lọc loại giao dịch"
-        >
-          {transactionKindFilters.map((item) => (
-            <ToggleGroupItem key={item.value} value={item.value}>
-              {item.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
       </div>
 
       {isFiltering ? (

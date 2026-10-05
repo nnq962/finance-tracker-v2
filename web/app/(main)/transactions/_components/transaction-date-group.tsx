@@ -1,3 +1,4 @@
+import { SettingsGroup } from "@/components/settings-list"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
@@ -14,7 +15,7 @@ type TransactionDateGroupProps = {
   isToday: boolean
 }
 
-/** One day: its date and totals as a sticky header, then its transactions as rows. */
+/** One day: its date and totals as the caption, then its transactions as rows. */
 export function TransactionDateGroup({
   accounts,
   categoryGroups,
@@ -36,20 +37,15 @@ export function TransactionDateGroup({
     0,
   )
 
-  const titleId = `transactions-${group.dateKey}`
-
   return (
-    <section aria-labelledby={titleId}>
-      {/* A section header that sticks while its day scrolls by, as in a
-          phone's list. On phones it runs edge to edge and covers the status
-          bar's strip above it; from md up it sits under the app's header. */}
-      <header className="sticky top-[env(safe-area-inset-top,0px)] z-10 mx-[calc(var(--main-content-px)*-1)] flex min-h-9 items-center justify-between gap-3 bg-[#f3f1ec]/90 px-(--main-content-px) py-1.5 backdrop-blur-md before:absolute before:inset-x-0 before:bottom-full before:h-[env(safe-area-inset-top,0px)] before:bg-[#fbfaf7] dark:bg-[#1b1a21]/90 dark:before:bg-background md:top-16 md:before:hidden lg:mx-0 lg:rounded-lg lg:px-3">
-        <h2 id={titleId} className="min-w-0 truncate text-[13px] font-semibold text-muted-foreground">
-          <time dateTime={group.dateKey}>
-            {isToday ? "Hôm nay" : group.weekdayLabel}, {group.dateLabel}
-          </time>
-        </h2>
-        {income > 0 || expense > 0 ? (
+    <SettingsGroup
+      title={
+        <time dateTime={group.dateKey}>
+          {isToday ? "Hôm nay" : group.weekdayLabel}, {group.dateLabel}
+        </time>
+      }
+      action={
+        income > 0 || expense > 0 ? (
           <span className="flex shrink-0 items-center gap-2 font-heading text-xs font-extrabold tabular-nums">
             {income > 0 ? (
               <span className={cashFlowColors.income.text}>
@@ -62,19 +58,17 @@ export function TransactionDateGroup({
               </span>
             ) : null}
           </span>
-        ) : null}
-      </header>
-      <ul className="mx-[calc(var(--main-content-px)*-1)] bg-white dark:bg-card lg:mx-0 lg:bg-transparent lg:py-1 dark:lg:bg-transparent">
-        {group.transactions.map((transaction) => (
-          <TransactionItem
-            key={transaction.id}
-            accounts={accounts}
-            categoryGroups={categoryGroups}
-            transaction={transaction}
-            native
-          />
-        ))}
-      </ul>
-    </section>
+        ) : undefined
+      }
+    >
+      {group.transactions.map((transaction) => (
+        <TransactionItem
+          key={transaction.id}
+          accounts={accounts}
+          categoryGroups={categoryGroups}
+          transaction={transaction}
+        />
+      ))}
+    </SettingsGroup>
   )
 }
