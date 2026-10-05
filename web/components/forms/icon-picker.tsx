@@ -2,7 +2,6 @@
 
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { getCategoryColor } from "@/lib/categories/category-colors"
 import {
   categoryIconOptions,
   categoryIconRegistry,
@@ -17,13 +16,8 @@ type IconPickerProps = {
   value: CategoryIconName
 }
 
-export function IconPicker({
-  color,
-  onValueChange,
-  value,
-}: IconPickerProps) {
-  const selectedColor = getCategoryColor(color)
-
+/** `color` is kept for callers; the chosen icon takes the selected chip's own colours. */
+export function IconPicker({ onValueChange, value }: IconPickerProps) {
   return (
     <ScrollArea className="h-52">
       <ToggleGroup
@@ -46,8 +40,7 @@ export function IconPicker({
               aria-label={option.label}
               className="justify-self-center"
             >
-              {/* The chosen icon shows in the category's colour, as it will appear. */}
-              <Icon className={option.name === value ? selectedColor.iconClassName : undefined} />
+              <Icon />
             </ToggleGroupItem>
           )
         })}

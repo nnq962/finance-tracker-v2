@@ -64,84 +64,90 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * Colours after the references in docs/template (see docs/design/colors.md):
+ * a light grey page with white, borderless cards, near-black as the one
+ * strong colour, and meaning colours used sparingly. Dark follows iOS: a
+ * black page, #1c1c1e cards, #2c2c2e fills.
+ */
 :root {
+  --background: oklch(0.962 0.003 286.3);
+  --foreground: oklch(0.179 0.004 286);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.179 0.004 286);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --popover-foreground: oklch(0.179 0.004 286);
+  --primary: oklch(0.192 0.004 286);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.953 0.003 286.3);
+  --secondary-foreground: oklch(0.179 0.004 286);
+  --muted: oklch(0.953 0.003 286.3);
+  --muted-foreground: oklch(0.565 0.011 286.1);
+  --accent: oklch(0.935 0.004 286.3);
+  --accent-foreground: oklch(0.179 0.004 286);
+  --destructive: oklch(0.626 0.193 23);
+  --border: oklch(0.929 0.004 286.3);
+  --input: oklch(0.896 0.005 286.3);
+  --ring: oklch(0.708 0.012 286.1);
+  --chart-1: oklch(0.588 0.212 288);
+  --chart-2: oklch(0.704 0.123 182.5);
+  --chart-3: oklch(0.769 0.165 70.1);
+  --chart-4: oklch(0.623 0.188 259.8);
+  --chart-5: oklch(0.656 0.212 354.3);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.179 0.004 286);
+  --sidebar-primary: oklch(0.192 0.004 286);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.953 0.003 286.3);
+  --sidebar-accent-foreground: oklch(0.179 0.004 286);
+  --sidebar-border: oklch(0.929 0.004 286.3);
+  --sidebar-ring: oklch(0.708 0.012 286.1);
   /* Meaning, not decoration: money in, money out, transfers, AI and Pro, warnings. */
-  --income: oklch(0.6 0.15 150);
-  --expense: oklch(0.6 0.21 25);
-  --transfer: oklch(0.58 0.16 255);
-  --ai: oklch(0.56 0.2 295);
-  --warning: oklch(0.7 0.16 70);
+  --income: oklch(0.632 0.142 159.3);
+  --expense: oklch(0.626 0.193 23);
+  --transfer: oklch(0.573 0.2 261.9);
+  --ai: oklch(0.588 0.212 288);
+  --warning: oklch(0.732 0.163 61);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-  --income: oklch(0.74 0.16 150);
-  --expense: oklch(0.7 0.19 22);
-  --transfer: oklch(0.7 0.14 255);
-  --ai: oklch(0.72 0.16 295);
-  --warning: oklch(0.8 0.15 75);
+  --background: oklch(0 0 0);
+  --foreground: oklch(0.971 0.003 286.4);
+  --card: oklch(0.227 0.004 286.1);
+  --card-foreground: oklch(0.971 0.003 286.4);
+  --popover: oklch(0.265 0.004 286.1);
+  --popover-foreground: oklch(0.971 0.003 286.4);
+  --primary: oklch(0.971 0.003 286.4);
+  --primary-foreground: oklch(0.179 0.004 286);
+  --secondary: oklch(0.294 0.004 286.2);
+  --secondary-foreground: oklch(0.971 0.003 286.4);
+  --muted: oklch(0.294 0.004 286.2);
+  --muted-foreground: oklch(0.682 0.01 286.1);
+  --accent: oklch(0.349 0.003 286.2);
+  --accent-foreground: oklch(0.971 0.003 286.4);
+  --destructive: oklch(0.701 0.19 21.2);
+  --border: oklch(0.322 0.005 286.1);
+  --input: oklch(0.403 0.007 286.1);
+  --ring: oklch(0.541 0.011 286);
+  --chart-1: oklch(0.707 0.166 290.2);
+  --chart-2: oklch(0.785 0.133 181.9);
+  --chart-3: oklch(0.837 0.164 84.4);
+  --chart-4: oklch(0.714 0.143 254.6);
+  --chart-5: oklch(0.725 0.175 349.8);
+  --sidebar: oklch(0.179 0.004 286);
+  --sidebar-foreground: oklch(0.971 0.003 286.4);
+  --sidebar-primary: oklch(0.971 0.003 286.4);
+  --sidebar-primary-foreground: oklch(0.179 0.004 286);
+  --sidebar-accent: oklch(0.294 0.004 286.2);
+  --sidebar-accent-foreground: oklch(0.971 0.003 286.4);
+  --sidebar-border: oklch(0.322 0.005 286.1);
+  --sidebar-ring: oklch(0.541 0.011 286);
+  --income: oklch(0.741 0.165 156.2);
+  --expense: oklch(0.701 0.19 21.2);
+  --transfer: oklch(0.693 0.162 259);
+  --ai: oklch(0.707 0.166 290.2);
+  --warning: oklch(0.795 0.155 65.4);
 }
 
 @layer base {

@@ -4,8 +4,8 @@ import * as React from "react"
 import { useTheme } from "next-themes"
 
 const APP_BACKGROUND = {
-  light: "#ffffff",
-  dark: "#0a0a0a",
+  light: "#f2f2f4",
+  dark: "#000000",
 } as const
 
 export function PwaThemeColor() {

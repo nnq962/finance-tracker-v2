@@ -5,4 +5,4 @@ Nơi lưu mockup đã được duyệt và quy ước của hướng thiết k�
 [`web/AGENTS.md`](../../web/AGENTS.md).
 
 Đang thiết kế lại từ đầu (tháng 10/2026): bộ Chunky UI cũ đã được gỡ; nền hiện tại là
-preset shadcn `b27GcrRo` với font Be Vietnam Pro. Chưa có mockup nào được duyệt.
+preset shadcn `b27GcrRo` với font Be Vietnam Pro. Bảng màu: [`colors.md`](colors.md).
