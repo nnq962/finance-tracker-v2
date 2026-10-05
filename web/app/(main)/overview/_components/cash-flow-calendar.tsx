@@ -101,7 +101,7 @@ export function CashFlowCalendar({
     <section aria-labelledby="cash-flow-calendar-title" className="space-y-2">
       <h2
         id="cash-flow-calendar-title"
-        className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+        className="px-3 text-[13px] font-medium text-muted-foreground"
       >
         Lịch thu chi
       </h2>

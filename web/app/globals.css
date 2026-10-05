@@ -18,14 +18,18 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-nunito);
+  --font-sans: var(--font-be-vietnam-pro);
   --font-mono: var(--font-jetbrains-mono);
-  --font-heading: var(--font-baloo);
-  --font-weight-normal: 600;
-  --font-weight-medium: 700;
-  --font-weight-semibold: 800;
-  --font-weight-bold: 800;
-  --font-weight-extrabold: 800;
+  /* One family for the whole app; kept as its own name for existing classes. */
+  --font-heading: var(--font-be-vietnam-pro);
+  /* Semantic colours, so components never hard-code hex. */
+  --color-surface-2: var(--surface-2);
+  --color-income: var(--income);
+  --color-income-soft: var(--income-soft);
+  --color-expense: var(--expense);
+  --color-expense-soft: var(--expense-soft);
+  --color-transfer: var(--transfer);
+  --color-transfer-soft: var(--transfer-soft);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -65,72 +69,89 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /* Minimal, after docs/design/minimal.md: a light grey page, white cards
+     without borders, black as the one strong colour. */
+  --background: #f2f2f4;
+  --foreground: #111113;
+  --card: #ffffff;
+  --card-foreground: #111113;
+  --popover: #ffffff;
+  --popover-foreground: #111113;
+  --primary: #111113;
+  --primary-foreground: #ffffff;
+  --secondary: #ebebee;
+  --secondary-foreground: #111113;
+  --muted: #ebebee;
+  --muted-foreground: #75757b;
+  --accent: #ebebee;
+  --accent-foreground: #111113;
+  --destructive: #e5484d;
+  --border: #e6e6ea;
+  --input: #e6e6ea;
+  --ring: #a1a1a8;
+  --surface-2: #e8e8ec;
+  --income: #1a9a50;
+  --income-soft: #e2f5e9;
+  --expense: #e5484d;
+  --expense-soft: #fde9e9;
+  --transfer: #2f6fec;
+  --transfer-soft: #e7eefd;
   --chart-1: oklch(0.809 0.105 251.813);
   --chart-2: oklch(0.623 0.214 259.815);
   --chart-3: oklch(0.546 0.245 262.881);
   --chart-4: oklch(0.488 0.243 264.376);
   --chart-5: oklch(0.424 0.199 265.638);
-  --radius: 0.625rem;
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --radius: 0.875rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #111113;
+  --sidebar-primary: #111113;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f2f2f4;
+  --sidebar-accent-foreground: #111113;
+  --sidebar-border: #ececef;
+  --sidebar-ring: #a1a1a8;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  /* iOS-style dark: black page, raised grey cards. */
+  --background: #000000;
+  --foreground: #f5f5f7;
+  --card: #1c1c1e;
+  --card-foreground: #f5f5f7;
+  --popover: #1c1c1e;
+  --popover-foreground: #f5f5f7;
+  --primary: #f5f5f7;
+  --primary-foreground: #000000;
+  --secondary: #2c2c2e;
+  --secondary-foreground: #f5f5f7;
+  --muted: #2c2c2e;
+  --muted-foreground: #98989f;
+  --accent: #2c2c2e;
+  --accent-foreground: #f5f5f7;
+  --destructive: #ff6369;
+  --border: #2c2c2e;
+  --input: #2c2c2e;
+  --ring: #6e6e73;
+  --surface-2: #2c2c2e;
+  --income: #3ccf6e;
+  --income-soft: #123020;
+  --expense: #ff6369;
+  --expense-soft: #3a1718;
+  --transfer: #6d9bff;
+  --transfer-soft: #15244a;
   --chart-1: oklch(0.809 0.105 251.813);
   --chart-2: oklch(0.623 0.214 259.815);
   --chart-3: oklch(0.546 0.245 262.881);
   --chart-4: oklch(0.488 0.243 264.376);
   --chart-5: oklch(0.424 0.199 265.638);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar: #0f0f10;
+  --sidebar-foreground: #f5f5f7;
+  --sidebar-primary: #f5f5f7;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #1c1c1e;
+  --sidebar-accent-foreground: #f5f5f7;
+  --sidebar-border: #1c1c1e;
+  --sidebar-ring: #6e6e73;
 }
 
 @layer base {
@@ -143,11 +164,10 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
     width: 0;
   }
   body {
-    @apply bg-background text-foreground;
-    font-weight: 700;
+    @apply bg-background text-foreground antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading font-extrabold;
+    @apply font-heading font-semibold tracking-tight;
   }
   button:not(:disabled), [role="button"]:not(:disabled) {
     cursor: pointer;
@@ -157,22 +177,9 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   }
 
   html:has([data-app-shell="main"]),
-  body:has([data-app-shell="main"]) {
-    background-color: #fbfaf7;
-  }
-
-  html.dark:has([data-app-shell="main"]),
-  html.dark body:has([data-app-shell="main"]) {
-    background-color: var(--background);
-  }
-
+  body:has([data-app-shell="main"]),
   html:has([data-landing-shell]),
   body:has([data-landing-shell]) {
-    background-color: #fbfaf7;
-  }
-
-  html.dark:has([data-landing-shell]),
-  html.dark body:has([data-landing-shell]) {
     background-color: var(--background);
   }
 
@@ -190,13 +197,6 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   html:has([data-login-shell]),
   body:has([data-login-shell]) {
     background-color: #000;
-  }
-}
-
-@layer utilities {
-  .tabular-nums:not(.font-mono) {
-    font-family: var(--font-baloo);
-    font-weight: 800;
   }
 }
 
@@ -232,148 +232,68 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   pointer-events: auto;
 }
 
-/*
- * Height of a raised control's lower edge; 0 while pressed. Registered as a
- * length so it can be transitioned on its own, apart from the edge colour.
- */
-@property --button-travel {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
-}
-
-/* Keep the painted face separate from the press shadow, including while held. */
+/* iOS switch: a grey track, black once on, a white thumb that stretches
+   while pressed. */
 @layer components {
-  .button-raised {
-    position: relative;
-    isolation: isolate;
-    --button-travel: var(--button-edge);
-    /* Reserve the lower edge inside the layout slot. */
-    translate: 0 calc(-1 * var(--button-travel));
-    transition-property: filter;
+  .ios-switch {
+    --switch-gap: 2px;
+    --switch-thumb: 27px;
+    --switch-press: 6px;
+    width: 51px;
+    height: 31px;
+    background: var(--secondary);
+    transition: background-color 200ms;
   }
 
-  .button-raised::before {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    z-index: -1;
-    pointer-events: none;
-    border-radius: inherit;
-    border: var(--button-face-border, 0px) solid var(--button-shade);
-    /* The shadow supplies the bottom edge while raised. */
-    border-bottom-width: 0;
-    background-color: var(--button-face);
-    box-shadow: 0 var(--button-travel) 0 var(--button-shade);
-  }
-
-  .button-raised:is(:active, [aria-expanded="true"], [aria-pressed="true"], [data-state="open"], [data-state="on"]):not(:disabled) {
-    --button-travel: 0px;
-  }
-
-  .button-raised:is(:active, [aria-expanded="true"], [aria-pressed="true"], [data-state="open"], [data-state="on"]):not(:disabled)::before {
-    border-bottom-width: var(--button-face-border, 0px);
-  }
-}
-
-/*
- * iOS may paint after touchend clears :active but before the synthesized click
- * commits aria/data state. Keep the pressed face in place across that gap so a
- * toggle or disclosure does not briefly rise before settling back down.
- * Only the geometry waits: colours (face and edge) change together at once.
- */
-@media (hover: none) and (pointer: coarse) {
-  .button-raised {
-    transition-property: filter, --button-travel;
-    transition-duration: 0s;
-    transition-delay: 80ms;
-  }
-
-  .button-raised::before {
-    transition-property: border-bottom-width;
-    transition-duration: 0s;
-    transition-delay: 80ms;
-  }
-
-  .button-raised:is(:active, [aria-expanded="true"], [aria-pressed="true"], [data-state="open"], [data-state="on"]):not(:disabled),
-  .button-raised:is(:active, [aria-expanded="true"], [aria-pressed="true"], [data-state="open"], [data-state="on"]):not(:disabled)::before {
-    transition-delay: 0s;
-  }
-}
-
-
-/* Chunky UI Kit: recessed track and raised, compressible thumb. */
-@layer components {
-  .chunky-switch {
-    --switch-gap: 3px;
-    --switch-thumb-width: 22px;
-    --switch-thumb-height: 22px;
-    --switch-press: 5px;
-    --switch-edge: 3px;
-    --switch-track: #e7e4dd;
-    --switch-shade: #d6d2c8;
-    --switch-knob: #fff;
-    width: 52px;
-    height: 30px;
-    background: var(--switch-track);
-    box-shadow: inset 0 var(--switch-edge) 0 var(--switch-shade);
-    transition: background-color 200ms, box-shadow 200ms;
-  }
-
-  .dark .chunky-switch {
-    --switch-track: #35323e;
-    --switch-shade: #4a4656;
-    --switch-knob: #f2f0f6;
-  }
-
-  .chunky-switch[data-size="sm"] {
-    --switch-thumb-width: 16px;
-    --switch-thumb-height: 16px;
+  .ios-switch[data-size="sm"] {
+    --switch-thumb: 20px;
     --switch-press: 4px;
-    --switch-edge: 2px;
-    width: 40px;
+    width: 38px;
     height: 24px;
   }
 
-  .chunky-switch[data-state="checked"] {
-    --switch-track: oklch(0.76 0.19 138);
-    --switch-shade: oklch(0.60 0.17 140);
+  .ios-switch[data-state="checked"] {
+    background: var(--primary);
   }
 
-  .chunky-switch [data-slot="switch-thumb"] {
+  .ios-switch [data-slot="switch-thumb"] {
     top: var(--switch-gap);
     left: var(--switch-gap);
-    width: var(--switch-thumb-width);
-    height: var(--switch-thumb-height);
-    transition: left 220ms cubic-bezier(0.3, 1.5, 0.5, 1);
+    width: var(--switch-thumb);
+    height: var(--switch-thumb);
+    transition: left 240ms cubic-bezier(0.3, 1.3, 0.5, 1);
   }
 
-  .chunky-switch [data-slot="switch-thumb"]::before {
+  .ios-switch [data-slot="switch-thumb"]::before {
     content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: var(--switch-knob);
-    box-shadow: 0 var(--switch-edge) 0 var(--switch-shade);
-    transition: left 120ms, right 120ms, box-shadow 200ms;
+    background: #fff;
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.15), 0 1px 1px rgb(0 0 0 / 0.06);
+    transition: left 160ms, right 160ms;
   }
 
-  .chunky-switch[data-state="checked"] [data-slot="switch-thumb"] {
-    left: calc(100% - var(--switch-gap) - var(--switch-thumb-width));
+  .dark .ios-switch[data-state="checked"] [data-slot="switch-thumb"]::before {
+    background: #000;
   }
 
-  .chunky-switch[data-state="unchecked"][data-pressed="true"]:not(:disabled) [data-slot="switch-thumb"]::before {
+  .ios-switch[data-state="checked"] [data-slot="switch-thumb"] {
+    left: calc(100% - var(--switch-gap) - var(--switch-thumb));
+  }
+
+  .ios-switch[data-state="unchecked"][data-pressed="true"]:not(:disabled) [data-slot="switch-thumb"]::before {
     right: calc(-1 * var(--switch-press));
   }
 
-  .chunky-switch[data-state="checked"][data-pressed="true"]:not(:disabled) [data-slot="switch-thumb"]::before {
+  .ios-switch[data-state="checked"][data-pressed="true"]:not(:disabled) [data-slot="switch-thumb"]::before {
     left: calc(-1 * var(--switch-press));
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .chunky-switch,
-    .chunky-switch [data-slot="switch-thumb"],
-    .chunky-switch [data-slot="switch-thumb"]::before {
+    .ios-switch,
+    .ios-switch [data-slot="switch-thumb"],
+    .ios-switch [data-slot="switch-thumb"]::before {
       transition: none;
     }
   }

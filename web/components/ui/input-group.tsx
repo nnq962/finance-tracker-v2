@@ -12,7 +12,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="input-group"
       role="group"
       className={cn(
-        "group/input-group relative flex h-8 w-full min-w-0 items-center rounded-lg border-2 border-[#e7e4dd] bg-[#f3f1ec] transition-[background-color,border-color,box-shadow] duration-150 outline-none in-data-[slot=combobox-content]:focus-within:border-inherit in-data-[slot=combobox-content]:focus-within:ring-0 has-disabled:bg-input/50 has-disabled:opacity-50 has-[[data-slot=input-group-control]:focus]:border-[oklch(0.74_0.14_235)] has-[[data-slot=input-group-control]:focus]:bg-white has-[[data-slot=input-group-control]:focus]:ring-4 has-[[data-slot=input-group-control]:focus]:ring-[oklch(0.95_0.04_235)] has-[[data-slot][aria-invalid=true]]:border-destructive has-[[data-slot][aria-invalid=true]]:ring-3 has-[[data-slot][aria-invalid=true]]:ring-destructive/20 has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto dark:border-[#35323e] dark:bg-[#1b1a21] dark:has-[[data-slot=input-group-control]:focus]:bg-[#201e26] dark:has-[[data-slot=input-group-control]:focus]:border-[oklch(0.74_0.14_235)] dark:has-[[data-slot=input-group-control]:focus]:ring-[oklch(0.33_0.06_238)] dark:has-disabled:bg-input/80 dark:has-[[data-slot][aria-invalid=true]]:ring-destructive/40 has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5",
+        "group/input-group relative flex h-11 w-full min-w-0 items-center rounded-xl border border-transparent bg-surface-2 transition-[background-color,border-color,box-shadow] duration-150 outline-none in-data-[slot=combobox-content]:focus-within:border-inherit in-data-[slot=combobox-content]:focus-within:ring-0 has-disabled:opacity-50 has-[[data-slot=input-group-control]:focus]:border-foreground/15 has-[[data-slot=input-group-control]:focus]:bg-card has-[[data-slot=input-group-control]:focus]:ring-4 has-[[data-slot=input-group-control]:focus]:ring-foreground/5 has-[[data-slot][aria-invalid=true]]:border-destructive has-[[data-slot][aria-invalid=true]]:bg-expense-soft has-[[data-slot][aria-invalid=true]]:ring-3 has-[[data-slot][aria-invalid=true]]:ring-destructive/15 has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5",
         className
       )}
       {...props}
@@ -26,9 +26,9 @@ const inputGroupAddonVariants = cva(
     variants: {
       align: {
         "inline-start":
-          "order-first pl-2 has-[>button]:ml-[-0.3rem] has-[>kbd]:ml-[-0.15rem]",
+          "order-first pl-3.5 has-[>button]:ml-[-0.3rem] has-[>kbd]:ml-[-0.15rem]",
         "inline-end":
-          "order-last pr-2 has-[>button]:mr-[-0.3rem] has-[>kbd]:mr-[-0.15rem]",
+          "order-last pr-3 has-[>button]:mr-[-0.3rem] has-[>kbd]:mr-[-0.15rem]",
         "block-start":
           "order-first w-full justify-start px-2.5 pt-2 group-has-[>input]/input-group:pt-2 [.border-b]:pb-2",
         "block-end":
@@ -120,7 +120,7 @@ function InputGroupInput({
     <input
       data-slot="input-group-control"
       className={cn(
-        "h-full w-full min-w-0 flex-1 rounded-[inherit] border-0 bg-transparent px-2.5 py-1 text-base text-[#2b2a33] outline-none placeholder:text-[#8f8b98]/70 disabled:pointer-events-none disabled:cursor-not-allowed md:text-sm dark:text-[#f2f0f6] dark:placeholder:text-[#9d99a9]/70",
+        "h-full w-full min-w-0 flex-1 rounded-[inherit] border-0 bg-transparent px-3.5 py-1 text-base text-foreground outline-none placeholder:text-muted-foreground/70 disabled:pointer-events-none disabled:cursor-not-allowed md:text-sm",
         className
       )}
       {...props}
@@ -136,7 +136,7 @@ function InputGroupTextarea({
     <textarea
       data-slot="input-group-control"
       className={cn(
-        "flex field-sizing-content min-h-16 w-full min-w-0 flex-1 resize-none rounded-[inherit] border-0 bg-transparent px-2.5 py-2 text-base text-[#2b2a33] outline-none placeholder:text-[#8f8b98]/70 disabled:cursor-not-allowed md:text-sm dark:text-[#f2f0f6] dark:placeholder:text-[#9d99a9]/70",
+        "flex field-sizing-content min-h-16 w-full min-w-0 flex-1 resize-none rounded-[inherit] border-0 bg-transparent px-3.5 py-3 text-base text-foreground outline-none placeholder:text-muted-foreground/70 disabled:cursor-not-allowed md:text-sm",
         className
       )}
       {...props}

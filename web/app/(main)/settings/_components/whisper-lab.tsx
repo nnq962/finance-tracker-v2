@@ -156,7 +156,7 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
 
   return (
     <section className="space-y-3">
-      <h3 className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+      <h3 className="px-3 text-[13px] font-medium text-muted-foreground">
         Nhận dạng giọng nói (Whisper · Groq)
       </h3>
       <ToggleGroup

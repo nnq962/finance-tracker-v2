@@ -47,8 +47,6 @@ type TransactionsDashboardProps = {
   purchaseDraft?: PurchaseDraft
 }
 
-// The AI button in the assistant's violet, set apart from the green add button.
-const aiButtonClassName = "[--button-face:#a78bfa] [--button-shade:#7c5bd6] [--button-text:#fff]"
 
 const initialSearchFilters: TransactionSearchFilters = {
   query: "",
@@ -134,7 +132,7 @@ export function TransactionsDashboard({
         title="Giao dịch"
         actions={
           <>
-            <AiAssistButton className={aiButtonClassName} remaining={aiRemaining} onClick={openAi}>
+            <AiAssistButton variant="grape" remaining={aiRemaining} onClick={openAi}>
               Nhập bằng AI
             </AiAssistButton>
             <AddTransactionButton
@@ -201,7 +199,7 @@ export function TransactionsDashboard({
           phone's width. */}
       <div className="pointer-events-none sticky bottom-4 z-20 flex justify-end md:hidden">
         <div className="pointer-events-auto flex flex-col items-end gap-4">
-          <AiAssistButton className={aiButtonClassName} remaining={aiRemaining} onClick={openAi}>
+          <AiAssistButton variant="grape" remaining={aiRemaining} onClick={openAi}>
             AI
           </AiAssistButton>
           <AddTransactionButton

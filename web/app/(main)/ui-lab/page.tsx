@@ -1,34 +1,29 @@
-import { CurrencyInputExample } from "./_components/currency-input-example"
-import { SonnerExamples } from "./_components/sonner-examples"
-import { SwitchExamples } from "./_components/switch-examples"
-import GradientWaves from "@/components/gradient-waves"
-import { Page } from "@/components/page"
-import Link from "next/link"
+import type * as React from "react"
 import { notFound } from "next/navigation"
 import {
   ArrowRightIcon,
-  CheckIcon,
+  BellIcon,
+  ChevronRightIcon,
+  PaletteIcon,
   PlusIcon,
+  SearchIcon,
+  SparklesIcon,
   Trash2Icon,
+  WalletIcon,
 } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
+import { Page, PageHeader } from "@/components/page"
+import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import {
   Tabs as AnimatedTabs,
-  TabsContent as AnimatedTabsContent,
   TabsList as AnimatedTabsList,
   TabsTrigger as AnimatedTabsTrigger,
 } from "@/components/animate-ui/components/radix/tabs"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { Progress } from "@/components/ui/progress"
 import {
   Select,
@@ -39,53 +34,79 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
-const variants = [
-  { name: "Default · Leaf", variant: "default", label: "Tiếp tục" },
-  { name: "Secondary · Sky", variant: "secondary", label: "Xem chi tiết" },
-  { name: "Outline", variant: "outline", label: "Để sau" },
-  { name: "Destructive · Coral", variant: "destructive", label: "Xóa mục" },
-  { name: "Ghost", variant: "ghost", label: "Xem thêm" },
-  { name: "Link", variant: "link", label: "Mở liên kết" },
+import { CurrencyInputExample } from "./_components/currency-input-example"
+import { SonnerExamples } from "./_components/sonner-examples"
+import { SwitchExamples } from "./_components/switch-examples"
+
+const surfaces = [
+  { name: "Nền trang", token: "background", className: "bg-background" },
+  { name: "Thẻ", token: "card", className: "bg-card" },
+  { name: "Xám phụ", token: "secondary", className: "bg-secondary" },
+  { name: "Ô nhập", token: "surface-2", className: "bg-surface-2" },
+  { name: "Chính", token: "primary", className: "bg-primary" },
 ] as const
 
-const sizes = [
-  { name: "xs", size: "xs" },
-  { name: "sm", size: "sm" },
-  { name: "default", size: "default" },
-  { name: "lg", size: "lg" },
+const semantics = [
+  { name: "Thu", className: "bg-income", soft: "bg-income-soft text-income" },
+  { name: "Chi", className: "bg-expense", soft: "bg-expense-soft text-expense" },
+  { name: "Chuyển", className: "bg-transfer", soft: "bg-transfer-soft text-transfer" },
 ] as const
 
-const iconSizes = [
-  { name: "icon-xs", size: "icon-xs" },
-  { name: "icon-sm", size: "icon-sm" },
-  { name: "icon", size: "icon" },
-  { name: "icon-lg", size: "icon-lg" },
+const typeScale = [
+  { name: "Tiêu đề lớn · 30/600", className: "text-3xl font-semibold tracking-tight", sample: "Giao dịch" },
+  { name: "Tiêu đề · 20/600", className: "text-xl font-semibold tracking-tight", sample: "Tài sản ròng" },
+  { name: "Tiêu đề dòng · 15/500", className: "text-[15px] font-medium", sample: "Ăn trưa văn phòng" },
+  { name: "Nội dung · 15/400", className: "text-[15px]", sample: "Ghi lại khoản chi đầu tiên để bắt đầu." },
+  { name: "Phụ · 13/400", className: "text-[13px] text-muted-foreground", sample: "Ví MoMo · 12:30" },
+  { name: "Chú thích · 12/500", className: "text-xs font-medium text-muted-foreground", sample: "Cập nhật lúc 09:41" },
+] as const
+
+const buttonVariants = [
+  { variant: "default", label: "Tiếp tục" },
+  { variant: "secondary", label: "Để sau" },
+  { variant: "outline", label: "Xem chi tiết" },
+  { variant: "ghost", label: "Bỏ qua" },
+  { variant: "grape", label: "Nâng cấp" },
+  { variant: "destructive", label: "Xoá" },
+  { variant: "link", label: "Mở liên kết" },
 ] as const
 
 const badgeSamples = [
-  { variant: "default", label: "Đã thu", dot: true },
-  { variant: "destructive", label: "Đã chi", dot: true },
-  { variant: "secondary", label: "Mới", dot: false },
-  { variant: "sun", label: "7 ngày liên tiếp", dot: false },
-  { variant: "grape", label: "Pro", dot: false },
-  { variant: "solid", label: "3", dot: false },
-  { variant: "outline", label: "Tùy chọn", dot: false },
+  { variant: "default", label: "+5,2%" },
+  { variant: "destructive", label: "−3,8%" },
+  { variant: "secondary", label: "Mới" },
+  { variant: "outline", label: "Tuỳ chọn" },
+  { variant: "sun", label: "7 ngày liên tiếp" },
+  { variant: "grape", label: "Pro" },
+  { variant: "solid", label: "3" },
 ] as const
 
 const progressSamples = [
   { label: "Quỹ du lịch", detail: "1,8 / 3 triệu", value: 60, tone: "leaf" },
   { label: "Ăn uống", detail: "82% hạn mức", value: 82, tone: "sun" },
   { label: "Mua sắm", detail: "Vượt 12%", value: 100, tone: "coral" },
-  { label: "Mục tiêu đặc biệt", detail: "45%", value: 45, tone: "grape" },
 ] as const
 
-const colors = [
-  { name: "Leaf", face: "#6ecc49", shade: "#3e9727" },
-  { name: "Sky", face: "#38b8f6", shade: "#0083c4" },
-  { name: "Coral", face: "#ff645f", shade: "#c8393a" },
-] as const
+/** One block of the reference: a caption, then its samples in a card. */
+function Section({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
+  return (
+    <section className="space-y-2">
+      <div className="px-3">
+        <h2 className="text-[13px] font-medium text-muted-foreground">{title}</h2>
+      </div>
+      <Card>
+        <CardContent className="space-y-5">
+          {note ? <p className="text-[13px] text-muted-foreground">{note}</p> : null}
+          {children}
+        </CardContent>
+      </Card>
+    </section>
+  )
+}
 
 export default function UiLabPage() {
   if (process.env.NODE_ENV !== "development") {
@@ -94,513 +115,222 @@ export default function UiLabPage() {
 
   return (
     <Page>
-      <div className="space-y-2">
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-3xl font-semibold tracking-tight">Thử giao diện</h1>
-          <Badge variant="outline">UI Lab</Badge>
-        </div>
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          Khu vực xem các thành phần giao diện trong ứng dụng. Nhấn giữ nút để
-          kiểm tra độ lún, dùng phím Tab để xem focus và chọn giao diện sáng,
-          tối hoặc theo hệ thống trong header.
-        </p>
-      </div>
+      <PageHeader title="Thử giao diện" />
+      <p className="-mt-2 max-w-2xl px-1 text-[15px] text-muted-foreground">
+        Bảng tham chiếu của giao diện tối giản: nền xám nhạt, thẻ trắng không viền, bo góc lớn, màu
+        đen làm điểm nhấn duy nhất. Đổi giao diện sáng/tối trong Cài đặt để so sánh.
+      </p>
 
-      <section aria-labelledby="typography-examples" className="space-y-4">
-        <div>
-          <h2 id="typography-examples" className="text-xl font-semibold">Chữ</h2>
-          <p className="text-sm text-muted-foreground">
-            Baloo 2 cho tiêu đề, số và nhãn nút; Nunito đậm cho nội dung.
-          </p>
-        </div>
-        <Card>
-          <CardContent className="grid gap-5 sm:grid-cols-2">
-            <div className="space-y-2">
-              <span className="text-xs text-muted-foreground">Display · Baloo 2</span>
-              <p className="font-heading text-4xl leading-none font-extrabold tabular-nums">500.000đ</p>
-              <h3 className="text-2xl font-semibold">Chi tiêu tháng này</h3>
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        <div className="space-y-6">
+          <Section title="Màu nền" note="Thẻ tách khỏi nền nhờ độ chênh màu, không dùng viền hay bóng.">
+            <div className="grid grid-cols-5 gap-3">
+              {surfaces.map((surface) => (
+                <div key={surface.token} className="space-y-2">
+                  <div className={`aspect-square rounded-2xl ring-1 ring-black/5 dark:ring-white/10 ${surface.className}`} />
+                  <p className="text-xs font-medium">{surface.name}</p>
+                </div>
+              ))}
             </div>
-            <div className="space-y-2">
-              <span className="text-xs text-muted-foreground">Body · Nunito</span>
-              <p>Theo dõi các khoản thu, chi và chuyển khoản của bạn.</p>
-              <p className="text-sm text-muted-foreground">8 giao dịch · tháng này</p>
-              <Button type="button">Tiếp tục</Button>
+          </Section>
+
+          <Section title="Màu theo ý nghĩa" note="Chỉ dùng cho số tiền, ô icon và badge, không tô cả khối.">
+            <div className="grid grid-cols-3 gap-3">
+              {semantics.map((item) => (
+                <div key={item.name} className="space-y-2">
+                  <div className={`h-12 rounded-2xl ${item.className}`} />
+                  <div className={`flex h-9 items-center justify-center rounded-full text-sm font-medium ${item.soft}`}>
+                    {item.name}
+                  </div>
+                </div>
+              ))}
             </div>
-          </CardContent>
-        </Card>
-      </section>
+          </Section>
 
-      <section aria-labelledby="gradient-waves" className="space-y-4">
-        <div>
-          <h2 id="gradient-waves" className="text-xl font-semibold">Gradient Waves</h2>
-          <p className="text-sm text-muted-foreground">
-            Nền sóng chuyển động. Di chuyển chuột trên nền để thử hiệu ứng parallax.
-          </p>
-        </div>
-        <div className="relative h-[600px] w-full overflow-hidden rounded-xl bg-black">
-          <GradientWaves
-            horizonColor="#000000"
-            waveColor="#6366F1"
-            crestColor="#ffffff"
-            speed={0.4}
-            amplitude={4}
-            waveScale={0.6}
-            waveRatio={0.9}
-            swell={35}
-            turbulence={20}
-            tilt={1.11}
-            zoom={1}
-            height={5.5}
-            fogDepth={15}
-            detail="medium"
-            brightness={1}
-            opacity={1}
-            mouseInteraction
-            parallaxStrength={0.5}
-            grain
-            grainIntensity={0.05}
-          />
-        </div>
-      </section>
+          <Section title="Chữ · Be Vietnam Pro">
+            <div className="space-y-4">
+              {typeScale.map((item) => (
+                <div key={item.name} className="space-y-0.5">
+                  <p className="text-xs text-muted-foreground">{item.name}</p>
+                  <p className={item.className}>{item.sample}</p>
+                </div>
+              ))}
+              <div className="space-y-0.5">
+                <p className="text-xs text-muted-foreground">Số tiền lớn · 36/600, đơn vị nhạt</p>
+                <p className="text-4xl font-semibold tracking-tight tabular-nums">
+                  124.680.000<span className="text-muted-foreground/60">đ</span>
+                </p>
+              </div>
+            </div>
+          </Section>
 
-      <section aria-labelledby="button-variants" className="space-y-4">
-        <div>
-          <h2 id="button-variants" className="text-xl font-semibold">Button variants</h2>
-          <p className="text-sm text-muted-foreground">
-            Các mẫu dưới đây dùng trực tiếp Button của ứng dụng.
-          </p>
+          <Section title="Nút" note="Dạng viên thuốc, phẳng; nhấn thì co nhẹ. Nút chính màu đen.">
+            <div className="flex flex-wrap gap-2">
+              {buttonVariants.map((item) => (
+                <Button key={item.variant} variant={item.variant}>
+                  {item.label}
+                </Button>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="xs">Rất nhỏ</Button>
+              <Button size="sm">Nhỏ</Button>
+              <Button>Mặc định</Button>
+              <Button size="lg">Lớn</Button>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="icon-xs" variant="secondary" aria-label="Thêm"><PlusIcon /></Button>
+              <Button size="icon-sm" variant="secondary" aria-label="Thêm"><PlusIcon /></Button>
+              <Button size="icon" variant="secondary" aria-label="Thêm"><PlusIcon /></Button>
+              <Button size="icon-lg" aria-label="Thêm"><PlusIcon /></Button>
+              <Button variant="outline">
+                <SparklesIcon data-icon="inline-start" />
+                Có icon
+              </Button>
+              <Button variant="destructive" size="icon" aria-label="Xoá"><Trash2Icon /></Button>
+              <Button disabled>Đang khoá</Button>
+            </div>
+            <Button size="lg" className="w-full">
+              Thêm giao dịch
+              <ArrowRightIcon data-icon="inline-end" />
+            </Button>
+          </Section>
+
+          <Section title="Segmented control">
+            <Tabs defaultValue="month">
+              <TabsList className="w-full">
+                <TabsTrigger value="week">Tuần</TabsTrigger>
+                <TabsTrigger value="month">Tháng</TabsTrigger>
+                <TabsTrigger value="year">Năm</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <AnimatedTabs defaultValue="expense">
+              <AnimatedTabsList className="w-full">
+                <AnimatedTabsTrigger value="expense">Chi tiền</AnimatedTabsTrigger>
+                <AnimatedTabsTrigger value="income">Thu tiền</AnimatedTabsTrigger>
+              </AnimatedTabsList>
+            </AnimatedTabs>
+            <Tabs defaultValue="overview">
+              <TabsList variant="line" className="w-full justify-start">
+                <TabsTrigger value="overview" className="flex-none">Tổng quan</TabsTrigger>
+                <TabsTrigger value="history" className="flex-none">Lịch sử</TabsTrigger>
+                <TabsTrigger value="notes" className="flex-none">Ghi chú</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </Section>
+
+          <Section title="Chip" note="Lọc nhanh: xám khi chưa chọn, màu chính (đen, hoặc trắng ở giao diện tối) khi đã chọn.">
+            <ToggleGroup type="single" defaultValue="all" className="flex-wrap" aria-label="Loại giao dịch">
+              <ToggleGroupItem value="all">Tất cả</ToggleGroupItem>
+              <ToggleGroupItem value="expense">Chi tiền</ToggleGroupItem>
+              <ToggleGroupItem value="income">Thu tiền</ToggleGroupItem>
+              <ToggleGroupItem value="transfer">Chuyển khoản</ToggleGroupItem>
+            </ToggleGroup>
+            <ToggleGroup type="multiple" size="sm" defaultValue={["momo"]} className="flex-wrap" aria-label="Tài khoản">
+              <ToggleGroupItem value="vcb">Vietcombank</ToggleGroupItem>
+              <ToggleGroupItem value="momo">Ví MoMo</ToggleGroupItem>
+              <ToggleGroupItem value="cash">Tiền mặt</ToggleGroupItem>
+            </ToggleGroup>
+          </Section>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {variants.map(({ name, variant, label }) => (
-            <Card key={variant}>
-              <CardHeader>
-                <CardTitle>{name}</CardTitle>
-                <CardDescription>variant=&quot;{variant}&quot;</CardDescription>
-              </CardHeader>
-              <CardContent className="flex min-h-16 items-start gap-3">
-                <Button type="button" variant={variant}>{label}</Button>
-                {variant === "outline" && (
-                  <Button type="button" variant="default">{label}</Button>
-                )}
+
+        <div className="space-y-6">
+          <Section title="Ô nhập" note="Nền xám, không viền; sáng lên khi đang nhập.">
+            <InputGroup>
+              <InputGroupAddon>
+                <SearchIcon aria-hidden="true" />
+              </InputGroupAddon>
+              <InputGroupInput placeholder="Tìm giao dịch..." aria-label="Tìm giao dịch" />
+            </InputGroup>
+            <Input placeholder="Tên khoản chi" aria-label="Tên khoản chi" />
+            <Input placeholder="Sai định dạng" aria-label="Ví dụ lỗi" aria-invalid="true" defaultValue="abc" />
+            <CurrencyInputExample />
+            <Select defaultValue="momo">
+              <SelectTrigger className="w-full" aria-label="Tài khoản">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Tài khoản</SelectLabel>
+                  <SelectItem value="vcb">Vietcombank</SelectItem>
+                  <SelectItem value="momo">Ví MoMo</SelectItem>
+                  <SelectItem value="cash">Tiền mặt</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <Textarea placeholder="Ghi chú" aria-label="Ghi chú" />
+          </Section>
+
+          <Section title="Badge và tiến độ">
+            <div className="flex flex-wrap gap-2">
+              {badgeSamples.map((badge) => (
+                <Badge key={badge.label} variant={badge.variant}>
+                  {badge.label}
+                </Badge>
+              ))}
+            </div>
+            <div className="space-y-4">
+              {progressSamples.map((item) => (
+                <div key={item.label} className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium">{item.label}</span>
+                    <span className="text-muted-foreground">{item.detail}</span>
+                  </div>
+                  <Progress value={item.value} tone={item.tone} aria-label={item.label} />
+                </div>
+              ))}
+            </div>
+          </Section>
+
+          <Section title="Công tắc">
+            <SwitchExamples />
+          </Section>
+
+          <SettingsGroup title="Danh sách" footer="Đường kẻ mảnh bắt đầu từ chỗ chữ, như danh sách trên iOS.">
+            <SettingsRow icon={WalletIcon} color="blue" title="Tài khoản" description="3 tài khoản" value="55,1 tr" chevron />
+            <SettingsRow icon={PaletteIcon} color="violet" title="Giao diện" value="Hệ thống" chevron />
+            <SettingsRow icon={BellIcon} color="amber" title="Nhắc ghi chi tiêu" description="Mỗi ngày lúc 21:00" chevron />
+          </SettingsGroup>
+
+          <section className="space-y-2">
+            <div className="px-3">
+              <h2 className="text-[13px] font-medium text-muted-foreground">Thẻ</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Card size="sm">
+                <CardHeader>
+                  <CardDescription>Đã thu</CardDescription>
+                  <CardTitle className="text-xl text-income tabular-nums">18,0 tr</CardTitle>
+                </CardHeader>
+              </Card>
+              <Card size="sm">
+                <CardHeader>
+                  <CardDescription>Đã chi</CardDescription>
+                  <CardTitle className="text-xl text-expense tabular-nums">3,2 tr</CardTitle>
+                </CardHeader>
+              </Card>
+            </div>
+            <Card pressable role="button" tabIndex={0}>
+              <CardContent className="flex items-center gap-3">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-violet-500/12 text-violet-600 dark:text-violet-300">
+                  <SparklesIcon className="size-5" aria-hidden="true" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium">Nhận xét từ AI</span>
+                  <span className="block text-[13px] text-muted-foreground">
+                    Tháng này bạn chi cho ăn uống ít hơn 12%.
+                  </span>
+                </span>
+                <ChevronRightIcon className="size-4 text-muted-foreground" aria-hidden="true" />
               </CardContent>
             </Card>
-          ))}
-        </div>
-      </section>
+          </section>
 
-      <section aria-labelledby="button-sizes">
-        <Card>
-          <CardHeader>
-            <CardTitle id="button-sizes">Kích thước</CardTitle>
-            <CardDescription>
-              Chiều cao, padding, kích thước icon và bo góc đang dùng trong dự án.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-7">
-            <div className="flex flex-wrap items-start gap-x-5 gap-y-7">
-              {sizes.map(({ name, size }) => (
-                <div key={size} className="flex flex-col items-start gap-3">
-                  <Button type="button" size={size}>Nút {name}</Button>
-                  <span className="text-xs text-muted-foreground">{name}</span>
-                </div>
-              ))}
-            </div>
-            <div className="flex flex-wrap items-start gap-x-5 gap-y-7 border-t pt-6">
-              {iconSizes.map(({ name, size }) => (
-                <div key={size} className="flex flex-col items-start gap-3">
-                  <Button type="button" size={size} aria-label={`Thêm · ${name}`}>
-                    <PlusIcon />
-                  </Button>
-                  <span className="text-xs text-muted-foreground">{name}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section aria-labelledby="button-states" className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle id="button-states">Trạng thái và cách dùng</CardTitle>
-            <CardDescription>Kiểm tra disabled, lỗi, icon và liên kết.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-wrap items-start gap-4">
-            <Button type="button" disabled>Đã vô hiệu</Button>
-            <Button type="button" variant="outline" disabled>Không khả dụng</Button>
-            <Button type="button" variant="destructive" aria-invalid="true">
-              <Trash2Icon /> Xóa
-            </Button>
-            <Button variant="secondary" asChild>
-              <Link href="#button-sizes">Xem kích thước <ArrowRightIcon /></Link>
-            </Button>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Trong ngữ cảnh</CardTitle>
-            <CardDescription>Nút cạnh nội dung, badge và ô nhập.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="flex items-center justify-between gap-4 rounded-lg border p-3">
-              <div className="min-w-0">
-                <p className="font-medium">Khoản tiết kiệm</p>
-                <p className="text-xs text-muted-foreground">Ví dụ hiển thị trong thẻ</p>
-              </div>
-              <Badge variant="secondary">Đang theo dõi</Badge>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <Input aria-label="Tên khoản tiết kiệm" placeholder="Tên khoản tiết kiệm" className="min-w-44 flex-1" />
-              <Button type="button"><CheckIcon /> Lưu lại</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section aria-labelledby="switch-examples">
-        <Card>
-          <CardHeader>
-            <CardTitle id="switch-examples">Switch</CardTitle>
-            <CardDescription>
-              Gạt để xem trạng thái bật, tắt và chuyển động ở hai kích thước.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <SwitchExamples />
-          </CardContent>
-        </Card>
-      </section>
-
-      <section aria-labelledby="sonner-examples">
-        <Card>
-          <CardHeader>
-            <CardTitle id="sonner-examples">Sonner</CardTitle>
-            <CardDescription>
-              Thử các trạng thái toast, tiến trình và thao tác hoàn tác.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+          <Section title="Thông báo">
             <SonnerExamples />
-          </CardContent>
-        </Card>
-      </section>
-
-      <section aria-labelledby="input-select-examples" className="space-y-4">
-        <div>
-          <h2 id="input-select-examples" className="text-xl font-semibold">Input &amp; Select</h2>
-          <p className="text-sm text-muted-foreground">
-            Bấm vào ô nhập và mở danh sách để xem trạng thái focus, lỗi và disabled.
-          </p>
+          </Section>
         </div>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Input</CardTitle>
-              <CardDescription>Nền phẳng, viền xanh khi focus; thử nhập trực tiếp.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              <div className="grid gap-1.5">
-                <label htmlFor="lab-input-default" className="text-sm font-semibold">Mặc định</label>
-                <Input id="lab-input-default" placeholder="Tên giao dịch" />
-              </div>
-              <div className="grid gap-1.5">
-                <label htmlFor="lab-input-filled" className="text-sm font-semibold">Có dữ liệu</label>
-                <Input id="lab-input-filled" defaultValue="Ăn trưa" />
-              </div>
-              <div className="grid gap-1.5">
-                <label htmlFor="lab-input-error" className="text-sm font-semibold">Lỗi</label>
-                <Input id="lab-input-error" type="email" defaultValue="tam@gmail" aria-invalid="true" aria-describedby="lab-input-error-help" />
-                <p id="lab-input-error-help" className="text-xs text-[oklch(0.56_0.18_25)] dark:text-[oklch(0.80_0.13_25)]">Email chưa đúng định dạng.</p>
-              </div>
-              <div className="grid gap-1.5">
-                <label htmlFor="lab-input-disabled" className="text-sm font-semibold">Disabled</label>
-                <Input id="lab-input-disabled" defaultValue="Không sửa được" disabled />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Select</CardTitle>
-              <CardDescription>Mở menu để xem lựa chọn, focus và dấu chọn.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-11">
-              <div className="grid gap-1.5">
-                <label htmlFor="lab-select-default" className="text-sm font-semibold">Mặc định</label>
-                <Select>
-                  <SelectTrigger id="lab-select-default" className="w-full">
-                    <SelectValue placeholder="Chọn tài khoản" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Tài khoản</SelectLabel>
-                      <SelectItem value="cash">Tiền mặt</SelectItem>
-                      <SelectItem value="momo">Ví MoMo</SelectItem>
-                      <SelectItem value="bank">Ngân hàng</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-1.5">
-                <label htmlFor="lab-select-filled" className="text-sm font-semibold">Có dữ liệu</label>
-                <Select defaultValue="momo">
-                  <SelectTrigger id="lab-select-filled" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="cash">Tiền mặt</SelectItem>
-                      <SelectItem value="momo">Ví MoMo</SelectItem>
-                      <SelectItem value="bank">Ngân hàng</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-1.5">
-                <label htmlFor="lab-select-error" className="text-sm font-semibold">Lỗi</label>
-                <Select>
-                  <SelectTrigger id="lab-select-error" className="w-full" aria-invalid="true" aria-describedby="lab-select-error-help">
-                    <SelectValue placeholder="Chọn hạng mục" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="food">Ăn uống</SelectItem>
-                      <SelectItem value="travel">Đi lại</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <p id="lab-select-error-help" className="text-xs text-[oklch(0.56_0.18_25)] dark:text-[oklch(0.80_0.13_25)]">Hãy chọn một hạng mục.</p>
-              </div>
-              <div className="grid gap-1.5">
-                <label htmlFor="lab-select-small" className="text-sm font-semibold">Kích thước nhỏ</label>
-                <Select defaultValue="month">
-                  <SelectTrigger id="lab-select-small" size="sm" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="week">Hằng tuần</SelectItem>
-                      <SelectItem value="month">Hằng tháng</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-1.5">
-                <label htmlFor="lab-select-disabled" className="text-sm font-semibold">Disabled</label>
-                <Select defaultValue="locked" disabled>
-                  <SelectTrigger id="lab-select-disabled" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="locked">Không thể chọn</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      <section aria-labelledby="textarea-examples">
-        <Card>
-          <CardHeader>
-            <CardTitle id="textarea-examples">Textarea</CardTitle>
-            <CardDescription>Thử nhập nhiều dòng, focus và kéo góc ô để thay đổi kích thước.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-6 sm:grid-cols-2">
-            <div className="grid content-start gap-1.5">
-              <label htmlFor="lab-textarea-default" className="text-sm font-semibold">Mặc định</label>
-              <Textarea id="lab-textarea-default" placeholder="Nhập ghi chú giao dịch..." />
-            </div>
-            <div className="grid content-start gap-1.5">
-              <label htmlFor="lab-textarea-filled" className="text-sm font-semibold">Có nội dung</label>
-              <Textarea id="lab-textarea-filled" defaultValue={"Chi phí đi chợ cuối tuần.\nGồm rau củ, trái cây và đồ dùng gia đình."} />
-            </div>
-            <div className="grid content-start gap-1.5">
-              <label htmlFor="lab-textarea-error" className="text-sm font-semibold">Lỗi</label>
-              <Textarea id="lab-textarea-error" placeholder="Nhập nội dung ghi chú" aria-invalid="true" aria-describedby="lab-textarea-error-help" />
-              <p id="lab-textarea-error-help" className="text-xs text-destructive">Vui lòng nhập nội dung ghi chú.</p>
-            </div>
-            <div className="grid content-start gap-1.5">
-              <label htmlFor="lab-textarea-disabled" className="text-sm font-semibold">Disabled</label>
-              <Textarea id="lab-textarea-disabled" defaultValue="Ghi chú này không thể chỉnh sửa." disabled />
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section aria-labelledby="currency-input-examples">
-        <Card>
-          <CardHeader>
-            <CardTitle id="currency-input-examples">Nhập tiền</CardTitle>
-            <CardDescription>Tự phân cách hàng nghìn, đơn vị đồng; dùng CurrencyInput của ứng dụng.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <CurrencyInputExample />
-          </CardContent>
-        </Card>
-      </section>
-
-      <section aria-labelledby="card-examples" className="space-y-4">
-        <div>
-          <h2 id="card-examples" className="text-xl font-semibold">Card</h2>
-          <p className="text-sm text-muted-foreground">
-            Thẻ thông tin phẳng; thẻ có thể bấm mới có cạnh nổi và lún khi nhấn.
-          </p>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Thẻ thông tin</CardTitle>
-              <CardDescription>Viền đều bốn phía, không có cạnh 3D.</CardDescription>
-            </CardHeader>
-            <CardContent>Đây là nội dung chỉ để xem.</CardContent>
-          </Card>
-          <Card pressable asChild>
-            <Link href="#button-sizes">
-              <CardHeader>
-                <CardTitle>Thẻ có thể bấm</CardTitle>
-                <CardDescription>Có cạnh nổi và lún xuống khi nhấn.</CardDescription>
-              </CardHeader>
-              <CardContent className="flex items-center gap-2">
-                Xem kích thước button <ArrowRightIcon className="size-4" />
-              </CardContent>
-            </Link>
-          </Card>
-        </div>
-      </section>
-
-      <section aria-labelledby="badge-examples" className="space-y-4">
-        <div>
-          <h2 id="badge-examples" className="text-xl font-semibold">Badge</h2>
-          <p className="text-sm text-muted-foreground">
-            Nền nhạt và chữ đậm cùng tông; badge chỉ hiển thị nên luôn phẳng.
-          </p>
-        </div>
-        <Card>
-          <CardContent className="flex flex-wrap items-center gap-3">
-            {badgeSamples.map(({ variant, label, dot }) => (
-              <Badge key={variant} variant={variant}>
-                {dot ? <span aria-hidden="true" className="size-[7px] rounded-full bg-current" /> : null}
-                {label}
-              </Badge>
-            ))}
-          </CardContent>
-        </Card>
-      </section>
-
-      <section aria-labelledby="progress-examples" className="space-y-4">
-        <div>
-          <h2 id="progress-examples" className="text-xl font-semibold">Progress</h2>
-          <p className="text-sm text-muted-foreground">
-            Rãnh dày, mặt màu bo tròn và vệt sáng theo Chunky UI Kit.
-          </p>
-        </div>
-        <Card>
-          <CardContent className="grid gap-5 sm:grid-cols-2">
-            {progressSamples.map(({ label, detail, value, tone }) => (
-              <div key={tone} className="space-y-2">
-                <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="font-semibold">{label}</span>
-                  <span className="text-muted-foreground">{detail}</span>
-                </div>
-                <Progress value={value} tone={tone} aria-label={`${label}: ${value}%`} />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </section>
-
-      <section aria-labelledby="tabs-examples" className="space-y-4">
-        <div>
-          <h2 id="tabs-examples" className="text-xl font-semibold">Segmented &amp; Tabs</h2>
-          <p className="text-sm text-muted-foreground">
-            Segmented chọn giữa các cách xem; Tabs chuyển giữa các nhóm nội dung.
-          </p>
-        </div>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Segmented</CardTitle>
-              <CardDescription>Ô được chọn nổi nhẹ trên nền trung tính.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="week">
-                <TabsList aria-label="Khoảng thời gian">
-                  <TabsTrigger value="day">Ngày</TabsTrigger>
-                  <TabsTrigger value="week">Tuần</TabsTrigger>
-                  <TabsTrigger value="month">Tháng</TabsTrigger>
-                  <TabsTrigger value="year">Năm</TabsTrigger>
-                </TabsList>
-                <TabsContent value="day">Giao dịch trong ngày.</TabsContent>
-                <TabsContent value="week">Giao dịch trong tuần.</TabsContent>
-                <TabsContent value="month">Giao dịch trong tháng.</TabsContent>
-                <TabsContent value="year">Giao dịch trong năm.</TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Segmented có chuyển động</CardTitle>
-              <CardDescription>Kiểu đang dùng tại trang Hạng mục.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AnimatedTabs defaultValue="expense">
-                <AnimatedTabsList aria-label="Loại hạng mục">
-                  <AnimatedTabsTrigger value="expense">Chi tiền</AnimatedTabsTrigger>
-                  <AnimatedTabsTrigger value="income">Thu tiền</AnimatedTabsTrigger>
-                  <AnimatedTabsTrigger value="transfer">Chuyển khoản</AnimatedTabsTrigger>
-                </AnimatedTabsList>
-                <AnimatedTabsContent value="expense">Hạng mục chi tiền.</AnimatedTabsContent>
-                <AnimatedTabsContent value="income">Hạng mục thu tiền.</AnimatedTabsContent>
-                <AnimatedTabsContent value="transfer">Hạng mục chuyển khoản.</AnimatedTabsContent>
-              </AnimatedTabs>
-            </CardContent>
-          </Card>
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Tabs dạng đường kẻ</CardTitle>
-              <CardDescription>Nhóm nội dung có gạch chân màu Sky khi được chọn.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="overview">
-                <TabsList variant="line" aria-label="Nội dung">
-                  <TabsTrigger value="overview">Tổng quan</TabsTrigger>
-                  <TabsTrigger value="transactions">Giao dịch</TabsTrigger>
-                  <TabsTrigger value="reports">Báo cáo</TabsTrigger>
-                </TabsList>
-                <TabsContent value="overview">Tóm tắt các chỉ số.</TabsContent>
-                <TabsContent value="transactions">Danh sách giao dịch.</TabsContent>
-                <TabsContent value="reports">Các báo cáo của bạn.</TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      <section aria-labelledby="design-colors">
-        <Card>
-          <CardHeader>
-            <CardTitle id="design-colors">Màu tham chiếu</CardTitle>
-            <CardDescription>
-              Màu mặt và cạnh lấy từ Chunky UI Kit trong my-design.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-3">
-            {colors.map(({ name, face, shade }) => (
-              <div key={name} className="overflow-hidden rounded-lg border">
-                <div className="h-14" style={{ backgroundColor: face }} />
-                <div className="h-2" style={{ backgroundColor: shade }} />
-                <div className="flex items-center justify-between gap-2 px-3 py-2 text-xs">
-                  <span className="font-medium">{name}</span>
-                  <span className="font-mono text-muted-foreground">{face}</span>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </section>
+      </div>
     </Page>
   )
 }

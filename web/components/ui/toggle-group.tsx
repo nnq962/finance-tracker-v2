@@ -8,14 +8,16 @@ import { ToggleGroup as ToggleGroupPrimitive } from "radix-ui"
 import { toggleVariants } from "@/components/ui/toggle"
 
 const toggleGroupItemVariants = cva(
-  "button-raised inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full border border-transparent bg-transparent font-sans text-sm font-medium whitespace-nowrap [--button-edge:3px] [--button-face-border:2px] [--button-face:#fff] [--button-shade:#e7e4dd] text-[#2b2a33] transition-[filter] duration-[80ms] hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38b8f6] disabled:pointer-events-none disabled:opacity-50 data-[state=on]:[--button-face:oklch(0.95_0.04_235)] data-[state=on]:[--button-shade:oklch(0.80_0.09_235)] data-[state=on]:text-[oklch(0.58_0.14_240)] dark:[--button-face:#201e26] dark:[--button-shade:#35323e] dark:text-[#f2f0f6] dark:data-[state=on]:[--button-face:oklch(0.33_0.06_238)] dark:data-[state=on]:[--button-shade:oklch(0.55_0.11_238)] dark:data-[state=on]:text-[oklch(0.82_0.11_235)] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  // Chips: grey pills, black once chosen.
+  "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full bg-secondary font-sans text-sm font-medium whitespace-nowrap text-foreground transition-[background-color,color,scale] duration-150 ease-out outline-none hover:bg-secondary/70 active:scale-[0.96] focus-visible:ring-3 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+
   {
     variants: {
       size: {
         default:
-          "h-8 min-w-8 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        sm: "h-7 min-w-7 px-2.5 text-[0.8rem] has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-9 min-w-9 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
+          "h-9 min-w-9 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
+        sm: "h-8 min-w-8 px-3.5 text-[0.8125rem] has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5 [&_svg:not([class*='size-'])]:size-3.5",
+        lg: "h-10 min-w-10 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
       },
     },
     defaultVariants: { size: "default" },

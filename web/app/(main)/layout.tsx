@@ -41,19 +41,19 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
         <WelcomeProvider firstRun={firstRun}>
           <SidebarProvider
             data-app-shell="main"
-            className="h-dvh min-h-0 flex-col overflow-hidden bg-[#fbfaf7] dark:bg-background md:h-auto md:min-h-svh md:flex-row md:overflow-visible md:bg-sidebar dark:md:bg-sidebar"
+            className="h-dvh min-h-0 flex-col overflow-hidden bg-background md:h-auto md:min-h-svh md:flex-row md:overflow-visible md:bg-sidebar dark:md:bg-sidebar"
           >
             <PwaThemeColor />
             <AppSidebar />
             <SidebarInset
               data-main-scroll-viewport
-              className="min-h-0 min-w-0 overflow-y-auto overscroll-y-contain bg-[#fbfaf7] [--main-content-px:--spacing(4)] [-webkit-overflow-scrolling:touch] dark:bg-background md:min-h-svh md:overflow-visible md:border-l-2 md:border-l-[#e7e4dd] md:peer-data-[variant=inset]:m-0 md:peer-data-[variant=inset]:rounded-none md:peer-data-[variant=inset]:shadow-none md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0 md:[--main-content-px:--spacing(6)] dark:md:border-l-[#35323e]"
+              className="min-h-0 min-w-0 overflow-y-auto overscroll-y-contain bg-background [--main-content-px:--spacing(4)] [-webkit-overflow-scrolling:touch] dark:bg-background md:min-h-svh md:overflow-visible md:border-l md:border-l-sidebar-border md:peer-data-[variant=inset]:m-0 md:peer-data-[variant=inset]:rounded-none md:peer-data-[variant=inset]:shadow-none md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0 md:[--main-content-px:--spacing(6)]"
             >
               <div
                 aria-hidden="true"
                 className="h-[env(safe-area-inset-top,0px)] shrink-0 md:hidden"
               />
-              <header className="sticky top-0 z-20 hidden h-16 shrink-0 items-center bg-[#fbfaf7] dark:bg-background md:flex">
+              <header className="sticky top-0 z-20 hidden h-16 shrink-0 items-center bg-background md:flex">
                 <div className="flex w-full items-center justify-between gap-3 px-(--main-content-px) transition-[padding] duration-200 ease-linear">
                   <div className="flex items-center gap-2">
                     <SidebarTrigger className="-ml-1" />

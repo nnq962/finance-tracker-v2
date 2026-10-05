@@ -6,9 +6,9 @@ import { Separator as SeparatorPrimitive } from "radix-ui"
 
 const separatorVariants = {
   default: "",
-  // 2px rounded rule in the card border color, matching chunky outlines.
-  chunky:
-    "rounded-full bg-[#e7e4dd] data-horizontal:h-0.5 data-vertical:w-0.5 dark:bg-[#35323e]",
+  // Was the Chunky 2px rule; now the same hairline as default. Kept so its
+  // callers need no change.
+  chunky: "",
 } as const
 
 function Separator({

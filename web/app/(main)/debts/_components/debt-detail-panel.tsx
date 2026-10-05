@@ -43,7 +43,7 @@ export function DebtDetailPanel(props: DebtDetailPanelProps) {
       <div className="flex min-h-6 items-center px-3">
         <h2
           id="debt-detail-title"
-          className="truncate text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+          className="truncate text-[13px] font-medium text-muted-foreground"
         >
           {props.contact.name}
         </h2>

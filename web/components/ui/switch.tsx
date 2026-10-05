@@ -42,7 +42,7 @@ function Switch({
       data-size={size}
       data-pressed={pressed && !props.disabled ? "true" : undefined}
       className={cn(
-        "chunky-switch peer relative inline-flex shrink-0 cursor-pointer rounded-full border-0 outline-none after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#38b8f6] aria-invalid:outline-3 aria-invalid:outline-destructive disabled:cursor-not-allowed disabled:opacity-50",
+        "ios-switch peer relative inline-flex shrink-0 cursor-pointer rounded-full border-0 outline-none after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:ring-3 focus-visible:ring-ring/40 aria-invalid:ring-3 aria-invalid:ring-destructive/40 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
       {...props}

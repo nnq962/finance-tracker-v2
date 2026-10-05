@@ -178,7 +178,7 @@ function FormSection({
   return (
     <section className="space-y-2">
       <div className="flex min-h-6 items-center px-3">
-        <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+        <h3 className="text-[13px] font-medium text-muted-foreground">
           {title}
         </h3>
       </div>

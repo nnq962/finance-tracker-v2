@@ -47,7 +47,7 @@ export function DebtSummary({ summary }: DebtSummaryProps) {
       <div className="flex min-h-6 items-center px-3">
         <h2
           id="debt-summary-title"
-          className="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+          className="text-[13px] font-medium text-muted-foreground"
         >
           Tổng quan
         </h2>

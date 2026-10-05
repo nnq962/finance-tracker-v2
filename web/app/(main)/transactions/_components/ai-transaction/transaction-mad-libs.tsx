@@ -348,7 +348,7 @@ export function TransactionMadLibs({
             transition={{ duration: 0.22, ease: EASE_OUT }}
           >
             <div className="flex items-center justify-between gap-2">
-              <p className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              <p className="px-3 text-[13px] font-medium text-muted-foreground">
                 {fieldCaptions[editing]}
               </p>
               <Button type="submit" variant="ghost" size="sm">

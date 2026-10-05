@@ -14,7 +14,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - Finance Tracker là một PWA dùng chủ yếu trên điện thoại. Giao diện phải mang cảm giác app native: thiết kế cho điện thoại trước (khung 390px), desktop là bản mở rộng.
 - Đặc trưng nên có: tiêu đề lớn, list chia nhóm tràn mép với tiêu đề nhóm bám khi cuộn, dòng list cao và dễ chạm, chip/segmented control thay cho form lọc, bottom sheet thay cho dialog, nút nổi trong tầm ngón cái, phản hồi khi chạm (`active:`) thay cho hiệu ứng hover. Tránh card lồng card, khung viền bao quanh mọi thứ và bố cục kiểu trang web.
-- Nguồn chuẩn về thiết kế: `docs/design/` (Chunky UI) và các mockup đã được người dùng duyệt. Khi spec khác style mặc định của component, làm theo spec.
+- Nguồn chuẩn về thiết kế: `docs/design/minimal.md` (giao diện tối giản, ảnh mẫu trong `docs/template/`), trang `/ui-lab` khi chạy dev, và các mockup đã được người dùng duyệt. Khi spec khác style mặc định của component, làm theo spec. Chunky UI trong `docs/design/` chỉ còn là lưu trữ.
+- Màu luôn lấy từ token trong `app/globals.css` (`bg-card`, `bg-secondary`, `bg-surface-2`, `text-muted-foreground`, `text-income`, `bg-expense-soft`…), không viết cứng mã hex.
 - Vùng chạm tối thiểu 44px, tôn trọng safe-area (`env(safe-area-inset-*)`), hỗ trợ cả theme sáng lẫn tối.
 
 ### Ba lớp component

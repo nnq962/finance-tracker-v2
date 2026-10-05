@@ -84,7 +84,7 @@ export function AllocationDonut({ categoryGroups, allocation, month }: Allocatio
     <section aria-labelledby="allocation-title" className="space-y-2">
       <h2
         id="allocation-title"
-        className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+        className="px-3 text-[13px] font-medium text-muted-foreground"
       >
         Phân bổ · Tháng {monthNumber}/{year}
       </h2>

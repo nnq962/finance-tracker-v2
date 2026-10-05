@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils"
 export function settingsSeparatorClassName(hasMedia: boolean) {
   return cn(
     // -right-1 crosses the list's 4px side padding to reach the card's edge.
-    "relative before:absolute before:top-0 before:-right-1 before:h-0.5 before:bg-[#e7e4dd] first:before:hidden dark:before:bg-[#35323e]",
+    "relative before:absolute before:top-0 before:-right-1 before:h-px before:bg-border first:before:hidden",
     // Row padding (12px), plus the icon (32px) and gap (10px) when present.
     hasMedia ? "before:left-[3.375rem]" : "before:left-3",
   )
@@ -57,7 +57,7 @@ function SettingsGroup({
       {title || action ? (
         <div className="flex min-h-6 items-center justify-between gap-3 px-3">
           {title ? (
-            <h2 className="flex min-w-0 items-center gap-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            <h2 className="flex min-w-0 items-center gap-1.5 text-[13px] font-medium text-muted-foreground">
               {title}
             </h2>
           ) : null}
@@ -103,10 +103,10 @@ type SettingsRowProps = {
   destructive?: boolean
 }
 
-// Item has no pressed state for button rows; these reuse the ghost/outline
-// button colours (hover, pressed and selected).
+// Item has no pressed state for button rows: a grey wash when hovered,
+// pressed or selected.
 const pressableRow =
-  "text-left hover:bg-[#f3f1ec] active:bg-[#d6f4ff] disabled:pointer-events-none disabled:opacity-50 md:data-[active=true]:bg-[#d6f4ff] dark:hover:bg-[#2c2a33] dark:active:bg-[#113950] dark:md:data-[active=true]:bg-[#113950]"
+  "text-left transition-colors hover:bg-secondary/60 active:bg-secondary disabled:pointer-events-none disabled:opacity-50 md:data-[active=true]:bg-secondary"
 
 function SettingsRow({
   icon: Icon,
@@ -135,7 +135,7 @@ function SettingsRow({
       ) : null}
       <ItemContent className={cn("min-w-0", destructive && "items-center")}>
         <ItemTitle
-          className={cn(destructive && "text-[#c8393a] dark:text-[#ff9b93]")}
+          className={cn(destructive && "text-expense")}
         >
           {title}
         </ItemTitle>

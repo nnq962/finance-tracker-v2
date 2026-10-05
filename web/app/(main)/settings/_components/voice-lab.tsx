@@ -271,7 +271,7 @@ export function VoiceLab() {
       <WhisperLab onRun={(run) => setWhisperRuns((runs) => [...runs, run])} />
 
       <section className="space-y-3">
-        <h3 className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+        <h3 className="px-3 text-[13px] font-medium text-muted-foreground">
           Nhận dạng giọng nói (Web Speech)
         </h3>
         <FieldGroup>
@@ -346,7 +346,7 @@ export function VoiceLab() {
       </section>
 
       <section className="space-y-3">
-        <h3 className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+        <h3 className="px-3 text-[13px] font-medium text-muted-foreground">
           Micro (mức âm thanh)
         </h3>
         <FieldGroup>
@@ -364,7 +364,7 @@ export function VoiceLab() {
       </section>
 
       <section className="space-y-3">
-        <h3 className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+        <h3 className="px-3 text-[13px] font-medium text-muted-foreground">
           Đọc chính tả bằng bàn phím
         </h3>
         <Field>

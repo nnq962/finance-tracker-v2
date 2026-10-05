@@ -6,11 +6,10 @@ function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
     <textarea
       data-slot="textarea"
       className={cn(
-        "flex field-sizing-content min-h-16 w-full min-w-0 rounded-lg border-2 border-[#e7e4dd] bg-[#f3f1ec] px-2.5 py-2 text-base text-[#2b2a33] outline-none transition-[background-color,border-color,box-shadow] duration-150 md:text-sm",
-        "placeholder:text-[#8f8b98]/70",
-        "enabled:not-focus:not-aria-invalid:hover:border-[#d6d2c8] focus:border-[oklch(0.74_0.14_235)] focus:bg-white focus:ring-4 focus:ring-[oklch(0.95_0.04_235)]",
-        "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-55 aria-invalid:border-[oklch(0.70_0.19_25)] aria-invalid:bg-[oklch(0.95_0.04_25)] aria-invalid:enabled:hover:border-[oklch(0.70_0.19_25)] aria-invalid:focus:border-[oklch(0.70_0.19_25)] aria-invalid:focus:ring-[oklch(0.95_0.04_25)]",
-        "dark:border-[#35323e] dark:bg-[#1b1a21] dark:text-[#f2f0f6] dark:placeholder:text-[#9d99a9]/70 dark:enabled:not-focus:not-aria-invalid:hover:border-[#4a4656] dark:focus:border-[oklch(0.74_0.14_235)] dark:focus:bg-[#201e26] dark:focus:ring-[oklch(0.33_0.06_238)] dark:aria-invalid:border-[oklch(0.70_0.19_25)] dark:aria-invalid:bg-[oklch(0.33_0.07_25)] dark:aria-invalid:enabled:hover:border-[oklch(0.70_0.19_25)] dark:aria-invalid:focus:border-[oklch(0.70_0.19_25)] dark:aria-invalid:focus:ring-[oklch(0.33_0.07_25)]",
+        "flex field-sizing-content min-h-20 w-full min-w-0 rounded-xl border border-transparent bg-surface-2 px-3.5 py-3 text-base text-foreground md:text-sm",
+        "outline-none transition-[background-color,border-color,box-shadow] duration-150 placeholder:text-muted-foreground/70",
+        "enabled:not-focus:not-aria-invalid:hover:bg-secondary focus:border-foreground/15 focus:bg-card focus:ring-4 focus:ring-foreground/5",
+        "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:bg-expense-soft aria-invalid:focus:ring-destructive/15",
         className
       )}
       {...props}

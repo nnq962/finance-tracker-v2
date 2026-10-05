@@ -80,7 +80,7 @@ export function TransactionsHero({
       {/* A caption above the card, as on the overview's sections. */}
       <h2
         id="transactions-summary-title"
-        className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+        className="px-3 text-[13px] font-medium text-muted-foreground"
       >
         Thu chi trong tháng
       </h2>

@@ -65,7 +65,7 @@ export function NetWorth({ data }: { data: OverviewSummary["netWorth"] }) {
           both desktop columns start on one line. */}
       <h2
         id="net-worth-title"
-        className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+        className="px-3 text-[13px] font-medium text-muted-foreground"
       >
         Tài sản ròng
       </h2>
@@ -115,7 +115,7 @@ export function CashFlowTrend({ summary }: { summary: OverviewSummary }) {
     <section aria-labelledby="cash-flow-trend-title" className="space-y-2">
       <h2
         id="cash-flow-trend-title"
-        className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+        className="px-3 text-[13px] font-medium text-muted-foreground"
       >
         Thu chi 6 tháng
       </h2>

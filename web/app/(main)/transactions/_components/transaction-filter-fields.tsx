@@ -271,7 +271,7 @@ export function TransactionFilterPanel({
       <div className="flex min-h-6 items-center justify-between gap-3 px-3">
         <h2
           id="transaction-filters-title"
-          className="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+          className="text-[13px] font-medium text-muted-foreground"
         >
           Bộ lọc
         </h2>
