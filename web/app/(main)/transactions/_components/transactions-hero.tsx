@@ -43,7 +43,7 @@ function CashFlowStat({
       </p>
       <p
         className={cn(
-          "font-heading text-xl leading-tight font-extrabold tabular-nums [overflow-wrap:anywhere]",
+          "text-xl leading-tight font-semibold tabular-nums [overflow-wrap:anywhere]",
           cashFlowColors[kind].text,
         )}
       >
@@ -80,7 +80,7 @@ export function TransactionsHero({
       {/* A caption above the card, as on the overview's sections. */}
       <h2
         id="transactions-summary-title"
-        className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+        className="px-3 text-xs font-semibold text-muted-foreground"
       >
         Thu chi trong tháng
       </h2>
@@ -144,7 +144,7 @@ export function TransactionsHero({
             <span className="text-muted-foreground">Chênh lệch</span>
             <span
               className={cn(
-                "font-heading font-extrabold tabular-nums",
+                "font-semibold tabular-nums",
                 netBalance > 0 && cashFlowColors.income.text,
                 netBalance < 0 && cashFlowColors.expense.text,
               )}

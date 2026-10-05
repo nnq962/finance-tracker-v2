@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { FlaskConicalIcon, SettingsIcon } from "lucide-react"
+import { SettingsIcon } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import { Badge } from "@/components/ui/badge"
@@ -29,15 +29,6 @@ const navMain = [
     url: "/settings",
     icon: <SettingsIcon />,
   },
-  ...(process.env.NODE_ENV === "development"
-    ? [
-        {
-          title: "Thử giao diện",
-          url: "/ui-lab",
-          icon: <FlaskConicalIcon />,
-        },
-      ]
-    : []),
 ]
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
@@ -60,7 +51,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="truncate font-medium">Finance Tracker</span>
-                    <Badge variant="secondary" className="px-1.5 tracking-normal">Beta</Badge>
+                    <Badge variant="secondary" className="px-1.5">Beta</Badge>
                   </div>
                   <span className="truncate text-xs">
                     Tài chính cá nhân · v{process.env.NEXT_PUBLIC_APP_VERSION}

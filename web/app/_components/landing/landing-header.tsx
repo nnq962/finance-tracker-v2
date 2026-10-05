@@ -29,10 +29,8 @@ export function LandingHeader() {
     // re-layers mid-scroll; only the border color reacts to scrolling.
     <header
       className={cn(
-        "sticky top-0 z-40 border-b bg-[#fbfaf7]/85 pt-[env(safe-area-inset-top,0px)] backdrop-blur-xl transition-colors duration-300 dark:bg-background/85",
-        scrolled
-          ? "border-[#e7e4dd] dark:border-[#35323e]"
-          : "border-transparent",
+        "sticky top-0 z-40 border-b bg-background/85 pt-[env(safe-area-inset-top,0px)] backdrop-blur-xl transition-colors duration-300",
+        scrolled ? "border-border" : "border-transparent",
       )}
     >
       <nav
@@ -52,7 +50,7 @@ export function LandingHeader() {
             priority
             className="size-9 transition-transform duration-500 ease-out group-hover:rotate-[20deg]"
           />
-          <span className="hidden whitespace-nowrap font-heading text-base font-extrabold min-[360px]:inline sm:text-lg">
+          <span className="hidden whitespace-nowrap text-base font-semibold min-[360px]:inline sm:text-lg">
             Finance Tracker
           </span>
         </Link>

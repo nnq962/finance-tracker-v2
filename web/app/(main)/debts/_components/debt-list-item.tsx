@@ -70,7 +70,7 @@ export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemPr
         <span className="flex flex-col items-end">
           <span
             className={cn(
-              "font-heading text-sm font-extrabold tabular-nums",
+              "text-sm font-semibold tabular-nums",
               status.isSettled && "text-muted-foreground",
             )}
           >
@@ -79,7 +79,7 @@ export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemPr
           <span
             className={cn(
               "text-xs text-muted-foreground",
-              status.isOverdue && "text-[#c8393a] dark:text-[#ff9b93]",
+              status.isOverdue && "text-expense",
             )}
           >
             {status.label}

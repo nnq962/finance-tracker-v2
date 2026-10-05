@@ -59,7 +59,7 @@ export function TransactionItem({
             <span className="flex flex-col items-end">
               <span
                 className={cn(
-                  "font-heading text-sm font-extrabold tabular-nums",
+                  "text-sm font-semibold tabular-nums",
                   presentation.amountClassName,
                 )}
               >

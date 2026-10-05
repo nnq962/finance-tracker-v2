@@ -159,7 +159,7 @@ export function SettingsView({
               <span className="flex min-w-0 items-center gap-1">
                 <span className="truncate">{user.name}</span>
                 {isPro ? (
-                  <BadgeCheckIcon className="size-4 shrink-0 fill-blue-500 text-white" role="img" aria-label="Pro" />
+                  <BadgeCheckIcon className="size-4 shrink-0 fill-ai text-background" role="img" aria-label="Pro" />
                 ) : null}
               </span>
             }

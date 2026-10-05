@@ -149,7 +149,7 @@ export function WelcomeProvider({
                   onClick={() => go(dot)}
                   className={cn(
                     "h-2 rounded-full bg-muted-foreground/30 transition-all",
-                    dot === index ? "w-6 bg-[#38b8f6]" : "w-2",
+                    dot === index ? "w-6 bg-primary" : "w-2",
                   )}
                 />
               ))}

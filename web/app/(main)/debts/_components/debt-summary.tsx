@@ -9,8 +9,8 @@ type DebtSummaryProps = {
   summary: DebtSummaryData
 }
 
-const lentClassName = "text-[#3e9727] dark:text-[#94e379]"
-const borrowedClassName = "text-[#c8393a] dark:text-[#ff9b93]"
+const lentClassName = "text-income"
+const borrowedClassName = "text-expense"
 
 function DirectionStat({
   amount,
@@ -26,7 +26,7 @@ function DirectionStat({
       </p>
       <p
         className={cn(
-          "font-heading text-xl leading-tight font-extrabold tabular-nums [overflow-wrap:anywhere]",
+          "text-xl leading-tight font-bold tabular-nums [overflow-wrap:anywhere]",
           direction === "lent" ? lentClassName : borrowedClassName,
         )}
       >
@@ -47,7 +47,7 @@ export function DebtSummary({ summary }: DebtSummaryProps) {
       <div className="flex min-h-6 items-center px-3">
         <h2
           id="debt-summary-title"
-          className="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+          className="text-xs font-semibold text-muted-foreground"
         >
           Tổng quan
         </h2>
@@ -63,7 +63,7 @@ export function DebtSummary({ summary }: DebtSummaryProps) {
             <span className="text-muted-foreground">Cân đối</span>
             <span
               className={cn(
-                "font-heading font-extrabold tabular-nums",
+                "font-semibold tabular-nums",
                 netBalance > 0 && lentClassName,
                 netBalance < 0 && borrowedClassName,
               )}

@@ -45,7 +45,7 @@ export function ThemeSelect() {
           variant: "ghost",
           size: "icon",
           className:
-            "gap-0 border-transparent bg-transparent p-0 enabled:hover:border-transparent focus:border-transparent focus:bg-transparent focus:ring-0 focus-visible:ring-3 data-[state=open]:border-transparent data-[state=open]:bg-[#d6f4ff] data-[state=open]:ring-0 dark:border-transparent dark:bg-transparent dark:enabled:hover:border-transparent dark:focus:border-transparent dark:focus:bg-transparent dark:focus:ring-0 dark:data-[state=open]:border-transparent dark:data-[state=open]:bg-[#d6f4ff]/15 dark:data-[state=open]:ring-0 [&>svg]:hidden",
+            "gap-0 bg-transparent p-0 data-[state=open]:bg-muted [&>svg]:hidden",
         })}
       >
         <span aria-hidden="true" className="flex size-4 items-center justify-center">

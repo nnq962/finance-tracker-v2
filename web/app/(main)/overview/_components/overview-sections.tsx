@@ -11,18 +11,24 @@ import {
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
-import { getCategoryColor, type CategoryColorName } from "@/lib/categories/category-colors"
 import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
 import type { OverviewSummary } from "@/lib/overview/summary"
 import { cn } from "@/lib/utils"
 
 import { CashFlowChart } from "./overview-charts"
 
-const overdueClassName = "text-[#c8393a] dark:text-[#ff9b93]"
+const overdueClassName = "text-expense"
+
+// Accounts stay neutral; what is owed to or by the user takes the money colours.
+const tileToneClassName = {
+  neutral: "bg-muted",
+  income: "bg-income/10 text-income",
+  expense: "bg-expense/10 text-expense",
+} as const
 
 type NetWorthTileProps = {
   icon: LucideIcon
-  color: CategoryColorName
+  tone: keyof typeof tileToneClassName
   label: string
   value: number
   onClick: () => void
@@ -33,7 +39,7 @@ type NetWorthTileProps = {
  * Three share the card's width, so the amount is shortened; the full one is
  * in the tooltip and the accessible name.
  */
-function NetWorthTile({ icon: Icon, color, label, value, onClick }: NetWorthTileProps) {
+function NetWorthTile({ icon: Icon, tone, label, value, onClick }: NetWorthTileProps) {
   return (
     <button
       type="button"
@@ -42,13 +48,13 @@ function NetWorthTile({ icon: Icon, color, label, value, onClick }: NetWorthTile
       onClick={onClick}
       className={cn(
         "flex min-w-0 flex-col items-start gap-2 rounded-xl p-3 text-left outline-none transition-[filter] hover:brightness-95 focus-visible:ring-3 focus-visible:ring-ring/50 active:brightness-90",
-        getCategoryColor(color).surfaceClassName,
+        tileToneClassName[tone],
       )}
     >
       <Icon className="size-4" aria-hidden="true" />
       <span className="space-y-0.5">
         <span className="block text-xs font-semibold text-muted-foreground">{label}</span>
-        <span className="block font-heading text-base leading-tight font-extrabold text-foreground tabular-nums">
+        <span className="block text-base leading-tight font-semibold text-foreground tabular-nums">
           {formatCompactCurrency(value, 1)}
         </span>
       </span>
@@ -65,7 +71,7 @@ export function NetWorth({ data }: { data: OverviewSummary["netWorth"] }) {
           both desktop columns start on one line. */}
       <h2
         id="net-worth-title"
-        className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+        className="px-3 text-xs font-semibold text-muted-foreground"
       >
         Tài sản ròng
       </h2>
@@ -74,7 +80,7 @@ export function NetWorth({ data }: { data: OverviewSummary["netWorth"] }) {
         <CardContent className="space-y-4">
           <p
             className={cn(
-              "font-heading text-4xl leading-tight font-extrabold tracking-tight tabular-nums [overflow-wrap:anywhere]",
+              "text-4xl leading-tight font-bold tracking-tight tabular-nums [overflow-wrap:anywhere]",
               data.total < 0 && overdueClassName,
             )}
           >
@@ -83,21 +89,21 @@ export function NetWorth({ data }: { data: OverviewSummary["netWorth"] }) {
           <div className="grid grid-cols-3 gap-2">
             <NetWorthTile
               icon={WalletCardsIcon}
-              color="blue"
+              tone="neutral"
               label="Tài khoản"
               value={data.cash}
               onClick={() => router.push("/budget")}
             />
             <NetWorthTile
               icon={ArrowDownLeftIcon}
-              color="emerald"
+              tone="income"
               label="Cho vay"
               value={data.receivable}
               onClick={() => router.push("/debts")}
             />
             <NetWorthTile
               icon={ArrowUpRightIcon}
-              color="rose"
+              tone="expense"
               label="Đang nợ"
               value={data.payable}
               onClick={() => router.push("/debts")}
@@ -115,7 +121,7 @@ export function CashFlowTrend({ summary }: { summary: OverviewSummary }) {
     <section aria-labelledby="cash-flow-trend-title" className="space-y-2">
       <h2
         id="cash-flow-trend-title"
-        className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+        className="px-3 text-xs font-semibold text-muted-foreground"
       >
         Thu chi 6 tháng
       </h2>
@@ -165,7 +171,7 @@ export function DueDebts({ debts }: { debts: OverviewSummary["dueDebts"] }) {
           description={debt.direction === "lent" ? "Cho vay" : "Đi vay"}
           action={
             <span className="flex flex-col items-end">
-              <span className="font-heading text-sm font-extrabold tabular-nums">
+              <span className="text-sm font-semibold tabular-nums">
                 {formatCurrency(debt.remainingAmount)}
               </span>
               <span

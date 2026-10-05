@@ -13,7 +13,6 @@ export default function robots(): MetadataRoute.Robots {
         "/debts",
         "/overview",
         "/transactions",
-        "/ui-lab",
       ],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,

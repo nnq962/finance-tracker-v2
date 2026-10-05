@@ -33,7 +33,7 @@ export function ColorPicker({ onValueChange, value }: ColorPickerProps) {
             title={option.label}
             onClick={() => onValueChange(option.name)}
             className={`flex size-9 items-center justify-center justify-self-center rounded-full text-white outline-none transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 ${option.dotClassName} ${
-              isSelected ? "ring-3 ring-offset-2 ring-offset-background ring-[#38b8f6]" : "hover:scale-110"
+              isSelected ? "ring-3 ring-offset-2 ring-offset-background ring-primary" : "hover:scale-110"
             }`}
           >
             {isSelected ? <CheckIcon className="size-4" aria-hidden="true" /> : null}

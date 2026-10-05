@@ -154,7 +154,7 @@ export function MobileBottomNav() {
   return (
     <nav
       aria-label="Điều hướng chính trên di động"
-      className="relative z-40 w-full shrink-0 isolate border-t-2 border-[#e7e4dd] bg-white px-3 pt-2 [padding-bottom:max(0.5rem,env(safe-area-inset-bottom,0px))] dark:border-[#35323e] dark:bg-[#201e26] md:hidden"
+      className="relative z-40 w-full shrink-0 isolate border-t border-border bg-background px-3 pt-2 [padding-bottom:max(0.5rem,env(safe-area-inset-bottom,0px))] md:hidden"
     >
       <ul ref={listRef} className="relative mx-auto grid max-w-md grid-cols-5">
         <li
@@ -170,7 +170,7 @@ export function MobileBottomNav() {
                 : `translate3d(${Math.round(activeIndex * slotWidth)}px, 0, 0)`,
           }}
         >
-          <span className="block size-full rounded-xl bg-[#d6f4ff] dark:bg-[#113950]" />
+          <span className="block size-full rounded-xl bg-accent" />
         </li>
 
         {mobileNavigationItems.map((item) => {
@@ -202,8 +202,8 @@ export function MobileBottomNav() {
                 onClick={(event) => navigateTo(event, item.url)}
                 aria-current={pathname === item.url ? "page" : undefined}
                 className={cn(
-                  "relative z-10 flex min-h-12 min-w-0 touch-manipulation flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 text-muted-foreground outline-none select-none [-webkit-tap-highlight-color:transparent] transition-[color,transform] duration-150 ease-out active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:ring-2 focus-visible:ring-[#38b8f6] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#201e26]",
-                  isActive && "text-[#0083c4] dark:text-[#78d0ff]",
+                  "relative z-10 flex min-h-12 min-w-0 touch-manipulation flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 text-muted-foreground outline-none select-none [-webkit-tap-highlight-color:transparent] transition-[color,transform] duration-150 ease-out active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                  isActive && "text-foreground",
                 )}
               >
                 <Icon
@@ -213,7 +213,7 @@ export function MobileBottomNav() {
                   )}
                   aria-hidden="true"
                 />
-                <span className="max-w-full truncate font-heading text-[0.65rem] leading-none font-extrabold max-[359px]:hidden">
+                <span className="max-w-full truncate text-[0.65rem] leading-none font-semibold max-[359px]:hidden">
                   {item.mobileTitle}
                 </span>
               </Link>

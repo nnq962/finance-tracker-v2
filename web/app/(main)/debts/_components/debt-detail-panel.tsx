@@ -43,7 +43,7 @@ export function DebtDetailPanel(props: DebtDetailPanelProps) {
       <div className="flex min-h-6 items-center px-3">
         <h2
           id="debt-detail-title"
-          className="truncate text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+          className="truncate text-xs font-semibold text-muted-foreground"
         >
           {props.contact.name}
         </h2>
@@ -70,7 +70,7 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
       <Card>
         <CardContent className="space-y-2">
           <p className="text-sm text-muted-foreground">{debt.hasInterest ? "Còn lại hôm nay" : "Còn lại"}</p>
-          <p className="font-heading text-3xl leading-tight font-extrabold tabular-nums [overflow-wrap:anywhere]">
+          <p className="text-3xl leading-tight font-bold tabular-nums [overflow-wrap:anywhere]">
             {formatCurrency(remainingAmount, { signDisplay: "never" })}
           </p>
           <Progress value={paymentProgress} />
@@ -86,7 +86,7 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
             // What it comes to on the due date, as interest keeps accruing until then.
             <p className="text-sm text-muted-foreground">
               Đến hạn {formatDebtDate(projection.dueAt)}:{" "}
-              <span className="font-heading font-extrabold text-foreground tabular-nums">
+              <span className="font-semibold text-foreground tabular-nums">
                 {formatCurrency(projection.remainingAmount)}
               </span>
             </p>

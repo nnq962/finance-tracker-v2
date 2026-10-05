@@ -99,7 +99,7 @@ export function NotificationDialogContent({
                   </SelectGroup>
                 </SelectContent>
               </Select>
-              <span aria-hidden="true" className="font-heading font-extrabold text-muted-foreground">:</span>
+              <span aria-hidden="true" className="font-semibold text-muted-foreground">:</span>
               <Select
                 value={reminderMinute}
                 onValueChange={(minute) => updateReminderTime(reminderHour, minute)}

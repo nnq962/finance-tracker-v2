@@ -40,23 +40,23 @@ const RECENT = [
     meta: "Vietcombank · 09:12",
     amount: 18_000_000,
     icon: BriefcaseBusinessIcon,
-    iconClassName: "bg-[#dbf9d2] text-[#3e9727] dark:bg-[#203e1a] dark:text-[#94e379]",
-    amountClassName: "text-[#3e9727] dark:text-[#94e379]",
+    iconClassName: "bg-income/10 text-income",
+    amountClassName: "text-income",
   },
   {
     title: "Ăn trưa",
     meta: "Tiền mặt · 12:30",
     amount: -65_000,
     icon: UtensilsIcon,
-    iconClassName: "bg-[#ffe5e1] text-[#c8393a] dark:bg-[#542523] dark:text-[#ff9b93]",
-    amountClassName: "text-[#c8393a] dark:text-[#ff9b93]",
+    iconClassName: "bg-expense/10 text-expense",
+    amountClassName: "text-expense",
   },
   {
     title: "Nạp ví MoMo",
     meta: "Chuyển khoản · 18:45",
     amount: 500_000,
     icon: ArrowLeftRightIcon,
-    iconClassName: "bg-[#d6f4ff] text-[#0083c4] dark:bg-[#113950] dark:text-[#78d0ff]",
+    iconClassName: "bg-transfer/10 text-transfer",
     amountClassName: "text-foreground",
   },
 ] as const
@@ -95,15 +95,14 @@ export function HeroPreview() {
         className="relative"
       >
         <div
-          className="absolute -inset-3 -z-10 rotate-3 rounded-[2rem] bg-[#d6f4ff] sm:-inset-5 dark:bg-[#113950]"
+          className="absolute -inset-3 -z-10 rotate-3 rounded-[2rem] bg-muted sm:-inset-5"
           aria-hidden="true"
         />
         <div
-          className="absolute -inset-3 -z-20 -rotate-2 rounded-[2rem] bg-[#dbf9d2] sm:-inset-5 dark:bg-[#203e1a]"
+          className="absolute -inset-3 -z-20 -rotate-2 rounded-[2rem] bg-border sm:-inset-5"
           aria-hidden="true"
         />
 
-        <div className="rounded-xl shadow-[0_24px_60px_-24px_rgb(43_42_51/0.25)] dark:shadow-[0_24px_60px_-24px_rgb(0_0_0/0.6)]">
         <Card className="gap-5">
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -139,7 +138,7 @@ export function HeroPreview() {
                       <Icon className="size-4" aria-hidden="true" />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate font-heading font-extrabold">
+                      <span className="block truncate font-semibold">
                         {item.title}
                       </span>
                       <span className="block truncate text-xs text-muted-foreground">
@@ -157,14 +156,13 @@ export function HeroPreview() {
             </ul>
           </CardContent>
         </Card>
-        </div>
 
         <FloatingChip
           className="top-[52%] -left-4 sm:-left-10 lg:-left-14"
           delay={1.5}
           floatDuration={5}
         >
-          <ChipIcon className="bg-[#dbf9d2] text-[#3e9727] dark:bg-[#203e1a] dark:text-[#94e379]">
+          <ChipIcon className="bg-income/10 text-income">
             <ArrowDownLeftIcon className="size-4" />
           </ChipIcon>
           <div>
@@ -173,7 +171,7 @@ export function HeroPreview() {
               value={8_400_000}
               signDisplay="always"
               delay={1.6}
-              className="text-[#3e9727] tabular-nums dark:text-[#94e379]"
+              className="text-income tabular-nums"
             />
           </div>
         </FloatingChip>
@@ -183,14 +181,14 @@ export function HeroPreview() {
           delay={1.8}
           floatDuration={6}
         >
-          <ChipIcon className="bg-[#f2e9ff] text-[#7a4aba] dark:bg-[#3b2c54] dark:text-[#d0b2ff]">
+          <ChipIcon className="bg-muted text-foreground">
             <HandCoinsIcon className="size-4" />
           </ChipIcon>
           <div className="w-28">
             <p className="text-xs text-muted-foreground">Khoản vay đã trả</p>
-            <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-[#f3f1ec] dark:bg-[#1b1a21]">
+            <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
               <motion.div
-                className="h-full origin-left rounded-full bg-[#a376e9]"
+                className="h-full origin-left rounded-full bg-primary"
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 0.62 }}
                 transition={{ duration: 1.2, delay: 2.1, ease: EASE_OUT }}
@@ -204,7 +202,7 @@ export function HeroPreview() {
           delay={2.1}
           floatDuration={5.5}
         >
-          <ChipIcon className="bg-[#fff0c5] text-[#a45e00] dark:bg-[#4b3711] dark:text-[#ffd060]">
+          <ChipIcon className="bg-warning/15 text-warning">
             <motion.span
               className="flex"
               animate={{ rotate: [0, -16, 14, -10, 8, 0] }}
@@ -214,7 +212,7 @@ export function HeroPreview() {
             </motion.span>
           </ChipIcon>
           <div>
-            <p className="font-heading font-extrabold">Đến giờ ghi chép</p>
+            <p className="font-semibold">Đến giờ ghi chép</p>
             <p className="text-xs text-muted-foreground">Nhắc mỗi ngày lúc 21:00</p>
           </div>
         </FloatingChip>
@@ -225,21 +223,15 @@ export function HeroPreview() {
 
 function NetWorthTile() {
   return (
-    <div className="relative overflow-hidden rounded-xl bg-[#2b2a33] p-5 text-white sm:p-6 dark:bg-[#2a2831]">
-      {/* A gradient instead of a blurred blob: iOS Safari does not clip
-          filtered children to the parent's rounded overflow. */}
-      <div
-        className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgb(56_184_246/0.32),transparent_55%)]"
-        aria-hidden="true"
-      />
+    <div className="relative overflow-hidden rounded-xl bg-muted p-5 sm:p-6">
       <div className="relative flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm text-white/70">Tài sản ròng</p>
+          <p className="text-sm text-muted-foreground">Tài sản ròng</p>
           <CountUp
             value={124_680_000}
             delay={0.6}
             duration={2}
-            className="mt-2 block text-3xl tabular-nums sm:text-4xl"
+            className="mt-2 block text-3xl font-bold tabular-nums sm:text-4xl"
           />
         </div>
         <Badge variant="default">
@@ -250,13 +242,13 @@ function NetWorthTile() {
       <svg
         viewBox="0 0 300 60"
         preserveAspectRatio="none"
-        className="relative mt-4 h-12 w-full"
+        className="relative mt-4 h-12 w-full text-income"
         aria-hidden="true"
       >
         <defs>
           <linearGradient id="hero-spark-fill" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#6ecc49" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#6ecc49" stopOpacity="0" />
+            <stop offset="0%" stopColor="currentColor" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
           </linearGradient>
         </defs>
         <motion.path
@@ -269,7 +261,7 @@ function NetWorthTile() {
         <motion.path
           d="M0 48 C 30 44, 45 30, 75 34 S 120 46, 150 30 S 200 22, 225 24 S 270 8, 300 6"
           fill="none"
-          stroke="#6ecc49"
+          stroke="currentColor"
           strokeWidth="3"
           strokeLinecap="round"
           initial={{ pathLength: 0 }}
@@ -283,16 +275,16 @@ function NetWorthTile() {
 
 function CashFlowBars() {
   return (
-    <div className="rounded-xl border-2 border-[#e7e4dd] p-4 dark:border-[#35323e]">
+    <div className="rounded-xl border p-4">
       <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
-        <span className="font-heading font-extrabold text-foreground">Dòng tiền 6 tháng</span>
+        <span className="font-semibold text-foreground">Dòng tiền 6 tháng</span>
         <span className="flex items-center gap-3">
           <span className="flex items-center gap-1">
-            <span className="size-2 rounded-full bg-[#6ecc49]" aria-hidden="true" />
+            <span className="size-2 rounded-full bg-income" aria-hidden="true" />
             Thu
           </span>
           <span className="flex items-center gap-1">
-            <span className="size-2 rounded-full bg-[#ff645f]" aria-hidden="true" />
+            <span className="size-2 rounded-full bg-expense" aria-hidden="true" />
             Chi
           </span>
         </span>
@@ -302,14 +294,14 @@ function CashFlowBars() {
           <div key={month.label} className="flex h-full flex-1 flex-col items-center gap-1.5">
             <div className="flex w-full flex-1 items-end justify-center gap-1">
               <motion.span
-                className="w-full max-w-3 origin-bottom rounded-t-[4px] bg-[#6ecc49]"
+                className="w-full max-w-3 origin-bottom rounded-t-[4px] bg-income"
                 style={{ height: `${month.income}%` }}
                 initial={{ scaleY: 0 }}
                 animate={{ scaleY: 1 }}
                 transition={{ duration: 0.8, delay: 0.9 + index * 0.08, ease: EASE_OUT }}
               />
               <motion.span
-                className="w-full max-w-3 origin-bottom rounded-t-[4px] bg-[#ff645f]"
+                className="w-full max-w-3 origin-bottom rounded-t-[4px] bg-expense"
                 style={{ height: `${month.expense}%` }}
                 initial={{ scaleY: 0 }}
                 animate={{ scaleY: 1 }}
@@ -345,7 +337,6 @@ function FloatingChip({
       <motion.div
         animate={{ y: [0, -8, 0] }}
         transition={{ duration: floatDuration, repeat: Infinity, ease: "easeInOut", delay }}
-        className="rounded-xl shadow-[0_16px_40px_-16px_rgb(43_42_51/0.35)] dark:shadow-[0_16px_40px_-16px_rgb(0_0_0/0.7)]"
       >
         <Card size="sm" className="flex-row items-center gap-3 px-3">
           {children}

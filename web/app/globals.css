@@ -50,6 +50,11 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-income: var(--income);
+  --color-expense: var(--expense);
+  --color-transfer: var(--transfer);
+  --color-ai: var(--ai);
+  --color-warning: var(--warning);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -92,6 +97,12 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --sidebar-ring: oklch(0.708 0 0);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+  /* Meaning, not decoration: money in, money out, transfers, AI and Pro, warnings. */
+  --income: oklch(0.6 0.15 150);
+  --expense: oklch(0.6 0.21 25);
+  --transfer: oklch(0.58 0.16 255);
+  --ai: oklch(0.56 0.2 295);
+  --warning: oklch(0.7 0.16 70);
 }
 
 .dark {
@@ -126,6 +137,11 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --income: oklch(0.74 0.16 150);
+  --expense: oklch(0.7 0.19 22);
+  --transfer: oklch(0.7 0.14 255);
+  --ai: oklch(0.72 0.16 295);
+  --warning: oklch(0.8 0.15 75);
 }
 
 @layer base {

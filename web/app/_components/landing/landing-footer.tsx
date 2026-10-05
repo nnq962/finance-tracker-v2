@@ -13,12 +13,12 @@ export function LandingFooter() {
   const version = process.env.NEXT_PUBLIC_APP_VERSION
 
   return (
-    <footer className="border-t-2 border-[#e7e4dd] pb-[env(safe-area-inset-bottom,0px)] dark:border-[#35323e]">
+    <footer className="border-t pb-[env(safe-area-inset-bottom,0px)]">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6 md:flex-row md:items-center md:justify-between">
         <div className="space-y-2">
           <Link href="/" className="flex w-fit items-center gap-2 rounded-lg">
             <Image src="/icon.svg" alt="" width={28} height={28} className="size-7" />
-            <span className="font-heading font-extrabold">Finance Tracker</span>
+            <span className="font-semibold">Finance Tracker</span>
           </Link>
           <p className="text-sm text-muted-foreground">
             Quản lý tài chính cá nhân rõ ràng và đơn giản.

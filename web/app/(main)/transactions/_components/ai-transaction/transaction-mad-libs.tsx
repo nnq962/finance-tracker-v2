@@ -93,7 +93,7 @@ function Blank({ placeholder, filled, active, valueKey, className, children, ...
       className={cn(
         // The padding gives the background room; the negative margin
         // keeps it out of the spacing, so no gap shows before a comma.
-        "group/blank -mx-1 inline rounded-md px-1 py-0.5 font-semibold text-foreground transition-colors outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-[#38b8f6] aria-expanded:bg-muted",
+        "group/blank -mx-1 inline rounded-md px-1 py-0.5 font-semibold text-foreground transition-colors outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring aria-expanded:bg-muted",
         !filled && "font-normal text-muted-foreground italic",
         className,
       )}
@@ -105,8 +105,8 @@ function Blank({ placeholder, filled, active, valueKey, className, children, ...
           // The underline sits on this word, as a box of its own does not
           // inherit the button's.
           className={cn(
-            "inline-block underline decoration-foreground/25 decoration-1 underline-offset-[6px] transition-colors group-hover/blank:decoration-foreground/60 group-aria-expanded/blank:decoration-[#38b8f6]",
-            !filled && "decoration-[#f59e0b]/70 decoration-dashed",
+            "inline-block underline decoration-foreground/25 decoration-1 underline-offset-[6px] transition-colors group-hover/blank:decoration-foreground/60 group-aria-expanded/blank:decoration-primary",
+            !filled && "decoration-warning/70 decoration-dashed",
           )}
           initial={{ opacity: 0, y: -6, filter: "blur(3px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -348,7 +348,7 @@ export function TransactionMadLibs({
             transition={{ duration: 0.22, ease: EASE_OUT }}
           >
             <div className="flex items-center justify-between gap-2">
-              <p className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              <p className="px-3 text-xs font-semibold text-muted-foreground">
                 {fieldCaptions[editing]}
               </p>
               <Button type="submit" variant="ghost" size="sm">

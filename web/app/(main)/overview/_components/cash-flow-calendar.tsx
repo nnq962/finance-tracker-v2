@@ -101,7 +101,7 @@ export function CashFlowCalendar({
     <section aria-labelledby="cash-flow-calendar-title" className="space-y-2">
       <h2
         id="cash-flow-calendar-title"
-        className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+        className="px-3 text-xs font-semibold text-muted-foreground"
       >
         Lịch thu chi
       </h2>
@@ -111,7 +111,7 @@ export function CashFlowCalendar({
           {/* The month on the left and both arrows together on the right, so
               they stay close on a wide card. */}
           <div className="flex items-center justify-between gap-2">
-            <p className="px-1 font-heading text-base font-extrabold">
+            <p className="px-1 text-base font-semibold">
               Tháng {monthNumber}, {year}
             </p>
             <div className="flex items-center gap-1">
@@ -154,7 +154,7 @@ export function CashFlowCalendar({
                   <span
                     className={cn(
                       "flex size-6 items-center justify-center rounded-full text-xs font-semibold",
-                      isToday && "bg-[#38b8f6] text-white",
+                      isToday && "bg-primary text-primary-foreground",
                       key > today && "text-muted-foreground/50",
                     )}
                   >
@@ -182,7 +182,7 @@ export function CashFlowCalendar({
                   type="button"
                   className={cn(
                     cellClassName,
-                    "outline-none hover:bg-[#f3f1ec] focus-visible:ring-3 focus-visible:ring-ring/50 active:bg-[#d6f4ff] dark:hover:bg-[#2c2a33] dark:active:bg-[#113950]",
+                    "outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 active:bg-accent",
                   )}
                   aria-label={
                     totals
@@ -205,13 +205,13 @@ export function CashFlowCalendar({
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground">Thu trong tháng</p>
-              <p className={cn("font-heading font-extrabold tabular-nums", cashFlowColors.income.text)}>
+              <p className={cn("font-semibold tabular-nums", cashFlowColors.income.text)}>
                 {formatCurrency(monthIncome)}
               </p>
             </div>
             <div>
               <p className="text-muted-foreground">Chi trong tháng</p>
-              <p className={cn("font-heading font-extrabold tabular-nums", cashFlowColors.expense.text)}>
+              <p className={cn("font-semibold tabular-nums", cashFlowColors.expense.text)}>
                 {formatCurrency(monthExpense)}
               </p>
             </div>
@@ -230,13 +230,13 @@ export function CashFlowCalendar({
                   <div className="grid grid-cols-2 gap-4 px-3 text-sm">
                     <div>
                       <p className="text-muted-foreground">Đã thu</p>
-                      <p className={cn("font-heading text-lg font-extrabold tabular-nums", cashFlowColors.income.text)}>
+                      <p className={cn("text-lg font-semibold tabular-nums", cashFlowColors.income.text)}>
                         {formatCurrency(openTotals.income)}
                       </p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Đã chi</p>
-                      <p className={cn("font-heading text-lg font-extrabold tabular-nums", cashFlowColors.expense.text)}>
+                      <p className={cn("text-lg font-semibold tabular-nums", cashFlowColors.expense.text)}>
                         {formatCurrency(openTotals.expense)}
                       </p>
                     </div>

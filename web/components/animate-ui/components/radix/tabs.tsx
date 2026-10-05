@@ -87,7 +87,7 @@ function TabsList({ className, children, ...props }: TabsListProps) {
   return (
     <TabsListPrimitive
       className={cn(
-        'relative isolate inline-grid w-fit grid-flow-col auto-cols-fr items-center justify-center gap-1 rounded-[14px] bg-[#e7e4dd] p-1 dark:bg-[#44424a]',
+        'relative isolate inline-grid w-fit grid-flow-col auto-cols-fr items-center justify-center gap-1 rounded-[14px] bg-muted p-1',
         className,
       )}
       {...props}
@@ -95,7 +95,7 @@ function TabsList({ className, children, ...props }: TabsListProps) {
       {tabValues.length > 0 && (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-1 left-1 z-0 rounded-[10px] bg-white shadow-[0_3px_0_#d6d2c8] transition-transform duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] [backface-visibility:hidden] [contain:paint] [will-change:transform] motion-reduce:duration-0 dark:bg-[#36333d] dark:shadow-[0_3px_0_#25232b]"
+          className="pointer-events-none absolute inset-y-1 left-1 z-0 rounded-[10px] border border-transparent bg-background shadow-sm transition-transform duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] [backface-visibility:hidden] [contain:paint] [will-change:transform] motion-reduce:duration-0 dark:border-input dark:bg-input/30"
           style={{
             width: `calc((100% - 0.5rem - ${totalGapRem}rem) / ${tabCount})`,
             transform: `translate3d(calc(${activeIndex * 100}% + ${activeIndex * gapRem}rem), 0, 0)`,
@@ -113,7 +113,7 @@ function TabsTrigger({ className, ...props }: TabsTriggerProps) {
   return (
     <TabsTriggerPrimitive
       className={cn(
-        "relative z-10 inline-flex w-full min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-[10px] border-0 px-4 pt-[11px] pb-[9px] font-heading text-xs leading-none font-extrabold tracking-[0.06em] uppercase text-[#8f8b98] transition-colors duration-150 hover:text-[#2b2a33] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[oklch(0.74_0.14_235)] data-[state=active]:text-[oklch(0.58_0.14_240)] disabled:pointer-events-none disabled:opacity-50 dark:text-[#a6a1af] dark:hover:text-white dark:data-[state=active]:text-[#71caff] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "relative z-10 inline-flex w-full min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-[10px] border-0 px-4 py-2.5 text-xs leading-none font-medium text-muted-foreground transition-colors duration-150 hover:text-foreground focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=active]:text-foreground disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
       {...props}

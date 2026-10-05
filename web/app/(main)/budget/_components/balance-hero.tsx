@@ -42,7 +42,7 @@ export function BalanceHero({ summary, accounts }: BalanceHeroProps) {
       header={
         // 16px all round, where the rows' content starts.
         <div className="space-y-3 p-4">
-          <p className="font-heading text-3xl leading-tight font-extrabold tracking-tight tabular-nums [overflow-wrap:anywhere]">
+          <p className="text-3xl leading-tight font-bold tracking-tight tabular-nums [overflow-wrap:anywhere]">
             {formatCurrency(summary.totalBalance)}
           </p>
           {accountsTotal > 0 ? (

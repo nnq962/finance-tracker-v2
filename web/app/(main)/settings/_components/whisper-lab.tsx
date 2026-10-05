@@ -156,7 +156,7 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
 
   return (
     <section className="space-y-3">
-      <h3 className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+      <h3 className="px-3 text-xs font-semibold text-muted-foreground">
         Nhận dạng giọng nói (Whisper · Groq)
       </h3>
       <ToggleGroup
@@ -198,8 +198,8 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
         <>
           <Field>
             <FieldLabel>Văn bản nhận được</FieldLabel>
-            <p className="min-h-16 rounded-lg border-2 p-3 text-base">
-              {run.error ? <span className="text-[#c8393a] dark:text-[#ff9b93]">{run.error}</span> : run.text || "—"}
+            <p className="min-h-16 rounded-lg border p-3 text-base">
+              {run.error ? <span className="text-destructive">{run.error}</span> : run.text || "—"}
             </p>
           </Field>
 

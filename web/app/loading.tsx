@@ -18,10 +18,10 @@ export default function RootLoading() {
           priority
           alt=""
         />
-        <p className="mt-8 font-heading text-xl leading-none font-extrabold">
+        <p className="mt-8 text-xl leading-none font-semibold">
           {SITE_NAME}
         </p>
-        <p className="mt-3 animate-pulse text-xs font-bold text-[#8f8b98] motion-reduce:animate-none dark:text-[#a6a1af]">
+        <p className="mt-3 animate-pulse text-xs font-medium text-muted-foreground motion-reduce:animate-none">
           Đang khởi động…
         </p>
       </div>

@@ -271,7 +271,7 @@ export function VoiceLab() {
       <WhisperLab onRun={(run) => setWhisperRuns((runs) => [...runs, run])} />
 
       <section className="space-y-3">
-        <h3 className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+        <h3 className="px-3 text-xs font-semibold text-muted-foreground">
           Nhận dạng giọng nói (Web Speech)
         </h3>
         <FieldGroup>
@@ -306,7 +306,7 @@ export function VoiceLab() {
           </Button>
           <Field>
             <FieldLabel>Văn bản nhận được</FieldLabel>
-            <p className="min-h-16 rounded-lg border-2 p-3 text-base" aria-live="polite">
+            <p className="min-h-16 rounded-lg border p-3 text-base" aria-live="polite">
               {finalText}
               {interimText ? <span className="text-muted-foreground"> {interimText}</span> : null}
               {!finalText && !interimText ? (
@@ -346,7 +346,7 @@ export function VoiceLab() {
       </section>
 
       <section className="space-y-3">
-        <h3 className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+        <h3 className="px-3 text-xs font-semibold text-muted-foreground">
           Micro (mức âm thanh)
         </h3>
         <FieldGroup>
@@ -364,7 +364,7 @@ export function VoiceLab() {
       </section>
 
       <section className="space-y-3">
-        <h3 className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+        <h3 className="px-3 text-xs font-semibold text-muted-foreground">
           Đọc chính tả bằng bàn phím
         </h3>
         <Field>

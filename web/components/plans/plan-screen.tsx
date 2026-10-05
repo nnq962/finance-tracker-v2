@@ -73,9 +73,9 @@ const outcomeMessages: Partial<Record<PaymentOutcome, { tone: OutcomeTone; title
 }
 
 const outcomeTones: Record<OutcomeTone, { icon: LucideIcon; className: string }> = {
-  success: { icon: CircleCheckIcon, className: "bg-[#dbf9d2] text-[#3e9727] dark:bg-[#203e1a] dark:text-[#94e379]" },
-  waiting: { icon: ClockIcon, className: "bg-[#fff0c5] text-[#a45e00] dark:bg-[#3d3014] dark:text-[#ffd060]" },
-  problem: { icon: CircleAlertIcon, className: "bg-[#ffe5e1] text-[#c8393a] dark:bg-[#4a2121] dark:text-[#ff9b93]" },
+  success: { icon: CircleCheckIcon, className: "bg-income/10 text-income" },
+  waiting: { icon: ClockIcon, className: "bg-warning/15 text-warning" },
+  problem: { icon: CircleAlertIcon, className: "bg-expense/10 text-expense" },
 }
 
 /** What a year costs against twelve single months. */
@@ -133,11 +133,11 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
       ) : null}
 
       <header className={cn("flex flex-col items-center gap-3 px-3 pt-2 text-center", page && "mx-auto max-w-2xl")}>
-        <div className="flex size-14 items-center justify-center rounded-2xl bg-[#f2e9ff] text-[#7a4aba] dark:bg-[#3b2c54] dark:text-[#d0b2ff]">
+        <div className="flex size-14 items-center justify-center rounded-2xl bg-ai/15 text-ai">
           <SparklesIcon className="size-7" aria-hidden="true" />
         </div>
         <div className="space-y-1.5">
-          <h2 className={cn("font-heading text-2xl leading-tight font-extrabold", page && "md:text-4xl")}>
+          <h2 className={cn("text-2xl leading-tight font-semibold", page && "md:text-4xl")}>
             {isPro ? "Bạn đang dùng Pro" : `Finance Tracker ${plans.pro.label}`}
           </h2>
           <p className={cn("text-sm leading-relaxed text-muted-foreground", page && "md:text-base")}>
@@ -174,10 +174,10 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
             page && "md:mx-auto md:max-w-4xl md:grid-cols-2 md:grid-rows-[auto_1fr_auto] md:gap-x-6 md:gap-y-0",
           )}
         >
-          {/* The recommended plan stands out with a grape outline, the colour the kit keeps for premium. */}
+          {/* The recommended plan stands out with an outline in the AI colour, which marks Pro. */}
           <Card
             className={cn(
-              "border-[#a376e9] ring-[#a376e9] dark:border-[#a376e9] dark:ring-[#a376e9]",
+              "ring-ai dark:ring-ai",
               page && "md:row-span-3 md:grid md:grid-rows-subgrid",
             )}
           >
@@ -297,7 +297,7 @@ function OutcomeCard({
           <Icon className="size-5" aria-hidden="true" />
         </div>
         <div className="min-w-0 space-y-0.5">
-          <p className="font-heading text-base leading-snug font-extrabold">{title}</p>
+          <p className="text-base leading-snug font-semibold">{title}</p>
           {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
         </div>
       </CardContent>
@@ -318,7 +318,7 @@ function OutcomeCard({
 function PriceTag({ amount, unit }: { amount: number; unit: string }) {
   return (
     <p className="flex items-baseline gap-1">
-      <span className="font-heading text-4xl leading-none font-extrabold tracking-tight tabular-nums">
+      <span className="text-4xl leading-none font-bold tracking-tight tabular-nums">
         {formatCurrency(amount)}
       </span>
       <span className="text-sm text-muted-foreground">/{unit}</span>
@@ -341,7 +341,7 @@ function FeatureList({ features }: { features: string[] }) {
 
 function CheckMark() {
   return (
-    <span className="mt-px flex size-4.5 shrink-0 items-center justify-center rounded-full bg-[#dbf9d2] text-[#3e9727] dark:bg-[#203e1a] dark:text-[#94e379]">
+    <span className="mt-px flex size-4.5 shrink-0 items-center justify-center rounded-full bg-income/10 text-income">
       <CheckIcon className="size-3" strokeWidth={3} aria-hidden="true" />
       <span className="sr-only">Có</span>
     </span>
@@ -521,7 +521,7 @@ function CheckoutDialog({
               {priced ? (
                 <div className="flex justify-between gap-3">
                   <dt className="text-muted-foreground">Giảm giá ({coupon?.percentOff}%)</dt>
-                  <dd className="tabular-nums text-[#3e9727] dark:text-[#94e379]">
+                  <dd className="tabular-nums text-income">
                     −{formatCurrency(priced.discount)}
                   </dd>
                 </div>
@@ -530,7 +530,7 @@ function CheckoutDialog({
             <Separator />
             <div className="flex items-baseline justify-between gap-3">
               <span className="font-medium">Tổng thanh toán</span>
-              <span className="font-heading text-2xl font-extrabold tabular-nums">{formatCurrency(total)}</span>
+              <span className="text-2xl font-bold tabular-nums">{formatCurrency(total)}</span>
             </div>
           </CardContent>
         </Card>

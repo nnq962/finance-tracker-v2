@@ -62,7 +62,7 @@ export function OverviewGreeting({
             {name || "bạn"}
             {planState.plan === "pro" ? (
               <BadgeCheckIcon
-                className="ml-1.5 inline-block size-5 fill-blue-500 align-[-0.15em] text-white"
+                className="ml-1.5 inline-block size-5 fill-ai align-[-0.15em] text-background"
                 role="img"
                 aria-label="Pro"
               />

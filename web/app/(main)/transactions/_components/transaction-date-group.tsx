@@ -46,7 +46,7 @@ export function TransactionDateGroup({
       }
       action={
         income > 0 || expense > 0 ? (
-          <span className="flex shrink-0 items-center gap-2 font-heading text-xs font-extrabold tabular-nums">
+          <span className="flex shrink-0 items-center gap-2 text-xs font-semibold tabular-nums">
             {income > 0 ? (
               <span className={cashFlowColors.income.text}>
                 +{formatCurrency(income, { signDisplay: "never" })}

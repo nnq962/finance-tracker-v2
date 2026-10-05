@@ -11,16 +11,9 @@ import {
 import { formatCurrency } from "@/lib/format-currency"
 import type { OverviewSummary } from "@/lib/overview/summary"
 
-// Validated with the dataviz palette checker: light pair CVD ΔE 10.0; the
-// dark pair (7.4) relies on the legend dots and the 2px gap between bars.
-export const cashFlowChartColors = {
-  income: { light: "#3e9727", dark: "#3e9727" },
-  expense: { light: "#ff837e", dark: "#f2564f" },
-} as const
-
 const cashFlowConfig = {
-  income: { label: "Thu", theme: cashFlowChartColors.income },
-  expense: { label: "Chi", theme: cashFlowChartColors.expense },
+  income: { label: "Thu", color: "var(--income)" },
+  expense: { label: "Chi", color: "var(--expense)" },
 } satisfies ChartConfig
 
 function compactMoney(value: number) {

@@ -129,7 +129,7 @@ export function AiAssistDrawer<Result>({
           {/* Centred on every screen; the Drawer header aligns left from md. */}
           <AiDrawerHeader className="relative px-12 md:text-center">
             <AiDrawerTitle className="flex items-center justify-center gap-2">
-              <SparklesIcon className="size-4 text-[#a78bfa]" aria-hidden="true" />
+              <SparklesIcon className="size-4 text-ai" aria-hidden="true" />
               Trợ lý AI
             </AiDrawerTitle>
             <AiDrawerDescription className="sr-only">{prompt}</AiDrawerDescription>
@@ -168,7 +168,7 @@ export function AiAssistDrawer<Result>({
                       <Card>
                         <CardContent className="space-y-3">
                           <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <SparklesIcon className="size-4 animate-pulse text-[#a78bfa]" aria-hidden="true" />
+                            <SparklesIcon className="size-4 animate-pulse text-ai" aria-hidden="true" />
                             Đang hiểu ý bạn…
                           </p>
                           <Skeleton className="h-5 w-full" />
@@ -196,7 +196,7 @@ export function AiAssistDrawer<Result>({
                         <Card>
                           <CardContent className="flex min-h-14 items-center justify-center text-center">
                             {heard ? (
-                              <p className="font-heading text-base leading-snug font-extrabold" aria-live="polite">
+                              <p className="text-base leading-snug font-semibold" aria-live="polite">
                                 {/* Each word rises in as it is heard, muted until the
                                     recogniser settles on it, then darkens in place:
                                     keyed by position, a settled word keeps its box. */}
@@ -299,7 +299,7 @@ export function AiAssistDrawer<Result>({
                       </div>
 
                       {phase.error || speech.error ? (
-                        <p className="px-3 text-sm text-[#c8393a] dark:text-[#ff9b93]" role="alert">
+                        <p className="px-3 text-sm text-destructive" role="alert">
                           {phase.error ?? speech.error}
                         </p>
                       ) : null}

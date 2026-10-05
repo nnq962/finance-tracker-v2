@@ -144,33 +144,33 @@ export function IosInstallDialog({
         </DialogHeader>
         <ol className="space-y-3">
           <li className="flex gap-3">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#d6f4ff] text-[#0083c4] dark:bg-[#113950] dark:text-[#78d0ff]">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
               <ExternalLinkIcon className="size-4" aria-hidden="true" />
             </span>
             <div>
-              <p className="font-heading font-extrabold">Mở bằng Safari</p>
+              <p className="font-semibold">Mở bằng Safari</p>
               <p className="text-muted-foreground">
                 Truy cập finance.nnqlab.dev trong Safari.
               </p>
             </div>
           </li>
           <li className="flex gap-3">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#d6f4ff] text-[#0083c4] dark:bg-[#113950] dark:text-[#78d0ff]">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
               <Share2Icon className="size-4" aria-hidden="true" />
             </span>
             <div>
-              <p className="font-heading font-extrabold">Chạm nút Chia sẻ</p>
+              <p className="font-semibold">Chạm nút Chia sẻ</p>
               <p className="text-muted-foreground">
                 Nút Chia sẻ nằm trên thanh công cụ của Safari.
               </p>
             </div>
           </li>
           <li className="flex gap-3">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#d6f4ff] text-[#0083c4] dark:bg-[#113950] dark:text-[#78d0ff]">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
               <SquarePlusIcon className="size-4" aria-hidden="true" />
             </span>
             <div>
-              <p className="font-heading font-extrabold">
+              <p className="font-semibold">
                 Chọn Thêm vào Màn hình chính
               </p>
               <p className="text-muted-foreground">

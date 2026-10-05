@@ -89,8 +89,8 @@ export function AccountSheet({ account, share, transactions, categoryGroups, onO
               </p>
               <p
                 className={cn(
-                  "font-heading text-3xl leading-tight font-extrabold tabular-nums [overflow-wrap:anywhere]",
-                  shown.balance < 0 && "text-[#c8393a] dark:text-[#ff9b93]",
+                  "text-3xl leading-tight font-bold tabular-nums [overflow-wrap:anywhere]",
+                  shown.balance < 0 && "text-expense",
                 )}
               >
                 {formatCurrency(shown.balance)}

@@ -23,7 +23,7 @@ export function AiQuotaGroup({ planState }: { planState: PlanState }) {
         <div className={cn("space-y-3 px-4 pt-3", hasCredits ? "pb-2" : "pb-3")}>
           <div className="flex items-baseline justify-between gap-3">
             <p className="text-sm font-medium">Lượt trợ lý AI tháng này</p>
-            <p className="font-heading text-xl leading-tight font-extrabold tabular-nums">
+            <p className="text-xl leading-tight font-semibold tabular-nums">
               {planState.aiUsed}
               <span className="text-base text-muted-foreground">/{planState.aiLimit}</span>
             </p>

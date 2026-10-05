@@ -55,7 +55,7 @@ export function PrivacySection() {
             <LockKeyholeIcon />
             Khu vực cá nhân
           </Badge>
-          <h2 id="privacy-title" className="mt-4 text-3xl tracking-tight sm:text-5xl">
+          <h2 id="privacy-title" className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
             Dữ liệu của bạn, chỉ bạn xem được
           </h2>
           <p className="mt-4 max-w-xl leading-7 text-muted-foreground sm:text-lg">
@@ -74,7 +74,7 @@ export function PrivacySection() {
               <Reveal key={point.title} delay={index * 0.08}>
                 <Card className="h-full">
                   <CardHeader>
-                    <div className="mb-3 flex size-11 items-center justify-center rounded-xl bg-[#f2e9ff] text-[#7a4aba] dark:bg-[#3b2c54] dark:text-[#d0b2ff]">
+                    <div className="mb-3 flex size-11 items-center justify-center rounded-xl bg-muted text-foreground">
                       <Icon className="size-5" aria-hidden="true" />
                     </div>
                     <CardTitle>{point.title}</CardTitle>
@@ -100,11 +100,11 @@ function ShieldPulse() {
       {[0, 1, 2].map((ring) => (
         <span
           key={ring}
-          className="absolute size-20 animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite] rounded-full border-2 border-[#a376e9]/60 motion-reduce:animate-none"
+          className="absolute size-20 animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite] rounded-full border border-foreground/20 motion-reduce:animate-none"
           style={{ animationDelay: `${ring}s` }}
         />
       ))}
-      <span className="relative flex size-20 items-center justify-center rounded-3xl bg-[#a376e9] text-white">
+      <span className="relative flex size-20 items-center justify-center rounded-3xl bg-primary text-primary-foreground">
         <ShieldCheckIcon className="size-10" />
       </span>
     </div>

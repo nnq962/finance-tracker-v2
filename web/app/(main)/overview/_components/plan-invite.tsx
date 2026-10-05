@@ -28,11 +28,11 @@ export function PlanInvite({ planState, checkoutEnabled, paymentOutcome, initial
       {planState.plan === "free" ? (
         <Card size="sm" className="lg:w-md lg:shrink-0">
           <CardContent className="flex items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#f2e9ff] text-[#7a4aba] dark:bg-[#3b2c54] dark:text-[#d0b2ff]">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-ai/10 text-ai">
               <SparklesIcon className="size-5" aria-hidden="true" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-heading text-base leading-snug font-extrabold">Nâng cấp lên {plans.pro.label}</p>
+              <p className="text-base leading-snug font-semibold">Nâng cấp lên {plans.pro.label}</p>
               <p className="text-sm text-muted-foreground">
                 {plans.pro.aiMonthlyLimit} lượt trợ lý AI mỗi tháng và dùng sớm tính năng mới
               </p>

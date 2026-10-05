@@ -60,14 +60,14 @@ export function HeroSection() {
           <motion.div variants={fadeUp}>
             <Badge variant="default">
               <span className="relative flex size-2" aria-hidden="true">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#6ecc49] opacity-75 motion-reduce:animate-none" />
-                <span className="relative inline-flex size-2 rounded-full bg-[#6ecc49]" />
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-income opacity-75 motion-reduce:animate-none" />
+                <span className="relative inline-flex size-2 rounded-full bg-income" />
               </span>
               Ứng dụng web · Cài như app
             </Badge>
           </motion.div>
 
-          <h1 className="mt-6 max-w-3xl text-[2.6rem] leading-[1.02] tracking-tight min-[400px]:text-5xl sm:text-6xl lg:text-[3.75rem] xl:text-[4.25rem]">
+          <h1 className="mt-6 max-w-3xl text-[2.6rem] leading-[1.02] font-semibold tracking-tight min-[400px]:text-5xl sm:text-6xl lg:text-[3.75rem] xl:text-[4.25rem]">
             <span className="sr-only">
               {`${HEADLINE_LEAD.join(" ")} ${HEADLINE_ACCENT.join(" ")}`}
             </span>
@@ -78,7 +78,7 @@ export function HeroSection() {
                 </motion.span>
               ))}
             </span>
-            <span aria-hidden="true" className="block text-[#0083c4] dark:text-[#78d0ff]">
+            <span aria-hidden="true" className="block text-muted-foreground">
               <span className="relative inline-block">
                 {HEADLINE_ACCENT.map((text, index) => (
                   <motion.span
@@ -125,7 +125,7 @@ export function HeroSection() {
           >
             {TRUST_POINTS.map(({ icon: Icon, label }) => (
               <li key={label} className="flex items-center gap-1.5">
-                <Icon className="size-4 text-[#3e9727] dark:text-[#94e379]" aria-hidden="true" />
+                <Icon className="size-4 text-foreground" aria-hidden="true" />
                 {label}
               </li>
             ))}
@@ -144,7 +144,7 @@ function Squiggle() {
       aria-hidden="true"
       viewBox="0 0 300 18"
       preserveAspectRatio="none"
-      className="absolute -bottom-2 left-0 h-3 w-full text-[#fdc436] sm:-bottom-3 sm:h-4"
+      className="absolute -bottom-2 left-0 h-3 w-full text-border sm:-bottom-3 sm:h-4"
     >
       <motion.path
         d="M3 12 C 40 3, 70 3, 100 10 S 165 17, 200 9 S 265 2, 297 8"
@@ -163,19 +163,19 @@ function Squiggle() {
 function HeroBackdrop() {
   return (
     <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
-      <div className="absolute inset-0 bg-[radial-gradient(#e7e4dd_1.2px,transparent_1.2px)] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_35%,#000_30%,transparent_100%)] bg-[size:22px_22px] dark:bg-[radial-gradient(#35323e_1.2px,transparent_1.2px)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(var(--color-border)_1.2px,transparent_1.2px)] bg-[size:22px_22px] mask-radial-[70%_60%] mask-radial-at-[50%_35%] mask-radial-from-30% mask-radial-to-100%" />
       <motion.div
-        className="absolute -top-24 -left-24 size-72 rounded-full bg-[#6ecc49]/20 blur-3xl sm:size-[28rem] dark:bg-[#6ecc49]/12"
+        className="absolute -top-24 -left-24 size-72 rounded-full bg-muted blur-3xl sm:size-[28rem]"
         animate={{ x: [0, 60, 0], y: [0, 40, 0] }}
         transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
-        className="absolute top-10 -right-24 size-80 rounded-full bg-[#38b8f6]/20 blur-3xl sm:size-[32rem] dark:bg-[#38b8f6]/12"
+        className="absolute top-10 -right-24 size-80 rounded-full bg-muted blur-3xl sm:size-[32rem]"
         animate={{ x: [0, -50, 0], y: [0, 60, 0] }}
         transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
-        className="absolute bottom-0 left-1/3 size-64 rounded-full bg-[#fdc436]/15 blur-3xl sm:size-96 dark:bg-[#a376e9]/12"
+        className="absolute bottom-0 left-1/3 size-64 rounded-full bg-muted blur-3xl sm:size-96"
         animate={{ x: [0, 40, -20, 0], y: [0, -30, 0] }}
         transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
       />

@@ -47,7 +47,7 @@ export function ThemeOptions() {
           title={label}
           action={
             value === choice ? (
-              <CheckIcon className="size-4 text-[#0083c4] dark:text-[#78d0ff]" aria-label="Đang chọn" />
+              <CheckIcon className="size-4 text-primary" aria-label="Đang chọn" />
             ) : null
           }
           chevron={false}

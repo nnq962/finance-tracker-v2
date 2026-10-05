@@ -226,7 +226,7 @@ export function DebtsView({
               key={direction}
               title={label}
               action={
-                <span className="shrink-0 font-heading text-xs font-extrabold tabular-nums">
+                <span className="shrink-0 text-xs font-semibold tabular-nums">
                   {formatCurrency(total, { signDisplay: "never" })}
                 </span>
               }
