@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 
 import { SESSION_COOKIE_NAME } from "@/lib/auth/constants"
-import { DEV_SESSION_VALUE, DEV_USER, isDevLoginEnabled } from "@/lib/auth/dev-session"
+import { DEV_SESSION_VALUE, DEV_TUNNEL_KEY_COOKIE, DEV_USER, isDevLoginEnabled } from "@/lib/auth/dev-session"
 import { seedDevUser } from "@/lib/dev/seed"
 
 export const runtime = "nodejs"
@@ -13,7 +13,10 @@ export const runtime = "nodejs"
  * isDevLoginEnabled.
  */
 export async function GET(request: NextRequest) {
-  if (!(await isDevLoginEnabled(request.headers))) {
+  const host = request.headers.get("host")
+  // Through the dev tunnel the link carries the key once; the browser then keeps it.
+  const tunnelKey = request.nextUrl.searchParams.get("key")
+  if (!isDevLoginEnabled(host, tunnelKey ?? request.cookies.get(DEV_TUNNEL_KEY_COOKIE)?.value)) {
     return new NextResponse(null, { status: 404 })
   }
 
@@ -24,7 +27,6 @@ export async function GET(request: NextRequest) {
   const target = next.startsWith("/") && !next.startsWith("//") ? next : "/overview"
   // request.url carries the bind address in dev; the Host header is what the
   // browser used, over https when it came through the tunnel.
-  const host = request.headers.get("host")
   const protocol = request.headers.get("x-forwarded-proto") === "https" ? "https" : "http"
   const response = NextResponse.redirect(new URL(target, `${protocol}://${host}`))
   response.cookies.set(SESSION_COOKIE_NAME, DEV_SESSION_VALUE, {
@@ -32,6 +34,15 @@ export async function GET(request: NextRequest) {
     sameSite: "lax",
     path: "/",
   })
+  if (tunnelKey) {
+    response.cookies.set(DEV_TUNNEL_KEY_COOKIE, tunnelKey, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 90,
+    })
+  }
   response.headers.set("Cache-Control", "no-store")
   return response
 }

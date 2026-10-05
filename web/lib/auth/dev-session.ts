@@ -1,11 +1,14 @@
 import "server-only"
 
-import { createRemoteJWKSet, jwtVerify } from "jose"
+import { timingSafeEqual } from "node:crypto"
 
 import type { SessionUser } from "@/lib/auth/session"
 
 /** The session cookie's value for the dev user; Firebase never issues it. */
 export const DEV_SESSION_VALUE = "dev-session"
+
+/** Holds DEV_TUNNEL_KEY in a browser that signed in through the dev tunnel. */
+export const DEV_TUNNEL_KEY_COOKIE = "dev-tunnel-key"
 
 export const DEV_USER: SessionUser = {
   uid: "dev-user",
@@ -15,42 +18,25 @@ export const DEV_USER: SessionUser = {
   avatar: "",
 }
 
-const accessTeamDomain = process.env.DEV_ACCESS_TEAM_DOMAIN
-const accessAudience = process.env.DEV_ACCESS_AUD
-// Cloudflare Access's signing keys, fetched once and cached by jose.
-const accessKeys = accessTeamDomain
-  ? createRemoteJWKSet(new URL(`https://${accessTeamDomain}/cdn-cgi/access/certs`))
-  : null
-
-/** The request passed Cloudflare Access: its signed assertion is valid for this application. */
-async function passedCloudflareAccess(requestHeaders: Headers) {
-  const assertion = requestHeaders.get("cf-access-jwt-assertion")
-  if (!accessKeys || !accessAudience || !assertion) return false
-  try {
-    await jwtVerify(assertion, accessKeys, {
-      issuer: `https://${accessTeamDomain}`,
-      audience: accessAudience,
-    })
-    return true
-  } catch {
-    return false
-  }
+function isTunnelKey(value: string | null | undefined) {
+  const key = process.env.DEV_TUNNEL_KEY
+  // A short key would be guessable; the tunnel is reachable from anywhere.
+  if (!key || key.length < 32 || !value) return false
+  const expected = Buffer.from(key)
+  const given = Buffer.from(value)
+  return given.length === expected.length && timingSafeEqual(given, expected)
 }
 
 /**
  * Sign-in without Google, so pages can be opened and screenshotted on the dev
  * server. Only under `next dev` with DEV_LOGIN=1 in .env.local, and only for
- * requests to localhost, or to the dev tunnel's host (DEV_TUNNEL_HOST) when
- * Cloudflare Access let the request through. A production build, or the dev
- * server reached any other way, never has it.
+ * requests to localhost, or to the dev tunnel's host (DEV_TUNNEL_HOST) with
+ * the secret DEV_TUNNEL_KEY. A production build, or the dev server reached
+ * any other way, never has it.
  */
-export async function isDevLoginEnabled(requestHeaders: Headers) {
+export function isDevLoginEnabled(host: string | null, tunnelKey?: string | null) {
   if (process.env.NODE_ENV !== "development" || process.env.DEV_LOGIN !== "1") return false
-  const hostname = requestHeaders.get("host")?.replace(/:\d+$/, "")
+  const hostname = host?.replace(/:\d+$/, "")
   if (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]") return true
-  return (
-    Boolean(process.env.DEV_TUNNEL_HOST) &&
-    hostname === process.env.DEV_TUNNEL_HOST &&
-    (await passedCloudflareAccess(requestHeaders))
-  )
+  return Boolean(process.env.DEV_TUNNEL_HOST) && hostname === process.env.DEV_TUNNEL_HOST && isTunnelKey(tunnelKey)
 }

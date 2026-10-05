@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 import type { DecodedIdToken } from "firebase-admin/auth"
 
 import { SESSION_COOKIE_NAME } from "@/lib/auth/constants"
-import { DEV_SESSION_VALUE, DEV_USER, isDevLoginEnabled } from "@/lib/auth/dev-session"
+import { DEV_SESSION_VALUE, DEV_TUNNEL_KEY_COOKIE, DEV_USER, isDevLoginEnabled } from "@/lib/auth/dev-session"
 import { getFirebaseAdminAuth } from "@/lib/firebase/admin"
 
 export type SessionUser = {
@@ -41,14 +41,15 @@ function toSessionUser(decodedToken: DecodedIdToken): SessionUser {
  * can overlap that round trip with their own reads.
  */
 const getVerifiedSession = cache(async (): Promise<VerifiedSession | null> => {
-  const sessionCookie = (await cookies()).get(SESSION_COOKIE_NAME)?.value
+  const cookieStore = await cookies()
+  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)?.value
 
   if (!sessionCookie) {
     return null
   }
 
   if (sessionCookie === DEV_SESSION_VALUE) {
-    return (await isDevLoginEnabled(await headers()))
+    return isDevLoginEnabled((await headers()).get("host"), cookieStore.get(DEV_TUNNEL_KEY_COOKIE)?.value)
       ? { user: DEV_USER, notRevoked: Promise.resolve(true) }
       : null
   }
