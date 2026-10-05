@@ -39,6 +39,7 @@ export function TransactionDateGroup({
 
   return (
     <SettingsGroup
+      plain
       title={
         <time dateTime={group.dateKey}>
           {isToday ? "Hôm nay" : group.weekdayLabel}, {group.dateLabel}

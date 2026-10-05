@@ -40,6 +40,7 @@ function SettingsGroup({
   header,
   footer,
   listClassName,
+  plain = false,
   children,
 }: {
   title?: React.ReactNode
@@ -50,12 +51,16 @@ function SettingsGroup({
   footer?: React.ReactNode
   /** Lays the rows out, e.g. in columns on wide screens. */
   listClassName?: string
+  /** Rows straight on the page, without the card, as in a phone app's list. */
+  plain?: boolean
   children: React.ReactNode
 }) {
   return (
     <section className="space-y-2">
       {title || action ? (
-        <div className="flex min-h-6 items-center justify-between gap-3 px-3">
+        // Plain rows have no card edge, so the caption lines up with the
+        // rows' content (list padding 4px + row padding 12px).
+        <div className={cn("flex min-h-6 items-center justify-between gap-3", plain ? "px-4" : "px-3")}>
           {title ? (
             <h2 className="flex min-w-0 items-center gap-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
               {title}
@@ -66,12 +71,19 @@ function SettingsGroup({
       ) : null}
       {/* Rows carry their own, equal padding, so the card only frames them:
           first and last rows match the ones in between. */}
-      <Card size="sm" className="gap-0 py-0">
-        {header}
-        <ul className={cn("px-1", listClassName)}>
-          {children}
-        </ul>
-      </Card>
+      {plain ? (
+        <>
+          {header}
+          <ul className={cn("px-1", listClassName)}>{children}</ul>
+        </>
+      ) : (
+        <Card size="sm" className="gap-0 py-0">
+          {header}
+          <ul className={cn("px-1", listClassName)}>
+            {children}
+          </ul>
+        </Card>
+      )}
       {footer ? (
         <p className="px-3 text-xs leading-relaxed text-muted-foreground">
           {footer}

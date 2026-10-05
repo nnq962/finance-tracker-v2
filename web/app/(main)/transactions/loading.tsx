@@ -65,31 +65,29 @@ function FilterPanelSkeleton() {
   )
 }
 
-/** Same footprint as a day's SettingsGroup of transaction rows. */
+/** Same footprint as a day's plain SettingsGroup of transaction rows. */
 function DayGroupSkeleton({ rows }: { rows: number }) {
   return (
     <div className="space-y-2">
-      <div className="flex justify-between px-3">
+      <div className="flex justify-between px-4">
         <Skeleton className="h-3 w-28" />
         <Skeleton className="h-3 w-20" />
       </div>
-      <Card size="sm" className="gap-0 py-0">
-        <div className="px-1">
-          {Array.from({ length: rows }, (_, row) => (
-            <div key={row} className={cn("flex items-center gap-2.5 px-3 py-3.5 not-first:pt-4", settingsSeparatorClassName(true))}>
-              <Skeleton className="size-8 shrink-0 rounded-lg" />
-              <div className="min-w-0 flex-1 space-y-1.5">
-                <Skeleton className="h-4 w-32 max-w-full" />
-                <Skeleton className="h-3.5 w-40 max-w-full" />
-              </div>
-              <div className="flex flex-col items-end gap-1.5">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-3.5 w-10" />
-              </div>
+      <div className="px-1">
+        {Array.from({ length: rows }, (_, row) => (
+          <div key={row} className={cn("flex items-center gap-2.5 px-3 py-3.5 not-first:pt-4", settingsSeparatorClassName(true))}>
+            <Skeleton className="size-8 shrink-0 rounded-lg" />
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <Skeleton className="h-4 w-32 max-w-full" />
+              <Skeleton className="h-3.5 w-40 max-w-full" />
             </div>
-          ))}
-        </div>
-      </Card>
+            <div className="flex flex-col items-end gap-1.5">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-3.5 w-10" />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
