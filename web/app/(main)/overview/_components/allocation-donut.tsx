@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { ReceiptTextIcon } from "lucide-react"
 import { Cell, Label, Pie, PieChart } from "recharts"
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/animate-ui/components/radix/tabs"
@@ -15,9 +14,7 @@ import {
 import { getCategoryColor, type CategoryColorName } from "@/lib/categories/category-colors"
 import type { CategoryGroup, CategoryType } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
-import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import type { MonthAllocation } from "@/lib/overview/month-data"
-import { cn } from "@/lib/utils"
 
 // Five groups and the rest folded into one neutral "Khác" slice.
 const MAX_SLICES = 5
@@ -31,7 +28,6 @@ type Slice = {
   amount: number
   share: number
   color: CategoryColorName
-  group?: CategoryGroup
   fill: string
 }
 
@@ -67,7 +63,6 @@ export function AllocationDonut({ categoryGroups, allocation, month }: Allocatio
       amount,
       share: toShare(amount),
       color,
-      group,
       fill: getCategoryColor(color).chartFill,
     }
   })
@@ -173,32 +168,21 @@ export function AllocationDonut({ categoryGroups, allocation, month }: Allocatio
             </p>
           )}
         </div>
-        {/* Legend rows as in the landing page's preview: no dividers, the
-            icon tile in the group's colour, the amount on the right. */}
+        {/* Dot legend as in the landing page's spending donut: each dot
+            has its slice's colour, the share on the right. */}
         {slices.length > 0 ? (
-          <ul className="space-y-1 px-3 pb-3">
-            {slices.map((slice) => {
-              const Icon = slice.group ? categoryIconRegistry[slice.group.iconName] : ReceiptTextIcon
-              return (
-                <li key={slice.key} className="flex items-center gap-3 rounded-xl px-1 py-2">
-                  <span
-                    className={cn(
-                      "flex size-9 shrink-0 items-center justify-center rounded-lg",
-                      getCategoryColor(slice.color).surfaceClassName,
-                    )}
-                  >
-                    <Icon className="size-4" aria-hidden="true" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-heading font-extrabold">{slice.name}</span>
-                    <span className="block truncate text-xs text-muted-foreground">
-                      {slice.share}% tổng {typeLabel}
-                    </span>
-                  </span>
-                  <span className="shrink-0 tabular-nums">{formatCurrency(slice.amount)}</span>
-                </li>
-              )
-            })}
+          <ul className="grid grid-cols-2 gap-x-4 gap-y-2.5 px-4 pb-4 text-sm">
+            {slices.map((slice) => (
+              <li key={slice.key} className="flex items-center gap-2">
+                <span
+                  className="size-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: slice.fill }}
+                  aria-hidden="true"
+                />
+                <span className="flex-1 truncate text-muted-foreground">{slice.name}</span>
+                <span className="tabular-nums">{slice.share}%</span>
+              </li>
+            ))}
           </ul>
         ) : null}
       </Card>
