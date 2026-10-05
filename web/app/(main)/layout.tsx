@@ -16,7 +16,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { requireSession } from "@/lib/auth/session"
+import { isDevSessionUser, requireSession } from "@/lib/auth/session"
 import { needsOnboarding } from "@/lib/onboarding/repository"
 
 export const metadata: Metadata = {
@@ -35,7 +35,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
   const firstRun = await needsOnboarding(user.uid).catch(() => false)
 
   return (
-    <AuthSessionGuard initialUid={user.uid}>
+    <AuthSessionGuard initialUid={user.uid} devSession={isDevSessionUser(user)}>
       <PushMessageListener />
       <TooltipProvider>
         <WelcomeProvider firstRun={firstRun}>

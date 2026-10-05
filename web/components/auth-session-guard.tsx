@@ -39,10 +39,20 @@ function leaveToLogin() {
   window.location.replace(`/login?next=${next}`)
 }
 
-export function AuthSessionGuard({ children, initialUid }: { children: React.ReactNode; initialUid: string }) {
+export function AuthSessionGuard({
+  children,
+  initialUid,
+  devSession = false,
+}: {
+  children: React.ReactNode
+  initialUid: string
+  /** The dev server's user from /api/dev/login: no Firebase account to follow. */
+  devSession?: boolean
+}) {
   const router = useRouter()
 
   React.useEffect(() => {
+    if (devSession) return
     let active = true
 
     const unsubscribe = onIdTokenChanged(firebaseAuth, async (user) => {
@@ -136,7 +146,7 @@ export function AuthSessionGuard({ children, initialUid }: { children: React.Rea
       window.removeEventListener("pageshow", onPageShow)
       uncover()
     }
-  }, [router, initialUid])
+  }, [router, initialUid, devSession])
 
   return (
     <>

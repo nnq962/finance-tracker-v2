@@ -1,9 +1,10 @@
 import { cache } from "react"
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import type { DecodedIdToken } from "firebase-admin/auth"
 
 import { SESSION_COOKIE_NAME } from "@/lib/auth/constants"
+import { DEV_SESSION_VALUE, DEV_USER, isDevLoginEnabled } from "@/lib/auth/dev-session"
 import { getFirebaseAdminAuth } from "@/lib/firebase/admin"
 
 export type SessionUser = {
@@ -46,6 +47,12 @@ const getVerifiedSession = cache(async (): Promise<VerifiedSession | null> => {
     return null
   }
 
+  if (sessionCookie === DEV_SESSION_VALUE) {
+    return isDevLoginEnabled((await headers()).get("host"))
+      ? { user: DEV_USER, notRevoked: Promise.resolve(true) }
+      : null
+  }
+
   const auth = getFirebaseAdminAuth()
 
   try {
@@ -70,6 +77,11 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
 
   return session.user
 })
+
+/** Whether this is the dev user from /api/dev/login, who has no Firebase account. */
+export function isDevSessionUser(user: SessionUser) {
+  return user.uid === DEV_USER.uid && user.email === DEV_USER.email
+}
 
 /** Fully verified user; redirects to login otherwise. Use for mutations. */
 export async function requireSession() {
