@@ -20,13 +20,35 @@ import type {
   TransactionSearchFilters,
 } from "../_types/transaction"
 
-const filters: { label: string; value: TransactionFilter }[] = [
+export const transactionKindFilters: { label: string; value: TransactionFilter }[] = [
   { label: "Tất cả", value: "all" },
   { label: "Chi tiền", value: "expense" },
   { label: "Thu tiền", value: "income" },
   { label: "Chuyển khoản", value: "transfer" },
   { label: "Vay nợ", value: "debt" },
 ]
+
+/**
+ * The search filters once the kind changes to `next`: categories that cannot
+ * match it are dropped (transfers and loans have none). The same object when
+ * nothing is dropped.
+ */
+export function withKindFilter(
+  next: TransactionFilter,
+  searchFilters: TransactionSearchFilters,
+  categoryGroups: CategoryGroup[],
+) {
+  if (next === "all") return searchFilters
+  const keep = new Set(
+    next === "transfer" || next === "debt"
+      ? []
+      : categoryGroups.filter((group) => group.type === next).map((group) => group.id),
+  )
+  const categoryGroupIds = searchFilters.categoryGroupIds.filter((id) => keep.has(id))
+  return categoryGroupIds.length === searchFilters.categoryGroupIds.length
+    ? searchFilters
+    : { ...searchFilters, categoryGroupIds }
+}
 
 /** How many conditions narrow the list, not counting the search text. */
 export function countActiveFilters(
@@ -79,23 +101,11 @@ export function TransactionFilterFields({
   const amountRangeReversed =
     minAmount !== null && maxAmount !== null && minAmount > maxAmount
 
-  /** Changes the kind, dropping categories that cannot match it (transfers have none). */
+  /** Changes the kind, dropping categories that cannot match it. */
   function changeFilter(next: TransactionFilter) {
     onFilterChange(next)
-    if (next === "all") return
-    const keep = new Set(
-      next === "transfer" || next === "debt"
-        ? []
-        : categoryGroups
-            .filter((group) => group.type === next)
-            .map((group) => group.id),
-    )
-    const categoryGroupIds = searchFilters.categoryGroupIds.filter((id) =>
-      keep.has(id),
-    )
-    if (categoryGroupIds.length !== searchFilters.categoryGroupIds.length) {
-      onSearchFiltersChange({ ...searchFilters, categoryGroupIds })
-    }
+    const nextSearchFilters = withKindFilter(next, searchFilters, categoryGroups)
+    if (nextSearchFilters !== searchFilters) onSearchFiltersChange(nextSearchFilters)
   }
 
   function updateCategoryGroupSelection(
@@ -132,7 +142,7 @@ export function TransactionFilterFields({
           className="flex-wrap"
           aria-label="Lọc loại giao dịch"
         >
-          {filters.map((item) => (
+          {transactionKindFilters.map((item) => (
             <ToggleGroupItem key={item.value} value={item.value}>
               {item.label}
             </ToggleGroupItem>

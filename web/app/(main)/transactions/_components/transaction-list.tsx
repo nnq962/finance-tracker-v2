@@ -66,7 +66,8 @@ export function TransactionList({
   }
 
   return (
-    <div className="space-y-6">
+    // Phones stack the days with no gap, their headers dividing them.
+    <div className="lg:space-y-6">
       {groups.map((group) => (
         <TransactionDateGroup
           accounts={accounts}

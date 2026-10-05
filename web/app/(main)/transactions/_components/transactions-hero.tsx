@@ -1,11 +1,16 @@
 "use client"
 
 import * as React from "react"
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import {
+  ArrowDownLeftIcon,
+  ArrowUpRightIcon,
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { formatCurrency } from "@/lib/format-currency"
 import { cn } from "@/lib/utils"
 
@@ -29,6 +34,12 @@ function shiftMonth(month: string, offset: number) {
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`
 }
 
+const cashFlowStats = {
+  income: { label: "Đã thu", icon: ArrowDownLeftIcon },
+  expense: { label: "Đã chi", icon: ArrowUpRightIcon },
+} as const
+
+/** A tile in the kind's colour, as the tiles in a banking app's summary. */
 function CashFlowStat({
   amount,
   kind,
@@ -36,17 +47,16 @@ function CashFlowStat({
   amount: number
   kind: "income" | "expense"
 }) {
+  const { label, icon: Icon } = cashFlowStats[kind]
   return (
-    <div className="min-w-0">
-      <p className="text-sm text-muted-foreground">
-        {kind === "income" ? "Đã thu" : "Đã chi"}
+    <div className={cn("min-w-0 rounded-2xl p-3", cashFlowColors[kind].surface)}>
+      <p className="flex items-center gap-1.5 text-xs font-semibold">
+        <span className="flex size-5 items-center justify-center rounded-full bg-white/70 dark:bg-black/20">
+          <Icon className="size-3" aria-hidden="true" />
+        </span>
+        {label}
       </p>
-      <p
-        className={cn(
-          "font-heading text-xl leading-tight font-extrabold tabular-nums [overflow-wrap:anywhere]",
-          cashFlowColors[kind].text,
-        )}
-      >
+      <p className="mt-2 font-heading text-lg leading-tight font-extrabold tabular-nums [overflow-wrap:anywhere]">
         {formatCurrency(amount)}
       </p>
     </div>
@@ -77,20 +87,23 @@ export function TransactionsHero({
 
   return (
     <section aria-labelledby="transactions-summary-title" className="space-y-2">
-      {/* A caption above the card, as on the overview's sections. */}
+      {/* A caption above the card on desktop, as on the overview's sections.
+          Phones have no card: the summary opens the page as in a native app. */}
       <h2
         id="transactions-summary-title"
-        className="px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+        className="sr-only px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase lg:not-sr-only"
       >
         Thu chi trong tháng
       </h2>
-      <Card>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between gap-2">
+      <Card className="max-lg:contents">
+        <CardContent className="space-y-5 max-lg:px-0">
+          {/* The month as a pill, its arrows inside. */}
+          <div className="flex items-center justify-between gap-2 rounded-full bg-[#f3f1ec] p-1 dark:bg-[#1b1a21]">
             <Button
               type="button"
               variant="ghost"
               size="icon"
+              className="rounded-full"
               aria-label="Tháng trước"
               disabled={isMonthPending}
               onClick={() => onMonthChange(shiftMonth(selectedMonth, -1))}
@@ -101,11 +114,13 @@ export function TransactionsHero({
               <Button
                 type="button"
                 variant="ghost"
+                className="rounded-full"
                 aria-label={`${rangeLabel}, chọn tháng khác`}
                 disabled={isMonthPending}
                 onClick={openMonthPicker}
               >
                 {rangeLabel}
+                <ChevronDownIcon data-icon="inline-end" aria-hidden="true" />
               </Button>
               {/* The native month picker, opened from the label above. */}
               <input
@@ -128,6 +143,7 @@ export function TransactionsHero({
               type="button"
               variant="ghost"
               size="icon"
+              className="rounded-full"
               aria-label="Tháng sau"
               disabled={isMonthPending || selectedMonth >= maxMonth}
               onClick={() => onMonthChange(shiftMonth(selectedMonth, 1))}
@@ -135,16 +151,12 @@ export function TransactionsHero({
               <ChevronRightIcon />
             </Button>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <CashFlowStat amount={income} kind="income" />
-            <CashFlowStat amount={expense} kind="expense" />
-          </div>
-          <Separator variant="chunky" />
-          <div className="flex items-center justify-between gap-3 text-sm">
-            <span className="text-muted-foreground">Chênh lệch</span>
-            <span
+          {/* The difference leads, large, as a balance does in a wallet app. */}
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">Chênh lệch</p>
+            <p
               className={cn(
-                "font-heading font-extrabold tabular-nums",
+                "mt-1 font-heading text-4xl leading-tight font-extrabold tabular-nums [overflow-wrap:anywhere]",
                 netBalance > 0 && cashFlowColors.income.text,
                 netBalance < 0 && cashFlowColors.expense.text,
               )}
@@ -152,7 +164,11 @@ export function TransactionsHero({
               {formatCurrency(netBalance, {
                 signDisplay: netBalance === 0 ? "auto" : "always",
               })}
-            </span>
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <CashFlowStat amount={income} kind="income" />
+            <CashFlowStat amount={expense} kind="expense" />
           </div>
         </CardContent>
       </Card>
