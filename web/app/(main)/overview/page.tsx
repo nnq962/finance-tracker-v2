@@ -85,7 +85,6 @@ export default async function OverviewPage({
         paymentOutcome={paymentOutcome}
         openPlan={screen === "plan"}
       />
-      <Missions state={missions} accounts={accounts} contacts={contacts} categoryGroups={categoryGroups} />
       <OverviewMonth
         accounts={accounts}
         categoryGroups={categoryGroups}
@@ -95,7 +94,8 @@ export default async function OverviewPage({
         today={today}
         // The six months loaded for the chart.
         minMonth={transactionRange.startMonth}
-        netWorth={<NetWorth data={summary.netWorth} />}
+        netWorth={<NetWorth data={summary.netWorth} accounts={accounts} categoryGroups={categoryGroups} />}
+        missions={<Missions state={missions} accounts={accounts} contacts={contacts} categoryGroups={categoryGroups} />}
         dueDebts={
           summary.dueDebts.length > 0 ? <DueDebts debts={summary.dueDebts} /> : undefined
         }

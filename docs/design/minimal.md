@@ -76,3 +76,7 @@ Tiêu đề nhóm phía trên thẻ: `text-[13px] font-medium text-muted-foregro
   ở dưới cùng. Từ md trở lên, nút nằm ở tiêu đề trang.
 - **Tiêu đề lớn thu gọn** (`CompactTitleBar`, tự gắn trong `PageHeader`): khi tiêu đề lớn
   cuộn khỏi màn hình, một thanh mờ 44px với tiêu đề nhỏ hiện ở đầu, như iOS.
+- **Tiêu đề mục trên trang dạng dashboard** (`SectionHeader`): 18/600 màu chữ chính, có thể kèm
+  ghi chú xám và liên kết "Xem tất cả ›". `SettingsGroup` dùng nó qua `heading="section"`;
+  danh sách kiểu Cài đặt giữ tiêu đề nhỏ màu xám.
+- **Số tiền lớn** (`Money`): chữ số đậm vừa, chữ "đ" nhạt hơn.

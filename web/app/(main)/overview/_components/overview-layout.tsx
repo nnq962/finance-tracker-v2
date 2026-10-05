@@ -2,6 +2,8 @@ import type * as React from "react"
 
 type OverviewLayoutProps = {
   netWorth: React.ReactNode
+  /** The first-run missions, under the net worth. */
+  missions?: React.ReactNode
   calendar: React.ReactNode
   /** Debts coming due; left out when there are none. */
   dueDebts?: React.ReactNode
@@ -11,12 +13,13 @@ type OverviewLayoutProps = {
 
 /**
  * The overview's sections, shared with its loading state. Below lg they stack
- * in one column: net worth, calendar, due debts, allocation, trend. From lg
+ * in one column: net worth, missions, calendar, due debts, allocation, trend. From lg
  * up the lists form a rail on the left (24rem wide from xl) and the calendar
  * and trend chart, which read better wide, take the rest.
  */
 export function OverviewLayout({
   netWorth,
+  missions,
   calendar,
   dueDebts,
   allocation,
@@ -30,12 +33,13 @@ export function OverviewLayout({
     <div className="flex min-w-0 flex-col gap-6 md:gap-8 lg:grid lg:grid-cols-2 lg:items-start xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
       <div className={columnClassName}>
         <div className="order-1">{netWorth}</div>
-        {dueDebts ? <div className="order-3">{dueDebts}</div> : null}
-        <div className="order-4">{allocation}</div>
+        {missions ? <div className="order-2">{missions}</div> : null}
+        {dueDebts ? <div className="order-4">{dueDebts}</div> : null}
+        <div className="order-5">{allocation}</div>
       </div>
       <div className={columnClassName}>
-        <div className="order-2">{calendar}</div>
-        <div className="order-5">{trend}</div>
+        <div className="order-3">{calendar}</div>
+        <div className="order-6">{trend}</div>
       </div>
     </div>
   )

@@ -30,8 +30,8 @@ function initialsOf(name: string) {
 
 /**
  * The overview's heading: the user's avatar and a greeting with their full
- * name, the blue tick on Pro. On Free, a card invites them to Pro: below on
- * a phone, so the name keeps the whole row, and beside the greeting from lg up.
+ * name, the blue tick on Pro. On Free, a small pill at the end of the row
+ * invites them to Pro.
  */
 export function OverviewGreeting({
   user,
@@ -50,15 +50,15 @@ export function OverviewGreeting({
   const name = user.name.trim()
 
   return (
-    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
+    <div className="flex items-center justify-between gap-3">
       <header className="flex min-w-0 items-center gap-3 pt-1">
         <Avatar size="lg">
           <AvatarImage src={user.avatar} alt="" />
           <AvatarFallback>{initialsOf(name) || "?"}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="text-sm text-muted-foreground">{greetingFor(new Date())},</p>
-          <h1 className="text-2xl leading-tight font-semibold tracking-tight [overflow-wrap:anywhere] md:text-3xl">
+          <p className="text-[13px] text-muted-foreground">{greetingFor(new Date())},</p>
+          <h1 className="truncate text-xl leading-tight font-semibold tracking-tight md:text-2xl">
             {name || "bạn"}
             {planState.plan === "pro" ? (
               <BadgeCheckIcon
@@ -88,7 +88,7 @@ export function OverviewGreetingSkeleton() {
       <Skeleton className="size-10 shrink-0 rounded-full" />
       <div className="space-y-1.5">
         <Skeleton className="h-4 w-28" />
-        <Skeleton className="h-7 w-20" />
+        <Skeleton className="h-6 w-32" />
       </div>
     </div>
   )

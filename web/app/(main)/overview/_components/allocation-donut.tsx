@@ -4,6 +4,7 @@ import * as React from "react"
 import { Cell, Label, Pie, PieChart } from "recharts"
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/animate-ui/components/radix/tabs"
+import { SectionHeader } from "@/components/app/section-header"
 import { Card } from "@/components/ui/card"
 import {
   ChartContainer,
@@ -81,13 +82,8 @@ export function AllocationDonut({ categoryGroups, allocation, month }: Allocatio
   const typeLabel = type === "expense" ? "chi" : "thu"
 
   return (
-    <section aria-labelledby="allocation-title" className="space-y-2">
-      <h2
-        id="allocation-title"
-        className="px-3 text-[13px] font-medium text-muted-foreground"
-      >
-        Phân bổ · Tháng {monthNumber}/{year}
-      </h2>
+    <section aria-labelledby="allocation-title" className="space-y-3">
+      <SectionHeader id="allocation-title" title="Phân bổ" note={`Tháng ${monthNumber}/${year}`} />
       {/* One card: the chart, then its legend, where each row's icon has
           its slice's colour. */}
       <Card size="sm" className="gap-0 py-0">
@@ -144,7 +140,7 @@ export function AllocationDonut({ categoryGroups, allocation, month }: Allocatio
                           <tspan
                             x={viewBox.cx}
                             y={(viewBox.cy ?? 0) - 8}
-                            className="fill-foreground font-heading text-base font-extrabold"
+                            className="fill-foreground text-base font-semibold"
                           >
                             {formatCurrency(total)}
                           </tspan>

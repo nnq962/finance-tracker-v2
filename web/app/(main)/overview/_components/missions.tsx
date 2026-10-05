@@ -206,7 +206,15 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
   return (
     <>
       <SettingsGroup
-        title={`Nhiệm vụ · ${claimedCount}/${missions.length}`}
+        heading="section"
+        title={
+          <>
+            Nhiệm vụ
+            <span className="ml-1.5 text-[15px] font-normal tracking-normal text-muted-foreground">
+              {claimedCount}/{missions.length}
+            </span>
+          </>
+        }
         action={
           remaining.length > 0 ? (
             <Button

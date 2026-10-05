@@ -11,11 +11,11 @@ import {
 import { formatCurrency } from "@/lib/format-currency"
 import type { OverviewSummary } from "@/lib/overview/summary"
 
-// Validated with the dataviz palette checker: light pair CVD ΔE 10.0; the
-// dark pair (7.4) relies on the legend dots and the 2px gap between bars.
+// The income and expense tokens of globals.css; a red-green pair, so the
+// legend dots and the 2px gap between bars carry it for colour-blind readers.
 export const cashFlowChartColors = {
-  income: { light: "#3e9727", dark: "#3e9727" },
-  expense: { light: "#ff837e", dark: "#f2564f" },
+  income: { light: "#1a9a50", dark: "#3ccf6e" },
+  expense: { light: "#e5484d", dark: "#ff6369" },
 } as const
 
 const cashFlowConfig = {
@@ -71,8 +71,8 @@ export function CashFlowChart({ data }: { data: OverviewSummary["cashFlow"] }) {
             }
           />
           {/* Phones stay below the cap; it only keeps bars from growing too wide on desktop. */}
-          <Bar dataKey="income" fill="var(--color-income)" radius={[4, 4, 0, 0]} maxBarSize={32} />
-          <Bar dataKey="expense" fill="var(--color-expense)" radius={[4, 4, 0, 0]} maxBarSize={32} />
+          <Bar dataKey="income" fill="var(--color-income)" radius={[6, 6, 0, 0]} maxBarSize={32} />
+          <Bar dataKey="expense" fill="var(--color-expense)" radius={[6, 6, 0, 0]} maxBarSize={32} />
         </BarChart>
       </ChartContainer>
       {/* sr-only on a div: a table cannot shrink to 1px and would stretch the

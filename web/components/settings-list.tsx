@@ -1,6 +1,7 @@
 import type * as React from "react"
 import { ChevronRightIcon, type LucideIcon } from "lucide-react"
 
+import { SectionHeader } from "@/components/app/section-header"
 import { Card } from "@/components/ui/card"
 import {
   Item,
@@ -40,6 +41,7 @@ function SettingsGroup({
   header,
   footer,
   listClassName,
+  heading = "caption",
   children,
 }: {
   title?: React.ReactNode
@@ -50,11 +52,15 @@ function SettingsGroup({
   footer?: React.ReactNode
   /** Lays the rows out, e.g. in columns on wide screens. */
   listClassName?: string
+  /** caption: the small grey label of a settings list; section: a dashboard's large title. */
+  heading?: "caption" | "section"
   children: React.ReactNode
 }) {
   return (
-    <section className="space-y-2">
-      {title || action ? (
+    <section className={heading === "section" ? "space-y-3" : "space-y-2"}>
+      {heading === "section" && (title || action) ? (
+        <SectionHeader title={title} action={action} />
+      ) : title || action ? (
         <div className="flex min-h-6 items-center justify-between gap-3 px-3">
           {title ? (
             <h2 className="flex min-w-0 items-center gap-1.5 text-[13px] font-medium text-muted-foreground">

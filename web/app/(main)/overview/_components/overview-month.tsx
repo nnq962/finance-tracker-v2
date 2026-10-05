@@ -18,6 +18,7 @@ type OverviewMonthProps = {
   today: string
   minMonth: string
   netWorth: React.ReactNode
+  missions?: React.ReactNode
   /** Debts coming due; left out when there are none. */
   dueDebts?: React.ReactNode
   /** The six-month chart. */
@@ -36,6 +37,7 @@ export function OverviewMonth({
   today,
   minMonth,
   netWorth,
+  missions,
   dueDebts,
   trend,
 }: OverviewMonthProps) {
@@ -44,6 +46,7 @@ export function OverviewMonth({
   return (
     <OverviewLayout
       netWorth={netWorth}
+      missions={missions}
       calendar={
         <CashFlowCalendar
           accounts={accounts}

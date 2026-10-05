@@ -5,7 +5,6 @@ import { SparklesIcon } from "lucide-react"
 
 import { PlanOverlay } from "@/components/plans/plan-overlay"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import type { PaymentOutcome } from "@/lib/plans/payos"
 import { plans, type PlanState } from "@/lib/plans/plans"
 
@@ -19,29 +18,19 @@ type PlanInviteProps = {
   initialOpen: boolean
 }
 
-/** On Free, a card inviting the user to Pro; the plans open over the overview. */
+/** On Free, a pill inviting the user to Pro; the plans open over the overview. */
 export function PlanInvite({ planState, checkoutEnabled, paymentOutcome, initialOpen }: PlanInviteProps) {
   const [open, setOpen] = React.useState(initialOpen)
 
   return (
     <>
       {planState.plan === "free" ? (
-        <Card size="sm" className="lg:w-md lg:shrink-0">
-          <CardContent className="flex items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#f2e9ff] text-[#7a4aba] dark:bg-[#3b2c54] dark:text-[#d0b2ff]">
-              <SparklesIcon className="size-5" aria-hidden="true" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-heading text-base leading-snug font-extrabold">Nâng cấp lên {plans.pro.label}</p>
-              <p className="text-sm text-muted-foreground">
-                {plans.pro.aiMonthlyLimit} lượt trợ lý AI mỗi tháng và dùng sớm tính năng mới
-              </p>
-            </div>
-            <Button type="button" variant="grape" className="shrink-0" onClick={() => setOpen(true)}>
-              Xem gói
-            </Button>
-          </CardContent>
-        </Card>
+        // A small pill beside the greeting, as an app's "Upgrade" chip,
+        // rather than a card that pushes the overview down.
+        <Button type="button" variant="grape" size="sm" className="shrink-0" onClick={() => setOpen(true)}>
+          <SparklesIcon data-icon="inline-start" aria-hidden="true" />
+          Nâng cấp {plans.pro.label}
+        </Button>
       ) : null}
 
       {/* Rendered on Pro too: back from payOS, it shows the payment went through. */}
