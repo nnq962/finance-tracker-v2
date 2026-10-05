@@ -8,19 +8,35 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-## Quy tắc sử dụng component giao diện
+## Quy tắc giao diện
 
-### Ưu tiên tái sử dụng
+### Định hướng: app, không phải web
 
-- Trước khi thêm hoặc sửa giao diện, phải kiểm tra các component hiện có, API, variant và cách sử dụng trong dự án, đặc biệt ở `components/ui`, `components/forms` và các component của từng tính năng.
-- Nếu đã có component đáp ứng nhu cầu, bắt buộc tái sử dụng component đó cùng các variant/props có sẵn. Không tự dựng bản tương đương bằng HTML/CSS, ví dụ dùng `span` tự tạo badge khi đã có `Badge`, hoặc tự làm hiệu ứng nhấn khi `Card` đã có `pressable`.
-- Nếu chưa có component phù hợp trong dự án, kiểm tra registry shadcn và ưu tiên cài bằng shadcn CLI theo cấu hình hiện có trong `components.json`. Kiểm tra thay đổi khi cài; không ghi đè component đã được tùy chỉnh trong dự án.
-- Chỉ tự thiết kế component mới khi cả component hiện có lẫn component có thể cài qua shadcn CLI đều không đáp ứng nhu cầu. Nêu ngắn gọn lý do trước khi thực hiện.
+- Finance Tracker là một PWA dùng chủ yếu trên điện thoại. Giao diện phải mang cảm giác app native: thiết kế cho điện thoại trước (khung 390px), desktop là bản mở rộng.
+- Đặc trưng nên có: tiêu đề lớn, list chia nhóm tràn mép với tiêu đề nhóm bám khi cuộn, dòng list cao và dễ chạm, chip/segmented control thay cho form lọc, bottom sheet thay cho dialog, nút nổi trong tầm ngón cái, phản hồi khi chạm (`active:`) thay cho hiệu ứng hover. Tránh card lồng card, khung viền bao quanh mọi thứ và bố cục kiểu trang web.
+- Nguồn chuẩn về thiết kế: `docs/design/` (Chunky UI) và các mockup đã được người dùng duyệt. Khi spec khác style mặc định của component, làm theo spec.
+- Vùng chạm tối thiểu 44px, tôn trọng safe-area (`env(safe-area-inset-*)`), hỗ trợ cả theme sáng lẫn tối.
 
-### Giữ nguyên thiết kế của component
+### Ba lớp component
 
-- Khi dùng component có sẵn, giữ nguyên font, cỡ chữ, độ đậm, chiều cao, padding nội bộ, bo góc, viền, bóng và các trạng thái tương tác. Ưu tiên API, `variant`, `size` và các props mà component cung cấp; không tự ghi đè bằng class hoặc style để tạo kiểu mới.
-- Chỉ thêm các điều chỉnh layout thực sự cần thiết cho vị trí sử dụng, ví dụ `w-full`, grid/flex, căn chỉnh, khoảng cách giữa các component và responsive hiển thị. Ưu tiên đặt các điều chỉnh này trên phần tử bao ngoài khi phù hợp.
-- Chỉ tùy chỉnh thiết kế khi người dùng yêu cầu rõ ràng hoặc có yêu cầu chức năng/accessibility cụ thể mà API hiện có không đáp ứng. Trong trường hợp sau, nêu rõ lý do và chỉ thay đổi phần tối thiểu cần thiết; không xem sở thích thẩm mỹ của agent là lý do để ghi đè style.
-- Yêu cầu đổi một thuộc tính không cho phép thay đổi các thuộc tính khác: ví dụ đổi màu badge phải giữ nguyên font, kích thước, padding và hình dạng; đặt button full width chỉ thêm `w-full`, không tự thêm `h-*`, `text-*` hay đổi padding.
-- Trước khi hoàn tất, kiểm tra diff để loại bỏ component tự dựng trùng chức năng và các override style không được yêu cầu.
+1. `components/app/`: khối giao diện kiểu app (ví dụ large title, list section, list row, sticky section header, segmented control, chip row, sheet header, FAB). Được tự thiết kế, viết HTML/CSS riêng, không bắt buộc dựa trên shadcn. Mỗi khối có API rõ ràng (props, variant) và tự lo theme tối, safe-area, accessibility.
+2. `components/ui/`: primitive của shadcn đã tuỳ biến theo Chunky; ưu tiên cho phần hành vi (dialog, popover, select, focus, a11y).
+3. Component của từng tính năng, ghép từ hai lớp trên.
+
+### Tái sử dụng
+
+- Trước khi thêm giao diện, kiểm tra `components/app`, `components/ui`, `components/forms` và component của tính năng. Đã có thì dùng lại; không dựng bản trùng chức năng.
+- Cần một khối kiểu app chưa có: thêm vào `components/app` (không viết thẳng trong trang) để các trang khác dùng chung. Cần primitive hành vi chưa có: ưu tiên cài qua shadcn CLI theo `components.json`, không ghi đè component đã tuỳ biến.
+
+### Tuỳ biến style
+
+- Trong `components/app`: tự do thiết kế theo định hướng ở trên.
+- Khi một trang cần component trông khác đi, thêm hoặc sửa `variant`/prop trong chính component đó thay vì rải class override ở nơi dùng; sửa một chỗ thì mọi trang đều nhất quán.
+- Class ở nơi dùng chỉ để bố cục: kích thước, grid/flex, căn chỉnh, khoảng cách, responsive.
+- Đổi một thuộc tính không kéo theo đổi các thuộc tính khác ngoài yêu cầu.
+
+### Quy trình cho thay đổi giao diện
+
+- Với thay đổi lớn (thiết kế lại một trang, thêm khối mới vào `components/app`): làm mockup và chờ người dùng duyệt trước khi code.
+- Trước khi báo xong: xem kết quả thật bằng ảnh chụp ở khung điện thoại (390px) và desktop, cả theme sáng lẫn tối.
+- Kiểm tra diff để loại bỏ component trùng chức năng và override style không cần thiết.
