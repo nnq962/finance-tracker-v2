@@ -16,7 +16,7 @@ import type { PurchaseDraft } from "@/lib/plans/purchase-draft"
 import type { AiQuota } from "../actions"
 
 import { filterTransactions } from "../_lib/filter-transactions"
-import { getTransactionPeriod } from "../_lib/get-transaction-period"
+import { getTransactionDateKey, getTransactionPeriod } from "../_lib/get-transaction-period"
 import type {
   Transaction,
   TransactionFilter,
@@ -109,6 +109,23 @@ export function TransactionsDashboard({
       ),
     [effectiveAnchorDateKey, period, todayDateKey, transactions],
   )
+  // What the month's figures are compared against: the same days of the month
+  // before while this month is still running, otherwise the whole month before.
+  // The page loads the month before along with the one shown.
+  const comparison = React.useMemo(() => {
+    const [year, month] = selectedMonth.split("-").map(Number)
+    const previous = new Date(Date.UTC(year, month - 2, 1))
+    const previousMonthKey = `${previous.getUTCFullYear()}-${String(previous.getUTCMonth() + 1).padStart(2, "0")}`
+    const isRunning = selectedMonth === todayDateKey.slice(0, 7)
+    const lastDay = isRunning ? todayDateKey.slice(8, 10) : "31"
+    return {
+      transactions: transactions.filter((transaction) => {
+        const dateKey = getTransactionDateKey(transaction.occurredAt)
+        return dateKey.startsWith(previousMonthKey) && dateKey.slice(8, 10) <= lastDay
+      }),
+      label: `${isRunning ? "cùng kỳ " : ""}tháng ${previous.getUTCMonth() + 1}`,
+    }
+  }, [selectedMonth, todayDateKey, transactions])
   const visibleTransactions = React.useMemo(
     () => filterTransactions(periodData.transactions, filter, searchFilters),
     [filter, periodData.transactions, searchFilters],
@@ -146,6 +163,8 @@ export function TransactionsDashboard({
         summary={
           <TransactionsHero
             transactions={periodData.transactions}
+            previousTransactions={comparison.transactions}
+            comparedTo={comparison.label}
             rangeLabel={periodData.rangeLabel}
             selectedMonth={selectedMonth}
             maxMonth={todayDateKey.slice(0, 7)}

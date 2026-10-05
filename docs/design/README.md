@@ -25,3 +25,6 @@ preset shadcn `b27GcrRo` với font Be Vietnam Pro. Bảng màu: [`colors.md`](c
   theo `sign`, màu theo `tone` (`income`, `expense`, `transfer`). Cỡ `sm` cho dòng list, `lg`
   cho số thống kê, `xl` cho số tổng. Dùng ở Thu chi trong tháng, Tổng số dư và dòng giao
   dịch (bước 2, phương án A được duyệt 2026-10-05).
+- **Badge thay đổi** (`DeltaBadge`): viên nhỏ có mũi tên và % thay đổi; xanh khi tốt, đỏ
+  khi xấu (`goodWhen`), xám khi không đổi, ẩn khi không có số để so. Ở Thu chi trong tháng,
+  tháng đang chạy so với cùng kỳ tháng trước, tháng đã qua so với trọn tháng trước (bước 3).

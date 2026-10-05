@@ -3,6 +3,7 @@
 import * as React from "react"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 
+import { DeltaBadge } from "@/components/app/delta-badge"
 import { Money } from "@/components/app/money"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -13,6 +14,10 @@ import type { Transaction } from "../_types/transaction"
 
 type TransactionsHeroProps = {
   transactions: Transaction[]
+  /** The same span of the month before, to show how the figures changed. */
+  previousTransactions: Transaction[]
+  /** What previousTransactions covers, e.g. "cùng kỳ tháng 9". */
+  comparedTo: string
   rangeLabel: string
   /** "YYYY-MM" */
   selectedMonth: string
@@ -29,15 +34,25 @@ function shiftMonth(month: string, offset: number) {
 
 function CashFlowStat({
   amount,
+  previousAmount,
+  comparedTo,
   kind,
 }: {
   amount: number
+  previousAmount: number
+  comparedTo: string
   kind: "income" | "expense"
 }) {
   return (
     <div className="min-w-0">
-      <p className="text-sm text-muted-foreground">
+      <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
         {kind === "income" ? "Đã thu" : "Đã chi"}
+        <DeltaBadge
+          current={amount}
+          previous={previousAmount}
+          goodWhen={kind === "income" ? "up" : "down"}
+          comparedTo={comparedTo}
+        />
       </p>
       <Money amount={amount} size="lg" tone={kind} />
     </div>
@@ -47,6 +62,8 @@ function CashFlowStat({
 /** The month being viewed, with what came in, went out and the difference. */
 export function TransactionsHero({
   transactions,
+  previousTransactions,
+  comparedTo,
   rangeLabel,
   selectedMonth,
   maxMonth,
@@ -55,6 +72,7 @@ export function TransactionsHero({
 }: TransactionsHeroProps) {
   const monthInput = React.useRef<HTMLInputElement>(null)
   const { income, expense, netBalance } = getTransactionSummary(transactions)
+  const previous = getTransactionSummary(previousTransactions)
 
   const openMonthPicker = () => {
     const input = monthInput.current
@@ -127,8 +145,8 @@ export function TransactionsHero({
             </Button>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <CashFlowStat amount={income} kind="income" />
-            <CashFlowStat amount={expense} kind="expense" />
+            <CashFlowStat amount={income} previousAmount={previous.income} comparedTo={comparedTo} kind="income" />
+            <CashFlowStat amount={expense} previousAmount={previous.expense} comparedTo={comparedTo} kind="expense" />
           </div>
           <Separator />
           <div className="flex items-center justify-between gap-3 text-sm">
