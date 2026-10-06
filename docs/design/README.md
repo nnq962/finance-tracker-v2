@@ -35,7 +35,7 @@ component ở đó là cả app đổi theo.
 | Font | Be Vietnam Pro; số tiền `tabular-nums` |
 | Cỡ chữ | Số tổng 36 · Tiêu đề trang 30 · Tiêu đề section 20 · Tiêu đề thẻ 18 · Nội dung 16 · Phụ 14 · Chú thích 12 |
 | Bo góc | 28 thẻ lớn, sheet, hộp thoại · 24 thẻ, nhóm danh sách · 20 thẻ nhỏ, menu · 16 ô nhập, ô icon · tròn cho nút, chip, badge, công tắc |
-| Chiều cao điều khiển | Nút 44 · ô nhập/select trong form 56 (bo 20, lề 20), ô lẻ như thanh tìm kiếm 44 · segmented 40 · 36/32 chỗ chật · 48 nút cuối form |
+| Chiều cao điều khiển | Nút 44 · ô nhập/select trong form 52, ô lẻ như thanh tìm kiếm 44 (bo 16) · segmented 40 · 36/32 chỗ chật · 48 nút cuối form |
 | Khoảng cách | Lề trang 16 (24 từ md) · giữa các thẻ 16 (24 từ md) · trong thẻ 20, lg 24 |
 | Bóng | Thẻ không bóng; chỉ lớp nổi (menu, sheet, hộp thoại, tab bar, nút nổi) có bóng |
 | Chuyển động | 150–250ms ease-out; tôn trọng `prefers-reduced-motion` |
@@ -47,9 +47,9 @@ component ở đó là cả app đổi theo.
   `icon` 44, `icon-sm` 36, `icon-xs` 32, `icon-lg` 48.
 - **Card:** `size="sm"` (bo 20, đệm 16) · mặc định (24, 20) · `size="lg"` (28, 24) cho thẻ chính
   của trang.
-- **Input, Textarea, InputGroup, Select, Combobox:** chữ 16px (để iOS không phóng to). Trong một
-  `Field` của form: cao 56, bo 20, lề 20, như mẫu form; đứng riêng (thanh tìm kiếm): cao 44, bo
-  16. `Field` đặt kích thước qua biến `--control-h`, `--control-radius`, `--control-px`.
+- **Input, Textarea, InputGroup, Select, Combobox:** chữ 16px (để iOS không phóng to), bo 16.
+  Trong một `Field` của form cao 52; đứng riêng (thanh tìm kiếm) cao 44. `Field` đặt kích thước
+  qua biến `--control-h`, `--control-radius`, `--control-px`.
 - **Màu ô nhập theo bề mặt** (token `field`, `track` và utility `surface-grouped` / `surface-plain`
   trong `globals.css`): trên nền xám (trang, sheet) ô nhập, chip, nút phụ màu trắng; trên thẻ
   trắng chúng màu xám. Thẻ tự đặt `surface-plain`, khung trang và sheet đặt `surface-grouped`. Trong `SelectContent`, các `SelectItem` luôn nằm trong
@@ -85,6 +85,7 @@ component ở đó là cả app đổi theo.
 | `DeltaBadge` | % thay đổi so với kỳ trước; xanh khi tốt, đỏ khi xấu |
 | `StatGroup` + `Stat` | 2–4 chỉ số chia cột bằng vạch mảnh, mỗi cột có thể mở trang |
 | `ProgressRing` | Tiến độ dạng vòng mảnh có số ở giữa |
+| `FormSection` | Các trường của một form trong thẻ trắng, có tiêu đề nhỏ, ghi chú và nội dung phụ bên dưới |
 | `PromoBanner` | Banner đen (sáng ở theme tối) cho một điều đáng chú ý, như gói Pro |
 | `FloatingActions` | Nút hành động chính nổi trên thanh tab, trên điện thoại |
 | `CompactTitleBar` | Tiêu đề thu nhỏ khi tiêu đề lớn cuộn đi; tự gắn trong `PageHeader` |
@@ -103,6 +104,7 @@ Utility `pressable` (trong `globals.css`) cho phản hồi chạm của thẻ v�
   xám nhỏ ở đầu rồi con số chính; thẻ cách nhau 16px.
 - **Trang danh sách** (Giao dịch, Ngân sách, Cài đặt): tiêu đề lớn, thẻ tóm tắt, rồi các
   `SettingsGroup` có tiêu đề nhóm.
-- **Form** (theo mẫu form trong `docs/template/`): sheet `screen` nền xám với `SheetNavHeader`;
-  các `Field` xếp dọc thẳng trên nền, nhãn ở trên, ô trắng cao 56; dòng chọn và công tắc trong
-  `SettingsGroup`; một nút `lg` rộng hết ở cuối. Nút quay lại là cách huỷ, không cần nút "Huỷ".
+- **Form:** sheet `screen` nền xám với `SheetNavHeader`; các trường gom trong một `FormSection`
+  (thẻ trắng, ô nhập xám bên trong), dòng chọn và công tắc trong `SettingsGroup`; một nút `lg`
+  rộng hết ở cuối. Không bọc một ô lẻ trong thẻ riêng. Nút quay lại là cách huỷ, không cần nút
+  "Huỷ".

@@ -7,6 +7,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
+import { FormSection } from "@/components/app/form-section"
 import { AmountSuggestions, useAmountQuickPick } from "@/components/forms/amount-suggestions"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
@@ -193,198 +194,200 @@ export function AccountForm({
     >
       {!defaultValues ? <input type="hidden" name="requestId" value={requestId} /> : null}
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
-        <FieldGroup>
-          {/* Tabs, as for a transaction's kind. */}
-          <input type="hidden" name="type" value={accountType} />
-          <Tabs
-            value={accountType}
-            onValueChange={(value) => {
-              setAccountType(value as AccountType)
-              setInstitutionId("")
-              if (!nameEdited) setName("")
-              clearError("institutionId")
-            }}
-            className="w-full"
-          >
-            <TabsList className="w-full" aria-label="Loại tài khoản">
-              {accountTypeOptions.map(({ value, label }) => (
-                <TabsTrigger key={value} value={value}>
-                  {label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-
-          {institutionOptions && (
-            <Field data-invalid={Boolean(errors.institutionId) || undefined}>
-              <FieldLabel htmlFor="account-institution">
-                {institutionLabel} <RequiredMark />
-              </FieldLabel>
-              <Combobox
-                key={accountType}
-                items={institutionOptions}
-                name="institutionId"
-                value={selectedInstitution ?? null}
-                onValueChange={(institution) => {
-                  setInstitutionId(institution?.id ?? "")
-                  clearError("institutionId")
-                  if (institution && !nameEdited) clearError("name")
-                  // Name the account after its institution until the
-                  // user types a name of their own.
-                  if (institution && !nameEdited) {
-                    setName(institution.shortName ?? institution.name)
-                  }
-                }}
-                itemToStringLabel={(institution) =>
-                  institution.shortName ?? institution.name
-                }
-                itemToStringValue={(institution) => institution.id}
-                isItemEqualToValue={(institution, value) =>
-                  institution.id === value.id
-                }
-                filter={matchesInstitution}
-                autoHighlight
-                required
-              >
-                <div ref={institutionAnchor} className="w-full">
-                  <ComboboxInput
-                    id="account-institution"
-                    className="w-full"
-                    placeholder="Tìm kiếm"
-                    autoComplete="off"
-                    aria-invalid={Boolean(errors.institutionId) || undefined}
-                  >
-                    {selectedInstitution ? (
-                      <InputGroupAddon align="inline-start">
-                        <span className="flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-0.5">
-                          <Image
-                            src={selectedInstitution.logoPath}
-                            alt=""
-                            width={16}
-                            height={16}
-                            className="size-full object-contain"
-                          />
-                        </span>
-                      </InputGroupAddon>
-                    ) : null}
-                  </ComboboxInput>
-                </div>
-                <ComboboxContent
-                  anchor={institutionAnchor}
-                  portalContainer={formRef}
-                >
-                  <ComboboxEmpty>
-                    Không tìm thấy {institutionLabel.toLowerCase()}.
-                  </ComboboxEmpty>
-                  <ComboboxList>
-                    {(institution) => (
-                      <ComboboxItem
-                        key={institution.id}
-                        value={institution}
-                      >
-                        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-white p-1">
-                          <Image
-                            src={institution.logoPath}
-                            alt=""
-                            width={20}
-                            height={20}
-                            className="size-full object-contain"
-                          />
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block truncate font-medium">
-                            {institution.shortName ?? institution.name}
-                          </span>
-                          {institution.shortName &&
-                          institution.shortName !== institution.name ? (
-                            <span className="block truncate text-xs text-muted-foreground">
-                              {institution.name}
-                            </span>
-                          ) : null}
-                        </span>
-                      </ComboboxItem>
-                    )}
-                  </ComboboxList>
-                </ComboboxContent>
-              </Combobox>
-              {errors.institutionId ? <FieldError>{errors.institutionId}</FieldError> : null}
-            </Field>
-          )}
-          <Field data-invalid={Boolean(errors.name) || undefined}>
-            <FieldLabel htmlFor="account-name">
-              Tên tài khoản <RequiredMark />
-            </FieldLabel>
-            <Input
-              id="account-name"
-              name="name"
-              value={name}
-              onChange={(event) => {
-                setName(event.target.value)
-                setNameEdited(event.target.value.trim().length > 0)
-                clearError("name")
-              }}
-              autoComplete="off"
-              required
-              aria-invalid={Boolean(errors.name) || undefined}
-            />
-            {errors.name ? <FieldError>{errors.name}</FieldError> : null}
-          </Field>
-
-          <Field data-invalid={Boolean(errors.balance) || undefined}>
-            <FieldLabel htmlFor="account-balance">
-              {expectedBalance === undefined ? "Số dư ban đầu" : "Số dư hiện tại"} <RequiredMark />
-            </FieldLabel>
-            {expectedBalance === undefined ? null : (
-              <input type="hidden" name="expectedBalance" value={expectedBalance} />
-            )}
-            <CurrencyInput
-              id="account-balance"
-              name="balance"
-              value={balancePick.amount}
+        <FormSection>
+          <FieldGroup>
+            {/* Tabs, as for a transaction's kind. */}
+            <input type="hidden" name="type" value={accountType} />
+            <Tabs
+              value={accountType}
               onValueChange={(value) => {
-                balancePick.onType(value)
-                clearError("balance")
+                setAccountType(value as AccountType)
+                setInstitutionId("")
+                if (!nameEdited) setName("")
+                clearError("institutionId")
               }}
-              invalid={Boolean(errors.balance)}
-              negative={balanceNegative}
-              onNegativeChange={setBalanceNegative}
+              className="w-full"
+            >
+              <TabsList className="w-full" aria-label="Loại tài khoản">
+                {accountTypeOptions.map(({ value, label }) => (
+                  <TabsTrigger key={value} value={value}>
+                    {label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+
+            {institutionOptions && (
+              <Field data-invalid={Boolean(errors.institutionId) || undefined}>
+                <FieldLabel htmlFor="account-institution">
+                  {institutionLabel} <RequiredMark />
+                </FieldLabel>
+                <Combobox
+                  key={accountType}
+                  items={institutionOptions}
+                  name="institutionId"
+                  value={selectedInstitution ?? null}
+                  onValueChange={(institution) => {
+                    setInstitutionId(institution?.id ?? "")
+                    clearError("institutionId")
+                    if (institution && !nameEdited) clearError("name")
+                    // Name the account after its institution until the
+                    // user types a name of their own.
+                    if (institution && !nameEdited) {
+                      setName(institution.shortName ?? institution.name)
+                    }
+                  }}
+                  itemToStringLabel={(institution) =>
+                    institution.shortName ?? institution.name
+                  }
+                  itemToStringValue={(institution) => institution.id}
+                  isItemEqualToValue={(institution, value) =>
+                    institution.id === value.id
+                  }
+                  filter={matchesInstitution}
+                  autoHighlight
+                  required
+                >
+                  <div ref={institutionAnchor} className="w-full">
+                    <ComboboxInput
+                      id="account-institution"
+                      className="w-full"
+                      placeholder="Tìm kiếm"
+                      autoComplete="off"
+                      aria-invalid={Boolean(errors.institutionId) || undefined}
+                    >
+                      {selectedInstitution ? (
+                        <InputGroupAddon align="inline-start">
+                          <span className="flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-0.5">
+                            <Image
+                              src={selectedInstitution.logoPath}
+                              alt=""
+                              width={16}
+                              height={16}
+                              className="size-full object-contain"
+                            />
+                          </span>
+                        </InputGroupAddon>
+                      ) : null}
+                    </ComboboxInput>
+                  </div>
+                  <ComboboxContent
+                    anchor={institutionAnchor}
+                    portalContainer={formRef}
+                  >
+                    <ComboboxEmpty>
+                      Không tìm thấy {institutionLabel.toLowerCase()}.
+                    </ComboboxEmpty>
+                    <ComboboxList>
+                      {(institution) => (
+                        <ComboboxItem
+                          key={institution.id}
+                          value={institution}
+                        >
+                          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-white p-1">
+                            <Image
+                              src={institution.logoPath}
+                              alt=""
+                              width={20}
+                              height={20}
+                              className="size-full object-contain"
+                            />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block truncate font-medium">
+                              {institution.shortName ?? institution.name}
+                            </span>
+                            {institution.shortName &&
+                            institution.shortName !== institution.name ? (
+                              <span className="block truncate text-xs text-muted-foreground">
+                                {institution.name}
+                              </span>
+                            ) : null}
+                          </span>
+                        </ComboboxItem>
+                      )}
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
+                {errors.institutionId ? <FieldError>{errors.institutionId}</FieldError> : null}
+              </Field>
+            )}
+            <Field data-invalid={Boolean(errors.name) || undefined}>
+              <FieldLabel htmlFor="account-name">
+                Tên tài khoản <RequiredMark />
+              </FieldLabel>
+              <Input
+                id="account-name"
+                name="name"
+                value={name}
+                onChange={(event) => {
+                  setName(event.target.value)
+                  setNameEdited(event.target.value.trim().length > 0)
+                  clearError("name")
+                }}
+                autoComplete="off"
+                required
+                aria-invalid={Boolean(errors.name) || undefined}
+              />
+              {errors.name ? <FieldError>{errors.name}</FieldError> : null}
+            </Field>
+
+            <Field data-invalid={Boolean(errors.balance) || undefined}>
+              <FieldLabel htmlFor="account-balance">
+                {expectedBalance === undefined ? "Số dư ban đầu" : "Số dư hiện tại"} <RequiredMark />
+              </FieldLabel>
+              {expectedBalance === undefined ? null : (
+                <input type="hidden" name="expectedBalance" value={expectedBalance} />
+              )}
+              <CurrencyInput
+                id="account-balance"
+                name="balance"
+                value={balancePick.amount}
+                onValueChange={(value) => {
+                  balancePick.onType(value)
+                  clearError("balance")
+                }}
+                invalid={Boolean(errors.balance)}
+                negative={balanceNegative}
+                onNegativeChange={setBalanceNegative}
+                required
+              />
+              <AmountSuggestions
+                suggestions={balancePick.suggestions}
+                value={balancePick.amount}
+                onSelect={(value) => {
+                  balancePick.onPick(value)
+                  clearError("balance")
+                }}
+              />
+              {errors.balance ? <FieldError>{errors.balance}</FieldError> : null}
+            </Field>
+
+            <DateTimeFields
+              idPrefix="account-opened"
+              label={<>Thời gian tạo <RequiredMark /></>}
+              // As for transactions: 2000 through today (Vietnam time).
+              minDate="2000-01-01"
+              maxDate={toDateKey(new Date())}
+              defaultDate={defaultOpenedAt?.date}
+              defaultTime={defaultOpenedAt?.time}
+              onDateChange={() => clearError("openedAt")}
+              onTimeChange={() => clearError("openedAt")}
+              error={errors.openedAt}
               required
             />
-            <AmountSuggestions
-              suggestions={balancePick.suggestions}
-              value={balancePick.amount}
-              onSelect={(value) => {
-                balancePick.onPick(value)
-                clearError("balance")
-              }}
-            />
-            {errors.balance ? <FieldError>{errors.balance}</FieldError> : null}
-          </Field>
 
-          <DateTimeFields
-            idPrefix="account-opened"
-            label={<>Thời gian tạo <RequiredMark /></>}
-            // As for transactions: 2000 through today (Vietnam time).
-            minDate="2000-01-01"
-            maxDate={toDateKey(new Date())}
-            defaultDate={defaultOpenedAt?.date}
-            defaultTime={defaultOpenedAt?.time}
-            onDateChange={() => clearError("openedAt")}
-            onTimeChange={() => clearError("openedAt")}
-            error={errors.openedAt}
-            required
-          />
+            <Field>
+              <FieldLabel htmlFor="account-note">Ghi chú</FieldLabel>
+              <Textarea
+                id="account-note"
+                name="note"
+                defaultValue={defaultValues?.note}
+              />
+            </Field>
 
-          <Field>
-            <FieldLabel htmlFor="account-note">Ghi chú</FieldLabel>
-            <Textarea
-              id="account-note"
-              name="note"
-              defaultValue={defaultValues?.note}
-            />
-          </Field>
-
-        </FieldGroup>
+          </FieldGroup>
+        </FormSection>
       </div>
 
       <SheetFooter>

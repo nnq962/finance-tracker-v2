@@ -10,6 +10,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 
+import { FormSection } from "@/components/app/form-section"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Card, CardContent } from "@/components/ui/card"
@@ -162,31 +163,6 @@ function NumberField({
       />
       {description ? <FieldDescription>{description}</FieldDescription> : null}
     </Field>
-  )
-}
-
-/** A caption, then the section's fields in a card; `after` goes below the card. */
-function FormSection({
-  title,
-  after,
-  children,
-}: {
-  title: string
-  after?: React.ReactNode
-  children: React.ReactNode
-}) {
-  return (
-    <section className="space-y-2">
-      <div className="flex min-h-6 items-center px-3">
-        <h3 className="text-sm font-medium text-muted-foreground">
-          {title}
-        </h3>
-      </div>
-      <Card>
-        <CardContent>{children}</CardContent>
-      </Card>
-      {after}
-    </section>
   )
 }
 

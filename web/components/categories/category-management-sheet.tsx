@@ -19,6 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { FormSection } from "@/components/app/form-section"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ColorPicker } from "@/components/forms/color-picker"
 import { IconPicker } from "@/components/forms/icon-picker"
@@ -242,35 +243,37 @@ export function CategoryManagementSheet({
         {editor ? (
           <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSave}>
             <div className="flex-1 space-y-6 overflow-y-auto px-4 pt-px pb-4">
-              <FieldGroup>
-                <Field data-invalid={Boolean(error)}>
-                  <FieldLabel htmlFor="category-name">
-                    {editor.kind === "group" ? "Tên nhóm" : "Tên hạng mục"}
-                  </FieldLabel>
-                  <Input
-                    id="category-name"
-                    value={name}
-                    onChange={(event) => {
-                      setName(event.target.value)
-                      setError("")
-                    }}
-                    maxLength={80}
-                    disabled={isPending}
-                    aria-invalid={Boolean(error)}
-                  />
-                  {error ? <FieldError>{error}</FieldError> : null}
-                </Field>
-                {editor.kind === "group" ? (
-                  <Field>
-                    <FieldLabel>Màu</FieldLabel>
-                    <ColorPicker value={colorName} onValueChange={setColorName} />
+              <FormSection>
+                <FieldGroup>
+                  <Field data-invalid={Boolean(error)}>
+                    <FieldLabel htmlFor="category-name">
+                      {editor.kind === "group" ? "Tên nhóm" : "Tên hạng mục"}
+                    </FieldLabel>
+                    <Input
+                      id="category-name"
+                      value={name}
+                      onChange={(event) => {
+                        setName(event.target.value)
+                        setError("")
+                      }}
+                      maxLength={80}
+                      disabled={isPending}
+                      aria-invalid={Boolean(error)}
+                    />
+                    {error ? <FieldError>{error}</FieldError> : null}
                   </Field>
-                ) : null}
-                <Field>
-                  <FieldLabel>Biểu tượng</FieldLabel>
-                  <IconPicker color={colorName} value={iconName} onValueChange={setIconName} />
-                </Field>
-              </FieldGroup>
+                  {editor.kind === "group" ? (
+                    <Field>
+                      <FieldLabel>Màu</FieldLabel>
+                      <ColorPicker value={colorName} onValueChange={setColorName} />
+                    </Field>
+                  ) : null}
+                  <Field>
+                    <FieldLabel>Biểu tượng</FieldLabel>
+                    <IconPicker color={colorName} value={iconName} onValueChange={setIconName} />
+                  </Field>
+                </FieldGroup>
+              </FormSection>
 
               {canDelete ? (
                 <SettingsGroup>

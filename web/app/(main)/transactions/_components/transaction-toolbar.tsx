@@ -3,6 +3,7 @@
 import * as React from "react"
 import { ListFilterIcon, SearchIcon, XIcon } from "lucide-react"
 
+import { FormSection } from "@/components/app/form-section"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -119,15 +120,17 @@ export function TransactionToolbar({
         >
           <SheetNavHeader title="Bộ lọc" />
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
-            <TransactionFilterFields
-              idPrefix="transaction-sheet"
-              accounts={accounts}
-              categoryGroups={categoryGroups}
-              filter={filter}
-              searchFilters={searchFilters}
-              onFilterChange={onFilterChange}
-              onSearchFiltersChange={onSearchFiltersChange}
-            />
+            <FormSection>
+              <TransactionFilterFields
+                idPrefix="transaction-sheet"
+                accounts={accounts}
+                categoryGroups={categoryGroups}
+                filter={filter}
+                searchFilters={searchFilters}
+                onFilterChange={onFilterChange}
+                onSearchFiltersChange={onSearchFiltersChange}
+              />
+            </FormSection>
           </div>
           <SheetFooter>
             <div className="grid grid-cols-2 gap-2">

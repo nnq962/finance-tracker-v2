@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { PencilIcon, PlusIcon, SaveIcon } from "lucide-react"
+import { FormSection } from "@/components/app/form-section"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { RequiredMark } from "@/components/forms/required-mark"
@@ -87,17 +88,19 @@ export function AddContactSheet({ contact, onAddContact, open: controlledOpen, o
           }
         }}>
           <fieldset disabled={pending} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
-            <FieldGroup>
-              <Field data-invalid={Boolean(nameError) || undefined}>
-                <FieldLabel htmlFor={`${id}-name`}>Họ và tên <RequiredMark /></FieldLabel>
-                <Input id={`${id}-name`} name="name" defaultValue={contact?.name} required maxLength={80} autoComplete="name" aria-invalid={Boolean(nameError) || undefined} onInput={() => setNameError(null)} />
-                {nameError ? <FieldError>{nameError}</FieldError> : null}
-              </Field>
-              <Field>
-                <FieldLabel htmlFor={`${id}-relationship`}>Mối quan hệ</FieldLabel>
-                <Input id={`${id}-relationship`} name="relationship" defaultValue={contact?.relationship} maxLength={80} />
-              </Field>
-            </FieldGroup>
+            <FormSection>
+              <FieldGroup>
+                <Field data-invalid={Boolean(nameError) || undefined}>
+                  <FieldLabel htmlFor={`${id}-name`}>Họ và tên <RequiredMark /></FieldLabel>
+                  <Input id={`${id}-name`} name="name" defaultValue={contact?.name} required maxLength={80} autoComplete="name" aria-invalid={Boolean(nameError) || undefined} onInput={() => setNameError(null)} />
+                  {nameError ? <FieldError>{nameError}</FieldError> : null}
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor={`${id}-relationship`}>Mối quan hệ</FieldLabel>
+                  <Input id={`${id}-relationship`} name="relationship" defaultValue={contact?.relationship} maxLength={80} />
+                </Field>
+              </FieldGroup>
+            </FormSection>
           </fieldset>
           <SheetFooter>
             {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}

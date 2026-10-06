@@ -3,6 +3,7 @@
 import * as React from "react"
 import { PlusIcon, SaveIcon } from "lucide-react"
 
+import { FormSection } from "@/components/app/form-section"
 import { AccountSelectGroups } from "@/components/account-select-groups"
 import { AmountSuggestions, useAmountQuickPick } from "@/components/forms/amount-suggestions"
 import { DatePreview } from "@/components/forms/date-preview"
@@ -282,254 +283,256 @@ export function AddDebtSheet({
           }}
         >
           <fieldset disabled={pending} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="debt-recording-mode">Cách ghi nhận</FieldLabel>
-                <Select value={recordingMode} onValueChange={(value) => setRecordingMode(value as DebtRecordingMode)} disabled={pending || Boolean(debt)}>
-                  <SelectTrigger id="debt-recording-mode" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="cash-flow">Phát sinh khoản vay mới</SelectItem>
-                      <SelectItem value="opening">Ghi nhận nợ có sẵn</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <FieldDescription>
-                  {isOpening ? "Không thay đổi số dư tài khoản." : "Cập nhật số dư tài khoản đã chọn."}
-                </FieldDescription>
-                {!isOpening && activeAccounts.length === 0 ? <FieldError>Thêm tài khoản trước, hoặc chọn ghi nhận nợ có sẵn.</FieldError> : null}
-              </Field>
-
-              <Field data-invalid={Boolean(errors.contactId) || undefined}>
-                <div className="flex items-center justify-between gap-2">
-                  <FieldLabel htmlFor="debt-contact">
-                    Người liên quan <RequiredMark />
-                  </FieldLabel>
-                  {onAddContact ? (
-                    <Button type="button" variant="ghost" size="xs" onClick={() => setAddingContact(true)}>
-                      <PlusIcon />
-                      Người mới
-                    </Button>
-                  ) : null}
-                </div>
-                <Select
-                  value={contactId}
-                  onValueChange={(value) => {
-                    setContactId(value)
-                    clear("contactId")
-                  }}
-                  name="contactId"
-                  required
-                  // An empty list would open as a stray box in the corner; add a person instead.
-                  disabled={pending || contacts.length === 0}
-                >
-                  <SelectTrigger id="debt-contact" className="w-full" aria-invalid={Boolean(errors.contactId) || undefined}>
-                    <SelectValue placeholder={contacts.length === 0 ? "Chưa có người liên hệ" : "Chọn từ danh bạ"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Danh bạ</SelectLabel>
-                      {contacts.map((contact) => (
-                        <SelectItem key={contact.id} value={contact.id}>
-                          {contact.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                {errors.contactId ? <FieldError>{errors.contactId}</FieldError> : null}
-              </Field>
-
-              <Field data-invalid={Boolean(errors.amount) || undefined}>
-                <FieldLabel htmlFor="debt-amount">
-                  {isOpening ? "Tiền gốc còn nợ" : "Số tiền"} <RequiredMark />
-                </FieldLabel>
-                <CurrencyInput
-                  id="debt-amount"
-                  name="amount"
-                  value={amountPick.amount}
-                  onValueChange={(value) => {
-                    amountPick.onType(value)
-                    clear("amount")
-                  }}
-                  invalid={Boolean(errors.amount)}
-                  required
-                />
-                <AmountSuggestions
-                  suggestions={amountPick.suggestions}
-                  value={amountPick.amount}
-                  onSelect={(value) => {
-                    amountPick.onPick(value)
-                    clear("amount")
-                  }}
-                />
-                {errors.amount ? <FieldError>{errors.amount}</FieldError> : null}
-              </Field>
-
-              {!isOpening && <Field data-invalid={Boolean(errors.accountId) || undefined}>
-                <FieldLabel htmlFor="debt-account">
-                  {accountLabel} <RequiredMark />
-                </FieldLabel>
-                <Select
-                  defaultValue={debt?.accountId}
-                  name="accountId"
-                  required
-                  disabled={pending || activeAccounts.length === 0}
-                  onValueChange={() => clear("accountId")}
-                >
-                  <SelectTrigger id="debt-account" className="w-full" aria-invalid={Boolean(errors.accountId) || undefined}>
-                    <SelectValue placeholder="Chọn tài khoản" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <AccountSelectGroups accounts={activeAccounts} />
-                  </SelectContent>
-                </Select>
-                {errors.accountId ? <FieldError>{errors.accountId}</FieldError> : null}
-              </Field>}
-
-              <Field>
-                <FieldLabel htmlFor="debt-note">Ghi chú</FieldLabel>
-                <Textarea
-                  id="debt-note"
-                  name="note"
-                  defaultValue={debt?.note}
-                  maxLength={500}
-                />
-              </Field>
-
-              <FieldSeparator>Điều khoản</FieldSeparator>
-              <div className="grid min-w-0 w-full gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-                <Field className="min-w-0" data-invalid={Boolean(errors.recordedAt) || undefined}>
-                  <FieldLabel htmlFor="debt-recorded-at">
-                    {isOpening ? "Ngày bắt đầu theo dõi" : "Ngày ghi"} <RequiredMark />
-                  </FieldLabel>
-                  <div className="flex min-w-0">
-                    <Input
-                      id="debt-recorded-at"
-                      name="recordedAt"
-                      type="date"
-                      defaultValue={debt?.recordedAt ?? today}
-                      onChange={(event) => {
-                        setRecordedAt(event.target.value)
-                        clear("recordedAt")
-                        clear("dueAt")
-                      }}
-                      required
-                      aria-invalid={Boolean(errors.recordedAt) || undefined}
-                      className="w-auto min-w-0 max-w-full flex-1"
-                    />
-                  </div>
-                  <DatePreview date={recordedAt} />
-                  {errors.recordedAt ? <FieldError>{errors.recordedAt}</FieldError> : null}
+            <FormSection>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="debt-recording-mode">Cách ghi nhận</FieldLabel>
+                  <Select value={recordingMode} onValueChange={(value) => setRecordingMode(value as DebtRecordingMode)} disabled={pending || Boolean(debt)}>
+                    <SelectTrigger id="debt-recording-mode" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="cash-flow">Phát sinh khoản vay mới</SelectItem>
+                        <SelectItem value="opening">Ghi nhận nợ có sẵn</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <FieldDescription>
+                    {isOpening ? "Không thay đổi số dư tài khoản." : "Cập nhật số dư tài khoản đã chọn."}
+                  </FieldDescription>
+                  {!isOpening && activeAccounts.length === 0 ? <FieldError>Thêm tài khoản trước, hoặc chọn ghi nhận nợ có sẵn.</FieldError> : null}
                 </Field>
-                <Field className="min-w-0" data-invalid={Boolean(errors.dueAt) || undefined}>
-                  <FieldLabel htmlFor="debt-due-at">
-                    Hẹn trả
-                  </FieldLabel>
-                  <div className="flex min-w-0">
-                    <Input
-                      id="debt-due-at"
-                      name="dueAt"
-                      type="date"
-                      defaultValue={debt?.dueAt}
-                      onChange={(event) => {
-                        setDueAt(event.target.value)
-                        clear("dueAt")
-                      }}
-                      aria-invalid={Boolean(errors.dueAt) || undefined}
-                      className="w-auto min-w-0 max-w-full flex-1"
-                    />
-                  </div>
-                  {dueAt ? <DatePreview date={dueAt} /> : null}
-                  {errors.dueAt ? <FieldError>{errors.dueAt}</FieldError> : null}
-                </Field>
-              </div>
 
-              <Field orientation="horizontal">
-                <FieldContent>
-                  <FieldLabel htmlFor="debt-has-interest">
-                    Có tính lãi
-                  </FieldLabel>
-                  {isOpening ? (
-                    <FieldDescription>Tính từ ngày bắt đầu theo dõi.</FieldDescription>
-                  ) : null}
-                </FieldContent>
-                <Switch
-                  disabled={pending}
-                  id="debt-has-interest"
-                  checked={hasInterest}
-                  onCheckedChange={setHasInterest}
-                />
-              </Field>
-
-              {hasInterest ? (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field data-invalid={Boolean(errors.interestRate) || undefined}>
-                    <FieldLabel htmlFor="debt-interest-rate">
-                      Lãi suất <RequiredMark />
+                <Field data-invalid={Boolean(errors.contactId) || undefined}>
+                  <div className="flex items-center justify-between gap-2">
+                    <FieldLabel htmlFor="debt-contact">
+                      Người liên quan <RequiredMark />
                     </FieldLabel>
-                    <InputGroup>
-                      <InputGroupInput
-                        id="debt-interest-rate"
-                        name="interestRate"
-                        defaultValue={debt?.interestRate}
-                        type="text"
-                        inputMode="decimal"
-                        pattern="[0-9]+([.,][0-9]{1,2})?"
-                        placeholder="0"
-                        required
-                        aria-invalid={Boolean(errors.interestRate) || undefined}
-                        onInput={(event) => {
-                          setInterestRate(event.currentTarget.value)
-                          clear("interestRate")
+                    {onAddContact ? (
+                      <Button type="button" variant="ghost" size="xs" onClick={() => setAddingContact(true)}>
+                        <PlusIcon />
+                        Người mới
+                      </Button>
+                    ) : null}
+                  </div>
+                  <Select
+                    value={contactId}
+                    onValueChange={(value) => {
+                      setContactId(value)
+                      clear("contactId")
+                    }}
+                    name="contactId"
+                    required
+                    // An empty list would open as a stray box in the corner; add a person instead.
+                    disabled={pending || contacts.length === 0}
+                  >
+                    <SelectTrigger id="debt-contact" className="w-full" aria-invalid={Boolean(errors.contactId) || undefined}>
+                      <SelectValue placeholder={contacts.length === 0 ? "Chưa có người liên hệ" : "Chọn từ danh bạ"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Danh bạ</SelectLabel>
+                        {contacts.map((contact) => (
+                          <SelectItem key={contact.id} value={contact.id}>
+                            {contact.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  {errors.contactId ? <FieldError>{errors.contactId}</FieldError> : null}
+                </Field>
+
+                <Field data-invalid={Boolean(errors.amount) || undefined}>
+                  <FieldLabel htmlFor="debt-amount">
+                    {isOpening ? "Tiền gốc còn nợ" : "Số tiền"} <RequiredMark />
+                  </FieldLabel>
+                  <CurrencyInput
+                    id="debt-amount"
+                    name="amount"
+                    value={amountPick.amount}
+                    onValueChange={(value) => {
+                      amountPick.onType(value)
+                      clear("amount")
+                    }}
+                    invalid={Boolean(errors.amount)}
+                    required
+                  />
+                  <AmountSuggestions
+                    suggestions={amountPick.suggestions}
+                    value={amountPick.amount}
+                    onSelect={(value) => {
+                      amountPick.onPick(value)
+                      clear("amount")
+                    }}
+                  />
+                  {errors.amount ? <FieldError>{errors.amount}</FieldError> : null}
+                </Field>
+
+                {!isOpening && <Field data-invalid={Boolean(errors.accountId) || undefined}>
+                  <FieldLabel htmlFor="debt-account">
+                    {accountLabel} <RequiredMark />
+                  </FieldLabel>
+                  <Select
+                    defaultValue={debt?.accountId}
+                    name="accountId"
+                    required
+                    disabled={pending || activeAccounts.length === 0}
+                    onValueChange={() => clear("accountId")}
+                  >
+                    <SelectTrigger id="debt-account" className="w-full" aria-invalid={Boolean(errors.accountId) || undefined}>
+                      <SelectValue placeholder="Chọn tài khoản" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <AccountSelectGroups accounts={activeAccounts} />
+                    </SelectContent>
+                  </Select>
+                  {errors.accountId ? <FieldError>{errors.accountId}</FieldError> : null}
+                </Field>}
+
+                <Field>
+                  <FieldLabel htmlFor="debt-note">Ghi chú</FieldLabel>
+                  <Textarea
+                    id="debt-note"
+                    name="note"
+                    defaultValue={debt?.note}
+                    maxLength={500}
+                  />
+                </Field>
+
+                <FieldSeparator>Điều khoản</FieldSeparator>
+                <div className="grid min-w-0 w-full gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                  <Field className="min-w-0" data-invalid={Boolean(errors.recordedAt) || undefined}>
+                    <FieldLabel htmlFor="debt-recorded-at">
+                      {isOpening ? "Ngày bắt đầu theo dõi" : "Ngày ghi"} <RequiredMark />
+                    </FieldLabel>
+                    <div className="flex min-w-0">
+                      <Input
+                        id="debt-recorded-at"
+                        name="recordedAt"
+                        type="date"
+                        defaultValue={debt?.recordedAt ?? today}
+                        onChange={(event) => {
+                          setRecordedAt(event.target.value)
+                          clear("recordedAt")
+                          clear("dueAt")
                         }}
+                        required
+                        aria-invalid={Boolean(errors.recordedAt) || undefined}
+                        className="w-auto min-w-0 max-w-full flex-1"
                       />
-                      <InputGroupAddon align="inline-end">
-                        <InputGroupText>%</InputGroupText>
-                      </InputGroupAddon>
-                    </InputGroup>
-                    {errors.interestRate ? <FieldError>{errors.interestRate}</FieldError> : null}
+                    </div>
+                    <DatePreview date={recordedAt} />
+                    {errors.recordedAt ? <FieldError>{errors.recordedAt}</FieldError> : null}
                   </Field>
-                  <Field>
-                    <FieldLabel htmlFor="debt-interest-period">
-                      Chu kỳ
+                  <Field className="min-w-0" data-invalid={Boolean(errors.dueAt) || undefined}>
+                    <FieldLabel htmlFor="debt-due-at">
+                      Hẹn trả
                     </FieldLabel>
-                    <Select
-                      disabled={pending}
-                      name="interestPeriod"
-                      value={interestPeriod}
-                      onValueChange={(value) => setInterestPeriod(value as InterestPeriod)}
-                      required
-                    >
-                      <SelectTrigger
-                        id="debt-interest-period"
-                        className="w-full"
-                      >
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>Chu kỳ tính lãi</SelectLabel>
-                          <SelectItem value="month">Mỗi tháng</SelectItem>
-                          <SelectItem value="year">Mỗi năm</SelectItem>
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+                    <div className="flex min-w-0">
+                      <Input
+                        id="debt-due-at"
+                        name="dueAt"
+                        type="date"
+                        defaultValue={debt?.dueAt}
+                        onChange={(event) => {
+                          setDueAt(event.target.value)
+                          clear("dueAt")
+                        }}
+                        aria-invalid={Boolean(errors.dueAt) || undefined}
+                        className="w-auto min-w-0 max-w-full flex-1"
+                      />
+                    </div>
+                    {dueAt ? <DatePreview date={dueAt} /> : null}
+                    {errors.dueAt ? <FieldError>{errors.dueAt}</FieldError> : null}
                   </Field>
                 </div>
-              ) : null}
-              {hasInterest ? (
-                <InterestPreview
-                  amount={amountPick.amount}
-                  rate={Number(interestRate.replace(",", "."))}
-                  period={interestPeriod}
-                  recordedAt={recordedAt}
-                  dueAt={dueAt}
-                />
-              ) : null}
-            </FieldGroup>
+
+                <Field orientation="horizontal">
+                  <FieldContent>
+                    <FieldLabel htmlFor="debt-has-interest">
+                      Có tính lãi
+                    </FieldLabel>
+                    {isOpening ? (
+                      <FieldDescription>Tính từ ngày bắt đầu theo dõi.</FieldDescription>
+                    ) : null}
+                  </FieldContent>
+                  <Switch
+                    disabled={pending}
+                    id="debt-has-interest"
+                    checked={hasInterest}
+                    onCheckedChange={setHasInterest}
+                  />
+                </Field>
+
+                {hasInterest ? (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field data-invalid={Boolean(errors.interestRate) || undefined}>
+                      <FieldLabel htmlFor="debt-interest-rate">
+                        Lãi suất <RequiredMark />
+                      </FieldLabel>
+                      <InputGroup>
+                        <InputGroupInput
+                          id="debt-interest-rate"
+                          name="interestRate"
+                          defaultValue={debt?.interestRate}
+                          type="text"
+                          inputMode="decimal"
+                          pattern="[0-9]+([.,][0-9]{1,2})?"
+                          placeholder="0"
+                          required
+                          aria-invalid={Boolean(errors.interestRate) || undefined}
+                          onInput={(event) => {
+                            setInterestRate(event.currentTarget.value)
+                            clear("interestRate")
+                          }}
+                        />
+                        <InputGroupAddon align="inline-end">
+                          <InputGroupText>%</InputGroupText>
+                        </InputGroupAddon>
+                      </InputGroup>
+                      {errors.interestRate ? <FieldError>{errors.interestRate}</FieldError> : null}
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="debt-interest-period">
+                        Chu kỳ
+                      </FieldLabel>
+                      <Select
+                        disabled={pending}
+                        name="interestPeriod"
+                        value={interestPeriod}
+                        onValueChange={(value) => setInterestPeriod(value as InterestPeriod)}
+                        required
+                      >
+                        <SelectTrigger
+                          id="debt-interest-period"
+                          className="w-full"
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Chu kỳ tính lãi</SelectLabel>
+                            <SelectItem value="month">Mỗi tháng</SelectItem>
+                            <SelectItem value="year">Mỗi năm</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  </div>
+                ) : null}
+                {hasInterest ? (
+                  <InterestPreview
+                    amount={amountPick.amount}
+                    rate={Number(interestRate.replace(",", "."))}
+                    period={interestPeriod}
+                    recordedAt={recordedAt}
+                    dueAt={dueAt}
+                  />
+                ) : null}
+              </FieldGroup>
+            </FormSection>
           </fieldset>
 
           <SheetFooter>

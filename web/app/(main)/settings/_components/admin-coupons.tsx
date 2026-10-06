@@ -15,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { FormSection } from "@/components/app/form-section"
 import { RequiredMark } from "@/components/forms/required-mark"
 import { useFieldErrors } from "@/components/forms/use-field-errors"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
@@ -170,105 +171,107 @@ function CouponForm({ coupon, onDone }: { coupon?: AdminCoupon; onDone: () => vo
       }}
     >
       <fieldset disabled={pending} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
-        <FieldGroup>
-          <Field data-invalid={Boolean(errors.code) || undefined}>
-            <FieldLabel htmlFor="coupon-code">
-              Mã <RequiredMark />
-            </FieldLabel>
-            <Input
-              id="coupon-code"
-              // The code stays once made: people may already have it.
-              disabled={Boolean(coupon)}
-              value={code}
-              maxLength={20}
-              autoCapitalize="characters"
-              autoComplete="off"
-              aria-invalid={Boolean(errors.code) || undefined}
-              onChange={(event) => {
-                setCode(event.target.value.replace(/\s+/g, "").toUpperCase())
-                clear("code")
-              }}
-            />
-            {errors.code ? <FieldError>{errors.code}</FieldError> : null}
-          </Field>
-          <Field data-invalid={Boolean(errors.percentOff) || undefined}>
-            <FieldLabel htmlFor="coupon-percent">
-              Mức giảm <RequiredMark />
-            </FieldLabel>
-            <InputGroup>
-              <InputGroupInput
-                id="coupon-percent"
-                inputMode="numeric"
-                value={percentOff}
-                aria-invalid={Boolean(errors.percentOff) || undefined}
-                onChange={(event) => {
-                  setPercentOff(event.target.value.replace(/\D/g, "").slice(0, 3))
-                  clear("percentOff")
-                }}
-              />
-              <InputGroupAddon align="inline-end">
-                <InputGroupText>%</InputGroupText>
-              </InputGroupAddon>
-            </InputGroup>
-            {errors.percentOff ? (
-              <FieldError>{errors.percentOff}</FieldError>
-            ) : Number(percentOff) >= 1 && Number(percentOff) <= 100 ? (
-              // The prices it gives, rounded as checkout rounds them.
-              <FieldDescription>
-                Gói tháng {formatCurrency(priceWithCoupon("month", Number(percentOff)).amount)} · Gói năm{" "}
-                {formatCurrency(priceWithCoupon("year", Number(percentOff)).amount)}
-              </FieldDescription>
-            ) : null}
-          </Field>
-          <Field data-invalid={Boolean(errors.maxRedemptions) || undefined}>
-            <FieldLabel htmlFor="coupon-max">Số lượt tối đa</FieldLabel>
-            <Input
-              id="coupon-max"
-              inputMode="numeric"
-              placeholder="Không giới hạn"
-              value={maxRedemptions}
-              aria-invalid={Boolean(errors.maxRedemptions) || undefined}
-              onChange={(event) => {
-                setMaxRedemptions(event.target.value.replace(/\D/g, "").slice(0, 7))
-                clear("maxRedemptions")
-              }}
-            />
-            {errors.maxRedemptions ? <FieldError>{errors.maxRedemptions}</FieldError> : null}
-          </Field>
-          <Field data-invalid={Boolean(errors.expiresOn) || undefined}>
-            <FieldLabel htmlFor="coupon-expires">Hết hạn sau ngày</FieldLabel>
-            <div className="flex min-w-0">
+        <FormSection>
+          <FieldGroup>
+            <Field data-invalid={Boolean(errors.code) || undefined}>
+              <FieldLabel htmlFor="coupon-code">
+                Mã <RequiredMark />
+              </FieldLabel>
               <Input
-                id="coupon-expires"
-                type="date"
-                min={toDateKey(new Date())}
-                value={expiresOn}
-                aria-invalid={Boolean(errors.expiresOn) || undefined}
+                id="coupon-code"
+                // The code stays once made: people may already have it.
+                disabled={Boolean(coupon)}
+                value={code}
+                maxLength={20}
+                autoCapitalize="characters"
+                autoComplete="off"
+                aria-invalid={Boolean(errors.code) || undefined}
                 onChange={(event) => {
-                  setExpiresOn(event.target.value)
-                  clear("expiresOn")
+                  setCode(event.target.value.replace(/\s+/g, "").toUpperCase())
+                  clear("code")
                 }}
-                className="w-auto min-w-0 max-w-full flex-1"
               />
-            </div>
-            {errors.expiresOn ? <FieldError>{errors.expiresOn}</FieldError> : null}
-          </Field>
-          {coupon ? (
-            <Field orientation="horizontal">
-              <FieldContent>
-                <FieldLabel htmlFor="coupon-active">Đang hoạt động</FieldLabel>
-                <FieldDescription>Tắt để ngừng nhận mã, lượt đã dùng vẫn giữ.</FieldDescription>
-              </FieldContent>
-              <Switch id="coupon-active" checked={active} onCheckedChange={setActive} />
+              {errors.code ? <FieldError>{errors.code}</FieldError> : null}
             </Field>
-          ) : null}
-          {coupon ? (
-            <Button type="button" variant="outline" className="w-full" onClick={() => setDeleteOpen(true)}>
-              <Trash2Icon />
-              Xoá mã
-            </Button>
-          ) : null}
-        </FieldGroup>
+            <Field data-invalid={Boolean(errors.percentOff) || undefined}>
+              <FieldLabel htmlFor="coupon-percent">
+                Mức giảm <RequiredMark />
+              </FieldLabel>
+              <InputGroup>
+                <InputGroupInput
+                  id="coupon-percent"
+                  inputMode="numeric"
+                  value={percentOff}
+                  aria-invalid={Boolean(errors.percentOff) || undefined}
+                  onChange={(event) => {
+                    setPercentOff(event.target.value.replace(/\D/g, "").slice(0, 3))
+                    clear("percentOff")
+                  }}
+                />
+                <InputGroupAddon align="inline-end">
+                  <InputGroupText>%</InputGroupText>
+                </InputGroupAddon>
+              </InputGroup>
+              {errors.percentOff ? (
+                <FieldError>{errors.percentOff}</FieldError>
+              ) : Number(percentOff) >= 1 && Number(percentOff) <= 100 ? (
+                // The prices it gives, rounded as checkout rounds them.
+                <FieldDescription>
+                  Gói tháng {formatCurrency(priceWithCoupon("month", Number(percentOff)).amount)} · Gói năm{" "}
+                  {formatCurrency(priceWithCoupon("year", Number(percentOff)).amount)}
+                </FieldDescription>
+              ) : null}
+            </Field>
+            <Field data-invalid={Boolean(errors.maxRedemptions) || undefined}>
+              <FieldLabel htmlFor="coupon-max">Số lượt tối đa</FieldLabel>
+              <Input
+                id="coupon-max"
+                inputMode="numeric"
+                placeholder="Không giới hạn"
+                value={maxRedemptions}
+                aria-invalid={Boolean(errors.maxRedemptions) || undefined}
+                onChange={(event) => {
+                  setMaxRedemptions(event.target.value.replace(/\D/g, "").slice(0, 7))
+                  clear("maxRedemptions")
+                }}
+              />
+              {errors.maxRedemptions ? <FieldError>{errors.maxRedemptions}</FieldError> : null}
+            </Field>
+            <Field data-invalid={Boolean(errors.expiresOn) || undefined}>
+              <FieldLabel htmlFor="coupon-expires">Hết hạn sau ngày</FieldLabel>
+              <div className="flex min-w-0">
+                <Input
+                  id="coupon-expires"
+                  type="date"
+                  min={toDateKey(new Date())}
+                  value={expiresOn}
+                  aria-invalid={Boolean(errors.expiresOn) || undefined}
+                  onChange={(event) => {
+                    setExpiresOn(event.target.value)
+                    clear("expiresOn")
+                  }}
+                  className="w-auto min-w-0 max-w-full flex-1"
+                />
+              </div>
+              {errors.expiresOn ? <FieldError>{errors.expiresOn}</FieldError> : null}
+            </Field>
+            {coupon ? (
+              <Field orientation="horizontal">
+                <FieldContent>
+                  <FieldLabel htmlFor="coupon-active">Đang hoạt động</FieldLabel>
+                  <FieldDescription>Tắt để ngừng nhận mã, lượt đã dùng vẫn giữ.</FieldDescription>
+                </FieldContent>
+                <Switch id="coupon-active" checked={active} onCheckedChange={setActive} />
+              </Field>
+            ) : null}
+            {coupon ? (
+              <Button type="button" variant="outline" className="w-full" onClick={() => setDeleteOpen(true)}>
+                <Trash2Icon />
+                Xoá mã
+              </Button>
+            ) : null}
+          </FieldGroup>
+        </FormSection>
       </fieldset>
       <SheetFooter>
         {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}

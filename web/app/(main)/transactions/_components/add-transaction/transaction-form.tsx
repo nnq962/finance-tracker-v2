@@ -4,6 +4,7 @@ import * as React from "react"
 import { SaveIcon } from "lucide-react"
 import { toast } from "sonner"
 
+import { FormSection } from "@/components/app/form-section"
 import { AmountSuggestions, useAmountQuickPick } from "@/components/forms/amount-suggestions"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
@@ -162,82 +163,84 @@ export function TransactionForm({
       <input type="hidden" name="kind" value={kind} />
       {isCreating ? <input type="hidden" name="requestId" value={requestId} /> : null}
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
-        <FieldGroup>
-          <Field data-invalid={Boolean(errors.amount) || undefined}>
-            <FieldLabel htmlFor="transaction-amount">
-              Số tiền <RequiredMark />
-            </FieldLabel>
-            <CurrencyInput
-              id="transaction-amount"
-              name="amount"
-              value={amountPick.amount}
-              onValueChange={(value) => {
-                amountPick.onType(value)
-                clearError("amount")
-              }}
-              invalid={Boolean(errors.amount)}
+        <FormSection>
+          <FieldGroup>
+            <Field data-invalid={Boolean(errors.amount) || undefined}>
+              <FieldLabel htmlFor="transaction-amount">
+                Số tiền <RequiredMark />
+              </FieldLabel>
+              <CurrencyInput
+                id="transaction-amount"
+                name="amount"
+                value={amountPick.amount}
+                onValueChange={(value) => {
+                  amountPick.onType(value)
+                  clearError("amount")
+                }}
+                invalid={Boolean(errors.amount)}
+                required
+              />
+              <AmountSuggestions
+                suggestions={amountPick.suggestions}
+                value={amountPick.amount}
+                onSelect={(value) => {
+                  amountPick.onPick(value)
+                  clearError("amount")
+                }}
+              />
+              {errors.amount ? <FieldError>{errors.amount}</FieldError> : null}
+            </Field>
+
+            {transactionKinds.map((formKind) => {
+              const fieldProps = {
+                accounts,
+                categoryGroups,
+                defaultValues: defaultValues?.kind === formKind ? defaultValues : undefined,
+                errors: formKind === kind ? errors : {},
+                onFieldChange: clearError,
+                onManageCategories,
+              }
+
+              return (
+                // `contents` keeps the fields in the group's layout.
+                <fieldset
+                  key={formKind}
+                  disabled={formKind !== kind}
+                  className={formKind === kind ? "contents" : "hidden"}
+                >
+                  {formKind === "transfer" ? (
+                    <TransferFields {...fieldProps} />
+                  ) : (
+                    <CashFlowFields {...fieldProps} kind={formKind} />
+                  )}
+                </fieldset>
+              )
+            })}
+
+            <DateTimeFields
+              idPrefix="transaction"
+              label={<>Thời gian <RequiredMark /></>}
+              // The server accepts 2000 through today (Vietnam time).
+              minDate="2000-01-01"
+              maxDate={toDateKey(new Date())}
+              defaultDate={defaultDateTime?.date}
+              defaultTime={defaultDateTime?.time}
+              onDateChange={() => clearError("date")}
+              onTimeChange={() => clearError("date")}
+              error={errors.date}
               required
             />
-            <AmountSuggestions
-              suggestions={amountPick.suggestions}
-              value={amountPick.amount}
-              onSelect={(value) => {
-                amountPick.onPick(value)
-                clearError("amount")
-              }}
-            />
-            {errors.amount ? <FieldError>{errors.amount}</FieldError> : null}
-          </Field>
 
-          {transactionKinds.map((formKind) => {
-            const fieldProps = {
-              accounts,
-              categoryGroups,
-              defaultValues: defaultValues?.kind === formKind ? defaultValues : undefined,
-              errors: formKind === kind ? errors : {},
-              onFieldChange: clearError,
-              onManageCategories,
-            }
-
-            return (
-              // `contents` keeps the fields in the group's layout.
-              <fieldset
-                key={formKind}
-                disabled={formKind !== kind}
-                className={formKind === kind ? "contents" : "hidden"}
-              >
-                {formKind === "transfer" ? (
-                  <TransferFields {...fieldProps} />
-                ) : (
-                  <CashFlowFields {...fieldProps} kind={formKind} />
-                )}
-              </fieldset>
-            )
-          })}
-
-          <DateTimeFields
-            idPrefix="transaction"
-            label={<>Thời gian <RequiredMark /></>}
-            // The server accepts 2000 through today (Vietnam time).
-            minDate="2000-01-01"
-            maxDate={toDateKey(new Date())}
-            defaultDate={defaultDateTime?.date}
-            defaultTime={defaultDateTime?.time}
-            onDateChange={() => clearError("date")}
-            onTimeChange={() => clearError("date")}
-            error={errors.date}
-            required
-          />
-
-          <Field>
-            <FieldLabel htmlFor="transaction-note">Ghi chú</FieldLabel>
-            <Textarea
-              id="transaction-note"
-              name="note"
-              defaultValue={defaultValues?.note ?? draft?.note}
-            />
-          </Field>
-        </FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="transaction-note">Ghi chú</FieldLabel>
+              <Textarea
+                id="transaction-note"
+                name="note"
+                defaultValue={defaultValues?.note ?? draft?.note}
+              />
+            </Field>
+          </FieldGroup>
+        </FormSection>
       </div>
       <SheetFooter>
         {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}

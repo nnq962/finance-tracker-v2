@@ -3,6 +3,7 @@
 import * as React from "react"
 import { CheckIcon } from "lucide-react"
 import { toast } from "sonner"
+import { FormSection } from "@/components/app/form-section"
 import { AccountSelectGroups } from "@/components/account-select-groups"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { RequiredMark } from "@/components/forms/required-mark"
@@ -105,57 +106,59 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
           }
         }}>
           <fieldset disabled={pending} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
-            <FieldGroup>
-              <Field data-invalid={Boolean(errors.amount) || undefined}>
-                <FieldLabel htmlFor={`${id}-amount`}>Số tiền <RequiredMark /></FieldLabel>
-                <CurrencyInput id={`${id}-amount`} name="amount" value={amount} required invalid={Boolean(errors.amount)} onValueChange={(value) => { setAmount(value); setErrorMessage(null); clear("amount") }} />
-                <div className="flex flex-wrap gap-2" aria-label="Nhập nhanh số tiền còn lại">
-                  {[{ label: "1/3 còn lại", divisor: 3 }, { label: "1/2 còn lại", divisor: 2 }, { label: "Toàn bộ", divisor: 1 }].map((choice) => (
-                    <Button key={choice.divisor} type="button" variant="outline" size="sm" disabled={pending || remainingAmount < 1} onClick={() => { setAmount(Math.max(1, Math.floor(remainingAmount / choice.divisor))); setErrorMessage(null); clear("amount") }}>{choice.label}</Button>
-                  ))}
-                </div>
-                <dl className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <dt className="text-muted-foreground">Đang còn{debt.hasInterest ? " (gồm lãi)" : ""}</dt>
-                    <dd className="font-semibold tabular-nums">{formatCurrency(remainingAmount)}</dd>
+            <FormSection>
+              <FieldGroup>
+                <Field data-invalid={Boolean(errors.amount) || undefined}>
+                  <FieldLabel htmlFor={`${id}-amount`}>Số tiền <RequiredMark /></FieldLabel>
+                  <CurrencyInput id={`${id}-amount`} name="amount" value={amount} required invalid={Boolean(errors.amount)} onValueChange={(value) => { setAmount(value); setErrorMessage(null); clear("amount") }} />
+                  <div className="flex flex-wrap gap-2" aria-label="Nhập nhanh số tiền còn lại">
+                    {[{ label: "1/3 còn lại", divisor: 3 }, { label: "1/2 còn lại", divisor: 2 }, { label: "Toàn bộ", divisor: 1 }].map((choice) => (
+                      <Button key={choice.divisor} type="button" variant="outline" size="sm" disabled={pending || remainingAmount < 1} onClick={() => { setAmount(Math.max(1, Math.floor(remainingAmount / choice.divisor))); setErrorMessage(null); clear("amount") }}>{choice.label}</Button>
+                    ))}
                   </div>
-                  <div>
-                    <dt className="text-muted-foreground">Sau lần này</dt>
-                    <dd className="font-semibold tabular-nums">{formatCurrency(Math.max(0, remainingAmount - (amount ?? 0)))}</dd>
-                  </div>
-                </dl>
-                {errors.amount ? <FieldError>{errors.amount}</FieldError> : null}
-              </Field>
-              <Field data-invalid={Boolean(errors.accountId) || undefined}>
-                <FieldLabel htmlFor={`${id}-account`}>{isCollection ? "Tài khoản nhận tiền" : "Nguồn tiền trả nợ"} <RequiredMark /></FieldLabel>
-                <Select value={accountId} onValueChange={(value) => { setAccountId(value); clear("accountId") }} required disabled={pending || eligibleAccounts.length === 0}>
-                  <SelectTrigger id={`${id}-account`} className="w-full" aria-invalid={Boolean(errors.accountId) || undefined}><SelectValue placeholder="Chọn tài khoản" /></SelectTrigger>
-                  <SelectContent>
-                    <AccountSelectGroups accounts={eligibleAccounts} />
-                  </SelectContent>
-                </Select>
-                {errors.accountId ? <FieldError>{errors.accountId}</FieldError> : eligibleAccounts.length === 0 ? <FieldError>Cần có tài khoản trước</FieldError> : null}
-              </Field>
-              <DateTimeFields
-                idPrefix={id}
-                label={<>Thời gian <RequiredMark /></>}
-                dateName="paidAt"
-                timeName="paidTime"
-                dateValue={paidAt}
-                defaultTime={payment?.paidTime ?? getLocalDateTime(new Date().toISOString()).time}
-                minDate={debt.recordedAt}
-                maxDate={todayDate()}
-                onDateChange={(event) => {
-                  setPaidAt(event.target.value)
-                  setErrorMessage(null)
-                  clear("paidAt")
-                }}
-                onTimeChange={() => clear("paidAt")}
-                error={errors.paidAt}
-                required
-              />
-              <Field><FieldLabel htmlFor={`${id}-note`}>Ghi chú</FieldLabel><Textarea id={`${id}-note`} name="note" defaultValue={payment?.note} maxLength={500} /></Field>
-            </FieldGroup>
+                  <dl className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <dt className="text-muted-foreground">Đang còn{debt.hasInterest ? " (gồm lãi)" : ""}</dt>
+                      <dd className="font-semibold tabular-nums">{formatCurrency(remainingAmount)}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">Sau lần này</dt>
+                      <dd className="font-semibold tabular-nums">{formatCurrency(Math.max(0, remainingAmount - (amount ?? 0)))}</dd>
+                    </div>
+                  </dl>
+                  {errors.amount ? <FieldError>{errors.amount}</FieldError> : null}
+                </Field>
+                <Field data-invalid={Boolean(errors.accountId) || undefined}>
+                  <FieldLabel htmlFor={`${id}-account`}>{isCollection ? "Tài khoản nhận tiền" : "Nguồn tiền trả nợ"} <RequiredMark /></FieldLabel>
+                  <Select value={accountId} onValueChange={(value) => { setAccountId(value); clear("accountId") }} required disabled={pending || eligibleAccounts.length === 0}>
+                    <SelectTrigger id={`${id}-account`} className="w-full" aria-invalid={Boolean(errors.accountId) || undefined}><SelectValue placeholder="Chọn tài khoản" /></SelectTrigger>
+                    <SelectContent>
+                      <AccountSelectGroups accounts={eligibleAccounts} />
+                    </SelectContent>
+                  </Select>
+                  {errors.accountId ? <FieldError>{errors.accountId}</FieldError> : eligibleAccounts.length === 0 ? <FieldError>Cần có tài khoản trước</FieldError> : null}
+                </Field>
+                <DateTimeFields
+                  idPrefix={id}
+                  label={<>Thời gian <RequiredMark /></>}
+                  dateName="paidAt"
+                  timeName="paidTime"
+                  dateValue={paidAt}
+                  defaultTime={payment?.paidTime ?? getLocalDateTime(new Date().toISOString()).time}
+                  minDate={debt.recordedAt}
+                  maxDate={todayDate()}
+                  onDateChange={(event) => {
+                    setPaidAt(event.target.value)
+                    setErrorMessage(null)
+                    clear("paidAt")
+                  }}
+                  onTimeChange={() => clear("paidAt")}
+                  error={errors.paidAt}
+                  required
+                />
+                <Field><FieldLabel htmlFor={`${id}-note`}>Ghi chú</FieldLabel><Textarea id={`${id}-note`} name="note" defaultValue={payment?.note} maxLength={500} /></Field>
+              </FieldGroup>
+            </FormSection>
           </fieldset>
           <SheetFooter>
             {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}

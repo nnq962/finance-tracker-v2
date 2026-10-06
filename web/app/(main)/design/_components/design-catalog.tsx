@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner"
 
 import { DeltaBadge } from "@/components/app/delta-badge"
+import { FormSection } from "@/components/app/form-section"
 import { IconTile } from "@/components/app/icon-tile"
 import { Money } from "@/components/app/money"
 import { ProgressRing } from "@/components/app/progress-ring"
@@ -326,7 +327,7 @@ export function DesignCatalog() {
           </Card>
         </Section>
 
-        <Section id="ds-forms" title="Ô nhập" note="Trong form: cao 56px, bo 20px; ô lẻ như thanh tìm kiếm cao 44px. Trên thẻ trắng ô xám, trên nền xám ô trắng.">
+        <Section id="ds-forms" title="Ô nhập" note="Ô xám trên thẻ trắng. Trong form cao 52px, ô lẻ như thanh tìm kiếm cao 44px; bo 16px.">
           <Card size="lg">
             <CardContent>
               <FieldGroup>
@@ -565,48 +566,50 @@ export function DesignCatalog() {
                         <TabsTrigger value="transfer">Chuyển khoản</TabsTrigger>
                       </TabsList>
                     </Tabs>
-                    <FieldGroup>
-                      <Field>
-                        <FieldLabel htmlFor="ds-screen-amount">Số tiền</FieldLabel>
-                        <InputGroup>
-                          <InputGroupInput id="ds-screen-amount" inputMode="numeric" placeholder="0" />
-                          <InputGroupAddon align="inline-end">đ</InputGroupAddon>
-                        </InputGroup>
-                        <ToggleGroup type="single" size="sm" className="flex-wrap">
-                          <ToggleGroupItem value="25">25.000đ</ToggleGroupItem>
-                          <ToggleGroupItem value="45">45.000đ</ToggleGroupItem>
-                          <ToggleGroupItem value="100">100.000đ</ToggleGroupItem>
-                        </ToggleGroup>
-                      </Field>
-                      <Field>
-                        <FieldLabel htmlFor="ds-screen-account">Tài khoản</FieldLabel>
-                        <Select defaultValue="momo">
-                          <SelectTrigger id="ds-screen-account" className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectItem value="cash">Tiền mặt</SelectItem>
-                              <SelectItem value="momo">Ví MoMo</SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      </Field>
-                      <Field>
-                        <FieldLabel htmlFor="ds-screen-date">Ngày</FieldLabel>
-                        <InputGroup>
-                          <InputGroupInput id="ds-screen-date" defaultValue="06/10/2026" />
-                          <InputGroupAddon align="inline-end">
-                            <CalendarDaysIcon />
-                          </InputGroupAddon>
-                        </InputGroup>
-                      </Field>
-                      <Field>
-                        <FieldLabel htmlFor="ds-screen-note">Ghi chú</FieldLabel>
-                        <Textarea id="ds-screen-note" placeholder="Thêm ghi chú" />
-                        <FieldDescription>Không bắt buộc.</FieldDescription>
-                      </Field>
-                    </FieldGroup>
+                    <FormSection>
+                      <FieldGroup>
+                        <Field>
+                          <FieldLabel htmlFor="ds-screen-amount">Số tiền</FieldLabel>
+                          <InputGroup>
+                            <InputGroupInput id="ds-screen-amount" inputMode="numeric" placeholder="0" />
+                            <InputGroupAddon align="inline-end">đ</InputGroupAddon>
+                          </InputGroup>
+                          <ToggleGroup type="single" size="sm" className="flex-wrap">
+                            <ToggleGroupItem value="25">25.000đ</ToggleGroupItem>
+                            <ToggleGroupItem value="45">45.000đ</ToggleGroupItem>
+                            <ToggleGroupItem value="100">100.000đ</ToggleGroupItem>
+                          </ToggleGroup>
+                        </Field>
+                        <Field>
+                          <FieldLabel htmlFor="ds-screen-account">Tài khoản</FieldLabel>
+                          <Select defaultValue="momo">
+                            <SelectTrigger id="ds-screen-account" className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectItem value="cash">Tiền mặt</SelectItem>
+                                <SelectItem value="momo">Ví MoMo</SelectItem>
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                        </Field>
+                        <Field>
+                          <FieldLabel htmlFor="ds-screen-date">Ngày</FieldLabel>
+                          <InputGroup>
+                            <InputGroupInput id="ds-screen-date" defaultValue="06/10/2026" />
+                            <InputGroupAddon align="inline-end">
+                              <CalendarDaysIcon />
+                            </InputGroupAddon>
+                          </InputGroup>
+                        </Field>
+                        <Field>
+                          <FieldLabel htmlFor="ds-screen-note">Ghi chú</FieldLabel>
+                          <Textarea id="ds-screen-note" placeholder="Thêm ghi chú" />
+                          <FieldDescription>Không bắt buộc.</FieldDescription>
+                        </Field>
+                      </FieldGroup>
+                    </FormSection>
                     <SettingsGroup title="Chi tiết">
                       <SettingsRow
                         media={<IconTile icon={UtensilsCrossedIcon} tone="orange" />}
