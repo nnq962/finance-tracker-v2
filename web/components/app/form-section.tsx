@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
  * A group of form fields on a white card, with an optional caption above
  * and a note below, like SettingsGroup for rows. On a grey screen sheet
  * the fields inside stay grey, the look of a form on a white surface.
+ * Holds several fields; a lone field in its own card reads as a box in a box.
  */
 export function FormSection({
   title,

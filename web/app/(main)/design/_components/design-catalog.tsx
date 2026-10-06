@@ -591,6 +591,11 @@ export function DesignCatalog() {
                             </SelectContent>
                           </Select>
                         </Field>
+                        <Field>
+                          <FieldLabel htmlFor="ds-grouped-note">Ghi chú</FieldLabel>
+                          <Textarea id="ds-grouped-note" placeholder="Thêm ghi chú" />
+                          <FieldDescription>Không bắt buộc.</FieldDescription>
+                        </Field>
                       </FieldGroup>
                     </FormSection>
                     <SettingsGroup title="Chi tiết">
@@ -606,9 +611,6 @@ export function DesignCatalog() {
                         action={<Switch aria-label="Nhắc lại hằng tháng" />}
                       />
                     </SettingsGroup>
-                    <FormSection title="Ghi chú" footer="Không bắt buộc.">
-                      <Textarea aria-label="Ghi chú" placeholder="Thêm ghi chú" />
-                    </FormSection>
                   </div>
                   <div className="p-4">
                     <Button size="lg" className="w-full">

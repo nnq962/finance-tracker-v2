@@ -103,4 +103,6 @@ Utility `pressable` (trong `globals.css`) cho phản hồi chạm của thẻ v�
 - **Form:** sheet `screen` nền xám với `SheetNavHeader`; các trường gom trong `FormSection`
   (thẻ trắng, ô nhập xám bên trong), dòng chọn và công tắc trong `SettingsGroup`; một nút `lg`
   rộng hết ở cuối. Không đặt ô nhập, chip hay nút phụ thẳng trên nền xám: chúng sẽ thành trắng
-  trên xám, không hợp. Nút quay lại ở đầu sheet là cách huỷ, không cần nút "Huỷ".
+  trên xám, không hợp. Không bọc một ô lẻ trong thẻ riêng (thành xám, viền trắng mỏng, rồi
+  lại xám): gom các trường của form vào chung một `FormSection`, chỉ tách thẻ khi là nhóm có
+  nghĩa riêng. Nút quay lại ở đầu sheet là cách huỷ, không cần nút "Huỷ".
