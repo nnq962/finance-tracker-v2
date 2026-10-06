@@ -16,6 +16,19 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_APP_VERSION: packageJson.version,
   },
+  // Dev only: never cache. The dev tunnel goes through Cloudflare, which turns
+  // the dev server's no-cache into a 4-hour browser cache; dev chunks keep
+  // their URL across edits, so phones kept stale CSS. no-store it respects.
+  async headers() {
+    if (process.env.NODE_ENV !== "development") return [];
+
+    return [
+      {
+        source: "/:path*",
+        headers: [{ key: "Cache-Control", value: "no-store, must-revalidate" }],
+      },
+    ];
+  },
   // Serve Firebase's OAuth helper from this domain, so Google Sign-In works
   // with NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN set to the app's own domain.
   async rewrites() {
