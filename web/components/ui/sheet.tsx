@@ -4,7 +4,7 @@ import * as React from "react"
 import { cn } from "cn"
 import { Dialog as SheetPrimitive } from "radix-ui"
 
-import { ClaimThemeColor, useClaimThemeColor } from "@/lib/theme-color"
+import { ClaimThemeColor } from "@/lib/theme-color"
 
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
@@ -35,14 +35,11 @@ function SheetOverlay({
   className,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Overlay>) {
-  // The status bar dims with the page under the backdrop.
-  useClaimThemeColor("dimmed")
-
   return (
     <SheetPrimitive.Overlay
       data-slot="sheet-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-black/30 duration-100 supports-backdrop-filter:backdrop-blur-sm data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 z-50 bg-black/25 duration-100 supports-backdrop-filter:backdrop-blur-sm data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}
@@ -65,7 +62,7 @@ const sheetVariantClassName = {
   screen:
     "gap-0 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] data-[side=right]:w-full data-[side=right]:sm:max-w-md data-[side=right]:sm:border-l",
   bottom:
-    "max-h-[92dvh] rounded-t-[28px] bg-background pb-[env(safe-area-inset-bottom,0px)] data-[side=bottom]:mx-auto data-[side=bottom]:max-w-lg",
+    "max-h-[92dvh] rounded-t-[28px] pb-[env(safe-area-inset-bottom,0px)] data-[side=bottom]:mx-auto data-[side=bottom]:max-w-lg",
 } as const
 
 function SheetContent({
@@ -73,14 +70,22 @@ function SheetContent({
   children,
   side,
   variant = "default",
+  surface,
   showCloseButton = true,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: "top" | "right" | "bottom" | "left"
   variant?: keyof typeof sheetVariantClassName
+  /**
+   * grouped: the page's grey, with white fields and groups of rows on it, so
+   * the status bar above a sheet filling the phone keeps the page's colour.
+   * plain: white, with grey fields. Bottom sheets are grouped by default.
+   */
+  surface?: "plain" | "grouped"
   showCloseButton?: boolean
 }) {
   const resolvedSide = side ?? (variant === "bottom" ? "bottom" : "right")
+  const resolvedSurface = surface ?? (variant === "bottom" ? "grouped" : "plain")
 
   return (
     <SheetPortal>
@@ -89,10 +94,16 @@ function SheetContent({
         data-slot="sheet-content"
         data-side={resolvedSide}
         data-variant={variant}
-        className={cn(sheetContentClassName, sheetVariantClassName[variant], className)}
+        data-surface={resolvedSurface}
+        className={cn(
+          sheetContentClassName,
+          sheetVariantClassName[variant],
+          resolvedSurface === "grouped" && "surface-grouped bg-background",
+          className,
+        )}
         {...props}
       >
-        {variant === "screen" ? (
+        {variant === "screen" && resolvedSurface === "plain" ? (
           // It fills a phone, so the status bar takes its colour; wider, it
           // is a panel and the backdrop's colour stays.
           <ClaimThemeColor surface="sheet" media="(max-width: 639.98px)" />

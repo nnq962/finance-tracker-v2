@@ -4,11 +4,11 @@ import * as React from "react"
 
 /**
  * What covers the top of the screen, which the phone's status bar (the PWA's
- * theme-color) should match: the page, a sheet filling the screen, or the
- * dimmed backdrop of a sheet or dialog. Overlays register while open; the
- * last one opened wins, and closing it gives the colour back.
+ * theme-color) should match: the page, or a white sheet filling the screen.
+ * The change is instant, not animated, so sheets on the page's grey
+ * (surface="grouped") avoid it; white screen sheets register while open.
  */
-export type ThemeColorSurface = "page" | "sheet" | "dimmed"
+export type ThemeColorSurface = "page" | "sheet"
 
 const stack: { surface: ThemeColorSurface }[] = []
 const listeners = new Set<() => void>()

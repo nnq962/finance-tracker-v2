@@ -11,7 +11,7 @@ const toggleVariants = cva(
     variants: {
       variant: {
         // A filled grey chip; the chosen one turns dark.
-        default: "bg-secondary text-secondary-foreground",
+        default: "bg-field text-foreground",
         outline: "border border-border bg-card hover:bg-muted",
       },
       size: {

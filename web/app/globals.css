@@ -55,6 +55,8 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --color-transfer: var(--transfer);
   --color-ai: var(--ai);
   --color-warning: var(--warning);
+  --color-field: var(--field);
+  --color-track: var(--track);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -109,6 +111,18 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --transfer: oklch(0.573 0.2 261.9);
   --ai: oklch(0.588 0.212 288);
   --warning: oklch(0.732 0.163 61);
+  /*
+   * Fills that depend on the surface below (see the surface-* utilities):
+   * field for inputs, chips and secondary buttons, track for the segmented
+   * control. On a white card they are grey; on the grey page or a grey
+   * sheet the fields turn white, as in iOS grouped screens.
+   */
+  --field-plain: color-mix(in oklch, var(--input) 50%, transparent);
+  --field-grouped: var(--card);
+  --track-plain: var(--muted);
+  --track-grouped: color-mix(in oklch, var(--input) 70%, transparent);
+  --field: var(--field-plain);
+  --track: var(--track-plain);
 }
 
 .dark {
@@ -148,6 +162,18 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --transfer: oklch(0.693 0.162 259);
   --ai: oklch(0.707 0.166 290.2);
   --warning: oklch(0.795 0.155 65.4);
+  --track-grouped: color-mix(in oklch, var(--input) 45%, transparent);
+}
+
+/* What a grey or a white surface sets for the fields on it. */
+@utility surface-grouped {
+  --field: var(--field-grouped);
+  --track: var(--track-grouped);
+}
+
+@utility surface-plain {
+  --field: var(--field-plain);
+  --track: var(--track-plain);
 }
 
 /*
