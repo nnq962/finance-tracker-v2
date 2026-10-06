@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
+import { DrawerNavHeader } from "@/components/drawer-nav-header"
 import { DeltaBadge } from "@/components/app/delta-badge"
 import { FormSection } from "@/components/app/form-section"
 import { IconTile } from "@/components/app/icon-tile"
@@ -59,6 +60,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -543,7 +545,7 @@ export function DesignCatalog() {
         <Section
           id="ds-overlays"
           title="Lớp phủ"
-          note="Màn hình đẩy từ phải cho form và chi tiết; sheet đáy cho lựa chọn ngắn; hộp thoại chỉ để xác nhận. Màn hình và sheet đáy cùng nền xám với trang, nên status bar không đổi màu."
+          note="Đang thử: sheet kiểu iOS (nút đen) trồi từ dưới lên tới ngay dưới status bar, kéo xuống để đóng; form nền trắng, chi tiết nền xám. So với màn hình trượt từ phải (hiện tại)."
         >
           <Card size="lg">
             <CardContent className="grid grid-cols-2 gap-2">
@@ -631,6 +633,105 @@ export function DesignCatalog() {
                   </div>
                 </SheetContent>
               </Sheet>
+
+              <Drawer>
+                <DrawerTrigger asChild>
+                  <Button>Sheet iOS · form</Button>
+                </DrawerTrigger>
+                <DrawerContent variant="page" aria-describedby={undefined}>
+                  <DrawerNavHeader title="Giao dịch mới" />
+                  <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pb-4">
+                    <Tabs defaultValue="expense">
+                      <TabsList className="w-full">
+                        <TabsTrigger value="expense">Chi tiền</TabsTrigger>
+                        <TabsTrigger value="income">Thu tiền</TabsTrigger>
+                        <TabsTrigger value="transfer">Chuyển khoản</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                    <FieldGroup>
+                      <Field>
+                        <FieldLabel htmlFor="ds-page-amount">Số tiền</FieldLabel>
+                        <InputGroup>
+                          <InputGroupInput id="ds-page-amount" inputMode="numeric" placeholder="0" />
+                          <InputGroupAddon align="inline-end">đ</InputGroupAddon>
+                        </InputGroup>
+                        <ToggleGroup type="single" size="sm" className="flex-wrap">
+                          <ToggleGroupItem value="25">25.000đ</ToggleGroupItem>
+                          <ToggleGroupItem value="45">45.000đ</ToggleGroupItem>
+                          <ToggleGroupItem value="100">100.000đ</ToggleGroupItem>
+                        </ToggleGroup>
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="ds-page-account">Tài khoản</FieldLabel>
+                        <Select defaultValue="momo">
+                          <SelectTrigger id="ds-page-account" className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectItem value="cash">Tiền mặt</SelectItem>
+                              <SelectItem value="momo">Ví MoMo</SelectItem>
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="ds-page-date">Ngày</FieldLabel>
+                        <InputGroup>
+                          <InputGroupInput id="ds-page-date" defaultValue="06/10/2026" />
+                          <InputGroupAddon align="inline-end">
+                            <CalendarDaysIcon />
+                          </InputGroupAddon>
+                        </InputGroup>
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="ds-page-note">Ghi chú</FieldLabel>
+                        <Textarea id="ds-page-note" placeholder="Thêm ghi chú" />
+                      </Field>
+                      <Field orientation="horizontal">
+                        <FieldLabel htmlFor="ds-page-repeat">Nhắc lại hằng tháng</FieldLabel>
+                        <Switch id="ds-page-repeat" />
+                      </Field>
+                    </FieldGroup>
+                  </div>
+                  <div className="p-4">
+                    <Button size="lg" className="w-full">
+                      Lưu giao dịch
+                    </Button>
+                  </div>
+                </DrawerContent>
+              </Drawer>
+
+              <Drawer>
+                <DrawerTrigger asChild>
+                  <Button>Sheet iOS · chi tiết</Button>
+                </DrawerTrigger>
+                <DrawerContent variant="page" surface="grouped" aria-describedby={undefined}>
+                  <DrawerNavHeader
+                    title="Chi tiết giao dịch"
+                    action={
+                      <Button type="button" variant="secondary" size="icon" aria-label="Sửa">
+                        <PencilIcon />
+                      </Button>
+                    }
+                  />
+                  <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pb-4">
+                    <div className="flex flex-col items-center py-2 text-center">
+                      <IconTile icon={UtensilsCrossedIcon} tone="orange" size="lg" shape="rounded" />
+                      <p className="mt-3 text-muted-foreground">Ăn trưa</p>
+                      <Money amount={-45_000} sign="always" size="xl" tone="expense" />
+                    </div>
+                    <SettingsGroup>
+                      <SettingsRow icon={WalletCardsIcon} title="Tài khoản" value="Ví MoMo" chevron={false} />
+                      <SettingsRow icon={CalendarDaysIcon} title="Thời gian" value="06/10 · 12:04" chevron={false} />
+                    </SettingsGroup>
+                    <SettingsGroup>
+                      <SettingsRow icon={CopyIcon} title="Nhân bản" onClick={() => toast("Nhân bản")} />
+                      <SettingsRow title="Xoá giao dịch" destructive onClick={() => toast("Xoá")} />
+                    </SettingsGroup>
+                  </div>
+                </DrawerContent>
+              </Drawer>
 
               <Sheet>
                 <SheetTrigger asChild>
