@@ -68,12 +68,13 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
 
 /*
  * Colours after the references in docs/template (see docs/design/colors.md):
- * a light grey page with white, borderless cards, near-black as the one
+ * a light, neutral grey page (#f6f6f6, as in the form and settings
+ * references) with white, borderless cards, near-black as the one
  * strong colour, and meaning colours used sparingly. Dark follows iOS: a
  * black page, #1c1c1e cards, #2c2c2e fills.
  */
 :root {
-  --background: oklch(0.962 0.003 286.3);
+  --background: oklch(0.973 0 0);
   --foreground: oklch(0.179 0.004 286);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.179 0.004 286);

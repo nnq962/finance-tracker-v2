@@ -52,7 +52,9 @@ function FieldGroup({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 const fieldVariants = cva(
-  "group/field flex w-full gap-3 data-[invalid=true]:text-destructive",
+  // Controls in a form field are taller and rounder, after the form in
+  // docs/template; a lone input (a search bar) keeps 44px.
+  "group/field flex w-full gap-3 [--control-h:3.5rem] [--control-px:1.25rem] [--control-radius:1.25rem] data-[invalid=true]:text-destructive",
   {
     variants: {
       orientation: {

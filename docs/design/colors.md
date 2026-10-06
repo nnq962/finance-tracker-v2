@@ -17,7 +17,7 @@ Bảng màu cho thiết kế lại (10/2026), rút ra từ các ảnh mẫu tron
 
 | Token | Sáng | Tối | Dùng cho |
 |---|---|---|---|
-| `background` | `#f2f2f4` | `#000000` | Nền trang |
+| `background` | `#f6f6f6` | `#000000` | Nền trang (xám trung tính nhạt, theo mẫu form và cài đặt) |
 | `card` | `#ffffff` | `#1c1c1e` | Thẻ |
 | `popover` | `#ffffff` | `#252527` | Sheet, menu, hộp thoại |
 | `primary` | `#141416` | `#f5f5f7` | Màu nhấn duy nhất |
@@ -43,4 +43,4 @@ Bảng màu cho thiết kế lại (10/2026), rút ra từ các ảnh mẫu tron
 - `ToggleGroup` / `Toggle`: mục đang chọn màu `primary` (chip đen).
 - `Button outline`, `Item outline`: nền `bg-card` để nổi trên nền trang.
 - `Switch`: núm `bg-card`.
-- Màu thanh trạng thái PWA: `#f2f2f4` / `#000000`.
+- Màu thanh trạng thái PWA: `#f6f6f6` / `#000000`, cố định; sheet toàn màn hình cùng màu nền nên không cần đổi.

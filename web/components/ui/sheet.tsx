@@ -4,7 +4,6 @@ import * as React from "react"
 import { cn } from "cn"
 import { Dialog as SheetPrimitive } from "radix-ui"
 
-import { ClaimThemeColor } from "@/lib/theme-color"
 
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
@@ -49,7 +48,7 @@ function SheetOverlay({
 
 // Where a sheet comes from and how it is shaped:
 // - screen: a whole screen pushed in from the right on phones, as a native
-//   app opens a detail or form; a 28rem panel from sm up.
+//   app opens a detail or form, on the page's grey; a 28rem panel from sm up.
 // - bottom: a card rising from the bottom with rounded top corners and a
 //   grabber, for short choices and confirmations; on the page's grey, so
 //   the white groups of rows inside stand out.
@@ -79,13 +78,14 @@ function SheetContent({
   /**
    * grouped: the page's grey, with white fields and groups of rows on it, so
    * the status bar above a sheet filling the phone keeps the page's colour.
-   * plain: white, with grey fields. Bottom sheets are grouped by default.
+   * plain: white, with grey fields. Screen and bottom sheets are grouped by
+   * default.
    */
   surface?: "plain" | "grouped"
   showCloseButton?: boolean
 }) {
   const resolvedSide = side ?? (variant === "bottom" ? "bottom" : "right")
-  const resolvedSurface = surface ?? (variant === "bottom" ? "grouped" : "plain")
+  const resolvedSurface = surface ?? (variant === "default" ? "plain" : "grouped")
 
   return (
     <SheetPortal>
@@ -103,11 +103,6 @@ function SheetContent({
         )}
         {...props}
       >
-        {variant === "screen" && resolvedSurface === "plain" ? (
-          // It fills a phone, so the status bar takes its colour; wider, it
-          // is a panel and the backdrop's colour stays.
-          <ClaimThemeColor surface="sheet" media="(max-width: 639.98px)" />
-        ) : null}
         {variant === "bottom" ? (
           // The grabber: a cue that the sheet sits over the page.
           <span aria-hidden="true" className="mx-auto mt-2 h-1 w-9 shrink-0 rounded-full bg-muted-foreground/30" />

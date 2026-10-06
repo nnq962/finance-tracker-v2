@@ -1,7 +1,8 @@
 # Hệ thống thiết kế
 
 Finance Tracker trông và cảm giác như một app iOS/Android thật. Hệ thống được chốt ngày
-2026-10-06, theo mockup "Mobile Finance Dashboard Design" mà người dùng đã duyệt.
+2026-10-06, theo mockup "Mobile Finance Dashboard Design" mà người dùng đã duyệt và các ảnh mẫu
+trong [`docs/template/`](../template/) (bảng tin, cài đặt, form).
 
 - **Xem trực tiếp:** trang `/design` (mục "Thiết kế" trong menu, chỉ có trên dev server). Ở đó
   có mọi token và khối, đủ sáng lẫn tối. Đó là nguồn chuẩn: trang nào cũng ghép từ những gì
@@ -15,8 +16,8 @@ component ở đó là cả app đổi theo.
 
 ## Nguyên tắc
 
-1. **Thẻ mềm trên nền xám.** Thẻ trắng bo tròn, không viền, không bóng; tách khỏi nền nhờ
-   chênh màu. Theme tối theo iOS: nền đen, thẻ `#1c1c1e`.
+1. **Thẻ mềm trên nền xám.** Nền xám trung tính rất nhạt (`#f6f6f6`); thẻ trắng bo tròn, không
+   viền, không bóng, tách khỏi nền nhờ chênh màu. Theme tối theo iOS: nền đen, thẻ `#1c1c1e`.
 2. **Một màu nhấn.** Gần đen (trắng ở theme tối) cho nút chính, chip đang chọn, công tắc bật,
    tiến độ.
 3. **Chữ nhẹ.** Chỉ dùng `font-normal` và `font-medium`. Ngoại lệ duy nhất là tiêu đề lớn của
@@ -34,7 +35,7 @@ component ở đó là cả app đổi theo.
 | Font | Be Vietnam Pro; số tiền `tabular-nums` |
 | Cỡ chữ | Số tổng 36 · Tiêu đề trang 30 · Tiêu đề section 20 · Tiêu đề thẻ 18 · Nội dung 16 · Phụ 14 · Chú thích 12 |
 | Bo góc | 28 thẻ lớn, sheet, hộp thoại · 24 thẻ, nhóm danh sách · 20 thẻ nhỏ, menu · 16 ô nhập, ô icon · tròn cho nút, chip, badge, công tắc |
-| Chiều cao điều khiển | 44 mặc định (nút, ô nhập, select) · 40 segmented · 36/32 chỗ chật · 48 nút cuối form |
+| Chiều cao điều khiển | Nút 44 · ô nhập/select trong form 56 (bo 20, lề 20), ô lẻ như thanh tìm kiếm 44 · segmented 40 · 36/32 chỗ chật · 48 nút cuối form |
 | Khoảng cách | Lề trang 16 (24 từ md) · giữa các thẻ 16 (24 từ md) · trong thẻ 20, lg 24 |
 | Bóng | Thẻ không bóng; chỉ lớp nổi (menu, sheet, hộp thoại, tab bar, nút nổi) có bóng |
 | Chuyển động | 150–250ms ease-out; tôn trọng `prefers-reduced-motion` |
@@ -46,8 +47,12 @@ component ở đó là cả app đổi theo.
   `icon` 44, `icon-sm` 36, `icon-xs` 32, `icon-lg` 48.
 - **Card:** `size="sm"` (bo 20, đệm 16) · mặc định (24, 20) · `size="lg"` (28, 24) cho thẻ chính
   của trang.
-- **Input, Textarea, InputGroup, Select, Combobox:** nền xám, bo 16, cao 44, chữ 16px trên điện
-  thoại (để iOS không phóng to). Trong `SelectContent`, các `SelectItem` luôn nằm trong
+- **Input, Textarea, InputGroup, Select, Combobox:** chữ 16px (để iOS không phóng to). Trong một
+  `Field` của form: cao 56, bo 20, lề 20, như mẫu form; đứng riêng (thanh tìm kiếm): cao 44, bo
+  16. `Field` đặt kích thước qua biến `--control-h`, `--control-radius`, `--control-px`.
+- **Màu ô nhập theo bề mặt** (token `field`, `track` và utility `surface-grouped` / `surface-plain`
+  trong `globals.css`): trên nền xám (trang, sheet) ô nhập, chip, nút phụ màu trắng; trên thẻ
+  trắng chúng màu xám. Thẻ tự đặt `surface-plain`, khung trang và sheet đặt `surface-grouped`. Trong `SelectContent`, các `SelectItem` luôn nằm trong
   `SelectGroup` (kèm `SelectLabel` nếu nhóm có tên), như shadcn hướng dẫn; danh sách tài khoản
   dùng `AccountSelectGroups`.
 - **Tabs:** segmented control dạng viên thuốc, viên đang chọn màu thẻ có bóng nhẹ. Dùng cho 2–3
@@ -58,15 +63,14 @@ component ở đó là cả app đổi theo.
 - **Badge:** viên thuốc cao 24; kiểu màu ý nghĩa `income`, `expense`, `transfer`, `ai`,
   `warning`.
 - **Sheet:**
-  - `variant="screen"`: một màn hình đẩy từ phải, phủ cả điện thoại, có safe-area; panel 28rem
-    trên desktop. Dùng cho form và màn chi tiết, kèm `SheetNavHeader`.
+  - `variant="screen"`: một màn hình đẩy từ phải, phủ cả điện thoại, có safe-area, nền xám như
+    trang; panel 28rem trên desktop. Dùng cho form và màn chi tiết, kèm `SheetNavHeader` (nút
+    quay lại tròn ở bên trái, tiêu đề giữa).
   - `variant="bottom"`: thẻ trồi từ đáy, bo 28, có thanh kéo, nền xám để nhóm dòng trắng nổi
     lên. Dùng cho lựa chọn ngắn và hành động.
-- **Status bar:** màu status bar (theme-color của PWA) theo thứ đang phủ đầu màn hình
-  (`lib/theme-color.ts`, `components/pwa-theme-color.tsx`). Bình thường là màu nền trang; sheet
-  `screen` trên điện thoại làm nó trắng như sheet; lớp làm tối của sheet và hộp thoại làm nó tối
-  theo. Overlay mới tự viết thì gọi `useClaimThemeColor` hoặc đặt `<ClaimThemeColor>` trong phần
-  chỉ tồn tại khi mở.
+- **Status bar:** màu cố định bằng màu nền trang (`components/pwa-theme-color.tsx`). Web không
+  đổi được màu status bar mượt theo chuyển động, nên mọi lớp phủ phủ tới đầu màn hình (sheet
+  `screen`) dùng chung nền xám với trang thay vì đổi màu.
 - **Dialog, AlertDialog:** bo 28. Chỉ để xác nhận hoặc nhập rất ngắn; nút huỷ màu xám.
 - **DropdownMenu, Select, Combobox (danh sách):** bo 20, dòng cao 40.
 - **Progress:** thanh mảnh 6px. **Empty:** icon trong vòng tròn xám.
@@ -81,7 +85,6 @@ component ở đó là cả app đổi theo.
 | `DeltaBadge` | % thay đổi so với kỳ trước; xanh khi tốt, đỏ khi xấu |
 | `StatGroup` + `Stat` | 2–4 chỉ số chia cột bằng vạch mảnh, mỗi cột có thể mở trang |
 | `ProgressRing` | Tiến độ dạng vòng mảnh có số ở giữa |
-| `FormSection` | Nhóm trường của form trong thẻ trắng, có tiêu đề nhỏ và ghi chú; trên sheet xám, ô nhập bên trong vẫn xám |
 | `PromoBanner` | Banner đen (sáng ở theme tối) cho một điều đáng chú ý, như gói Pro |
 | `FloatingActions` | Nút hành động chính nổi trên thanh tab, trên điện thoại |
 | `CompactTitleBar` | Tiêu đề thu nhỏ khi tiêu đề lớn cuộn đi; tự gắn trong `PageHeader` |
@@ -100,9 +103,6 @@ Utility `pressable` (trong `globals.css`) cho phản hồi chạm của thẻ v�
   xám nhỏ ở đầu rồi con số chính; thẻ cách nhau 16px.
 - **Trang danh sách** (Giao dịch, Ngân sách, Cài đặt): tiêu đề lớn, thẻ tóm tắt, rồi các
   `SettingsGroup` có tiêu đề nhóm.
-- **Form:** sheet `screen` nền xám với `SheetNavHeader`; các trường gom trong `FormSection`
-  (thẻ trắng, ô nhập xám bên trong), dòng chọn và công tắc trong `SettingsGroup`; một nút `lg`
-  rộng hết ở cuối. Không đặt ô nhập, chip hay nút phụ thẳng trên nền xám: chúng sẽ thành trắng
-  trên xám, không hợp. Không bọc một ô lẻ trong thẻ riêng (thành xám, viền trắng mỏng, rồi
-  lại xám): gom các trường của form vào chung một `FormSection`, chỉ tách thẻ khi là nhóm có
-  nghĩa riêng. Nút quay lại ở đầu sheet là cách huỷ, không cần nút "Huỷ".
+- **Form** (theo mẫu form trong `docs/template/`): sheet `screen` nền xám với `SheetNavHeader`;
+  các `Field` xếp dọc thẳng trên nền, nhãn ở trên, ô trắng cao 56; dòng chọn và công tắc trong
+  `SettingsGroup`; một nút `lg` rộng hết ở cuối. Nút quay lại là cách huỷ, không cần nút "Huỷ".

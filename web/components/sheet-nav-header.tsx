@@ -34,7 +34,7 @@ export function SheetNavHeader({
   const back = (
     <Button
       type="button"
-      variant="ghost"
+      variant="secondary"
       size="icon"
       aria-label={backLabel}
       disabled={disabled}
@@ -46,11 +46,11 @@ export function SheetNavHeader({
 
   return (
     <SheetHeader className="relative min-h-14 justify-center px-4 py-2">
-      <div className="absolute top-1/2 left-2 -translate-y-1/2">
+      <div className="absolute top-1/2 left-4 -translate-y-1/2">
         {onBack ? back : <SheetClose asChild>{back}</SheetClose>}
       </div>
       {/* Side padding clears the back button so the title stays centred. */}
-      <SheetTitle className="truncate px-8 text-center">{title}</SheetTitle>
+      <SheetTitle className="truncate px-12 text-center">{title}</SheetTitle>
     </SheetHeader>
   )
 }

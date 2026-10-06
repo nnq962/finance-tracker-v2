@@ -48,7 +48,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
             <AppSidebar />
             <SidebarInset
               data-main-scroll-viewport
-              className="min-h-0 min-w-0 overflow-y-auto overscroll-y-contain [--main-content-px:--spacing(4)] [-webkit-overflow-scrolling:touch] md:min-h-svh md:overflow-visible md:[--main-content-px:--spacing(6)]"
+              className="surface-grouped min-h-0 min-w-0 overflow-y-auto overscroll-y-contain [--main-content-px:--spacing(4)] [-webkit-overflow-scrolling:touch] md:min-h-svh md:overflow-visible md:[--main-content-px:--spacing(6)]"
             >
               <div
                 aria-hidden="true"

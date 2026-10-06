@@ -39,7 +39,7 @@ export function Stat({ value, label, onClick, title }: StatProps) {
       title={title}
       aria-label={title ? `${label}: ${title}` : undefined}
       onClick={onClick}
-      className={cn(className, "pressable rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30")}
+      className={cn(className, "pressable outline-none focus-visible:ring-3 focus-visible:ring-ring/30")}
     >
       {content}
     </button>
