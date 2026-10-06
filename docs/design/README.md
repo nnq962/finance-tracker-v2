@@ -81,6 +81,7 @@ component ở đó là cả app đổi theo.
 | `DeltaBadge` | % thay đổi so với kỳ trước; xanh khi tốt, đỏ khi xấu |
 | `StatGroup` + `Stat` | 2–4 chỉ số chia cột bằng vạch mảnh, mỗi cột có thể mở trang |
 | `ProgressRing` | Tiến độ dạng vòng mảnh có số ở giữa |
+| `FormSection` | Nhóm trường của form trong thẻ trắng, có tiêu đề nhỏ và ghi chú; trên sheet xám, ô nhập bên trong vẫn xám |
 | `PromoBanner` | Banner đen (sáng ở theme tối) cho một điều đáng chú ý, như gói Pro |
 | `FloatingActions` | Nút hành động chính nổi trên thanh tab, trên điện thoại |
 | `CompactTitleBar` | Tiêu đề thu nhỏ khi tiêu đề lớn cuộn đi; tự gắn trong `PageHeader` |

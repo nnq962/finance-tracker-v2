@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner"
 
 import { DeltaBadge } from "@/components/app/delta-badge"
+import { FormSection } from "@/components/app/form-section"
 import { IconTile } from "@/components/app/icon-tile"
 import { Money } from "@/components/app/money"
 import { ProgressRing } from "@/components/app/progress-ring"
@@ -541,7 +542,7 @@ export function DesignCatalog() {
         <Section
           id="ds-overlays"
           title="Lớp phủ"
-          note="Màn hình đẩy từ phải cho form và chi tiết; sheet đáy cho lựa chọn ngắn; hộp thoại chỉ để xác nhận. Đang so sánh: màn hình xám (ô nhập trắng, status bar không đổi màu) với màn hình trắng hiện tại."
+          note="Màn hình đẩy từ phải cho form và chi tiết; sheet đáy cho lựa chọn ngắn; hộp thoại chỉ để xác nhận. Đang so sánh: màn hình xám (form trong thẻ trắng, status bar không đổi màu) với màn hình trắng hiện tại."
         >
           <Card size="lg">
             <CardContent className="grid grid-cols-2 gap-2">
@@ -565,31 +566,33 @@ export function DesignCatalog() {
                         <TabsTrigger value="transfer">Chuyển khoản</TabsTrigger>
                       </TabsList>
                     </Tabs>
-                    <FieldGroup>
-                      <Field>
-                        <FieldLabel htmlFor="ds-grouped-amount">Số tiền</FieldLabel>
-                        <Input id="ds-grouped-amount" inputMode="numeric" placeholder="0" />
-                        <ToggleGroup type="single" size="sm" className="flex-wrap">
-                          <ToggleGroupItem value="25">25.000đ</ToggleGroupItem>
-                          <ToggleGroupItem value="45">45.000đ</ToggleGroupItem>
-                          <ToggleGroupItem value="100">100.000đ</ToggleGroupItem>
-                        </ToggleGroup>
-                      </Field>
-                      <Field>
-                        <FieldLabel htmlFor="ds-grouped-account">Tài khoản</FieldLabel>
-                        <Select defaultValue="momo">
-                          <SelectTrigger id="ds-grouped-account" className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectItem value="cash">Tiền mặt</SelectItem>
-                              <SelectItem value="momo">Ví MoMo</SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      </Field>
-                    </FieldGroup>
+                    <FormSection>
+                      <FieldGroup>
+                        <Field>
+                          <FieldLabel htmlFor="ds-grouped-amount">Số tiền</FieldLabel>
+                          <Input id="ds-grouped-amount" inputMode="numeric" placeholder="0" />
+                          <ToggleGroup type="single" size="sm" className="flex-wrap">
+                            <ToggleGroupItem value="25">25.000đ</ToggleGroupItem>
+                            <ToggleGroupItem value="45">45.000đ</ToggleGroupItem>
+                            <ToggleGroupItem value="100">100.000đ</ToggleGroupItem>
+                          </ToggleGroup>
+                        </Field>
+                        <Field>
+                          <FieldLabel htmlFor="ds-grouped-account">Tài khoản</FieldLabel>
+                          <Select defaultValue="momo">
+                            <SelectTrigger id="ds-grouped-account" className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectItem value="cash">Tiền mặt</SelectItem>
+                                <SelectItem value="momo">Ví MoMo</SelectItem>
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                        </Field>
+                      </FieldGroup>
+                    </FormSection>
                     <SettingsGroup title="Chi tiết">
                       <SettingsRow
                         media={<IconTile icon={UtensilsCrossedIcon} tone="orange" />}
@@ -603,10 +606,9 @@ export function DesignCatalog() {
                         action={<Switch aria-label="Nhắc lại hằng tháng" />}
                       />
                     </SettingsGroup>
-                    <Field>
-                      <FieldLabel htmlFor="ds-grouped-note">Ghi chú</FieldLabel>
-                      <Textarea id="ds-grouped-note" placeholder="Thêm ghi chú" />
-                    </Field>
+                    <FormSection title="Ghi chú" footer="Không bắt buộc.">
+                      <Textarea aria-label="Ghi chú" placeholder="Thêm ghi chú" />
+                    </FormSection>
                   </div>
                   <div className="flex gap-2 p-4">
                     <Button variant="secondary" size="lg" className="flex-1">
