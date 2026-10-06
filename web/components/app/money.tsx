@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 
 const numberFormatter = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 })
 
-const moneyVariants = cva("inline-flex min-w-0 items-baseline font-semibold tabular-nums [overflow-wrap:anywhere]", {
+const moneyVariants = cva("inline-flex min-w-0 items-baseline tabular-nums [overflow-wrap:anywhere]", {
   variants: {
     size: {
       sm: "text-sm",
@@ -18,8 +18,12 @@ const moneyVariants = cva("inline-flex min-w-0 items-baseline font-semibold tabu
       expense: "text-expense",
       transfer: "text-transfer",
     },
+    weight: {
+      semibold: "font-semibold",
+      medium: "font-medium",
+    },
   },
-  defaultVariants: { size: "md", tone: "default" },
+  defaultVariants: { size: "md", tone: "default", weight: "semibold" },
 })
 
 type MoneyProps = {
@@ -34,11 +38,11 @@ type MoneyProps = {
  * in the amount's colour, and a smaller, muted đ, so the eye reads the number
  * first.
  */
-export function Money({ amount, sign = "auto", size, tone, className }: MoneyProps) {
+export function Money({ amount, sign = "auto", size, tone, weight, className }: MoneyProps) {
   const prefix = sign === "never" ? "" : amount < 0 ? "−" : amount > 0 && sign === "always" ? "+" : ""
 
   return (
-    <span data-slot="money" className={cn(moneyVariants({ size, tone }), className)}>
+    <span data-slot="money" className={cn(moneyVariants({ size, tone, weight }), className)}>
       {prefix}
       {numberFormatter.format(Math.abs(amount))}
       <span className={cn("ml-0.5 text-[0.7em]", tone && tone !== "default" ? "opacity-55" : "text-muted-foreground")}>

@@ -13,7 +13,6 @@ import { getTransactionsInRange } from "@/lib/transactions/repository"
 
 import { Missions } from "./_components/missions"
 import { OverviewGreeting } from "./_components/overview-greeting"
-
 import { OverviewMonth } from "./_components/overview-month"
 import {
   CashFlowTrend,
@@ -77,7 +76,7 @@ export default async function OverviewPage({
   )
 
   return (
-    <Page>
+    <Page className="space-y-4 md:space-y-6">
       <OverviewGreeting
         user={user}
         planState={planState}
@@ -95,7 +94,7 @@ export default async function OverviewPage({
         today={today}
         // The six months loaded for the chart.
         minMonth={transactionRange.startMonth}
-        netWorth={<NetWorth data={summary.netWorth} />}
+        netWorth={<NetWorth data={summary.netWorth} month={summary.cashFlow.current} />}
         dueDebts={
           summary.dueDebts.length > 0 ? <DueDebts debts={summary.dueDebts} /> : undefined
         }

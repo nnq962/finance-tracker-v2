@@ -17,7 +17,7 @@ const cashFlowConfig = {
 } satisfies ChartConfig
 
 function compactMoney(value: number) {
-  if (value >= 1_000_000) return `${Number((value / 1_000_000).toFixed(1))}tr`
+  if (value >= 1_000_000) return `${Number((value / 1_000_000).toFixed(1)).toLocaleString("vi-VN")}tr`
   if (value >= 1_000) return `${Number((value / 1_000).toFixed(0))}k`
   return String(value)
 }
@@ -25,15 +25,15 @@ function compactMoney(value: number) {
 export function CashFlowChart({ data }: { data: OverviewSummary["cashFlow"] }) {
   return (
     <>
-      <ChartContainer config={cashFlowConfig} className="aspect-auto h-48 w-full sm:h-56">
+      <ChartContainer config={cashFlowConfig} className="aspect-auto h-44 w-full sm:h-56">
         <BarChart
           data={data.months}
           accessibilityLayer
-          barGap={2}
+          barGap={3}
           barCategoryGap="28%"
           margin={{ top: 8, right: 0, left: 0, bottom: 0 }}
         >
-          <CartesianGrid vertical={false} />
+          <CartesianGrid vertical={false} strokeDasharray="3 4" />
           <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
           <YAxis
             tickFormatter={compactMoney}
@@ -64,8 +64,8 @@ export function CashFlowChart({ data }: { data: OverviewSummary["cashFlow"] }) {
             }
           />
           {/* Phones stay below the cap; it only keeps bars from growing too wide on desktop. */}
-          <Bar dataKey="income" fill="var(--color-income)" radius={[4, 4, 0, 0]} maxBarSize={32} />
-          <Bar dataKey="expense" fill="var(--color-expense)" radius={[4, 4, 0, 0]} maxBarSize={32} />
+          <Bar dataKey="income" fill="var(--color-income)" radius={[6, 6, 2, 2]} maxBarSize={28} />
+          <Bar dataKey="expense" fill="var(--color-expense)" radius={[6, 6, 2, 2]} maxBarSize={28} />
         </BarChart>
       </ChartContainer>
       {/* sr-only on a div: a table cannot shrink to 1px and would stretch the

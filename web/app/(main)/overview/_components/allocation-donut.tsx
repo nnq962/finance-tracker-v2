@@ -1,9 +1,12 @@
 "use client"
 
 import * as React from "react"
+import { CircleHelpIcon, EllipsisIcon, type LucideIcon } from "lucide-react"
 import { Cell, Label, Pie, PieChart } from "recharts"
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { IconTile } from "@/components/app/icon-tile"
+import { Money } from "@/components/app/money"
+
 import { Card, CardContent } from "@/components/ui/card"
 import {
   ChartContainer,
@@ -12,9 +15,11 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { Empty, EmptyDescription, EmptyHeader } from "@/components/ui/empty"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getCategoryColor, type CategoryColorName } from "@/lib/categories/category-colors"
 import type { CategoryGroup, CategoryType } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
+import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import type { MonthAllocation } from "@/lib/overview/month-data"
 
 // Five groups and the rest folded into one neutral "Khác" slice.
@@ -25,6 +30,7 @@ const chartConfig = { amount: { label: "Số tiền" } } satisfies ChartConfig
 
 type Slice = {
   key: string
+  icon: LucideIcon
   name: string
   amount: number
   share: number
@@ -60,6 +66,7 @@ export function AllocationDonut({ categoryGroups, allocation, month }: Allocatio
     const color = group?.colorName ?? OTHER_COLOR
     return {
       key,
+      icon: group ? categoryIconRegistry[group.iconName] : CircleHelpIcon,
       name: group?.name ?? "Chưa phân loại",
       amount,
       share: toShare(amount),
@@ -70,6 +77,7 @@ export function AllocationDonut({ categoryGroups, allocation, month }: Allocatio
   if (restAmount > 0) {
     slices.push({
       key: "rest",
+      icon: EllipsisIcon,
       name: `Khác (${ranked.length - visible.length} nhóm)`,
       amount: restAmount,
       share: toShare(restAmount),
@@ -82,115 +90,120 @@ export function AllocationDonut({ categoryGroups, allocation, month }: Allocatio
   const typeLabel = type === "expense" ? "chi" : "thu"
 
   return (
-    <section aria-labelledby="allocation-title" className="space-y-2">
-      <h2
-        id="allocation-title"
-        className="px-3 text-sm font-medium text-muted-foreground"
-      >
-        Phân bổ · Tháng {monthNumber}/{year}
-      </h2>
-      {/* One card: the chart, then its legend, where each row's icon has
-          its slice's colour. */}
-      <Card size="sm">
-        <CardContent className="space-y-4">
-          <Tabs value={type} onValueChange={(value) => setType(value as CategoryType)}>
-            <TabsList className="w-full">
-              <TabsTrigger value="expense">Chi tiền</TabsTrigger>
-              <TabsTrigger value="income">Thu tiền</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          {slices.length > 0 ? (
-            <ChartContainer config={chartConfig} className="mx-auto aspect-square h-56">
-              <PieChart accessibilityLayer>
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      hideLabel
-                      nameKey="name"
-                      formatter={(value, _name, item) => (
-                        <span className="flex w-full items-center justify-between gap-3">
-                          <span className="text-muted-foreground">{item.payload.name}</span>
-                          <span className="font-mono font-medium tabular-nums">
-                            {formatCurrency(Number(value))} · {item.payload.share}%
-                          </span>
-                        </span>
-                      )}
-                    />
-                  }
-                />
-                <Pie
-                  data={slices}
-                  dataKey="amount"
-                  nameKey="name"
-                  innerRadius="62%"
-                  outerRadius="92%"
-                  // Largest first, clockwise from twelve o'clock.
-                  startAngle={90}
-                  endAngle={-270}
-                  cornerRadius={4}
-                  // A 2px gap in the card's colour between slices; a lone
-                  // slice is a full ring with no seam.
-                  stroke="var(--card)"
-                  strokeWidth={slices.length > 1 ? 2 : 0}
-                  isAnimationActive={false}
-                >
-                  {slices.map((slice) => (
-                    <Cell key={slice.key} fill={slice.fill} />
-                  ))}
-                  <Label
-                    content={({ viewBox }) => {
-                      if (!viewBox || !("cx" in viewBox)) return null
-                      return (
-                        <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
-                          <tspan
-                            x={viewBox.cx}
-                            y={(viewBox.cy ?? 0) - 8}
-                            className="fill-foreground text-base font-semibold"
-                          >
-                            {formatCurrency(total)}
-                          </tspan>
-                          <tspan
-                            x={viewBox.cx}
-                            y={(viewBox.cy ?? 0) + 14}
-                            className="fill-muted-foreground text-xs"
-                          >
-                            tổng {typeLabel}
-                          </tspan>
-                        </text>
-                      )
-                    }}
-                  />
-                </Pie>
-              </PieChart>
-            </ChartContainer>
-          ) : (
-            <Empty>
-              <EmptyHeader>
-                <EmptyDescription>Chưa có khoản {typeLabel} trong tháng này.</EmptyDescription>
-              </EmptyHeader>
-            </Empty>
-          )}
-        </CardContent>
-        {/* Dot legend as in the landing page's spending donut: each dot
-            has its slice's colour, the share on the right. */}
+    <Card size="lg" role="region" aria-labelledby="allocation-title">
+      <CardContent className="space-y-4">
+        <h2 id="allocation-title" className="flex items-baseline justify-between gap-3">
+          <span className="font-medium">Phân bổ</span>
+          <span className="text-sm text-muted-foreground">
+            Tháng {monthNumber}/{year}
+          </span>
+        </h2>
+        <Tabs value={type} onValueChange={(value) => setType(value as CategoryType)}>
+          <TabsList className="w-full">
+            <TabsTrigger value="expense">Chi tiền</TabsTrigger>
+            <TabsTrigger value="income">Thu tiền</TabsTrigger>
+          </TabsList>
+        </Tabs>
         {slices.length > 0 ? (
-          <CardContent>
-            <ul className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm">
-              {slices.map((slice) => (
-                <li key={slice.key} className="flex items-center gap-2">
-                  <span
-                    className="size-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: slice.fill }}
-                    aria-hidden="true"
+          <ChartContainer config={chartConfig} className="mx-auto aspect-square h-56">
+            <PieChart accessibilityLayer>
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    hideLabel
+                    nameKey="name"
+                    formatter={(value, _name, item) => (
+                      <span className="flex w-full items-center justify-between gap-3">
+                        <span className="text-muted-foreground">{item.payload.name}</span>
+                        <span className="font-mono font-medium tabular-nums">
+                          {formatCurrency(Number(value))} · {item.payload.share}%
+                        </span>
+                      </span>
+                    )}
                   />
-                  <span className="flex-1 truncate text-muted-foreground">{slice.name}</span>
-                  <span className="tabular-nums">{slice.share}%</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        ) : null}
-      </Card>
-    </section>
+                }
+              />
+              <Pie
+                data={slices}
+                dataKey="amount"
+                nameKey="name"
+                innerRadius="76%"
+                outerRadius="92%"
+                // Largest first, clockwise from twelve o'clock.
+                startAngle={90}
+                endAngle={-270}
+                cornerRadius={6}
+                // A 3px gap in the card's colour between slices; a lone
+                // slice is a full ring with no seam.
+                stroke="var(--card)"
+                strokeWidth={slices.length > 1 ? 3 : 0}
+                isAnimationActive={false}
+              >
+                {slices.map((slice) => (
+                  <Cell key={slice.key} fill={slice.fill} />
+                ))}
+                <Label
+                  content={({ viewBox }) => {
+                    if (!viewBox || !("cx" in viewBox)) return null
+                    return (
+                      <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
+                        <tspan
+                          x={viewBox.cx}
+                          y={(viewBox.cy ?? 0) - 8}
+                          className="fill-foreground text-base font-medium"
+                        >
+                          {formatCurrency(total)}
+                        </tspan>
+                        <tspan
+                          x={viewBox.cx}
+                          y={(viewBox.cy ?? 0) + 14}
+                          className="fill-muted-foreground text-xs"
+                        >
+                          tổng {typeLabel}
+                        </tspan>
+                      </text>
+                    )
+                  }}
+                />
+              </Pie>
+            </PieChart>
+          </ChartContainer>
+        ) : (
+          <Empty>
+            <EmptyHeader>
+              <EmptyDescription>Chưa có khoản {typeLabel} trong tháng này.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        )}
+      </CardContent>
+      {/* The groups as rows below the chart: each tile has its slice's
+          colour, and a thin bar its share. */}
+      {slices.length > 0 ? (
+        <CardContent>
+          <ul className="space-y-1">
+            {slices.map((slice) => (
+              <li key={slice.key} className="flex items-center gap-3.5 py-1.5">
+                <IconTile icon={slice.icon} tone={slice.color} size="lg" shape="rounded" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{slice.name}</p>
+                  <div className="mt-2 h-1 rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full"
+                      style={{ width: `${Math.max(slice.share, 2)}%`, backgroundColor: slice.fill }}
+                    />
+                  </div>
+                </div>
+                <div className="w-28 shrink-0 border-l pl-3 text-right">
+                  <Money amount={slice.amount} size="sm" weight="medium" />
+                  <p className="text-[11px] text-muted-foreground">
+                    {slice.share}% tổng {typeLabel}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      ) : null}
+    </Card>
   )
 }

@@ -52,17 +52,17 @@ export function OverviewGreeting({
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
       <header className="flex min-w-0 items-center gap-3 pt-1">
-        <Avatar size="lg">
+        <Avatar size="xl">
           <AvatarImage src={user.avatar} alt="" />
           <AvatarFallback>{initialsOf(name) || "?"}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="text-sm text-muted-foreground">{greetingFor(new Date())},</p>
-          <h1 className="text-2xl font-semibold tracking-tight [overflow-wrap:anywhere]">
+          <p className="text-xs text-muted-foreground">{greetingFor(new Date())}</p>
+          <h1 className="text-lg leading-tight font-medium [overflow-wrap:anywhere]">
             {name || "bạn"}
             {planState.plan === "pro" ? (
               <BadgeCheckIcon
-                className="ml-1.5 inline-block size-5 fill-ai align-[-0.15em] text-background"
+                className="ml-1 inline-block size-[18px] fill-ai align-[-0.15em] text-background"
                 role="img"
                 aria-label="Pro"
               />
@@ -85,10 +85,10 @@ export function OverviewGreeting({
 export function OverviewGreetingSkeleton() {
   return (
     <div aria-hidden="true" className="flex items-center gap-3 pt-1">
-      <Skeleton className="size-10 shrink-0 rounded-full" />
+      <Skeleton className="size-12 shrink-0 rounded-full" />
       <div className="space-y-1.5">
-        <Skeleton className="h-4 w-28" />
-        <Skeleton className="h-8 w-20" />
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-5 w-36" />
       </div>
     </div>
   )

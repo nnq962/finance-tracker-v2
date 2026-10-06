@@ -28,3 +28,22 @@ preset shadcn `b27GcrRo` với font Be Vietnam Pro. Bảng màu: [`colors.md`](c
 - **Badge thay đổi** (`DeltaBadge`): viên nhỏ có mũi tên và % thay đổi; xanh khi tốt, đỏ
   khi xấu (`goodWhen`), xám khi không đổi, ẩn khi không có số để so. Ở Thu chi trong tháng,
   tháng đang chạy so với cùng kỳ tháng trước, tháng đã qua so với trọn tháng trước (bước 3).
+
+## Phong cách trang dạng bảng tin (Tổng quan, duyệt 2026-10-06)
+
+Theo mockup "Mobile Finance Dashboard Design" (Figma Make), áp dụng đầu tiên cho trang Tổng quan.
+
+- **Thẻ lớn** (`Card size="lg"`, `SettingsGroup size="lg"`): bo 28px, đệm 24px, không viền,
+  không bóng. Các thẻ cách nhau 16px trên điện thoại, 24px từ md.
+- **Nhãn trong thẻ:** chữ nhỏ xám (`text-sm text-muted-foreground`) ở đầu thẻ, rồi con số
+  hoặc tiêu đề chính. Tiêu đề section ngoài thẻ dùng `SectionHeader` (`text-xl`, đậm vừa).
+- **Độ đậm:** không quá `font-medium`; số tiền dùng `Money weight="medium"`.
+- **Nút chính dạng viên thuốc:** `Button size="xl" shape="pill"` (cao 44px, màu `primary`);
+  nút tròn `size="icon-xl" shape="pill"` (44px), `variant="secondary"` khi nằm trong thẻ.
+- **Banner nổi bật** (mời lên Pro): nền `primary` chuyển sang `primary/85`, chấm mờ, đảo màu ở
+  theme tối.
+- **Chỉ số chia cột:** 2–3 cột ngăn bằng `divide-x`, số ở trên, nhãn `text-xs` xám ở dưới.
+- **Tiến độ dạng vòng mảnh** (nhiệm vụ) và **donut mảnh** (phân bổ); danh sách nhóm dưới donut
+  là dòng có `IconTile` bo góc 48px, thanh tỉ lệ 4px màu nhóm, số tiền và % bên phải.
+- **Phản hồi chạm:** utility `pressable` (thu nhỏ 0.97 khi nhấn, tắt khi giảm chuyển động)
+  cho thẻ và ô bấm được.

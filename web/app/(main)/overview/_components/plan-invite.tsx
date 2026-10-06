@@ -1,18 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { SparklesIcon } from "lucide-react"
+import { ChevronRightIcon, SparklesIcon } from "lucide-react"
 
 import { PlanOverlay } from "@/components/plans/plan-overlay"
-import { Button } from "@/components/ui/button"
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemMedia,
-  ItemTitle,
-} from "@/components/ui/item"
 import type { PaymentOutcome } from "@/lib/plans/payos"
 import { plans, type PlanState } from "@/lib/plans/plans"
 
@@ -26,29 +17,40 @@ type PlanInviteProps = {
   initialOpen: boolean
 }
 
-/** On Free, a row inviting the user to Pro; the plans open over the overview. */
+/**
+ * On Free, a dark banner inviting the user to Pro (light in the dark theme);
+ * the plans open over the overview.
+ */
 export function PlanInvite({ planState, checkoutEnabled, paymentOutcome, initialOpen }: PlanInviteProps) {
   const [open, setOpen] = React.useState(initialOpen)
 
   return (
     <>
       {planState.plan === "free" ? (
-        <Item variant="outline" className="lg:w-md lg:shrink-0">
-          <ItemMedia variant="icon" className="text-ai">
-            <SparklesIcon aria-hidden="true" />
-          </ItemMedia>
-          <ItemContent className="min-w-0">
-            <ItemTitle>Nâng cấp lên {plans.pro.label}</ItemTitle>
-            <ItemDescription>
-              {plans.pro.aiMonthlyLimit} lượt trợ lý AI mỗi tháng và dùng sớm tính năng mới
-            </ItemDescription>
-          </ItemContent>
-          <ItemActions>
-            <Button type="button" onClick={() => setOpen(true)}>
-              Xem gói
-            </Button>
-          </ItemActions>
-        </Item>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="pressable relative flex w-full items-center gap-4 overflow-hidden rounded-[28px] bg-linear-to-r from-primary via-primary to-primary/85 px-6 py-5 text-left text-primary-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 lg:w-md lg:shrink-0"
+        >
+          {/* A dotted texture, fading out at both ends. */}
+          <span
+            aria-hidden="true"
+            className="absolute inset-0 opacity-15 [background-image:radial-gradient(currentColor_1px,transparent_1px)] [background-size:10px_10px] [mask-image:linear-gradient(90deg,transparent,black_40%,transparent)]"
+          />
+          <SparklesIcon aria-hidden="true" className="relative size-7 shrink-0 text-ai" strokeWidth={1.7} />
+          <span className="relative min-w-0 flex-1">
+            <span className="block text-lg font-medium">Nâng cấp lên {plans.pro.label}</span>
+            <span className="block text-sm opacity-60">
+              {plans.pro.aiMonthlyLimit} lượt trợ lý AI mỗi tháng
+            </span>
+          </span>
+          <span
+            aria-hidden="true"
+            className="relative grid size-11 shrink-0 place-items-center rounded-full bg-primary-foreground text-primary"
+          >
+            <ChevronRightIcon className="size-5" strokeWidth={1.7} />
+          </span>
+        </button>
       ) : null}
 
       {/* Rendered on Pro too: back from payOS, it shows the payment went through. */}

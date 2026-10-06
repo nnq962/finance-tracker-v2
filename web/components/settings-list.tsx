@@ -32,6 +32,7 @@ function SettingsGroup({
   header,
   footer,
   listClassName,
+  size,
   children,
 }: {
   title?: React.ReactNode
@@ -42,6 +43,8 @@ function SettingsGroup({
   footer?: React.ReactNode
   /** Lays the rows out, e.g. in columns on wide screens. */
   listClassName?: string
+  /** lg: the rounder card of dashboard pages. */
+  size?: "default" | "lg"
   children: React.ReactNode
 }) {
   return (
@@ -57,7 +60,7 @@ function SettingsGroup({
         </div>
       ) : null}
       {/* Rows carry their own padding, so the card only frames them. */}
-      <Card className="gap-0 py-0">
+      <Card size={size} className="gap-0 py-0">
         {header}
         <ul className={listClassName}>
           {children}

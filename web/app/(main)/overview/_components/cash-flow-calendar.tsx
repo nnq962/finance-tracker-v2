@@ -4,11 +4,11 @@ import * as React from "react"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 import { toast } from "sonner"
 
+import { Money } from "@/components/app/money"
 import { SettingsGroup } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { Account } from "@/lib/accounts/types"
@@ -98,173 +98,161 @@ export function CashFlowCalendar({
   const sheetTitle = shownDay ? formatDayLabel(shownDay, today) : ""
 
   return (
-    <section aria-labelledby="cash-flow-calendar-title" className="space-y-2">
-      <h2
-        id="cash-flow-calendar-title"
-        className="px-3 text-sm font-medium text-muted-foreground"
-      >
-        Lịch thu chi
-      </h2>
-      <Card>
-        {/* The month on the left and both arrows together on the right, so
-            they stay close on a wide card. */}
-        <CardHeader>
-          <CardTitle>
-            Tháng {monthNumber}, {year}
-          </CardTitle>
-          <CardAction className="flex items-center gap-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="Tháng trước"
-              disabled={month <= minMonth}
-              onClick={() => onMonthChange(shiftMonth(month, -1))}
-            >
-              <ChevronLeftIcon />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="Tháng sau"
-              disabled={month >= maxMonth}
-              onClick={() => onMonthChange(shiftMonth(month, 1))}
-            >
-              <ChevronRightIcon />
-            </Button>
-          </CardAction>
-        </CardHeader>
-        {/* A container, so the days grow with the card rather than the screen. */}
-        <CardContent className="@container space-y-4">
-          <div className="grid grid-cols-7 gap-1 text-center">
-            {weekdays.map((weekday) => (
-              <span key={weekday} className="pb-1 text-xs text-muted-foreground">
-                {weekday}
-              </span>
-            ))}
-            {Array.from({ length: leadingBlanks }, (_, index) => (
-              <span key={`blank-${index}`} aria-hidden="true" />
-            ))}
-            {monthDays.map(({ key, day, totals }) => {
-              const isToday = key === today
-              const content = (
-                <>
-                  <span
-                    className={cn(
-                      "flex size-6 items-center justify-center rounded-full text-xs font-medium",
-                      isToday && "bg-primary text-primary-foreground",
-                      key > today && "text-muted-foreground",
-                    )}
-                  >
-                    {day}
-                  </span>
-                  {totals?.income ? (
-                    <span className={cn(amountClassName, cashFlowColors.income.text)}>
-                      +{formatCompactCurrency(totals.income)}
-                    </span>
-                  ) : null}
-                  {totals?.expense ? (
-                    <span className={cn(amountClassName, cashFlowColors.expense.text)}>
-                      −{formatCompactCurrency(totals.expense)}
-                    </span>
-                  ) : null}
-                </>
-              )
-              const cellClassName =
-                "flex min-h-14 min-w-0 flex-col items-center gap-0.5 rounded-2xl pt-1 @lg:min-h-20 @lg:pt-2"
-
-              // Every day up to today opens its sheet, also one without transactions.
-              return key <= today ? (
-                <button
-                  key={key}
-                  type="button"
+    <Card size="lg" role="region" aria-labelledby="cash-flow-calendar-title">
+      {/* The month on the left and both arrows together on the right, so
+          they stay close on a wide card. */}
+      <CardHeader>
+        <h2 id="cash-flow-calendar-title" className="text-sm text-muted-foreground">
+          Lịch thu chi
+        </h2>
+        <CardTitle className="text-xl">
+          Tháng {monthNumber}, {year}
+        </CardTitle>
+        <CardAction className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            size="icon-xl"
+            shape="pill"
+            aria-label="Tháng trước"
+            disabled={month <= minMonth}
+            onClick={() => onMonthChange(shiftMonth(month, -1))}
+          >
+            <ChevronLeftIcon />
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            size="icon-xl"
+            shape="pill"
+            aria-label="Tháng sau"
+            disabled={month >= maxMonth}
+            onClick={() => onMonthChange(shiftMonth(month, 1))}
+          >
+            <ChevronRightIcon />
+          </Button>
+        </CardAction>
+      </CardHeader>
+      {/* A container, so the days grow with the card rather than the screen. */}
+      <CardContent className="@container space-y-5">
+        <div className="grid grid-cols-7 gap-1 text-center">
+          {weekdays.map((weekday) => (
+            <span key={weekday} className="pb-1 text-[11px] text-muted-foreground">
+              {weekday}
+            </span>
+          ))}
+          {Array.from({ length: leadingBlanks }, (_, index) => (
+            <span key={`blank-${index}`} aria-hidden="true" />
+          ))}
+          {monthDays.map(({ key, day, totals }) => {
+            const isToday = key === today
+            const content = (
+              <>
+                <span
                   className={cn(
-                    cellClassName,
-                    "outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/30",
+                    "flex size-7 items-center justify-center rounded-full text-sm",
+                    isToday && "bg-primary font-medium text-primary-foreground",
+                    key > today && "text-muted-foreground",
                   )}
-                  aria-label={
-                    totals
-                      ? `Ngày ${day}: thu ${formatCurrency(totals.income)}, chi ${formatCurrency(totals.expense)}`
-                      : `Ngày ${day}: chưa có giao dịch`
-                  }
-                  onClick={() => setOpenDay(key)}
                 >
-                  {content}
-                </button>
-              ) : (
-                <div key={key} className={cellClassName}>
-                  {content}
-                </div>
-              )
-            })}
-          </div>
+                  {day}
+                </span>
+                {totals?.income ? (
+                  <span className={cn(amountClassName, cashFlowColors.income.text)}>
+                    +{formatCompactCurrency(totals.income)}
+                  </span>
+                ) : null}
+                {totals?.expense ? (
+                  <span className={cn(amountClassName, cashFlowColors.expense.text)}>
+                    −{formatCompactCurrency(totals.expense)}
+                  </span>
+                ) : null}
+              </>
+            )
+            const cellClassName =
+              "flex min-h-14 min-w-0 flex-col items-center gap-0.5 rounded-2xl pt-1 @lg:min-h-20 @lg:pt-2"
 
-          <Separator />
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-muted-foreground">Thu trong tháng</p>
-              <p className={cn("font-medium tabular-nums", cashFlowColors.income.text)}>
-                {formatCurrency(monthIncome)}
-              </p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Chi trong tháng</p>
-              <p className={cn("font-medium tabular-nums", cashFlowColors.expense.text)}>
-                {formatCurrency(monthExpense)}
-              </p>
-            </div>
-          </div>
+            // Every day up to today opens its sheet, also one without transactions.
+            return key <= today ? (
+              <button
+                key={key}
+                type="button"
+                className={cn(
+                  cellClassName,
+                  "outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/30 active:bg-muted",
+                )}
+                aria-label={
+                  totals
+                    ? `Ngày ${day}: thu ${formatCurrency(totals.income)}, chi ${formatCurrency(totals.expense)}`
+                    : `Ngày ${day}: chưa có giao dịch`
+                }
+                onClick={() => setOpenDay(key)}
+              >
+                {content}
+              </button>
+            ) : (
+              <div key={key} className={cellClassName}>
+                {content}
+              </div>
+            )
+          })}
+        </div>
 
-          <Sheet open={openTotals !== undefined} onOpenChange={(open) => { if (!open) setOpenDay(null) }}>
-            <SheetContent
-              showCloseButton={false}
-              aria-describedby={undefined}
-              className="gap-0 data-[side=right]:w-full sm:max-w-md!"
-              onOpenAutoFocus={(event) => event.preventDefault()}
-            >
-              <SheetNavHeader title={sheetTitle} />
-              {openTotals ? (
-                <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-px pb-4">
-                  <div className="grid grid-cols-2 gap-4 px-3 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Đã thu</p>
-                      <p className={cn("text-lg font-medium tabular-nums", cashFlowColors.income.text)}>
-                        {formatCurrency(openTotals.income)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Đã chi</p>
-                      <p className={cn("text-lg font-medium tabular-nums", cashFlowColors.expense.text)}>
-                        {formatCurrency(openTotals.expense)}
-                      </p>
-                    </div>
+        <div className="grid grid-cols-2 divide-x border-t pt-5">
+          <div className="min-w-0">
+            <Money amount={monthIncome} size="md" weight="medium" tone="income" />
+            <p className="text-xs text-muted-foreground">Thu trong tháng</p>
+          </div>
+          <div className="min-w-0 pl-4">
+            <Money amount={monthExpense} size="md" weight="medium" tone="expense" />
+            <p className="text-xs text-muted-foreground">Chi trong tháng</p>
+          </div>
+        </div>
+
+        <Sheet open={openTotals !== undefined} onOpenChange={(open) => { if (!open) setOpenDay(null) }}>
+          <SheetContent
+            showCloseButton={false}
+            aria-describedby={undefined}
+            className="gap-0 data-[side=right]:w-full sm:max-w-md!"
+            onOpenAutoFocus={(event) => event.preventDefault()}
+          >
+            <SheetNavHeader title={sheetTitle} />
+            {openTotals ? (
+              <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-px pb-4">
+                <div className="grid grid-cols-2 gap-4 px-3 text-sm">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Đã thu</p>
+                    <Money amount={openTotals.income} size="lg" weight="medium" tone="income" />
                   </div>
-                  {dayItems && dayItems.length === 0 ? (
-                    <p className="px-3 text-sm text-muted-foreground">Chưa có giao dịch</p>
-                  ) : dayItems ? (
-                    <SettingsGroup title={`${dayItems.length} giao dịch`}>
-                      {dayItems.map((transaction) => (
-                        <TransactionItem
-                          key={transaction.id}
-                          accounts={accounts}
-                          categoryGroups={categoryGroups}
-                          transaction={transaction}
-                        />
-                      ))}
-                    </SettingsGroup>
-                  ) : (
-                    <div className="space-y-2" role="status" aria-label="Đang tải giao dịch">
-                      <Skeleton className="mx-3 h-3 w-24" />
-                      <Skeleton className="h-36 w-full" />
-                    </div>
-                  )}
+                  <div>
+                    <p className="text-xs text-muted-foreground">Đã chi</p>
+                    <Money amount={openTotals.expense} size="lg" weight="medium" tone="expense" />
+                  </div>
                 </div>
-              ) : null}
-            </SheetContent>
-          </Sheet>
-        </CardContent>
-      </Card>
-    </section>
+                {dayItems && dayItems.length === 0 ? (
+                  <p className="px-3 text-sm text-muted-foreground">Chưa có giao dịch</p>
+                ) : dayItems ? (
+                  <SettingsGroup title={`${dayItems.length} giao dịch`}>
+                    {dayItems.map((transaction) => (
+                      <TransactionItem
+                        key={transaction.id}
+                        accounts={accounts}
+                        categoryGroups={categoryGroups}
+                        transaction={transaction}
+                      />
+                    ))}
+                  </SettingsGroup>
+                ) : (
+                  <div className="space-y-2" role="status" aria-label="Đang tải giao dịch">
+                    <Skeleton className="mx-3 h-3 w-24" />
+                    <Skeleton className="h-36 w-full" />
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </SheetContent>
+        </Sheet>
+      </CardContent>
+    </Card>
   )
 }

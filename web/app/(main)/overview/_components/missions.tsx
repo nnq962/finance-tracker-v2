@@ -6,7 +6,6 @@ import {
   BellRingIcon,
   ChevronDownIcon,
   DownloadIcon,
-  GiftIcon,
   HandCoinsIcon,
   ReceiptTextIcon,
   SparklesIcon,
@@ -22,12 +21,12 @@ import { AddAccountSheet } from "@/app/(main)/budget/_components/add-account/add
 import { AddContactSheet } from "@/app/(main)/debts/_components/add-contact-sheet"
 import { AddDebtSheet } from "@/app/(main)/debts/_components/add-debt-sheet"
 import { createContactAction, createDebtAction } from "@/app/(main)/debts/actions"
+import { IconTile } from "@/components/app/icon-tile"
 import { CategoryManagementSheet } from "@/components/categories/category-management-sheet"
 import { IosInstallDialog, usePwaInstall } from "@/components/pwa-install-button"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
 import { Spinner } from "@/components/ui/spinner"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryColorName } from "@/lib/categories/category-colors"
@@ -35,6 +34,8 @@ import type { CategoryGroup } from "@/lib/categories/types"
 import type { Contact, NewContact, NewDebt } from "@/lib/debts/types"
 import { claimMissionRewardAction } from "@/lib/onboarding/actions"
 import { MISSION_REWARD, type MissionKey, type MissionState } from "@/lib/onboarding/missions"
+
+import { cn } from "@/lib/utils"
 
 import { AddTransactionSheet } from "../../transactions/_components/add-transaction/add-transaction-sheet"
 
@@ -62,6 +63,40 @@ type OpenSheet = "account" | "transaction" | "transfer" | "contact" | "debt" | "
 function unwrap<T>(result: { success: true; data: T } | { success: false; error: string }) {
   if (!result.success) throw new Error(result.error)
   return result.data
+}
+
+/** Claimed missions as a thin ring around the count. */
+function MissionRing({ done, total }: { done: number; total: number }) {
+  // The circle's length for r=16, so the dash is the share done.
+  const length = 2 * Math.PI * 16
+
+  return (
+    <div
+      role="img"
+      aria-label={`Đã xong ${done} trên ${total} nhiệm vụ`}
+      className="relative size-28 shrink-0"
+    >
+      <svg viewBox="0 0 36 36" aria-hidden="true" className="size-full -rotate-90">
+        <circle cx="18" cy="18" r="16" fill="none" strokeWidth="0.8" className="stroke-muted" />
+        <circle
+          cx="18"
+          cy="18"
+          r="16"
+          fill="none"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeDasharray={`${(done / total) * length} ${length}`}
+          className="stroke-primary motion-safe:transition-[stroke-dasharray] motion-safe:duration-500"
+        />
+      </svg>
+      <div aria-hidden="true" className="absolute inset-0 grid place-content-center text-center">
+        <p className="text-2xl font-medium tabular-nums">
+          {done}/{total}
+        </p>
+        <p className="text-[10px] text-muted-foreground">đã xong</p>
+      </div>
+    </div>
+  )
 }
 
 /**
@@ -203,41 +238,43 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
     router.refresh()
   }
 
+  const rewardsLeft = (missions.length - claimedCount) * MISSION_REWARD
+
   return (
     <>
       <SettingsGroup
-        title={`Nhiệm vụ · ${claimedCount}/${missions.length}`}
-        action={
-          remaining.length > 0 ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="xs"
-              aria-expanded={expanded}
-              onClick={() => setExpanded((open) => !open)}
-            >
-              {expanded ? "Thu gọn" : "Xem nhiệm vụ"}
-              <ChevronDownIcon
-                data-icon="inline-end"
-                className={expanded ? "rotate-180" : undefined}
-                aria-hidden="true"
-              />
-            </Button>
-          ) : undefined
-        }
+        size="lg"
+        listClassName={shown.length > 0 ? "border-t" : undefined}
         header={
-          <div className={shown.length > 0 ? "space-y-2.5 px-4 pt-3.5 pb-2" : "space-y-2.5 px-4 py-3.5"}>
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm text-muted-foreground">Hoàn thành nhiệm vụ để nhận thêm lượt AI</p>
-              <Badge variant="secondary" className="shrink-0">
-                <GiftIcon data-icon="inline-start" aria-hidden="true" />
-                {claimedCount * MISSION_REWARD}/{missions.length * MISSION_REWARD} lượt
-              </Badge>
+          <div className="flex items-center gap-4 p-6">
+            <div className="min-w-0 flex-1">
+              <h2 className="text-sm text-muted-foreground">Nhiệm vụ</h2>
+              <p className="mt-0.5 text-lg font-medium">Nhận thêm lượt AI</p>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                {claimable.length > 0
+                  ? `${claimable.length} phần thưởng đang chờ nhận.`
+                  : `Còn ${remaining.length} nhiệm vụ, mỗi nhiệm vụ +${MISSION_REWARD} lượt.`}{" "}
+                Tối đa {rewardsLeft} lượt nữa.
+              </p>
+              {remaining.length > 0 ? (
+                <Button
+                  type="button"
+                  size="xl"
+                  shape="pill"
+                  className="mt-4"
+                  aria-expanded={expanded}
+                  onClick={() => setExpanded((open) => !open)}
+                >
+                  {expanded ? "Thu gọn" : "Xem nhiệm vụ"}
+                  <ChevronDownIcon
+                    data-icon="inline-end"
+                    className={cn("transition-transform", expanded && "rotate-180")}
+                    aria-hidden="true"
+                  />
+                </Button>
+              ) : null}
             </div>
-            <Progress
-              value={(claimedCount / missions.length) * 100}
-              aria-label="Nhiệm vụ đã hoàn thành"
-            />
+            <MissionRing done={claimedCount} total={missions.length} />
           </div>
         }
       >
@@ -245,15 +282,18 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
           mission.done ? (
             <SettingsRow
               key={mission.key}
-              icon={mission.icon}
-              color={mission.color}
+              media={<IconTile icon={mission.icon} tone={mission.color} />}
               title={mission.title}
               description="Đã hoàn thành"
               action={
-                <Button type="button" size="sm" disabled={claiming !== null} onClick={() => void claim(mission)}>
-                  {claiming === mission.key ? (
-                    <Spinner />
-                  ) : null}
+                <Button
+                  type="button"
+                  size="sm"
+                  shape="pill"
+                  disabled={claiming !== null}
+                  onClick={() => void claim(mission)}
+                >
+                  {claiming === mission.key ? <Spinner /> : null}
                   Nhận +{MISSION_REWARD}
                 </Button>
               }
@@ -261,8 +301,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
           ) : (
             <SettingsRow
               key={mission.key}
-              icon={mission.icon}
-              color={mission.color}
+              media={<IconTile icon={mission.icon} tone={mission.color} />}
               title={mission.title}
               description={mission.description}
               value={<Badge variant="secondary">+{MISSION_REWARD}</Badge>}

@@ -150,6 +150,24 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --warning: oklch(0.795 0.155 65.4);
 }
 
+/*
+ * Touch feedback for tappable cards and tiles: they give a little under the
+ * finger, as in native apps. Still under reduced motion.
+ */
+@utility pressable {
+  transition-property: scale;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  &:active:not(:disabled) {
+    scale: 0.97;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &:active:not(:disabled) {
+      scale: none;
+    }
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

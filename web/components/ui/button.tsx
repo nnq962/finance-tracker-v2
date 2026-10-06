@@ -25,15 +25,22 @@ const buttonVariants = cva(
         xs: "h-6 gap-1 px-2.5 text-xs has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3",
         sm: "h-7 gap-1 px-3 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
         lg: "h-9 gap-1.5 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
+        xl: "h-11 gap-2 px-5 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
         icon: "size-8",
         "icon-xs": "size-6 [&_svg:not([class*='size-'])]:size-3",
         "icon-sm": "size-7",
         "icon-lg": "size-9",
+        "icon-xl": "size-11 [&_svg:not([class*='size-'])]:size-5",
+      },
+      shape: {
+        default: "",
+        pill: "rounded-full",
       },
     },
     defaultVariants: {
       variant: "default",
       size: "default",
+      shape: "default",
     },
   }
 )
@@ -42,6 +49,7 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  shape = "default",
   asChild = false,
   ...props
 }: React.ComponentProps<"button"> &
@@ -55,7 +63,7 @@ function Button({
       data-slot="button"
       data-variant={variant}
       data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(buttonVariants({ variant, size, shape, className }))}
       {...props}
     />
   )

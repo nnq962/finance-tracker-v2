@@ -24,10 +24,10 @@ export function OverviewLayout({
 }: OverviewLayoutProps) {
   // Below lg the two columns dissolve (`contents`) and `order` interleaves
   // their sections; inside a column the same order values keep their sequence.
-  const columnClassName = "contents min-w-0 lg:flex lg:flex-col lg:gap-8"
+  const columnClassName = "contents min-w-0 lg:flex lg:flex-col lg:gap-6"
 
   return (
-    <div className="flex min-w-0 flex-col gap-6 md:gap-8 lg:grid lg:grid-cols-2 lg:items-start xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
+    <div className="flex min-w-0 flex-col gap-4 md:gap-6 lg:grid lg:grid-cols-2 lg:items-start xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
       <div className={columnClassName}>
         <div className="order-1">{netWorth}</div>
         {dueDebts ? <div className="order-3">{dueDebts}</div> : null}
