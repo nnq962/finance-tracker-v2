@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress"
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -283,8 +284,10 @@ export function VoiceLab() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="vi-VN">Tiếng Việt (vi-VN)</SelectItem>
-                <SelectItem value="en-US">Tiếng Anh (en-US)</SelectItem>
+                <SelectGroup>
+                  <SelectItem value="vi-VN">Tiếng Việt (vi-VN)</SelectItem>
+                  <SelectItem value="en-US">Tiếng Anh (en-US)</SelectItem>
+                </SelectGroup>
               </SelectContent>
             </Select>
           </Field>

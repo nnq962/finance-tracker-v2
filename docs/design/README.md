@@ -47,7 +47,9 @@ component ở đó là cả app đổi theo.
 - **Card:** `size="sm"` (bo 20, đệm 16) · mặc định (24, 20) · `size="lg"` (28, 24) cho thẻ chính
   của trang.
 - **Input, Textarea, InputGroup, Select, Combobox:** nền xám, bo 16, cao 44, chữ 16px trên điện
-  thoại (để iOS không phóng to).
+  thoại (để iOS không phóng to). Trong `SelectContent`, các `SelectItem` luôn nằm trong
+  `SelectGroup` (kèm `SelectLabel` nếu nhóm có tên), như shadcn hướng dẫn; danh sách tài khoản
+  dùng `AccountSelectGroups`.
 - **Tabs:** segmented control dạng viên thuốc, viên đang chọn màu thẻ có bóng nhẹ. Dùng cho 2–3
   chế độ cùng loại (Chi/Thu/Chuyển).
 - **ToggleGroup / Toggle:** chip viên thuốc xám, chip đang chọn màu đen; `variant="outline"` là
@@ -60,6 +62,11 @@ component ở đó là cả app đổi theo.
     trên desktop. Dùng cho form và màn chi tiết, kèm `SheetNavHeader`.
   - `variant="bottom"`: thẻ trồi từ đáy, bo 28, có thanh kéo, nền xám để nhóm dòng trắng nổi
     lên. Dùng cho lựa chọn ngắn và hành động.
+- **Status bar:** màu status bar (theme-color của PWA) theo thứ đang phủ đầu màn hình
+  (`lib/theme-color.ts`, `components/pwa-theme-color.tsx`). Bình thường là màu nền trang; sheet
+  `screen` trên điện thoại làm nó trắng như sheet; lớp làm tối của sheet và hộp thoại làm nó tối
+  theo. Overlay mới tự viết thì gọi `useClaimThemeColor` hoặc đặt `<ClaimThemeColor>` trong phần
+  chỉ tồn tại khi mở.
 - **Dialog, AlertDialog:** bo 28. Chỉ để xác nhận hoặc nhập rất ngắn; nút huỷ màu xám.
 - **DropdownMenu, Select, Combobox (danh sách):** bo 20, dòng cao 40.
 - **Progress:** thanh mảnh 6px. **Empty:** icon trong vòng tròn xám.

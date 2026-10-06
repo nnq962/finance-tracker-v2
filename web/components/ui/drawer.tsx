@@ -4,6 +4,8 @@ import * as React from "react"
 import { cn } from "cn"
 import { Drawer as DrawerPrimitive } from "vaul"
 
+import { useClaimThemeColor } from "@/lib/theme-color"
+
 function Drawer({
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) {
@@ -32,6 +34,9 @@ function DrawerOverlay({
   className,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Overlay>) {
+  // The status bar dims with the page under the backdrop.
+  useClaimThemeColor("dimmed")
+
   return (
     <DrawerPrimitive.Overlay
       data-slot="drawer-overlay"

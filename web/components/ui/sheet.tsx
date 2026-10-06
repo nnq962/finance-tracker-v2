@@ -4,6 +4,8 @@ import * as React from "react"
 import { cn } from "cn"
 import { Dialog as SheetPrimitive } from "radix-ui"
 
+import { ClaimThemeColor, useClaimThemeColor } from "@/lib/theme-color"
+
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
 
@@ -33,6 +35,9 @@ function SheetOverlay({
   className,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Overlay>) {
+  // The status bar dims with the page under the backdrop.
+  useClaimThemeColor("dimmed")
+
   return (
     <SheetPrimitive.Overlay
       data-slot="sheet-overlay"
@@ -87,6 +92,11 @@ function SheetContent({
         className={cn(sheetContentClassName, sheetVariantClassName[variant], className)}
         {...props}
       >
+        {variant === "screen" ? (
+          // It fills a phone, so the status bar takes its colour; wider, it
+          // is a panel and the backdrop's colour stays.
+          <ClaimThemeColor surface="sheet" media="(max-width: 639.98px)" />
+        ) : null}
         {variant === "bottom" ? (
           // The grabber: a cue that the sheet sits over the page.
           <span aria-hidden="true" className="mx-auto mt-2 h-1 w-9 shrink-0 rounded-full bg-muted-foreground/30" />

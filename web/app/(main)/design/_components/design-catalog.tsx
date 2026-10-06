@@ -65,6 +65,7 @@ import { Progress } from "@/components/ui/progress"
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -348,9 +349,11 @@ export function DesignCatalog() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="cash">Tiền mặt</SelectItem>
-                      <SelectItem value="momo">Ví MoMo</SelectItem>
-                      <SelectItem value="vcb">Vietcombank</SelectItem>
+                      <SelectGroup>
+                        <SelectItem value="cash">Tiền mặt</SelectItem>
+                        <SelectItem value="momo">Ví MoMo</SelectItem>
+                        <SelectItem value="vcb">Vietcombank</SelectItem>
+                      </SelectGroup>
                     </SelectContent>
                   </Select>
                 </Field>

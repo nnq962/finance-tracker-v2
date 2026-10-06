@@ -4,6 +4,8 @@ import * as React from "react"
 import { cn } from "cn"
 import { AlertDialog as AlertDialogPrimitive } from "radix-ui"
 
+import { useClaimThemeColor } from "@/lib/theme-color"
+
 import { Button } from "@/components/ui/button"
 
 function AlertDialog({
@@ -32,6 +34,9 @@ function AlertDialogOverlay({
   className,
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Overlay>) {
+  // The status bar dims with the page under the backdrop.
+  useClaimThemeColor("dimmed")
+
   return (
     <AlertDialogPrimitive.Overlay
       data-slot="alert-dialog-overlay"
