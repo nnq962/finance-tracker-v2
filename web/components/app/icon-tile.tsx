@@ -8,17 +8,20 @@ const iconTileVariants = cva(
   "inline-flex shrink-0 items-center justify-center [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
+      // sm: a list row's icon (36, as in the mockup's settings list); md: a
+      // transaction or category row; lg: a card's or a sheet's lead.
       size: {
-        sm: "size-8 [&_svg]:size-4",
+        sm: "size-9 [&_svg]:size-[18px]",
         md: "size-10 [&_svg]:size-5",
         lg: "size-12 [&_svg]:size-6",
       },
+      // rounded: the mockup's tile, a soft square; circle is kept for faces and initials.
       shape: {
+        rounded: "rounded-xl data-[size=lg]:rounded-2xl",
         circle: "rounded-full",
-        rounded: "rounded-xl",
       },
     },
-    defaultVariants: { size: "md", shape: "circle" },
+    defaultVariants: { size: "md", shape: "rounded" },
   },
 )
 
@@ -52,7 +55,7 @@ export function IconTile({
       : getCategoryColor(tone as CategoryColorName).surfaceClassName
 
   return (
-    <span data-slot="icon-tile" aria-hidden="true" className={cn(iconTileVariants({ size, shape }), toneClassName, className)}>
+    <span data-slot="icon-tile" data-size={size ?? "md"} aria-hidden="true" className={cn(iconTileVariants({ size, shape }), toneClassName, className)}>
       <Icon />
     </span>
   )

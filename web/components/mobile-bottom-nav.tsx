@@ -151,7 +151,7 @@ export function MobileBottomNav() {
         <li
           aria-hidden="true"
           className={cn(
-            "absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/var(--tab-count))] rounded-full bg-muted transition-[translate,opacity] duration-300 ease-out motion-reduce:transition-none",
+            "absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/var(--tab-count))] rounded-full bg-muted transition-[translate,opacity] duration-300 ease-out motion-reduce:duration-150",
             activeIndex < 0 && "opacity-0",
           )}
           style={

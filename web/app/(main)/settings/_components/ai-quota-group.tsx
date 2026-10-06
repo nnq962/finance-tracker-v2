@@ -39,6 +39,7 @@ export function AiQuotaGroup({ planState }: { planState: PlanState }) {
       {hasCredits ? (
         <SettingsRow
           icon={GiftIcon}
+          tone="ai"
           title="Lượt thưởng"
           description="Dùng khi hết lượt tháng"
           value={String(planState.aiCredits)}

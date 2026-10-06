@@ -34,7 +34,7 @@ function PageHeader({ title, actions }: PageHeaderProps) {
       className="flex flex-col gap-5 pt-1 sm:flex-row sm:items-center sm:justify-between"
     >
       <div className="min-w-0">
-        <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
+        <h1 className="text-[28px] leading-tight font-medium tracking-tight">{title}</h1>
         {/* On phones the title moves to a small bar once scrolled away. */}
         {typeof title === "string" ? <CompactTitleBar title={title} /> : null}
       </div>

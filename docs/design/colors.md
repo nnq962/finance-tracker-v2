@@ -1,7 +1,6 @@
 # Màu
 
-Bảng màu cho thiết kế lại (10/2026), rút ra từ các ảnh mẫu trong
-[`docs/template/`](../template/). Giá trị gốc nằm trong `web/app/globals.css` (oklch); hex dưới
+Bảng màu cho thiết kế lại (10/2026), theo mockup đã duyệt (xem [`README.md`](README.md)). Giá trị gốc nằm trong `web/app/globals.css` (oklch); hex dưới
 đây để đọc cho dễ. Bo góc và kích thước component giữ nguyên theo preset shadcn.
 
 ## Tinh thần
@@ -31,7 +30,7 @@ Bảng màu cho thiết kế lại (10/2026), rút ra từ các ảnh mẫu tron
 | `income` | `#10a36a` | `#30c97e` | Tiền vào |
 | `expense` | `#e5484d` | `#ff6369` | Tiền ra |
 | `transfer` | `#2f6fec` | `#5b9bff` | Chuyển khoản |
-| `ai` | `#7c5cf0` | `#a18bff` | AI và gói Pro |
+| `ai` | xanh ngọc, `oklch(0.6 0.115 195)` | `oklch(0.76 0.12 192)` | AI và gói Pro (đổi từ tím ngày 2026-10-07) |
 | `warning` | `#f08c1a` | `#ffa53d` | Cảnh báo, nhắc nhở |
 | `chart-1…5` | tím, xanh ngọc, cam, xanh dương, hồng | bản sáng hơn | Biểu đồ nhiều màu |
 | `sidebar` | `#ffffff` | `#111113` | Sidebar desktop |

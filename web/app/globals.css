@@ -110,7 +110,8 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --income: oklch(0.632 0.142 159.3);
   --expense: oklch(0.626 0.193 23);
   --transfer: oklch(0.573 0.2 261.9);
-  --ai: oklch(0.588 0.212 288);
+  /* Teal: apart from the other meaning colours (green in, red out, blue transfer, amber warning). */
+  --ai: oklch(0.6 0.115 195);
   --warning: oklch(0.732 0.163 61);
   /*
    * Fills that depend on the surface below (see the surface-* utilities):
@@ -161,7 +162,7 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --income: oklch(0.741 0.165 156.2);
   --expense: oklch(0.701 0.19 21.2);
   --transfer: oklch(0.693 0.162 259);
-  --ai: oklch(0.707 0.166 290.2);
+  --ai: oklch(0.76 0.12 192);
   --warning: oklch(0.795 0.155 65.4);
   --track-grouped: color-mix(in oklch, var(--input) 45%, transparent);
 }
@@ -246,13 +247,8 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
     width: auto;
   }
 
-  /* The toaster now spans the space between its offsets; toasts fill it,
-     as wide as before. */
-  body:has([data-app-shell="main"])
-    [data-sonner-toaster][data-y-position="top"]
-    [data-sonner-toast] {
-    width: 100%;
-  }
+  /* The toaster spans the space between its offsets; each toast is a pill
+     as wide as its text, centred in it (components/ui/sonner.tsx). */
 }
 
 /*

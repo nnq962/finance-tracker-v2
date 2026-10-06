@@ -121,7 +121,7 @@ export function AccountSheet({ account, share, transactions, categoryGroups, onO
                       <SettingsRow
                         key={transaction.id}
                         icon={icon}
-                        color={color}
+                        tone={color}
                         title={transaction.title}
                         description={`${formatShortDate(toDateKey(transaction.occurredAt))} · ${formatTime(transaction.occurredAt)}`}
                         value={formatCurrency(amount, { signDisplay: "always" })}

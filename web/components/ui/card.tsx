@@ -4,14 +4,20 @@ import { cn } from "cn"
 function Card({
   className,
   size = "default",
+  variant = "default",
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" | "lg" }) {
+}: React.ComponentProps<"div"> & {
+  size?: "default" | "sm" | "lg"
+  /** inverse: dark (light in the dark theme), for the one card a page leads with, like a balance. */
+  variant?: "default" | "inverse"
+}) {
   return (
     <div
       data-slot="card"
       data-size={size}
+      data-variant={variant}
       className={cn(
-        "group/card surface-plain flex flex-col gap-(--card-spacing) overflow-hidden rounded-[min(var(--radius-4xl),24px)] bg-card py-(--card-spacing) text-sm text-card-foreground [--card-spacing:--spacing(5)] has-[>img:first-child]:pt-0 data-[size=sm]:rounded-[20px] data-[size=sm]:[--card-spacing:--spacing(4)] data-[size=lg]:rounded-[28px] data-[size=lg]:[--card-spacing:--spacing(6)] *:[img:first-child]:rounded-t-[min(var(--radius-4xl),24px)] *:[img:last-child]:rounded-b-[min(var(--radius-4xl),24px)]",
+        "group/card surface-plain flex flex-col gap-(--card-spacing) overflow-hidden rounded-[min(var(--radius-4xl),24px)] bg-card py-(--card-spacing) text-sm text-card-foreground [--card-spacing:--spacing(5)] has-[>img:first-child]:pt-0 data-[size=sm]:rounded-[20px] data-[size=sm]:[--card-spacing:--spacing(4)] data-[size=lg]:rounded-[28px] data-[size=lg]:[--card-spacing:--spacing(6)] *:[img:first-child]:rounded-t-[min(var(--radius-4xl),24px)] *:[img:last-child]:rounded-b-[min(var(--radius-4xl),24px)] data-[variant=inverse]:bg-primary data-[variant=inverse]:text-primary-foreground",
         className
       )}
       {...props}

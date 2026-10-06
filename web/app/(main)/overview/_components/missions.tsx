@@ -21,7 +21,6 @@ import { AddAccountSheet } from "@/app/(main)/budget/_components/add-account/add
 import { AddContactSheet } from "@/app/(main)/debts/_components/add-contact-sheet"
 import { AddDebtSheet } from "@/app/(main)/debts/_components/add-debt-sheet"
 import { createContactAction, createDebtAction } from "@/app/(main)/debts/actions"
-import { IconTile } from "@/components/app/icon-tile"
 import { ProgressRing } from "@/components/app/progress-ring"
 import { CategoryManagementSheet } from "@/components/categories/category-management-sheet"
 import { IosInstallDialog, usePwaInstall } from "@/components/pwa-install-button"
@@ -30,7 +29,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import type { Account } from "@/lib/accounts/types"
-import type { CategoryColorName } from "@/lib/categories/category-colors"
+import type { IconTileTone } from "@/components/app/icon-tile"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { Contact, NewContact, NewDebt } from "@/lib/debts/types"
 import { claimMissionRewardAction } from "@/lib/onboarding/actions"
@@ -43,7 +42,7 @@ import { AddTransactionSheet } from "../../transactions/_components/add-transact
 type Mission = {
   key: MissionKey
   icon: LucideIcon
-  color: CategoryColorName
+  color: IconTileTone
   title: string
   description: string
   done: boolean
@@ -114,7 +113,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
     {
       key: "ai",
       icon: SparklesIcon,
-      color: "violet",
+      color: "ai",
       title: "Ghi giao dịch bằng trợ lý AI",
       description: hasAccount ? "Chỉ cần gõ hoặc nói một câu" : needAccount,
       done: state.done.ai,
@@ -247,7 +246,8 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
           mission.done ? (
             <SettingsRow
               key={mission.key}
-              media={<IconTile icon={mission.icon} tone={mission.color} />}
+              icon={mission.icon}
+              tone={mission.color}
               title={mission.title}
               description="Đã hoàn thành"
               action={
@@ -265,7 +265,8 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
           ) : (
             <SettingsRow
               key={mission.key}
-              media={<IconTile icon={mission.icon} tone={mission.color} />}
+              icon={mission.icon}
+              tone={mission.color}
               title={mission.title}
               description={mission.description}
               value={<Badge variant="secondary">+{MISSION_REWARD}</Badge>}

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { CheckIcon } from "lucide-react"
 import { cn } from "cn"
 import { Switch as SwitchPrimitive } from "radix-ui"
 
@@ -23,8 +24,17 @@ function Switch({
     >
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
-        className="pointer-events-none block rounded-full bg-card shadow-md ring-0 transition-transform duration-200 ease-out not-dark:bg-clip-padding group-data-[size=default]/switch:size-[27px] group-data-[size=sm]/switch:size-5 group-data-[size=default]/switch:data-checked:translate-x-5 group-data-[size=sm]/switch:data-checked:translate-x-4 dark:data-checked:bg-primary-foreground data-unchecked:translate-x-0 dark:data-unchecked:bg-foreground"
-      />
+        className="pointer-events-none grid place-items-center rounded-full bg-card text-primary shadow-md ring-0 transition-transform duration-300 ease-[cubic-bezier(.34,1.4,.64,1)] will-change-transform not-dark:bg-clip-padding group-data-[size=default]/switch:size-[27px] group-data-[size=sm]/switch:size-5 group-data-[size=default]/switch:data-checked:translate-x-5 group-data-[size=sm]/switch:data-checked:translate-x-4 motion-reduce:duration-150 motion-reduce:ease-out dark:data-checked:bg-primary-foreground data-unchecked:translate-x-0 dark:data-unchecked:bg-foreground"
+      >
+        {/* A tick in the thumb says "on" without relying on colour alone. Sized so it
+            sits on whole pixels (27 − 13 = 14), and kept on its own layer: iOS
+            Safari otherwise re-snaps it half a pixel down as the thumb starts moving. */}
+        <CheckIcon
+          aria-hidden="true"
+          strokeWidth={3.5}
+          className="size-[13px] opacity-0 transition-opacity duration-200 will-change-[opacity] group-data-[size=sm]/switch:size-2.5 group-data-checked/switch:opacity-100"
+        />
+      </SwitchPrimitive.Thumb>
     </SwitchPrimitive.Root>
   )
 }

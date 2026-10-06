@@ -170,7 +170,7 @@ export function DebtsView({
     <SettingsGroup title="Danh bạ">
       <SettingsRow
         icon={BookUserIcon}
-        color="blue"
+        tone="blue"
         title="Người liên hệ"
         value={`${contacts.length} người`}
         onClick={onOpenContacts}
@@ -207,7 +207,7 @@ export function DebtsView({
           <SettingsGroup>
             <SettingsRow
               icon={TriangleAlertIcon}
-              color="rose"
+              tone="rose"
               title={`${overdueDebts.length} khoản quá hạn`}
               description={[...new Set(overdueDebts.map((debt) => contactById.get(debt.contactId)?.name))].filter(Boolean).join(", ")}
               // Opens the one overdue the longest; the rest sit at the top of their sections.

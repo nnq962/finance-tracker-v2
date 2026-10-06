@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
 
-import { Page, PageHeader } from "@/components/page"
+import { Page } from "@/components/page"
 
 import { DesignCatalog } from "./_components/design-catalog"
 
@@ -12,8 +12,7 @@ export default function DesignPage() {
   if (process.env.NODE_ENV === "production") notFound()
 
   return (
-    <Page className="space-y-8">
-      <PageHeader title="Thiết kế" />
+    <Page>
       <DesignCatalog />
     </Page>
   )

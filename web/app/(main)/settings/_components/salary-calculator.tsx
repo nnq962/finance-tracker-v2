@@ -346,7 +346,7 @@ export function SalaryCalculator() {
             <SettingsGroup>
               <SettingsRow
                 icon={TriangleAlertIcon}
-                color="rose"
+                tone="rose"
                 title={`Vượt ${MONTHLY_OVERTIME_LIMIT} giờ tăng ca mỗi tháng`}
                 description="Mức tối đa theo Bộ luật Lao động 2019."
               />
@@ -393,7 +393,7 @@ export function SalaryCalculator() {
               <SettingsGroup>
                 <SettingsRow
                   icon={WalletIcon}
-                  color={shortfall > 0 ? "amber" : "emerald"}
+                  tone={shortfall > 0 ? "amber" : "emerald"}
                   title={shortfall > 0 ? "Còn thiếu" : "Đã đạt mục tiêu"}
                   description={`Thực nhận hiện tại ${formatCurrency(result.netIncome)}`}
                   value={shortfall > 0 ? formatCurrency(shortfall) : `+${formatCurrency(-shortfall)}`}
@@ -411,7 +411,7 @@ export function SalaryCalculator() {
                       <SettingsRow
                         key={kind}
                         icon={overLimit ? TriangleAlertIcon : icon}
-                        color={overLimit ? "rose" : undefined}
+                        tone={overLimit ? "rose" : undefined}
                         title={`${label} · ${overtimeRates[kind] * 100}%`}
                         description={
                           hours === null

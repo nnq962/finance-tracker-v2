@@ -1,6 +1,9 @@
 import type * as React from "react"
 import { ChevronRightIcon, type LucideIcon } from "lucide-react"
 
+import { IconTile, type IconTileTone } from "@/components/app/icon-tile"
+import { SwipeRow } from "@/components/app/swipe-row"
+
 import { Card } from "@/components/ui/card"
 import {
   Item,
@@ -10,7 +13,6 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item"
-import type { CategoryColorName } from "@/lib/categories/category-colors"
 import { cn } from "@/lib/utils"
 
 /**
@@ -79,8 +81,8 @@ type SettingsRowProps = {
   icon?: LucideIcon
   /** Leading content in place of the icon, e.g. an avatar. */
   media?: React.ReactNode
-  /** Kept for callers; the icon renders in the default colour. */
-  color?: CategoryColorName
+  /** The icon's tile colour: a meaning colour or a category colour; grey by default. */
+  tone?: IconTileTone
   title: React.ReactNode
   description?: React.ReactNode
   /** Summary on the right, e.g. the current choice. */
@@ -96,7 +98,11 @@ type SettingsRowProps = {
   disabled?: boolean
   /** Centered, red text for a destructive action such as signing out. */
   destructive?: boolean
+  /** An action revealed by swiping the row left, e.g. delete. */
+  swipeAction?: { label?: string; onAction: () => void }
 }
+
+const rowClassName = "min-h-16 gap-3 py-3"
 
 // Item only gives links a hover state; button rows get the same one, plus
 // the selected state of the row whose screen is shown beside the list.
@@ -104,7 +110,8 @@ const pressableRow =
   "text-left hover:bg-muted disabled:pointer-events-none disabled:opacity-50 md:data-[active=true]:bg-muted"
 
 function SettingsRow({
-  icon: Icon,
+  icon,
+  tone,
   media,
   title,
   description,
@@ -115,21 +122,21 @@ function SettingsRow({
   active = false,
   disabled = false,
   destructive = false,
+  swipeAction,
 }: SettingsRowProps) {
   const content = (
     <>
-      {Icon ? (
-        <ItemMedia variant="icon">
-          <Icon aria-hidden="true" />
+      {icon || media ? (
+        // Centred on the row, also beside a two-line title and description.
+        <ItemMedia className="group-has-data-[slot=item-description]/item:translate-y-0 group-has-data-[slot=item-description]/item:self-center">
+          {icon ? <IconTile icon={icon} tone={tone} size="sm" /> : media}
         </ItemMedia>
-      ) : media ? (
-        <ItemMedia>{media}</ItemMedia>
       ) : null}
-      <ItemContent className={cn("min-w-0", destructive && "items-center")}>
+      <ItemContent className={cn("min-w-0 gap-0.5", destructive && "items-center")}>
         <ItemTitle className={cn(destructive && "text-destructive")}>
           {title}
         </ItemTitle>
-        {description ? <ItemDescription>{description}</ItemDescription> : null}
+        {description ? <ItemDescription className="text-xs">{description}</ItemDescription> : null}
       </ItemContent>
       {value || action || (chevron && !destructive) ? (
         <ItemActions className="shrink-0">
@@ -145,23 +152,33 @@ function SettingsRow({
     </>
   )
 
+  // Every row is the same: 64 high (one line or title and description alike),
+  // a 36 tile, 16 of padding at the sides.
+  const row = onClick ? (
+    <Item asChild className={rowClassName}>
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        data-active={active}
+        aria-current={active ? "page" : undefined}
+        className={pressableRow}
+      >
+        {content}
+      </button>
+    </Item>
+  ) : (
+    <Item className={rowClassName}>{content}</Item>
+  )
+
   return (
     <li className={settingsSeparatorClassName()}>
-      {onClick ? (
-        <Item asChild>
-          <button
-            type="button"
-            onClick={onClick}
-            disabled={disabled}
-            data-active={active}
-            aria-current={active ? "page" : undefined}
-            className={pressableRow}
-          >
-            {content}
-          </button>
-        </Item>
+      {swipeAction ? (
+        <SwipeRow onAction={swipeAction.onAction} actionLabel={swipeAction.label}>
+          {row}
+        </SwipeRow>
       ) : (
-        <Item>{content}</Item>
+        row
       )}
     </li>
   )

@@ -17,6 +17,7 @@ export function InstallAppRow() {
     <>
       <SettingsRow
         icon={DownloadIcon}
+        tone="slate"
         title="Cài ứng dụng"
         description="Mở nhanh từ Màn hình chính"
         onClick={() => (isIOS ? setGuideOpen(true) : void install())}

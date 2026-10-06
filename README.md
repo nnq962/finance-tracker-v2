@@ -17,7 +17,7 @@ Firebase: chỉ dùng cho đăng nhập Google (Auth) và thông báo đẩy (FC
 | [`db/`](db/) | Schema PostgreSQL và migration — dùng chung cho web và backend | [`db/README.md`](db/README.md) |
 | [`backend/`](backend/) | Python: worker nhắc thông báo, sau này LLM | [`backend/README.md`](backend/README.md) |
 | [`deploy/`](deploy/) | Docker Compose, script deploy / backup / database dev | [`deploy/README.md`](deploy/README.md) |
-| [`docs/design/`](docs/design/) | Mockup giao diện đã duyệt và quy ước thiết kế | [`docs/design/README.md`](docs/design/README.md) |
+| [`docs/design/`](docs/design/) | Quy ước thiết kế (bản xem trực tiếp: trang `/design`) | [`docs/design/README.md`](docs/design/README.md) |
 
 ## Bắt đầu nhanh (dev)
 

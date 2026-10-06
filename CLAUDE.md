@@ -4,7 +4,7 @@
 - `db/` — PostgreSQL schema and dbmate migrations, shared by web and backend.
 - `backend/` — Python services (reminder worker; LLM later).
 - `deploy/` — Docker Compose and deploy/backup/dev-database scripts.
-- `docs/design/` — UI design mockups.
+- `docs/design/` — design system conventions (the live catalogue is `/design`).
 
 See README.md for how the parts fit together.
 

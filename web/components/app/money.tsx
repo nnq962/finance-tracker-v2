@@ -10,7 +10,7 @@ const moneyVariants = cva("inline-flex min-w-0 items-baseline font-medium tabula
       sm: "text-sm",
       md: "text-base",
       lg: "text-2xl tracking-tight",
-      xl: "text-4xl tracking-tight",
+      xl: "text-[34px] leading-tight tracking-tight",
     },
     tone: {
       default: "",
@@ -30,9 +30,9 @@ type MoneyProps = {
 } & VariantProps<typeof moneyVariants>
 
 /**
- * An amount of money as a figure rather than text: tabular digits, the sign
- * in the amount's colour, and a smaller, muted đ, so the eye reads the number
- * first.
+ * An amount of money as a figure rather than text: tabular digits and the
+ * sign in the amount's colour, with the đ written right after the digits, in
+ * the same size and colour, as Vietnamese amounts are usually written.
  */
 export function Money({ amount, sign = "auto", size, tone, className }: MoneyProps) {
   const prefix = sign === "never" ? "" : amount < 0 ? "−" : amount > 0 && sign === "always" ? "+" : ""
@@ -40,10 +40,7 @@ export function Money({ amount, sign = "auto", size, tone, className }: MoneyPro
   return (
     <span data-slot="money" className={cn(moneyVariants({ size, tone }), className)}>
       {prefix}
-      {numberFormatter.format(Math.abs(amount))}
-      <span className={cn("ml-0.5 text-[0.7em]", tone && tone !== "default" ? "opacity-55" : "text-muted-foreground")}>
-        đ
-      </span>
+      {numberFormatter.format(Math.abs(amount))}đ
     </span>
   )
 }

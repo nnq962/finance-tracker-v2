@@ -1,10 +1,12 @@
 # Hệ thống thiết kế
 
 Finance Tracker trông và cảm giác như một app iOS/Android thật. Hệ thống được chốt ngày
-2026-10-06, theo mockup "Mobile Finance Dashboard Design" mà người dùng đã duyệt và các ảnh mẫu
-trong [`docs/template/`](../template/) (bảng tin, cài đặt, form).
+2026-10-07, theo mockup "Mobile Finance Dashboard Design" (Figma Make: bảng tin và trang "Thư viện
+UI") mà người dùng đã duyệt. Mockup và ảnh mẫu không còn giữ trong repo: trang `/design` là bản
+chuẩn duy nhất.
 
-- **Xem trực tiếp:** trang `/design` (mục "Thiết kế" trong menu, chỉ có trên dev server). Ở đó
+- **Xem trực tiếp:** trang `/design` (mục "Thiết kế" trong menu, chỉ có trên dev server), dựng
+  theo trang "Thư viện UI" của mockup: 14 nhóm đánh số, hàng chip mục lục bám khi cuộn. Ở đó
   có mọi token và khối, đủ sáng lẫn tối. Đó là nguồn chuẩn: trang nào cũng ghép từ những gì
   có ở đó.
 - **Bảng màu chi tiết:** [`colors.md`](colors.md).
@@ -20,8 +22,7 @@ component ở đó là cả app đổi theo.
    viền, không bóng, tách khỏi nền nhờ chênh màu. Theme tối theo iOS: nền đen, thẻ `#1c1c1e`.
 2. **Một màu nhấn.** Gần đen (trắng ở theme tối) cho nút chính, chip đang chọn, công tắc bật,
    tiến độ.
-3. **Chữ nhẹ.** Chỉ dùng `font-normal` và `font-medium`. Ngoại lệ duy nhất là tiêu đề lớn của
-   trang (`font-semibold`).
+3. **Chữ nhẹ.** Chỉ dùng `font-normal` và `font-medium`, kể cả tiêu đề lớn của trang.
 4. **Màu mang ý nghĩa.** `income` tiền vào, `expense` tiền ra, `transfer` chuyển khoản, `ai`
    AI và Pro, `warning` nhắc nhở. Chỉ tô số tiền, icon, badge; nền nhạt dùng độ mờ
    (`bg-income/10`).
@@ -33,12 +34,12 @@ component ở đó là cả app đổi theo.
 | | Giá trị |
 |---|---|
 | Font | Be Vietnam Pro; số tiền `tabular-nums` |
-| Cỡ chữ | Số tổng 36 · Tiêu đề trang 30 · Tiêu đề section 20 · Tiêu đề thẻ 18 · Nội dung 16 · Phụ 14 · Chú thích 12 |
+| Cỡ chữ | Theo mockup: Display 28 (tiêu đề trang) · Title 20 (tiêu đề nhóm) · Headline 16 (tiêu đề thẻ, hộp thoại, trạng thái trống) · Body 14 (nội dung, dòng list, nút, nhãn ô) · Caption 12 (mô tả dòng, lỗi và ghi chú dưới ô). Số tiền lớn 34; chữ trong ô nhập 16 để iOS không phóng to |
 | Bo góc | 28 thẻ lớn, sheet, hộp thoại · 24 thẻ, nhóm danh sách · 20 thẻ nhỏ, menu · 16 ô nhập, ô icon · tròn cho nút, chip, badge, công tắc |
-| Chiều cao điều khiển | Nút 44 · ô nhập/select trong form 52, ô lẻ như thanh tìm kiếm 44 (bo 16) · segmented 40 · 36/32 chỗ chật · 48 nút cuối form |
+| Chiều cao điều khiển | Nút 44 · ô nhập/select trong form 52, ô lẻ như thanh tìm kiếm 44 (bo 16) · segmented 44 · 36/32 chỗ chật · 48 nút cuối form |
 | Khoảng cách | Lề trang 16 (24 từ md) · giữa các thẻ 16 (24 từ md) · trong thẻ 20, lg 24 |
 | Bóng | Thẻ không bóng; chỉ lớp nổi (menu, sheet, hộp thoại, tab bar, nút nổi) có bóng |
-| Chuyển động | 150–250ms ease-out; tôn trọng `prefers-reduced-motion` |
+| Chuyển động | 150–250ms ease-out; chỉ báo trượt (segmented, công tắc) nảy nhẹ ~450ms. Dùng CSS transition trên `translate`/`opacity` hoặc `motion` cho chiều cao, không dùng layout animation hay transition `grid-template-rows` (giật trên iOS Safari). Khi `prefers-reduced-motion`, rút còn 150ms ease-out, không nảy, thay vì tắt hẳn |
 
 ## Component (`components/ui`, đã may lại)
 
@@ -46,22 +47,29 @@ component ở đó là cả app đổi theo.
   `ghost`, `destructive` (đỏ nhạt), `link`. Cỡ `xs` 32 · `sm` 36 · mặc định 44 · `lg` 48;
   `icon` 44, `icon-sm` 36, `icon-xs` 32, `icon-lg` 48.
 - **Card:** `size="sm"` (bo 20, đệm 16) · mặc định (24, 20) · `size="lg"` (28, 24) cho thẻ chính
-  của trang.
+  của trang. `variant="inverse"`: thẻ đen (sáng ở theme tối) cho một con số dẫn đầu như số dư.
 - **Input, Textarea, InputGroup, Select, Combobox:** chữ 16px (để iOS không phóng to), bo 16.
-  Trong một `Field` của form cao 52; đứng riêng (thanh tìm kiếm) cao 44. `Field` đặt kích thước
+  Trong một `Field` của form cao 52; đứng riêng (thanh tìm kiếm) cao 44. Khi focus, ô chuyển
+  nền trắng (màu thẻ) và có viền đậm 2px màu nhấn; khi lỗi, viền 2px màu `destructive`. `Field` đặt kích thước
   qua biến `--control-h`, `--control-radius`, `--control-px`.
 - **Màu ô nhập theo bề mặt** (token `field`, `track` và utility `surface-grouped` / `surface-plain`
   trong `globals.css`): trên nền xám (trang, sheet) ô nhập, chip, nút phụ màu trắng; trên thẻ
   trắng chúng màu xám. Thẻ tự đặt `surface-plain`, khung trang và sheet đặt `surface-grouped`. Trong `SelectContent`, các `SelectItem` luôn nằm trong
   `SelectGroup` (kèm `SelectLabel` nếu nhóm có tên), như shadcn hướng dẫn; danh sách tài khoản
   dùng `AccountSelectGroups`.
-- **Tabs:** segmented control dạng viên thuốc, viên đang chọn màu thẻ có bóng nhẹ. Dùng cho 2–3
-  chế độ cùng loại (Chi/Thu/Chuyển).
+- **Tabs:** segmented control dạng viên thuốc, viên đen (trắng ở theme tối) trượt tới lựa chọn
+  (motion). Dùng cho 2–4 chế độ cùng loại (Chi/Thu/Chuyển). `variant="line"`: tab gạch chân,
+  vạch trượt theo.
 - **ToggleGroup / Toggle:** chip viên thuốc xám, chip đang chọn màu đen; `variant="outline"` là
   chip trắng có viền. Dùng cho bộ lọc, gợi ý, chọn icon/màu.
-- **Switch:** cỡ iOS 51×31.
+- **Switch:** cỡ iOS 51×31, núm có dấu ✓ khi bật.
+- **Checkbox:** ô 24, đen có ✓ khi chọn; `shape="circle"` cho danh sách chọn nhiều kiểu iOS.
+  **RadioGroup:** vòng 24, đen với chấm sáng khi chọn.
+- **Slider:** rãnh dày 8, núm trắng; hai giá trị là khoảng; `formatValue` hiện bong bóng giá trị
+  khi kéo.
+- **Accordion:** dòng câu hỏi cao từ 56, nút + xoay thành × khi mở.
 - **Badge:** viên thuốc cao 24; kiểu màu ý nghĩa `income`, `expense`, `transfer`, `ai`,
-  `warning`.
+  `warning`; `count` là số đỏ đặc trên icon (chưa đọc, đang chờ).
 - **Sheet:**
   - `variant="screen"`: một màn hình đẩy từ phải, phủ cả điện thoại, có safe-area, nền xám như
     trang; panel 28rem trên desktop. Dùng cho form và màn chi tiết, kèm `SheetNavHeader` (nút
@@ -71,6 +79,11 @@ component ở đó là cả app đổi theo.
 - **Status bar:** màu cố định bằng màu nền trang (`components/pwa-theme-color.tsx`). Web không
   đổi được màu status bar mượt theo chuyển động, nên mọi lớp phủ phủ tới đầu màn hình (sheet
   `screen`) dùng chung nền xám với trang thay vì đổi màu.
+- **Toast (Sonner, `components/ui/sonner.tsx`):** như mockup, kiểu banner iOS chứ không phải
+  thông báo web: viên thuốc đen (trắng ở theme tối) rộng vừa chữ, giữa phía trên, ô tròn màu
+  theo trạng thái (thành công `income`, lỗi `destructive`, cảnh báo `warning`, thông tin
+  `transfer`) chứa glyph trắng, bóng mềm; nút Hoàn tác là viên nhỏ trong toast. Sonner vẫn lo
+  xếp chồng, vuốt để đóng, hẹn giờ.
 - **Dialog, AlertDialog:** bo 28. Chỉ để xác nhận hoặc nhập rất ngắn; nút huỷ màu xám.
 - **DropdownMenu, Select, Combobox (danh sách):** bo 20, dòng cao 40.
 - **Progress:** thanh mảnh 6px. **Empty:** icon trong vòng tròn xám.
@@ -80,8 +93,8 @@ component ở đó là cả app đổi theo.
 | Khối | Dùng khi |
 |---|---|
 | `SectionHeader` | Tiêu đề section ngoài thẻ (20px, đậm vừa), kèm ghi chú và "Xem tất cả" |
-| `Money` | Mọi số tiền: chữ số đều, "đ" nhỏ và nhạt; cỡ `sm`/`md`/`lg`/`xl`, màu theo `tone` |
-| `IconTile` | Icon trên ô màu nhạt ở đầu dòng; màu hạng mục hoặc màu ý nghĩa |
+| `Money` | Mọi số tiền: chữ số đều, "đ" viết liền sau số, cùng cỡ và màu (55.103.000đ); cỡ `sm`/`md`/`lg`/`xl`, màu theo `tone` |
+| `IconTile` | Icon trên ô vuông bo góc nền nhạt (như mockup); màu hạng mục hoặc màu ý nghĩa. Cỡ `sm` 36 (mọi dòng list, qua `SettingsRow`), `md` 40, `lg` 48 (đầu thẻ, đầu sheet); `shape="circle"` chỉ cho chữ cái, khuôn mặt |
 | `DeltaBadge` | % thay đổi so với kỳ trước; xanh khi tốt, đỏ khi xấu |
 | `StatGroup` + `Stat` | 2–4 chỉ số chia cột bằng vạch mảnh, mỗi cột có thể mở trang |
 | `ProgressRing` | Tiến độ dạng vòng mảnh có số ở giữa |
@@ -89,11 +102,28 @@ component ở đó là cả app đổi theo.
 | `PromoBanner` | Banner đen (sáng ở theme tối) cho một điều đáng chú ý, như gói Pro |
 | `FloatingActions` | Nút hành động chính nổi trên thanh tab, trên điện thoại |
 | `CompactTitleBar` | Tiêu đề thu nhỏ khi tiêu đề lớn cuộn đi; tự gắn trong `PageHeader` |
+| `InlineSelect` | Dropdown mở tại chỗ, đẩy nội dung bên dưới xuống: chọn trong vài tài khoản, ví. Hiệu ứng chiều cao đơn giản (300ms ease-out); trên iOS kém mượt hơn transform, đã chấp nhận. Danh sách dài vẫn dùng `Select`/`Combobox` |
+| `Chip` | Chip tĩnh cho thứ đã chọn hoặc gắn kèm (người, thẻ #): có thể có avatar và nút × |
+| `Stepper` | Đếm từng bước bằng − / + (số người, số tháng) |
+| `OtpInput` | Mã một lần trong các ô riêng; tự nhảy ô, dán được cả mã |
+| `WheelPicker` + `WheelPickerGroup` | Bánh xe cuộn kiểu iOS để chọn giờ, phút |
+| `DateStrip` | Một tuần ngày nằm ngang để chọn một ngày; chấm đánh dấu ngày có việc |
+| `RulerSlider` | Thước vạch kéo để chọn giá trị, kim màu `warning` |
+| `Rating` | Sao 1–5 |
+| `SegmentedProgress` | Tiến độ chia đoạn: các bước của một luồng, độ mạnh mật khẩu |
+| `Steps` | Các bước có tên nối bằng đường kẻ: xong có ✓, đang làm có viền |
+| `PageDots` | Chỉ báo trang; chấm hiện tại kéo dài thành vạch |
+| `Carousel` | Thẻ vuốt ngang, bắt từng thẻ, kèm `PageDots` |
+| `SwipeRow` | Vuốt trái để lộ một hành động (mặc định Xoá); dùng qua `SettingsRow swipeAction` để dòng vuốt giống mọi dòng khác |
+| `ActionSheet` | Danh sách lựa chọn ngắn trồi từ đáy, Huỷ tách riêng bên dưới (vaul) |
+| `NoticeBanner` | Thông báo trong trang trên nền nhạt theo `tone`, đóng được |
 
 Danh sách nằm ở `components/settings-list.tsx`. `SettingsGroup` là nhóm dòng trong một thẻ
-(`size="lg"` cho trang dạng bảng tin). `SettingsRow` là một dòng: `media` (thường là
-`IconTile`), tiêu đề, mô tả, giá trị, công tắc hoặc mũi tên. Khung app gồm thanh tab dưới nổi
-(`components/mobile-bottom-nav.tsx`) và `Page` / `PageHeader` (`components/page.tsx`).
+(`size="lg"` cho trang dạng bảng tin). `SettingsRow` là **mọi** dòng list (cài đặt, giao dịch, nhiệm vụ…), nên các list đồng nhất: cao 64
+(một dòng hay tiêu đề + mô tả đều vậy), lề ngang 16, `icon` tự đặt trong `IconTile` cỡ `sm` (36,
+bo 12) màu theo `tone` (xám nếu không truyền), tiêu đề 14, mô tả 12, rồi giá trị, công tắc, số
+tiền hoặc mũi tên ở bên phải. `media` chỉ cho avatar. `swipeAction` cho dòng vuốt để xoá. Dòng ở
+trang Cài đặt mỗi mục một `tone`, như mockup.
 
 Utility `pressable` (trong `globals.css`) cho phản hồi chạm của thẻ và ô bấm được không phải
 `Button`.

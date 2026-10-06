@@ -388,7 +388,7 @@ export function CategoryManagementSheet({
                               <SettingsRow
                                 key={item.id}
                                 icon={categoryIconRegistry[item.iconName]}
-                                color={group.colorName}
+                                tone={group.colorName}
                                 title={item.name}
                                 onClick={() => openItemEditor(group, item)}
                               />
