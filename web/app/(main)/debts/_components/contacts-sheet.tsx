@@ -37,7 +37,7 @@ export function ContactsSheet({ open, onOpenChange, contacts, debts, onAdd, onEd
       <SheetContent
         showCloseButton={false}
         aria-describedby={undefined}
-        className="gap-0 data-[side=right]:w-full sm:max-w-md!"
+        variant="screen"
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
         <SheetNavHeader title="Danh bạ" />

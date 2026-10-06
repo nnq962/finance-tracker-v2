@@ -89,7 +89,7 @@ export function AdminCoupons({ coupons }: { coupons: AdminCoupon[] }) {
         <SheetContent
           showCloseButton={false}
           aria-describedby={undefined}
-          className="gap-0 data-[side=right]:w-full sm:max-w-md!"
+          variant="screen"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
           <SheetNavHeader title={coupon ? `Mã ${coupon.code}` : "Tạo mã giảm giá"} />

@@ -177,7 +177,7 @@ export function AddDebtSheet({
         </Button>}
       </SheetTrigger> : null}
       <SheetContent
-        className="gap-0 data-[side=right]:w-full sm:max-w-md!"
+        variant="screen"
         showCloseButton={false}
         aria-describedby={undefined}
         onOpenAutoFocus={(event) => event.preventDefault()}

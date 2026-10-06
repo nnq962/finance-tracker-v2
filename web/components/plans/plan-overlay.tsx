@@ -37,7 +37,7 @@ export function PlanOverlay({ open, onOpenChange, planState, checkoutEnabled, pa
         <SheetContent
           showCloseButton={false}
           aria-describedby={undefined}
-          className="gap-0 data-[side=right]:w-full sm:max-w-md!"
+          variant="screen"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
           <SheetNavHeader backLabel={backLabel} title={title} />

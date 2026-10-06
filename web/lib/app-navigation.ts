@@ -2,6 +2,7 @@ import {
   ArrowLeftRightIcon,
   HandCoinsIcon,
   LayoutDashboardIcon,
+  SwatchBookIcon,
   WalletCardsIcon,
   type LucideIcon,
 } from "lucide-react"
@@ -39,3 +40,12 @@ export const appNavigationItems: AppNavigationItem[] = [
     icon: HandCoinsIcon,
   },
 ]
+
+/**
+ * The design system's catalogue: in the menus on the dev server only, so the
+ * look can be checked on a phone; production builds leave it out.
+ */
+export const designNavigationItems: AppNavigationItem[] =
+  process.env.NODE_ENV === "production"
+    ? []
+    : [{ title: "Thiết kế", mobileTitle: "Thiết kế", url: "/design", icon: SwatchBookIcon }]

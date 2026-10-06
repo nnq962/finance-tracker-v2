@@ -14,7 +14,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - Finance Tracker là PWA dùng chủ yếu trên điện thoại. Mục tiêu là người dùng cảm thấy đang dùng một app iOS/Android thật, không phải một trang web. Thiết kế cho điện thoại trước (khung 390px); desktop là bản mở rộng, không phải bản gốc.
 - Hình dung theo ngôn ngữ của app native: tiêu đề lớn thu gọn khi cuộn, list chia nhóm với tiêu đề nhóm bám khi cuộn, dòng list cao và dễ chạm, segmented control và chip thay cho form lọc, bottom sheet thay cho dialog, thanh tab dưới, nút chính trong tầm ngón cái, chuyển cảnh và cử chỉ (vuốt, kéo sheet), phản hồi khi chạm (`active:`) thay cho hover. Tránh bố cục kiểu trang web: card lồng card, khung viền bao mọi thứ, bảng dày đặc, hover làm tín hiệu chính.
-- Chưa có design system cố định. Nguồn chuẩn là các mockup người dùng đã duyệt (lưu trong `docs/design/`). Khi một hướng thiết kế được duyệt, ghi lại token, kiểu chữ và quy ước của nó vào `docs/design/` để các trang sau dùng chung.
+- Design system đã chốt (2026-10-06) trong `docs/design/README.md`. Nguồn chuẩn để nhìn là trang `/design` (catalog, chỉ có trên dev server): mọi token, component và khối đều có mặt ở đó, đủ sáng lẫn tối. Trang nào cũng ghép từ những gì có trong catalog.
+- Thêm khối mới vào `components/app` hoặc thêm biến thể mới thì đồng thời thêm mẫu của nó vào `/design` (`app/(main)/design/_components/design-catalog.tsx`) và ghi vào `docs/design/README.md`.
 
 ### Không bị bó bởi shadcn
 

@@ -48,7 +48,7 @@ export function AddContactSheet({ contact, onAddContact, open: controlledOpen, o
           {contact ? <PencilIcon /> : <><PlusIcon />Thêm người</>}
         </Button>
       </SheetTrigger> : null}
-      <SheetContent showCloseButton={false} aria-describedby={undefined} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!" onCloseAutoFocus={(event) => {
+      <SheetContent showCloseButton={false} aria-describedby={undefined} onOpenAutoFocus={(event) => event.preventDefault()} variant="screen" onCloseAutoFocus={(event) => {
         if (returnFocusRef?.current) {
           event.preventDefault()
           returnFocusRef.current.focus()

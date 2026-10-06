@@ -15,6 +15,7 @@ const routeLabels: Record<string, string> = {
   "/budget": "Ngân sách",
   "/debts": "Nợ & Cho vay",
   "/settings": "Cài đặt",
+  "/design": "Thiết kế",
 }
 
 export function MainBreadcrumb() {

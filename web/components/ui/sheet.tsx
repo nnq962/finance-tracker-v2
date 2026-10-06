@@ -45,39 +45,63 @@ function SheetOverlay({
   )
 }
 
+// Where a sheet comes from and how it is shaped:
+// - screen: a whole screen pushed in from the right on phones, as a native
+//   app opens a detail or form; a 28rem panel from sm up.
+// - bottom: a card rising from the bottom with rounded top corners and a
+//   grabber, for short choices and confirmations; on the page's grey, so
+//   the white groups of rows inside stand out.
+// - default: shadcn's side panel, for the desktop sidebar.
+const sheetContentClassName =
+  "fixed z-50 flex flex-col bg-popover bg-clip-padding text-sm text-popover-foreground shadow-xl transition duration-200 ease-out data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=left]:sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-[side=bottom]:data-open:slide-in-from-bottom-10 data-[side=left]:data-open:slide-in-from-left-10 data-[side=right]:data-open:slide-in-from-right-10 data-[side=top]:data-open:slide-in-from-top-10 data-closed:animate-out data-closed:fade-out-0 data-[side=bottom]:data-closed:slide-out-to-bottom-10 data-[side=left]:data-closed:slide-out-to-left-10 data-[side=right]:data-closed:slide-out-to-right-10 data-[side=top]:data-closed:slide-out-to-top-10"
+
+const sheetVariantClassName = {
+  default: "data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=right]:sm:max-w-sm data-[side=bottom]:border-t",
+  screen:
+    "gap-0 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] data-[side=right]:w-full data-[side=right]:sm:max-w-md data-[side=right]:sm:border-l",
+  bottom:
+    "max-h-[92dvh] rounded-t-[28px] bg-background pb-[env(safe-area-inset-bottom,0px)] data-[side=bottom]:mx-auto data-[side=bottom]:max-w-lg",
+} as const
+
 function SheetContent({
   className,
   children,
-  side = "right",
+  side,
+  variant = "default",
   showCloseButton = true,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: "top" | "right" | "bottom" | "left"
+  variant?: keyof typeof sheetVariantClassName
   showCloseButton?: boolean
 }) {
+  const resolvedSide = side ?? (variant === "bottom" ? "bottom" : "right")
+
   return (
     <SheetPortal>
       <SheetOverlay />
       <SheetPrimitive.Content
         data-slot="sheet-content"
-        data-side={side}
-        className={cn(
-          "fixed z-50 flex flex-col bg-popover bg-clip-padding text-sm text-popover-foreground shadow-xl transition duration-200 ease-in-out data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-[side=bottom]:data-open:slide-in-from-bottom-10 data-[side=left]:data-open:slide-in-from-left-10 data-[side=right]:data-open:slide-in-from-right-10 data-[side=top]:data-open:slide-in-from-top-10 data-closed:animate-out data-closed:fade-out-0 data-[side=bottom]:data-closed:slide-out-to-bottom-10 data-[side=left]:data-closed:slide-out-to-left-10 data-[side=right]:data-closed:slide-out-to-right-10 data-[side=top]:data-closed:slide-out-to-top-10",
-          className
-        )}
+        data-side={resolvedSide}
+        data-variant={variant}
+        className={cn(sheetContentClassName, sheetVariantClassName[variant], className)}
         {...props}
       >
+        {variant === "bottom" ? (
+          // The grabber: a cue that the sheet sits over the page.
+          <span aria-hidden="true" className="mx-auto mt-2 h-1 w-9 shrink-0 rounded-full bg-muted-foreground/30" />
+        ) : null}
         {children}
         {showCloseButton && (
           <SheetPrimitive.Close data-slot="sheet-close" asChild>
             <Button
-              variant="ghost"
-              className="absolute top-4 right-4 bg-secondary"
+              variant="secondary"
+              className="absolute top-4 right-4"
               size="icon-sm"
             >
               <XIcon
               />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">Đóng</span>
             </Button>
           </SheetPrimitive.Close>
         )}
@@ -114,7 +138,7 @@ function SheetTitle({
     <SheetPrimitive.Title
       data-slot="sheet-title"
       className={cn(
-        "font-heading text-base font-medium text-foreground",
+        "font-heading text-[17px] font-medium text-foreground",
         className
       )}
       {...props}

@@ -5,6 +5,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { Money } from "@/components/app/money"
+import { Stat, StatGroup } from "@/components/app/stat-group"
 import { SettingsGroup } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Button } from "@/components/ui/button"
@@ -112,8 +113,7 @@ export function CashFlowCalendar({
           <Button
             type="button"
             variant="secondary"
-            size="icon-xl"
-            shape="pill"
+            size="icon"
             aria-label="Tháng trước"
             disabled={month <= minMonth}
             onClick={() => onMonthChange(shiftMonth(month, -1))}
@@ -123,8 +123,7 @@ export function CashFlowCalendar({
           <Button
             type="button"
             variant="secondary"
-            size="icon-xl"
-            shape="pill"
+            size="icon"
             aria-label="Tháng sau"
             disabled={month >= maxMonth}
             onClick={() => onMonthChange(shiftMonth(month, 1))}
@@ -198,22 +197,16 @@ export function CashFlowCalendar({
           })}
         </div>
 
-        <div className="grid grid-cols-2 divide-x border-t pt-5">
-          <div className="min-w-0">
-            <Money amount={monthIncome} size="md" weight="medium" tone="income" />
-            <p className="text-xs text-muted-foreground">Thu trong tháng</p>
-          </div>
-          <div className="min-w-0 pl-4">
-            <Money amount={monthExpense} size="md" weight="medium" tone="expense" />
-            <p className="text-xs text-muted-foreground">Chi trong tháng</p>
-          </div>
-        </div>
+        <StatGroup className="border-t pt-5">
+          <Stat value={<Money amount={monthIncome} tone="income" />} label="Thu trong tháng" />
+          <Stat value={<Money amount={monthExpense} tone="expense" />} label="Chi trong tháng" />
+        </StatGroup>
 
         <Sheet open={openTotals !== undefined} onOpenChange={(open) => { if (!open) setOpenDay(null) }}>
           <SheetContent
             showCloseButton={false}
             aria-describedby={undefined}
-            className="gap-0 data-[side=right]:w-full sm:max-w-md!"
+            variant="screen"
             onOpenAutoFocus={(event) => event.preventDefault()}
           >
             <SheetNavHeader title={sheetTitle} />
@@ -222,11 +215,11 @@ export function CashFlowCalendar({
                 <div className="grid grid-cols-2 gap-4 px-3 text-sm">
                   <div>
                     <p className="text-xs text-muted-foreground">Đã thu</p>
-                    <Money amount={openTotals.income} size="lg" weight="medium" tone="income" />
+                    <Money amount={openTotals.income} size="lg" tone="income" />
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Đã chi</p>
-                    <Money amount={openTotals.expense} size="lg" weight="medium" tone="expense" />
+                    <Money amount={openTotals.expense} size="lg" tone="expense" />
                   </div>
                 </div>
                 {dayItems && dayItems.length === 0 ? (

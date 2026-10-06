@@ -22,6 +22,7 @@ import { AddContactSheet } from "@/app/(main)/debts/_components/add-contact-shee
 import { AddDebtSheet } from "@/app/(main)/debts/_components/add-debt-sheet"
 import { createContactAction, createDebtAction } from "@/app/(main)/debts/actions"
 import { IconTile } from "@/components/app/icon-tile"
+import { ProgressRing } from "@/components/app/progress-ring"
 import { CategoryManagementSheet } from "@/components/categories/category-management-sheet"
 import { IosInstallDialog, usePwaInstall } from "@/components/pwa-install-button"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
@@ -63,40 +64,6 @@ type OpenSheet = "account" | "transaction" | "transfer" | "contact" | "debt" | "
 function unwrap<T>(result: { success: true; data: T } | { success: false; error: string }) {
   if (!result.success) throw new Error(result.error)
   return result.data
-}
-
-/** Claimed missions as a thin ring around the count. */
-function MissionRing({ done, total }: { done: number; total: number }) {
-  // The circle's length for r=16, so the dash is the share done.
-  const length = 2 * Math.PI * 16
-
-  return (
-    <div
-      role="img"
-      aria-label={`Đã xong ${done} trên ${total} nhiệm vụ`}
-      className="relative size-28 shrink-0"
-    >
-      <svg viewBox="0 0 36 36" aria-hidden="true" className="size-full -rotate-90">
-        <circle cx="18" cy="18" r="16" fill="none" strokeWidth="0.8" className="stroke-muted" />
-        <circle
-          cx="18"
-          cy="18"
-          r="16"
-          fill="none"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          strokeDasharray={`${(done / total) * length} ${length}`}
-          className="stroke-primary motion-safe:transition-[stroke-dasharray] motion-safe:duration-500"
-        />
-      </svg>
-      <div aria-hidden="true" className="absolute inset-0 grid place-content-center text-center">
-        <p className="text-2xl font-medium tabular-nums">
-          {done}/{total}
-        </p>
-        <p className="text-[10px] text-muted-foreground">đã xong</p>
-      </div>
-    </div>
-  )
 }
 
 /**
@@ -259,8 +226,6 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
               {remaining.length > 0 ? (
                 <Button
                   type="button"
-                  size="xl"
-                  shape="pill"
                   className="mt-4"
                   aria-expanded={expanded}
                   onClick={() => setExpanded((open) => !open)}
@@ -274,7 +239,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
                 </Button>
               ) : null}
             </div>
-            <MissionRing done={claimedCount} total={missions.length} />
+            <ProgressRing value={claimedCount} max={missions.length} label="đã xong" />
           </div>
         }
       >
@@ -289,7 +254,6 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
                 <Button
                   type="button"
                   size="sm"
-                  shape="pill"
                   disabled={claiming !== null}
                   onClick={() => void claim(mission)}
                 >

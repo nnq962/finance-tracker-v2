@@ -101,7 +101,7 @@ export function AdminScreen({ data }: { data: AdminData }) {
         <SheetContent
           showCloseButton={false}
           aria-describedby={undefined}
-          className="gap-0 data-[side=right]:w-full sm:max-w-md!"
+          variant="screen"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
           {selected ? (

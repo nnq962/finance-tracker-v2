@@ -98,7 +98,7 @@ export function TransactionDetailsSheet({
   }
 
   return (
-    <SheetContent showCloseButton={false} aria-describedby={undefined} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
+    <SheetContent showCloseButton={false} aria-describedby={undefined} onOpenAutoFocus={(event) => event.preventDefault()} variant="screen">
       <SheetNavHeader title="Chi tiết giao dịch" />
 
       <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-px pb-4">

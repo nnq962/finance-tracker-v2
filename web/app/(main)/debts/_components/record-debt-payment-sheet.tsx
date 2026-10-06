@@ -68,7 +68,7 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
   return (
     <Sheet open={open} onOpenChange={changeOpen}>
       {typeof trigger === "function" ? trigger(() => changeOpen(true)) : <SheetTrigger asChild>{trigger}</SheetTrigger>}
-      <SheetContent showCloseButton={false} aria-describedby={undefined} className="gap-0 data-[side=right]:w-full sm:max-w-md!" onOpenAutoFocus={(event) => event.preventDefault()} onCloseAutoFocus={(event) => {
+      <SheetContent showCloseButton={false} aria-describedby={undefined} variant="screen" onOpenAutoFocus={(event) => event.preventDefault()} onCloseAutoFocus={(event) => {
         if (returnFocusRef?.current) {
           event.preventDefault()
           returnFocusRef.current.focus()

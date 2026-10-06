@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
+  type CSSProperties,
   type MouseEvent,
   useEffect,
   useRef,
@@ -12,11 +13,12 @@ import {
 import { cn } from "cn"
 import { SettingsIcon } from "lucide-react"
 
-import { appNavigationItems } from "@/lib/app-navigation"
+import { appNavigationItems, designNavigationItems } from "@/lib/app-navigation"
 
 const mobileNavigationItems = [
   ...appNavigationItems,
   { title: "Cài đặt", mobileTitle: "Cài đặt", url: "/settings", icon: SettingsIcon },
+  ...designNavigationItems,
 ]
 
 export function MobileBottomNav() {
@@ -142,15 +144,22 @@ export function MobileBottomNav() {
       aria-label="Điều hướng chính trên di động"
       className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:hidden"
     >
-      <ul className="pointer-events-auto relative mx-auto grid max-w-md grid-cols-5 rounded-full bg-card/80 p-1 shadow-lg ring-1 ring-foreground/5 backdrop-blur-xl backdrop-saturate-150 dark:ring-foreground/10">
+      <ul
+        style={{ gridTemplateColumns: `repeat(${mobileNavigationItems.length}, minmax(0, 1fr))` }}
+        className="pointer-events-auto relative mx-auto grid max-w-md rounded-full bg-card/80 p-1 shadow-lg ring-1 ring-foreground/5 backdrop-blur-xl backdrop-saturate-150 dark:ring-foreground/10">
         {/* The pill behind the current tab slides from tab to tab. */}
         <li
           aria-hidden="true"
           className={cn(
-            "absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/5)] rounded-full bg-muted transition-[translate,opacity] duration-300 ease-out motion-reduce:transition-none",
+            "absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/var(--tab-count))] rounded-full bg-muted transition-[translate,opacity] duration-300 ease-out motion-reduce:transition-none",
             activeIndex < 0 && "opacity-0",
           )}
-          style={{ translate: `${Math.max(activeIndex, 0) * 100}% 0` }}
+          style={
+            {
+              "--tab-count": mobileNavigationItems.length,
+              translate: `${Math.max(activeIndex, 0) * 100}% 0`,
+            } as CSSProperties
+          }
         />
         {mobileNavigationItems.map((item) => {
           const isActive = activePathname === item.url

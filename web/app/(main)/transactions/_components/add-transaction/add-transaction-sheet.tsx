@@ -59,7 +59,7 @@ export function AddTransactionSheet({
             </Button>
           </SheetTrigger>
         ) : null}
-        <SheetContent showCloseButton={false} aria-describedby={undefined} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
+        <SheetContent showCloseButton={false} aria-describedby={undefined} onOpenAutoFocus={(event) => event.preventDefault()} variant="screen">
           <SheetNavHeader title="Giao dịch mới" />
           {hasAccount ? (
             <>

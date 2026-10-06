@@ -194,7 +194,7 @@ export function AllocationDonut({ categoryGroups, allocation, month }: Allocatio
                   </div>
                 </div>
                 <div className="w-28 shrink-0 border-l pl-3 text-right">
-                  <Money amount={slice.amount} size="sm" weight="medium" />
+                  <Money amount={slice.amount} size="sm" />
                   <p className="text-[11px] text-muted-foreground">
                     {slice.share}% tổng {typeLabel}
                   </p>

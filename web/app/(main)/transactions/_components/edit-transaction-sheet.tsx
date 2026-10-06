@@ -45,7 +45,7 @@ export function EditTransactionSheet({
         onOpenChange(nextOpen)
       }}
     >
-      <SheetContent showCloseButton={false} aria-describedby={undefined} onOpenAutoFocus={(event) => event.preventDefault()} className="gap-0 data-[side=right]:w-full sm:max-w-md!">
+      <SheetContent showCloseButton={false} aria-describedby={undefined} onOpenAutoFocus={(event) => event.preventDefault()} variant="screen">
         <SheetNavHeader title="Chỉnh sửa giao dịch" />
         <div className="px-4 pb-4">
           <TransactionKindSelector value={kind} onValueChange={setKind} />

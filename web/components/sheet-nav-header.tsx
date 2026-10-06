@@ -45,7 +45,7 @@ export function SheetNavHeader({
   )
 
   return (
-    <SheetHeader className="relative">
+    <SheetHeader className="relative min-h-14 justify-center px-4 py-2">
       <div className="absolute top-1/2 left-2 -translate-y-1/2">
         {onBack ? back : <SheetClose asChild>{back}</SheetClose>}
       </div>

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 
 import { Money } from "@/components/app/money"
 import { SectionHeader } from "@/components/app/section-header"
+import { Stat, StatGroup } from "@/components/app/stat-group"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
@@ -15,32 +16,6 @@ import { cn } from "@/lib/utils"
 import { CashFlowChart } from "./overview-charts"
 
 const overdueClassName = "text-expense"
-
-type NetWorthPartProps = {
-  label: string
-  value: number
-  onClick: () => void
-}
-
-/**
- * One of the amounts behind the total, opening its page. Three share the
- * card's width, so the amount is shortened; the full one is in the tooltip
- * and the accessible name.
- */
-function NetWorthPart({ label, value, onClick }: NetWorthPartProps) {
-  return (
-    <button
-      type="button"
-      title={formatCurrency(value)}
-      aria-label={`${label}: ${formatCurrency(value)}`}
-      onClick={onClick}
-      className="pressable flex min-h-11 min-w-0 flex-col justify-center text-left outline-none not-first:pl-4 focus-visible:ring-3 focus-visible:ring-ring/30"
-    >
-      <span className="truncate font-medium tabular-nums">{formatCompactCurrency(value, 1)}</span>
-      <span className="truncate text-xs text-muted-foreground">{label}</span>
-    </button>
-  )
-}
 
 export function NetWorth({
   data,
@@ -63,7 +38,7 @@ export function NetWorth({
         <Money
           amount={data.total}
           size="xl"
-          weight="medium"
+         
           tone={data.total < 0 ? "expense" : "default"}
           className="mt-1"
         />
@@ -81,11 +56,25 @@ export function NetWorth({
             <span className="ml-1.5 text-muted-foreground">thu chi tháng này</span>
           </p>
         ) : null}
-        <div className="mt-5 grid grid-cols-3 divide-x">
-          <NetWorthPart label="Tài khoản" value={data.cash} onClick={() => router.push("/budget")} />
-          <NetWorthPart label="Cho vay" value={data.receivable} onClick={() => router.push("/debts")} />
-          <NetWorthPart label="Đang nợ" value={data.payable} onClick={() => router.push("/debts")} />
-        </div>
+        {/* Three share the card's width, so the amounts are shortened; the
+            full ones are in the tooltip and the accessible name. */}
+        <StatGroup className="mt-5">
+          {(
+            [
+              ["Tài khoản", data.cash, "/budget"],
+              ["Cho vay", data.receivable, "/debts"],
+              ["Đang nợ", data.payable, "/debts"],
+            ] as const
+          ).map(([label, value, href]) => (
+            <Stat
+              key={label}
+              label={label}
+              value={formatCompactCurrency(value, 1)}
+              title={formatCurrency(value)}
+              onClick={() => router.push(href)}
+            />
+          ))}
+        </StatGroup>
       </CardContent>
     </Card>
   )
@@ -163,7 +152,7 @@ export function DueDebts({ debts }: { debts: OverviewSummary["dueDebts"] }) {
             chevron={false}
             action={
               <span className="flex flex-col items-end">
-                <Money amount={debt.remainingAmount} size="sm" weight="medium" />
+                <Money amount={debt.remainingAmount} size="sm" />
                 <span
                   className={cn(
                     "text-xs text-muted-foreground",

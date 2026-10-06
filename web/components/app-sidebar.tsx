@@ -16,7 +16,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { appNavigationItems } from "@/lib/app-navigation"
+import { appNavigationItems, designNavigationItems } from "@/lib/app-navigation"
 
 const navMain = [
   ...appNavigationItems.map(({ title, url, icon: Icon }) => ({
@@ -29,6 +29,11 @@ const navMain = [
     url: "/settings",
     icon: <SettingsIcon />,
   },
+  ...designNavigationItems.map(({ title, url, icon: Icon }) => ({
+    title,
+    url,
+    icon: <Icon />,
+  })),
 ]
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {

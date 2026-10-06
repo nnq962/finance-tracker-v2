@@ -78,7 +78,7 @@ export function AccountSheet({ account, share, transactions, categoryGroups, onO
         <SheetContent
           showCloseButton={false}
           aria-describedby={undefined}
-          className="gap-0 data-[side=right]:w-full sm:max-w-md!"
+          variant="screen"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
           <SheetNavHeader title={shown.name} />

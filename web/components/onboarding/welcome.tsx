@@ -100,7 +100,7 @@ export function WelcomeProvider({
         <SheetContent
           showCloseButton={false}
           aria-describedby={undefined}
-          className="gap-0 data-[side=right]:w-full sm:max-w-md!"
+          variant="screen"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
           <div className="flex justify-end p-4">
