@@ -100,4 +100,7 @@ Utility `pressable` (trong `globals.css`) cho phản hồi chạm của thẻ v�
   xám nhỏ ở đầu rồi con số chính; thẻ cách nhau 16px.
 - **Trang danh sách** (Giao dịch, Ngân sách, Cài đặt): tiêu đề lớn, thẻ tóm tắt, rồi các
   `SettingsGroup` có tiêu đề nhóm.
-- **Form:** sheet `screen` với `SheetNavHeader`, các `Field` xếp dọc, nút `lg` rộng hết ở cuối.
+- **Form:** sheet `screen` nền xám với `SheetNavHeader`; các trường gom trong `FormSection`
+  (thẻ trắng, ô nhập xám bên trong), dòng chọn và công tắc trong `SettingsGroup`; một nút `lg`
+  rộng hết ở cuối. Không đặt ô nhập, chip hay nút phụ thẳng trên nền xám: chúng sẽ thành trắng
+  trên xám, không hợp. Nút quay lại ở đầu sheet là cách huỷ, không cần nút "Huỷ".

@@ -610,12 +610,9 @@ export function DesignCatalog() {
                       <Textarea aria-label="Ghi chú" placeholder="Thêm ghi chú" />
                     </FormSection>
                   </div>
-                  <div className="flex gap-2 p-4">
-                    <Button variant="secondary" size="lg" className="flex-1">
-                      Huỷ
-                    </Button>
-                    <Button size="lg" className="flex-1">
-                      Lưu
+                  <div className="p-4">
+                    <Button size="lg" className="w-full">
+                      Lưu giao dịch
                     </Button>
                   </div>
                 </SheetContent>
