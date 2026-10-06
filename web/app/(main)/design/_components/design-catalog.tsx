@@ -634,7 +634,7 @@ export function DesignCatalog() {
                 </SheetContent>
               </Sheet>
 
-              <Drawer>
+              <Drawer variant="page">
                 <DrawerTrigger asChild>
                   <Button>Sheet iOS · form</Button>
                 </DrawerTrigger>
@@ -702,7 +702,7 @@ export function DesignCatalog() {
                 </DrawerContent>
               </Drawer>
 
-              <Drawer>
+              <Drawer variant="page">
                 <DrawerTrigger asChild>
                   <Button>Sheet iOS · chi tiết</Button>
                 </DrawerTrigger>

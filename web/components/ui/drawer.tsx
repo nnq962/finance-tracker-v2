@@ -6,9 +6,25 @@ import { Drawer as DrawerPrimitive } from "vaul"
 
 
 function Drawer({
+  variant = "default",
   ...props
-}: React.ComponentProps<typeof DrawerPrimitive.Root>) {
-  return <DrawerPrimitive.Root data-slot="drawer" {...props} />
+}: React.ComponentProps<typeof DrawerPrimitive.Root> & {
+  /**
+   * page: for DrawerContent variant="page". Nearly as tall as the screen, it
+   * leaves the keyboard to the browser, which scrolls the focused field into
+   * view as smoothly as in a Sheet; vaul's own repositioning and its styles
+   * on <body> made the sheet jump while the keyboard opened. Scrolling
+   * behind stays locked by the dialog underneath.
+   */
+  variant?: "default" | "page"
+}) {
+  return (
+    <DrawerPrimitive.Root
+      data-slot="drawer"
+      {...(variant === "page" ? { repositionInputs: false, noBodyStyles: true } : {})}
+      {...props}
+    />
+  )
 }
 
 function DrawerTrigger({
