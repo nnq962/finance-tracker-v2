@@ -1,14 +1,16 @@
 "use client"
 
 import * as React from "react"
+import { BookUserIcon, PlusIcon } from "lucide-react"
+
 import { Page, PageHeader } from "@/components/page"
 import { FloatingActions } from "@/components/app/floating-actions"
+import { Button } from "@/components/ui/button"
 import type { Account } from "@/lib/accounts/types"
 
 import { toast } from "sonner"
 import { createContactAction, updateContactAction, deleteContactAction, createDebtAction, saveDebtPaymentAction, changeDebtAction } from "../actions"
 import { scheduleUndoableDelete } from "@/lib/undoable-delete"
-import { getDebtSummary } from "../_lib/get-debt-summary"
 import type {
   Contact,
   Debt,
@@ -19,7 +21,6 @@ import type {
 
 import { AddDebtSheet } from "./add-debt-sheet"
 import { ContactsSheet } from "./contacts-sheet"
-import { DebtSummary } from "./debt-summary"
 import { DebtsView } from "./debts-view"
 
 type DebtsDashboardProps = {
@@ -37,7 +38,6 @@ export function DebtsDashboard({
 }: DebtsDashboardProps) {
   const contacts = initialContacts
   const debts = initialDebts
-  const summary = getDebtSummary(debts)
   const operations = React.useRef(new Map<string, string>())
   const [contactsOpen, setContactsOpen] = React.useState(false)
 
@@ -96,15 +96,33 @@ export function DebtsDashboard({
     await execute(JSON.stringify(["payment", debtId, paymentId, values]), (id) => saveDebtPaymentAction(debtId, paymentId, values, id))
   }
 
-  const addDebtSheet = (
-    <AddDebtSheet accounts={accounts} contacts={contacts} onAddDebt={addDebt} onAddContact={addContact} />
+  const addDebtSheet = (trigger?: React.ReactNode) => (
+    <AddDebtSheet accounts={accounts} contacts={contacts} onAddDebt={addDebt} onAddContact={addContact} trigger={trigger} />
   )
+  const contactsLabel = `Người liên hệ, ${contacts.length} người`
 
   return (
     <Page>
-      <PageHeader title="Nợ & Cho vay" actions={addDebtSheet} />
+      <PageHeader
+        title="Vay nợ"
+        phoneTitle={false}
+        actions={
+          <>
+            <Button type="button" variant="outline" onClick={() => setContactsOpen(true)}>
+              <BookUserIcon />
+              Người liên hệ
+            </Button>
+            {addDebtSheet()}
+          </>
+        }
+      />
+      {/* Below md, where the header is hidden: the people, as a nav bar's trailing button. */}
+      <div className="flex justify-end md:hidden">
+        <Button type="button" variant="secondary" size="icon" aria-label={contactsLabel} onClick={() => setContactsOpen(true)}>
+          <BookUserIcon />
+        </Button>
+      </div>
       <DebtsView
-        summary={<DebtSummary summary={summary} />}
         initialSelectedDebtId={selectedDebtId}
         contacts={contacts}
         debts={debts}
@@ -134,7 +152,6 @@ export function DebtsDashboard({
         onRecordPayment={(id, values) => changePayment(id, undefined, values)}
         onEditPayment={(id, paymentId, values) => changePayment(id, paymentId, values)}
         onDeletePayment={(id, paymentId) => changePayment(id, paymentId, null)}
-        onOpenContacts={() => setContactsOpen(true)}
       />
       <ContactsSheet
         open={contactsOpen}
@@ -145,7 +162,13 @@ export function DebtsDashboard({
         onEdit={editContact}
         onDelete={deleteContact}
       />
-      <FloatingActions>{addDebtSheet}</FloatingActions>
+      <FloatingActions>
+        {addDebtSheet(
+          <Button type="button" size="fab" aria-label="Thêm khoản nợ">
+            <PlusIcon />
+          </Button>,
+        )}
+      </FloatingActions>
     </Page>
   )
 }

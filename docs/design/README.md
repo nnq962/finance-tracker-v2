@@ -61,7 +61,8 @@ component ở đó là cả app đổi theo.
   bo 12, cùng cao với nút mặc định, trong form cũng như đứng riêng (thanh tìm kiếm); `Textarea` và
   `InlineSelect` khi cao lên vẫn giữ góc 12. Khi focus, ô chuyển nền trắng (màu thẻ) và có viền đậm
   2px màu nhấn; khi lỗi, viền 2px màu `destructive`. Kích thước đặt qua biến `--control-h`,
-  `--control-radius`, `--control-px` (mặc định 44, 12, 16).
+  `--control-radius`, `--control-px` (mặc định 44, 12, 16). `InputGroup variant="search"`: ô tìm kiếm đứng riêng (trang Giao dịch), tròn như nút
+  và không đổi nền, không viền khi focus.
 - **Màu ô nhập theo bề mặt** (token `field`, `track` và utility `surface-grouped` / `surface-plain`
   trong `globals.css`): trên nền xám (trang, sheet) ô nhập, chip, nút phụ màu trắng; trên thẻ
   trắng chúng màu xám. Thẻ tự đặt `surface-plain`, khung trang và sheet đặt `surface-grouped`. Trong `SelectContent`, các `SelectItem` luôn nằm trong
@@ -115,7 +116,8 @@ component ở đó là cả app đổi theo.
 | `ProgressRing` | Tiến độ dạng vòng mảnh có số ở giữa |
 | `FormSection` | Các trường của một form trong thẻ trắng, có tiêu đề nhỏ, ghi chú và nội dung phụ bên dưới |
 | `PromoBanner` | Banner đen (sáng ở theme tối) cho một điều đáng chú ý, như gói Pro |
-| `FloatingActions` | Nút hành động chính nổi trên thanh tab, trên điện thoại |
+| `FloatingActions` | Nút hành động chính nổi phía trên thanh tab, trên điện thoại; tự chừa một khoảng cuối trang để dòng cuối cuộn lên khỏi nút |
+| `MobileBottomNav` | Thanh tab nổi trên điện thoại (`components/mobile-bottom-nav.tsx`): viên thuốc mờ rộng ngang màn hình (tối đa 28rem), không chữ (tên tab là `aria-label`); viên đen (trắng ở theme tối) trượt tới tab đang mở |
 | `CompactTitleBar` | Tiêu đề thu nhỏ khi tiêu đề lớn cuộn đi; tự gắn trong `PageHeader` |
 | `InlineSelect` | Dropdown mở tại chỗ, đẩy nội dung bên dưới xuống: chọn trong vài tài khoản, ví. Hiệu ứng chiều cao đơn giản (300ms ease-out); trên iOS kém mượt hơn transform, đã chấp nhận. Danh sách dài vẫn dùng `Select`/`Combobox` |
 | `CardLabel` | Tiêu đề nhỏ trong thẻ ("TÀI SẢN RÒNG", "ĐÃ CHI"): chữ hoa 12, đậm 600, giãn chữ nhẹ, màu phụ; trên thẻ `inverse` thì sáng 60%. Mọi thẻ có nhãn dùng nó |
@@ -134,14 +136,15 @@ component ở đó là cả app đổi theo.
 | `Carousel` | Thẻ vuốt ngang, bắt từng thẻ, kèm `PageDots` |
 | `SwipeRow` | Vuốt trái để lộ một hành động (mặc định Xoá); dùng qua `SettingsRow swipeAction` để dòng vuốt giống mọi dòng khác |
 | `ActionSheet` | Danh sách lựa chọn ngắn trồi từ đáy, Huỷ tách riêng bên dưới (vaul) |
-| `NoticeBanner` | Thông báo trong trang trên nền nhạt theo `tone`, đóng được |
+| `NoticeBanner` | Thông báo trong trang trên nền nhạt theo `tone`, đóng được (`onDismiss`), hoặc bấm cả khối kèm mũi tên để mở thứ nó nói tới (`onClick`, như khoản quá hạn ở Vay nợ) |
+| `FlowTiles` | Hai thẻ cạnh nhau cho tiền theo hai chiều (Tiền vào / Tiền ra ở Giao dịch, Cần thu / Cần trả ở Vay nợ): số tiền và ghi chú; chạm để danh sách chỉ còn chiều đó, thẻ đang chọn thành `inverse`, chạm lại để bỏ |
 
 Danh sách nằm ở `components/settings-list.tsx`. `SettingsGroup` là nhóm dòng trong một thẻ
 (`size="lg"` cho trang dạng bảng tin); đường kẻ giữa các dòng thụt 16 vào từ hai bên. `SettingsRow` là **mọi** dòng list (cài đặt, giao dịch, nhiệm vụ…), nên các list đồng nhất: cao 64
 (một dòng hay tiêu đề + mô tả đều vậy), lề ngang 16, `icon` tự đặt trong `IconTile` cỡ `sm` (36,
 bo 12) màu theo `tone` (xám nếu không truyền), tiêu đề 14 (Body), mô tả 12, rồi giá trị, công tắc, số
-tiền hoặc mũi tên ở bên phải. `media` chỉ cho avatar. `swipeAction` cho dòng vuốt để xoá. Dòng ở
-trang Cài đặt mỗi mục một `tone`, như mockup.
+tiền hoặc mũi tên ở bên phải. `media` cho avatar và logo tài khoản (`AccountLogo`: ô vuông bo 10 cỡ 36 như `IconTile sm`, logo trên nền trắng, tiền mặt là tờ tiền xanh; `size="xs"` 20 trong select). `swipeAction` cho dòng vuốt để xoá. Dòng ở
+trang Cài đặt mỗi mục một `tone`, như mockup. `SettingsGroup collapsible`: nhóm ẩn dòng tới khi cần (khoản đã tất toán, tài khoản ngừng dùng); tiêu đề vẫn thẳng hàng với các nhóm khác, cuối tiêu đề là "Hiện …" / "Ẩn".
 
 Utility `pressable` (trong `globals.css`) cho phản hồi chạm của thẻ và ô bấm được không phải
 `Button`.
@@ -151,7 +154,7 @@ Utility `pressable` (trong `globals.css`) cho phản hồi chạm của thẻ v�
 - **Trang dạng bảng tin** (Tổng quan, duyệt 2026-10-07): lời chào và chuông thông báo, banner Pro,
   nhiệm vụ, thẻ tài sản ròng (nhãn `CardLabel` rồi con số chính), rồi các `Section`: tháng (chỉ
   lịch), theo hạng mục (biểu đồ tròn, không list), thu và chi theo tháng. Các khối cách nhau 24px.
-- **Trang danh sách** (Giao dịch, Ngân sách, Cài đặt): tiêu đề lớn, thẻ tóm tắt, rồi các
+- **Trang danh sách** (Giao dịch, Tài khoản, Vay nợ, Cài đặt): tiêu đề lớn, thẻ tóm tắt, rồi các
   `SettingsGroup` có tiêu đề nhóm.
 - **Form:** sheet `screen` nền xám với `SheetNavHeader`; các trường gom trong một `FormSection`
   (thẻ trắng, ô nhập xám bên trong), dòng chọn và công tắc trong `SettingsGroup`; một nút `lg`

@@ -1,6 +1,10 @@
 import "server-only"
 
+import { randomUUID } from "node:crypto"
+
 import { createAccount, getAccounts } from "@/lib/accounts/repository"
+import { todayDate } from "@/lib/debts/calculations"
+import { createContact, createDebt, getContacts, saveDebtPayment } from "@/lib/debts/repository"
 import { ensureDefaultCategories, getCategoryGroups } from "@/lib/categories/repository"
 import { markOnboardingSeen } from "@/lib/onboarding/repository"
 import { createTransaction } from "@/lib/transactions/repository"
@@ -32,7 +36,12 @@ export async function seedDevUser(userId: string) {
   await ensureDefaultCategories(userId)
   // The welcome screens would cover every screenshot.
   await markOnboardingSeen(userId)
-  if ((await getAccounts(userId)).length > 0) return
+  if ((await getAccounts(userId)).length === 0) await seedMoney(userId)
+  await seedDebts(userId)
+}
+
+/** Three accounts and about two months of transactions. */
+async function seedMoney(userId: string) {
 
   const now = new Date()
   const start = new Date(now.getFullYear(), now.getMonth() - 1, 1)
@@ -111,4 +120,76 @@ export async function seedDevUser(userId: string) {
       })
     }
   }
+}
+
+/** "YYYY-MM-DD", `days` from today (negative: before). */
+function dayFromToday(days: number) {
+  const date = new Date(`${todayDate()}T00:00:00Z`)
+  date.setUTCDate(date.getUTCDate() + days)
+  return date.toISOString().slice(0, 10)
+}
+
+/**
+ * A few people and loans each way, once: one overdue, one part paid, one
+ * with interest, one settled. Recorded as opening balances, so the accounts
+ * only move with the payments.
+ */
+async function seedDebts(userId: string) {
+  if ((await getContacts(userId)).length > 0) return
+
+  const accounts = await getAccounts(userId)
+  const accountId = (name: string) => accounts.find((account) => account.name === name)!.id
+  const contact = async (name: string, relationship: string) =>
+    (await createContact(userId, { name, relationship }, randomUUID())).id
+  const minh = await contact("Minh Tuấn", "Đồng nghiệp")
+  const lan = await contact("Lan Anh", "Bạn thân")
+  const ha = await contact("Chị Hà", "Chị gái")
+  const hoang = await contact("Hoàng Nam", "Bạn đại học")
+
+  const debt = async (values: {
+    contactId: string
+    direction: "lent" | "borrowed"
+    amount: number
+    note: string
+    recordedDaysAgo: number
+    dueInDays?: number
+    interest?: { rate: number; period: "month" | "year" }
+  }) =>
+    (
+      await createDebt(
+        userId,
+        {
+          contactId: values.contactId,
+          recordingMode: "opening",
+          direction: values.direction,
+          amount: values.amount,
+          hasInterest: Boolean(values.interest),
+          interestRate: values.interest?.rate,
+          interestPeriod: values.interest?.period,
+          note: values.note,
+          recordedAt: dayFromToday(-values.recordedDaysAgo),
+          dueAt: values.dueInDays === undefined ? undefined : dayFromToday(values.dueInDays),
+        },
+        randomUUID(),
+      )
+    ).id
+  const pay = (debtId: string, amount: number, account: string, daysAgo: number) =>
+    saveDebtPayment(
+      userId,
+      debtId,
+      undefined,
+      { amount, accountId: accountId(account), paidAt: dayFromToday(-daysAgo), paidTime: "10:00", note: "" },
+      randomUUID(),
+    )
+
+  await debt({ contactId: minh, direction: "lent", amount: 2_000_000, note: "Mượn sửa xe", recordedDaysAgo: 40, dueInDays: -5 })
+  const deposit = await debt({ contactId: lan, direction: "lent", amount: 5_000_000, note: "Tiền cọc phòng", recordedDaysAgo: 20, dueInDays: 12 })
+  await pay(deposit, 1_500_000, "Vietcombank", 6)
+  await debt({
+    contactId: ha, direction: "borrowed", amount: 10_000_000, note: "Mua laptop", recordedDaysAgo: 60,
+    interest: { rate: 1, period: "month" },
+  })
+  await debt({ contactId: hoang, direction: "borrowed", amount: 800_000, note: "Ăn tối sinh nhật", recordedDaysAgo: 10, dueInDays: 3 })
+  const ticket = await debt({ contactId: hoang, direction: "lent", amount: 300_000, note: "Vé xem phim", recordedDaysAgo: 30 })
+  await pay(ticket, 300_000, "Tiền mặt", 25)
 }

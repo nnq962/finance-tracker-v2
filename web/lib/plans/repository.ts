@@ -36,7 +36,7 @@ async function getProEndsAt(userId: string) {
 }
 
 export async function getPlanState(userId: string): Promise<PlanState> {
-  const [proEndsAt, usage, user] = await Promise.all([
+  const [proEndsAt, usage, user, rewards] = await Promise.all([
     getProEndsAt(userId),
     getDb()
       .selectFrom("aiUsage")
@@ -45,14 +45,22 @@ export async function getPlanState(userId: string): Promise<PlanState> {
       .where("month", "=", currentMonth())
       .executeTakeFirst(),
     getDb().selectFrom("users").select("aiCredits").where("id", "=", userId).executeTakeFirst(),
+    getDb()
+      .selectFrom("missionRewards")
+      .select((eb) => eb.fn.coalesce(eb.fn.sum<number>("credits"), eb.lit(0)).as("earned"))
+      .where("userId", "=", userId)
+      .executeTakeFirst(),
   ])
   const plan = proEndsAt ? "pro" : "free"
+  const aiCredits = user?.aiCredits ?? 0
   return {
     plan,
     ...(proEndsAt ? { proEndsAt: proEndsAt.toISOString() } : {}),
     aiUsed: usage?.count ?? 0,
     aiLimit: plans[plan].aiMonthlyLimit,
-    aiCredits: user?.aiCredits ?? 0,
+    aiCredits,
+    // A refunded request can leave more than was earned.
+    aiCreditsEarned: Math.max(Number(rewards?.earned ?? 0), aiCredits),
   }
 }
 

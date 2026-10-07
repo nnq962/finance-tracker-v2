@@ -30,7 +30,7 @@ export function AccountSelectGroups({ accounts }: { accounts: Account[] }) {
             value={account.id}
             textValue={account.name}
           >
-            <AccountLogo account={account} className="size-5" />
+            <AccountLogo account={account} size="xs" />
             <span className="flex min-w-0 items-baseline gap-2">
               <span className="min-w-0 truncate">{account.name}</span>
               <span className="ml-auto text-xs text-muted-foreground tabular-nums">

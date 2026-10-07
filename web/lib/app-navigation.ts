@@ -27,13 +27,13 @@ export const appNavigationItems: AppNavigationItem[] = [
     icon: ArrowLeftRightIcon,
   },
   {
-    title: "Ngân sách",
-    mobileTitle: "Ngân sách",
+    title: "Tài khoản",
+    mobileTitle: "Tài khoản",
     url: "/budget",
     icon: WalletCardsIcon,
   },
   {
-    title: "Nợ & Cho vay",
+    title: "Vay nợ",
     mobileTitle: "Vay nợ",
     url: "/debts",
     icon: HandCoinsIcon,

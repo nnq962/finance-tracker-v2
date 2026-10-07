@@ -17,7 +17,7 @@ export default function AccountsError({ retry }: { retry: () => void }) {
     <Page>
       <Card>
         <CardHeader>
-          <CardTitle>Không thể tải ngân sách</CardTitle>
+          <CardTitle>Không thể tải tài khoản</CardTitle>
           <CardDescription>
             Đã có lỗi khi kết nối dữ liệu. Vui lòng thử lại.
           </CardDescription>

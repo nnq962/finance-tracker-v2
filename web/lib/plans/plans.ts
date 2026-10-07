@@ -40,6 +40,8 @@ export type PlanState = {
   aiLimit: number
   /** AI credits earned from missions, used once the month's requests run out. */
   aiCredits: number
+  /** Every credit earned from missions, so what is left can be shown against it. */
+  aiCreditsEarned: number
 }
 
 /** What a user writes on a transfer, so the payment can be matched to them. */

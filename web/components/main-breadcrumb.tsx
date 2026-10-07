@@ -12,8 +12,8 @@ import {
 const routeLabels: Record<string, string> = {
   "/overview": "Tổng quan",
   "/transactions": "Giao dịch",
-  "/budget": "Ngân sách",
-  "/debts": "Nợ & Cho vay",
+  "/budget": "Tài khoản",
+  "/debts": "Vay nợ",
   "/settings": "Cài đặt",
   "/design": "Thiết kế",
 }

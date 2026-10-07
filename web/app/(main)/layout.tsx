@@ -42,7 +42,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
           <SidebarProvider
             data-app-shell="main"
             // The floating tab bar's height plus its gap from the screen's bottom edge.
-            className="h-dvh min-h-0 flex-col overflow-hidden [--tab-bar-space:calc(4.25rem+max(0.75rem,env(safe-area-inset-bottom,0px)))] md:h-auto md:min-h-svh md:flex-row md:overflow-visible"
+            className="h-dvh min-h-0 flex-col overflow-hidden [--tab-bar-space:calc(3.75rem+max(0.75rem,env(safe-area-inset-bottom,0px)))] md:h-auto md:min-h-svh md:flex-row md:overflow-visible"
           >
             <PwaThemeColor />
             <AppSidebar />

@@ -2,24 +2,18 @@
 
 import * as React from "react"
 import {
-  BookUserIcon,
-  ChevronDownIcon,
+  ArrowDownLeftIcon,
+  ArrowUpRightIcon,
   HandCoinsIcon,
   TriangleAlertIcon,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 import type { Account } from "@/lib/accounts/types"
-import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { FlowTiles } from "@/components/app/flow-tiles"
+import { NoticeBanner } from "@/components/app/notice-banner"
+import { SettingsGroup } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 import {
   Empty,
   EmptyDescription,
@@ -29,7 +23,6 @@ import {
 } from "@/components/ui/empty"
 import { Sheet, SheetContent, SheetFooter } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
-import { formatCurrency } from "@/lib/format-currency"
 
 import {
   compareDebtsByUrgency,
@@ -42,6 +35,7 @@ import {
   DebtDetailPanel,
   DebtRecordPaymentButton,
 } from "./debt-detail-panel"
+import { getDebtSummary } from "../_lib/get-debt-summary"
 import { DebtListItem } from "./debt-list-item"
 
 // Matches Tailwind's `xl`, where the detail panel sits beside the list.
@@ -70,9 +64,6 @@ type DebtsViewProps = {
   contacts: Contact[]
   debts: Debt[]
   onRecordPayment: (debtId: string, payment: NewDebtPayment) => Promise<void>
-  onOpenContacts: () => void
-  /** The totals, at the top of the list column. */
-  summary: React.ReactNode
 }
 
 function isSettled(debt: Debt) {
@@ -93,8 +84,6 @@ export function DebtsView({
   accounts,
   onEditPayment,
   onDeletePayment,
-  onOpenContacts,
-  summary,
 }: DebtsViewProps) {
   const router = useRouter()
   const [, startNavigation] = React.useTransition()
@@ -106,7 +95,36 @@ export function DebtsView({
   const settledDebts = debts
     .filter(isSettled)
     .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt))
-  const overdueDebts = openDebts.filter((debt) => getDebtDeadline(debt).isOverdue)
+  // A tile chosen shows only that side, its overdue and settled loans included.
+  const [direction, setDirection] = React.useState<DebtDirection | null>(null)
+  const shown = (items: Debt[]) => (direction ? items.filter((debt) => debt.direction === direction) : items)
+  const overdueDebts = shown(openDebts).filter((debt) => getDebtDeadline(debt).isOverdue)
+  const summary = getDebtSummary(debts)
+  const openCount = (side: DebtDirection) => openDebts.filter((debt) => debt.direction === side).length
+  const tiles = (
+    <FlowTiles
+      value={direction}
+      onValueChange={setDirection}
+      tiles={[
+        {
+          value: "lent",
+          label: "Cần thu",
+          amount: summary.totalLent,
+          caption: `${openCount("lent")} khoản`,
+          icon: ArrowDownLeftIcon,
+          tone: "income",
+        },
+        {
+          value: "borrowed",
+          label: "Cần trả",
+          amount: summary.totalBorrowed,
+          caption: `${openCount("borrowed")} khoản`,
+          icon: ArrowUpRightIcon,
+          tone: "expense",
+        },
+      ]}
+    />
+  )
   const selectedDebt = debts.find((debt) => debt.id === selectedDebtId)
   const selectedContact = selectedDebt
     ? contactById.get(selectedDebt.contactId)
@@ -166,34 +184,19 @@ export function DebtsView({
     })
   }
 
-  const contactsRow = (
-    <SettingsGroup title="Danh bạ">
-      <SettingsRow
-        icon={BookUserIcon}
-        tone="blue"
-        title="Người liên hệ"
-        value={`${contacts.length} người`}
-        onClick={onOpenContacts}
-      />
-    </SettingsGroup>
-  )
-
   if (debts.length === 0) {
     return (
       <div className="space-y-6 md:space-y-8">
-        {summary}
-        <Card>
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <HandCoinsIcon />
-              </EmptyMedia>
-              <EmptyTitle>Chưa có khoản nợ</EmptyTitle>
-              <EmptyDescription>Thêm khoản vay đầu tiên để bắt đầu theo dõi.</EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        </Card>
-        {contactsRow}
+        {tiles}
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <HandCoinsIcon />
+            </EmptyMedia>
+            <EmptyTitle>Chưa có khoản nợ</EmptyTitle>
+            <EmptyDescription>Khoản cho vay và đi vay hiện ở đây, kèm hạn trả.</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       </div>
     )
   }
@@ -201,60 +204,41 @@ export function DebtsView({
   return (
     <div className="grid items-start gap-6 md:gap-8 xl:grid-cols-[minmax(0,1fr)_24rem]">
       <div className="min-w-0 space-y-6 md:space-y-8">
-        {summary}
+        {tiles}
 
         {overdueDebts.length > 0 ? (
-          <SettingsGroup>
-            <SettingsRow
-              icon={TriangleAlertIcon}
-              tone="rose"
-              title={`${overdueDebts.length} khoản quá hạn`}
-              description={[...new Set(overdueDebts.map((debt) => contactById.get(debt.contactId)?.name))].filter(Boolean).join(", ")}
-              // Opens the one overdue the longest; the rest sit at the top of their sections.
-              onClick={() => selectDebt(overdueDebts[0].id)}
-            />
-          </SettingsGroup>
+          <NoticeBanner
+            tone="warning"
+            icon={TriangleAlertIcon}
+            title={`${overdueDebts.length} khoản quá hạn`}
+            // Opens the one overdue the longest; the rest sit at the top of their sections.
+            onClick={() => selectDebt(overdueDebts[0].id)}
+          >
+            {[...new Set(overdueDebts.map((debt) => contactById.get(debt.contactId)?.name))].filter(Boolean).join(", ")}
+          </NoticeBanner>
         ) : null}
 
-        {sections.map(({ direction, label }) => {
-          const items = openDebts.filter((debt) => debt.direction === direction)
+        {/* The totals are on the tiles above. */}
+        {sections.map(({ direction: side, label }) => {
+          const items = shown(openDebts).filter((debt) => debt.direction === side)
           if (items.length === 0) return null
-          const total = items.reduce((sum, debt) => sum + getDebtMetrics(debt).remainingAmount, 0)
 
           return (
-            <SettingsGroup
-              key={direction}
-              title={label}
-              action={
-                <span className="shrink-0 text-xs font-medium tabular-nums">
-                  {formatCurrency(total, { signDisplay: "never" })}
-                </span>
-              }
-            >
+            <SettingsGroup key={side} title={label}>
               {renderRows(items)}
             </SettingsGroup>
           )
         })}
 
-        {settledDebts.length > 0 ? (
-          <Collapsible defaultOpen={openDebts.length === 0}>
-            <CollapsibleTrigger asChild>
-              <Button type="button" variant="ghost" className="group/settled">
-                Đã tất toán
-                <Badge variant="outline">{settledDebts.length}</Badge>
-                <ChevronDownIcon
-                  className="transition-transform group-data-[state=open]/settled:rotate-180"
-                  aria-hidden="true"
-                />
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pt-2">
-              <SettingsGroup>{renderRows(settledDebts)}</SettingsGroup>
-            </CollapsibleContent>
-          </Collapsible>
+        {shown(settledDebts).length > 0 ? (
+          <SettingsGroup
+            title="Đã tất toán"
+            collapsible={{ showLabel: `Hiện ${shown(settledDebts).length} khoản`, defaultOpen: openDebts.length === 0 }}
+          >
+            {renderRows(shown(settledDebts))}
+          </SettingsGroup>
         ) : null}
 
-        {contactsRow}
       </div>
 
       {/* Full height, scrolling with the page rather than on its own. */}

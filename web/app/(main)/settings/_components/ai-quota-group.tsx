@@ -1,50 +1,61 @@
-import { GiftIcon } from "lucide-react"
-
-import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { SettingsGroup, settingsSeparatorClassName } from "@/components/settings-list"
 import { Progress } from "@/components/ui/progress"
-import { cn } from "@/lib/utils"
 import { formatDate, toDateKey } from "@/lib/format-date"
+import { cn } from "@/lib/utils"
 import type { PlanState } from "@/lib/plans/plans"
 
-/** This month's AI requests against the plan's limit, and the credits from missions on top while any are left. */
+/** One allowance counting down: what is left of it, a bar that empties, and a note. */
+function UsageMeter({ label, left, total, note }: { label: string; left: number; total: number; note: string }) {
+  return (
+    // Divided like list rows, inset 16 from both sides.
+    <div className={cn("space-y-3 px-4 py-3", settingsSeparatorClassName())}>
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="text-sm font-medium">{label}</p>
+        <p className="text-base font-medium tabular-nums">
+          {left}
+          <span className="text-sm font-normal text-muted-foreground">/{total}</span>
+        </p>
+      </div>
+      <Progress value={total > 0 ? (left / total) * 100 : 0} aria-label={`${label}: còn ${left} trên ${total}`} />
+      <p className="text-xs text-muted-foreground">{note}</p>
+    </div>
+  )
+}
+
+/**
+ * The AI allowances, each counting down as it is used, as usage meters
+ * usually do: this month's requests, then the credits from missions, used
+ * once the month's run out (shown once any were earned).
+ */
 export function AiQuotaGroup({ planState }: { planState: PlanState }) {
-  const used = Math.min(planState.aiUsed, planState.aiLimit)
-  const percent = planState.aiLimit > 0 ? (used / planState.aiLimit) * 100 : 0
+  const monthLeft = Math.max(0, planState.aiLimit - planState.aiUsed)
   // The first of next month, Vietnam time, when the count starts over.
   const month = Number(toDateKey(new Date()).slice(5, 7))
   const renewsOn = `01/${String((month % 12) + 1).padStart(2, "0")}`
-  const hasCredits = planState.aiCredits > 0
 
   return (
     <SettingsGroup
-      title="Hạn mức"
+      title="Lượt AI"
       header={
-        // Alone in the card, it keeps equal padding top and bottom.
-        <div className={cn("space-y-3 px-4 pt-3", hasCredits ? "pb-2" : "pb-3")}>
-          <div className="flex items-baseline justify-between gap-3">
-            <p className="text-sm font-medium">Lượt trợ lý AI tháng này</p>
-            <p className="text-base font-medium tabular-nums">
-              {planState.aiUsed}
-              <span className="text-sm font-normal text-muted-foreground">/{planState.aiLimit}</span>
-            </p>
-          </div>
-          <Progress value={percent} aria-label="Lượt AI đã dùng" />
-          <p className="text-xs text-muted-foreground">
-            Làm mới {renewsOn}
-            {planState.proEndsAt ? ` · Pro đến ${formatDate(toDateKey(planState.proEndsAt))}` : ""}
-          </p>
+        <div>
+          <UsageMeter
+            label="Lượt tháng này"
+            left={monthLeft}
+            total={planState.aiLimit}
+            note={`Làm mới ${renewsOn}${planState.proEndsAt ? ` · Pro đến ${formatDate(toDateKey(planState.proEndsAt))}` : ""}`}
+          />
+          {planState.aiCreditsEarned > 0 ? (
+            <UsageMeter
+              label="Lượt thưởng"
+              left={planState.aiCredits}
+              total={planState.aiCreditsEarned}
+              note="Từ nhiệm vụ, dùng khi hết lượt tháng"
+            />
+          ) : null}
         </div>
       }
     >
-      {hasCredits ? (
-        <SettingsRow
-          icon={GiftIcon}
-          tone="ai"
-          title="Lượt thưởng"
-          description="Dùng khi hết lượt tháng"
-          value={String(planState.aiCredits)}
-        />
-      ) : null}
+      {null}
     </SettingsGroup>
   )
 }

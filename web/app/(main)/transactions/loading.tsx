@@ -94,19 +94,18 @@ export default function TransactionsLoading() {
         <div className="max-lg:hidden">
           <PageHeaderSkeleton action />
         </div>
-        {/* Below lg: the month, then the search and filter buttons. */}
-        <div className="flex items-center justify-between gap-3 pt-1 lg:hidden">
+        {/* Below lg: the month. */}
+        <div className="flex h-11 items-center lg:hidden">
           <Skeleton className="h-9 w-40 rounded-full" />
-          <div className="flex gap-2">
-            <Skeleton className="size-11 rounded-full" />
-            <Skeleton className="size-11 rounded-full" />
-          </div>
         </div>
         <TransactionsLayout
           summary={<MonthSummarySkeleton />}
           filters={<FilterPanelSkeleton />}
         >
-          <Skeleton className="hidden h-11 rounded-xl lg:block" />
+          <div className="flex gap-2">
+            <Skeleton className="h-11 flex-1 rounded-xl" />
+            <Skeleton className="size-11 rounded-full lg:hidden" />
+          </div>
           <div className="space-y-6 md:space-y-8">
             <DayGroupSkeleton rows={3} />
             <DayGroupSkeleton rows={2} />

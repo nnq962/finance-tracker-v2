@@ -1,18 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { ChevronDownIcon, WalletCardsIcon } from "lucide-react"
+import { WalletCardsIcon } from "lucide-react"
 
 import { AccountLogo } from "@/components/account-logo"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 import {
   Empty,
   EmptyDescription,
@@ -20,14 +13,14 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
-import { getAccountDistribution } from "@/lib/accounts/distribution"
+import { accountTypeLabels } from "@/lib/accounts/labels"
 import type { Account } from "@/lib/accounts/types"
 import { formatCurrency } from "@/lib/format-currency"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { Transaction } from "@/lib/transactions/types"
 import { cn } from "@/lib/utils"
 
-import { AccountSheet, getAccountKind } from "./account-sheet"
+import { AccountSheet } from "./account-sheet"
 
 type AccountListProps = {
   accounts: Account[]
@@ -35,44 +28,29 @@ type AccountListProps = {
   categoryGroups: CategoryGroup[]
 }
 
-type AccountShare = { percentageLabel: string }
+/** The type, and the bank or wallet, leaving out what the name already says. */
+function accountDescription(account: Account) {
+  const type = accountTypeLabels[account.type]
+  if (account.institutionName && account.institutionName !== account.name) return `${type} · ${account.institutionName}`
+  return type === account.name ? undefined : type
+}
 
-function AccountRow({
-  account,
-  share,
-  grouped = false,
-  onSelect,
-}: {
-  account: Account
-  share?: AccountShare
-  /** Under its type's caption, where only the bank or wallet adds anything. */
-  grouped?: boolean
-  onSelect: () => void
-}) {
+function AccountRow({ account, onSelect }: { account: Account; onSelect: () => void }) {
   const isLocked = account.status === "archived"
 
   return (
     <SettingsRow
-      media={<AccountLogo account={account} className="size-8" />}
+      media={<AccountLogo account={account} />}
       title={account.name}
-      description={grouped ? account.institutionName : getAccountKind(account)}
+      description={accountDescription(account)}
       action={
-        <span className="flex flex-col items-end">
-          <span
-            className={cn(
-              "text-sm font-medium tabular-nums",
-              isLocked
-                ? "text-muted-foreground"
-                : account.balance < 0 && "text-expense",
-            )}
-          >
-            {formatCurrency(account.balance)}
-          </span>
-          {share ? (
-            <span className="text-xs text-muted-foreground">
-              {share.percentageLabel}
-            </span>
-          ) : null}
+        <span
+          className={cn(
+            "text-sm font-medium tabular-nums",
+            isLocked ? "text-muted-foreground" : account.balance < 0 && "text-expense",
+          )}
+        >
+          {formatCurrency(account.balance)}
         </span>
       }
       onClick={onSelect}
@@ -82,12 +60,13 @@ function AccountRow({
 
 export function AccountList({ accounts, recentTransactions, categoryGroups }: AccountListProps) {
   const [openAccountId, setOpenAccountId] = React.useState<string | null>(null)
-  // Grouped by type, largest total first, the same order as the bar.
-  const { distribution, groups } = getAccountDistribution(accounts)
+  // One list, largest balance first.
+  const activeAccounts = accounts
+    .filter((account) => account.status === "active")
+    .sort((left, right) => right.balance - left.balance)
   const archivedAccounts = accounts.filter((account) => account.status === "archived")
   // A deleted account closes its sheet.
   const openAccount = accounts.find((account) => account.id === openAccountId)
-  const openShare = distribution.find((account) => account.id === openAccountId)
 
   if (accounts.length === 0) {
     return (
@@ -107,57 +86,29 @@ export function AccountList({ accounts, recentTransactions, categoryGroups }: Ac
 
   return (
     <div className="space-y-6 md:space-y-8">
-      {groups.map((group) => (
-        <SettingsGroup
-          key={group.type}
-          title={group.label}
-          action={
-            <span className="shrink-0 text-xs font-medium tabular-nums">
-              {formatCurrency(group.total)}
-            </span>
-          }
-        >
-          {group.accounts.map((account) => (
-            <AccountRow
-              key={account.id}
-              account={account}
-              share={account}
-              grouped
-              onSelect={() => setOpenAccountId(account.id)}
-            />
+      {activeAccounts.length > 0 ? (
+        // Named like the "Ngừng sử dụng" group below it.
+        <SettingsGroup title="Đang dùng">
+          {activeAccounts.map((account) => (
+            <AccountRow key={account.id} account={account} onSelect={() => setOpenAccountId(account.id)} />
           ))}
         </SettingsGroup>
-      ))}
+      ) : null}
 
       {archivedAccounts.length > 0 ? (
-        <Collapsible defaultOpen={distribution.length === 0}>
-          <CollapsibleTrigger asChild>
-            <Button type="button" variant="ghost" className="group/archived">
-              Ngừng sử dụng
-              <Badge variant="outline">{archivedAccounts.length}</Badge>
-              <ChevronDownIcon
-                className="transition-transform group-data-[state=open]/archived:rotate-180"
-                aria-hidden="true"
-              />
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pt-2">
-            <SettingsGroup footer="Không tính vào tổng số dư">
-              {archivedAccounts.map((account) => (
-                <AccountRow
-                  key={account.id}
-                  account={account}
-                  onSelect={() => setOpenAccountId(account.id)}
-                />
-              ))}
-            </SettingsGroup>
-          </CollapsibleContent>
-        </Collapsible>
+        <SettingsGroup
+          title="Ngừng sử dụng"
+          footer="Không tính vào tổng số dư"
+          collapsible={{ showLabel: `Hiện ${archivedAccounts.length} tài khoản`, defaultOpen: activeAccounts.length === 0 }}
+        >
+          {archivedAccounts.map((account) => (
+            <AccountRow key={account.id} account={account} onSelect={() => setOpenAccountId(account.id)} />
+          ))}
+        </SettingsGroup>
       ) : null}
 
       <AccountSheet
         account={openAccount}
-        share={openShare}
         transactions={openAccount ? recentTransactions[openAccount.id] ?? [] : []}
         categoryGroups={categoryGroups}
         onOpenChange={(open) => {

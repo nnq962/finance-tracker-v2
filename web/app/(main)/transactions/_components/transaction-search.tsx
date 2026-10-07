@@ -1,6 +1,5 @@
 "use client"
 
-import type * as React from "react"
 import { SearchIcon, XIcon } from "lucide-react"
 
 import { FormSection } from "@/components/app/form-section"
@@ -29,30 +28,24 @@ export function TransactionSearchBar({
   onQueryChange,
   onCancel,
   autoFocus,
-  inputRef,
-  accessory,
 }: {
   id: string
   query: string
   onQueryChange: (query: string) => void
   onCancel?: () => void
   autoFocus?: boolean
-  inputRef?: React.Ref<HTMLInputElement>
-  /** Beside the field, before "Huỷ", e.g. the filter button. */
-  accessory?: React.ReactNode
 }) {
   return (
     <div className="flex min-w-0 items-center gap-2">
       <label htmlFor={id} className="sr-only">
         Tìm giao dịch
       </label>
-      <InputGroup className="min-w-0 flex-1">
+      <InputGroup variant="search" className="min-w-0 flex-1">
         <InputGroupAddon>
           <SearchIcon aria-hidden="true" />
         </InputGroupAddon>
         <InputGroupInput
           id={id}
-          ref={inputRef}
           type="text"
           inputMode="search"
           // Opened by a tap on the search button, it takes the keyboard straight away.
@@ -69,7 +62,6 @@ export function TransactionSearchBar({
           </InputGroupAddon>
         ) : null}
       </InputGroup>
-      {accessory}
       {onCancel ? (
         <Button type="button" variant="ghost" className="shrink-0 px-3" onClick={onCancel}>
           Huỷ

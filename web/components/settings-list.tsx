@@ -1,10 +1,11 @@
 import type * as React from "react"
-import { ChevronRightIcon, type LucideIcon } from "lucide-react"
+import { ChevronDownIcon, ChevronRightIcon, type LucideIcon } from "lucide-react"
 
 import { IconTile, type IconTileTone } from "@/components/app/icon-tile"
 import { SwipeRow } from "@/components/app/swipe-row"
 
 import { Card } from "@/components/ui/card"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
   Item,
   ItemActions,
@@ -16,18 +17,23 @@ import {
 import { cn } from "@/lib/utils"
 
 /**
- * Divider above every row but the first, inset 16px from both sides of the
- * card, as in the mockup's lists. Exported for loading skeletons; `hasMedia`
- * is kept for their calls.
+ * Divider above every row but the first, as in native lists: from where the
+ * row's text starts (past a 36 icon or logo and its 12 gap, when the row has
+ * one) to 16 short of the card's right edge. `hasMedia` is for loading
+ * skeletons, which have no ItemMedia to detect.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function settingsSeparatorClassName(hasMedia?: boolean) {
-  return "relative before:absolute before:inset-x-4 before:top-0 before:h-px before:bg-border first:before:hidden"
+  return cn(
+    "relative before:absolute before:top-0 before:right-4 before:left-4 before:h-px before:bg-border first:before:hidden has-[[data-slot=item-media]]:before:left-16",
+    hasMedia && "before:left-16",
+  )
 }
 
 /**
  * Grouped list: an optional caption, a card of rows separated by dividers,
- * and an optional footnote.
+ * and an optional footnote. `collapsible` keeps the rows hidden until asked
+ * for, e.g. settled loans: the caption stays in line with the other groups',
+ * with "Hiện …" at its end ("Ẩn" once open).
  */
 function SettingsGroup({
   title,
@@ -36,6 +42,7 @@ function SettingsGroup({
   footer,
   listClassName,
   size,
+  collapsible,
   children,
 }: {
   title?: React.ReactNode
@@ -48,20 +55,23 @@ function SettingsGroup({
   listClassName?: string
   /** lg: the rounder card of dashboard pages. */
   size?: "default" | "lg"
+  /** The rows hidden behind the caption; `showLabel` says what opens, e.g. "Hiện 2 khoản". */
+  collapsible?: { showLabel: string; defaultOpen?: boolean }
   children: React.ReactNode
 }) {
-  return (
-    <section className="space-y-2">
-      {title || action ? (
-        <div className="flex min-h-6 items-center justify-between gap-3 px-4">
-          {title ? (
-            <h2 className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-muted-foreground">
-              {title}
-            </h2>
-          ) : null}
-          {action}
-        </div>
-      ) : null}
+  const caption = (end: React.ReactNode) =>
+    title || end ? (
+      <div className="flex min-h-6 items-center justify-between gap-3 px-4">
+        {title ? (
+          <h2 className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-muted-foreground">
+            {title}
+          </h2>
+        ) : null}
+        {end}
+      </div>
+    ) : null
+  const body = (
+    <>
       {/* Rows carry their own padding, so the card only frames them. */}
       <Card size={size} className="gap-0 py-0">
         {header}
@@ -74,6 +84,34 @@ function SettingsGroup({
           {footer}
         </p>
       ) : null}
+    </>
+  )
+
+  if (collapsible) {
+    return (
+      // Gaps, not space-y: closed, the hidden rows leave no margin.
+      <Collapsible asChild defaultOpen={collapsible.defaultOpen}>
+        <section className="flex flex-col gap-2">
+          {caption(
+            <CollapsibleTrigger className="group/trigger relative flex shrink-0 items-center gap-1 text-sm font-medium text-foreground outline-none after:absolute after:-inset-x-2 after:-inset-y-3 focus-visible:underline">
+              <span className="group-data-[state=open]/trigger:hidden">{collapsible.showLabel}</span>
+              <span className="hidden group-data-[state=open]/trigger:inline">Ẩn</span>
+              <ChevronDownIcon
+                aria-hidden="true"
+                className="size-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]/trigger:rotate-180 motion-reduce:transition-none"
+              />
+            </CollapsibleTrigger>,
+          )}
+          <CollapsibleContent className="flex flex-col gap-2">{body}</CollapsibleContent>
+        </section>
+      </Collapsible>
+    )
+  }
+
+  return (
+    <section className="space-y-2">
+      {caption(action)}
+      {body}
     </section>
   )
 }

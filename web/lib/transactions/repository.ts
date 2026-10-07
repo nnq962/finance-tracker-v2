@@ -388,7 +388,7 @@ async function lockExisting(
 
   if (existing.debtId) {
     throw new TransactionValidationError(
-      `Hãy ${action} giao dịch này tại trang Nợ & Cho vay để giữ đồng bộ khoản nợ.`,
+      `Hãy ${action} giao dịch này tại trang Vay nợ để giữ đồng bộ khoản nợ.`,
     )
   }
 

@@ -26,12 +26,14 @@ export default async function AccountsPage() {
   return (
     <Page>
       <PageHeader
-        title="Ngân sách"
+        title="Tài khoản"
+        phoneTitle={false}
         actions={<AddAccountButton />}
       />
+
       {accounts.length > 0 ? (
         <BudgetLayout
-          summary={<BalanceHero summary={balanceSummary} accounts={accounts} />}
+          summary={<BalanceHero summary={balanceSummary} />}
         >
           <AccountList accounts={accounts} recentTransactions={recentTransactions} categoryGroups={categoryGroups} />
         </BudgetLayout>
@@ -39,7 +41,7 @@ export default async function AccountsPage() {
         <AccountList accounts={accounts} recentTransactions={recentTransactions} categoryGroups={categoryGroups} />
       )}
       <FloatingActions>
-        <AddAccountButton />
+        <AddAccountButton fab />
       </FloatingActions>
     </Page>
   )

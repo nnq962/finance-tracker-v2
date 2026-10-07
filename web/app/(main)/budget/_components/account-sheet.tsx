@@ -7,7 +7,7 @@ import { toast } from "sonner"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
-import { accountTypeLabels } from "@/lib/accounts/distribution"
+import { accountTypeLabels } from "@/lib/accounts/labels"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
@@ -20,10 +20,6 @@ import { setAccountArchivedAction } from "../actions"
 import { DeleteAccountAlert } from "./account-actions/delete-account-alert"
 import { EditAccountSheet } from "./account-actions/edit-account-sheet"
 
-export function getAccountKind(account: Account) {
-  return account.institutionName ?? accountTypeLabels[account.type]
-}
-
 /** How a transaction moved this account's balance: a transfer out also pays its fee. */
 function getAccountAmount(transaction: Transaction, accountId: string) {
   if (transaction.kind !== "transfer") return transaction.amount
@@ -35,14 +31,13 @@ function getAccountAmount(transaction: Transaction, accountId: string) {
 type AccountSheetProps = {
   /** The account to show; none closes the sheet. */
   account?: Account
-  share?: { percentageLabel: string }
   transactions: Transaction[]
   /** For the transactions' category icons. */
   categoryGroups: CategoryGroup[]
   onOpenChange: (open: boolean) => void
 }
 
-export function AccountSheet({ account, share, transactions, categoryGroups, onOpenChange }: AccountSheetProps) {
+export function AccountSheet({ account, transactions, categoryGroups, onOpenChange }: AccountSheetProps) {
   const router = useRouter()
   const [isPending, startTransition] = React.useTransition()
   const [editOpen, setEditOpen] = React.useState(false)
@@ -105,7 +100,6 @@ export function AccountSheet({ account, share, transactions, categoryGroups, onO
               />
               <SettingsRow title="Ngày tạo" value={formatDate(toDateKey(shown.openedAt))} />
               <SettingsRow title="Số dư ban đầu" value={formatCurrency(shown.openingBalance)} />
-              {share ? <SettingsRow title="Tỉ trọng" value={share.percentageLabel} /> : null}
               {shown.note ? <SettingsRow title="Ghi chú" description={shown.note} /> : null}
             </SettingsGroup>
 

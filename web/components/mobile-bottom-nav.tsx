@@ -137,28 +137,30 @@ export function MobileBottomNav() {
   const activeIndex = mobileNavigationItems.findIndex((item) => item.url === activePathname)
 
   return (
-    // Floats over the page, clear of the screen's edges; the shell reserves
-    // its height in --tab-bar-space so the end of a page can scroll above it.
+    // Icons only, on a capsule across the screen, floating over the page;
+    // the shell reserves its height in --tab-bar-space so the end of a page
+    // can scroll above it. Each tab keeps its name for screen readers
+    // (aria-label).
     <nav
       aria-label="Điều hướng chính trên di động"
       className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:hidden"
     >
       <ul
-        style={{ gridTemplateColumns: `repeat(${mobileNavigationItems.length}, minmax(0, 1fr))` }}
-        className="pointer-events-auto relative mx-auto grid max-w-md rounded-full bg-card/80 p-1.5 shadow-[0_8px_30px_rgb(0_0_0/0.08)] backdrop-blur-xl backdrop-saturate-150 dark:ring-1 dark:ring-foreground/10">
-        {/* The pill behind the current tab slides from tab to tab. */}
+        style={
+          {
+            "--tab-count": mobileNavigationItems.length,
+            gridTemplateColumns: `repeat(${mobileNavigationItems.length}, minmax(0, 1fr))`,
+          } as CSSProperties
+        }
+        className="pointer-events-auto relative mx-auto grid w-full max-w-md rounded-full bg-card/80 p-1.5 shadow-[0_8px_30px_rgb(0_0_0/0.12)] backdrop-blur-xl backdrop-saturate-150 dark:ring-1 dark:ring-foreground/10">
+        {/* The dark pill behind the current tab slides from tab to tab. */}
         <li
           aria-hidden="true"
           className={cn(
-            "absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/var(--tab-count))] rounded-full bg-muted transition-[translate,opacity] duration-300 ease-out motion-reduce:duration-150",
+            "absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/var(--tab-count))] rounded-full bg-primary transition-[translate,opacity] duration-300 ease-out motion-reduce:duration-150",
             activeIndex < 0 && "opacity-0",
           )}
-          style={
-            {
-              "--tab-count": mobileNavigationItems.length,
-              translate: `${Math.max(activeIndex, 0) * 100}% 0`,
-            } as CSSProperties
-          }
+          style={{ translate: `${Math.max(activeIndex, 0) * 100}% 0` }}
         />
         {mobileNavigationItems.map((item) => {
           const isActive = menuUrlFor(activePathname) === item.url
@@ -189,14 +191,11 @@ export function MobileBottomNav() {
                 onClick={(event) => navigateTo(event, item.url)}
                 aria-current={pathname === item.url ? "page" : undefined}
                 className={cn(
-                  "flex min-h-14 min-w-0 touch-manipulation flex-col items-center justify-center gap-1 rounded-full text-muted-foreground transition-colors outline-none select-none [-webkit-tap-highlight-color:transparent] focus-visible:ring-3 focus-visible:ring-ring/50",
-                  isActive && "text-foreground",
+                  "flex h-12 min-w-0 touch-manipulation items-center justify-center rounded-full text-muted-foreground transition-colors duration-300 outline-none select-none [-webkit-tap-highlight-color:transparent] focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:duration-150",
+                  isActive && "text-primary-foreground",
                 )}
               >
-                <Icon className="size-5 shrink-0" aria-hidden="true" />
-                <span className="max-w-full truncate text-[11px] max-[359px]:hidden">
-                  {item.mobileTitle}
-                </span>
+                <Icon className="size-[22px] shrink-0" aria-hidden="true" />
               </Link>
             </li>
           )

@@ -34,14 +34,22 @@ type PageHeaderProps = {
    * search field, so nothing under it moves.
    */
   replacement?: React.ReactNode
+  /**
+   * false: below md the title is only for screen readers (and the compact bar
+   * once scrolled), as in native apps where the tab bar names the page.
+   */
+  phoneTitle?: boolean
 }
 
 /** A title only, as in native apps: what each page holds is plain from its content. */
-function PageHeader({ title, actions, accessory, replacement }: PageHeaderProps) {
+function PageHeader({ title, actions, accessory, replacement, phoneTitle = true }: PageHeaderProps) {
   return (
     <header
       data-slot="page-header"
-      className="flex flex-col gap-5 pt-1 sm:flex-row sm:items-center sm:justify-between"
+      className={cn(
+        "flex flex-col gap-5 pt-1 sm:flex-row sm:items-center sm:justify-between",
+        !phoneTitle && "max-md:sr-only",
+      )}
     >
       <div className={cn("flex min-w-0 flex-1 items-center justify-between gap-3", replacement && "max-lg:hidden")}>
         <div className="min-w-0">

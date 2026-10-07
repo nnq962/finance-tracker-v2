@@ -20,7 +20,6 @@ import { PlanOverlay } from "@/components/plans/plan-overlay"
 import { useWelcome } from "@/components/onboarding/welcome"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
   Sheet,
@@ -150,10 +149,11 @@ export function SettingsView({
       {/* From md up the groups pair up across the full width, the app
           group last. */}
       <div className="grid items-start gap-6 md:grid-cols-2 md:gap-8">
-        <SettingsGroup title="Tài khoản">
+        {/* The person first, as in native settings: a larger avatar, the plan beside. */}
+        <SettingsGroup>
           <SettingsRow
             media={
-              <Avatar>
+              <Avatar size="xl">
                 <AvatarImage src={user.avatar} alt={user.name} />
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
@@ -167,10 +167,9 @@ export function SettingsView({
               </span>
             }
             description={user.email || undefined}
-            value={<Badge variant={isPro ? "secondary" : "outline"}>{plans[planState.plan].label}</Badge>}
+            value={`Gói ${plans[planState.plan].label}`}
             onClick={() => setPlanOpen(true)}
           />
-          <SignOutRow />
         </SettingsGroup>
 
         <AiQuotaGroup planState={planState} />
@@ -223,19 +222,13 @@ export function SettingsView({
             icon={SmartphoneIcon}
             tone="cyan"
             title="Thiết bị nhận thông báo"
-            value={String(devices.devices.length)}
+            value={devices.devices.length > 0 ? String(devices.devices.length) : "Chưa có"}
             onClick={() => open("devices")}
           />
         </SettingsGroup>
 
         <SettingsGroup
           title="Ứng dụng"
-          footer={
-            <span className="flex items-center justify-center gap-2">
-              Finance Tracker · v{process.env.NEXT_PUBLIC_APP_VERSION}
-              <Badge variant="secondary">Beta</Badge>
-            </span>
-          }
         >
           <SettingsRow
             icon={CalculatorIcon}
@@ -254,6 +247,11 @@ export function SettingsView({
           {process.env.NODE_ENV === "production" ? null : (
             <SettingsRow icon={SwatchBookIcon} tone="neutral" title="Thiết kế" onClick={() => router.push("/design")} />
           )}
+        </SettingsGroup>
+
+        {/* Signing out last and alone, as in native settings, with the version under it. */}
+        <SettingsGroup footer={<span className="block text-center">Finance Tracker {process.env.NEXT_PUBLIC_APP_VERSION} · Beta</span>}>
+          <SignOutRow />
         </SettingsGroup>
       </div>
 

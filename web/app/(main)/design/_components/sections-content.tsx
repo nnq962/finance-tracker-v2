@@ -2,7 +2,9 @@
 
 import * as React from "react"
 import {
+  ArrowDownLeftIcon,
   ArrowLeftRightIcon,
+  ArrowUpRightIcon,
   BellRingIcon,
   CalendarDaysIcon,
   CopyIcon,
@@ -33,6 +35,7 @@ import { IconTile } from "@/components/app/icon-tile"
 import { Money } from "@/components/app/money"
 import { MonthPickerSheet } from "@/components/app/month-picker-sheet"
 import { MonthSelect } from "@/components/app/month-select"
+import { FlowTiles } from "@/components/app/flow-tiles"
 import { NoticeBanner } from "@/components/app/notice-banner"
 import { PageDots } from "@/components/app/page-dots"
 import { PromoBanner } from "@/components/app/promo-banner"
@@ -135,8 +138,21 @@ export function ContentSections() {
 }
 
 function CardSection() {
+  const [flow, setFlow] = React.useState<"in" | "out" | null>(null)
+
   return (
     <CatalogSection id="card">
+      <Wide>
+        <BlockLabel className="px-1">Hai chiều tiền, chạm để lọc danh sách (FlowTiles)</BlockLabel>
+        <FlowTiles
+          value={flow}
+          onValueChange={setFlow}
+          tiles={[
+            { value: "in", label: "Tiền vào", amount: 18_000_000, caption: "1 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
+            { value: "out", label: "Tiền ra", amount: 5_152_000, caption: "16 giao dịch", icon: ArrowUpRightIcon, tone: "expense" },
+          ]}
+        />
+      </Wide>
       <Card size="lg" variant="inverse">
         <CardContent>
           <CardLabel as="p">Số dư khả dụng · Card inverse</CardLabel>
@@ -303,6 +319,11 @@ function ListSection() {
         />
         <SettingsRow title="Đăng xuất" destructive onClick={() => toast("Đăng xuất")} />
       </SettingsGroup>
+      <SettingsGroup title="Đã tất toán (collapsible)" size="lg" collapsible={{ showLabel: "Hiện 2 khoản" }}>
+        {dueSamples.map(([name, kind, amount]) => (
+          <SettingsRow key={name} title={name} description={kind} value={<Money amount={amount} size="sm" />} />
+        ))}
+      </SettingsGroup>
       <SettingsGroup title="Vuốt trái để xoá (swipeAction)" size="lg">
         {rows.map(([name, time, amount]) => (
           <SettingsRow
@@ -437,6 +458,11 @@ function FeedbackSection() {
       <Wide>
         <NoticeBanner tone="warning" icon={BellRingIcon} title="Sắp đến hạn">
           Hoá đơn điện 520.000đ đến hạn ngày 10/10.
+        </NoticeBanner>
+      </Wide>
+      <Wide>
+        <NoticeBanner tone="warning" title="1 khoản quá hạn" onClick={() => toast("Mở khoản quá hạn")}>
+          Minh Tuấn · bấm được cả khối (onClick)
         </NoticeBanner>
       </Wide>
       <Block label="Mở thử" wide>

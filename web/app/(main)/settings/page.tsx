@@ -41,9 +41,7 @@ export default async function SettingsPage({
 
   return (
     <Page>
-      <PageHeader
-        title="Cài đặt"
-      />
+      <PageHeader title="Cài đặt" phoneTitle={false} />
 
       <SettingsView
         key={user.uid}

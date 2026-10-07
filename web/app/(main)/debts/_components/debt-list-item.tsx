@@ -1,5 +1,5 @@
 import { SettingsRow } from "@/components/settings-list"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { categoryColorOptions } from "@/lib/categories/category-colors"
 import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
 import { cn } from "@/lib/utils"
 
@@ -36,6 +36,16 @@ function getDebtStatus(debt: Debt) {
   }
 }
 
+// Rose reads as money owed, slate as nothing chosen: neither marks a person.
+const contactColors = categoryColorOptions.filter((color) => color.name !== "rose" && color.name !== "slate")
+
+/** A colour of the category palette per person (FNV-1a of the id), the same on every visit. */
+function contactColor(contactId: string) {
+  let hash = 2_166_136_261
+  for (const char of contactId) hash = Math.imul(hash ^ char.charCodeAt(0), 16_777_619) >>> 0
+  return contactColors[hash % contactColors.length].surfaceClassName
+}
+
 export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemProps) {
   const { remainingAmount, totalAmount, paidAmount } = getDebtMetrics(debt)
   // With interest and a due date ahead: what it will come to then.
@@ -47,10 +57,14 @@ export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemPr
 
   return (
     <SettingsRow
+      // The person's initials on a round tile, the size of the rows' icons.
       media={
-        <Avatar>
-          <AvatarFallback>{contact.initials}</AvatarFallback>
-        </Avatar>
+        <span
+          aria-hidden="true"
+          className={cn("flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-medium", contactColor(contact.id))}
+        >
+          {contact.initials}
+        </span>
       }
       title={contact.name}
       // The rate shows on open debts, so a loan with interest reads apart.

@@ -2,7 +2,7 @@
 
 import type * as React from "react"
 import type { LucideIcon } from "lucide-react"
-import { InfoIcon, XIcon } from "lucide-react"
+import { ChevronRightIcon, InfoIcon, XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -17,8 +17,9 @@ const tones = {
 
 /**
  * A short message in the flow of a page, on a tinted card: news, a warning,
- * a hint. Closable when onDismiss is given. For something that needs a
- * decision, use a dialog; for a passing confirmation, a toast.
+ * a hint. Closable when onDismiss is given; tapped as a whole, with a
+ * chevron, when onClick is (it then opens what it is about). For something
+ * that needs a decision, use a dialog; for a passing confirmation, a toast.
  */
 export function NoticeBanner({
   title,
@@ -26,6 +27,7 @@ export function NoticeBanner({
   tone = "info",
   icon: Icon = InfoIcon,
   onDismiss,
+  onClick,
   className,
 }: {
   title: React.ReactNode
@@ -33,8 +35,31 @@ export function NoticeBanner({
   tone?: keyof typeof tones
   icon?: LucideIcon
   onDismiss?: () => void
+  onClick?: () => void
   className?: string
 }) {
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        data-slot="notice-banner"
+        onClick={onClick}
+        className={cn(
+          "pressable flex w-full items-center gap-3 rounded-2xl p-4 text-left text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30",
+          tones[tone].surface,
+          className,
+        )}
+      >
+        <Icon aria-hidden="true" className={cn("size-5 shrink-0", tones[tone].icon)} />
+        <span className="min-w-0 flex-1">
+          <span className="block font-medium">{title}</span>
+          {children ? <span className="block truncate text-muted-foreground">{children}</span> : null}
+        </span>
+        <ChevronRightIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+      </button>
+    )
+  }
+
   return (
     <div
       role="status"
