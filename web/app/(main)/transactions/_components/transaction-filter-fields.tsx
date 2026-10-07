@@ -20,13 +20,14 @@ import type {
   TransactionSearchFilters,
 } from "../_types/transaction"
 
-const filters: { label: string; value: TransactionFilter }[] = [
+/** The kinds a list can be narrowed to, as chips. */
+export const transactionKindOptions = [
   { label: "Tất cả", value: "all" },
-  { label: "Chi tiền", value: "expense" },
-  { label: "Thu tiền", value: "income" },
+  { label: "Chi tiêu", value: "expense" },
+  { label: "Thu nhập", value: "income" },
   { label: "Chuyển khoản", value: "transfer" },
   { label: "Vay nợ", value: "debt" },
-]
+] as const satisfies readonly { label: string; value: TransactionFilter }[]
 
 /** How many conditions narrow the list, not counting the search text. */
 export function countActiveFilters(
@@ -40,6 +41,28 @@ export function countActiveFilters(
     searchFilters.accountIds.length +
     searchFilters.categoryGroupIds.length
   )
+}
+
+/**
+ * The search filters once the kind changes to `kind`: chosen categories that
+ * cannot match it go (transfers and loans have none). The same object when
+ * nothing goes.
+ */
+export function filtersForKind(
+  kind: TransactionFilter,
+  searchFilters: TransactionSearchFilters,
+  categoryGroups: CategoryGroup[],
+) {
+  if (kind === "all") return searchFilters
+  const keep = new Set(
+    kind === "transfer" || kind === "debt"
+      ? []
+      : categoryGroups.filter((group) => group.type === kind).map((group) => group.id),
+  )
+  const categoryGroupIds = searchFilters.categoryGroupIds.filter((id) => keep.has(id))
+  return categoryGroupIds.length === searchFilters.categoryGroupIds.length
+    ? searchFilters
+    : { ...searchFilters, categoryGroupIds }
 }
 
 export type TransactionFilterFieldsProps = {
@@ -79,23 +102,11 @@ export function TransactionFilterFields({
   const amountRangeReversed =
     minAmount !== null && maxAmount !== null && minAmount > maxAmount
 
-  /** Changes the kind, dropping categories that cannot match it (transfers have none). */
+  /** Changes the kind, dropping categories that cannot match it. */
   function changeFilter(next: TransactionFilter) {
     onFilterChange(next)
-    if (next === "all") return
-    const keep = new Set(
-      next === "transfer" || next === "debt"
-        ? []
-        : categoryGroups
-            .filter((group) => group.type === next)
-            .map((group) => group.id),
-    )
-    const categoryGroupIds = searchFilters.categoryGroupIds.filter((id) =>
-      keep.has(id),
-    )
-    if (categoryGroupIds.length !== searchFilters.categoryGroupIds.length) {
-      onSearchFiltersChange({ ...searchFilters, categoryGroupIds })
-    }
+    const narrowed = filtersForKind(next, searchFilters, categoryGroups)
+    if (narrowed !== searchFilters) onSearchFiltersChange(narrowed)
   }
 
   function updateCategoryGroupSelection(
@@ -132,7 +143,7 @@ export function TransactionFilterFields({
           className="flex-wrap"
           aria-label="Lọc loại giao dịch"
         >
-          {filters.map((item) => (
+          {transactionKindOptions.map((item) => (
             <ToggleGroupItem key={item.value} value={item.value}>
               {item.label}
             </ToggleGroupItem>
@@ -202,8 +213,8 @@ export function TransactionFilterFields({
 
       {(filter === "all" || filter === "expense") &&
       expenseCategoryGroups.length > 0 ? (
-        <Field aria-label="Lọc theo nhóm chi">
-          <FieldLabel>Nhóm chi</FieldLabel>
+        <Field aria-label="Lọc theo hạng mục chi">
+          <FieldLabel>Hạng mục chi</FieldLabel>
           <ToggleGroup
             type="multiple"
             size="sm"
@@ -214,7 +225,7 @@ export function TransactionFilterFields({
               updateCategoryGroupSelection("expense", categoryGroupIds)
             }
             className="flex-wrap"
-            aria-label="Lọc theo nhóm chi"
+            aria-label="Lọc theo hạng mục chi"
           >
             {expenseCategoryGroups.map((group) => (
               <ToggleGroupItem key={group.id} value={group.id}>
@@ -227,8 +238,8 @@ export function TransactionFilterFields({
 
       {(filter === "all" || filter === "income") &&
       incomeCategoryGroups.length > 0 ? (
-        <Field aria-label="Lọc theo nhóm thu">
-          <FieldLabel>Nhóm thu</FieldLabel>
+        <Field aria-label="Lọc theo hạng mục thu">
+          <FieldLabel>Hạng mục thu</FieldLabel>
           <ToggleGroup
             type="multiple"
             size="sm"
@@ -239,7 +250,7 @@ export function TransactionFilterFields({
               updateCategoryGroupSelection("income", categoryGroupIds)
             }
             className="flex-wrap"
-            aria-label="Lọc theo nhóm thu"
+            aria-label="Lọc theo hạng mục thu"
           >
             {incomeCategoryGroups.map((group) => (
               <ToggleGroupItem key={group.id} value={group.id}>

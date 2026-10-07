@@ -46,7 +46,7 @@ const tabsListVariants = cva(
     variants: {
       variant: {
         // A segmented control: a dark pill slides under the chosen option.
-        default: "rounded-full bg-track p-1 group-data-horizontal/tabs:h-11",
+        default: "rounded-full bg-track p-1 group-data-horizontal/tabs:h-[52px]",
         // Tabs over content: a short bar slides under the chosen one.
         line: "rounded-none border-b bg-transparent group-data-horizontal/tabs:h-11",
       },
@@ -117,7 +117,7 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "relative inline-flex h-full flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors duration-200 outline-none group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "relative inline-flex h-full flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-medium whitespace-nowrap text-foreground/60 transition-colors duration-200 outline-none group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         "data-active:text-primary-foreground group-data-[variant=line]/tabs-list:rounded-none group-data-[variant=line]/tabs-list:data-active:text-foreground",
         // Before the indicator is measured (first paint), the chosen trigger fills itself.
         "[[data-slot=tabs-list][data-variant=default]:not([data-ready])>&]:data-active:bg-primary",

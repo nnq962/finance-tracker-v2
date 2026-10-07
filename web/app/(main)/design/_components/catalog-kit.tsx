@@ -1,6 +1,5 @@
 import type * as React from "react"
 
-import { CardLabel } from "@/components/app/card-label"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
@@ -67,11 +66,12 @@ export function Block({
   )
 }
 
+/** The caption naming a sample, in the mockup's library style: 11px capitals, spaced out. */
 export function BlockLabel({ className, children }: { className?: string; children: React.ReactNode }) {
   return (
-    <CardLabel as="p" className={cn("mb-3", className)}>
+    <p className={cn("mb-3 text-[11px] font-medium tracking-[0.08em] text-muted-foreground uppercase", className)}>
       {children}
-    </CardLabel>
+    </p>
   )
 }
 

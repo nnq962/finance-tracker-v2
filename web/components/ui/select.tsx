@@ -43,7 +43,7 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "flex w-fit items-center justify-between gap-1.5 rounded-[var(--control-radius,1rem)] border border-transparent bg-field px-[var(--control-px,0.875rem)] py-2 text-base whitespace-nowrap md:text-sm transition-[color,background-color,box-shadow] duration-200 outline-none focus-visible:bg-card focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:ring-2 aria-invalid:ring-destructive data-placeholder:text-muted-foreground data-[size=default]:h-[var(--control-h,2.75rem)] data-[size=sm]:h-9 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "flex w-fit items-center justify-between gap-1.5 rounded-[var(--control-radius,1.5rem)] border border-transparent bg-field px-[var(--control-px,1rem)] py-2 text-base whitespace-nowrap md:text-sm transition-[color,background-color,box-shadow] duration-200 outline-none focus-visible:bg-card focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:ring-2 aria-invalid:ring-destructive data-placeholder:text-muted-foreground data-[size=default]:h-[var(--control-h,3rem)] data-[size=sm]:h-9 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}

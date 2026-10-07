@@ -201,7 +201,7 @@ export function SalaryCalculator() {
         <CardContent className="space-y-4">
           <div>
             <p className="text-sm text-muted-foreground">Thực nhận</p>
-            <p className="text-3xl font-semibold tabular-nums [overflow-wrap:anywhere]">
+            <p className="text-[34px] leading-tight font-medium tracking-tight tabular-nums [overflow-wrap:anywhere]">
               {formatCurrency(result.netIncome)}
             </p>
           </div>

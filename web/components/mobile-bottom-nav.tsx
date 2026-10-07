@@ -145,12 +145,12 @@ export function MobileBottomNav() {
     >
       <ul
         style={{ gridTemplateColumns: `repeat(${mobileNavigationItems.length}, minmax(0, 1fr))` }}
-        className="pointer-events-auto relative mx-auto grid max-w-md rounded-full bg-card/80 p-1 shadow-lg ring-1 ring-foreground/5 backdrop-blur-xl backdrop-saturate-150 dark:ring-foreground/10">
+        className="pointer-events-auto relative mx-auto grid max-w-md rounded-full bg-card/80 p-1.5 shadow-[0_8px_30px_rgb(0_0_0/0.08)] backdrop-blur-xl backdrop-saturate-150 dark:ring-1 dark:ring-foreground/10">
         {/* The pill behind the current tab slides from tab to tab. */}
         <li
           aria-hidden="true"
           className={cn(
-            "absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/var(--tab-count))] rounded-full bg-muted transition-[translate,opacity] duration-300 ease-out motion-reduce:duration-150",
+            "absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/var(--tab-count))] rounded-full bg-muted transition-[translate,opacity] duration-300 ease-out motion-reduce:duration-150",
             activeIndex < 0 && "opacity-0",
           )}
           style={
@@ -194,7 +194,7 @@ export function MobileBottomNav() {
                 )}
               >
                 <Icon className="size-5 shrink-0" aria-hidden="true" />
-                <span className="max-w-full truncate text-[11px] font-medium max-[359px]:hidden">
+                <span className="max-w-full truncate text-[11px] max-[359px]:hidden">
                   {item.mobileTitle}
                 </span>
               </Link>

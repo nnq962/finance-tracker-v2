@@ -271,7 +271,7 @@ export function TransactionMadLibs({
         <CardContent>
           {/* Loose leading leaves room for the blanks' underline. */}
           <motion.p
-            className="text-lg leading-loose text-muted-foreground"
+            className="text-base leading-loose text-muted-foreground"
             variants={sentence}
             initial="hidden"
             animate="shown"

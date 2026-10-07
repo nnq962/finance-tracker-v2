@@ -6,7 +6,6 @@ import { BellIcon, GiftIcon, HandCoinsIcon, PencilLineIcon, SparklesIcon, type L
 import type { IconTileTone } from "@/components/app/icon-tile"
 import { DrawerNavHeader } from "@/components/drawer-nav-header"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
@@ -115,9 +114,7 @@ export function NotificationsButton() {
         >
           <BellIcon />
           {unread > 0 ? (
-            <Badge variant="count" className="absolute -top-1 -right-1">
-              {unread}
-            </Badge>
+            <span aria-hidden="true" className="absolute top-3 right-3 size-1.5 rounded-full bg-warning" />
           ) : null}
         </Button>
       </DrawerTrigger>

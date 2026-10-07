@@ -18,14 +18,16 @@ component ở đó là cả app đổi theo.
 
 ## Nguyên tắc
 
-1. **Thẻ mềm trên nền xám.** Nền xám trung tính rất nhạt (`#f6f6f6`); thẻ trắng bo tròn, không
-   viền, không bóng, tách khỏi nền nhờ chênh màu. Theme tối theo iOS: nền đen, thẻ `#1c1c1e`.
-2. **Một màu nhấn.** Gần đen (trắng ở theme tối) cho nút chính, chip đang chọn, công tắc bật,
-   tiến độ.
+1. **Thẻ mềm trên nền xám.** Nền trắng ngà rất nhạt (`#f2f2f1`, "Canvas" của mockup); thẻ trắng
+   bo 28, không viền, không bóng, tách khỏi nền nhờ chênh màu. Xám là thang `neutral` của
+   Tailwind (không ngả xanh). Theme tối: nền `#0a0a0a`, thẻ `#171717`.
+2. **Một màu nhấn.** `neutral-900` (trắng ở theme tối) cho nút chính, chip đang chọn, công tắc
+   bật, tiến độ.
 3. **Chữ nhẹ.** Chỉ dùng `font-normal` và `font-medium`, kể cả tiêu đề lớn của trang.
-4. **Màu mang ý nghĩa.** `income` tiền vào, `expense` tiền ra, `transfer` chuyển khoản, `ai`
-   AI và Pro, `warning` nhắc nhở. Chỉ tô số tiền, icon, badge; nền nhạt dùng độ mờ
-   (`bg-income/10`).
+4. **Màu mang ý nghĩa.** `income` tiền vào (emerald), `expense` tiền ra (rose), `transfer`
+   chuyển khoản (sky), `ai` AI và Pro (xanh ngọc), `warning` nhắc nhở (amber). Chỉ tô số tiền,
+   icon, badge; nền nhạt dùng độ mờ (`bg-income/10`). Trong danh sách giao dịch chỉ khoản thu có
+   màu, khoản chi để màu chữ thường, như mockup.
 5. **Vừa ngón tay.** Thứ bấm được cao từ 44px. Mọi nút là viên thuốc. Chạm thì hơi lún
    (thu nhỏ 0.97), tắt khi người dùng giảm chuyển động.
 6. **Ít chữ.** Nhãn, mô tả, thông báo ngắn và dễ hiểu, giọng trung tính ("Thêm tài khoản", không
@@ -38,8 +40,8 @@ component ở đó là cả app đổi theo.
 |---|---|
 | Font | Be Vietnam Pro; số tiền `tabular-nums` |
 | Cỡ chữ | Theo mockup: Display 28 (tiêu đề trang) · Title 20 (tiêu đề nhóm) · Headline 16 (tiêu đề thẻ, hộp thoại, trạng thái trống) · Body 14 (nội dung, dòng list, nút, nhãn ô) · Caption 12 (mô tả dòng, lỗi và ghi chú dưới ô). Số tiền lớn 34; chữ trong ô nhập 16 để iOS không phóng to |
-| Bo góc | 28 thẻ lớn, sheet, hộp thoại · 24 thẻ, nhóm danh sách · 20 thẻ nhỏ, menu · 16 ô nhập, ô icon · tròn cho nút, chip, badge, công tắc |
-| Chiều cao điều khiển | Nút 44 · ô nhập/select trong form 52, ô lẻ như thanh tìm kiếm 44 (bo 16) · segmented 44 · 36/32 chỗ chật · 48 nút cuối form |
+| Bo góc | 28 thẻ, nhóm danh sách, hộp thoại · 32 đầu sheet đáy · 24 ô nhập (cao 48 nên tròn như nút), action sheet · 22 banner · 20 thẻ nhỏ, menu · 16 ô icon, ô OTP · tròn cho nút, chip, badge, công tắc |
+| Chiều cao điều khiển | Nút theo mockup: L 56 · M 48 (mặc định) · S 36 · nút nổi chính 60 (`size="fab"`) · ô nhập, select, thanh tìm kiếm 48, cùng cỡ và độ bo với nút · segmented 52 (lựa chọn 44) · nút tròn icon 44 · công tắc 52×32 |
 | Khoảng cách | Bội của 4. Lề trang 16 (24 từ md) · giữa các phần của trang và các nhóm list 24 (32 từ md; `Page` và layout trang tự lo) · tiêu đề → nội dung 8 · các thứ trong một phần 12 (thẻ cạnh thẻ, segmented → list) · đệm thẻ 16 `sm`, 20, 24 `lg`. Tiêu đề luôn gần nội dung của nó hơn phần phía trên: với `Section` thấy ~16 dưới tiêu đề, ~32 trên |
 | Bóng | Thẻ không bóng; chỉ lớp nổi (menu, sheet, hộp thoại, tab bar, nút nổi) có bóng |
 | Chuyển động | 150–250ms ease-out; chỉ báo trượt (segmented, công tắc) nảy nhẹ ~450ms. Dùng CSS transition trên `translate`/`opacity` hoặc `motion` cho chiều cao, không dùng layout animation hay transition `grid-template-rows` (giật trên iOS Safari). Khi `prefers-reduced-motion`, rút còn 150ms ease-out, không nảy, thay vì tắt hẳn |
@@ -47,38 +49,47 @@ component ở đó là cả app đổi theo.
 ## Component (`components/ui`, đã may lại)
 
 - **Button:** viên thuốc. Kiểu `default` (đen), `secondary` (xám), `outline` (trắng có viền),
-  `ghost`, `destructive` (đỏ nhạt), `link`. Cỡ `xs` 32 · `sm` 36 · mặc định 44 · `lg` 48;
-  `icon` 44, `icon-sm` 36, `icon-xs` 32, `icon-lg` 48.
-- **Card:** `size="sm"` (bo 20, đệm 16) · mặc định (24, 20) · `size="lg"` (28, 24) cho thẻ chính
-  của trang. `variant="inverse"`: thẻ đen (sáng ở theme tối) cho một con số dẫn đầu như số dư.
-- **Input, Textarea, InputGroup, Select, Combobox:** chữ 16px (để iOS không phóng to), bo 16.
-  Trong một `Field` của form cao 52; đứng riêng (thanh tìm kiếm) cao 44. Khi focus, ô chuyển
-  nền trắng (màu thẻ) và có viền đậm 2px màu nhấn; khi lỗi, viền 2px màu `destructive`. `Field` đặt kích thước
-  qua biến `--control-h`, `--control-radius`, `--control-px`.
+  `ghost`, `destructive` (đỏ nhạt), `link`. Cỡ như mockup: `lg` 56 · mặc định 48 · `sm` 36
+  (thêm `xs` 32); `icon` 44, `icon-sm` 36, `icon-xs` 32, `icon-lg` 48, `fab` 60. Icon trong nút
+  18px; nút tắt mờ còn 35%.
+- **Card:** bo 28 như mockup; mặc định đệm 20 · `size="lg"` đệm 24 cho thẻ chính của trang ·
+  `size="sm"` (bo 20, đệm 16). Nhãn trong thẻ (`CardLabel`): chữ thường 14px màu phụ, như "Tài
+  sản ròng". `variant="inverse"`: thẻ đen (sáng ở theme tối) cho một con số dẫn đầu như số dư.
+- **Input, Textarea, InputGroup, Select, Combobox:** chữ 16px (để iOS không phóng to). Cao 48 và
+  bo 24, cùng cỡ với nút mặc định, trong form cũng như đứng riêng (thanh tìm kiếm); `Textarea` và
+  `InlineSelect` khi cao lên vẫn giữ góc 24. Khi focus, ô chuyển nền trắng (màu thẻ) và có viền đậm
+  2px màu nhấn; khi lỗi, viền 2px màu `destructive`. Kích thước đặt qua biến `--control-h`,
+  `--control-radius`, `--control-px` (mặc định 48, 24, 16).
 - **Màu ô nhập theo bề mặt** (token `field`, `track` và utility `surface-grouped` / `surface-plain`
   trong `globals.css`): trên nền xám (trang, sheet) ô nhập, chip, nút phụ màu trắng; trên thẻ
   trắng chúng màu xám. Thẻ tự đặt `surface-plain`, khung trang và sheet đặt `surface-grouped`. Trong `SelectContent`, các `SelectItem` luôn nằm trong
   `SelectGroup` (kèm `SelectLabel` nếu nhóm có tên), như shadcn hướng dẫn; danh sách tài khoản
   dùng `AccountSelectGroups`.
-- **Tabs:** segmented control dạng viên thuốc, viên đen (trắng ở theme tối) trượt tới lựa chọn
-  (motion). Dùng cho 2–4 chế độ cùng loại (Chi/Thu/Chuyển). `variant="line"`: tab gạch chân,
+- **Tabs:** segmented control dạng viên thuốc cao 52 (lựa chọn 44), viên đen (trắng ở theme tối)
+  trượt tới lựa chọn, chữ lựa chọn chưa chọn `neutral-500`. Dùng cho 2–4 chế độ cùng loại (Chi/Thu/Chuyển). `variant="line"`: tab gạch chân,
   vạch trượt theo.
-- **ToggleGroup / Toggle:** chip viên thuốc xám, chip đang chọn màu đen; `variant="outline"` là
-  chip trắng có viền. Dùng cho bộ lọc, gợi ý, chọn icon/màu.
-- **Switch:** cỡ iOS 51×31, núm có dấu ✓ khi bật.
-- **Checkbox:** ô 24, đen có ✓ khi chọn; `shape="circle"` cho danh sách chọn nhiều kiểu iOS.
+- **ToggleGroup / Toggle:** chip viên thuốc xám chữ thường (không đậm), chip đang chọn màu đen;
+  `variant="outline"` là chip trắng có viền; `variant="segmented"` là vài lựa chọn icon trên rãnh
+  xám bo 16, lựa chọn đang chọn là ô trắng có bóng nhẹ (kiểu iOS). Dùng cho bộ lọc, gợi ý, chọn
+  icon/màu.
+- **Switch:** như mockup: rãnh 52×32, núm 24 cách mép 4, dấu ✓ 12 khi bật; tắt là rãnh `neutral-200`.
+- **Checkbox:** ô 24 bo 8, viền 1.5 `neutral-300` khi chưa chọn, đen có ✓ khi chọn; `shape="circle"` cho danh sách chọn nhiều kiểu iOS.
   **RadioGroup:** vòng 24, đen với chấm sáng khi chọn.
 - **Slider:** rãnh dày 8, núm trắng; hai giá trị là khoảng; `formatValue` hiện bong bóng giá trị
   khi kéo.
-- **Accordion:** dòng câu hỏi cao từ 56, nút + xoay thành × khi mở.
-- **Badge:** viên thuốc cao 24; kiểu màu ý nghĩa `income`, `expense`, `transfer`, `ai`,
-  `warning`; `count` là số đỏ đặc trên icon (chưa đọc, đang chờ).
+- **Accordion:** câu hỏi chữ 14, dòng cao từ 56, nút + trong vòng xám xoay thành × khi mở.
+- **Progress:** thanh dày 8. **Empty:** icon mảnh trong ô vuông xám 80 bo 28, tiêu đề 16.
+- **Badge:** viên thuốc cao 24 có chấm màu ở đầu; kiểu màu ý nghĩa `income`, `expense`,
+  `transfer`, `ai`, `warning`; `count` là số đỏ đặc trên icon. Có cái mới mà không cần số (chuông
+  thông báo): chấm cam 6px như mockup.
 - **Sheet:**
   - `variant="screen"`: một màn hình đẩy từ phải, phủ cả điện thoại, có safe-area, nền xám như
     trang; panel 28rem trên desktop. Dùng cho form và màn chi tiết, kèm `SheetNavHeader` (nút
     quay lại tròn ở bên trái, tiêu đề giữa).
   - `variant="bottom"`: thẻ trồi từ đáy, bo 28, có thanh kéo, nền xám để nhóm dòng trắng nổi
     lên. Dùng cho lựa chọn ngắn và hành động.
+- **Drawer mặc định (sheet đáy):** như half sheet của mockup: sát hai mép, đầu bo 32, thanh kéo
+  40×6 `neutral-200`, nội dung căn trái.
 - **Status bar:** màu cố định bằng màu nền trang (`components/pwa-theme-color.tsx`). Web không
   đổi được màu status bar mượt theo chuyển động, nên mọi lớp phủ phủ tới đầu màn hình (sheet
   `screen`) dùng chung nền xám với trang thay vì đổi màu.
@@ -89,16 +100,15 @@ component ở đó là cả app đổi theo.
   xếp chồng, vuốt để đóng, hẹn giờ.
 - **Dialog, AlertDialog:** bo 28. Chỉ để xác nhận hoặc nhập rất ngắn; nút huỷ màu xám.
 - **DropdownMenu, Select, Combobox (danh sách):** bo 20, dòng cao 40.
-- **Progress:** thanh mảnh 6px. **Empty:** icon trong vòng tròn xám.
 
 ## Khối kiểu app (`components/app`)
 
 | Khối | Dùng khi |
 |---|---|
 | `Section` | Một phần có tiêu đề ngoài thẻ (`SectionHeader`: 20px, đậm vừa, kèm ghi chú và "Xem tất cả" hoặc nút); nội dung cách tiêu đề 8, các thứ bên trong cách nhau 12. Phần có tiêu đề lớn luôn dùng nó |
-| `Money` | Mọi số tiền: chữ số đều, "đ" viết liền sau số, cùng cỡ và màu (55.103.000đ); cỡ `sm`/`md`/`lg`/`xl`, màu theo `tone` |
+| `Money` | Mọi số tiền: chữ số đều, "đ" viết liền sau số (55.103.000đ); ở cỡ lớn (`lg`, `xl`) "đ" nhỏ hơn và mờ 50% như mockup; cỡ `sm`/`md`/`lg`/`xl`, màu theo `tone` |
 | `IconTile` | Icon trên ô vuông bo góc nền nhạt (như mockup); màu hạng mục hoặc màu ý nghĩa. Cỡ `sm` 36 (mọi dòng list, qua `SettingsRow`), `md` 40, `lg` 48 (đầu thẻ, đầu sheet); `shape="circle"` chỉ cho chữ cái, khuôn mặt |
-| `DeltaBadge` | % thay đổi so với kỳ trước; xanh khi tốt, đỏ khi xấu |
+| `DeltaBadge` | % thay đổi so với kỳ trước, dạng chữ nhỏ có mũi tên ("↘ 93%") như mockup, không nền; xanh khi tốt, đỏ khi xấu |
 | `StatGroup` + `Stat` | 2–4 chỉ số chia cột bằng vạch mảnh, mỗi cột có thể mở trang |
 | `ProgressRing` | Tiến độ dạng vòng mảnh có số ở giữa |
 | `FormSection` | Các trường của một form trong thẻ trắng, có tiêu đề nhỏ, ghi chú và nội dung phụ bên dưới |
@@ -108,6 +118,8 @@ component ở đó là cả app đổi theo.
 | `InlineSelect` | Dropdown mở tại chỗ, đẩy nội dung bên dưới xuống: chọn trong vài tài khoản, ví. Hiệu ứng chiều cao đơn giản (300ms ease-out); trên iOS kém mượt hơn transform, đã chấp nhận. Danh sách dài vẫn dùng `Select`/`Combobox` |
 | `CardLabel` | Tiêu đề nhỏ trong thẻ ("TÀI SẢN RÒNG", "ĐÃ CHI"): chữ hoa 12, đậm 600, giãn chữ nhẹ, màu phụ; trên thẻ `inverse` thì sáng 60%. Mọi thẻ có nhãn dùng nó |
 | `Chip` | Chip tĩnh cho thứ đã chọn hoặc gắn kèm (người, thẻ #): có thể có avatar và nút × |
+| `MonthPickerSheet` | Chọn tháng từ sheet đáy: năm với ‹ ›, lưới 12 tháng, tháng chưa tới mờ đi, nút "Về tháng này" |
+| `MonthTabs` | Tháng đang xem dạng tab cuộn ngang: 12 tháng gần nhất, mới nhất bên phải, "Cũ hơn" ở đầu mở `MonthPickerSheet`. Tab chạm vào được chọn ngay khi tháng còn đang tải (`pending`). Một cách đổi tháng duy nhất cho trang có tháng |
 | `Stepper` | Đếm từng bước bằng − / + (số người, số tháng) |
 | `OtpInput` | Mã một lần trong các ô riêng; tự nhảy ô, dán được cả mã |
 | `WheelPicker` + `WheelPickerGroup` | Bánh xe cuộn kiểu iOS để chọn giờ, phút |
@@ -123,9 +135,9 @@ component ở đó là cả app đổi theo.
 | `NoticeBanner` | Thông báo trong trang trên nền nhạt theo `tone`, đóng được |
 
 Danh sách nằm ở `components/settings-list.tsx`. `SettingsGroup` là nhóm dòng trong một thẻ
-(`size="lg"` cho trang dạng bảng tin). `SettingsRow` là **mọi** dòng list (cài đặt, giao dịch, nhiệm vụ…), nên các list đồng nhất: cao 64
+(`size="lg"` cho trang dạng bảng tin); đường kẻ giữa các dòng thụt 16 vào từ hai bên. `SettingsRow` là **mọi** dòng list (cài đặt, giao dịch, nhiệm vụ…), nên các list đồng nhất: cao 64
 (một dòng hay tiêu đề + mô tả đều vậy), lề ngang 16, `icon` tự đặt trong `IconTile` cỡ `sm` (36,
-bo 12) màu theo `tone` (xám nếu không truyền), tiêu đề 14, mô tả 12, rồi giá trị, công tắc, số
+bo 12) màu theo `tone` (xám nếu không truyền), tiêu đề 14 (Body), mô tả 12, rồi giá trị, công tắc, số
 tiền hoặc mũi tên ở bên phải. `media` chỉ cho avatar. `swipeAction` cho dòng vuốt để xoá. Dòng ở
 trang Cài đặt mỗi mục một `tone`, như mockup.
 

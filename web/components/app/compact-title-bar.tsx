@@ -39,7 +39,7 @@ export function CompactTitleBar({ title }: { title: string }) {
       >
         <p
           className={cn(
-            "flex h-11 items-center justify-center px-16 text-base font-semibold opacity-0 transition-[opacity,translate] duration-200",
+            "flex h-11 items-center justify-center px-16 text-base font-medium opacity-0 transition-[opacity,translate] duration-200",
             visible ? "translate-y-0 opacity-100" : "translate-y-1",
           )}
         >

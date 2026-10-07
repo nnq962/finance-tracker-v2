@@ -27,7 +27,7 @@ export function DrawerNavHeader({
           <XIcon />
         </Button>
       </DrawerClose>
-      <DrawerTitle className="truncate text-center text-[17px]">{title}</DrawerTitle>
+      <DrawerTitle className="truncate text-center text-base">{title}</DrawerTitle>
       <div className="flex justify-end">{action}</div>
     </div>
   )

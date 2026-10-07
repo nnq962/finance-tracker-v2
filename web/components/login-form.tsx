@@ -53,7 +53,7 @@ export function LoginForm({
               <Image src="/icon.svg" alt="" width={40} height={40} className="size-10" />
               <span className="sr-only">Finance Tracker.</span>
             </div>
-            <h1 className="text-xl font-bold">
+            <h1 className="text-xl font-medium">
               Chào mừng đến với Finance Tracker.
             </h1>
           </div>

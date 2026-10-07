@@ -67,31 +67,30 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
 }
 
 /*
- * Colours after the references in docs/template (see docs/design/colors.md):
- * a light, neutral grey page (#f6f6f6, as in the form and settings
- * references) with white, borderless cards, near-black as the one
- * strong colour, and meaning colours used sparingly. Dark follows iOS: a
- * black page, #1c1c1e cards, #2c2c2e fills.
+ * Colours after the approved Figma Make mockup (see docs/design/colors.md):
+ * Tailwind's neutral greys on a warm off-white page (#f2f2f1), white,
+ * borderless cards, neutral-900 as the one strong colour, and meaning
+ * colours used sparingly. Dark: a #0a0a0a page and #171717 cards.
  */
 :root {
-  --background: oklch(0.973 0 0);
-  --foreground: oklch(0.179 0.004 286);
+  --background: oklch(0.961 0.0013 106.4);
+  --foreground: oklch(0.205 0 0);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.179 0.004 286);
+  --card-foreground: oklch(0.205 0 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.179 0.004 286);
-  --primary: oklch(0.192 0.004 286);
+  --popover-foreground: oklch(0.205 0 0);
+  --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.953 0.003 286.3);
-  --secondary-foreground: oklch(0.179 0.004 286);
-  --muted: oklch(0.953 0.003 286.3);
-  --muted-foreground: oklch(0.565 0.011 286.1);
-  --accent: oklch(0.935 0.004 286.3);
-  --accent-foreground: oklch(0.179 0.004 286);
-  --destructive: oklch(0.626 0.193 23);
-  --border: oklch(0.929 0.004 286.3);
-  --input: oklch(0.896 0.005 286.3);
-  --ring: oklch(0.708 0.012 286.1);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.586 0.253 17.585);
+  --border: oklch(0.97 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.588 0.212 288);
   --chart-2: oklch(0.704 0.123 182.5);
   --chart-3: oklch(0.769 0.165 70.1);
@@ -99,72 +98,75 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --chart-5: oklch(0.656 0.212 354.3);
   --radius: 0.625rem;
   --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.179 0.004 286);
-  --sidebar-primary: oklch(0.192 0.004 286);
+  --sidebar-foreground: oklch(0.205 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.953 0.003 286.3);
-  --sidebar-accent-foreground: oklch(0.179 0.004 286);
-  --sidebar-border: oklch(0.929 0.004 286.3);
-  --sidebar-ring: oklch(0.708 0.012 286.1);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.97 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
   /* Meaning, not decoration: money in, money out, transfers, AI and Pro, warnings. */
-  --income: oklch(0.632 0.142 159.3);
-  --expense: oklch(0.626 0.193 23);
-  --transfer: oklch(0.573 0.2 261.9);
+  --income: oklch(0.596 0.145 163.225);
+  --expense: oklch(0.586 0.253 17.585);
+  --transfer: oklch(0.588 0.158 241.966);
   /* Teal: apart from the other meaning colours (green in, red out, blue transfer, amber warning). */
   --ai: oklch(0.6 0.115 195);
-  --warning: oklch(0.732 0.163 61);
+  --warning: oklch(0.769 0.188 70.08);
   /*
    * Fills that depend on the surface below (see the surface-* utilities):
    * field for inputs, chips and secondary buttons, track for the segmented
-   * control. On a white card they are grey; on the grey page or a grey
-   * sheet the fields turn white, as in iOS grouped screens.
+   * control. On a white card both are the mockup's neutral-100 (#f5f5f5),
+   * barely grey; on the grey page or a grey sheet they turn white, as in iOS
+   * grouped screens.
    */
-  --field-plain: color-mix(in oklch, var(--input) 50%, transparent);
+  --field-plain: oklch(0.97 0 0);
   --field-grouped: var(--card);
-  --track-plain: var(--muted);
-  --track-grouped: color-mix(in oklch, var(--input) 70%, transparent);
+  --track-plain: oklch(0.97 0 0);
+  --track-grouped: var(--card);
   --field: var(--field-plain);
   --track: var(--track-plain);
 }
 
 .dark {
-  --background: oklch(0 0 0);
-  --foreground: oklch(0.971 0.003 286.4);
-  --card: oklch(0.227 0.004 286.1);
-  --card-foreground: oklch(0.971 0.003 286.4);
-  --popover: oklch(0.265 0.004 286.1);
-  --popover-foreground: oklch(0.971 0.003 286.4);
-  --primary: oklch(0.971 0.003 286.4);
-  --primary-foreground: oklch(0.179 0.004 286);
-  --secondary: oklch(0.294 0.004 286.2);
-  --secondary-foreground: oklch(0.971 0.003 286.4);
-  --muted: oklch(0.294 0.004 286.2);
-  --muted-foreground: oklch(0.682 0.01 286.1);
-  --accent: oklch(0.349 0.003 286.2);
-  --accent-foreground: oklch(0.971 0.003 286.4);
-  --destructive: oklch(0.701 0.19 21.2);
-  --border: oklch(0.322 0.005 286.1);
-  --input: oklch(0.403 0.007 286.1);
-  --ring: oklch(0.541 0.011 286);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(1 0 0);
+  --primary: oklch(1 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.712 0.194 13.428);
+  --border: oklch(0.269 0 0);
+  --input: oklch(1 0 0 / 0.15);
+  --ring: oklch(0.556 0 0);
   --chart-1: oklch(0.707 0.166 290.2);
   --chart-2: oklch(0.785 0.133 181.9);
   --chart-3: oklch(0.837 0.164 84.4);
   --chart-4: oklch(0.714 0.143 254.6);
   --chart-5: oklch(0.725 0.175 349.8);
-  --sidebar: oklch(0.179 0.004 286);
-  --sidebar-foreground: oklch(0.971 0.003 286.4);
-  --sidebar-primary: oklch(0.971 0.003 286.4);
-  --sidebar-primary-foreground: oklch(0.179 0.004 286);
-  --sidebar-accent: oklch(0.294 0.004 286.2);
-  --sidebar-accent-foreground: oklch(0.971 0.003 286.4);
-  --sidebar-border: oklch(0.322 0.005 286.1);
-  --sidebar-ring: oklch(0.541 0.011 286);
-  --income: oklch(0.741 0.165 156.2);
-  --expense: oklch(0.701 0.19 21.2);
-  --transfer: oklch(0.693 0.162 259);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(1 0 0);
+  --sidebar-primary-foreground: oklch(0.205 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.556 0 0);
+  --income: oklch(0.765 0.177 163.223);
+  --expense: oklch(0.712 0.194 13.428);
+  --transfer: oklch(0.746 0.16 232.661);
   --ai: oklch(0.76 0.12 192);
-  --warning: oklch(0.795 0.155 65.4);
-  --track-grouped: color-mix(in oklch, var(--input) 45%, transparent);
+  --warning: oklch(0.828 0.189 84.429);
+  /* On a dark card, white at 6%, as in the mockup. */
+  --field-plain: oklch(1 0 0 / 0.06);
+  --track-plain: oklch(1 0 0 / 0.06);
 }
 
 /* What a grey or a white surface sets for the fields on it. */

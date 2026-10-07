@@ -52,10 +52,10 @@ function FieldGroup({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 const fieldVariants = cva(
-  // Controls in a form field are a little taller (52px) and roomier than a
-  // lone input such as a search bar (44px); 16px corners sit inside the
-  // card's 24px ones.
-  "group/field flex w-full gap-3 [--control-h:3.25rem] [--control-px:1rem] [--control-radius:1rem] data-[invalid=true]:text-destructive",
+  // Controls take their size from --control-h, --control-px and
+  // --control-radius: 48px tall and as round as a button everywhere, in a
+  // form field as on a lone search bar.
+  "group/field flex w-full gap-3 data-[invalid=true]:text-destructive",
   {
     variants: {
       orientation: {

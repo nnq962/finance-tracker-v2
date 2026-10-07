@@ -122,7 +122,7 @@ function InputSection() {
           </InputGroup>
         </Field>
       </Block>
-      <Block label="Tìm kiếm · ô lẻ cao 44">
+      <Block label="Tìm kiếm · cao 44, tròn như nút">
         <InputGroup>
           <InputGroupAddon>
             <SearchIcon />

@@ -70,7 +70,7 @@ export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemPr
         <span className="flex flex-col items-end">
           <span
             className={cn(
-              "text-sm font-semibold tabular-nums",
+              "text-sm font-medium tabular-nums",
               status.isSettled && "text-muted-foreground",
             )}
           >

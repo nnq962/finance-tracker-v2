@@ -39,7 +39,7 @@ export function NoticeBanner({
     <div
       role="status"
       data-slot="notice-banner"
-      className={cn("flex items-start gap-3 rounded-3xl p-4 text-sm", tones[tone].surface, className)}
+      className={cn("flex items-start gap-3 rounded-[22px] p-4 text-sm", tones[tone].surface, className)}
     >
       <Icon aria-hidden="true" className={cn("mt-0.5 size-5 shrink-0", tones[tone].icon)} />
       <div className="min-w-0 flex-1">

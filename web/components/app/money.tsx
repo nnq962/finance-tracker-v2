@@ -31,16 +31,21 @@ type MoneyProps = {
 
 /**
  * An amount of money as a figure rather than text: tabular digits and the
- * sign in the amount's colour, with the đ written right after the digits, in
- * the same size and colour, as Vietnamese amounts are usually written.
+ * sign in the amount's colour, with the đ written right after the digits, as
+ * Vietnamese amounts are usually written. On the large sizes (lg, xl) the đ
+ * is smaller and at half strength, as in the mockup, so the digits lead.
  */
+const currencyClassName = { lg: "text-base opacity-50", xl: "text-xl opacity-50" } as const
+
 export function Money({ amount, sign = "auto", size, tone, className }: MoneyProps) {
   const prefix = sign === "never" ? "" : amount < 0 ? "−" : amount > 0 && sign === "always" ? "+" : ""
+  const currency = size === "lg" || size === "xl" ? currencyClassName[size] : undefined
 
   return (
     <span data-slot="money" className={cn(moneyVariants({ size, tone }), className)}>
       {prefix}
-      {numberFormatter.format(Math.abs(amount))}đ
+      {numberFormatter.format(Math.abs(amount))}
+      {currency ? <span className={currency}>đ</span> : "đ"}
     </span>
   )
 }

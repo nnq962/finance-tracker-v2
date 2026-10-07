@@ -89,7 +89,7 @@ export function AccountSheet({ account, share, transactions, categoryGroups, onO
               </p>
               <p
                 className={cn(
-                  "text-2xl font-semibold tabular-nums [overflow-wrap:anywhere]",
+                  "text-[34px] leading-tight font-medium tracking-tight tabular-nums [overflow-wrap:anywhere]",
                   shown.balance < 0 && "text-expense",
                 )}
               >

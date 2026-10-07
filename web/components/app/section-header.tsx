@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { ChevronRightIcon } from "lucide-react"
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -41,7 +40,6 @@ export function SectionHeader({
             className="flex min-h-11 shrink-0 items-center text-sm text-muted-foreground transition-colors hover:text-foreground active:opacity-60"
           >
             {linkLabel}
-            <ChevronRightIcon aria-hidden="true" className="size-4" />
           </Link>
         ) : null)}
     </div>

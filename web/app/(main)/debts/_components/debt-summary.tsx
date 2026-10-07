@@ -26,7 +26,7 @@ function DirectionStat({
       </p>
       <p
         className={cn(
-          "text-xl font-semibold tabular-nums [overflow-wrap:anywhere]",
+          "text-xl font-medium tabular-nums [overflow-wrap:anywhere]",
           direction === "lent" ? lentClassName : borrowedClassName,
         )}
       >
@@ -63,7 +63,7 @@ export function DebtSummary({ summary }: DebtSummaryProps) {
             <span className="text-muted-foreground">Cân đối</span>
             <span
               className={cn(
-                "font-semibold tabular-nums",
+                "font-medium tabular-nums",
                 netBalance > 0 && lentClassName,
                 netBalance < 0 && borrowedClassName,
               )}

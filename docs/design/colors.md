@@ -1,7 +1,7 @@
 # Màu
 
 Bảng màu cho thiết kế lại (10/2026), theo mockup đã duyệt (xem [`README.md`](README.md)). Giá trị gốc nằm trong `web/app/globals.css` (oklch); hex dưới
-đây để đọc cho dễ. Bo góc và kích thước component giữ nguyên theo preset shadcn.
+đây để đọc cho dễ. Bo góc và kích thước component theo mockup, ghi trong README.
 
 ## Tinh thần
 
@@ -9,31 +9,30 @@ Bảng màu cho thiết kế lại (10/2026), theo mockup đã duyệt (xem [`RE
 - **Một màu nhấn: gần đen** (trắng ở theme tối) cho nút chính, chip đang chọn, công tắc bật,
   thanh tiến độ.
 - **Màu ý nghĩa dùng ít:** chỉ tô số tiền, icon, badge; nền nhạt bằng độ mờ (`bg-income/10`).
-- **Theme tối theo iOS:** nền đen, thẻ `#1c1c1e`, nền phụ `#2c2c2e`.
-- Xám ngả rất nhẹ sang tím lạnh (hue 286) cho hợp với nền iOS.
+- **Theme tối như mockup:** nền `#0a0a0a`, thẻ `#171717`, nền phụ trắng 6–15%.
+- Xám là thang `neutral` của Tailwind, trung tính (không ngả xanh); nền trang hơi ấm (`#f2f2f1`).
 
 ## Token
 
 | Token | Sáng | Tối | Dùng cho |
 |---|---|---|---|
-| `background` | `#f6f6f6` | `#000000` | Nền trang (xám trung tính nhạt, theo mẫu form và cài đặt) |
-| `card` | `#ffffff` | `#1c1c1e` | Thẻ |
-| `popover` | `#ffffff` | `#252527` | Sheet, menu, hộp thoại |
-| `primary` | `#141416` | `#f5f5f7` | Màu nhấn duy nhất |
-| `secondary` / `muted` | `#efeff1` | `#2c2c2e` | Nút phụ, rãnh segmented, skeleton |
-| `accent` | `#e9e9ec` | `#3a3a3c` | Nền khi rê/nhấn |
-| `muted-foreground` | `#75757c` | `#98989f` | Chữ phụ |
-| `border` | `#e7e7ea` | `#333336` | Đường kẻ mảnh |
-| `input` | `#dcdce0` | `#48484c` | Nền ô nhập (dùng ở 50%), công tắc tắt |
-| `ring` | `#a0a0a8` | `#6e6e75` | Viền focus |
-| `destructive` | `#e5484d` | `#ff6369` | Xoá, lỗi |
-| `income` | `#10a36a` | `#30c97e` | Tiền vào |
-| `expense` | `#e5484d` | `#ff6369` | Tiền ra |
-| `transfer` | `#2f6fec` | `#5b9bff` | Chuyển khoản |
+| `background` | `#f2f2f1` | `#0a0a0a` | Nền trang ("Canvas" của mockup) |
+| `card` | `#ffffff` | `#171717` | Thẻ |
+| `popover` | `#ffffff` | `#171717` | Sheet, menu, hộp thoại |
+| `foreground`, `primary` | `#171717` | `#ffffff` | Chữ chính, màu nhấn duy nhất (`neutral-900`) |
+| `secondary` / `muted` / `accent` | `#f5f5f5` | `#262626` | Skeleton, nền khi nhấn, ô tab đang chọn |
+| `muted-foreground` | `#a3a3a3` | `#737373` | Chữ phụ ("Muted" của mockup, `neutral-400` / `neutral-500`) |
+| `border` | `#f5f5f5` | `#262626` | Đường kẻ mảnh giữa các dòng |
+| `input` | `#e5e5e5` | trắng 15% | Công tắc tắt |
+| `field`, `track` | `#f5f5f5` trên thẻ trắng, trắng trên nền xám | trắng 6% trên thẻ, `card` trên nền đen | Nền ô nhập, chip, nút phụ (`field`) và rãnh segmented (`track`), đổi theo bề mặt (`surface-plain` / `surface-grouped`) |
+| `ring` | `#a3a3a3` | `#737373` | Viền focus |
+| `income` | emerald-600 `#059669` | emerald-400 | Tiền vào ("Success") |
+| `expense`, `destructive` | rose-600 `#e11d48` | rose-400 | Tiền ra, xoá, lỗi ("Danger") |
+| `transfer` | sky-600 `#0284c7` | sky-400 | Chuyển khoản ("Info") |
 | `ai` | xanh ngọc, `oklch(0.6 0.115 195)` | `oklch(0.76 0.12 192)` | AI và gói Pro (đổi từ tím ngày 2026-10-07) |
-| `warning` | `#f08c1a` | `#ffa53d` | Cảnh báo, nhắc nhở |
+| `warning` | amber-500 `#f59e0b` | amber-400 | Cảnh báo, nhắc nhở, chấm "có cái mới" |
 | `chart-1…5` | tím, xanh ngọc, cam, xanh dương, hồng | bản sáng hơn | Biểu đồ nhiều màu |
-| `sidebar` | `#ffffff` | `#111113` | Sidebar desktop |
+| `sidebar` | `#ffffff` | `#171717` | Sidebar desktop |
 
 ## Chỉnh trong `components/ui` (chỉ màu)
 
@@ -42,4 +41,4 @@ Bảng màu cho thiết kế lại (10/2026), theo mockup đã duyệt (xem [`RE
 - `ToggleGroup` / `Toggle`: mục đang chọn màu `primary` (chip đen).
 - `Button outline`, `Item outline`: nền `bg-card` để nổi trên nền trang.
 - `Switch`: núm `bg-card`.
-- Màu thanh trạng thái PWA: `#f6f6f6` / `#000000`, cố định; sheet toàn màn hình cùng màu nền nên không cần đổi.
+- Màu thanh trạng thái PWA: `#f2f2f1` / `#0a0a0a`, cố định; sheet toàn màn hình cùng màu nền nên không cần đổi.

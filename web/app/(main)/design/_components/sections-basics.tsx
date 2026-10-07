@@ -14,6 +14,7 @@ import {
   HeartIcon,
   ItalicIcon,
   MailIcon,
+  PlusIcon,
   RefreshCwIcon,
   Share2Icon,
   SparklesIcon,
@@ -85,6 +86,7 @@ const spacing = [
 const radii = [
   ["28", "rounded-[28px]"],
   ["24", "rounded-3xl"],
+  ["22", "rounded-[22px]"],
   ["16", "rounded-2xl"],
   ["∞", "rounded-full"],
 ] as const
@@ -226,6 +228,9 @@ function ButtonSection() {
           <Button disabled>Disabled</Button>
         </div>
         <div className="mt-4 flex items-center gap-2">
+          <Button size="fab" aria-label="Thêm giao dịch">
+            <PlusIcon />
+          </Button>
           <Button size="icon-lg" aria-label="Yêu thích">
             <HeartIcon />
           </Button>
@@ -317,12 +322,11 @@ function ChipSection() {
             </Badge>
           </span>
           <span className="relative">
-            <Button size="icon-lg" variant="secondary" aria-label="Hộp thư">
+            <Button size="icon-lg" variant="secondary" aria-label="Hộp thư, có thư mới">
               <MailIcon />
             </Button>
-            <Badge variant="count" className="absolute -top-1 -right-1">
-              12
-            </Badge>
+            {/* Something new, without a count: the mockup's small orange dot. */}
+            <span aria-hidden="true" className="absolute top-2.5 right-2.5 size-2 rounded-full bg-warning" />
           </span>
         </div>
         <div className="mt-4 flex flex-wrap gap-1.5">
@@ -387,18 +391,19 @@ function SegmentedSection() {
       <Block label="Chọn một · icon">
         <ToggleGroup
           type="single"
+          variant="segmented"
           value={align}
           onValueChange={(value) => value && setAlign(value)}
           className="w-full"
           aria-label="Căn lề"
         >
-          <ToggleGroupItem value="left" aria-label="Căn trái" className="flex-1">
+          <ToggleGroupItem value="left" aria-label="Căn trái">
             <AlignLeftIcon />
           </ToggleGroupItem>
-          <ToggleGroupItem value="center" aria-label="Căn giữa" className="flex-1">
+          <ToggleGroupItem value="center" aria-label="Căn giữa">
             <AlignCenterIcon />
           </ToggleGroupItem>
-          <ToggleGroupItem value="right" aria-label="Căn phải" className="flex-1">
+          <ToggleGroupItem value="right" aria-label="Căn phải">
             <AlignRightIcon />
           </ToggleGroupItem>
         </ToggleGroup>

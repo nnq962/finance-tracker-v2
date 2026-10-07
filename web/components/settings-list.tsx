@@ -16,12 +16,13 @@ import {
 import { cn } from "@/lib/utils"
 
 /**
- * Divider above every row but the first, the full width of the list.
- * Exported for loading skeletons; `hasMedia` is kept for their calls.
+ * Divider above every row but the first, inset 16px from both sides of the
+ * card, as in the mockup's lists. Exported for loading skeletons; `hasMedia`
+ * is kept for their calls.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function settingsSeparatorClassName(hasMedia?: boolean) {
-  return "border-t first:border-t-0"
+  return "relative before:absolute before:inset-x-4 before:top-0 before:h-px before:bg-border first:before:hidden"
 }
 
 /**
@@ -145,7 +146,7 @@ function SettingsRow({
           ) : null}
           {action}
           {chevron && !destructive ? (
-            <ChevronRightIcon className="size-4" aria-hidden="true" />
+            <ChevronRightIcon className="size-4 text-muted-foreground" aria-hidden="true" />
           ) : null}
         </ItemActions>
       ) : null}

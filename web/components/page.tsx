@@ -24,20 +24,34 @@ type PageHeaderProps = {
   title: React.ReactNode
   /** Shown from md up; below md pages offer their main action as a floating button. */
   actions?: React.ReactNode
+  /**
+   * Round icon buttons beside the title below lg, e.g. search and filters,
+   * which sit beside the content from lg up.
+   */
+  accessory?: React.ReactNode
+  /**
+   * Below lg, takes the title row's place at the same height, e.g. an open
+   * search field, so nothing under it moves.
+   */
+  replacement?: React.ReactNode
 }
 
 /** A title only, as in native apps: what each page holds is plain from its content. */
-function PageHeader({ title, actions }: PageHeaderProps) {
+function PageHeader({ title, actions, accessory, replacement }: PageHeaderProps) {
   return (
     <header
       data-slot="page-header"
       className="flex flex-col gap-5 pt-1 sm:flex-row sm:items-center sm:justify-between"
     >
-      <div className="min-w-0">
-        <h1 className="text-[28px] leading-tight font-medium tracking-tight">{title}</h1>
-        {/* On phones the title moves to a small bar once scrolled away. */}
-        {typeof title === "string" ? <CompactTitleBar title={title} /> : null}
+      <div className={cn("flex min-w-0 flex-1 items-center justify-between gap-3", replacement && "max-lg:hidden")}>
+        <div className="min-w-0">
+          <h1 className="text-[28px] leading-tight font-medium tracking-tight">{title}</h1>
+          {/* On phones the title moves to a small bar once scrolled away. */}
+          {typeof title === "string" ? <CompactTitleBar title={title} /> : null}
+        </div>
+        {accessory ? <div className="flex shrink-0 gap-2 lg:hidden">{accessory}</div> : null}
       </div>
+      {replacement ? <div className="min-w-0 flex-1 lg:hidden">{replacement}</div> : null}
       {actions ? (
         <div className="hidden shrink-0 flex-wrap gap-2 md:flex">{actions}</div>
       ) : null}

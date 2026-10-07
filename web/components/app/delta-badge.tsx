@@ -3,8 +3,8 @@ import { ArrowDownRightIcon, ArrowUpRightIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 /**
- * How much a figure changed against an earlier one, as a small tinted pill:
- * an arrow for the direction and the change in percent. Green when the
+ * How much a figure changed against an earlier one, as small coloured text
+ * (the mockup's "↑ 12%"): an arrow for the direction and the change in percent. Green when the
  * change is good (`goodWhen`: spending going down, income going up), red
  * when it is bad, grey when flat. Nothing to compare against shows nothing.
  */
@@ -35,12 +35,8 @@ export function DeltaBadge({
       title={label}
       aria-label={label}
       className={cn(
-        "inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs font-medium tabular-nums",
-        direction === "flat"
-          ? "bg-muted text-muted-foreground"
-          : direction === goodWhen
-            ? "bg-income/10 text-income dark:bg-income/15"
-            : "bg-expense/10 text-expense dark:bg-expense/15",
+        "inline-flex shrink-0 items-center gap-0.5 text-xs font-medium tabular-nums",
+        direction === "flat" ? "text-muted-foreground" : direction === goodWhen ? "text-income" : "text-expense",
         className,
       )}
     >

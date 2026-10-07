@@ -57,7 +57,8 @@ export function TransactionItem({
                 amount={transaction.kind === "expense" ? -Math.abs(transaction.amount) : Math.abs(transaction.amount)}
                 sign={transaction.kind === "transfer" ? "never" : "always"}
                 size="sm"
-                tone={transaction.kind}
+                // Only money coming in is coloured, as in the mockup.
+                tone={transaction.kind === "income" ? "income" : "default"}
               />
               <time
                 className="text-xs text-muted-foreground"

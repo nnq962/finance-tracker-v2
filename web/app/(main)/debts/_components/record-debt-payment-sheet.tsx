@@ -119,11 +119,11 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
                   <dl className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <dt className="text-muted-foreground">Đang còn{debt.hasInterest ? " (gồm lãi)" : ""}</dt>
-                      <dd className="font-semibold tabular-nums">{formatCurrency(remainingAmount)}</dd>
+                      <dd className="font-medium tabular-nums">{formatCurrency(remainingAmount)}</dd>
                     </div>
                     <div>
                       <dt className="text-muted-foreground">Sau lần này</dt>
-                      <dd className="font-semibold tabular-nums">{formatCurrency(Math.max(0, remainingAmount - (amount ?? 0)))}</dd>
+                      <dd className="font-medium tabular-nums">{formatCurrency(Math.max(0, remainingAmount - (amount ?? 0)))}</dd>
                     </div>
                   </dl>
                   {errors.amount ? <FieldError>{errors.amount}</FieldError> : null}

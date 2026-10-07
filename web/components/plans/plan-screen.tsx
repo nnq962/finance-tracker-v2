@@ -135,7 +135,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
       <header className={cn("flex flex-col items-center gap-3 px-3 pt-2 text-center", page && "mx-auto max-w-2xl")}>
         <SparklesIcon className="size-8 text-ai" aria-hidden="true" />
         <div className="space-y-1.5">
-          <h2 className="text-xl font-semibold">
+          <h2 className="text-xl font-medium">
             {isPro ? "Bạn đang dùng Pro" : `Finance Tracker ${plans.pro.label}`}
           </h2>
           <p className="text-sm text-muted-foreground">
@@ -307,7 +307,7 @@ function OutcomeCard({
 function PriceTag({ amount, unit }: { amount: number; unit: string }) {
   return (
     <p className="flex items-baseline gap-1">
-      <span className="text-2xl font-semibold tabular-nums">
+      <span className="text-[28px] leading-tight font-medium tracking-tight tabular-nums">
         {formatCurrency(amount)}
       </span>
       <span className="text-sm text-muted-foreground">/{unit}</span>
@@ -512,7 +512,7 @@ function CheckoutDialog({
             <Separator />
             <div className="flex items-baseline justify-between gap-3">
               <span className="font-medium">Tổng thanh toán</span>
-              <span className="text-lg font-semibold tabular-nums">{formatCurrency(total)}</span>
+              <span className="text-base font-medium tabular-nums">{formatCurrency(total)}</span>
             </div>
           </CardContent>
         </Card>
