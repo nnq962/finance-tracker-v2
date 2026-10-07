@@ -1,6 +1,8 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
+import { ChevronLeftIcon } from "lucide-react"
 
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
@@ -46,17 +48,25 @@ export function DesignCatalog() {
 
   return (
     <div className="mx-auto w-full max-w-4xl min-w-0">
-      <header className="flex items-start justify-between gap-4 pt-1">
-        <div className="min-w-0">
+      <header className="pt-1">
+        {/* Opened from Settings, so back leads there. */}
+        <div className="flex items-center justify-between gap-4">
+          <Button asChild variant="secondary" size="icon">
+            <Link href="/settings" aria-label="Cài đặt">
+              <ChevronLeftIcon />
+            </Link>
+          </Button>
+          {/* From md up the app header has the theme switch. */}
+          <div className="md:hidden">
+            <ThemeToggle />
+          </div>
+        </div>
+        <div className="mt-4 min-w-0">
           <p className="text-sm text-muted-foreground">Finance Tracker · hệ thống thiết kế</p>
           <h1 className="text-[28px] leading-tight font-medium tracking-tight">Thư viện UI</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {catalogSections.length} nhóm component, tất cả đều chạm thử được.
           </p>
-        </div>
-        {/* From md up the app header has the theme switch. */}
-        <div className="md:hidden">
-          <ThemeToggle />
         </div>
       </header>
 

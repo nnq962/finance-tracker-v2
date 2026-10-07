@@ -5,7 +5,7 @@ Finance Tracker trông và cảm giác như một app iOS/Android thật. Hệ t
 UI") mà người dùng đã duyệt. Mockup và ảnh mẫu không còn giữ trong repo: trang `/design` là bản
 chuẩn duy nhất.
 
-- **Xem trực tiếp:** trang `/design` (mục "Thiết kế" trong menu, chỉ có trên dev server), dựng
+- **Xem trực tiếp:** trang `/design` (dòng "Thiết kế" trong Cài đặt, chỉ có trên dev server), dựng
   theo trang "Thư viện UI" của mockup: 14 nhóm đánh số, hàng chip mục lục bám khi cuộn. Ở đó
   có mọi token và khối, đủ sáng lẫn tối. Đó là nguồn chuẩn: trang nào cũng ghép từ những gì
   có ở đó.

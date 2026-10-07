@@ -21,6 +21,7 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { menuUrlFor } from "@/lib/app-navigation"
 
 type NavItem = {
   title: string
@@ -34,7 +35,8 @@ type NavItem = {
 }
 
 export function NavMain({ items }: { items: NavItem[] }) {
-  const pathname = usePathname()
+  // Pages opened from Settings light it up.
+  const pathname = menuUrlFor(usePathname())
   const { isMobile, setOpenMobile } = useSidebar()
 
   function handleNavigate() {

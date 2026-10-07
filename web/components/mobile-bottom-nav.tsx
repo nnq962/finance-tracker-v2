@@ -13,12 +13,11 @@ import {
 import { cn } from "cn"
 import { SettingsIcon } from "lucide-react"
 
-import { appNavigationItems, designNavigationItems } from "@/lib/app-navigation"
+import { appNavigationItems, menuUrlFor } from "@/lib/app-navigation"
 
 const mobileNavigationItems = [
   ...appNavigationItems,
   { title: "Cài đặt", mobileTitle: "Cài đặt", url: "/settings", icon: SettingsIcon },
-  ...designNavigationItems,
 ]
 
 export function MobileBottomNav() {
@@ -162,7 +161,7 @@ export function MobileBottomNav() {
           }
         />
         {mobileNavigationItems.map((item) => {
-          const isActive = activePathname === item.url
+          const isActive = menuUrlFor(activePathname) === item.url
           const Icon = item.icon
 
           return (

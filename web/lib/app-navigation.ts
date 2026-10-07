@@ -2,7 +2,6 @@ import {
   ArrowLeftRightIcon,
   HandCoinsIcon,
   LayoutDashboardIcon,
-  SwatchBookIcon,
   WalletCardsIcon,
   type LucideIcon,
 } from "lucide-react"
@@ -42,10 +41,12 @@ export const appNavigationItems: AppNavigationItem[] = [
 ]
 
 /**
- * The design system's catalogue: in the menus on the dev server only, so the
- * look can be checked on a phone; production builds leave it out.
+ * Pages opened from Settings rather than from the menus, such as the design
+ * catalogue: Settings stays lit on them, as a tab does under a pushed screen.
  */
-export const designNavigationItems: AppNavigationItem[] =
-  process.env.NODE_ENV === "production"
-    ? []
-    : [{ title: "Thiết kế", mobileTitle: "Thiết kế", url: "/design", icon: SwatchBookIcon }]
+const settingsPages = ["/design"]
+
+/** The menu item a page belongs to: its own, or Settings for the pages opened from it. */
+export function menuUrlFor(pathname: string) {
+  return settingsPages.includes(pathname) ? "/settings" : pathname
+}

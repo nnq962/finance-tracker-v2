@@ -10,8 +10,10 @@ import {
   PaletteIcon,
   ShieldCheckIcon,
   SmartphoneIcon,
+  SwatchBookIcon,
   TagsIcon,
 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 import { CategoryManagementSheet } from "@/components/categories/category-management-sheet"
 import { PlanOverlay } from "@/components/plans/plan-overlay"
@@ -100,6 +102,7 @@ export function SettingsView({
   const [devices, setDevices] = React.useState(notifications)
   const { choice } = useThemeChoice()
   const { openWelcome } = useWelcome()
+  const router = useRouter()
 
   const open = (screen: Screen) => setSheetScreen(screen)
   const isPro = planState.plan === "pro"
@@ -247,6 +250,10 @@ export function SettingsView({
             onClick={openWelcome}
           />
           <InstallAppRow />
+          {/* The design catalogue, like its page, is on the dev server only. */}
+          {process.env.NODE_ENV === "production" ? null : (
+            <SettingsRow icon={SwatchBookIcon} tone="neutral" title="Thiết kế" onClick={() => router.push("/design")} />
+          )}
         </SettingsGroup>
       </div>
 
