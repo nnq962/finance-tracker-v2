@@ -133,6 +133,10 @@ Ai cũng mở được địa chỉ này, nhưng chỉ người có khoá mới 
 đăng nhập dev qua tunnel cần `DEV_LOGIN=1`, `DEV_TUNNEL_HOST=finance-dev.nnqlab.dev` và
 `DEV_TUNNEL_KEY` (từ 32 ký tự) trong `web/.env.local`. Đổi khoá là đăng xuất mọi máy.
 
+Cùng mạng nội bộ với máy dev thì không cần tunnel: thêm địa chỉ LAN của máy vào
+`allowedDevOrigins` (`web/next.config.ts`) và `DEV_LAN_HOSTS` (trong `web/.env.local`, cách nhau dấu
+phẩy), rồi mở `http://<địa chỉ LAN>:3000/api/dev/login?key=<DEV_TUNNEL_KEY>&next=/overview`.
+
 Dựng lần đầu (đã làm 2026-10-05): cài `cloudflared` vào `~/.local/bin` (bản
 `cloudflared-linux-amd64` trên GitHub), `cloudflared tunnel login` (chọn zone `nnqlab.dev`;
 nếu trình duyệt tải về `cert.pem` thì chép nó vào `~/.cloudflared/`), `cloudflared tunnel

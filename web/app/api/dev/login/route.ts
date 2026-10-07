@@ -37,7 +37,8 @@ export async function GET(request: NextRequest) {
   if (tunnelKey) {
     response.cookies.set(DEV_TUNNEL_KEY_COOKIE, tunnelKey, {
       httpOnly: true,
-      secure: true,
+      // Over the LAN the dev server is plain http, where Safari drops a secure cookie.
+      secure: protocol === "https",
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 90,
