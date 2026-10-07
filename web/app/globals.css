@@ -207,6 +207,10 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   *::-webkit-scrollbar {
     width: 0;
   }
+  html {
+    /* No double-tap zoom, as in a native app (pinching: see PreventZoom). */
+    touch-action: manipulation;
+  }
   body {
     @apply bg-background text-foreground;
   }

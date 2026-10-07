@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
 
+import { PreventZoom } from "@/components/prevent-zoom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import {
@@ -99,6 +100,11 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // No zooming, as in a native app; inputs use 16px text, so iOS has no reason to zoom into them either.
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   colorScheme: "light dark",
   viewportFit: "cover",
   themeColor: [
@@ -115,6 +121,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${beVietnamPro.variable} ${jetBrainsMono.variable} h-full font-sans antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <PreventZoom />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
           <Toaster position="top-center" />
