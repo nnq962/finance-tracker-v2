@@ -7,6 +7,7 @@ import {
   ArrowUpRightIcon,
   BellRingIcon,
   CalendarDaysIcon,
+  CircleCheckIcon,
   CopyIcon,
   FileSpreadsheetIcon,
   FileTextIcon,
@@ -29,6 +30,7 @@ import { toast } from "sonner"
 
 import { CardLabel } from "@/components/app/card-label"
 import { Carousel } from "@/components/app/carousel"
+import { ChoiceTiles } from "@/components/app/choice-tiles"
 import { DeltaBadge } from "@/components/app/delta-badge"
 import { FormSection } from "@/components/app/form-section"
 import { IconTile } from "@/components/app/icon-tile"
@@ -37,12 +39,12 @@ import { MonthPickerSheet } from "@/components/app/month-picker-sheet"
 import { MonthSelect } from "@/components/app/month-select"
 import { FlowTiles } from "@/components/app/flow-tiles"
 import { NoticeBanner } from "@/components/app/notice-banner"
+import { PageSheet } from "@/components/app/page-sheet"
 import { PageDots } from "@/components/app/page-dots"
 import { PromoBanner } from "@/components/app/promo-banner"
 import { Section } from "@/components/app/section-header"
 import { Stat, StatGroup } from "@/components/app/stat-group"
 import { Steps } from "@/components/app/steps"
-import { DrawerNavHeader } from "@/components/drawer-nav-header"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -139,6 +141,8 @@ export function ContentSections() {
 
 function CardSection() {
   const [flow, setFlow] = React.useState<"in" | "out" | null>(null)
+  const [period, setPeriod] = React.useState<"month" | "year">("year")
+  const [reminder, setReminder] = React.useState<"morning" | "noon" | "evening">("evening")
 
   return (
     <CatalogSection id="card">
@@ -153,6 +157,30 @@ function CardSection() {
           ]}
         />
       </Wide>
+      <Block label="Chọn một trong vài ô (ChoiceTiles) · tone ai, như kỳ thanh toán Pro">
+        <ChoiceTiles
+          tone="ai"
+          aria-label="Kỳ thanh toán"
+          value={period}
+          onValueChange={setPeriod}
+          options={[
+            { value: "month", title: "29.000đ", description: "Trả theo tháng" },
+            { value: "year", title: "249.000đ", description: "Trả theo năm", badge: "Giảm 28%" },
+          ]}
+        />
+      </Block>
+      <Block label="ChoiceTiles · tone mặc định, ba ô">
+        <ChoiceTiles
+          aria-label="Giờ nhắc"
+          value={reminder}
+          onValueChange={setReminder}
+          options={[
+            { value: "morning", title: "8:00", description: "Sáng" },
+            { value: "noon", title: "12:00", description: "Trưa" },
+            { value: "evening", title: "21:00", description: "Tối" },
+          ]}
+        />
+      </Block>
       <Card size="lg" variant="inverse">
         <CardContent>
           <CardLabel as="p">Số dư khả dụng · Card inverse</CardLabel>
@@ -461,6 +489,20 @@ function FeedbackSection() {
         </NoticeBanner>
       </Wide>
       <Wide>
+        <NoticeBanner
+          tone="income"
+          icon={CircleCheckIcon}
+          title="Đã nâng cấp Pro"
+          action={
+            <Button size="sm" variant="secondary" onClick={() => toast("Ghi khoản chi")}>
+              Ghi khoản chi
+            </Button>
+          }
+        >
+          Kèm một nút ở cuối (action)
+        </NoticeBanner>
+      </Wide>
+      <Wide>
         <NoticeBanner tone="warning" title="1 khoản quá hạn" onClick={() => toast("Mở khoản quá hạn")}>
           Minh Tuấn · bấm được cả khối (onClick)
         </NoticeBanner>
@@ -747,57 +789,64 @@ function ScreenSheetSample() {
 
 function PageSheetFormSample() {
   return (
-    <Drawer variant="page">
-      <DrawerTrigger asChild>
-        <Button variant="secondary">Sheet iOS · form</Button>
-      </DrawerTrigger>
-      <DrawerContent variant="page" aria-describedby={undefined}>
-        <DrawerNavHeader title="Giao dịch mới" />
-        <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pb-4">
-          <KindTabs />
-          <TransactionFields idPrefix="ds-page" />
-        </div>
-        <div className="p-4">
-          <Button size="lg" className="w-full">
-            Lưu giao dịch
-          </Button>
-        </div>
-      </DrawerContent>
-    </Drawer>
+    <PageSheet
+      title="Giao dịch mới"
+      className="space-y-6"
+      trigger={<Button variant="secondary">PageSheet · form</Button>}
+      footer={
+        <Button size="lg" className="w-full">
+          Lưu giao dịch
+        </Button>
+      }
+    >
+      <KindTabs />
+      <TransactionFields idPrefix="ds-page" />
+    </PageSheet>
   )
 }
 
+// Long enough to scroll, so the rows show how they fade into the bar.
+const recentLunches = ["05/10", "04/10", "03/10", "02/10", "01/10", "30/09"]
+
 function PageSheetDetailSample() {
   return (
-    <Drawer variant="page">
-      <DrawerTrigger asChild>
-        <Button variant="secondary">Sheet iOS · chi tiết</Button>
-      </DrawerTrigger>
-      <DrawerContent variant="page" surface="grouped" aria-describedby={undefined}>
-        <DrawerNavHeader
-          title="Chi tiết giao dịch"
-          action={
-            <Button type="button" variant="secondary" size="icon" aria-label="Sửa">
-              <PencilIcon />
-            </Button>
-          }
-        />
-        <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pb-4">
-          <div className="flex flex-col items-center py-2 text-center">
-            <IconTile icon={UtensilsCrossedIcon} tone="orange" size="lg" shape="rounded" />
-            <p className="mt-3 text-muted-foreground">Ăn trưa</p>
-            <Money amount={-45_000} sign="always" size="xl" tone="expense" />
-          </div>
-          <SettingsGroup>
-            <SettingsRow icon={WalletCardsIcon} title="Tài khoản" value="Ví MoMo" chevron={false} />
-            <SettingsRow icon={CalendarDaysIcon} title="Thời gian" value="06/10 · 12:04" chevron={false} />
-          </SettingsGroup>
-          <SettingsGroup>
-            <SettingsRow icon={CopyIcon} title="Nhân bản" onClick={() => toast("Nhân bản")} />
-            <SettingsRow title="Xoá giao dịch" destructive onClick={() => toast("Xoá")} />
-          </SettingsGroup>
-        </div>
-      </DrawerContent>
-    </Drawer>
+    <PageSheet
+      title="Chi tiết giao dịch"
+      surface="grouped"
+      className="space-y-6"
+      trigger={<Button variant="secondary">PageSheet · chi tiết</Button>}
+      action={
+        <Button type="button" variant="secondary" size="icon" aria-label="Sửa">
+          <PencilIcon />
+        </Button>
+      }
+    >
+      <div className="flex flex-col items-center py-2 text-center">
+        <IconTile icon={UtensilsCrossedIcon} tone="orange" size="lg" shape="rounded" />
+        <p className="mt-3 text-muted-foreground">Ăn trưa</p>
+        <Money amount={-45_000} sign="always" size="xl" tone="expense" />
+      </div>
+      <SettingsGroup>
+        <SettingsRow icon={WalletCardsIcon} title="Tài khoản" value="Ví MoMo" chevron={false} />
+        <SettingsRow icon={CalendarDaysIcon} title="Thời gian" value="06/10 · 12:04" chevron={false} />
+      </SettingsGroup>
+      <SettingsGroup title="Cùng hạng mục gần đây">
+        {recentLunches.map((day) => (
+          <SettingsRow
+            key={day}
+            icon={UtensilsCrossedIcon}
+            tone="orange"
+            title="Ăn trưa"
+            description={day}
+            value={<Money amount={-45_000} sign="always" size="sm" tone="expense" />}
+            chevron={false}
+          />
+        ))}
+      </SettingsGroup>
+      <SettingsGroup>
+        <SettingsRow icon={CopyIcon} title="Nhân bản" onClick={() => toast("Nhân bản")} />
+        <SettingsRow title="Xoá giao dịch" destructive onClick={() => toast("Xoá")} />
+      </SettingsGroup>
+    </PageSheet>
   )
 }

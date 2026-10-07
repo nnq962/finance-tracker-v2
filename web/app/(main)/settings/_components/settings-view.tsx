@@ -283,7 +283,6 @@ export function SettingsView({
         planState={planState}
         checkoutEnabled={checkoutEnabled}
         paymentOutcome={paymentOutcome}
-        backLabel="Cài đặt"
       />
 
       <CategoryManagementSheet

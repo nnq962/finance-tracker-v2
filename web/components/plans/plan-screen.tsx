@@ -5,29 +5,26 @@ import Link from "next/link"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import {
   CheckIcon,
-  ChevronDownIcon,
   CircleAlertIcon,
   CircleCheckIcon,
   ClockIcon,
-  ReceiptTextIcon,
   ShieldCheckIcon,
-  SparklesIcon,
   TicketPercentIcon,
   type LucideIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 
+import { ChoiceTiles } from "@/components/app/choice-tiles"
+import { NoticeBanner } from "@/components/app/notice-banner"
 import { SettingsGroup } from "@/components/settings-list"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
-import { Item, ItemActions, ItemContent, ItemTitle } from "@/components/ui/item"
 import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Spinner } from "@/components/ui/spinner"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDate, toDateKey } from "@/lib/format-date"
@@ -41,7 +38,6 @@ import {
   type PlanState,
 } from "@/lib/plans/plans"
 import type { PaymentOutcome } from "@/lib/plans/payos"
-import { cn } from "@/lib/utils"
 
 type PlanScreenProps = {
   planState: PlanState
@@ -49,8 +45,6 @@ type PlanScreenProps = {
   checkoutEnabled: boolean
   /** How the payment the user just came back from stands. */
   paymentOutcome?: PaymentOutcome
-  /** In the settings sheet (one column), or as the full pricing in a dialog, which spreads out from md up. */
-  layout?: "sheet" | "page"
 }
 
 type OutcomeTone = "success" | "waiting" | "problem"
@@ -72,46 +66,77 @@ const outcomeMessages: Partial<Record<PaymentOutcome, { tone: OutcomeTone; title
   expired: { tone: "problem", title: "Phiên thanh toán đã hết hạn", description: "Vui lòng thử lại." },
 }
 
-const outcomeTones: Record<OutcomeTone, { icon: LucideIcon; className: string }> = {
-  success: { icon: CircleCheckIcon, className: "text-income" },
-  waiting: { icon: ClockIcon, className: "text-warning" },
-  problem: { icon: CircleAlertIcon, className: "text-expense" },
+const outcomeTones: Record<OutcomeTone, { icon: LucideIcon; tone: "income" | "warning" | "expense" }> = {
+  success: { icon: CircleCheckIcon, tone: "income" },
+  waiting: { icon: ClockIcon, tone: "warning" },
+  problem: { icon: CircleAlertIcon, tone: "expense" },
 }
 
 /** What a year costs against twelve single months. */
 const yearSaving = proPrices.month.amount * 12 - proPrices.year.amount
 const yearSavingPercent = Math.round((yearSaving / (proPrices.month.amount * 12)) * 100)
 
+const periodOptions = [
+  { value: "month" as const, title: formatCurrency(proPrices.month.amount), description: "Trả theo tháng" },
+  {
+    value: "year" as const,
+    title: formatCurrency(proPrices.year.amount),
+    description: "Trả theo năm",
+    badge: `Giảm ${yearSavingPercent}%`,
+  },
+]
+
+const proFeatures = [
+  `${plans.pro.aiMonthlyLimit} lượt trợ lý AI mỗi tháng, gấp ${Math.round(plans.pro.aiMonthlyLimit / plans.free.aiMonthlyLimit)} lần gói ${plans.free.label}`,
+  "Dùng trước các tính năng AI mới",
+  "Trả một lần, không tự động gia hạn",
+]
+
+const freeFeatures = [
+  `${plans.free.aiMonthlyLimit} lượt trợ lý AI mỗi tháng`,
+  "Không giới hạn giao dịch, tài khoản và vay nợ",
+  "Nhắc ghi chép hằng ngày",
+]
+
 const faqs = [
   {
+    id: "ai",
     question: "Trợ lý AI làm được gì?",
     answer:
       "Trợ lý AI ghi giao dịch từ câu bạn nhập hoặc nói, kể cả cách nói thông dụng. Các tính năng mới như chỉnh sửa giao dịch và hỏi đáp về chi tiêu sẽ ra mắt trước cho người dùng Pro.",
   },
   {
+    id: "payment",
     question: "Thanh toán như thế nào?",
     answer:
       "Quét mã QR trên trang payOS bằng ứng dụng ngân hàng bất kỳ. Gói Pro được kích hoạt ngay khi giao dịch thành công.",
   },
   {
+    id: "renewal",
     question: "Gói Pro có tự động gia hạn không?",
     answer: `Không. Mỗi lần thanh toán áp dụng cho thời hạn đã chọn; gia hạn sớm được cộng nối tiếp, không mất ngày còn lại. Khi hết hạn, tài khoản chuyển về gói ${plans.free.label}.`,
   },
   {
+    id: "data",
     question: "Dữ liệu có bị ảnh hưởng khi hết Pro không?",
     answer: `Không. Toàn bộ dữ liệu được giữ nguyên, chỉ hạn mức trợ lý AI trở về mức của gói ${plans.free.label}.`,
   },
   {
+    id: "quota",
     question: "Lượt AI được tính thế nào?",
     answer:
       "Mỗi yêu cầu gửi trợ lý AI tính là một lượt; yêu cầu không xử lý được sẽ không bị tính. Hạn mức được làm mới vào ngày 1 hằng tháng. Khi hết, hệ thống dùng lượt thưởng từ nhiệm vụ, loại lượt không có thời hạn.",
   },
 ]
 
-/** The user's plan and this month's AI requests, the plans side by side and buying Pro through payOS. */
-export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout = "sheet" }: PlanScreenProps) {
-  const page = layout === "page"
-  const [period, setPeriod] = React.useState<PlanPeriod>("month")
+/**
+ * The plans, as on app pricing screens: a large title, Pro first with its
+ * billing period picked from two tiles and what it adds to Free, then Free,
+ * then the questions people ask. Buying goes through payOS.
+ */
+export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanScreenProps) {
+  const [period, setPeriod] = React.useState<PlanPeriod>("year")
+  const [openFaq, setOpenFaq] = React.useState("")
   const isPro = planState.plan === "pro"
   const outcome = paymentOutcome ? outcomeMessages[paymentOutcome] : undefined
   // Paid through payOS: the order the user came back with writes the payment down as an expense.
@@ -124,139 +149,130 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
   // The order is confirmed, with a coupon if any, in a dialog before payOS.
   const [confirmOpen, setConfirmOpen] = React.useState(false)
 
+  const note = !checkoutEnabled
+    ? `Vui lòng liên hệ quản trị viên để ${isPro ? "gia hạn" : "nâng cấp"}`
+    : isPro
+      ? "Thời hạn mới được cộng nối tiếp, không mất ngày còn lại"
+      : period === "year"
+        ? `Chỉ ${formatCurrency(Math.round(proPrices.year.amount / 12))} mỗi tháng. Không tự động gia hạn`
+        : "Kích hoạt ngay sau khi thanh toán. Không tự động gia hạn"
+
+  // From the link under Pro's features: opens the answer and brings it into view, now and again
+  // once it has opened below the question, so it is not left under the bottom edge.
+  const showFaq = (id: string) => {
+    setOpenFaq(id)
+    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+    const item = document.getElementById(`plan-faq-${id}`)
+    item?.scrollIntoView({ behavior, block: "center" })
+    item?.addEventListener("animationend", () => item.scrollIntoView({ behavior, block: "nearest" }), { once: true })
+  }
+
   return (
-    <div className={cn("space-y-6 pt-2", page && "md:space-y-10")}>
+    <div className="space-y-6">
       {outcome ? (
-        <div className={cn(page && "mx-auto max-w-xl")}>
-          <OutcomeCard {...outcome} recordHref={recordHref} />
-        </div>
+        <NoticeBanner
+          tone={outcomeTones[outcome.tone].tone}
+          icon={outcomeTones[outcome.tone].icon}
+          title={outcome.title}
+          action={
+            recordHref ? (
+              <Button asChild size="sm" variant="secondary">
+                <Link href={recordHref}>Ghi khoản chi</Link>
+              </Button>
+            ) : null
+          }
+        >
+          {outcome.description}
+        </NoticeBanner>
       ) : null}
 
-      <header className={cn("flex flex-col items-center gap-3 px-3 pt-2 text-center", page && "mx-auto max-w-2xl")}>
-        <SparklesIcon className="size-8 text-ai" aria-hidden="true" />
-        <div className="space-y-1.5">
-          <h2 className="text-xl font-medium">
-            {isPro ? "Bạn đang dùng Pro" : `Finance Tracker ${plans.pro.label}`}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Trợ lý AI thông minh, tài chính trong tầm tay.
-          </p>
-        </div>
+      <header className="flex flex-col items-center gap-2 pt-2 text-center">
+        <h2 className="text-[28px] leading-tight font-medium tracking-tight text-balance">
+          {isPro ? `Bạn đang dùng ${plans.pro.label}` : "Nâng cấp Finance Tracker"}
+        </h2>
+        <p className="text-base text-muted-foreground">
+          {isPro && planState.proEndsAt
+            ? `Còn hạn đến ${formatDate(toDateKey(planState.proEndsAt))}`
+            : "Chọn gói phù hợp với bạn"}
+        </p>
       </header>
 
-      <section aria-labelledby="plan-options" className={cn("space-y-3", page && "md:space-y-5")}>
-        <h2 id="plan-options" className="sr-only">
-          Chọn gói
-        </h2>
-        <Tabs
-          value={period}
-          onValueChange={(value) => {
-            if (value === "month" || value === "year") setPeriod(value)
-          }}
-          className={cn(page && "md:mx-auto md:w-full md:max-w-xs")}
-        >
-          <TabsList className="w-full" aria-label="Kỳ thanh toán">
-            <TabsTrigger value="month">Theo tháng</TabsTrigger>
-            <TabsTrigger value="year">
-              Theo năm
-              <Badge variant="secondary">-{yearSavingPercent}%</Badge>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        {/* Pro first on a phone; side by side from md up in the dialog, free on the left. There the
-            cards share rows (subgrid), so headers, prices and footers line up and the buttons align. */}
-        <div
-          className={cn(
-            "grid gap-3",
-            page && "md:mx-auto md:max-w-4xl md:grid-cols-2 md:grid-rows-[auto_1fr_auto] md:gap-x-6 md:gap-y-0",
-          )}
-        >
-          <Card className={cn(page && "md:row-span-3 md:grid md:grid-rows-subgrid")}>
+      <div className="space-y-4">
+        <Card asChild size="lg">
+          <section aria-labelledby="plan-pro">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <PlanName id="plan-pro" current={isPro}>
                 {plans.pro.label}
-                <Badge variant="secondary">{isPro ? "Đang dùng" : "Khuyên dùng"}</Badge>
-              </CardTitle>
+              </PlanName>
               <CardDescription>Đầy đủ sức mạnh của trợ lý AI</CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 space-y-4">
-              <div>
-                <PriceTag amount={price.amount} unit={period === "year" ? "năm" : "tháng"} />
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {period === "year"
-                    ? `Tương đương ${formatCurrency(Math.round(price.amount / 12))}/tháng · Tiết kiệm ${formatCurrency(yearSaving)}`
-                    : `Tiết kiệm ${yearSavingPercent}% khi thanh toán theo năm`}
-                </p>
+            <CardContent className="space-y-4">
+              <ChoiceTiles
+                tone="ai"
+                aria-label="Kỳ thanh toán"
+                options={periodOptions}
+                value={period}
+                onValueChange={setPeriod}
+              />
+              <div className="space-y-2.5">
+                <Button
+                  type="button"
+                  size="lg"
+                  className="w-full"
+                  disabled={!checkoutEnabled}
+                  onClick={() => setConfirmOpen(true)}
+                >
+                  {isPro ? `Gia hạn thêm ${price.label}` : `Nâng cấp ${plans.pro.label}`}
+                </Button>
+                <p className="text-center text-xs text-muted-foreground">{note}</p>
               </div>
-              <FeatureList
-                features={[
-                  `${plans.pro.aiMonthlyLimit} lượt trợ lý AI mỗi tháng`,
-                  "Truy cập sớm tính năng AI mới",
-                  `Bao gồm toàn bộ gói ${plans.free.label}`,
-                  "Không tự động gia hạn",
-                ]}
-              />
             </CardContent>
-            <CardFooter className="flex-col gap-2">
-              <Button
+            <CardFooter className="flex-col items-start gap-3 border-t">
+              <p className="font-medium text-muted-foreground">Mọi thứ của gói {plans.free.label}, thêm:</p>
+              <FeatureList features={proFeatures} />
+              <button
                 type="button"
-                size="lg"
-                className="w-full"
-                disabled={!checkoutEnabled}
-                onClick={() => setConfirmOpen(true)}
+                onClick={() => showFaq("quota")}
+                className="relative mt-1 text-muted-foreground underline underline-offset-4 outline-none after:absolute after:-inset-x-2 after:-inset-y-3 focus-visible:text-foreground active:opacity-60"
               >
-                {isPro ? `Gia hạn thêm ${price.label}` : `Nâng cấp Pro · ${formatCurrency(price.amount)}`}
-              </Button>
-              <p className="text-center text-xs text-muted-foreground">
-                {checkoutEnabled
-                  ? isPro && planState.proEndsAt
-                    ? `Còn hạn đến ${formatDate(toDateKey(planState.proEndsAt))}, thời hạn mới được cộng thêm`
-                    : "Kích hoạt ngay sau khi thanh toán"
-                  : "Vui lòng liên hệ quản trị viên để nâng cấp"}
-              </p>
+                Lượt AI được tính thế nào?
+              </button>
             </CardFooter>
-          </Card>
+          </section>
+        </Card>
 
-          <Card className={cn(page && "md:order-first md:row-span-3 md:grid md:grid-rows-subgrid")}>
+        <Card asChild size="lg">
+          <section aria-labelledby="plan-free">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <PlanName id="plan-free" current={!isPro}>
                 {plans.free.label}
-                {isPro ? null : <Badge variant="outline">Đang dùng</Badge>}
-              </CardTitle>
-              <CardDescription>Các tính năng cơ bản</CardDescription>
+              </PlanName>
+              <CardDescription>Các tính năng cơ bản, miễn phí</CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 space-y-4">
-              <PriceTag amount={0} unit="tháng" />
-              <FeatureList
-                features={[
-                  `${plans.free.aiMonthlyLimit} lượt trợ lý AI mỗi tháng`,
-                  "Không giới hạn giao dịch, tài khoản, ngân sách và vay nợ",
-                  "Nhắc ghi chép hằng ngày",
-                ]}
-              />
-            </CardContent>
-            <CardFooter className="flex-col gap-2">
-              <Button type="button" variant="outline" size="lg" className="w-full" disabled>
-                {isPro ? "Gói cơ bản" : "Gói hiện tại"}
-              </Button>
+            <CardFooter className="border-t">
+              <FeatureList features={freeFeatures} />
             </CardFooter>
-          </Card>
-        </div>
+          </section>
+        </Card>
+      </div>
 
-        <p className="flex items-center justify-center gap-1.5 px-3 text-center text-xs text-muted-foreground">
-          <ShieldCheckIcon className="size-4 shrink-0" aria-hidden="true" />
-          Thanh toán bảo mật qua payOS, hỗ trợ mọi ngân hàng
-        </p>
-      </section>
+      <p className="flex items-center justify-center gap-1.5 px-4 text-center text-xs text-muted-foreground">
+        <ShieldCheckIcon className="size-4 shrink-0" aria-hidden="true" />
+        Thanh toán bảo mật qua payOS, mọi ngân hàng
+      </p>
 
-      <div className={cn("space-y-6", page && "mx-auto max-w-3xl md:space-y-10")}>
-        <SettingsGroup title="Câu hỏi thường gặp">
-          {faqs.map((faq, index) => (
-            <FaqRow key={faq.question} {...faq} first={index === 0} />
+      <Accordion type="single" collapsible value={openFaq} onValueChange={setOpenFaq}>
+        <SettingsGroup title="Câu hỏi thường gặp" listClassName="px-4">
+          {faqs.map((faq) => (
+            <AccordionItem key={faq.id} value={faq.id} asChild>
+              <li id={`plan-faq-${faq.id}`}>
+                <AccordionTrigger>{faq.question}</AccordionTrigger>
+                <AccordionContent>{faq.answer}</AccordionContent>
+              </li>
+            </AccordionItem>
           ))}
         </SettingsGroup>
-      </div>
+      </Accordion>
 
       <CheckoutDialog
         open={confirmOpen}
@@ -268,92 +284,28 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome, layout 
   )
 }
 
-function OutcomeCard({
-  tone,
-  title,
-  description,
-  recordHref,
-}: {
-  tone: OutcomeTone
-  title: string
-  description?: string
-  /** Where the payment is written down as an expense. */
-  recordHref?: string
-}) {
-  const { icon: Icon, className } = outcomeTones[tone]
+/** A plan's name, with "Đang dùng" beside the one the user is on. */
+function PlanName({ id, current, children }: { id: string; current: boolean; children: React.ReactNode }) {
   return (
-    <Card size="sm" role="status">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Icon className={cn("size-4 shrink-0", className)} aria-hidden="true" />
-          {title}
-        </CardTitle>
-        {description ? <CardDescription>{description}</CardDescription> : null}
-      </CardHeader>
-      {recordHref ? (
-        <CardFooter>
-          <Button asChild variant="outline" className="w-full">
-            <Link href={recordHref}>
-              <ReceiptTextIcon />
-              Ghi khoản chi
-            </Link>
-          </Button>
-        </CardFooter>
-      ) : null}
-    </Card>
-  )
-}
-
-function PriceTag({ amount, unit }: { amount: number; unit: string }) {
-  return (
-    <p className="flex items-baseline gap-1">
-      <span className="text-[28px] leading-tight font-medium tracking-tight tabular-nums">
-        {formatCurrency(amount)}
-      </span>
-      <span className="text-sm text-muted-foreground">/{unit}</span>
-    </p>
+    <div className="flex items-center gap-2">
+      <h3 id={id} className="text-xl font-medium">
+        {children}
+      </h3>
+      {current ? <Badge variant="income">Đang dùng</Badge> : null}
+    </div>
   )
 }
 
 function FeatureList({ features }: { features: string[] }) {
   return (
-    <ul className="space-y-2">
+    <ul className="space-y-3">
       {features.map((feature) => (
-        <li key={feature} className="flex items-start gap-2">
-          <CheckIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          <span className="sr-only">Có</span>
+        <li key={feature} className="flex items-start gap-3">
+          <CheckIcon className="size-5 shrink-0 text-foreground/70" aria-hidden="true" />
           <span>{feature}</span>
         </li>
       ))}
     </ul>
-  )
-}
-
-function FaqRow({ question, answer, first }: { question: string; answer: string; first: boolean }) {
-  return (
-    <li>
-      {first ? null : <Separator />}
-      <Collapsible>
-        <CollapsibleTrigger asChild>
-          <Item asChild>
-            <button type="button" className="group/faq text-left">
-              <ItemContent>
-                <ItemTitle>{question}</ItemTitle>
-              </ItemContent>
-              <ItemActions>
-                <ChevronDownIcon
-                  className="size-4 text-muted-foreground transition-transform group-data-[state=open]/faq:rotate-180"
-                  aria-hidden="true"
-                />
-              </ItemActions>
-            </button>
-          </Item>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="px-4 pb-3.5 text-sm text-muted-foreground">
-          {answer}
-        </CollapsibleContent>
-      </Collapsible>
-    </li>
   )
 }
 

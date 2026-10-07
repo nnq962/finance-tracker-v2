@@ -18,8 +18,10 @@ const tones = {
 /**
  * A short message in the flow of a page, on a tinted card: news, a warning,
  * a hint. Closable when onDismiss is given; tapped as a whole, with a
- * chevron, when onClick is (it then opens what it is about). For something
- * that needs a decision, use a dialog; for a passing confirmation, a toast.
+ * chevron, when onClick is (it then opens what it is about); with a small
+ * button at the end when action is (a next step, such as recording the
+ * payment). For something that needs a decision, use a dialog; for a
+ * passing confirmation, a toast.
  */
 export function NoticeBanner({
   title,
@@ -28,6 +30,7 @@ export function NoticeBanner({
   icon: Icon = InfoIcon,
   onDismiss,
   onClick,
+  action,
   className,
 }: {
   title: React.ReactNode
@@ -36,6 +39,8 @@ export function NoticeBanner({
   icon?: LucideIcon
   onDismiss?: () => void
   onClick?: () => void
+  /** A small button at the end, e.g. `<Button size="sm" variant="secondary">`. */
+  action?: React.ReactNode
   className?: string
 }) {
   if (onClick) {
@@ -71,6 +76,7 @@ export function NoticeBanner({
         <p className="font-medium">{title}</p>
         {children ? <div className="text-muted-foreground">{children}</div> : null}
       </div>
+      {action ? <div className="shrink-0 self-center">{action}</div> : null}
       {onDismiss ? (
         <button
           type="button"

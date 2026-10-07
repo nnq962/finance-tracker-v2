@@ -4,10 +4,9 @@ import * as React from "react"
 import { BellIcon, GiftIcon, HandCoinsIcon, PencilLineIcon, SparklesIcon, type LucideIcon } from "lucide-react"
 
 import type { IconTileTone } from "@/components/app/icon-tile"
-import { DrawerNavHeader } from "@/components/drawer-nav-header"
+import { PageSheet } from "@/components/app/page-sheet"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 
 type Notice = {
@@ -103,8 +102,11 @@ export function NotificationsButton() {
     ) : null
 
   return (
-    <Drawer variant="page">
-      <DrawerTrigger asChild>
+    <PageSheet
+      title="Thông báo"
+      surface="grouped"
+      className="space-y-6"
+      trigger={
         <Button
           type="button"
           size="icon"
@@ -117,37 +119,31 @@ export function NotificationsButton() {
             <span aria-hidden="true" className="absolute top-3 right-3 size-1.5 rounded-full bg-warning" />
           ) : null}
         </Button>
-      </DrawerTrigger>
-      <DrawerContent variant="page" surface="grouped" aria-describedby={undefined}>
-        <DrawerNavHeader
-          title="Thông báo"
-          action={
-            unread > 0 ? (
-              <Button type="button" variant="ghost" size="sm" onClick={() => markRead()}>
-                Đọc hết
-              </Button>
-            ) : null
-          }
-        />
-        <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pb-4">
-          {notices.length > 0 ? (
-            <>
-              {group("Mới", notices.filter((notice) => notice.recent))}
-              {group("Trước đó", notices.filter((notice) => !notice.recent))}
-            </>
-          ) : (
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <BellIcon />
-                </EmptyMedia>
-                <EmptyTitle>Chưa có thông báo</EmptyTitle>
-                <EmptyDescription>Nhắc nhở và tin về khoản nợ sẽ hiện ở đây.</EmptyDescription>
-              </EmptyHeader>
-            </Empty>
-          )}
-        </div>
-      </DrawerContent>
-    </Drawer>
+      }
+      action={
+        unread > 0 ? (
+          <Button type="button" variant="ghost" size="sm" onClick={() => markRead()}>
+            Đọc hết
+          </Button>
+        ) : null
+      }
+    >
+      {notices.length > 0 ? (
+        <>
+          {group("Mới", notices.filter((notice) => notice.recent))}
+          {group("Trước đó", notices.filter((notice) => !notice.recent))}
+        </>
+      ) : (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <BellIcon />
+            </EmptyMedia>
+            <EmptyTitle>Chưa có thông báo</EmptyTitle>
+            <EmptyDescription>Nhắc nhở và tin về khoản nợ sẽ hiện ở đây.</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      )}
+    </PageSheet>
   )
 }

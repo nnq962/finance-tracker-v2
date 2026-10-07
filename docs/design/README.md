@@ -93,6 +93,9 @@ component ở đó là cả app đổi theo.
     lên. Dùng cho lựa chọn ngắn và hành động.
 - **Drawer mặc định (sheet đáy):** như half sheet của mockup: sát hai mép, đầu bo 32, thanh kéo
   40×6 `neutral-200`, nội dung căn trái.
+- **Drawer `variant="page"` (page sheet iOS):** trồi lên tới ngay dưới status bar, đầu bo 28, kéo
+  xuống để đóng; giữa màn hình, rộng tối đa 32rem trên desktop. Không dùng thẳng: dùng qua khối
+  `PageSheet`.
 - **Status bar:** màu cố định bằng màu nền trang (`components/pwa-theme-color.tsx`). Web không
   đổi được màu status bar mượt theo chuyển động, nên mọi lớp phủ phủ tới đầu màn hình (sheet
   `screen`) dùng chung nền xám với trang thay vì đổi màu.
@@ -136,7 +139,9 @@ component ở đó là cả app đổi theo.
 | `Carousel` | Thẻ vuốt ngang, bắt từng thẻ, kèm `PageDots` |
 | `SwipeRow` | Vuốt trái để lộ một hành động (mặc định Xoá); dùng qua `SettingsRow swipeAction` để dòng vuốt giống mọi dòng khác |
 | `ActionSheet` | Danh sách lựa chọn ngắn trồi từ đáy, Huỷ tách riêng bên dưới (vaul) |
-| `NoticeBanner` | Thông báo trong trang trên nền nhạt theo `tone`, đóng được (`onDismiss`), hoặc bấm cả khối kèm mũi tên để mở thứ nó nói tới (`onClick`, như khoản quá hạn ở Vay nợ) |
+| `NoticeBanner` | Thông báo trong trang trên nền nhạt theo `tone`, đóng được (`onDismiss`), hoặc bấm cả khối kèm mũi tên để mở thứ nó nói tới (`onClick`, như khoản quá hạn ở Vay nợ), hoặc kèm một nút nhỏ ở cuối cho bước tiếp theo (`action`, như "Ghi khoản chi" sau khi thanh toán gói) |
+| `PageSheet` | Page sheet iOS (`Drawer variant="page"`), tên theo thiết kế: thanh trên cùng có nút ✕ tròn (cách mép trên và trái 16), tiêu đề giữa, `action` bên phải; `hideTitle` khi nội dung tự mở đầu bằng tiêu đề lớn (màn gói). Nội dung cuộn xuyên dưới thanh, như sheet của app Claude: nội dung cuộn lên tới tận mép trên của sheet, thanh kéo nổi bên trên; khi đã cuộn, một lớp màu nền sheet phủ từ mép trên (cả chỗ thanh kéo) qua cả thanh, đậm nhất ở mép trên rồi nhạt đều qua hết thanh, về 0 ở 16px dưới thanh; nội dung vẫn thấp thoáng bên dưới, không có đường kẻ. Khi thanh có tiêu đề, lớp phủ giữ dày qua dòng tiêu đề để chữ rõ. Nút tròn trên thanh khi đó có bóng mềm (theme tối: viền mảnh). `surface="grouped"` (xám, cho thẻ trắng) hoặc trắng cho form; `footer` cho nút Lưu. Dùng cho màn gói, Thông báo |
+| `ChoiceTiles` | Vài ô cạnh nhau, chọn một, như bảng giá: vòng radio ở đầu, chip đối diện (ngắn, như "Giảm 28%"), rồi con số và một dòng mô tả. Radio group bên dưới (phím mũi tên, trình đọc màn hình). `tone="ai"` tô ô đang chọn màu `ai` (kỳ thanh toán Pro); mặc định viền đen |
 | `FlowTiles` | Hai thẻ cạnh nhau cho tiền theo hai chiều (Tiền vào / Tiền ra ở Giao dịch, Cần thu / Cần trả ở Vay nợ): số tiền và ghi chú; chạm để danh sách chỉ còn chiều đó, thẻ đang chọn thành `inverse`, chạm lại để bỏ |
 
 Danh sách nằm ở `components/settings-list.tsx`. `SettingsGroup` là nhóm dòng trong một thẻ
@@ -156,6 +161,11 @@ Utility `pressable` (trong `globals.css`) cho phản hồi chạm của thẻ v�
   lịch), theo hạng mục (biểu đồ tròn, không list), thu và chi theo tháng. Các khối cách nhau 24px.
 - **Trang danh sách** (Giao dịch, Tài khoản, Vay nợ, Cài đặt): tiêu đề lớn, thẻ tóm tắt, rồi các
   `SettingsGroup` có tiêu đề nhóm.
+- **Màn gói** (duyệt 2026-10-07, theo màn "Get more Claude"): page sheet nền xám, tiêu đề lớn giữa
+  ("Nâng cấp Finance Tracker" / "Bạn đang dùng Pro"); thẻ Pro trước với `ChoiceTiles tone="ai"`
+  chọn kỳ (mặc định theo năm), nút `lg` rộng hết, ghi chú nhỏ, rồi đường kẻ và "Mọi thứ của gói
+  Free, thêm:"; thẻ Free gọn hơn; cuối là dòng payOS và câu hỏi thường gặp (`Accordion` trong
+  `SettingsGroup`). Kết quả thanh toán là `NoticeBanner` ở đầu.
 - **Form:** sheet `screen` nền xám với `SheetNavHeader`; các trường gom trong một `FormSection`
   (thẻ trắng, ô nhập xám bên trong), dòng chọn và công tắc trong `SettingsGroup`; một nút `lg`
   rộng hết ở cuối. Không bọc một ô lẻ trong thẻ riêng. Nút quay lại là cách huỷ, không cần nút

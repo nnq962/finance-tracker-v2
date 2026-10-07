@@ -44,7 +44,6 @@ export function PlanInvite({ planState, checkoutEnabled, paymentOutcome, initial
         planState={planState}
         checkoutEnabled={checkoutEnabled}
         paymentOutcome={paymentOutcome}
-        backLabel="Tổng quan"
       />
     </>
   )

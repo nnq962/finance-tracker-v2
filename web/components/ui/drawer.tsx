@@ -64,9 +64,11 @@ function DrawerOverlay({
 // page: iOS's page sheet. It rises from the bottom to just below the status
 // bar, white with rounded top corners and a grabber, over the dimmed page,
 // and is dragged down to close. It never covers the status bar, so the
-// status bar keeps the page's colour.
+// status bar keeps the page's colour. The grabber floats over the content,
+// which may scroll up to the sheet's top edge (PageSheet), clipped to its
+// corners.
 const pageSheetClassName =
-  "fixed inset-x-0 bottom-0 top-[calc(env(safe-area-inset-top,0px)+0.625rem)] z-50 flex flex-col rounded-t-[28px] bg-popover pb-[env(safe-area-inset-bottom,0px)] text-sm text-popover-foreground shadow-xl outline-none sm:inset-x-auto sm:left-1/2 sm:top-[6dvh] sm:w-full sm:max-w-lg sm:-translate-x-1/2"
+  "fixed inset-x-0 bottom-0 top-[calc(env(safe-area-inset-top,0px)+0.625rem)] z-50 flex flex-col overflow-hidden rounded-t-[28px] bg-popover pb-[env(safe-area-inset-bottom,0px)] text-sm text-popover-foreground shadow-xl outline-none sm:inset-x-auto sm:left-1/2 sm:top-[6dvh] sm:w-full sm:max-w-lg sm:-translate-x-1/2"
 
 function DrawerContent({
   className,
@@ -90,7 +92,10 @@ function DrawerContent({
           className={cn(pageSheetClassName, surface === "grouped" && "surface-grouped bg-background", className)}
           {...props}
         >
-          <span aria-hidden="true" className="mx-auto mt-2 h-1 w-9 shrink-0 rounded-full bg-muted-foreground/30" />
+          <span
+            aria-hidden="true"
+            className="absolute top-2 left-1/2 z-20 h-1 w-9 -translate-x-1/2 rounded-full bg-muted-foreground/30"
+          />
           {children}
         </DrawerPrimitive.Content>
       </DrawerPortal>
