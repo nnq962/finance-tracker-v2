@@ -210,7 +210,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
           <div className="flex items-center gap-4 p-6">
             <div className="min-w-0 flex-1">
               <CardLabel>Nhiệm vụ</CardLabel>
-              <p className="mt-1.5 text-lg font-medium">Nhận thêm lượt AI</p>
+              <p className="mt-1.5 text-lg font-semibold">Nhận thêm lượt AI</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {claimable.length > 0
                   ? `${claimable.length} phần thưởng chờ nhận`

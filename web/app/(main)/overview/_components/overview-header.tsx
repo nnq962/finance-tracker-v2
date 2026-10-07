@@ -33,7 +33,7 @@ export function OverviewHeader({
       </Avatar>
       <div className="min-w-0 flex-1">
         <p className="text-xs text-muted-foreground">{greeting}</p>
-        <h1 className="truncate text-lg leading-tight font-medium">
+        <h1 className="truncate text-lg leading-tight font-semibold">
           {name || "bạn"}
           {planState.plan === "pro" ? (
             <BadgeCheckIcon

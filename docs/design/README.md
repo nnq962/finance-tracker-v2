@@ -39,7 +39,9 @@ component ở đó là cả app đổi theo.
 | | Giá trị |
 |---|---|
 | Font | Be Vietnam Pro; số tiền `tabular-nums` |
-| Cỡ chữ | Theo mockup: Display 28 (tiêu đề trang) · Title 20 (tiêu đề nhóm) · Headline 16 (tiêu đề thẻ, hộp thoại, trạng thái trống) · Body 14 (nội dung, dòng list, nút, nhãn ô) · Caption 12 (mô tả dòng, lỗi và ghi chú dưới ô). Số tiền lớn 34; chữ trong ô nhập 16 để iOS không phóng to |
+| Cỡ chữ | Display 28 (tiêu đề trang) · Title 20 (tiêu đề nhóm) · Headline 16 (tiêu đề thẻ, hộp thoại, trạng thái trống) · Body 14 (nội dung, dòng list, nút, nhãn ô) · Caption 12 (mô tả dòng, lỗi và ghi chú dưới ô). Số tiền lớn 34; chữ trong ô nhập 16 để iOS không phóng to |
+| Độ đậm | Số tiền, tiêu đề (trang, nhóm, thẻ, hộp thoại, sheet), nút và con số lớn 600 (`font-semibold`); tiêu đề dòng list, segmented, nhãn ô 500; chữ thường 400 |
+| Màu chữ phụ | `muted-foreground` như secondary label của iOS: `#858585` theme sáng, `#929292` theme tối (đổi 2026-10-07 từ `#a1a1a1` / `#737373`, quá nhạt). Làm mịn nét `antialiased` chỉ ở theme tối |
 | Bo góc | 32 đầu sheet đáy · 28 đầu sheet `bottom` · 24 thẻ lớn (`size="lg"`), action sheet · 20 thẻ, nhóm danh sách, hộp thoại, menu · 16 thẻ nhỏ, banner, ô icon lớn, ô OTP · 12 ô nhập, select, ô tháng · 10 ô icon trong dòng · tròn cho nút, chip, badge, công tắc (đổi 2026-10-07: thẻ từ 28 xuống 20, ô nhập từ viên thuốc 48 xuống 44 bo 12, như list của app Claude) |
 | Chiều cao điều khiển | Nút: L 56 · M 44 (mặc định) · S 36 · nút nổi chính 60 (`size="fab"`) · ô nhập, select, thanh tìm kiếm 44, cùng cao với nút mặc định · segmented 52 (lựa chọn 44) · nút tròn icon 44 · công tắc 52×32 |
 | Khoảng cách | Bội của 4. Lề trang 16 (24 từ md) · giữa các phần của trang và các nhóm list 24 (32 từ md; `Page` và layout trang tự lo) · tiêu đề → nội dung 8 · các thứ trong một phần 12 (thẻ cạnh thẻ, segmented → list) · đệm thẻ 16 `sm`, 20, 24 `lg`. Tiêu đề luôn gần nội dung của nó hơn phần phía trên: với `Section` thấy ~16 dưới tiêu đề, ~32 trên |
@@ -123,7 +125,7 @@ component ở đó là cả app đổi theo.
 | `MobileBottomNav` | Thanh tab nổi trên điện thoại (`components/mobile-bottom-nav.tsx`): viên thuốc mờ rộng ngang màn hình (tối đa 28rem), không chữ (tên tab là `aria-label`); viên đen (trắng ở theme tối) trượt tới tab đang mở |
 | `CompactTitleBar` | Tiêu đề thu nhỏ khi tiêu đề lớn cuộn đi; tự gắn trong `PageHeader` |
 | `InlineSelect` | Dropdown mở tại chỗ, đẩy nội dung bên dưới xuống: chọn trong vài tài khoản, ví. Hiệu ứng chiều cao đơn giản (300ms ease-out); trên iOS kém mượt hơn transform, đã chấp nhận. Danh sách dài vẫn dùng `Select`/`Combobox` |
-| `CardLabel` | Tiêu đề nhỏ trong thẻ ("TÀI SẢN RÒNG", "ĐÃ CHI"): chữ hoa 12, đậm 600, giãn chữ nhẹ, màu phụ; trên thẻ `inverse` thì sáng 60%. Mọi thẻ có nhãn dùng nó |
+| `CardLabel` | Nhãn nhỏ trong thẻ ("Tài sản ròng", "Tiền vào"): chữ thường cỡ Body, màu phụ; trên thẻ `inverse` thì sáng 60%. Mọi thẻ có nhãn dùng nó |
 | `Chip` | Chip tĩnh cho thứ đã chọn hoặc gắn kèm (người, thẻ #): có thể có avatar và nút × |
 | `MonthPickerSheet` | Chọn tháng từ sheet đáy: năm với ‹ ›, lưới 12 tháng, tháng chưa tới mờ đi, nút "Về tháng này" |
 | `MonthSelect` | Tháng đang xem dạng nút viên thuốc "Tháng 10, 2026 ▾", chạm mở `MonthPickerSheet`; tới tháng nào cũng hai chạm. Một cách đổi tháng duy nhất cho trang có tháng, không kèm mũi tên ‹ › |
@@ -147,7 +149,7 @@ component ở đó là cả app đổi theo.
 Danh sách nằm ở `components/settings-list.tsx`. `SettingsGroup` là nhóm dòng trong một thẻ
 (`size="lg"` cho trang dạng bảng tin); đường kẻ giữa các dòng thụt 16 vào từ hai bên. `SettingsRow` là **mọi** dòng list (cài đặt, giao dịch, nhiệm vụ…), nên các list đồng nhất: cao 64
 (một dòng hay tiêu đề + mô tả đều vậy), lề ngang 16, `icon` tự đặt trong `IconTile` cỡ `sm` (36,
-bo 12) màu theo `tone` (xám nếu không truyền), tiêu đề 14 (Body), mô tả 12, rồi giá trị, công tắc, số
+bo 12) màu theo `tone` (xám nếu không truyền), tiêu đề 14 (Body, đậm 500), mô tả 12 (Caption), rồi giá trị, công tắc, số
 tiền hoặc mũi tên ở bên phải. `media` cho avatar và logo tài khoản (`AccountLogo`: ô vuông bo 10 cỡ 36 như `IconTile sm`, logo trên nền trắng, tiền mặt là tờ tiền xanh; `size="xs"` 20 trong select). `swipeAction` cho dòng vuốt để xoá. Dòng ở
 trang Cài đặt mỗi mục một `tone`, như mockup. `SettingsGroup collapsible`: nhóm ẩn dòng tới khi cần (khoản đã tất toán, tài khoản ngừng dùng); tiêu đề vẫn thẳng hàng với các nhóm khác, cuối tiêu đề là "Hiện …" / "Ẩn".
 

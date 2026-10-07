@@ -53,7 +53,7 @@ function PageHeader({ title, actions, accessory, replacement, phoneTitle = true 
     >
       <div className={cn("flex min-w-0 flex-1 items-center justify-between gap-3", replacement && "max-lg:hidden")}>
         <div className="min-w-0">
-          <h1 className="text-[28px] leading-tight font-medium tracking-tight">{title}</h1>
+          <h1 className="text-[28px] leading-tight font-semibold tracking-tight">{title}</h1>
           {/* On phones the title moves to a small bar once scrolled away. */}
           {typeof title === "string" ? <CompactTitleBar title={title} /> : null}
         </div>

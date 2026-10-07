@@ -118,9 +118,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="vi"
       suppressHydrationWarning
-      className={`${beVietnamPro.variable} ${jetBrainsMono.variable} h-full font-sans antialiased`}
+      className={`${beVietnamPro.variable} ${jetBrainsMono.variable} h-full font-sans`}
     >
-      <body className="min-h-full flex flex-col">
+      {/* Thin smoothing only in the dark theme, where light text would otherwise spread; on a light
+          ground the default keeps strokes full (macOS; iOS ignores both). */}
+      <body className="min-h-full flex flex-col dark:antialiased">
         <PreventZoom />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}

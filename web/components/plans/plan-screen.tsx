@@ -187,7 +187,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanS
       ) : null}
 
       <header className="flex flex-col items-center gap-2 pt-2 text-center">
-        <h2 className="text-[28px] leading-tight font-medium tracking-tight text-balance">
+        <h2 className="text-[28px] leading-tight font-semibold tracking-tight text-balance">
           {isPro ? `Bạn đang dùng ${plans.pro.label}` : "Nâng cấp Finance Tracker"}
         </h2>
         <p className="text-base text-muted-foreground">
@@ -288,7 +288,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanS
 function PlanName({ id, current, children }: { id: string; current: boolean; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2">
-      <h3 id={id} className="text-xl font-medium">
+      <h3 id={id} className="text-xl font-semibold">
         {children}
       </h3>
       {current ? <Badge variant="income">Đang dùng</Badge> : null}

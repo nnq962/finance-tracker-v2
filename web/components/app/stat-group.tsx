@@ -27,7 +27,7 @@ type StatProps = {
 export function Stat({ value, label, onClick, title }: StatProps) {
   const content = (
     <>
-      <span className="truncate font-medium tabular-nums">{value}</span>
+      <span className="truncate font-semibold tabular-nums">{value}</span>
       <span className="truncate text-xs text-muted-foreground">{label}</span>
     </>
   )

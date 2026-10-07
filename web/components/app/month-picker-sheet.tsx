@@ -45,13 +45,13 @@ export function MonthPickerSheet({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent aria-describedby={undefined}>
         <div className="px-4 pt-3 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
-          <DrawerTitle className="text-center text-base font-medium">Chọn tháng</DrawerTitle>
+          <DrawerTitle className="text-center text-base">Chọn tháng</DrawerTitle>
 
           <div className="mt-3 flex items-center justify-between">
             <Button type="button" variant="secondary" size="icon" aria-label="Năm trước" onClick={() => setYear(year - 1)}>
               <ChevronLeftIcon />
             </Button>
-            <span className="text-xl font-medium tabular-nums" aria-live="polite">
+            <span className="text-xl font-semibold tabular-nums" aria-live="polite">
               {year}
             </span>
             <Button

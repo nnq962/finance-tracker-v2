@@ -48,7 +48,7 @@ export function ProgressRing({
         />
       </svg>
       <div aria-hidden="true" className="absolute inset-0 grid place-content-center text-center">
-        <p className={cn("font-medium tabular-nums", size === "md" ? "text-2xl" : "text-sm")}>
+        <p className={cn("font-semibold tabular-nums", size === "md" ? "text-2xl" : "text-sm")}>
           {value}/{max}
         </p>
         {label && size === "md" ? <p className="text-[10px] text-muted-foreground">{label}</p> : null}

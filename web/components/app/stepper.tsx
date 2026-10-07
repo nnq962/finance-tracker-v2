@@ -47,7 +47,7 @@ export function Stepper({
       <span
         key={value}
         aria-live="polite"
-        className="min-w-0 flex-1 text-center text-base font-medium tabular-nums motion-safe:animate-in motion-safe:zoom-in-90 motion-safe:fade-in-50"
+        className="min-w-0 flex-1 text-center text-base font-semibold tabular-nums motion-safe:animate-in motion-safe:zoom-in-90 motion-safe:fade-in-50"
       >
         {value}
       </span>

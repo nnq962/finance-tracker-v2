@@ -36,7 +36,7 @@ export function PromoBanner({
       />
       <Icon aria-hidden="true" className="relative size-7 shrink-0 text-ai" strokeWidth={1.7} />
       <span className="relative min-w-0 flex-1">
-        <span className="block text-lg font-medium">{title}</span>
+        <span className="block text-lg font-semibold">{title}</span>
         {description ? <span className="block text-sm opacity-60">{description}</span> : null}
       </span>
       <span

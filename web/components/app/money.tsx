@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 
 const numberFormatter = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 })
 
-const moneyVariants = cva("inline-flex min-w-0 items-baseline font-medium tabular-nums [overflow-wrap:anywhere]", {
+const moneyVariants = cva("inline-flex min-w-0 items-baseline font-semibold tabular-nums [overflow-wrap:anywhere]", {
   variants: {
     size: {
       sm: "text-sm",

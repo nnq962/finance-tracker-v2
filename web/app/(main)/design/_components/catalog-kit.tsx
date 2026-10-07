@@ -33,7 +33,7 @@ export function CatalogSection({ id, children }: { id: CatalogSectionId; childre
       <div className="mb-3 flex items-baseline gap-3 px-1 pt-6">
         <span className="text-xs text-muted-foreground tabular-nums">{String(index + 1).padStart(2, "0")}</span>
         <div className="min-w-0">
-          <h2 id={`${id}-title`} className="text-xl font-medium tracking-tight">
+          <h2 id={`${id}-title`} className="text-xl font-semibold tracking-tight">
             {title}
           </h2>
           <p className="text-sm text-muted-foreground">{note}</p>

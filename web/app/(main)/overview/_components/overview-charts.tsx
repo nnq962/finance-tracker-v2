@@ -39,7 +39,7 @@ export function CashFlowChart({ data }: { data: OverviewSummary["cashFlow"] }) {
             tickFormatter={compactMoney}
             tickLine={false}
             axisLine={false}
-            width={40}
+            width={44}
           />
           <ChartTooltip
             cursor={false}

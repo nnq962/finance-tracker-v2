@@ -18,7 +18,7 @@ export default function RootLoading() {
           priority
           alt=""
         />
-        <p className="mt-8 text-xl font-medium">
+        <p className="mt-8 text-xl font-semibold">
           {SITE_NAME}
         </p>
         <p className="mt-3 animate-pulse text-sm text-muted-foreground motion-reduce:animate-none">

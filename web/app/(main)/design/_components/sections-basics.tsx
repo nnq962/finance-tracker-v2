@@ -62,13 +62,13 @@ const colors = [
   ["border", "Đường kẻ", "bg-border"],
 ] as const
 
-// After the mockup's scale: Display 28 · Title 20 · Headline 16 · Body 14 · Caption 12,
-// plus the large amount (34) and the input text (16, so iOS does not zoom in).
+// Display 28 · Title 20 · Headline 16 · Body 14 · Caption 12, plus the large amount (34) and the
+// input text (16, so iOS does not zoom in). Figures and headings 600, text 400; list titles 500.
 const typeScale = [
-  ["Số tiền lớn", "text-[34px] font-medium tracking-tight", "34"],
-  ["Display · trang", "text-[28px] font-medium tracking-tight", "28"],
-  ["Title · nhóm", "text-xl font-medium", "20"],
-  ["Headline · thẻ", "text-base font-medium", "16"],
+  ["Số tiền lớn", "text-[34px] font-semibold tracking-tight", "34"],
+  ["Display · trang", "text-[28px] font-semibold tracking-tight", "28"],
+  ["Title · nhóm", "text-xl font-semibold", "20"],
+  ["Headline · thẻ", "text-base font-semibold", "16"],
   ["Body · nội dung", "text-sm", "14"],
   ["Caption · mô tả, lỗi", "text-xs text-muted-foreground", "12"],
 ] as const

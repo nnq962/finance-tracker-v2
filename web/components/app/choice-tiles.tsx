@@ -80,7 +80,7 @@ export function ChoiceTiles<T extends string>({
             </span>
             {option.badge ? <Badge variant={tones[tone].badge}>{option.badge}</Badge> : null}
           </span>
-          <span className="mt-auto pt-4 text-xl font-medium tabular-nums">{option.title}</span>
+          <span className="mt-auto pt-4 text-xl font-semibold tabular-nums">{option.title}</span>
           {option.description ? <span className="text-sm text-muted-foreground">{option.description}</span> : null}
         </RadioGroupPrimitive.Item>
       ))}
