@@ -1,19 +1,20 @@
 "use client"
 
 import * as React from "react"
+import { flushSync } from "react-dom"
 import { usePathname, useRouter } from "next/navigation"
 import { ListFilterIcon, PlusIcon, SearchIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { AiAssistButton } from "@/components/ai-assist/ai-assist-button"
+import { CompactTitleBar } from "@/components/app/compact-title-bar"
 import { FloatingActions } from "@/components/app/floating-actions"
-import { MonthTabs } from "@/components/app/month-tabs"
+import { MonthSelect } from "@/components/app/month-select"
 import { PageHeader } from "@/components/page"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { cn } from "@/lib/utils"
@@ -30,6 +31,7 @@ import { AiTransactionDrawer } from "./ai-transaction/ai-transaction-drawer"
 import { NeedAccountState } from "./add-transaction/need-account-state"
 import { TransactionHistoryProvider } from "./add-transaction/transaction-history-context"
 import { MonthSummary } from "./month-summary"
+import { TransactionActiveFilters } from "./transaction-active-filters"
 import { countActiveFilters, filtersForKind, TransactionFilterPanel } from "./transaction-filter-fields"
 import { countSheetFilters, TransactionFilterSheet, TransactionSearchBar } from "./transaction-search"
 import { TransactionsLayout } from "./transactions-layout"
@@ -59,11 +61,13 @@ const initialSearchFilters: TransactionSearchFilters = {
 }
 
 /**
- * The transactions page, as in banking apps: the months as tabs, the month's
- * totals, a switch for all, spending or income, then the days. On phones the
- * search takes the title's place and the other filters (kind, category,
- * account, amount) open in a sheet; the totals follow all of them. A tapped
- * month is chosen at once and the list stays put, dimmed, until it loads.
+ * The transactions page, as in banking apps: the month, then its money in and
+ * money out as two tiles that also narrow the list to that kind, then the
+ * days, each date staying on top while its rows scroll. On phones the top
+ * row holds the month, search and the other filters (category, account,
+ * amount); the search field slides open under it, and the filters in force
+ * show as chips above the list. A month chosen loads while the list stays
+ * put, dimmed.
  */
 export function TransactionsScreen({
   accounts,
@@ -77,7 +81,6 @@ export function TransactionsScreen({
   purchaseDraft,
 }: TransactionsScreenProps) {
   const router = useRouter()
-  // The page's own address, so the preview keeps to itself while it is reviewed.
   const pathname = usePathname()
   const [isNavigating, startNavigation] = React.useTransition()
   const thisMonth = todayDateKey.slice(0, 7)
@@ -122,6 +125,11 @@ export function TransactionsScreen({
     () => filterTransactions(monthTransactions, filter, searchFilters),
     [filter, monthTransactions, searchFilters],
   )
+  // Every filter but the kind, for the tiles: the kind is what they switch.
+  const summaryTransactions = React.useMemo(
+    () => filterTransactions(monthTransactions, "all", searchFilters),
+    [monthTransactions, searchFilters],
+  )
 
   const changeKind = (kind: TransactionFilter) => {
     setFilter(kind)
@@ -148,44 +156,48 @@ export function TransactionsScreen({
     setRequestedMonth(month)
     startNavigation(() => router.push(month === thisMonth ? pathname : `${pathname}?month=${month}`, { scroll: false }))
   }
+  const shownMonth = isNavigating ? requestedMonth : selectedMonth
+  const searchInput = React.useRef<HTMLInputElement>(null)
+  // The field takes the keyboard within the tap itself, which iOS requires,
+  // so it is shown (no longer inert) before it is focused.
+  const openSearch = () => {
+    flushSync(() => setSearchOpen(true))
+    searchInput.current?.focus()
+  }
+  const headerActions = (
+    <>
+      <AiAssistButton variant="outline" remaining={aiRemaining} onClick={openAi}>
+        Nhập bằng AI
+      </AiAssistButton>
+      <AddTransactionButton accounts={accounts} categoryGroups={categoryGroups} />
+    </>
+  )
   // While a month loads, what is shown stays and dims.
   const loadingClassName = cn("transition-opacity duration-200", isNavigating && "opacity-50")
 
   return (
     <TransactionHistoryProvider transactions={transactions}>
-      <PageHeader
-        title="Giao dịch"
-        actions={
-          <>
-            <AiAssistButton variant="outline" remaining={aiRemaining} onClick={openAi}>
-              Nhập bằng AI
-            </AiAssistButton>
-            <AddTransactionButton accounts={accounts} categoryGroups={categoryGroups} />
-          </>
-        }
-        replacement={
-          showSearch ? (
-            <TransactionSearchBar
-              id="transaction-search-phone"
-              query={searchFilters.query}
-              onQueryChange={changeQuery}
-              autoFocus={searchOpen}
-              onCancel={() => {
-                changeQuery("")
-                setSearchOpen(false)
-              }}
-            />
-          ) : undefined
-        }
-        accessory={
-          <>
+      {/* From lg up: the page's title and actions, as on every page. */}
+      <div className="max-lg:hidden">
+        <PageHeader title="Giao dịch" actions={headerActions} />
+      </div>
+
+      {/* Below lg, as in native apps, the tab bar already names the page: the
+          month leads the top row, beside search and the filters; AI floats above the add button. The search field
+          opens under that row, pushing the page down. */}
+      <header className="lg:hidden">
+        <h1 className="sr-only">Giao dịch</h1>
+        <div className="flex items-center justify-between gap-3 pt-1">
+          <MonthSelect value={shownMonth} max={thisMonth} onValueChange={changeMonth} />
+          <div className="flex shrink-0 gap-2">
             <Button
               type="button"
               variant="secondary"
               size="icon"
               aria-label="Tìm giao dịch"
-              aria-pressed={showSearch}
-              onClick={() => setSearchOpen(true)}
+              aria-expanded={showSearch}
+              aria-controls="transaction-search-row"
+              onClick={openSearch}
             >
               <SearchIcon />
             </Button>
@@ -204,20 +216,55 @@ export function TransactionsScreen({
                 </Badge>
               ) : null}
             </Button>
-          </>
-        }
-      />
+            <div className="hidden gap-2 md:flex">{headerActions}</div>
+          </div>
+        </div>
+        <CompactTitleBar title="Giao dịch" />
+        <div
+          id="transaction-search-row"
+          inert={!showSearch}
+          className={cn(
+            // 4px of room on each side keeps the focused field's ring from being clipped.
+            "-mx-1 overflow-hidden px-1 transition-[height] duration-250 ease-out motion-reduce:duration-150",
+            showSearch ? "h-15" : "h-0",
+          )}
+        >
+          <div
+            className={cn(
+              "pt-3 transition-[opacity,translate] duration-250 ease-out motion-reduce:duration-150",
+              showSearch ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0",
+            )}
+          >
+            <TransactionSearchBar
+              id="transaction-search-phone"
+              inputRef={searchInput}
+              query={searchFilters.query}
+              onQueryChange={changeQuery}
+              onCancel={() => {
+                changeQuery("")
+                setSearchOpen(false)
+              }}
+            />
+          </div>
+        </div>
+      </header>
 
       <TransactionsLayout
         summary={
           <div className="flex flex-col gap-3">
-            <MonthTabs
-              value={isNavigating ? requestedMonth : selectedMonth}
+            <MonthSelect
+              className="self-start max-lg:hidden"
+              value={shownMonth}
               max={thisMonth}
-              pending={isNavigating}
               onValueChange={changeMonth}
             />
-            <MonthSummary transactions={visibleTransactions} className={loadingClassName} />
+            {/* In the narrow rail of lg the tiles stack, so their figures fit. */}
+            <MonthSummary
+              transactions={summaryTransactions}
+              filter={filter}
+              onFilterChange={changeKind}
+              className={cn("lg:grid-cols-1 xl:grid-cols-2", loadingClassName)}
+            />
           </div>
         }
         filters={
@@ -236,21 +283,16 @@ export function TransactionsScreen({
         <div className="hidden lg:block">
           <TransactionSearchBar id="transaction-search" query={searchFilters.query} onQueryChange={changeQuery} />
         </div>
-        {/* The other kinds and every other filter are in the sheet, or beside the list from lg up. */}
-        <div className="flex flex-col gap-3 lg:hidden">
-          <Tabs value={filter} onValueChange={(value) => changeKind(value as TransactionFilter)}>
-            <TabsList className="w-full" aria-label="Lọc loại giao dịch">
-              <TabsTrigger value="all">Tất cả</TabsTrigger>
-              <TabsTrigger value="expense">Chi</TabsTrigger>
-              <TabsTrigger value="income">Thu</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          {isFiltering ? (
-            <p className="px-1 text-sm text-muted-foreground" aria-live="polite">
-              {visibleTransactions.length} giao dịch
-            </p>
-          ) : null}
-        </div>
+        {/* From lg up the filter panel beside the list shows them instead. */}
+        <TransactionActiveFilters
+          className="lg:hidden"
+          accounts={accounts}
+          categoryGroups={categoryGroups}
+          filter={filter}
+          searchFilters={searchFilters}
+          onFilterChange={changeKind}
+          onSearchFiltersChange={setSearchFilters}
+        />
         <div className={loadingClassName}>
           <TransactionsView
             accounts={accounts}

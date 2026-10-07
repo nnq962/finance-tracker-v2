@@ -1,6 +1,6 @@
 import { Page } from "@/components/page"
 
-import { TransactionsDashboard } from "./_components/transactions-dashboard"
+import { TransactionsScreen } from "./_components/transactions-screen"
 import { loadTransactions, type TransactionsSearchParams } from "./_lib/load-transactions"
 
 export default async function TransactionsPage({
@@ -12,7 +12,7 @@ export default async function TransactionsPage({
 
   return (
     <Page>
-      <TransactionsDashboard {...data} />
+      <TransactionsScreen {...data} />
     </Page>
   )
 }

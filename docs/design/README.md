@@ -19,7 +19,7 @@ component ở đó là cả app đổi theo.
 ## Nguyên tắc
 
 1. **Thẻ mềm trên nền xám.** Nền trắng ngà rất nhạt (`#f2f2f1`, "Canvas" của mockup); thẻ trắng
-   bo 28, không viền, không bóng, tách khỏi nền nhờ chênh màu. Xám là thang `neutral` của
+   bo 20, không viền, không bóng, tách khỏi nền nhờ chênh màu. Xám là thang `neutral` của
    Tailwind (không ngả xanh). Theme tối: nền `#0a0a0a`, thẻ `#171717`.
 2. **Một màu nhấn.** `neutral-900` (trắng ở theme tối) cho nút chính, chip đang chọn, công tắc
    bật, tiến độ.
@@ -40,8 +40,8 @@ component ở đó là cả app đổi theo.
 |---|---|
 | Font | Be Vietnam Pro; số tiền `tabular-nums` |
 | Cỡ chữ | Theo mockup: Display 28 (tiêu đề trang) · Title 20 (tiêu đề nhóm) · Headline 16 (tiêu đề thẻ, hộp thoại, trạng thái trống) · Body 14 (nội dung, dòng list, nút, nhãn ô) · Caption 12 (mô tả dòng, lỗi và ghi chú dưới ô). Số tiền lớn 34; chữ trong ô nhập 16 để iOS không phóng to |
-| Bo góc | 28 thẻ, nhóm danh sách, hộp thoại · 32 đầu sheet đáy · 24 ô nhập (cao 48 nên tròn như nút), action sheet · 22 banner · 20 thẻ nhỏ, menu · 16 ô icon, ô OTP · tròn cho nút, chip, badge, công tắc |
-| Chiều cao điều khiển | Nút theo mockup: L 56 · M 48 (mặc định) · S 36 · nút nổi chính 60 (`size="fab"`) · ô nhập, select, thanh tìm kiếm 48, cùng cỡ và độ bo với nút · segmented 52 (lựa chọn 44) · nút tròn icon 44 · công tắc 52×32 |
+| Bo góc | 32 đầu sheet đáy · 28 đầu sheet `bottom` · 24 thẻ lớn (`size="lg"`), action sheet · 20 thẻ, nhóm danh sách, hộp thoại, menu · 16 thẻ nhỏ, banner, ô icon lớn, ô OTP · 12 ô nhập, select, ô tháng · 10 ô icon trong dòng · tròn cho nút, chip, badge, công tắc (đổi 2026-10-07: thẻ từ 28 xuống 20, ô nhập từ viên thuốc 48 xuống 44 bo 12, như list của app Claude) |
+| Chiều cao điều khiển | Nút: L 56 · M 44 (mặc định) · S 36 · nút nổi chính 60 (`size="fab"`) · ô nhập, select, thanh tìm kiếm 44, cùng cao với nút mặc định · segmented 52 (lựa chọn 44) · nút tròn icon 44 · công tắc 52×32 |
 | Khoảng cách | Bội của 4. Lề trang 16 (24 từ md) · giữa các phần của trang và các nhóm list 24 (32 từ md; `Page` và layout trang tự lo) · tiêu đề → nội dung 8 · các thứ trong một phần 12 (thẻ cạnh thẻ, segmented → list) · đệm thẻ 16 `sm`, 20, 24 `lg`. Tiêu đề luôn gần nội dung của nó hơn phần phía trên: với `Section` thấy ~16 dưới tiêu đề, ~32 trên |
 | Bóng | Thẻ không bóng; chỉ lớp nổi (menu, sheet, hộp thoại, tab bar, nút nổi) có bóng |
 | Chuyển động | 150–250ms ease-out; chỉ báo trượt (segmented, công tắc) nảy nhẹ ~450ms. Dùng CSS transition trên `translate`/`opacity` hoặc `motion` cho chiều cao, không dùng layout animation hay transition `grid-template-rows` (giật trên iOS Safari). Khi `prefers-reduced-motion`, rút còn 150ms ease-out, không nảy, thay vì tắt hẳn |
@@ -49,17 +49,19 @@ component ở đó là cả app đổi theo.
 ## Component (`components/ui`, đã may lại)
 
 - **Button:** viên thuốc. Kiểu `default` (đen), `secondary` (xám), `outline` (trắng có viền),
-  `ghost`, `destructive` (đỏ nhạt), `link`. Cỡ như mockup: `lg` 56 · mặc định 48 · `sm` 36
+  `ghost`, `destructive` (đỏ nhạt), `link`. Cỡ: `lg` 56 · mặc định 44 · `sm` 36
   (thêm `xs` 32); `icon` 44, `icon-sm` 36, `icon-xs` 32, `icon-lg` 48, `fab` 60. Icon trong nút
   18px; nút tắt mờ còn 35%.
-- **Card:** bo 28 như mockup; mặc định đệm 20 · `size="lg"` đệm 24 cho thẻ chính của trang ·
-  `size="sm"` (bo 20, đệm 16). Nhãn trong thẻ (`CardLabel`): chữ thường 14px màu phụ, như "Tài
+- **Card:** bo 20, đệm 20 · `size="lg"` (bo 24, đệm 24) cho thẻ chính của trang ·
+  `size="sm"` (bo 16, đệm 16). Nhãn trong thẻ (`CardLabel`): chữ thường 14px màu phụ, như "Tài
   sản ròng". `variant="inverse"`: thẻ đen (sáng ở theme tối) cho một con số dẫn đầu như số dư.
-- **Input, Textarea, InputGroup, Select, Combobox:** chữ 16px (để iOS không phóng to). Cao 48 và
-  bo 24, cùng cỡ với nút mặc định, trong form cũng như đứng riêng (thanh tìm kiếm); `Textarea` và
-  `InlineSelect` khi cao lên vẫn giữ góc 24. Khi focus, ô chuyển nền trắng (màu thẻ) và có viền đậm
+  `asChild`: thẻ là phần tử con, như một nút cho thẻ bấm cả khối (thẻ Tiền vào / Tiền ra ở Giao
+  dịch, đang chọn thì `inverse`).
+- **Input, Textarea, InputGroup, Select, Combobox:** chữ 16px (để iOS không phóng to). Cao 44 và
+  bo 12, cùng cao với nút mặc định, trong form cũng như đứng riêng (thanh tìm kiếm); `Textarea` và
+  `InlineSelect` khi cao lên vẫn giữ góc 12. Khi focus, ô chuyển nền trắng (màu thẻ) và có viền đậm
   2px màu nhấn; khi lỗi, viền 2px màu `destructive`. Kích thước đặt qua biến `--control-h`,
-  `--control-radius`, `--control-px` (mặc định 48, 24, 16).
+  `--control-radius`, `--control-px` (mặc định 44, 12, 16).
 - **Màu ô nhập theo bề mặt** (token `field`, `track` và utility `surface-grouped` / `surface-plain`
   trong `globals.css`): trên nền xám (trang, sheet) ô nhập, chip, nút phụ màu trắng; trên thẻ
   trắng chúng màu xám. Thẻ tự đặt `surface-plain`, khung trang và sheet đặt `surface-grouped`. Trong `SelectContent`, các `SelectItem` luôn nằm trong
@@ -78,7 +80,7 @@ component ở đó là cả app đổi theo.
 - **Slider:** rãnh dày 8, núm trắng; hai giá trị là khoảng; `formatValue` hiện bong bóng giá trị
   khi kéo.
 - **Accordion:** câu hỏi chữ 14, dòng cao từ 56, nút + trong vòng xám xoay thành × khi mở.
-- **Progress:** thanh dày 8. **Empty:** icon mảnh trong ô vuông xám 80 bo 28, tiêu đề 16.
+- **Progress:** thanh dày 8. **Empty:** icon mảnh trong ô vuông xám 80 bo 20, tiêu đề 16.
 - **Badge:** viên thuốc cao 24 có chấm màu ở đầu; kiểu màu ý nghĩa `income`, `expense`,
   `transfer`, `ai`, `warning`; `count` là số đỏ đặc trên icon. Có cái mới mà không cần số (chuông
   thông báo): chấm cam 6px như mockup.
@@ -98,7 +100,7 @@ component ở đó là cả app đổi theo.
   theo trạng thái (thành công `income`, lỗi `destructive`, cảnh báo `warning`, thông tin
   `transfer`) chứa glyph trắng, bóng mềm; nút Hoàn tác là viên nhỏ trong toast. Sonner vẫn lo
   xếp chồng, vuốt để đóng, hẹn giờ.
-- **Dialog, AlertDialog:** bo 28. Chỉ để xác nhận hoặc nhập rất ngắn; nút huỷ màu xám.
+- **Dialog, AlertDialog:** bo 20. Chỉ để xác nhận hoặc nhập rất ngắn; nút huỷ màu xám.
 - **DropdownMenu, Select, Combobox (danh sách):** bo 20, dòng cao 40.
 
 ## Khối kiểu app (`components/app`)
@@ -107,7 +109,7 @@ component ở đó là cả app đổi theo.
 |---|---|
 | `Section` | Một phần có tiêu đề ngoài thẻ (`SectionHeader`: 20px, đậm vừa, kèm ghi chú và "Xem tất cả" hoặc nút); nội dung cách tiêu đề 8, các thứ bên trong cách nhau 12. Phần có tiêu đề lớn luôn dùng nó |
 | `Money` | Mọi số tiền: chữ số đều, "đ" viết liền sau số (55.103.000đ); ở cỡ lớn (`lg`, `xl`) "đ" nhỏ hơn và mờ 50% như mockup; cỡ `sm`/`md`/`lg`/`xl`, màu theo `tone` |
-| `IconTile` | Icon trên ô vuông bo góc nền nhạt (như mockup); màu hạng mục hoặc màu ý nghĩa. Cỡ `sm` 36 (mọi dòng list, qua `SettingsRow`), `md` 40, `lg` 48 (đầu thẻ, đầu sheet); `shape="circle"` chỉ cho chữ cái, khuôn mặt |
+| `IconTile` | Icon trên ô vuông bo góc nền nhạt (như mockup); màu hạng mục hoặc màu ý nghĩa. Cỡ `sm` 36 (mọi dòng list, qua `SettingsRow`), `md` 40 (bo 10), `lg` 48 (bo 16; đầu thẻ, đầu sheet); `shape="circle"` chỉ cho chữ cái, khuôn mặt |
 | `DeltaBadge` | % thay đổi so với kỳ trước, dạng chữ nhỏ có mũi tên ("↘ 93%") như mockup, không nền; xanh khi tốt, đỏ khi xấu |
 | `StatGroup` + `Stat` | 2–4 chỉ số chia cột bằng vạch mảnh, mỗi cột có thể mở trang |
 | `ProgressRing` | Tiến độ dạng vòng mảnh có số ở giữa |
@@ -119,7 +121,7 @@ component ở đó là cả app đổi theo.
 | `CardLabel` | Tiêu đề nhỏ trong thẻ ("TÀI SẢN RÒNG", "ĐÃ CHI"): chữ hoa 12, đậm 600, giãn chữ nhẹ, màu phụ; trên thẻ `inverse` thì sáng 60%. Mọi thẻ có nhãn dùng nó |
 | `Chip` | Chip tĩnh cho thứ đã chọn hoặc gắn kèm (người, thẻ #): có thể có avatar và nút × |
 | `MonthPickerSheet` | Chọn tháng từ sheet đáy: năm với ‹ ›, lưới 12 tháng, tháng chưa tới mờ đi, nút "Về tháng này" |
-| `MonthTabs` | Tháng đang xem dạng tab cuộn ngang: 12 tháng gần nhất, mới nhất bên phải, "Cũ hơn" ở đầu mở `MonthPickerSheet`. Tab chạm vào được chọn ngay khi tháng còn đang tải (`pending`). Một cách đổi tháng duy nhất cho trang có tháng |
+| `MonthSelect` | Tháng đang xem dạng nút viên thuốc "Tháng 10, 2026 ▾", chạm mở `MonthPickerSheet`; tới tháng nào cũng hai chạm. Một cách đổi tháng duy nhất cho trang có tháng, không kèm mũi tên ‹ › |
 | `Stepper` | Đếm từng bước bằng − / + (số người, số tháng) |
 | `OtpInput` | Mã một lần trong các ô riêng; tự nhảy ô, dán được cả mã |
 | `WheelPicker` + `WheelPickerGroup` | Bánh xe cuộn kiểu iOS để chọn giờ, phút |

@@ -53,7 +53,7 @@ function FieldGroup({ className, ...props }: React.ComponentProps<"div">) {
 
 const fieldVariants = cva(
   // Controls take their size from --control-h, --control-px and
-  // --control-radius: 48px tall and as round as a button everywhere, in a
+  // --control-radius: 44px tall like a button, with 12px corners, in a
   // form field as on a lone search bar.
   "group/field flex w-full gap-3 data-[invalid=true]:text-destructive",
   {

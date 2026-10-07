@@ -32,7 +32,7 @@ import { FormSection } from "@/components/app/form-section"
 import { IconTile } from "@/components/app/icon-tile"
 import { Money } from "@/components/app/money"
 import { MonthPickerSheet } from "@/components/app/month-picker-sheet"
-import { MonthTabs } from "@/components/app/month-tabs"
+import { MonthSelect } from "@/components/app/month-select"
 import { NoticeBanner } from "@/components/app/notice-banner"
 import { PageDots } from "@/components/app/page-dots"
 import { PromoBanner } from "@/components/app/promo-banner"
@@ -388,15 +388,13 @@ function AvatarSection() {
 function NavSection() {
   const [page, setPage] = React.useState(1)
   const [step, setStep] = React.useState(1)
-  const [tabMonth, setTabMonth] = React.useState("2026-10")
+  const [month, setMonth] = React.useState("2026-10")
 
   return (
     <CatalogSection id="nav">
-      {/* Outside a card: the tabs bleed to the screen's edges on phones. */}
-      <Wide>
-        <BlockLabel className="px-1">Tab tháng · cuộn ngang, “Cũ hơn” mở sheet chọn tháng (MonthTabs)</BlockLabel>
-        <MonthTabs value={tabMonth} max="2026-10" onValueChange={setTabMonth} />
-      </Wide>
+      <Block label="Chọn tháng · nút mở sheet chọn tháng (MonthSelect)">
+        <MonthSelect value={month} max="2026-10" onValueChange={setMonth} />
+      </Block>
       <Block label="Chỉ báo trang · chạm để chuyển">
         <div className="flex items-center justify-between">
           <PageDots count={4} value={page} onValueChange={setPage} />

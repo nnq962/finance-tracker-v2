@@ -25,7 +25,7 @@ export function PromoBanner({
       data-slot="promo-banner"
       onClick={onClick}
       className={cn(
-        "pressable relative flex w-full items-center gap-4 overflow-hidden rounded-[28px] bg-linear-to-r from-primary via-primary to-primary/85 px-6 py-5 text-left text-primary-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+        "pressable relative flex w-full items-center gap-4 overflow-hidden rounded-[20px] bg-linear-to-r from-primary via-primary to-primary/85 px-6 py-5 text-left text-primary-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
         className,
       )}
     >

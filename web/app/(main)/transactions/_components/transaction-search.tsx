@@ -1,5 +1,6 @@
 "use client"
 
+import type * as React from "react"
 import { SearchIcon, XIcon } from "lucide-react"
 
 import { FormSection } from "@/components/app/form-section"
@@ -13,7 +14,7 @@ import type { CategoryGroup } from "@/lib/categories/types"
 import type { TransactionFilter, TransactionSearchFilters } from "../_types/transaction"
 import { countActiveFilters, TransactionFilterFields } from "./transaction-filter-fields"
 
-/** The conditions to count on the filter button: all but spending or income, which the switch above the list shows. */
+/** The conditions to count on the filter button: all but spending or income, which the tiles above the list show. */
 export function countSheetFilters(filter: TransactionFilter, searchFilters: TransactionSearchFilters) {
   return countActiveFilters(filter, searchFilters) - Number(filter === "expense" || filter === "income")
 }
@@ -28,12 +29,17 @@ export function TransactionSearchBar({
   onQueryChange,
   onCancel,
   autoFocus,
+  inputRef,
+  accessory,
 }: {
   id: string
   query: string
   onQueryChange: (query: string) => void
   onCancel?: () => void
   autoFocus?: boolean
+  inputRef?: React.Ref<HTMLInputElement>
+  /** Beside the field, before "Huỷ", e.g. the filter button. */
+  accessory?: React.ReactNode
 }) {
   return (
     <div className="flex min-w-0 items-center gap-2">
@@ -46,6 +52,7 @@ export function TransactionSearchBar({
         </InputGroupAddon>
         <InputGroupInput
           id={id}
+          ref={inputRef}
           type="text"
           inputMode="search"
           // Opened by a tap on the search button, it takes the keyboard straight away.
@@ -62,6 +69,7 @@ export function TransactionSearchBar({
           </InputGroupAddon>
         ) : null}
       </InputGroup>
+      {accessory}
       {onCancel ? (
         <Button type="button" variant="ghost" className="shrink-0 px-3" onClick={onCancel}>
           Huỷ

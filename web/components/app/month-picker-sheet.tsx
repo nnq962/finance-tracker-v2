@@ -80,7 +80,7 @@ export function MonthPickerSheet({
                   aria-label={`Tháng ${index + 1}, ${year}`}
                   onClick={() => choose(month)}
                   className={cn(
-                    "pressable h-14 rounded-[18px] text-sm font-medium tabular-nums outline-none focus-visible:ring-3 focus-visible:ring-ring/30",
+                    "pressable h-14 rounded-xl text-sm font-medium tabular-nums outline-none focus-visible:ring-3 focus-visible:ring-ring/30",
                     selected ? "bg-primary text-primary-foreground" : "bg-field",
                     later && "bg-transparent text-muted-foreground/50",
                   )}

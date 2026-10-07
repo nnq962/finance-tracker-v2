@@ -12,7 +12,7 @@ export function CardLabel({
   as: Component = "h2",
   className,
   ...props
-}: React.ComponentProps<"h2"> & { as?: "h2" | "h3" | "p" }) {
+}: React.ComponentProps<"h2"> & { as?: "h2" | "h3" | "p" | "span" }) {
   return (
     <Component
       data-slot="card-label"

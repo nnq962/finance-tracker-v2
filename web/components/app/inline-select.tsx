@@ -27,7 +27,7 @@ type SelectProps = {
 }
 
 const fieldClassName =
-  "flex h-[var(--control-h,3rem)] w-full items-center gap-3 px-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-primary"
+  "flex h-[var(--control-h,2.75rem)] w-full items-center gap-3 px-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-primary"
 
 /** The closed field: the chosen option's tile, name and meta, and a chevron that turns when open. */
 function ChosenValue({ chosen, placeholder, open }: { chosen?: InlineSelectOption; placeholder: string; open: boolean }) {
@@ -127,7 +127,7 @@ export function InlineSelect({ options, value, onValueChange, label, placeholder
           setOpen(false)
         }
       }}
-      className={cn("overflow-hidden rounded-[var(--control-radius,1.5rem)] bg-field", className)}
+      className={cn("overflow-hidden rounded-[var(--control-radius,0.75rem)] bg-field", className)}
     >
       <button
         type="button"

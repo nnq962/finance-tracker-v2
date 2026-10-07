@@ -1,5 +1,4 @@
 import { Card, CardContent } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { Page, PageHeaderSkeleton } from "@/components/page"
 import { Skeleton } from "@/components/ui/skeleton"
 import { settingsSeparatorClassName } from "@/components/settings-list"
@@ -7,35 +6,25 @@ import { cn } from "@/lib/utils"
 
 import { TransactionsLayout } from "./_components/transactions-layout"
 
-function TransactionsHeroSkeleton() {
+/** Same footprint as the month's pill and its two tiles, money in and money out. */
+function MonthSummarySkeleton() {
   return (
-    <div className="space-y-2">
-      <div className="flex min-h-4 items-center px-3">
-        <Skeleton className="h-3 w-28" />
+    <div className="flex flex-col gap-3">
+      <Skeleton className="h-9 w-40 rounded-full max-lg:hidden" />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-1 xl:grid-cols-2">
+        {[0, 1].map((index) => (
+          <Card key={index} size="sm" className="px-4">
+            <div className="flex items-center gap-2">
+              <Skeleton className="size-9 rounded-xl" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+            <div className="space-y-1.5">
+              <Skeleton className="h-7 w-28 max-w-full" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+          </Card>
+        ))}
       </div>
-      <Card>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between gap-2">
-            <Skeleton className="size-8" />
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="size-8" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {[0, 1].map((index) => (
-              <div key={index} className="space-y-1.5">
-                <Skeleton className="h-4 w-14" />
-                <Skeleton className="h-6 w-28 max-w-full" />
-                <Skeleton className="h-3.5 w-20" />
-              </div>
-            ))}
-          </div>
-          <Separator />
-          <div className="flex justify-between gap-3">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-28" />
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }
@@ -102,15 +91,22 @@ export default function TransactionsLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <PageHeaderSkeleton action />
+        <div className="max-lg:hidden">
+          <PageHeaderSkeleton action />
+        </div>
+        {/* Below lg: the month, then the search and filter buttons. */}
+        <div className="flex items-center justify-between gap-3 pt-1 lg:hidden">
+          <Skeleton className="h-9 w-40 rounded-full" />
+          <div className="flex gap-2">
+            <Skeleton className="size-11 rounded-full" />
+            <Skeleton className="size-11 rounded-full" />
+          </div>
+        </div>
         <TransactionsLayout
-          summary={<TransactionsHeroSkeleton />}
+          summary={<MonthSummarySkeleton />}
           filters={<FilterPanelSkeleton />}
         >
-          <div className="flex gap-2">
-            <Skeleton className="h-8 max-w-md flex-1 lg:max-w-none" />
-            <Skeleton className="h-8 w-20 lg:hidden" />
-          </div>
+          <Skeleton className="hidden h-11 rounded-xl lg:block" />
           <div className="space-y-6 md:space-y-8">
             <DayGroupSkeleton rows={3} />
             <DayGroupSkeleton rows={2} />

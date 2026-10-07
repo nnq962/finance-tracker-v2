@@ -84,10 +84,10 @@ const spacing = [
 ] as const
 
 const radii = [
-  ["28", "rounded-[28px]"],
   ["24", "rounded-3xl"],
-  ["22", "rounded-[22px]"],
+  ["20", "rounded-[20px]"],
   ["16", "rounded-2xl"],
+  ["12", "rounded-xl"],
   ["∞", "rounded-full"],
 ] as const
 
@@ -197,7 +197,7 @@ function ButtonSection() {
           <Button variant="link">Xem thêm</Button>
         </div>
       </Block>
-      <Block label="Kích thước · 32 / 36 / 44 / 48">
+      <Block label="Kích thước · 32 / 36 / 44 / 56">
         <div className="flex flex-wrap items-center gap-2">
           <Button size="xs">Nhận +5</Button>
           <Button size="sm">Small</Button>
