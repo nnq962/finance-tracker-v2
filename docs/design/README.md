@@ -28,6 +28,9 @@ component ở đó là cả app đổi theo.
    (`bg-income/10`).
 5. **Vừa ngón tay.** Thứ bấm được cao từ 44px. Mọi nút là viên thuốc. Chạm thì hơi lún
    (thu nhỏ 0.97), tắt khi người dùng giảm chuyển động.
+6. **Ít chữ.** Nhãn, mô tả, thông báo ngắn và dễ hiểu, giọng trung tính ("Thêm tài khoản", không
+   "Chỉ cần…", "Ví dụ…"). Mô tả dưới dòng chỉ ghi điều tiêu đề chưa nói hoặc điều cần làm trước.
+   Một thứ gọi một tên trong cả app: "hạng mục", "lượt AI".
 
 ## Nền tảng
 
@@ -37,7 +40,7 @@ component ở đó là cả app đổi theo.
 | Cỡ chữ | Theo mockup: Display 28 (tiêu đề trang) · Title 20 (tiêu đề nhóm) · Headline 16 (tiêu đề thẻ, hộp thoại, trạng thái trống) · Body 14 (nội dung, dòng list, nút, nhãn ô) · Caption 12 (mô tả dòng, lỗi và ghi chú dưới ô). Số tiền lớn 34; chữ trong ô nhập 16 để iOS không phóng to |
 | Bo góc | 28 thẻ lớn, sheet, hộp thoại · 24 thẻ, nhóm danh sách · 20 thẻ nhỏ, menu · 16 ô nhập, ô icon · tròn cho nút, chip, badge, công tắc |
 | Chiều cao điều khiển | Nút 44 · ô nhập/select trong form 52, ô lẻ như thanh tìm kiếm 44 (bo 16) · segmented 44 · 36/32 chỗ chật · 48 nút cuối form |
-| Khoảng cách | Lề trang 16 (24 từ md) · giữa các thẻ 16 (24 từ md) · trong thẻ 20, lg 24 |
+| Khoảng cách | Bội của 4. Lề trang 16 (24 từ md) · giữa các phần của trang và các nhóm list 24 (32 từ md; `Page` và layout trang tự lo) · tiêu đề → nội dung 8 · các thứ trong một phần 12 (thẻ cạnh thẻ, segmented → list) · đệm thẻ 16 `sm`, 20, 24 `lg`. Tiêu đề luôn gần nội dung của nó hơn phần phía trên: với `Section` thấy ~16 dưới tiêu đề, ~32 trên |
 | Bóng | Thẻ không bóng; chỉ lớp nổi (menu, sheet, hộp thoại, tab bar, nút nổi) có bóng |
 | Chuyển động | 150–250ms ease-out; chỉ báo trượt (segmented, công tắc) nảy nhẹ ~450ms. Dùng CSS transition trên `translate`/`opacity` hoặc `motion` cho chiều cao, không dùng layout animation hay transition `grid-template-rows` (giật trên iOS Safari). Khi `prefers-reduced-motion`, rút còn 150ms ease-out, không nảy, thay vì tắt hẳn |
 
@@ -92,7 +95,7 @@ component ở đó là cả app đổi theo.
 
 | Khối | Dùng khi |
 |---|---|
-| `SectionHeader` | Tiêu đề section ngoài thẻ (20px, đậm vừa), kèm ghi chú và "Xem tất cả" |
+| `Section` | Một phần có tiêu đề ngoài thẻ (`SectionHeader`: 20px, đậm vừa, kèm ghi chú và "Xem tất cả" hoặc nút); nội dung cách tiêu đề 8, các thứ bên trong cách nhau 12. Phần có tiêu đề lớn luôn dùng nó |
 | `Money` | Mọi số tiền: chữ số đều, "đ" viết liền sau số, cùng cỡ và màu (55.103.000đ); cỡ `sm`/`md`/`lg`/`xl`, màu theo `tone` |
 | `IconTile` | Icon trên ô vuông bo góc nền nhạt (như mockup); màu hạng mục hoặc màu ý nghĩa. Cỡ `sm` 36 (mọi dòng list, qua `SettingsRow`), `md` 40, `lg` 48 (đầu thẻ, đầu sheet); `shape="circle"` chỉ cho chữ cái, khuôn mặt |
 | `DeltaBadge` | % thay đổi so với kỳ trước; xanh khi tốt, đỏ khi xấu |
@@ -103,6 +106,7 @@ component ở đó là cả app đổi theo.
 | `FloatingActions` | Nút hành động chính nổi trên thanh tab, trên điện thoại |
 | `CompactTitleBar` | Tiêu đề thu nhỏ khi tiêu đề lớn cuộn đi; tự gắn trong `PageHeader` |
 | `InlineSelect` | Dropdown mở tại chỗ, đẩy nội dung bên dưới xuống: chọn trong vài tài khoản, ví. Hiệu ứng chiều cao đơn giản (300ms ease-out); trên iOS kém mượt hơn transform, đã chấp nhận. Danh sách dài vẫn dùng `Select`/`Combobox` |
+| `CardLabel` | Tiêu đề nhỏ trong thẻ ("TÀI SẢN RÒNG", "ĐÃ CHI"): chữ hoa 12, đậm 600, giãn chữ nhẹ, màu phụ; trên thẻ `inverse` thì sáng 60%. Mọi thẻ có nhãn dùng nó |
 | `Chip` | Chip tĩnh cho thứ đã chọn hoặc gắn kèm (người, thẻ #): có thể có avatar và nút × |
 | `Stepper` | Đếm từng bước bằng − / + (số người, số tháng) |
 | `OtpInput` | Mã một lần trong các ô riêng; tự nhảy ô, dán được cả mã |
@@ -130,8 +134,9 @@ Utility `pressable` (trong `globals.css`) cho phản hồi chạm của thẻ v�
 
 ## Mẫu màn hình
 
-- **Trang dạng bảng tin** (Tổng quan, duyệt 2026-10-06): lời chào, banner, các thẻ `lg` có nhãn
-  xám nhỏ ở đầu rồi con số chính; thẻ cách nhau 16px.
+- **Trang dạng bảng tin** (Tổng quan, duyệt 2026-10-07): lời chào và chuông thông báo, banner Pro,
+  nhiệm vụ, thẻ tài sản ròng (nhãn `CardLabel` rồi con số chính), rồi các `Section`: tháng (chỉ
+  lịch), theo hạng mục (biểu đồ tròn, không list), thu và chi theo tháng. Các khối cách nhau 24px.
 - **Trang danh sách** (Giao dịch, Ngân sách, Cài đặt): tiêu đề lớn, thẻ tóm tắt, rồi các
   `SettingsGroup` có tiêu đề nhóm.
 - **Form:** sheet `screen` nền xám với `SheetNavHeader`; các trường gom trong một `FormSection`

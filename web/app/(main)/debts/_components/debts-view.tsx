@@ -180,7 +180,7 @@ export function DebtsView({
 
   if (debts.length === 0) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 md:space-y-8">
         {summary}
         <Card>
           <Empty>
@@ -199,8 +199,8 @@ export function DebtsView({
   }
 
   return (
-    <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-      <div className="min-w-0 space-y-6">
+    <div className="grid items-start gap-6 md:gap-8 xl:grid-cols-[minmax(0,1fr)_24rem]">
+      <div className="min-w-0 space-y-6 md:space-y-8">
         {summary}
 
         {overdueDebts.length > 0 ? (

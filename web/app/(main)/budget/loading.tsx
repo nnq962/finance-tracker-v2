@@ -76,7 +76,7 @@ export default function AccountsLoading() {
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
         <PageHeaderSkeleton action />
         <BudgetLayout summary={<BalanceHeroSkeleton />}>
-          <div className="space-y-6">
+          <div className="space-y-6 md:space-y-8">
             <AccountGroupSkeleton rows={2} />
             <AccountGroupSkeleton rows={1} />
           </div>

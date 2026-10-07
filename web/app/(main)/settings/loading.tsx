@@ -42,7 +42,7 @@ export default function SettingsLoading() {
 
       <div
         aria-hidden="true"
-        className="grid items-start gap-6 md:grid-cols-2 md:gap-x-8"
+        className="grid items-start gap-6 md:grid-cols-2 md:gap-8"
       >
         <GroupSkeleton rows={2} />
         <GroupSkeleton rows={2} />

@@ -43,6 +43,7 @@ const principles = [
   ["Chữ nhẹ", "Chỉ dùng độ đậm thường và vừa, kể cả tiêu đề lớn; chữ thường 14px, phụ 12px."],
   ["Màu mang ý nghĩa", "Xanh lá là tiền vào, đỏ là tiền ra, xanh dương là chuyển khoản, xanh ngọc là AI."],
   ["Vừa ngón tay", "Mọi thứ bấm được cao từ 44px; mọi nút là viên thuốc; chạm thì hơi lún."],
+  ["Ít chữ", "Nhãn và mô tả ngắn, dễ hiểu; một thứ gọi một tên trong cả app."],
 ] as const
 
 const colors = [
@@ -69,6 +70,16 @@ const typeScale = [
   ["Headline · thẻ", "text-base font-medium", "16"],
   ["Body · nội dung", "text-sm", "14"],
   ["Caption · mô tả, lỗi", "text-xs text-muted-foreground", "12"],
+] as const
+
+// Every gap is a multiple of 4, chosen by what it separates.
+const spacing = [
+  [8, "Tiêu đề → nội dung"],
+  [12, "Trong một phần: thẻ cạnh thẻ"],
+  [16, "Lề trang · đệm thẻ sm"],
+  [20, "Đệm thẻ"],
+  [24, "Giữa các phần · đệm thẻ lg"],
+  [32, "Giữa các phần, từ md"],
 ] as const
 
 const radii = [
@@ -150,11 +161,14 @@ function FoundationSection() {
         </div>
       </Block>
       <Block label="Khoảng cách">
-        <div className="space-y-1.5">
-          {[4, 8, 12, 16, 24].map((space) => (
-            <div key={space} className="flex items-center gap-2">
-              <span className="h-2 rounded-full bg-primary" style={{ width: space * 2.5 }} />
-              <span className="text-[10px] text-muted-foreground tabular-nums">{space}</span>
+        <div className="space-y-2">
+          {spacing.map(([space, usage]) => (
+            <div key={space} className="flex items-center gap-3">
+              <span className="w-20 shrink-0">
+                <span className="block h-2 rounded-full bg-primary" style={{ width: space * 2.5 }} />
+              </span>
+              <span className="w-5 shrink-0 text-xs font-medium tabular-nums">{space}</span>
+              <span className="min-w-0 truncate text-xs text-muted-foreground">{usage}</span>
             </div>
           ))}
         </div>

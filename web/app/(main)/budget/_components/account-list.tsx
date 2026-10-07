@@ -106,7 +106,7 @@ export function AccountList({ accounts, recentTransactions, categoryGroups }: Ac
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:space-y-8">
       {groups.map((group) => (
         <SettingsGroup
           key={group.type}

@@ -111,7 +111,7 @@ export default function TransactionsLoading() {
             <Skeleton className="h-8 max-w-md flex-1 lg:max-w-none" />
             <Skeleton className="h-8 w-20 lg:hidden" />
           </div>
-          <div className="space-y-6">
+          <div className="space-y-6 md:space-y-8">
             <DayGroupSkeleton rows={3} />
             <DayGroupSkeleton rows={2} />
           </div>

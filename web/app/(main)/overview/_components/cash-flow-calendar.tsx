@@ -1,15 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { Money } from "@/components/app/money"
-import { Stat, StatGroup } from "@/components/app/stat-group"
 import { SettingsGroup } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
-import { Button } from "@/components/ui/button"
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { Account } from "@/lib/accounts/types"
@@ -30,7 +27,7 @@ const weekdays = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
 // the card is wide (32rem and up).
 const amountClassName = "text-[10px] font-medium tabular-nums @lg:text-xs"
 
-function shiftMonth(month: string, offset: number) {
+export function shiftMonth(month: string, offset: number) {
   const [year, monthIndex] = month.split("-").map(Number)
   const date = new Date(Date.UTC(year, monthIndex - 1 + offset, 1))
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`
@@ -43,11 +40,8 @@ type CashFlowCalendarProps = {
   days: Record<string, DayTotals>
   /** "YYYY-MM-DD" in Vietnam time. */
   today: string
-  /** Earliest month with loaded transactions, "YYYY-MM". */
-  minMonth: string
-  /** The month shown, "YYYY-MM"; shared with the allocation chart. */
+  /** The month shown, "YYYY-MM"; its title and arrows are around the card. */
   month: string
-  onMonthChange: (month: string) => void
 }
 
 /** A month of days, each with what came in and went out; a day opens its transactions. */
@@ -56,11 +50,8 @@ export function CashFlowCalendar({
   categoryGroups,
   days,
   today,
-  minMonth,
   month,
-  onMonthChange,
 }: CashFlowCalendarProps) {
-  const maxMonth = today.slice(0, 7)
   const [openDay, setOpenDay] = React.useState<string | null>(null)
 
   // The open day's transactions, loaded when it opens and again whenever
@@ -89,8 +80,6 @@ export function CashFlowCalendar({
     const key = `${month}-${String(index + 1).padStart(2, "0")}`
     return { key, day: index + 1, totals: days[key] }
   })
-  const monthIncome = monthDays.reduce((sum, day) => sum + (day.totals?.income ?? 0), 0)
-  const monthExpense = monthDays.reduce((sum, day) => sum + (day.totals?.expense ?? 0), 0)
 
   const openTotals = openDay ? (days[openDay] ?? { income: 0, expense: 0 }) : undefined
   // Keeps the last day's title while the sheet slides closed.
@@ -99,39 +88,11 @@ export function CashFlowCalendar({
   const sheetTitle = shownDay ? formatDayLabel(shownDay, today) : ""
 
   return (
-    <Card size="lg" role="region" aria-labelledby="cash-flow-calendar-title">
-      {/* The month on the left and both arrows together on the right, so
-          they stay close on a wide card. */}
-      <CardHeader>
-        <h2 id="cash-flow-calendar-title" className="text-sm text-muted-foreground">
-          Lịch thu chi
-        </h2>
-        <CardTitle className="text-xl">
-          Tháng {monthNumber}, {year}
-        </CardTitle>
-        <CardAction className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            size="icon"
-            aria-label="Tháng trước"
-            disabled={month <= minMonth}
-            onClick={() => onMonthChange(shiftMonth(month, -1))}
-          >
-            <ChevronLeftIcon />
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            size="icon"
-            aria-label="Tháng sau"
-            disabled={month >= maxMonth}
-            onClick={() => onMonthChange(shiftMonth(month, 1))}
-          >
-            <ChevronRightIcon />
-          </Button>
-        </CardAction>
-      </CardHeader>
+    <Card
+      size="lg"
+      role="region"
+      aria-label={`Lịch thu chi tháng ${monthNumber}, ${year}`}
+    >
       {/* A container, so the days grow with the card rather than the screen. */}
       <CardContent className="@container space-y-5">
         <div className="grid grid-cols-7 gap-1 text-center">
@@ -196,11 +157,6 @@ export function CashFlowCalendar({
             )
           })}
         </div>
-
-        <StatGroup className="border-t pt-5">
-          <Stat value={<Money amount={monthIncome} tone="income" />} label="Thu trong tháng" />
-          <Stat value={<Money amount={monthExpense} tone="expense" />} label="Chi trong tháng" />
-        </StatGroup>
 
         <Sheet open={openTotals !== undefined} onOpenChange={(open) => { if (!open) setOpenDay(null) }}>
           <SheetContent

@@ -21,6 +21,7 @@ import { AddAccountSheet } from "@/app/(main)/budget/_components/add-account/add
 import { AddContactSheet } from "@/app/(main)/debts/_components/add-contact-sheet"
 import { AddDebtSheet } from "@/app/(main)/debts/_components/add-debt-sheet"
 import { createContactAction, createDebtAction } from "@/app/(main)/debts/actions"
+import { CardLabel } from "@/components/app/card-label"
 import { ProgressRing } from "@/components/app/progress-ring"
 import { CategoryManagementSheet } from "@/components/categories/category-management-sheet"
 import { IosInstallDialog, usePwaInstall } from "@/components/pwa-install-button"
@@ -44,7 +45,8 @@ type Mission = {
   icon: LucideIcon
   color: IconTileTone
   title: string
-  description: string
+  /** Only what the title does not say, or what is needed first. */
+  description?: string
   done: boolean
   /** Where the mission is done: a sheet here, or the page that does it. */
   start: () => void
@@ -81,7 +83,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
   const { available, isStandalone, isIOS, install } = usePwaInstall()
 
   const hasAccount = accounts.length > 0
-  const needAccount = "Cần có tài khoản trước"
+  const needAccount = "Cần thêm tài khoản trước"
   const sheetProps = (name: Exclude<OpenSheet, null>) => ({
     open: sheet === name,
     onOpenChange: (open: boolean) => {
@@ -96,8 +98,8 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       key: "account",
       icon: WalletCardsIcon,
       color: "blue",
-      title: "Thêm tài khoản đầu tiên",
-      description: "Tiền mặt, ngân hàng hoặc ví điện tử",
+      title: "Thêm tài khoản",
+      description: "Tiền mặt, ngân hàng hoặc ví",
       done: state.done.account,
       start: () => setSheet("account"),
     },
@@ -106,7 +108,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       icon: ReceiptTextIcon,
       color: "orange",
       title: "Ghi giao dịch đầu tiên",
-      description: hasAccount ? "Một khoản thu hoặc chi bất kỳ" : needAccount,
+      description: hasAccount ? undefined : needAccount,
       done: state.done.transaction,
       start: () => setSheet(hasAccount ? "transaction" : "account"),
     },
@@ -114,8 +116,8 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       key: "ai",
       icon: SparklesIcon,
       color: "ai",
-      title: "Ghi giao dịch bằng trợ lý AI",
-      description: hasAccount ? "Chỉ cần gõ hoặc nói một câu" : needAccount,
+      title: "Ghi giao dịch bằng AI",
+      description: hasAccount ? "Gõ hoặc nói một câu" : needAccount,
       done: state.done.ai,
       start: () => (hasAccount ? router.push("/transactions?ai=1") : setSheet("account")),
     },
@@ -124,7 +126,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       icon: ArrowLeftRightIcon,
       color: "cyan",
       title: "Chuyển tiền giữa hai tài khoản",
-      description: accounts.length >= 2 ? "Ví dụ: rút tiền từ ngân hàng ra ví" : "Cần ít nhất 2 tài khoản",
+      description: accounts.length >= 2 ? undefined : "Cần 2 tài khoản trở lên",
       done: state.done.transfer,
       start: () => setSheet(accounts.length >= 2 ? "transfer" : "account"),
     },
@@ -132,8 +134,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       key: "contact",
       icon: UserPlusIcon,
       color: "pink",
-      title: "Thêm người vào danh bạ",
-      description: "Người bạn thường vay hoặc cho vay",
+      title: "Thêm người liên hệ",
       done: state.done.contact,
       start: () => setSheet("contact"),
     },
@@ -141,8 +142,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       key: "debt",
       icon: HandCoinsIcon,
       color: "rose",
-      title: "Ghi một khoản vay hoặc cho vay",
-      description: "Theo dõi các khoản nợ",
+      title: "Ghi khoản vay hoặc cho vay",
       done: state.done.debt,
       start: () => setSheet("debt"),
     },
@@ -151,7 +151,6 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       icon: TagsIcon,
       color: "lime",
       title: "Tạo hạng mục riêng",
-      description: "Phân loại chi tiêu theo cách của bạn",
       done: state.done.category,
       start: () => setSheet("category"),
     },
@@ -160,7 +159,6 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       icon: BellRingIcon,
       color: "amber",
       title: "Bật nhắc ghi chi tiêu",
-      description: "Nhận lời nhắc mỗi tối",
       done: state.done.reminder,
       start: () => router.push("/settings?screen=notifications"),
     },
@@ -171,7 +169,6 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
           icon: DownloadIcon,
           color: "emerald" as const,
           title: "Cài ứng dụng lên màn hình chính",
-          description: "Mở nhanh như ứng dụng điện thoại",
           done: isStandalone,
           start: () => (isIOS ? setInstallGuideOpen(true) : void install()),
         }]
@@ -204,8 +201,6 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
     router.refresh()
   }
 
-  const rewardsLeft = (missions.length - claimedCount) * MISSION_REWARD
-
   return (
     <>
       <SettingsGroup
@@ -214,13 +209,12 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
         header={
           <div className="flex items-center gap-4 p-6">
             <div className="min-w-0 flex-1">
-              <h2 className="text-sm text-muted-foreground">Nhiệm vụ</h2>
-              <p className="mt-0.5 text-lg font-medium">Nhận thêm lượt AI</p>
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              <CardLabel>Nhiệm vụ</CardLabel>
+              <p className="mt-1.5 text-lg font-medium">Nhận thêm lượt AI</p>
+              <p className="mt-1 text-xs text-muted-foreground">
                 {claimable.length > 0
-                  ? `${claimable.length} phần thưởng đang chờ nhận.`
-                  : `Còn ${remaining.length} nhiệm vụ, mỗi nhiệm vụ +${MISSION_REWARD} lượt.`}{" "}
-                Tối đa {rewardsLeft} lượt nữa.
+                  ? `${claimable.length} phần thưởng chờ nhận`
+                  : `+${MISSION_REWARD} lượt cho mỗi nhiệm vụ`}
               </p>
               {remaining.length > 0 ? (
                 <Button
@@ -249,7 +243,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
               icon={mission.icon}
               tone={mission.color}
               title={mission.title}
-              description="Đã hoàn thành"
+              description="Đã xong"
               action={
                 <Button
                   type="button"

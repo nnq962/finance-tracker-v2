@@ -25,6 +25,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
+import { CardLabel } from "@/components/app/card-label"
 import { Carousel } from "@/components/app/carousel"
 import { DeltaBadge } from "@/components/app/delta-badge"
 import { FormSection } from "@/components/app/form-section"
@@ -33,6 +34,7 @@ import { Money } from "@/components/app/money"
 import { NoticeBanner } from "@/components/app/notice-banner"
 import { PageDots } from "@/components/app/page-dots"
 import { PromoBanner } from "@/components/app/promo-banner"
+import { Section } from "@/components/app/section-header"
 import { Stat, StatGroup } from "@/components/app/stat-group"
 import { Steps } from "@/components/app/steps"
 import { DrawerNavHeader } from "@/components/drawer-nav-header"
@@ -135,8 +137,8 @@ function CardSection() {
     <CatalogSection id="card">
       <Card size="lg" variant="inverse">
         <CardContent>
-          <p className="text-sm opacity-60">Số dư khả dụng · Card inverse</p>
-          <Money amount={12_480_000} size="xl" className="mt-1" />
+          <CardLabel as="p">Số dư khả dụng · Card inverse</CardLabel>
+          <Money amount={12_480_000} size="xl" className="mt-1.5" />
           <div className="mt-8 flex items-end justify-between">
             <p className="text-sm tracking-[0.2em] opacity-70">•••• 4821</p>
             <p className="text-sm font-medium">Techcombank</p>
@@ -145,8 +147,8 @@ function CardSection() {
       </Card>
       <Card size="lg">
         <CardContent>
-          <p className="text-sm text-muted-foreground">Tài sản ròng · Card lg</p>
-          <Money amount={55_103_000} size="xl" className="mt-1" />
+          <CardLabel as="p">Tài sản ròng · Card lg</CardLabel>
+          <Money amount={55_103_000} size="xl" className="mt-1.5" />
           <p className="mt-0.5 text-sm">
             <span className="font-medium text-income">+17,6tr</span>
             <span className="ml-1.5 text-muted-foreground">thu chi tháng này</span>
@@ -162,7 +164,7 @@ function CardSection() {
         <Card>
           <CardContent>
             <IconTile icon={PiggyBankIcon} tone="income" />
-            <p className="mt-4 text-xs text-muted-foreground">Tiết kiệm · Card</p>
+            <CardLabel as="p" className="mt-4">Tiết kiệm · Card</CardLabel>
             <Money amount={8_400_000} size="md" />
             <DeltaBadge current={112} previous={100} goodWhen="up" comparedTo="tháng trước" className="mt-1" />
           </CardContent>
@@ -170,7 +172,7 @@ function CardSection() {
         <Card size="sm">
           <CardContent>
             <IconTile icon={UtensilsCrossedIcon} tone="orange" />
-            <p className="mt-4 text-xs text-muted-foreground">Ăn uống · Card sm</p>
+            <CardLabel as="p" className="mt-4">Ăn uống · Card sm</CardLabel>
             <Money amount={-2_100_000} size="md" tone="expense" />
             <DeltaBadge current={130} previous={100} goodWhen="down" comparedTo="tháng trước" className="mt-1" />
           </CardContent>
@@ -201,6 +203,12 @@ function CardSection() {
     </CatalogSection>
   )
 }
+
+// A Section's sample: the title outside, the content 8px below it.
+const dueSamples = [
+  ["Minh Anh", "Cho vay", 2_000_000, "Còn 3 ngày"],
+  ["Hoàng Nam", "Đi vay", 500_000, "Đến hạn hôm nay"],
+] as const
 
 function ListSection() {
   const [rows, setRows] = React.useState<readonly (typeof swipeRows)[number][]>(swipeRows)
@@ -247,6 +255,30 @@ function ListSection() {
           action={<Money amount={500_000} sign="never" size="sm" tone="transfer" />}
         />
       </SettingsGroup>
+      <Section title="Sắp đến hạn" href="/debts">
+        <SettingsGroup size="lg">
+          {dueSamples.map(([name, direction, amount, due]) => (
+            <SettingsRow
+              key={name}
+              media={
+                <Avatar size="lg">
+                  <AvatarFallback>{name.split(" ").map((word) => word[0]).join("")}</AvatarFallback>
+                </Avatar>
+              }
+              title={name}
+              description={direction}
+              chevron={false}
+              onClick={() => toast(`Mở khoản của ${name}`)}
+              action={
+                <span className="flex flex-col items-end">
+                  <Money amount={amount} size="sm" />
+                  <span className="text-xs text-muted-foreground">{due}</span>
+                </span>
+              }
+            />
+          ))}
+        </SettingsGroup>
+      </Section>
       <SettingsGroup
         title="Cài đặt"
         footer="Icon nằm trên ô vuông bo góc nền nhạt (tone). Dòng mở màn hình khác có mũi tên; dòng bật tắt có công tắc."

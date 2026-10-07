@@ -2,18 +2,16 @@
 
 import { useRouter } from "next/navigation"
 
+import { CardLabel } from "@/components/app/card-label"
 import { Money } from "@/components/app/money"
-import { SectionHeader } from "@/components/app/section-header"
+import { Section } from "@/components/app/section-header"
 import { Stat, StatGroup } from "@/components/app/stat-group"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
-import { Empty, EmptyDescription, EmptyHeader } from "@/components/ui/empty"
 import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
 import type { OverviewSummary } from "@/lib/overview/summary"
 import { cn } from "@/lib/utils"
-
-import { CashFlowChart } from "./overview-charts"
 
 const overdueClassName = "text-expense"
 
@@ -32,15 +30,13 @@ export function NetWorth({
   return (
     <Card size="lg" aria-labelledby="net-worth-title" role="region">
       <CardContent>
-        <h2 id="net-worth-title" className="text-sm text-muted-foreground">
-          Tài sản ròng
-        </h2>
+        <CardLabel id="net-worth-title">Tài sản ròng</CardLabel>
         <Money
           amount={data.total}
           size="xl"
          
           tone={data.total < 0 ? "expense" : "default"}
-          className="mt-1"
+          className="mt-1.5"
         />
         {hasMonth ? (
           <p className="mt-0.5 text-sm">
@@ -53,7 +49,7 @@ export function NetWorth({
               {monthNet > 0 ? "+" : monthNet < 0 ? "−" : ""}
               {formatCompactCurrency(Math.abs(monthNet), 1)}
             </span>
-            <span className="ml-1.5 text-muted-foreground">thu chi tháng này</span>
+            <span className="ml-1.5 text-muted-foreground">tháng này</span>
           </p>
         ) : null}
         {/* Three share the card's width, so the amounts are shortened; the
@@ -80,42 +76,6 @@ export function NetWorth({
   )
 }
 
-/** Income and expenses over the last six months. */
-export function CashFlowTrend({ summary }: { summary: OverviewSummary }) {
-  return (
-    <Card size="lg" role="region" aria-labelledby="cash-flow-trend-title">
-      <CardContent className="flex items-center justify-between gap-3">
-        <h2 id="cash-flow-trend-title" className="font-medium">
-          Thu chi 6 tháng
-        </h2>
-        {summary.cashFlow.hasActivity ? (
-          <p aria-hidden="true" className="flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-income" />
-              Thu
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-expense" />
-              Chi
-            </span>
-          </p>
-        ) : null}
-      </CardContent>
-      <CardContent>
-        {summary.cashFlow.hasActivity ? (
-          <CashFlowChart data={summary.cashFlow} />
-        ) : (
-          <Empty>
-            <EmptyHeader>
-              <EmptyDescription>Chưa có thu chi.</EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
-
 function getInitials(name: string) {
   const words = name.trim().split(/\s+/).filter(Boolean)
   const letters = words.length > 1 ? [words[0], words[words.length - 1]] : words
@@ -136,8 +96,7 @@ export function DueDebts({ debts }: { debts: OverviewSummary["dueDebts"] }) {
   if (debts.length === 0) return null
 
   return (
-    <section aria-labelledby="due-debts-title" className="space-y-2">
-      <SectionHeader title={<span id="due-debts-title">Sắp đến hạn</span>} href="/debts" />
+    <Section title="Sắp đến hạn" href="/debts">
       <SettingsGroup size="lg">
         {debts.map((debt) => (
           <SettingsRow
@@ -167,6 +126,6 @@ export function DueDebts({ debts }: { debts: OverviewSummary["dueDebts"] }) {
           />
         ))}
       </SettingsGroup>
-    </section>
+    </Section>
   )
 }

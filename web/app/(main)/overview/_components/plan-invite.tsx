@@ -30,8 +30,8 @@ export function PlanInvite({ planState, checkoutEnabled, paymentOutcome, initial
       {planState.plan === "free" ? (
         <PromoBanner
           icon={SparklesIcon}
-          title={`Nâng cấp lên ${plans.pro.label}`}
-          description={`${plans.pro.aiMonthlyLimit} lượt trợ lý AI mỗi tháng`}
+          title={`Nâng cấp ${plans.pro.label}`}
+          description={`${plans.pro.aiMonthlyLimit} lượt AI mỗi tháng`}
           onClick={() => setOpen(true)}
           className="lg:w-md lg:shrink-0"
         />

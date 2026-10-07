@@ -1,5 +1,6 @@
 import type * as React from "react"
 
+import { CardLabel } from "@/components/app/card-label"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
@@ -67,7 +68,11 @@ export function Block({
 }
 
 export function BlockLabel({ className, children }: { className?: string; children: React.ReactNode }) {
-  return <p className={cn("mb-3 text-xs font-semibold tracking-[0.06em] text-muted-foreground uppercase", className)}>{children}</p>
+  return (
+    <CardLabel as="p" className={cn("mb-3", className)}>
+      {children}
+    </CardLabel>
+  )
 }
 
 /** A sample that is its own card (a list group, a banner): spans the row from md up when `wide`. */

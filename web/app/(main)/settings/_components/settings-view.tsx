@@ -146,7 +146,7 @@ export function SettingsView({
     <>
       {/* From md up the groups pair up across the full width, the app
           group last. */}
-      <div className="grid items-start gap-6 md:grid-cols-2 md:gap-x-8">
+      <div className="grid items-start gap-6 md:grid-cols-2 md:gap-8">
         <SettingsGroup title="Tài khoản">
           <SettingsRow
             media={
