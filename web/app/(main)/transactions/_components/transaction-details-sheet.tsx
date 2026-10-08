@@ -11,6 +11,7 @@ import { formatCurrency } from "@/lib/format-currency"
 import { formatLongDate, formatTime, toDateKey } from "@/lib/format-date"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { scheduleUndoableDelete } from "@/lib/undoable-delete"
+import { cn } from "@/lib/utils"
 
 import { deleteTransactionAction } from "../actions"
 import { transactionPresentation } from "../_lib/transaction-presentation"
@@ -104,12 +105,15 @@ export function TransactionDetailsSheet({
       <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-px pb-4">
         <div className="flex flex-col items-center text-center">
           <div
-            className={`flex size-16 items-center justify-center rounded-xl ${categoryColor?.surfaceClassName ?? presentation.iconClassName}`}
+            className={cn(
+              "flex size-16 items-center justify-center rounded-xl",
+              categoryColor ? cn("tile-tinted", categoryColor.tileClassName) : presentation.iconClassName,
+            )}
           >
             <Icon className="size-7" aria-hidden="true" />
           </div>
           <p
-            className={`mt-5 text-[34px] leading-tight font-medium tracking-tight tabular-nums ${presentation.amountClassName}`}
+            className={cn("mt-5 text-[34px] leading-tight font-semibold tracking-tight tabular-nums", presentation.amountClassName)}
           >
             {/* Signed as in the list, so spending and income read apart without colour. */}
             {transaction.kind === "expense" ? "−" : transaction.kind === "income" ? "+" : ""}

@@ -19,6 +19,7 @@ import type {
   NewDebtPayment,
 } from "../_types/debt"
 
+import { getDebtMetrics } from "../_lib/debt-presentation"
 import { AddDebtSheet } from "./add-debt-sheet"
 import { ContactsSheet } from "./contacts-sheet"
 import { DebtsView } from "./debts-view"
@@ -100,12 +101,13 @@ export function DebtsDashboard({
     <AddDebtSheet accounts={accounts} contacts={contacts} onAddDebt={addDebt} onAddContact={addContact} trigger={trigger} />
   )
   const contactsLabel = `Người liên hệ, ${contacts.length} người`
+  const openCount = debts.filter((debt) => debt.status !== "settled" && getDebtMetrics(debt).remainingAmount > 0).length
 
   return (
     <Page>
       <PageHeader
+        eyebrow={openCount > 0 ? `${openCount} khoản đang mở` : "Cho vay và đi vay"}
         title="Vay nợ"
-        phoneTitle={false}
         actions={
           <>
             <Button type="button" variant="outline" onClick={() => setContactsOpen(true)}>
@@ -115,13 +117,12 @@ export function DebtsDashboard({
             {addDebtSheet()}
           </>
         }
+        accessory={
+          <Button type="button" variant="secondary" size="icon" aria-label={contactsLabel} onClick={() => setContactsOpen(true)}>
+            <BookUserIcon />
+          </Button>
+        }
       />
-      {/* Below md, where the header is hidden: the people, as a nav bar's trailing button. */}
-      <div className="flex justify-end md:hidden">
-        <Button type="button" variant="secondary" size="icon" aria-label={contactsLabel} onClick={() => setContactsOpen(true)}>
-          <BookUserIcon />
-        </Button>
-      </div>
       <DebtsView
         initialSelectedDebtId={selectedDebtId}
         contacts={contacts}

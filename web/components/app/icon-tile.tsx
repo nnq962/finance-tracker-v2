@@ -28,19 +28,21 @@ const iconTileVariants = cva(
 // Meaning colours, for tiles that are not about a category.
 const semanticTones = {
   neutral: "bg-muted text-foreground",
-  income: "bg-income/10 text-income dark:bg-income/15",
-  expense: "bg-expense/10 text-expense dark:bg-expense/15",
-  transfer: "bg-transfer/10 text-transfer dark:bg-transfer/15",
-  ai: "bg-ai/10 text-ai dark:bg-ai/15",
-  warning: "bg-warning/15 text-warning",
+  income: "tile-tinted [--tile:var(--income)]",
+  expense: "tile-tinted [--tile:var(--expense)]",
+  transfer: "tile-tinted [--tile:var(--transfer)]",
+  ai: "tile-tinted [--tile:var(--ai)]",
+  warning: "tile-tinted [--tile:var(--warning)]",
 } as const
 
 export type IconTileTone = keyof typeof semanticTones | CategoryColorName
 
 /**
- * An icon on a soft tinted tile: the visual anchor of a list row, so the eye
- * finds the row by colour and shape before reading it. `tone` is a category's
- * colour or a meaning colour; `neutral` is a grey tile.
+ * An icon on a soft tile: the visual anchor of a list row, so the eye finds
+ * the row by shape and a hint of colour before reading it. `tone` is a
+ * category's colour or a meaning colour, toned down towards grey with the
+ * icon in ink (tile-tinted), so a list reads calm rather than as a rainbow;
+ * `neutral` is a grey tile.
  */
 export function IconTile({
   icon: Icon,
@@ -52,7 +54,7 @@ export function IconTile({
   const toneClassName =
     tone in semanticTones
       ? semanticTones[tone as keyof typeof semanticTones]
-      : getCategoryColor(tone as CategoryColorName).surfaceClassName
+      : cn("tile-tinted", getCategoryColor(tone as CategoryColorName).tileClassName)
 
   return (
     <span data-slot="icon-tile" data-size={size ?? "md"} aria-hidden="true" className={cn(iconTileVariants({ size, shape }), toneClassName, className)}>

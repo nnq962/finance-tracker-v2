@@ -19,6 +19,7 @@ import {
   PencilIcon,
   PiggyBankIcon,
   PlusIcon,
+  SearchIcon,
   ShieldCheckIcon,
   SparklesIcon,
   Trash2Icon,
@@ -45,6 +46,7 @@ import { PromoBanner } from "@/components/app/promo-banner"
 import { Section } from "@/components/app/section-header"
 import { Stat, StatGroup } from "@/components/app/stat-group"
 import { Steps } from "@/components/app/steps"
+import { PageHeader } from "@/components/page"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -455,10 +457,23 @@ function NavSection() {
           <Steps steps={["Thông tin", "Xác minh", "Hoàn tất"]} current={step} />
         </button>
       </Block>
+      <Block label="Đầu trang (PageHeader) · nhãn nhỏ, tiêu đề lớn, nút tròn" wide>
+        <PageHeader
+          eyebrow={<MonthSelect variant="eyebrow" value={month} max="2026-10" onValueChange={setMonth} />}
+          // Not plain text, so no second compact bar on this page.
+          title={<span>Giao dịch</span>}
+          accessory={
+            <Button type="button" variant="secondary" size="icon" aria-label="Tìm" onClick={() => toast("Tìm")}>
+              <SearchIcon />
+            </Button>
+          }
+        />
+      </Block>
       <Block label="Thanh tab và tiêu đề thu gọn" wide>
         <p className="text-sm text-muted-foreground">
-          Thanh tab nổi ở đáy màn hình (MobileBottomNav) và tiêu đề nhỏ hiện khi tiêu đề lớn cuộn đi
-          (CompactTitleBar) là khung của app; xem trực tiếp ở các trang chính. Tabs dạng gạch chân ở mục Toggle group.
+          Thanh tab nổi ở đáy màn hình (MobileBottomNav: icon và tên, tab đang mở trên viên xám nhạt) và
+          tiêu đề nhỏ hiện khi tiêu đề lớn cuộn đi (CompactTitleBar) là khung của app; xem trực tiếp ở các
+          trang chính. Tabs dạng gạch chân ở mục Toggle group.
         </p>
       </Block>
     </CatalogSection>

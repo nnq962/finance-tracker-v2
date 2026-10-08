@@ -6,7 +6,6 @@ import { ListFilterIcon, PlusIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { AiAssistButton } from "@/components/ai-assist/ai-assist-button"
-import { CompactTitleBar } from "@/components/app/compact-title-bar"
 import { FloatingActions } from "@/components/app/floating-actions"
 import { MonthSelect } from "@/components/app/month-select"
 import { PageHeader } from "@/components/page"
@@ -60,12 +59,13 @@ const initialSearchFilters: TransactionSearchFilters = {
 }
 
 /**
- * The transactions page, as in banking apps: the month, then its money in and
- * money out as two tiles that also narrow the list to that kind, then the
- * days. On phones the search field and the button for the other filters
- * (category, account, amount) sit under the tiles, and the filters in force
- * show as chips above the list. A month chosen loads while the list stays
- * put, dimmed.
+ * The transactions page, as in banking apps: the month above the title (a tap
+ * changes it), then its money in and money out as one card whose halves also
+ * narrow the list to that kind, then the days. On phones the AI sits beside
+ * the title and adding is the one floating button; the search field and the
+ * button for the other filters (category, account, amount) sit under the
+ * card, and the filters in force show as chips above the list. A month chosen
+ * loads while the list stays put, dimmed.
  */
 export function TransactionsScreen({
   accounts,
@@ -182,39 +182,31 @@ export function TransactionsScreen({
 
   return (
     <TransactionHistoryProvider transactions={transactions}>
-      {/* From lg up: the page's title and actions, as on every page. */}
-      <div className="max-lg:hidden">
-        <PageHeader title="Giao dịch" actions={headerActions} />
-      </div>
-
-      {/* Below lg, as in native apps, the tab bar already names the page:
-          the month leads, and AI floats above the add button. */}
-      <header className="lg:hidden">
-        <h1 className="sr-only">Giao dịch</h1>
-        <div className="flex h-11 items-center justify-between gap-3">
-          <MonthSelect value={shownMonth} max={thisMonth} onValueChange={changeMonth} />
-          <div className="hidden shrink-0 gap-2 md:flex">{headerActions}</div>
-        </div>
-        <CompactTitleBar title="Giao dịch" />
-      </header>
+      <PageHeader
+        eyebrow={<MonthSelect variant="eyebrow" value={shownMonth} max={thisMonth} onValueChange={changeMonth} />}
+        title="Giao dịch"
+        actions={headerActions}
+        accessory={
+          <AiAssistButton
+            variant="secondary"
+            size="icon"
+            className="text-ai"
+            aria-label={`Nhập bằng AI, còn ${aiRemaining} lượt`}
+            onClick={openAi}
+          >
+            {null}
+          </AiAssistButton>
+        }
+      />
 
       <TransactionsLayout
         summary={
-          <div className="flex flex-col gap-3">
-            <MonthSelect
-              className="self-start max-lg:hidden"
-              value={shownMonth}
-              max={thisMonth}
-              onValueChange={changeMonth}
-            />
-            {/* In the narrow rail of lg the tiles stack, so their figures fit. */}
-            <MonthSummary
-              transactions={summaryTransactions}
-              filter={filter}
-              onFilterChange={changeKind}
-              className={cn("lg:grid-cols-1 xl:grid-cols-2", loadingClassName)}
-            />
-          </div>
+          <MonthSummary
+            transactions={summaryTransactions}
+            filter={filter}
+            onFilterChange={changeKind}
+            className={loadingClassName}
+          />
         }
         filters={
           <TransactionFilterPanel
@@ -258,15 +250,6 @@ export function TransactionsScreen({
       </TransactionsLayout>
 
       <FloatingActions>
-        <AiAssistButton
-          variant="secondary"
-          size="fab"
-          className="text-ai"
-          aria-label={`Nhập bằng AI, còn ${aiRemaining} lượt`}
-          onClick={openAi}
-        >
-          {null}
-        </AiAssistButton>
         <Button type="button" size="fab" aria-label="Thêm giao dịch" onClick={() => setAddOpen(true)}>
           <PlusIcon />
         </Button>

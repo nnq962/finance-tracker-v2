@@ -43,7 +43,7 @@ const contactColors = categoryColorOptions.filter((color) => color.name !== "ros
 function contactColor(contactId: string) {
   let hash = 2_166_136_261
   for (const char of contactId) hash = Math.imul(hash ^ char.charCodeAt(0), 16_777_619) >>> 0
-  return contactColors[hash % contactColors.length].surfaceClassName
+  return cn("tile-tinted", contactColors[hash % contactColors.length].tileClassName)
 }
 
 export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemProps) {

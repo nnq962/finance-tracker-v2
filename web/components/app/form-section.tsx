@@ -1,6 +1,8 @@
 import type * as React from "react"
 
+import { groupCaptionClassName } from "@/components/settings-list"
 import { Card, CardContent } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
 /**
  * A form's fields on a white card, on the grey of a sheet or page, with an
@@ -24,7 +26,7 @@ export function FormSection({
 }) {
   return (
     <section data-slot="form-section" className="space-y-2">
-      {title ? <h2 className="px-4 text-sm font-medium text-muted-foreground">{title}</h2> : null}
+      {title ? <h2 className={cn("px-4", groupCaptionClassName)}>{title}</h2> : null}
       <Card>
         <CardContent>{children}</CardContent>
       </Card>

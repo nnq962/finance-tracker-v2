@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card"
+import { FlowTilesSkeleton } from "@/components/app/flow-tiles"
 import { Page, PageHeaderSkeleton } from "@/components/page"
 import { Skeleton } from "@/components/ui/skeleton"
 import { settingsSeparatorClassName } from "@/components/settings-list"
@@ -9,26 +10,6 @@ function CaptionSkeleton() {
   return (
     <div className="flex min-h-6 items-center px-3">
       <Skeleton className="h-3 w-24" />
-    </div>
-  )
-}
-
-/** Same footprint as the two FlowTiles: Cần thu and Cần trả. */
-function TilesSkeleton() {
-  return (
-    <div className="grid grid-cols-2 gap-3">
-      {[0, 1].map((index) => (
-        <Card key={index} size="sm" className="px-4">
-          <div className="flex items-center gap-2">
-            <Skeleton className="size-9 rounded-[10px]" />
-            <Skeleton className="h-4 w-16" />
-          </div>
-          <div className="space-y-1.5">
-            <Skeleton className="h-7 w-28 max-w-full" />
-            <Skeleton className="h-3 w-12" />
-          </div>
-        </Card>
-      ))}
     </div>
   )
 }
@@ -80,16 +61,11 @@ export default function DebtsLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <div className="max-md:hidden">
-          <PageHeaderSkeleton action />
-        </div>
-        <div className="flex justify-end md:hidden">
-          <Skeleton className="size-11 rounded-full" />
-        </div>
+        <PageHeaderSkeleton action accessory={1} />
 
         <div className="grid items-start gap-6 md:gap-8 xl:grid-cols-[minmax(0,1fr)_24rem]">
           <div className="min-w-0 space-y-6 md:space-y-8">
-            <TilesSkeleton />
+            <FlowTilesSkeleton />
             <GroupSkeleton rows={2} />
             <GroupSkeleton rows={2} />
           </div>

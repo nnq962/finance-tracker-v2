@@ -22,44 +22,48 @@ function Page({ className, ...props }: React.ComponentProps<"div">) {
 
 type PageHeaderProps = {
   title: React.ReactNode
+  /**
+   * Small capitals above the title that set the page in context: the date,
+   * the month shown, how many there are. A control fits too (the month).
+   */
+  eyebrow?: React.ReactNode
+  /** The small bar's title once the large one scrolls away; `title` itself when it is text. */
+  compactTitle?: string
   /** Shown from md up; below md pages offer their main action as a floating button. */
   actions?: React.ReactNode
   /**
-   * Round icon buttons beside the title below lg, e.g. search and filters,
-   * which sit beside the content from lg up.
+   * Round icon buttons beside the title, e.g. the people on Vay nợ: the phone
+   * form of `actions`, so below md only when there are actions, else always.
    */
   accessory?: React.ReactNode
-  /**
-   * Below lg, takes the title row's place at the same height, e.g. an open
-   * search field, so nothing under it moves.
-   */
-  replacement?: React.ReactNode
-  /**
-   * false: below md the title is only for screen readers (and the compact bar
-   * once scrolled), as in native apps where the tab bar names the page.
-   */
-  phoneTitle?: boolean
 }
 
-/** A title only, as in native apps: what each page holds is plain from its content. */
-function PageHeader({ title, actions, accessory, replacement, phoneTitle = true }: PageHeaderProps) {
+/**
+ * Every page opens the same way, on phones as on desktop: the eyebrow, the
+ * large title, at most a round button or two beside it. Learn one page and
+ * the others read the same.
+ */
+function PageHeader({ title, eyebrow, compactTitle, actions, accessory }: PageHeaderProps) {
+  const barTitle = compactTitle ?? (typeof title === "string" ? title : undefined)
+
   return (
     <header
       data-slot="page-header"
-      className={cn(
-        "flex flex-col gap-5 pt-1 sm:flex-row sm:items-center sm:justify-between",
-        !phoneTitle && "max-md:sr-only",
-      )}
+      className="flex flex-col gap-5 pt-1 sm:flex-row sm:items-center sm:justify-between"
     >
-      <div className={cn("flex min-w-0 flex-1 items-center justify-between gap-3", replacement && "max-lg:hidden")}>
+      <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-[28px] leading-tight font-semibold tracking-tight">{title}</h1>
+          {eyebrow ? (
+            <div className="mb-1 flex min-h-5 items-center text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+              {eyebrow}
+            </div>
+          ) : null}
+          <h1 className="text-[32px] leading-10 font-semibold tracking-tight">{title}</h1>
           {/* On phones the title moves to a small bar once scrolled away. */}
-          {typeof title === "string" ? <CompactTitleBar title={title} /> : null}
+          {barTitle ? <CompactTitleBar title={barTitle} /> : null}
         </div>
-        {accessory ? <div className="flex shrink-0 gap-2 lg:hidden">{accessory}</div> : null}
+        {accessory ? <div className={cn("flex shrink-0 gap-2", actions && "md:hidden")}>{accessory}</div> : null}
       </div>
-      {replacement ? <div className="min-w-0 flex-1 lg:hidden">{replacement}</div> : null}
       {actions ? (
         <div className="hidden shrink-0 flex-wrap gap-2 md:flex">{actions}</div>
       ) : null}
@@ -68,15 +72,39 @@ function PageHeader({ title, actions, accessory, replacement, phoneTitle = true 
 }
 
 /** Placeholder with the same footprint as PageHeader, for loading states. */
-function PageHeaderSkeleton({ action = false }: { action?: boolean }) {
+function PageHeaderSkeleton({
+  action = false,
+  accessory = 0,
+}: {
+  /** The page has actions from md up. */
+  action?: boolean
+  /** How many round buttons sit beside the title (below md when there are actions). */
+  accessory?: number
+}) {
   return (
     <div
       aria-hidden="true"
       className="flex flex-col gap-5 pt-1 sm:flex-row sm:items-center sm:justify-between"
     >
-      <Skeleton className="h-9 w-40" />
+      <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
+        <div>
+          <div className="mb-1 flex h-5 items-center">
+            <Skeleton className="h-3 w-28" />
+          </div>
+          <div className="flex h-10 items-center">
+            <Skeleton className="h-8 w-44" />
+          </div>
+        </div>
+        {accessory > 0 ? (
+          <div className={cn("flex shrink-0 gap-2", action && "md:hidden")}>
+            {Array.from({ length: accessory }, (_, index) => (
+              <Skeleton key={index} className="size-11 rounded-full" />
+            ))}
+          </div>
+        ) : null}
+      </div>
       {action ? (
-        <Skeleton className="hidden h-8 w-36 shrink-0 md:block" />
+        <Skeleton className="hidden h-11 w-36 shrink-0 rounded-full md:block" />
       ) : null}
     </div>
   )

@@ -54,9 +54,10 @@ function TrendSection({ cashFlow }: { cashFlow: OverviewSummary["cashFlow"] }) {
 }
 
 /**
- * The overview's body below the greeting: net worth, then the chosen month
- * (figures, calendar, categories), debts coming due and six months of
- * income and expenses. The month is shared by the calendar and the categories.
+ * The overview's body below the greeting: net worth, the new user's missions,
+ * then the chosen month (figures, calendar, categories), debts coming due, six
+ * months of income and expenses, and the Pro invitation. The month is shared
+ * by the calendar and the categories.
  */
 export function OverviewScreen({
   accounts,
@@ -66,6 +67,8 @@ export function OverviewScreen({
   today,
   minMonth,
   summary,
+  missions,
+  planInvite,
 }: {
   accounts: Account[]
   categoryGroups: CategoryGroup[]
@@ -74,12 +77,15 @@ export function OverviewScreen({
   today: string
   minMonth: string
   summary: OverviewSummary
+  missions?: React.ReactNode
+  planInvite?: React.ReactNode
 }) {
   const [month, setMonth] = React.useState(today.slice(0, 7))
 
   return (
     <OverviewLayout
       netWorth={<NetWorth data={summary.netWorth} month={summary.cashFlow.current} />}
+      missions={missions}
       calendar={
         <MonthSection
           accounts={accounts}
@@ -94,6 +100,7 @@ export function OverviewScreen({
       dueDebts={summary.dueDebts.length > 0 ? <DueDebts debts={summary.dueDebts} /> : undefined}
       allocation={<CategoryBreakdown categoryGroups={categoryGroups} allocation={allocation} month={month} />}
       trend={<TrendSection cashFlow={summary.cashFlow} />}
+      planInvite={planInvite}
     />
   )
 }

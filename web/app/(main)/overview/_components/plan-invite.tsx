@@ -18,10 +18,7 @@ type PlanInviteProps = {
   initialOpen: boolean
 }
 
-/**
- * On Free, a dark banner inviting the user to Pro (light in the dark theme);
- * the plans open over the overview.
- */
+/** On Free, a light card inviting the user to Pro; the plans open over the overview. */
 export function PlanInvite({ planState, checkoutEnabled, paymentOutcome, initialOpen }: PlanInviteProps) {
   const [open, setOpen] = React.useState(initialOpen)
 

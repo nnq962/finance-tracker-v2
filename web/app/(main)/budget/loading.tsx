@@ -6,12 +6,12 @@ import { cn } from "@/lib/utils"
 
 import { BudgetLayout } from "./_components/budget-layout"
 
-/** Same footprint as BalanceHero: the label and the total. */
+/** Same footprint as BalanceHero: the label and the total, on the dark lead card. */
 function BalanceHeroSkeleton() {
   return (
-    <Card size="lg" className="gap-2 px-6">
-      <Skeleton className="h-4 w-24" />
-      <Skeleton className="h-10 w-56 max-w-full" />
+    <Card size="lg" variant="inverse" className="gap-2 px-6">
+      <Skeleton className="h-4 w-24 bg-inverse-foreground/15" />
+      <Skeleton className="h-10 w-56 max-w-full bg-inverse-foreground/15" />
     </Card>
   )
 }
@@ -47,9 +47,7 @@ export default function AccountsLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <div className="max-md:hidden">
-          <PageHeaderSkeleton action />
-        </div>
+        <PageHeaderSkeleton action />
         <BudgetLayout summary={<BalanceHeroSkeleton />}>
           <AccountListSkeleton rows={3} />
         </BudgetLayout>

@@ -219,6 +219,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
               {remaining.length > 0 ? (
                 <Button
                   type="button"
+                  variant="secondary"
                   className="mt-4"
                   aria-expanded={expanded}
                   onClick={() => setExpanded((open) => !open)}

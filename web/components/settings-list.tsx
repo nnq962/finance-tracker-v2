@@ -29,11 +29,15 @@ export function settingsSeparatorClassName(hasMedia?: boolean) {
   )
 }
 
+/** A group's caption above its card, in small capitals as in iOS grouped lists: lists, forms, the filters. */
+export const groupCaptionClassName = "text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+
 /**
- * Grouped list: an optional caption, a card of rows separated by dividers,
- * and an optional footnote. `collapsible` keeps the rows hidden until asked
- * for, e.g. settled loans: the caption stays in line with the other groups',
- * with "Hiện …" at its end ("Ẩn" once open).
+ * Grouped list: an optional caption in small capitals, as in iOS grouped
+ * lists ("HÔM NAY", "CHUNG"), a card of rows separated by dividers, and an
+ * optional footnote. `collapsible` keeps the rows hidden until asked for,
+ * e.g. settled loans: the caption stays in line with the other groups', with
+ * "Hiện …" at its end ("Ẩn" once open).
  */
 function SettingsGroup({
   title,
@@ -63,7 +67,7 @@ function SettingsGroup({
     title || end ? (
       <div className="flex min-h-6 items-center justify-between gap-3 px-4">
         {title ? (
-          <h2 className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-muted-foreground">
+          <h2 className={cn("flex min-w-0 items-center gap-1.5", groupCaptionClassName)}>
             {title}
           </h2>
         ) : null}
@@ -93,7 +97,7 @@ function SettingsGroup({
       <Collapsible asChild defaultOpen={collapsible.defaultOpen}>
         <section className="flex flex-col gap-2">
           {caption(
-            <CollapsibleTrigger className="group/trigger relative flex shrink-0 items-center gap-1 text-sm font-medium text-foreground outline-none after:absolute after:-inset-x-2 after:-inset-y-3 focus-visible:underline">
+            <CollapsibleTrigger className="group/trigger relative flex shrink-0 items-center gap-1 text-xs font-semibold text-foreground outline-none after:absolute after:-inset-x-2 after:-inset-y-3 focus-visible:underline">
               <span className="group-data-[state=open]/trigger:hidden">{collapsible.showLabel}</span>
               <span className="hidden group-data-[state=open]/trigger:inline">Ẩn</span>
               <ChevronDownIcon

@@ -1,6 +1,7 @@
 "use client"
 
 import { CurrencyInput } from "@/components/forms/currency-input"
+import { groupCaptionClassName } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -280,10 +281,7 @@ export function TransactionFilterPanel({
   return (
     <section aria-labelledby="transaction-filters-title" className="space-y-2">
       <div className="flex min-h-6 items-center justify-between gap-3 px-3">
-        <h2
-          id="transaction-filters-title"
-          className="text-sm font-medium text-muted-foreground"
-        >
+        <h2 id="transaction-filters-title" className={groupCaptionClassName}>
           Bộ lọc
         </h2>
         {activeFilterCount > 0 ? (

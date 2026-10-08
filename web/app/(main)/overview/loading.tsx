@@ -1,36 +1,24 @@
 import type * as React from "react"
 
 import { Card, CardContent } from "@/components/ui/card"
-import { Page } from "@/components/page"
+import { Page, PageHeaderSkeleton } from "@/components/page"
 import { Skeleton } from "@/components/ui/skeleton"
+import { cn } from "@/lib/utils"
 
 import { OverviewLayout } from "./_components/overview-layout"
 
-/** The avatar, the greeting and the bell. */
-function HeaderSkeleton() {
-  return (
-    <div className="flex items-center gap-3 pt-1">
-      <Skeleton className="size-12 shrink-0 rounded-full" />
-      <div className="flex-1 space-y-1.5">
-        <Skeleton className="h-3 w-24" />
-        <Skeleton className="h-5 w-36" />
-      </div>
-      <Skeleton className="size-11 shrink-0 rounded-full" />
-    </div>
-  )
-}
-
-/** The label, the total and its three parts. */
+/** The label, the total and its three parts, on the dark lead card. */
 function NetWorthSkeleton() {
+  const shade = "bg-inverse-foreground/15"
   return (
-    <Card size="lg">
+    <Card size="lg" variant="inverse">
       <CardContent>
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="mt-2 h-9 w-56 max-w-full" />
-        <Skeleton className="mt-2 h-4 w-36" />
-        <div className="mt-5 grid grid-cols-3 gap-4">
+        <Skeleton className={cn("h-4 w-24", shade)} />
+        <Skeleton className={cn("mt-2 h-9 w-56 max-w-full", shade)} />
+        <Skeleton className={cn("mt-2 h-4 w-36", shade)} />
+        <div className="mt-5 grid grid-cols-3 gap-4 border-t border-inverse-foreground/15 pt-5">
           {Array.from({ length: 3 }, (_, index) => (
-            <Skeleton key={index} className="h-10" />
+            <Skeleton key={index} className={cn("h-10", shade)} />
           ))}
         </div>
       </CardContent>
@@ -116,7 +104,7 @@ export default function OverviewLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <HeaderSkeleton />
+        <PageHeaderSkeleton accessory={1} />
         <OverviewLayout
           netWorth={<NetWorthSkeleton />}
           calendar={<CalendarSkeleton />}

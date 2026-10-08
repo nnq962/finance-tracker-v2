@@ -1,3 +1,4 @@
+import { FlowTilesSkeleton } from "@/components/app/flow-tiles"
 import { Card, CardContent } from "@/components/ui/card"
 import { Page, PageHeaderSkeleton } from "@/components/page"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -5,29 +6,6 @@ import { settingsSeparatorClassName } from "@/components/settings-list"
 import { cn } from "@/lib/utils"
 
 import { TransactionsLayout } from "./_components/transactions-layout"
-
-/** Same footprint as the month's pill and its two tiles, money in and money out. */
-function MonthSummarySkeleton() {
-  return (
-    <div className="flex flex-col gap-3">
-      <Skeleton className="h-9 w-40 rounded-full max-lg:hidden" />
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-1 xl:grid-cols-2">
-        {[0, 1].map((index) => (
-          <Card key={index} size="sm" className="px-4">
-            <div className="flex items-center gap-2">
-              <Skeleton className="size-9 rounded-xl" />
-              <Skeleton className="h-4 w-16" />
-            </div>
-            <div className="space-y-1.5">
-              <Skeleton className="h-7 w-28 max-w-full" />
-              <Skeleton className="h-3 w-16" />
-            </div>
-          </Card>
-        ))}
-      </div>
-    </div>
-  )
-}
 
 /** Same footprint as the desktop filter panel: a caption, then rows of chips. */
 function FilterPanelSkeleton() {
@@ -91,15 +69,9 @@ export default function TransactionsLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <div className="max-lg:hidden">
-          <PageHeaderSkeleton action />
-        </div>
-        {/* Below lg: the month. */}
-        <div className="flex h-11 items-center lg:hidden">
-          <Skeleton className="h-9 w-40 rounded-full" />
-        </div>
+        <PageHeaderSkeleton action accessory={1} />
         <TransactionsLayout
-          summary={<MonthSummarySkeleton />}
+          summary={<FlowTilesSkeleton />}
           filters={<FilterPanelSkeleton />}
         >
           <div className="flex gap-2">

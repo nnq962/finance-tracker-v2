@@ -15,12 +15,12 @@ export const cashFlowColors = {
   income: {
     text: "text-income",
     dot: "bg-income",
-    surface: "bg-income/10 text-income",
+    surface: "tile-tinted [--tile:var(--income)]",
   },
   expense: {
     text: "text-expense",
     dot: "bg-expense",
-    surface: "bg-expense/10 text-expense",
+    surface: "tile-tinted [--tile:var(--expense)]",
   },
 } as const
 
@@ -29,7 +29,8 @@ export const transactionPresentation = {
     label: "Chi tiền",
     icon: ArrowUpRightIcon,
     iconClassName: cashFlowColors.expense.surface,
-    amountClassName: cashFlowColors.expense.text,
+    // Spending in the text colour, as in the list: red is kept for warnings.
+    amountClassName: "text-foreground",
   },
   income: {
     label: "Thu tiền",
@@ -40,8 +41,8 @@ export const transactionPresentation = {
   transfer: {
     label: "Chuyển khoản",
     icon: Repeat2Icon,
-    iconClassName: "bg-transfer/10 text-transfer",
-    amountClassName: "text-transfer",
+    iconClassName: "tile-tinted [--tile:var(--transfer)]",
+    amountClassName: "text-foreground",
   },
 } satisfies Record<
   TransactionKind,

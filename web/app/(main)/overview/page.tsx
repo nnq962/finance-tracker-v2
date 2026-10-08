@@ -17,20 +17,7 @@ export default async function OverviewPage({
 
   return (
     <Page>
-      <OverviewHeader user={data.user} planState={data.planState} greeting={greetingFor(new Date())} />
-      <PlanInvite
-        planState={data.planState}
-        checkoutEnabled={data.checkoutEnabled}
-        paymentOutcome={data.paymentOutcome}
-        // Back from payOS: the plans open again.
-        initialOpen={screen === "plan"}
-      />
-      <Missions
-        state={data.missions}
-        accounts={data.accounts}
-        contacts={data.contacts}
-        categoryGroups={data.categoryGroups}
-      />
+      <OverviewHeader greeting={greetingFor(new Date())} today={data.today} />
       <OverviewScreen
         accounts={data.accounts}
         categoryGroups={data.categoryGroups}
@@ -39,6 +26,23 @@ export default async function OverviewPage({
         today={data.today}
         minMonth={data.minMonth}
         summary={data.summary}
+        missions={
+          <Missions
+            state={data.missions}
+            accounts={data.accounts}
+            contacts={data.contacts}
+            categoryGroups={data.categoryGroups}
+          />
+        }
+        planInvite={
+          <PlanInvite
+            planState={data.planState}
+            checkoutEnabled={data.checkoutEnabled}
+            paymentOutcome={data.paymentOutcome}
+            // Back from payOS: the plans open again.
+            initialOpen={screen === "plan"}
+          />
+        }
       />
     </Page>
   )

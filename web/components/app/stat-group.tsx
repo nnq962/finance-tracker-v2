@@ -5,10 +5,27 @@ import { cn } from "@/lib/utils"
 /**
  * Two to four figures side by side, split by thin lines: the figure above,
  * a small grey label below, e.g. the parts of a total. Each can open a page.
+ * `separated`: a line above too, set off from the lead figure over it. On an
+ * inverse card the lines and labels turn light.
  */
-export function StatGroup({ className, children }: { className?: string; children: React.ReactNode }) {
+export function StatGroup({
+  separated = false,
+  className,
+  children,
+}: {
+  separated?: boolean
+  className?: string
+  children: React.ReactNode
+}) {
   return (
-    <div data-slot="stat-group" className={cn("grid auto-cols-fr grid-flow-col divide-x", className)}>
+    <div
+      data-slot="stat-group"
+      className={cn(
+        "grid auto-cols-fr grid-flow-col divide-x group-data-[variant=inverse]/card:divide-inverse-foreground/15",
+        separated && "border-t pt-5 group-data-[variant=inverse]/card:border-inverse-foreground/15",
+        className,
+      )}
+    >
       {children}
     </div>
   )
@@ -28,7 +45,9 @@ export function Stat({ value, label, onClick, title }: StatProps) {
   const content = (
     <>
       <span className="truncate font-semibold tabular-nums">{value}</span>
-      <span className="truncate text-xs text-muted-foreground">{label}</span>
+      <span className="truncate text-xs text-muted-foreground group-data-[variant=inverse]/card:text-inverse-foreground/60">
+        {label}
+      </span>
     </>
   )
   const className = "flex min-h-11 min-w-0 flex-col justify-center text-left not-first:pl-4"

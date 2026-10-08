@@ -50,6 +50,8 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-inverse: var(--inverse);
+  --color-inverse-foreground: var(--inverse-foreground);
   --color-income: var(--income);
   --color-expense: var(--expense);
   --color-transfer: var(--transfer);
@@ -77,6 +79,13 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --foreground: oklch(0.205 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.205 0 0);
+  /*
+   * The one card a page leads with (Card variant="inverse"): black on the
+   * light page; on the dark page a raised grey, as iOS raises surfaces in
+   * dark mode, never a white slab.
+   */
+  --inverse: oklch(0.205 0 0);
+  --inverse-foreground: oklch(1 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.205 0 0);
   --primary: oklch(0.205 0 0);
@@ -116,14 +125,15 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   /*
    * Fills that depend on the surface below (see the surface-* utilities):
    * field for inputs, chips and secondary buttons, track for the segmented
-   * control. On a white card both are the mockup's neutral-100 (#f5f5f5),
-   * barely grey; on the grey page or a grey sheet they turn white, as in iOS
-   * grouped screens.
+   * control and slider rails. On a white card both are the mockup's
+   * neutral-100 (#f5f5f5), barely grey. On the grey page or a grey sheet a
+   * field turns white, as in iOS grouped screens, and a track a shade darker
+   * than the page, so the segmented control's white thumb shows on it.
    */
   --field-plain: oklch(0.97 0 0);
   --field-grouped: var(--card);
   --track-plain: oklch(0.97 0 0);
-  --track-grouped: var(--card);
+  --track-grouped: oklch(0.922 0.0015 106.4);
   --field: var(--field-plain);
   --track: var(--track-plain);
 }
@@ -133,6 +143,8 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --foreground: oklch(1 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(1 0 0);
+  --inverse: oklch(0.269 0 0);
+  --inverse-foreground: oklch(1 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(1 0 0);
   --primary: oklch(1 0 0);
@@ -168,6 +180,8 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   /* On a dark card, white at 6%, as in the mockup. */
   --field-plain: oklch(1 0 0 / 0.06);
   --track-plain: oklch(1 0 0 / 0.06);
+  /* On the dark page, a card's grey: lighter than the page, darker than the thumb. */
+  --track-grouped: var(--card);
 }
 
 /* What a grey or a white surface sets for the fields on it. */
@@ -179,6 +193,17 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
 @utility surface-plain {
   --field: var(--field-plain);
   --track: var(--track-plain);
+}
+
+/*
+ * An icon's tile in the colour --tile names (a category's or a meaning
+ * colour), toned down towards grey so a list of them reads calm: a pastel
+ * tile, and the icon in ink with a hint of the hue. One rule for both themes,
+ * as muted and foreground follow the theme.
+ */
+@utility tile-tinted {
+  background-color: color-mix(in oklab, var(--tile) 15%, var(--muted));
+  color: color-mix(in oklab, var(--tile) 45%, var(--foreground));
 }
 
 /*

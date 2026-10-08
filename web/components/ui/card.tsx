@@ -10,7 +10,7 @@ function Card({
   ...props
 }: React.ComponentProps<"div"> & {
   size?: "default" | "sm" | "lg"
-  /** inverse: dark (light in the dark theme), for the one card a page leads with, like a balance. */
+  /** inverse: black (a raised grey in the dark theme), for the one card a page leads with, like a balance. */
   variant?: "default" | "inverse"
   /** The card is its child, e.g. a button for a card that is tapped as a whole. */
   asChild?: boolean
@@ -23,7 +23,7 @@ function Card({
       data-size={size}
       data-variant={variant}
       className={cn(
-        "group/card surface-plain flex flex-col gap-(--card-spacing) overflow-hidden rounded-[20px] bg-card py-(--card-spacing) text-sm text-card-foreground [--card-spacing:--spacing(5)] has-[>img:first-child]:pt-0 data-[size=sm]:rounded-[16px] data-[size=sm]:[--card-spacing:--spacing(4)] data-[size=lg]:rounded-[24px] data-[size=lg]:[--card-spacing:--spacing(6)] *:[img:first-child]:rounded-t-[20px] *:[img:last-child]:rounded-b-[20px] data-[variant=inverse]:bg-primary data-[variant=inverse]:text-primary-foreground",
+        "group/card surface-plain flex flex-col gap-(--card-spacing) overflow-hidden rounded-[20px] bg-card py-(--card-spacing) text-sm text-card-foreground [--card-spacing:--spacing(5)] has-[>img:first-child]:pt-0 data-[size=sm]:rounded-[16px] data-[size=sm]:[--card-spacing:--spacing(4)] data-[size=lg]:rounded-[24px] data-[size=lg]:[--card-spacing:--spacing(6)] *:[img:first-child]:rounded-t-[20px] *:[img:last-child]:rounded-b-[20px] data-[variant=inverse]:bg-inverse data-[variant=inverse]:text-inverse-foreground",
         className
       )}
       {...props}

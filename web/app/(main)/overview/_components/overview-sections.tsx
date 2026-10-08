@@ -28,33 +28,29 @@ export function NetWorth({
   const hasMonth = month.income > 0 || month.expense > 0
 
   return (
-    <Card size="lg" aria-labelledby="net-worth-title" role="region">
+    <Card size="lg" variant="inverse" aria-labelledby="net-worth-title" role="region">
       <CardContent>
         <CardLabel id="net-worth-title">Tài sản ròng</CardLabel>
-        <Money
-          amount={data.total}
-          size="xl"
-         
-          tone={data.total < 0 ? "expense" : "default"}
-          className="mt-1.5"
-        />
+        <Money amount={data.total} size="xl" tone={data.total < 0 ? "expense" : "default"} className="mt-1.5" />
         {hasMonth ? (
           <p className="mt-0.5 text-sm">
             <span
               className={cn(
-                "font-medium tabular-nums",
+                "font-semibold tabular-nums",
                 monthNet > 0 ? "text-income" : monthNet < 0 ? "text-expense" : undefined,
               )}
             >
               {monthNet > 0 ? "+" : monthNet < 0 ? "−" : ""}
               {formatCompactCurrency(Math.abs(monthNet), 1)}
             </span>
-            <span className="ml-1.5 text-muted-foreground">tháng này</span>
+            <CardLabel as="span" className="ml-1.5">
+              tháng này
+            </CardLabel>
           </p>
         ) : null}
         {/* Three share the card's width, so the amounts are shortened; the
             full ones are in the tooltip and the accessible name. */}
-        <StatGroup className="mt-5">
+        <StatGroup separated className="mt-5">
           {(
             [
               ["Tài khoản", data.cash, "/budget"],

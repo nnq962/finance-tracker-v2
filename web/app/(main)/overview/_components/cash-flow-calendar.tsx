@@ -122,8 +122,9 @@ export function CashFlowCalendar({
                     +{formatCompactCurrency(totals.income)}
                   </span>
                 ) : null}
+                {/* Spending in grey: the minus says it, and red is kept for warnings. */}
                 {totals?.expense ? (
-                  <span className={cn(amountClassName, cashFlowColors.expense.text)}>
+                  <span className={cn(amountClassName, "text-muted-foreground")}>
                     −{formatCompactCurrency(totals.expense)}
                   </span>
                 ) : null}
@@ -175,7 +176,7 @@ export function CashFlowCalendar({
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Đã chi</p>
-                    <Money amount={openTotals.expense} size="lg" tone="expense" />
+                    <Money amount={openTotals.expense} size="lg" />
                   </div>
                 </div>
                 {dayItems && dayItems.length === 0 ? (

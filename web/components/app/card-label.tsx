@@ -16,7 +16,7 @@ export function CardLabel({
   return (
     <Component
       data-slot="card-label"
-      className={cn("text-sm text-muted-foreground group-data-[variant=inverse]/card:text-primary-foreground/60", className)}
+      className={cn("text-sm text-muted-foreground group-data-[variant=inverse]/card:text-inverse-foreground/60", className)}
       {...props}
     />
   )

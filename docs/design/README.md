@@ -21,16 +21,21 @@ component ở đó là cả app đổi theo.
 1. **Thẻ mềm trên nền xám.** Nền trắng ngà rất nhạt (`#f2f2f1`, "Canvas" của mockup); thẻ trắng
    bo 20, không viền, không bóng, tách khỏi nền nhờ chênh màu. Xám là thang `neutral` của
    Tailwind (không ngả xanh). Theme tối: nền `#0a0a0a`, thẻ `#171717`.
-2. **Một màu nhấn.** `neutral-900` (trắng ở theme tối) cho nút chính, chip đang chọn, công tắc
-   bật, tiến độ.
-3. **Chữ nhẹ.** Chỉ dùng `font-normal` và `font-medium`, kể cả tiêu đề lớn của trang.
-4. **Màu mang ý nghĩa.** `income` tiền vào (emerald), `expense` tiền ra (rose), `transfer`
-   chuyển khoản (sky), `ai` AI và Pro (xanh ngọc), `warning` nhắc nhở (amber). Chỉ tô số tiền,
-   icon, badge; nền nhạt dùng độ mờ (`bg-income/10`). Trong danh sách giao dịch chỉ khoản thu có
-   màu, khoản chi để màu chữ thường, như mockup.
-5. **Vừa ngón tay.** Thứ bấm được cao từ 44px. Mọi nút là viên thuốc. Chạm thì hơi lún
+2. **Một khuôn trang** (2026-10-08). Mọi trang mở đầu giống nhau: nhãn nhỏ in hoa, tiêu đề lớn,
+   tối đa một nút tròn (`PageHeader`); rồi một thẻ dẫn đầu, rồi các nhóm. Học một trang là đoán
+   được các trang khác. Xem "Khuôn trang" bên dưới.
+3. **Một mảng đen.** `neutral-900` cho thẻ dẫn đầu (`Card variant="inverse"`), nút chính, nút nổi,
+   chip đang chọn, công tắc bật. Mỗi màn chỉ một khối đen lớn: thanh tab, segmented control, lời
+   mời Pro đều sáng.
+4. **Chữ rõ thứ bậc.** Tiêu đề trang 32 đậm, số tiền và tiêu đề đậm 600, chữ thường 400.
+5. **Màu dịu, có ý nghĩa.** `income` tiền vào (emerald), `expense` tiền ra (rose), `transfer`
+   chuyển khoản (sky), `ai` AI và Pro (xanh ngọc), `warning` nhắc nhở (amber). Ô icon dùng màu
+   đó (hay màu hạng mục) đã làm dịu về xám, icon màu mực (`tile-tinted`), để list không thành cầu
+   vồng. Số tiền: chỉ tiền vào có màu; tiền chi, chuyển khoản để màu chữ thường. Đỏ chỉ để cảnh
+   báo thật: quá hạn, số dư âm.
+6. **Vừa ngón tay.** Thứ bấm được cao từ 44px. Mọi nút là viên thuốc. Chạm thì hơi lún
    (thu nhỏ 0.97), tắt khi người dùng giảm chuyển động.
-6. **Ít chữ.** Nhãn, mô tả, thông báo ngắn và dễ hiểu, giọng trung tính ("Thêm tài khoản", không
+7. **Ít chữ.** Nhãn, mô tả, thông báo ngắn và dễ hiểu, giọng trung tính ("Thêm tài khoản", không
    "Chỉ cần…", "Ví dụ…"). Mô tả dưới dòng chỉ ghi điều tiêu đề chưa nói hoặc điều cần làm trước.
    Một thứ gọi một tên trong cả app: "hạng mục", "lượt AI".
 
@@ -39,7 +44,7 @@ component ở đó là cả app đổi theo.
 | | Giá trị |
 |---|---|
 | Font | Be Vietnam Pro; số tiền `tabular-nums` |
-| Cỡ chữ | Display 28 (tiêu đề trang) · Title 20 (tiêu đề nhóm) · Headline 16 (tiêu đề thẻ, hộp thoại, trạng thái trống) · Body 14 (nội dung, dòng list, nút, nhãn ô) · Caption 12 (mô tả dòng, lỗi và ghi chú dưới ô). Số tiền lớn 34; chữ trong ô nhập 16 để iOS không phóng to |
+| Cỡ chữ | Display 32 (tiêu đề trang, đổi 2026-10-08 từ 28) · Nhãn 12 in hoa giãn chữ, đậm 600 (nhãn đầu trang, tiêu đề nhóm list) · Title 20 (tiêu đề nhóm) · Headline 16 (tiêu đề thẻ, hộp thoại, trạng thái trống) · Body 14 (nội dung, dòng list, nút, nhãn ô) · Caption 12 (mô tả dòng, lỗi và ghi chú dưới ô). Số tiền lớn 34; chữ trong ô nhập 16 để iOS không phóng to |
 | Độ đậm | Số tiền, tiêu đề (trang, nhóm, thẻ, hộp thoại, sheet), nút và con số lớn 600 (`font-semibold`); tiêu đề dòng list, segmented, nhãn ô 500; chữ thường 400 |
 | Màu chữ phụ | `muted-foreground` như secondary label của iOS: `#858585` theme sáng, `#929292` theme tối (đổi 2026-10-07 từ `#a1a1a1` / `#737373`, quá nhạt). Làm mịn nét `antialiased` chỉ ở theme tối |
 | Bo góc | 32 đầu sheet đáy · 28 đầu sheet `bottom` · 24 thẻ lớn (`size="lg"`), action sheet · 20 thẻ, nhóm danh sách, hộp thoại, menu · 16 thẻ nhỏ, banner, ô icon lớn, ô OTP · 12 ô nhập, select, ô tháng · 10 ô icon trong dòng · tròn cho nút, chip, badge, công tắc (đổi 2026-10-07: thẻ từ 28 xuống 20, ô nhập từ viên thuốc 48 xuống 44 bo 12, như list của app Claude) |
@@ -56,7 +61,8 @@ component ở đó là cả app đổi theo.
   18px; nút tắt mờ còn 35%.
 - **Card:** bo 20, đệm 20 · `size="lg"` (bo 24, đệm 24) cho thẻ chính của trang ·
   `size="sm"` (bo 16, đệm 16). Nhãn trong thẻ (`CardLabel`): chữ thường 14px màu phụ, như "Tài
-  sản ròng". `variant="inverse"`: thẻ đen (sáng ở theme tối) cho một con số dẫn đầu như số dư.
+  sản ròng". `variant="inverse"`: thẻ dẫn đầu cho một con số như số dư, mỗi trang một thẻ: đen ở
+  theme sáng, xám nổi (`neutral-800`) ở theme tối, không bao giờ là khối trắng (token `inverse`).
   `asChild`: thẻ là phần tử con, như một nút cho thẻ bấm cả khối (thẻ Tiền vào / Tiền ra ở Giao
   dịch, đang chọn thì `inverse`).
 - **Input, Textarea, InputGroup, Select, Combobox:** chữ 16px (để iOS không phóng to). Cao 44 và
@@ -70,8 +76,9 @@ component ở đó là cả app đổi theo.
   trắng chúng màu xám. Thẻ tự đặt `surface-plain`, khung trang và sheet đặt `surface-grouped`. Trong `SelectContent`, các `SelectItem` luôn nằm trong
   `SelectGroup` (kèm `SelectLabel` nếu nhóm có tên), như shadcn hướng dẫn; danh sách tài khoản
   dùng `AccountSelectGroups`.
-- **Tabs:** segmented control dạng viên thuốc cao 52 (lựa chọn 44), viên đen (trắng ở theme tối)
-  trượt tới lựa chọn, chữ lựa chọn chưa chọn `neutral-500`. Dùng cho 2–4 chế độ cùng loại (Chi/Thu/Chuyển). `variant="line"`: tab gạch chân,
+- **Tabs:** segmented control kiểu iOS, viên thuốc cao 52 (lựa chọn 44): viên trắng có bóng nhẹ
+  trượt trên rãnh xám (`track`; trên nền xám của trang là một bậc xám đậm hơn nền), lựa chọn đang
+  chọn chữ đậm. Theme tối: viên xám sáng trên rãnh màu thẻ. Dùng cho 2–4 chế độ cùng loại (Chi/Thu/Chuyển). `variant="line"`: tab gạch chân,
   vạch trượt theo.
 - **ToggleGroup / Toggle:** chip viên thuốc xám chữ thường (không đậm), chip đang chọn màu đen;
   `variant="outline"` là chip trắng có viền; `variant="segmented"` là vài lựa chọn icon trên rãnh
@@ -114,16 +121,17 @@ component ở đó là cả app đổi theo.
 | Khối | Dùng khi |
 |---|---|
 | `Section` | Một phần có tiêu đề ngoài thẻ (`SectionHeader`: 20px, đậm vừa, kèm ghi chú và "Xem tất cả" hoặc nút); nội dung cách tiêu đề 8, các thứ bên trong cách nhau 12. Phần có tiêu đề lớn luôn dùng nó |
-| `Money` | Mọi số tiền: chữ số đều, "đ" viết liền sau số (55.103.000đ); ở cỡ lớn (`lg`, `xl`) "đ" nhỏ hơn và mờ 50% như mockup; cỡ `sm`/`md`/`lg`/`xl`, màu theo `tone` |
-| `IconTile` | Icon trên ô vuông bo góc nền nhạt (như mockup); màu hạng mục hoặc màu ý nghĩa. Cỡ `sm` 36 (mọi dòng list, qua `SettingsRow`), `md` 40 (bo 10), `lg` 48 (bo 16; đầu thẻ, đầu sheet); `shape="circle"` chỉ cho chữ cái, khuôn mặt |
+| `Money` | Mọi số tiền: chữ số đều, "đ" viết liền sau số (55.103.000đ); ở cỡ lớn (`lg`, `xl`) "đ" nhỏ hơn và mờ 50% như mockup; cỡ `sm` 14 / `md` 16 / `lg` 20 / `xl` 34, màu theo `tone` |
+| `IconTile` | Icon trên ô vuông bo góc nền nhạt (như mockup); màu hạng mục hoặc màu ý nghĩa, làm dịu về xám với icon màu mực (`tile-tinted`, 2026-10-08). Cỡ `sm` 36 (mọi dòng list, qua `SettingsRow`), `md` 40 (bo 10), `lg` 48 (bo 16; đầu thẻ, đầu sheet); `shape="circle"` chỉ cho chữ cái, khuôn mặt |
 | `DeltaBadge` | % thay đổi so với kỳ trước, dạng chữ nhỏ có mũi tên ("↘ 93%") như mockup, không nền; xanh khi tốt, đỏ khi xấu |
 | `StatGroup` + `Stat` | 2–4 chỉ số chia cột bằng vạch mảnh, mỗi cột có thể mở trang |
 | `ProgressRing` | Tiến độ dạng vòng mảnh có số ở giữa |
 | `FormSection` | Các trường của một form trong thẻ trắng, có tiêu đề nhỏ, ghi chú và nội dung phụ bên dưới |
-| `PromoBanner` | Banner đen (sáng ở theme tối) cho một điều đáng chú ý, như gói Pro |
+| `PromoBanner` | Thẻ sáng cho một điều đáng chú ý, như lời mời Pro (cuối Tổng quan): ô icon `lg` màu `tone` (mặc định `ai`), tiêu đề, một dòng, mũi tên. Sáng để không tranh với thẻ dẫn đầu |
 | `FloatingActions` | Nút hành động chính nổi phía trên thanh tab, trên điện thoại; tự chừa một khoảng cuối trang để dòng cuối cuộn lên khỏi nút |
-| `MobileBottomNav` | Thanh tab nổi trên điện thoại (`components/mobile-bottom-nav.tsx`): viên thuốc mờ rộng ngang màn hình (tối đa 28rem), không chữ (tên tab là `aria-label`); viên đen (trắng ở theme tối) trượt tới tab đang mở |
-| `CompactTitleBar` | Tiêu đề thu nhỏ khi tiêu đề lớn cuộn đi; tự gắn trong `PageHeader` |
+| `MobileBottomNav` | Thanh tab nổi trên điện thoại (`components/mobile-bottom-nav.tsx`): viên thuốc mờ rộng ngang màn hình (tối đa 28rem), mỗi tab icon 22 và tên 11 bên dưới (đổi 2026-10-08: trước chỉ có icon, nên không gì gọi tên trang); viên xám nhạt trượt tới tab đang mở, tab đó icon và chữ đậm màu chữ |
+| `PageHeader` | Đầu mọi trang (`components/page.tsx`), cả điện thoại lẫn desktop: `eyebrow` (nhãn nhỏ in hoa: ngày, tháng đang xem, số lượng; có thể là nút, như `MonthSelect variant="eyebrow"`), tiêu đề 32, `accessory` (nút tròn cạnh tiêu đề, dạng điện thoại của `actions`: dưới md khi có `actions`, luôn hiện khi không có), `actions` (nút có chữ từ md) |
+| `CompactTitleBar` | Tiêu đề thu nhỏ khi tiêu đề lớn cuộn đi; tự gắn trong `PageHeader` (`compactTitle` khi tiêu đề không phải tên tab, như lời chào ở Tổng quan) |
 | `InlineSelect` | Dropdown mở tại chỗ, đẩy nội dung bên dưới xuống: chọn trong vài tài khoản, ví. Hiệu ứng chiều cao đơn giản (300ms ease-out); trên iOS kém mượt hơn transform, đã chấp nhận. Danh sách dài vẫn dùng `Select`/`Combobox` |
 | `CardLabel` | Nhãn nhỏ trong thẻ ("Tài sản ròng", "Tiền vào"): chữ thường cỡ Body, màu phụ; trên thẻ `inverse` thì sáng 60%. Mọi thẻ có nhãn dùng nó |
 | `Chip` | Chip tĩnh cho thứ đã chọn hoặc gắn kèm (người, thẻ #): có thể có avatar và nút × |
@@ -144,10 +152,11 @@ component ở đó là cả app đổi theo.
 | `NoticeBanner` | Thông báo trong trang trên nền nhạt theo `tone`, đóng được (`onDismiss`), hoặc bấm cả khối kèm mũi tên để mở thứ nó nói tới (`onClick`, như khoản quá hạn ở Vay nợ), hoặc kèm một nút nhỏ ở cuối cho bước tiếp theo (`action`, như "Ghi khoản chi" sau khi thanh toán gói) |
 | `PageSheet` | Page sheet iOS (`Drawer variant="page"`), tên theo thiết kế: thanh trên cùng có nút ✕ tròn (cách mép trên và trái 16), tiêu đề giữa, `action` bên phải; `hideTitle` khi nội dung tự mở đầu bằng tiêu đề lớn (màn gói). Nội dung cuộn xuyên dưới thanh, như sheet của app Claude: nội dung cuộn lên tới tận mép trên của sheet, thanh kéo nổi bên trên; khi đã cuộn, một lớp màu nền sheet phủ từ mép trên (cả chỗ thanh kéo) qua cả thanh, đậm nhất ở mép trên rồi nhạt đều qua hết thanh, về 0 ở 16px dưới thanh; nội dung vẫn thấp thoáng bên dưới, không có đường kẻ. Khi thanh có tiêu đề, lớp phủ giữ dày qua dòng tiêu đề để chữ rõ. Nút tròn trên thanh khi đó có bóng mềm (theme tối: viền mảnh). `surface="grouped"` (xám, cho thẻ trắng) hoặc trắng cho form; `footer` cho nút Lưu. Dùng cho màn gói, Thông báo |
 | `ChoiceTiles` | Vài ô cạnh nhau, chọn một, như bảng giá: vòng radio ở đầu, chip đối diện (ngắn, như "Giảm 28%"), rồi con số và một dòng mô tả. Radio group bên dưới (phím mũi tên, trình đọc màn hình). `tone="ai"` tô ô đang chọn màu `ai` (kỳ thanh toán Pro); mặc định viền đen |
-| `FlowTiles` | Hai thẻ cạnh nhau cho tiền theo hai chiều (Tiền vào / Tiền ra ở Giao dịch, Cần thu / Cần trả ở Vay nợ): số tiền và ghi chú; chạm để danh sách chỉ còn chiều đó, thẻ đang chọn thành `inverse`, chạm lại để bỏ |
+| `FlowTiles` | Tiền theo hai chiều (Tiền vào / Tiền ra ở Giao dịch, Cần thu / Cần trả ở Vay nợ) là hai nửa của một thẻ, chia bằng vạch mảnh: ô icon, nhãn, số tiền `lg` có dấu (chỉ tiền vào có màu) và ghi chú; chạm một nửa để danh sách chỉ còn chiều đó (nửa đó nền xám, nửa kia mờ đi), chạm lại để bỏ. `FlowTilesSkeleton` cho màn tải |
 
 Danh sách nằm ở `components/settings-list.tsx`. `SettingsGroup` là nhóm dòng trong một thẻ
-(`size="lg"` cho trang dạng bảng tin); đường kẻ giữa các dòng thụt 16 vào từ hai bên. `SettingsRow` là **mọi** dòng list (cài đặt, giao dịch, nhiệm vụ…), nên các list đồng nhất: cao 64
+(`size="lg"` cho trang dạng bảng tin), tiêu đề nhóm là nhãn 12 in hoa giãn chữ như list nhóm của
+iOS ("HÔM NAY", "CHUNG"; `groupCaptionClassName`, dùng chung cho `FormSection` và bộ lọc); đường kẻ giữa các dòng thụt 16 vào từ hai bên. `SettingsRow` là **mọi** dòng list (cài đặt, giao dịch, nhiệm vụ…), nên các list đồng nhất: cao 64
 (một dòng hay tiêu đề + mô tả đều vậy), lề ngang 16, `icon` tự đặt trong `IconTile` cỡ `sm` (36,
 bo 12) màu theo `tone` (xám nếu không truyền), tiêu đề 14 (Body, đậm 500), mô tả 12 (Caption), rồi giá trị, công tắc, số
 tiền hoặc mũi tên ở bên phải. `media` cho avatar và logo tài khoản (`AccountLogo`: ô vuông bo 10 cỡ 36 như `IconTile sm`, logo trên nền trắng, tiền mặt là tờ tiền xanh; `size="xs"` 20 trong select). `swipeAction` cho dòng vuốt để xoá. Dòng ở
@@ -158,10 +167,42 @@ Utility `pressable` (trong `globals.css`) cho phản hồi chạm của thẻ v�
 
 ## Mẫu màn hình
 
-- **Trang dạng bảng tin** (Tổng quan, duyệt 2026-10-07): lời chào và chuông thông báo, banner Pro,
-  nhiệm vụ, thẻ tài sản ròng (nhãn `CardLabel` rồi con số chính), rồi các `Section`: tháng (chỉ
-  lịch), theo hạng mục (biểu đồ tròn, không list), thu và chi theo tháng. Các khối cách nhau 24px.
-- **Trang danh sách** (Giao dịch, Tài khoản, Vay nợ, Cài đặt): tiêu đề lớn, thẻ tóm tắt, rồi các
+### Khuôn trang (2026-10-08)
+
+Mọi trang tab theo cùng một thứ tự, như các thiết kế app trên Figma:
+
+1. **Đầu trang** (`PageHeader`): nhãn nhỏ in hoa cho ngữ cảnh, tiêu đề lớn, tối đa một hai nút
+   tròn bên phải. Trên điện thoại tiêu đề luôn hiện (không ẩn vì "thanh tab đã gọi tên trang").
+2. **Thẻ dẫn đầu:** con số quan trọng nhất của trang, `Card variant="inverse"` (Tổng quan, Tài
+   khoản) hoặc `FlowTiles` (Giao dịch, Vay nợ).
+3. **Các nhóm:** `Section` (tiêu đề đậm 20) cho nội dung chính của trang bảng tin, `SettingsGroup`
+   (nhãn nhỏ in hoa) cho nhóm ngày, nhóm cài đặt, các phần của một list. Không có kiểu tiêu đề
+   thứ ba.
+4. **Một nút nổi** (`FloatingActions`) cho thao tác chính; list chừa đủ chỗ dưới cùng.
+
+| Trang | Nhãn đầu trang | Nút tròn | Thẻ dẫn đầu |
+|---|---|---|---|
+| Tổng quan | ngày ("Thứ Năm, 08/10"), tiêu đề là lời chào | chuông | Tài sản ròng (đen) |
+| Giao dịch | tháng đang xem, chạm để đổi | AI | Tiền vào / Tiền ra |
+| Tài khoản | số tài khoản đang dùng | | Tổng số dư (đen), chia theo loại tài khoản |
+| Vay nợ | số khoản đang mở | người liên hệ | Cần thu / Cần trả |
+| Cài đặt | "Hồ sơ và ứng dụng" | | Hồ sơ |
+
+Trước khi báo xong một màn mới, kiểm tra:
+
+- Có tiêu đề lớn trên điện thoại chưa?
+- Chỉ một khối đen lớn (thẻ dẫn đầu) và tối đa một nút nổi?
+- Tiêu đề nhóm thuộc một trong hai kiểu?
+- Đỏ chỉ dùng cho cảnh báo?
+- Nút nổi có đè thứ không cuộn được không? Số tiền dài nhất có ngắt dòng không?
+
+### Các màn khác
+
+- **Trang dạng bảng tin** (Tổng quan): đầu trang, thẻ tài sản ròng (nhãn `CardLabel`, con số
+  chính, ba phần chia cột), nhiệm vụ, rồi các `Section`: tháng (chỉ lịch), sắp đến hạn, theo hạng
+  mục (biểu đồ tròn, không list), thu và chi theo tháng; cuối cùng lời mời Pro. Các khối cách
+  nhau 24px.
+- **Trang danh sách** (Giao dịch, Tài khoản, Vay nợ, Cài đặt): đầu trang, thẻ dẫn đầu, rồi các
   `SettingsGroup` có tiêu đề nhóm.
 - **Màn gói** (duyệt 2026-10-07, theo màn "Get more Claude"): page sheet nền xám, tiêu đề lớn giữa
   ("Nâng cấp Finance Tracker" / "Bạn đang dùng Pro"); thẻ Pro trước với `ChoiceTiles tone="ai"`

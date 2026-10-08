@@ -9,7 +9,7 @@ const moneyVariants = cva("inline-flex min-w-0 items-baseline font-semibold tabu
     size: {
       sm: "text-sm",
       md: "text-base",
-      lg: "text-2xl tracking-tight",
+      lg: "text-xl tracking-tight",
       xl: "text-[34px] leading-tight tracking-tight",
     },
     tone: {
@@ -35,7 +35,7 @@ type MoneyProps = {
  * Vietnamese amounts are usually written. On the large sizes (lg, xl) the đ
  * is smaller and at half strength, as in the mockup, so the digits lead.
  */
-const currencyClassName = { lg: "text-base opacity-50", xl: "text-xl opacity-50" } as const
+const currencyClassName = { lg: "text-sm opacity-50", xl: "text-xl opacity-50" } as const
 
 export function Money({ amount, sign = "auto", size, tone, className }: MoneyProps) {
   const prefix = sign === "never" ? "" : amount < 0 ? "−" : amount > 0 && sign === "always" ? "+" : ""

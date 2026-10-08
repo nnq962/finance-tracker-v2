@@ -16,7 +16,11 @@ function UsageMeter({ label, left, total, note }: { label: string; left: number;
           <span className="text-sm font-normal text-muted-foreground">/{total}</span>
         </p>
       </div>
-      <Progress value={total > 0 ? (left / total) * 100 : 0} aria-label={`${label}: còn ${left} trên ${total}`} />
+      <Progress
+        tone="ai"
+        value={total > 0 ? (left / total) * 100 : 0}
+        aria-label={`${label}: còn ${left} trên ${total}`}
+      />
       <p className="text-xs text-muted-foreground">{note}</p>
     </div>
   )

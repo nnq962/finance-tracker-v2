@@ -134,13 +134,12 @@ export function MobileBottomNav() {
     requestNavigation(requestedPathname)
   }
 
-  const activeIndex = mobileNavigationItems.findIndex((item) => item.url === activePathname)
+  const activeIndex = mobileNavigationItems.findIndex((item) => item.url === menuUrlFor(activePathname))
 
   return (
-    // Icons only, on a capsule across the screen, floating over the page;
+    // Icon and name on a capsule across the screen, floating over the page;
     // the shell reserves its height in --tab-bar-space so the end of a page
-    // can scroll above it. Each tab keeps its name for screen readers
-    // (aria-label).
+    // can scroll above it.
     <nav
       aria-label="Điều hướng chính trên di động"
       className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:hidden"
@@ -152,12 +151,12 @@ export function MobileBottomNav() {
             gridTemplateColumns: `repeat(${mobileNavigationItems.length}, minmax(0, 1fr))`,
           } as CSSProperties
         }
-        className="pointer-events-auto relative mx-auto grid w-full max-w-md rounded-full bg-card/80 p-1.5 shadow-[0_8px_30px_rgb(0_0_0/0.12)] backdrop-blur-xl backdrop-saturate-150 dark:ring-1 dark:ring-foreground/10">
-        {/* The dark pill behind the current tab slides from tab to tab. */}
+        className="pointer-events-auto relative mx-auto grid w-full max-w-md rounded-full bg-card/85 p-1.5 shadow-[0_8px_30px_rgb(0_0_0/0.10)] backdrop-blur-xl backdrop-saturate-150 dark:ring-1 dark:ring-foreground/10">
+        {/* A light pill behind the current tab slides from tab to tab. */}
         <li
           aria-hidden="true"
           className={cn(
-            "absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/var(--tab-count))] rounded-full bg-primary transition-[translate,opacity] duration-300 ease-out motion-reduce:duration-150",
+            "absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/var(--tab-count))] rounded-full bg-foreground/[0.06] transition-[translate,opacity] duration-300 ease-out motion-reduce:duration-150 dark:bg-foreground/10",
             activeIndex < 0 && "opacity-0",
           )}
           style={{ translate: `${Math.max(activeIndex, 0) * 100}% 0` }}
@@ -170,7 +169,6 @@ export function MobileBottomNav() {
             <li key={item.url} className="relative min-w-0">
               <Link
                 href={item.url}
-                aria-label={item.mobileTitle}
                 onTouchStart={() => {
                   touchPreviewPathnameRef.current = item.url
                   setVisualPathname(item.url)
@@ -191,11 +189,14 @@ export function MobileBottomNav() {
                 onClick={(event) => navigateTo(event, item.url)}
                 aria-current={pathname === item.url ? "page" : undefined}
                 className={cn(
-                  "flex h-12 min-w-0 touch-manipulation items-center justify-center rounded-full text-muted-foreground transition-colors duration-300 outline-none select-none [-webkit-tap-highlight-color:transparent] focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:duration-150",
-                  isActive && "text-primary-foreground",
+                  "flex h-[52px] min-w-0 touch-manipulation flex-col items-center justify-center gap-1 rounded-full text-muted-foreground transition-colors duration-300 outline-none select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:duration-150",
+                  isActive && "text-foreground",
                 )}
               >
-                <Icon className="size-[22px] shrink-0" aria-hidden="true" />
+                <Icon className="size-[22px] shrink-0" strokeWidth={isActive ? 2 : 1.75} aria-hidden="true" />
+                <span className={cn("max-w-full truncate px-1 text-[11px] leading-none font-medium", isActive && "font-semibold")}>
+                  {item.mobileTitle}
+                </span>
               </Link>
             </li>
           )
