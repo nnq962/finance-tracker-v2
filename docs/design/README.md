@@ -94,8 +94,10 @@ component ở đó là cả app đổi theo.
 - **Progress:** thanh dày 8; `tone="ai"` màu xanh ngọc cho lượt AI (Cài đặt), để không thành thêm một khối đen. **Empty:** icon mảnh trong ô 80 bo 20 nền `field` theo bề mặt (trắng trên nền xám của trang, sheet; xám trên thẻ trắng), tiêu đề 16. Đồng hồ lượt AI ghi "Còn N/M", nên thanh đầy là chưa dùng.
 - **Skeleton:** nền theo bề mặt (`track`): đậm hơn nền xám của trang, xám rất nhạt trên thẻ trắng, sáng 15% trên thẻ dẫn đầu. Không truyền `bg-*` ở nơi dùng. Ngừng nhấp nháy khi giảm chuyển động.
 - **Badge:** viên thuốc cao 24 có chấm màu ở đầu; kiểu màu ý nghĩa `income`, `expense`,
-  `transfer`, `ai`, `warning`; `count` là số đỏ đặc trên icon. Có cái mới mà không cần số (chuông
-  thông báo): chấm cam 6px như mockup.
+  `transfer`, `ai`, `warning`. `count` là số trên vai icon như trên icon app (chuông thông báo):
+  viên tròn 18, chữ 10 đậm, màu mực của app (đen; trắng ở theme tối), không đỏ vì đỏ dành cho
+  cảnh báo; viền 2px màu nền trang cắt nó khỏi icon và nút tròn. Đặt từ ngay phải tâm icon
+  (`top-1 left-[calc(50%+4px)]`) để "9+" nở ra ngoài; quá 9 ghi "9+".
 - **Sheet:**
   - Form và màn chi tiết dùng `PageSheet` (xem bảng khối), không dùng `Sheet` trực tiếp
     (đổi 2026-10-08: mọi sheet của app chuyển sang `PageSheet`).

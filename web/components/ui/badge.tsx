@@ -24,8 +24,11 @@ const badgeVariants = cva(
         transfer: "bg-transfer/10 text-transfer dark:bg-transfer/15",
         ai: "bg-ai/10 text-ai dark:bg-ai/15",
         warning: "bg-warning/15 text-warning",
-        // A count on an icon (unread, pending): solid red, ringed in the card's colour.
-        count: "h-5 min-w-5 bg-destructive px-1.5 text-[11px] text-white ring-2 ring-card",
+        // A count on an icon's shoulder (unread, pending), as on an app icon:
+        // in the app's ink, not red (red is for warnings), ringed in the
+        // page's colour so it is cut out of the icon and its button.
+        count:
+          "h-4.5 min-w-4.5 bg-primary px-1 py-0 text-[10px] leading-none font-semibold text-primary-foreground ring-2 ring-background",
       },
     },
     defaultVariants: {

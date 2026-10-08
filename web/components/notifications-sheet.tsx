@@ -6,9 +6,9 @@ import { BellIcon, GiftIcon, HandCoinsIcon, PencilLineIcon, SparklesIcon, type L
 import type { IconTileTone } from "@/components/app/icon-tile"
 import { PageSheet } from "@/components/app/page-sheet"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
-import { cn } from "@/lib/utils"
 
 type Notice = {
   id: string
@@ -67,7 +67,7 @@ const sampleNotices: Notice[] = [
 ]
 
 /**
- * The bell, with a dot while something is unread, and the page sheet it
+ * The bell, with the unread count while there is any, and the page sheet it
  * opens: new notices first, each one marked read when tapped. On phones it
  * sits at the top of the overview, a grey round button; on wider screens in
  * the top bar beside the theme switch, bare like it (`variant="ghost"`).
@@ -121,14 +121,10 @@ export function NotificationsButton({ variant = "secondary" }: { variant?: "seco
         >
           <BellIcon />
           {unread > 0 ? (
-            <span
-              aria-hidden="true"
-              className={cn(
-                "absolute top-2.5 right-2.5 size-2 rounded-full bg-warning ring-2",
-                // A ring in the colour behind it, so the dot stands off the bell.
-                variant === "ghost" ? "ring-background" : "ring-field",
-              )}
-            />
+            // On the bell's shoulder, from just right of its centre, so a wider "9+" grows outwards.
+            <Badge variant="count" aria-hidden="true" className="absolute top-1 left-[calc(50%+4px)]">
+              {unread > 9 ? "9+" : unread}
+            </Badge>
           ) : null}
         </Button>
       }

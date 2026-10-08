@@ -347,21 +347,21 @@ function ChipSection() {
       </Block>
       <Block label="Badge">
         <div className="flex flex-wrap items-center gap-5">
-          <span className="relative">
-            <Button size="icon-lg" variant="secondary" aria-label="Thông báo, 3 mới">
-              <BellRingIcon />
+          {/* As on the notifications bell: on the icon's shoulder, cut out of it and of its button. */}
+          {["3", "9+"].map((count) => (
+            <Button key={count} size="icon" variant="secondary" aria-label={`Thông báo, ${count} chưa đọc`} className="relative">
+              <BellIcon />
+              <Badge variant="count" aria-hidden="true" className="absolute top-1 left-[calc(50%+4px)]">
+                {count}
+              </Badge>
             </Button>
-            <Badge variant="count" className="absolute -top-1 -right-1">
-              3
+          ))}
+          <Button size="icon" variant="ghost" aria-label="Hộp thư, 1 chưa đọc" className="relative">
+            <MailIcon />
+            <Badge variant="count" aria-hidden="true" className="absolute top-1 left-[calc(50%+4px)]">
+              1
             </Badge>
-          </span>
-          <span className="relative">
-            <Button size="icon-lg" variant="secondary" aria-label="Hộp thư, có thư mới">
-              <MailIcon />
-            </Button>
-            {/* Something new, without a count: the mockup's small orange dot. */}
-            <span aria-hidden="true" className="absolute top-2.5 right-2.5 size-2 rounded-full bg-warning" />
-          </span>
+          </Button>
         </div>
         <div className="mt-4 flex flex-wrap gap-1.5">
           {(
