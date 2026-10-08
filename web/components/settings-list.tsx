@@ -50,7 +50,7 @@ const captionRowClassName = "flex min-h-6 items-center justify-between gap-3 px-
  * lists ("HÔM NAY", "CHUNG"), a card of rows separated by dividers, and an
  * optional footnote. `collapsible` keeps the rows hidden until asked for,
  * e.g. settled loans: the caption stays in line with the other groups', with
- * "Hiện …" at its end ("Ẩn" once open), and the card slides open and shut.
+ * "Hiện …" at its end ("Thu gọn" once open), and the card slides open and shut.
  */
 function SettingsGroup({
   title,
@@ -126,12 +126,13 @@ function SettingsGroup({
       <Collapsible asChild defaultOpen={collapsible.defaultOpen}>
         <section className="flex flex-col">
           {caption(
-            <CollapsibleTrigger className="group/trigger relative flex shrink-0 items-center gap-1 text-xs font-semibold text-foreground outline-none after:absolute after:-inset-x-2 after:-inset-y-3 focus-visible:underline">
+            // As the "Xem tất cả ›" of a section's title (SectionHeader), the chevron turning to say it folds.
+            <CollapsibleTrigger className="group/trigger relative flex shrink-0 items-center gap-0.5 text-sm font-medium text-foreground/70 transition-colors outline-none after:absolute after:-inset-x-2 after:-inset-y-3 hover:text-foreground focus-visible:underline active:opacity-60">
               <span className="group-data-[state=open]/trigger:hidden">{collapsible.showLabel}</span>
-              <span className="hidden group-data-[state=open]/trigger:inline">Ẩn</span>
+              <span className="hidden group-data-[state=open]/trigger:inline">Thu gọn</span>
               <ChevronDownIcon
                 aria-hidden="true"
-                className="size-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]/trigger:rotate-180 motion-reduce:transition-none"
+                className="size-4 transition-transform duration-200 group-data-[state=open]/trigger:rotate-180 motion-reduce:transition-none"
               />
             </CollapsibleTrigger>,
           )}
