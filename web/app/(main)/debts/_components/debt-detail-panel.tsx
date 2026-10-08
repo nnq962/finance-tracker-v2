@@ -8,12 +8,15 @@ import { CheckIcon } from "lucide-react"
 
 import type { Account } from "@/lib/accounts/types"
 import { DebtPaymentHistory } from "./debt-payment-history"
-import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { CardLabel } from "@/components/app/card-label"
+import { Money } from "@/components/app/money"
+import { groupCaptionClassName, SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { formatCurrency } from "@/lib/format-currency"
 import { actionErrorMessage } from "@/lib/stale-deploy"
+import { cn } from "@/lib/utils"
 
 import {
   formatDebtDate,
@@ -41,10 +44,7 @@ export function DebtDetailPanel(props: DebtDetailPanelProps) {
     <section aria-labelledby="debt-detail-title" className="space-y-2">
       {/* A caption like the summary's beside it, so both columns start on one line. */}
       <div className="flex min-h-6 items-center px-3">
-        <h2
-          id="debt-detail-title"
-          className="truncate text-sm font-medium text-muted-foreground"
-        >
+        <h2 id="debt-detail-title" className={cn("truncate", groupCaptionClassName)}>
           {props.contact.name}
         </h2>
       </div>
@@ -69,10 +69,8 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
     <div className="space-y-6">
       <Card>
         <CardContent className="space-y-2">
-          <p className="text-sm text-muted-foreground">{debt.hasInterest ? "Còn lại hôm nay" : "Còn lại"}</p>
-          <p className="text-[34px] leading-tight font-medium tracking-tight tabular-nums [overflow-wrap:anywhere]">
-            {formatCurrency(remainingAmount, { signDisplay: "never" })}
-          </p>
+          <CardLabel as="p">{debt.hasInterest ? "Còn lại hôm nay" : "Còn lại"}</CardLabel>
+          <Money amount={remainingAmount} sign="never" size="xl" />
           <Progress value={paymentProgress} />
           <p className="text-xs text-muted-foreground">
             {paidLabel} {formatCurrency(paidAmount, { signDisplay: "never" })} / {formatCurrency(totalAmount, { signDisplay: "never" })} · {Math.round(paymentProgress)}%
@@ -120,7 +118,7 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
             <SettingsRow title="Tổng gốc và lãi" value={formatCurrency(totalAmount)} />
           </>
         ) : null}
-        {debt.note ? <SettingsRow title="Ghi chú" description={debt.note} /> : null}
+        {debt.note ? <SettingsRow title="Ghi chú" description={<span className="select-text">{debt.note}</span>} /> : null}
       </SettingsGroup>
 
       <SettingsGroup>

@@ -52,12 +52,14 @@ export function getOverviewSummary(
     }
   }
 
-  const contactsById = new Map(contacts.map((contact) => [contact.id, contact.name]))
+  const contactsById = new Map(contacts.map((contact) => [contact.id, contact]))
   const dueDebts = debts
     .filter((debt) => debt.dueAt && getPaymentMetrics(debt, today).remainingAmount > 0)
     .map((debt) => ({
       id: debt.id,
-      contactName: contactsById.get(debt.contactId) ?? "Người liên hệ",
+      contactId: debt.contactId,
+      contactName: contactsById.get(debt.contactId)?.name ?? "Người liên hệ",
+      contactInitials: contactsById.get(debt.contactId)?.initials ?? "?",
       direction: debt.direction,
       dueAt: debt.dueAt!,
       daysUntilDue: Math.round((Date.parse(debt.dueAt!) - Date.parse(today)) / 86_400_000),

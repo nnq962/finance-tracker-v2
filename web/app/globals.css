@@ -258,6 +258,27 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
     }
   }
 
+  /*
+   * On touch screens the app behaves like a native one: no grey flash on a
+   * tap, and a long press neither selects interface text nor opens a link
+   * preview. Fields, and anything marked select-text, stay selectable.
+   */
+  @media (hover: none) and (pointer: coarse) {
+    html:has([data-app-shell="main"]) {
+      -webkit-tap-highlight-color: transparent;
+    }
+    body:has([data-app-shell="main"]) {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+    body:has([data-app-shell="main"]) :is(input, textarea, [contenteditable="true"], .select-text) {
+      -webkit-user-select: text;
+      user-select: text;
+      -webkit-touch-callout: default;
+    }
+  }
+
   html:has([data-login-shell]),
   body:has([data-login-shell]) {
     background-color: #000;

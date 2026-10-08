@@ -4,6 +4,7 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
+import { Money } from "@/components/app/money"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
@@ -13,7 +14,6 @@ import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDate, formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
 import type { Transaction } from "@/lib/transactions/types"
-import { cn } from "@/lib/utils"
 
 import { getTransactionVisual } from "../../transactions/_lib/transaction-presentation"
 import { setAccountArchivedAction } from "../actions"
@@ -82,14 +82,7 @@ export function AccountSheet({ account, transactions, categoryGroups, onOpenChan
               <p className="text-sm text-muted-foreground">
                 Số dư
               </p>
-              <p
-                className={cn(
-                  "text-[34px] leading-tight font-medium tracking-tight tabular-nums [overflow-wrap:anywhere]",
-                  shown.balance < 0 && "text-expense",
-                )}
-              >
-                {formatCurrency(shown.balance)}
-              </p>
+              <Money amount={shown.balance} size="xl" tone={shown.balance < 0 ? "expense" : "default"} />
             </div>
 
             <SettingsGroup>
@@ -100,7 +93,7 @@ export function AccountSheet({ account, transactions, categoryGroups, onOpenChan
               />
               <SettingsRow title="Ngày tạo" value={formatDate(toDateKey(shown.openedAt))} />
               <SettingsRow title="Số dư ban đầu" value={formatCurrency(shown.openingBalance)} />
-              {shown.note ? <SettingsRow title="Ghi chú" description={shown.note} /> : null}
+              {shown.note ? <SettingsRow title="Ghi chú" description={<span className="select-text">{shown.note}</span>} /> : null}
             </SettingsGroup>
 
             <SettingsGroup title="Giao dịch gần đây">
@@ -118,7 +111,16 @@ export function AccountSheet({ account, transactions, categoryGroups, onOpenChan
                         tone={color}
                         title={transaction.title}
                         description={`${formatShortDate(toDateKey(transaction.occurredAt))} · ${formatTime(transaction.occurredAt)}`}
-                        value={formatCurrency(amount, { signDisplay: "always" })}
+                        chevron={false}
+                        // As in the transactions list: only money coming in is coloured.
+                        action={
+                          <Money
+                            amount={amount}
+                            sign="always"
+                            size="sm"
+                            tone={transaction.kind === "income" ? "income" : "default"}
+                          />
+                        }
                       />
                     )
                   })}

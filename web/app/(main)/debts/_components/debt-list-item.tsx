@@ -1,11 +1,11 @@
 import { SettingsRow } from "@/components/settings-list"
-import { categoryColorOptions } from "@/lib/categories/category-colors"
 import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
 import { cn } from "@/lib/utils"
 
 import { getDueProjection } from "../_lib/debt-payments"
 import { getDebtDeadline, getDebtMetrics } from "../_lib/debt-presentation"
 import type { Contact, Debt } from "../_types/debt"
+import { ContactAvatar } from "./contact-avatar"
 
 type DebtListItemProps = {
   contact: Contact
@@ -36,16 +36,6 @@ function getDebtStatus(debt: Debt) {
   }
 }
 
-// Rose reads as money owed, slate as nothing chosen: neither marks a person.
-const contactColors = categoryColorOptions.filter((color) => color.name !== "rose" && color.name !== "slate")
-
-/** A colour of the category palette per person (FNV-1a of the id), the same on every visit. */
-function contactColor(contactId: string) {
-  let hash = 2_166_136_261
-  for (const char of contactId) hash = Math.imul(hash ^ char.charCodeAt(0), 16_777_619) >>> 0
-  return cn("tile-tinted", contactColors[hash % contactColors.length].tileClassName)
-}
-
 export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemProps) {
   const { remainingAmount, totalAmount, paidAmount } = getDebtMetrics(debt)
   // With interest and a due date ahead: what it will come to then.
@@ -57,15 +47,7 @@ export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemPr
 
   return (
     <SettingsRow
-      // The person's initials on a round tile, the size of the rows' icons.
-      media={
-        <span
-          aria-hidden="true"
-          className={cn("flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-medium", contactColor(contact.id))}
-        >
-          {contact.initials}
-        </span>
-      }
+      media={<ContactAvatar contactId={contact.id} initials={contact.initials} />}
       title={contact.name}
       // The rate shows on open debts, so a loan with interest reads apart.
       description={

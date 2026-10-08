@@ -7,11 +7,12 @@ import { Money } from "@/components/app/money"
 import { Section } from "@/components/app/section-header"
 import { Stat, StatGroup } from "@/components/app/stat-group"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
 import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
 import type { OverviewSummary } from "@/lib/overview/summary"
 import { cn } from "@/lib/utils"
+
+import { ContactAvatar } from "../../debts/_components/contact-avatar"
 
 const overdueClassName = "text-expense"
 
@@ -72,13 +73,6 @@ export function NetWorth({
   )
 }
 
-function getInitials(name: string) {
-  const words = name.trim().split(/\s+/).filter(Boolean)
-  const letters = words.length > 1 ? [words[0], words[words.length - 1]] : words
-
-  return letters.map((word) => word[0]).join("").toUpperCase() || "?"
-}
-
 function getDueLabel(daysUntilDue: number) {
   if (daysUntilDue < 0) return `Quá ${Math.abs(daysUntilDue)} ngày`
   if (daysUntilDue === 0) return "Đến hạn hôm nay"
@@ -97,11 +91,7 @@ export function DueDebts({ debts }: { debts: OverviewSummary["dueDebts"] }) {
         {debts.map((debt) => (
           <SettingsRow
             key={debt.id}
-            media={
-              <Avatar size="lg">
-                <AvatarFallback>{getInitials(debt.contactName)}</AvatarFallback>
-              </Avatar>
-            }
+            media={<ContactAvatar contactId={debt.contactId} initials={debt.contactInitials} />}
             title={debt.contactName}
             description={debt.direction === "lent" ? "Cho vay" : "Đi vay"}
             chevron={false}

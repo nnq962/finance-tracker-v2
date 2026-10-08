@@ -138,7 +138,7 @@ export function TransactionDetailsSheet({
           {transaction.note ? (
             <SettingsRow
               title="Ghi chú"
-              description={<span className="whitespace-pre-wrap">{transaction.note}</span>}
+              description={<span className="whitespace-pre-wrap select-text">{transaction.note}</span>}
             />
           ) : null}
         </SettingsGroup>

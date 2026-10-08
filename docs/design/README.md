@@ -90,7 +90,7 @@ component ở đó là cả app đổi theo.
 - **Slider:** rãnh dày 8, núm trắng; hai giá trị là khoảng; `formatValue` hiện bong bóng giá trị
   khi kéo.
 - **Accordion:** câu hỏi chữ 14, dòng cao từ 56, nút + trong vòng xám xoay thành × khi mở.
-- **Progress:** thanh dày 8. **Empty:** icon mảnh trong ô vuông xám 80 bo 20, tiêu đề 16.
+- **Progress:** thanh dày 8; `tone="ai"` màu xanh ngọc cho lượt AI (Cài đặt), để không thành thêm một khối đen. **Empty:** icon mảnh trong ô vuông xám 80 bo 20, tiêu đề 16.
 - **Badge:** viên thuốc cao 24 có chấm màu ở đầu; kiểu màu ý nghĩa `income`, `expense`,
   `transfer`, `ai`, `warning`; `count` là số đỏ đặc trên icon. Có cái mới mà không cần số (chuông
   thông báo): chấm cam 6px như mockup.
@@ -163,7 +163,9 @@ tiền hoặc mũi tên ở bên phải. `media` cho avatar và logo tài khoả
 trang Cài đặt mỗi mục một `tone`, như mockup. `SettingsGroup collapsible`: nhóm ẩn dòng tới khi cần (khoản đã tất toán, tài khoản ngừng dùng); tiêu đề vẫn thẳng hàng với các nhóm khác, cuối tiêu đề là "Hiện …" / "Ẩn".
 
 Utility `pressable` (trong `globals.css`) cho phản hồi chạm của thẻ và ô bấm được không phải
-`Button`.
+`Button`. Dòng list bấm được xám đi khi chạm (`active:bg-muted`), như dòng của iOS. Trên màn cảm
+ứng, giữ lâu không chọn chữ của giao diện và không mở xem trước liên kết (`globals.css`); ô nhập
+và chữ có `select-text` (ghi chú của giao dịch, tài khoản, khoản vay) vẫn chọn được.
 
 ## Mẫu màn hình
 

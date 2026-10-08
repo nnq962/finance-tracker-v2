@@ -147,10 +147,11 @@ type SettingsRowProps = {
 
 const rowClassName = "min-h-16 gap-3 py-3"
 
-// Item only gives links a hover state; button rows get the same one, plus
-// the selected state of the row whose screen is shown beside the list.
+// Item only gives links a hover state; button rows get the same one, the
+// grey a native row shows under the finger (hover only exists with a mouse),
+// and the selected state of the row whose screen is shown beside the list.
 const pressableRow =
-  "text-left hover:bg-muted disabled:pointer-events-none disabled:opacity-50 md:data-[active=true]:bg-muted"
+  "text-left transition-colors duration-150 hover:bg-muted active:bg-muted disabled:pointer-events-none disabled:opacity-50 md:data-[active=true]:bg-muted"
 
 function SettingsRow({
   icon,

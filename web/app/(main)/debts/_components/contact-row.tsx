@@ -3,7 +3,6 @@
 import * as React from "react"
 import { EllipsisIcon, PencilIcon, Trash2Icon } from "lucide-react"
 import { SettingsRow } from "@/components/settings-list"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import {
@@ -17,6 +16,7 @@ import {
 import { actionErrorMessage } from "@/lib/stale-deploy"
 import type { Contact, NewContact } from "../_types/debt"
 import { AddContactSheet } from "./add-contact-sheet"
+import { ContactAvatar } from "./contact-avatar"
 
 type ContactRowProps = {
   contact: Contact
@@ -35,7 +35,7 @@ export function ContactRow({ contact, hasDebts, onEdit, onDelete }: ContactRowPr
   return (
     <>
       <SettingsRow
-        media={<Avatar><AvatarFallback>{contact.initials}</AvatarFallback></Avatar>}
+        media={<ContactAvatar contactId={contact.id} initials={contact.initials} />}
         title={contact.name}
         description={contact.relationship || undefined}
         action={
