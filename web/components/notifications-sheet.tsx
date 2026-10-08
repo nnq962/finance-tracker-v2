@@ -8,6 +8,7 @@ import { PageSheet } from "@/components/app/page-sheet"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { cn } from "@/lib/utils"
 
 type Notice = {
   id: string
@@ -66,10 +67,12 @@ const sampleNotices: Notice[] = [
 ]
 
 /**
- * The bell at the top of the overview, with the unread count, and the page
- * sheet it opens: new notices first, each one marked read when tapped.
+ * The bell, with a dot while something is unread, and the page sheet it
+ * opens: new notices first, each one marked read when tapped. On phones it
+ * sits at the top of the overview, a grey round button; on wider screens in
+ * the top bar beside the theme switch, bare like it (`variant="ghost"`).
  */
-export function NotificationsButton() {
+export function NotificationsButton({ variant = "secondary" }: { variant?: "secondary" | "ghost" }) {
   const [notices, setNotices] = React.useState(sampleNotices)
   const unread = notices.filter((notice) => !notice.read).length
   const markRead = (id?: string) =>
@@ -112,13 +115,20 @@ export function NotificationsButton() {
         <Button
           type="button"
           size="icon"
-          variant="secondary"
+          variant={variant}
           aria-label={unread > 0 ? `Thông báo, ${unread} chưa đọc` : "Thông báo"}
           className="relative shrink-0"
         >
           <BellIcon />
           {unread > 0 ? (
-            <span aria-hidden="true" className="absolute top-2.5 right-2.5 size-2 rounded-full bg-warning ring-2 ring-field" />
+            <span
+              aria-hidden="true"
+              className={cn(
+                "absolute top-2.5 right-2.5 size-2 rounded-full bg-warning ring-2",
+                // A ring in the colour behind it, so the dot stands off the bell.
+                variant === "ghost" ? "ring-background" : "ring-field",
+              )}
+            />
           ) : null}
         </Button>
       }

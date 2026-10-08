@@ -51,7 +51,7 @@ export function ThemeSelect() {
           </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuRadioGroup
           value={value}
           onValueChange={(nextTheme) => {

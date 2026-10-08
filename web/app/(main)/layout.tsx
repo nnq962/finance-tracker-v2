@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { AuthSessionGuard } from "@/components/auth-session-guard"
 import { MainBreadcrumb } from "@/components/main-breadcrumb"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
+import { NotificationsButton } from "@/components/notifications-sheet"
 import { WelcomeProvider } from "@/components/onboarding/welcome"
 import { PwaThemeColor } from "@/components/pwa-theme-color"
 import { PushMessageListener } from "@/components/push-message-listener"
@@ -59,7 +60,10 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
                     <SidebarTrigger className="-ml-1" />
                     <MainBreadcrumb />
                   </div>
-                  <ThemeSelect />
+                  <div className="flex items-center gap-1">
+                    <NotificationsButton variant="ghost" />
+                    <ThemeSelect />
+                  </div>
                 </div>
               </header>
               {/* A 1px scroll range keeps iOS bounce inside this pane on short pages. */}

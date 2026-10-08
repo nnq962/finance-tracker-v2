@@ -1,19 +1,19 @@
 import Link from "next/link"
 import { BadgeCheckIcon, ChevronRightIcon } from "lucide-react"
 
+import { NotificationsButton } from "@/components/notifications-sheet"
 import { PageHeader } from "@/components/page"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import type { SessionUser } from "@/lib/auth/session"
 import type { PlanState } from "@/lib/plans/plans"
 
-import { NotificationsButton } from "./notifications-sheet"
 import { initialsOf } from "../_lib/greeting"
 
 /**
  * The top of the overview, as Vietnamese banking apps open: the user's avatar
  * with a greeting by the hour over their name (the tick on Pro), which opens
- * Cài đặt, and the notifications bell. The bar's title stays for screen
- * readers.
+ * Cài đặt, and the notifications bell (on wider screens it sits in the top
+ * bar, by the theme switch). The bar's title stays for screen readers.
  */
 export function OverviewHeader({
   user,
@@ -53,7 +53,7 @@ export function OverviewHeader({
           </span>
         </Link>
       }
-      tools={<NotificationsButton />}
+      tools={<div className="md:hidden"><NotificationsButton /></div>}
     />
   )
 }
