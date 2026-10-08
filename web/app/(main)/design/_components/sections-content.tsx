@@ -40,6 +40,7 @@ import { IconTile } from "@/components/app/icon-tile"
 import { Money } from "@/components/app/money"
 import { MonthPickerSheet } from "@/components/app/month-picker-sheet"
 import { MonthSelect } from "@/components/app/month-select"
+import { PickGrid } from "@/components/app/pick-grid"
 import { FlowTiles } from "@/components/app/flow-tiles"
 import { NoticeBanner } from "@/components/app/notice-banner"
 import { PageSheet } from "@/components/app/page-sheet"
@@ -150,6 +151,7 @@ function CardSection() {
   const [hugeFlow, setHugeFlow] = React.useState<"in" | "out" | null>(null)
   const [period, setPeriod] = React.useState<"month" | "year">("year")
   const [reminder, setReminder] = React.useState<"morning" | "noon" | "evening">("evening")
+  const [gridPick, setGridPick] = React.useState("food")
 
   return (
     <CatalogSection id="card">
@@ -222,6 +224,24 @@ function CardSection() {
             { value: "noon", title: "12:00", description: "Trưa" },
             { value: "evening", title: "21:00", description: "Tối" },
           ]}
+        />
+      </Block>
+      <Block label="Lưới chọn (PickGrid) · hạng mục, ngân hàng; ô cuối mở danh sách đủ">
+        <PickGrid
+          id="ds-pick-grid"
+          caption="Hạng mục"
+          items={[
+            { id: "food", label: "Ăn uống", media: <IconTile icon={UtensilsCrossedIcon} tone="orange" /> },
+            { id: "save", label: "Tiết kiệm", media: <IconTile icon={PiggyBankIcon} tone="pink" /> },
+            { id: "bills", label: "Hoá đơn", media: <IconTile icon={FileTextIcon} tone="blue" /> },
+            { id: "invest", label: "Đầu tư", media: <IconTile icon={TrendingUpIcon} tone="emerald" /> },
+            { id: "gift", label: "Quà tặng", media: <IconTile icon={SparklesIcon} tone="violet" /> },
+            { id: "tag", label: "Mua sắm trực tuyến", media: <IconTile icon={TagIcon} tone="amber" /> },
+            { id: "transfer", label: "Chuyển tiền", media: <IconTile icon={ArrowLeftRightIcon} /> },
+          ]}
+          value={gridPick}
+          onValueChange={setGridPick}
+          onShowAll={() => toast("Mở danh sách đủ")}
         />
       </Block>
       <Card size="lg" variant="inverse">

@@ -25,9 +25,11 @@ type CurrencyInputProps = {
   /** Marks the amount as wrong, e.g. left empty, for the field's error below it. */
   invalid?: boolean
   /**
-   * With `onNegativeChange`, the amount can be below zero: a +/− button
-   * flips its sign (phone keypads have no minus) and a typed "-" works too.
-   * `value` stays the amount without its sign; the submitted field is signed.
+   * With `onNegativeChange`, the amount can be below zero: in a field a +/−
+   * button flips its sign (phone keypads have no minus) and a typed "-" works
+   * too; the hero has neither, its sign set from outside (a switch), shown as
+   * "−" in the expense colour. `value` stays the amount without its sign; the
+   * submitted field is signed.
    */
   negative?: boolean
   onNegativeChange?: (negative: boolean) => void
@@ -47,8 +49,8 @@ type CurrencyInputProps = {
   variant?: "field" | "hero"
   /** hero only: the sign shown before the number once there is one, e.g. − for spending. */
   sign?: "+" | "−"
-  /** hero only: income in its colour, as Money shows it. */
-  tone?: "default" | "income"
+  /** hero only: income or money owed in its colour, as Money shows it. */
+  tone?: "default" | "income" | "expense"
   /** hero only: the keyboard comes up with the field, as a money app opens on its amount. */
   autoFocus?: boolean
 }
@@ -111,7 +113,7 @@ export function CurrencyInput({
   const minus = signed && negative ? "-" : ""
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (signed) {
+    if (signed && variant === "field") {
       const typedNegative = event.target.value.trimStart().startsWith("-")
       if (typedNegative !== negative) onNegativeChange?.(typedNegative)
     }
@@ -143,12 +145,16 @@ export function CurrencyInput({
               "flex max-w-full items-baseline justify-center leading-tight font-semibold tracking-tight tabular-nums",
               // Smaller as the number grows, so hundreds of billions still fit a phone's width.
               shown.length > 15 ? "text-[22px]" : shown.length > 11 ? "text-[30px]" : "text-[40px]",
-              invalid ? "text-destructive" : tone === "income" && value ? "text-income" : undefined,
+              invalid
+                ? "text-destructive"
+                : value && (tone === "income" || tone === "expense" || minus)
+                  ? tone === "income" && !minus ? "text-income" : "text-expense"
+                  : undefined,
             )}
             // A tap anywhere on the amount brings the keyboard up.
             onClick={() => inputRef.current?.focus()}
           >
-            {sign && value ? <span aria-hidden="true">{sign}</span> : null}
+            {(minus || sign) && value ? <span aria-hidden="true">{minus ? "−" : sign}</span> : null}
             {/* The field exactly as wide as what it holds, so the sign, the number
                 and "đ" stay centred together, typing or not: an invisible copy of
                 the text sizes the cell the field fills, 8px wider than the text
@@ -202,7 +208,7 @@ export function CurrencyInput({
             </button>
           ) : null}
         </div>
-        <input type="hidden" name={name} value={value} />
+        <input type="hidden" name={name} value={value && minus + value} />
         {chips}
       </>
     )

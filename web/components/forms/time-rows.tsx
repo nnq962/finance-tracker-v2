@@ -27,13 +27,16 @@ function timeLabel(date: string, time: string, today: string) {
 }
 
 /**
- * When a transaction happened, as rows of a group: "Thời gian … Hôm nay,
- * 20:02", with today, yesterday and the day before as chips under it, and the
- * date and time fields (the phone's own pickers) folded under the row, open
- * from a tap on it. Submitted as date and time. Rendered as list items of the
- * group it sits in.
+ * When something happened, as rows of a group: "Thời gian … Hôm nay,
+ * 20:02", with today, yesterday and the day before as chips under it (unless
+ * `quickDays` is off), and the date and time fields (the phone's own pickers)
+ * folded under the row, open from a tap on it. Submitted as date and time,
+ * from 2000 through today. Rendered as list items of the group it sits in.
  */
 export function TimeRows({
+  idPrefix,
+  title = "Thời gian",
+  quickDays: withQuickDays = true,
   date,
   time,
   today,
@@ -41,6 +44,11 @@ export function TimeRows({
   onTimeChange,
   invalid,
 }: {
+  /** The row is `<idPrefix>-date-row`, for focusing it when the time is wrong; the fields `<idPrefix>-date` and `-time`. */
+  idPrefix: string
+  title?: string
+  /** Today, yesterday and the day before as chips under the row, for what is mostly entered as it happens. */
+  quickDays?: boolean
   /** "YYYY-MM-DD". */
   date: string
   /** "HH:mm". */
@@ -61,8 +69,8 @@ export function TimeRows({
   return (
     <>
       <SettingsRow
-        id="transaction-date-row"
-        title="Thời gian"
+        id={`${idPrefix}-date-row`}
+        title={title}
         value={
           <span className={cn("flex items-center gap-1", invalid && "text-destructive")}>
             {timeLabel(date, time, today)}
@@ -77,27 +85,30 @@ export function TimeRows({
         onClick={() => setOpen((current) => !current)}
       />
       {/* No divider: the chips and the fields belong to the row above, with
-          8px above and below the chips, and 8px under the fields to the line. */}
-      <li className="flex flex-col px-4 py-2">
-        <ToggleGroup
-          type="single"
-          size="sm"
-          value={quickDays.some((day) => day.key === date) ? date : ""}
-          onValueChange={(next) => {
-            if (next) onDateChange(next)
-          }}
-          aria-label="Chọn nhanh ngày"
-        >
-          {quickDays.map((day) => (
-            <ToggleGroupItem key={day.key} value={day.key}>
-              {day.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+          8px above and below the chips, and 8px under the fields to the line
+          (inside the fold without chips, so nothing is left once folded). */}
+      <li className={cn("flex flex-col px-4", withQuickDays && "py-2")}>
+        {withQuickDays ? (
+          <ToggleGroup
+            type="single"
+            size="sm"
+            value={quickDays.some((day) => day.key === date) ? date : ""}
+            onValueChange={(next) => {
+              if (next) onDateChange(next)
+            }}
+            aria-label="Chọn nhanh ngày"
+          >
+            {quickDays.map((day) => (
+              <ToggleGroupItem key={day.key} value={day.key}>
+                {day.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        ) : null}
         <Collapse open={open}>
-          <div className="grid grid-cols-2 gap-3 pt-2">
+          <div className={cn("grid grid-cols-2 gap-3", withQuickDays ? "pt-2" : "pb-2")}>
             <Input
-              id="transaction-date"
+              id={`${idPrefix}-date`}
               aria-label="Ngày"
               type="date"
               name="date"
@@ -108,7 +119,7 @@ export function TimeRows({
               aria-invalid={invalid || undefined}
             />
             <Input
-              id="transaction-time"
+              id={`${idPrefix}-time`}
               aria-label="Giờ"
               type="time"
               name="time"

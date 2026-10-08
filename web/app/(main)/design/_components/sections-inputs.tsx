@@ -16,6 +16,7 @@ import { SegmentedProgress } from "@/components/app/steps"
 import { Stepper } from "@/components/app/stepper"
 import { WheelPicker, WheelPickerGroup } from "@/components/app/wheel-picker"
 import { CurrencyInput } from "@/components/forms/currency-input"
+import { TimeRows } from "@/components/forms/time-rows"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -94,6 +95,8 @@ function InputSection() {
   const [note, setNote] = React.useState("Ăn trưa cùng team")
   const [amount, setAmount] = React.useState<number | null>(250_000)
   const [code, setCode] = React.useState("38")
+  const [owing, setOwing] = React.useState(true)
+  const [when, setWhen] = React.useState({ date: "2026-10-07", time: "08:30" })
 
   const emailValid = /\S+@\S+\.\S+/.test(email)
   const strength = Math.min(4, Math.ceil(password.length / 3))
@@ -238,6 +241,46 @@ function InputSection() {
         <div className="flex flex-col items-center gap-2">
           <CurrencyInput variant="hero" id="ds-hero-amount" name="heroAmount" sign="−" history={[45_000, 32_000, 45_000]} />
         </div>
+      </Block>
+      <Block label="Số dư âm · hero với onNegativeChange (dấu đặt bằng công tắc)">
+        <div className="flex flex-col items-center gap-2">
+          <CurrencyInput
+            variant="hero"
+            id="ds-hero-balance"
+            name="heroBalance"
+            defaultValue={750_000}
+            negative={owing}
+            onNegativeChange={setOwing}
+            suggestions={false}
+          />
+          <Button type="button" variant="secondary" size="sm" onClick={() => setOwing((current) => !current)}>
+            Đổi dấu
+          </Button>
+        </div>
+      </Block>
+      <Block label="Thời gian trong nhóm dòng · TimeRows (chip ngày; quickDays=false thì không)">
+        <SettingsGroup>
+          <TimeRows
+            idPrefix="ds-time"
+            date={when.date}
+            time={when.time}
+            today="2026-10-08"
+            onDateChange={(date) => setWhen((current) => ({ ...current, date }))}
+            onTimeChange={(time) => setWhen((current) => ({ ...current, time }))}
+            invalid={false}
+          />
+          <TimeRows
+            idPrefix="ds-start"
+            title="Bắt đầu từ"
+            quickDays={false}
+            date={when.date}
+            time={when.time}
+            today="2026-10-08"
+            onDateChange={(date) => setWhen((current) => ({ ...current, date }))}
+            onTimeChange={(time) => setWhen((current) => ({ ...current, time }))}
+            invalid={false}
+          />
+        </SettingsGroup>
       </Block>
       <Block label="Mã OTP" wide>
         <OtpInput value={code} onValueChange={setCode} />

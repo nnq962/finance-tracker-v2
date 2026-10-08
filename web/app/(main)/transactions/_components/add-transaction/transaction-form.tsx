@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import { AccountLogo } from "@/components/account-logo"
 import { PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
 import { CurrencyInput } from "@/components/forms/currency-input"
+import { TimeRows } from "@/components/forms/time-rows"
 import { SettingsGroup, SettingsRow, settingsSeparatorClassName } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { FieldError, FieldLabel } from "@/components/ui/field"
@@ -26,7 +27,6 @@ import { cn } from "@/lib/utils"
 
 import { AccountPicker, canTransfer, TransferAccounts } from "./fields/account-fields"
 import { CategoryGrid, CategoryPicker, gridCategories, type RetiredCategory } from "./fields/category-fields"
-import { TimeRows } from "./fields/time-row"
 import type { TransactionDraft, TransactionFieldErrors, TransactionFieldName } from "./form-types"
 import { NeedAccountState } from "./need-account-state"
 import { useTransactionHistory } from "./transaction-history-context"
@@ -401,6 +401,7 @@ export function TransactionForm({
               />
             ) : null}
             <TimeRows
+              idPrefix="transaction"
               date={when.date}
               time={when.time}
               today={today}
