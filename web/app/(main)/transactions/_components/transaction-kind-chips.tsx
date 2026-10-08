@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { ListFilterIcon } from "lucide-react"
 
 import { ChipButton, ChipRow, ChipRowDivider } from "@/components/app/chip-row"
@@ -11,7 +12,9 @@ import { transactionKindOptions } from "./transaction-filter-fields"
 /**
  * The phone's filters above the list, as in banking apps: the filter chip,
  * which opens the sheet of the other conditions (filled, with their count,
- * while any is on), then the kinds, one chosen.
+ * while any is on), then the kinds, one chosen. A tapped kind shows as chosen
+ * at once while the page filters in a transition behind it, so the chip never
+ * waits on the page re-rendering.
  */
 export function TransactionKindChips({
   filter,
@@ -27,6 +30,17 @@ export function TransactionKindChips({
   onOpenFilters: () => void
   className?: string
 }) {
+  // The chip shown as chosen: set at once on a tap, re-rendering only this
+  // row; it follows the page's filter when that changes from elsewhere (the
+  // sheet, "Bỏ lọc").
+  const [shownFilter, setShownFilter] = React.useState(filter)
+  const [pageFilter, setPageFilter] = React.useState(filter)
+  if (pageFilter !== filter) {
+    setPageFilter(filter)
+    setShownFilter(filter)
+  }
+  const [, startTransition] = React.useTransition()
+
   return (
     <ChipRow className={className}>
       <ChipButton
@@ -42,9 +56,11 @@ export function TransactionKindChips({
       <ToggleGroup
         type="single"
         size="sm"
-        value={filter}
+        value={shownFilter}
         onValueChange={(value) => {
-          if (value) onFilterChange(value as TransactionFilter)
+          if (!value) return
+          setShownFilter(value as TransactionFilter)
+          startTransition(() => onFilterChange(value as TransactionFilter))
         }}
         aria-label="Loại giao dịch"
         className="shrink-0"

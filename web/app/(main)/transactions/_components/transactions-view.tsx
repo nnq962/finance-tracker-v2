@@ -1,3 +1,5 @@
+import * as React from "react"
+
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 
@@ -14,7 +16,11 @@ type TransactionsViewProps = {
   search?: TransactionSearchResults
 }
 
-export function TransactionsView({
+/**
+ * The list, memoised: it renders again only when what it shows changes, not
+ * on every tap elsewhere on the page (a chip, the search field).
+ */
+export const TransactionsView = React.memo(function TransactionsView({
   accounts,
   categoryGroups,
   todayDateKey,
@@ -36,4 +42,4 @@ export function TransactionsView({
       />
     </section>
   )
-}
+})

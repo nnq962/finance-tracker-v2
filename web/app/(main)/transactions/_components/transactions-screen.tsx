@@ -143,10 +143,15 @@ export function TransactionsScreen({
     () => getTransactionPeriod(transactions, "month", `${selectedMonth}-01`, todayDateKey, todayDateKey).transactions,
     [selectedMonth, todayDateKey, transactions],
   )
+  // The list follows the filters a moment behind them: a tap on a chip
+  // paints the chip at once, then the list (dozens of rows) renders in the
+  // background, so the chip never waits on it mid-change.
+  const listFilter = React.useDeferredValue(filter)
+  const listSearchFilters = React.useDeferredValue(searchFilters)
   const visibleTransactions = React.useMemo(
     () =>
-      filterTransactions(allMonths ? (everyTransaction ?? []) : monthTransactions, filter, searchFilters),
-    [allMonths, everyTransaction, filter, monthTransactions, searchFilters],
+      filterTransactions(allMonths ? (everyTransaction ?? []) : monthTransactions, listFilter, listSearchFilters),
+    [allMonths, everyTransaction, listFilter, monthTransactions, listSearchFilters],
   )
   // Every filter but the kind, for the tiles: the kind is what they switch.
   const summaryTransactions = React.useMemo(
@@ -169,15 +174,19 @@ export function TransactionsScreen({
     setFilter("all")
     setSearchFilters({ ...initialSearchFilters, query: searchFilters.query })
   }
-  // From an empty result: the search goes too.
-  const clearFilters = () => {
+  // From an empty result: the search goes too. Setters only, so the list,
+  // which is memoised, can keep it.
+  const clearFilters = React.useCallback(() => {
     setFilter("all")
     setSearchFilters(initialSearchFilters)
-  }
+  }, [])
   // Clears the sheet's conditions; the kind and search stay.
-  const resetSheetFilters = () =>
-    setSearchFilters({ ...initialSearchFilters, query: searchFilters.query })
-  const isFiltering = countActiveFilters(filter, searchFilters) > 0 || searchFilters.query.trim() !== ""
+  const resetSheetFilters = React.useCallback(
+    () => setSearchFilters((current) => ({ ...initialSearchFilters, query: current.query })),
+    [],
+  )
+  const isFiltering =
+    countActiveFilters(listFilter, listSearchFilters) > 0 || listSearchFilters.query.trim() !== ""
   const sheetFilterCount = countSheetFilters(filter, searchFilters)
 
   const openSearch = () => {
@@ -191,25 +200,27 @@ export function TransactionsScreen({
     setAllMonths(false)
     changeQuery("")
   }
-  const shownMonthNumber = Number(selectedMonth.slice(5))
-  const search: TransactionSearchResults | undefined = searchFilters.query.trim()
-    ? {
-        query: searchFilters.query,
-        scopeLabel: allMonths
-          ? "mọi tháng"
-          : `Tháng ${shownMonthNumber}${selectedMonth.slice(0, 4) === thisMonth.slice(0, 4) ? "" : `/${selectedMonth.slice(0, 4)}`}`,
-        onSearchAllMonths: allMonths ? undefined : () => setAllMonths(true),
-        loading: allMonths && !everyTransaction && isLoadingAll,
-        filterLabels: [
-          ...(filter === "all" ? [] : transactionKindOptions.filter((item) => item.value === filter).map((item) => item.label)),
-          ...getSheetFilterChips(accounts, categoryGroups, searchFilters).map((chip) => chip.label),
-        ],
-        onClearFilters: () => {
-          setFilter("all")
-          resetSheetFilters()
-        },
-      }
-    : undefined
+  const loadingAll = allMonths && !everyTransaction && isLoadingAll
+  const search = React.useMemo<TransactionSearchResults | undefined>(() => {
+    if (!listSearchFilters.query.trim()) return undefined
+    const year = selectedMonth.slice(0, 4)
+    return {
+      query: listSearchFilters.query,
+      scopeLabel: allMonths
+        ? "mọi tháng"
+        : `Tháng ${Number(selectedMonth.slice(5))}${year === thisMonth.slice(0, 4) ? "" : `/${year}`}`,
+      onSearchAllMonths: allMonths ? undefined : () => setAllMonths(true),
+      loading: loadingAll,
+      filterLabels: [
+        ...transactionKindOptions.filter((item) => item.value !== "all" && item.value === listFilter).map((item) => item.label),
+        ...getSheetFilterChips(accounts, categoryGroups, listSearchFilters).map((chip) => chip.label),
+      ],
+      onClearFilters: () => {
+        setFilter("all")
+        resetSheetFilters()
+      },
+    }
+  }, [accounts, allMonths, categoryGroups, listFilter, listSearchFilters, loadingAll, resetSheetFilters, selectedMonth, thisMonth])
 
   const changeMonth = (month: string) => {
     setRequestedMonth(month)
