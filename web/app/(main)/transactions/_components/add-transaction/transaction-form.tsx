@@ -57,7 +57,7 @@ type TransactionFormProps = {
   action: (formData: FormData) => Promise<TransactionActionResult>
   categoryGroups: CategoryGroup[]
   defaultValues?: Transaction
-  /** A new transaction filled in ahead: amount, time and note. */
+  /** A new transaction filled in ahead: amount, time and note, and from `copyOf` its accounts, category and fee. */
   draft?: TransactionDraft
   isCreating?: boolean
   kind: SupportedTransactionKind
@@ -187,7 +187,12 @@ export function TransactionForm({
               const fieldProps = {
                 accounts,
                 categoryGroups,
-                defaultValues: defaultValues?.kind === formKind ? defaultValues : undefined,
+                defaultValues:
+                  defaultValues?.kind === formKind
+                    ? defaultValues
+                    : draft?.copyOf?.kind === formKind
+                      ? draft.copyOf
+                      : undefined,
                 errors: formKind === kind ? errors : {},
                 onFieldChange: clearError,
                 onManageCategories,

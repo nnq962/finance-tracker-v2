@@ -8,16 +8,18 @@ const iconTileVariants = cva(
   "inline-flex shrink-0 items-center justify-center [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
-      // sm: a list row's icon (36, as in the mockup's settings list); md: a
+      // xs: beside a value at the end of a row (20, as AccountLogo xs); sm: a
+      // list row's icon (36, as in the mockup's settings list); md: a
       // transaction or category row; lg: a card's or a sheet's lead.
       size: {
+        xs: "size-5 [&_svg]:size-3",
         sm: "size-9 [&_svg]:size-[18px]",
         md: "size-10 [&_svg]:size-5",
         lg: "size-12 [&_svg]:size-6",
       },
       // rounded: the mockup's tile, a soft square; circle is kept for faces and initials.
       shape: {
-        rounded: "rounded-[10px] data-[size=lg]:rounded-2xl",
+        rounded: "rounded-[10px] data-[size=lg]:rounded-2xl data-[size=xs]:rounded-[6px]",
         circle: "rounded-full",
       },
     },

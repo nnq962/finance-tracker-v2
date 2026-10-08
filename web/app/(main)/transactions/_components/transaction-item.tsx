@@ -11,6 +11,8 @@ import { formatTime } from "@/lib/format-date"
 import { findMatch } from "../_lib/find-match"
 import { getTransactionVisual } from "../_lib/transaction-presentation"
 import type { Transaction } from "../_types/transaction"
+import { AddTransactionSheet } from "./add-transaction/add-transaction-sheet"
+import type { TransactionDraft } from "./add-transaction/form-types"
 import { EditTransactionSheet } from "./edit-transaction-sheet"
 import { TransactionDetailsSheet } from "./transaction-details-sheet"
 
@@ -46,6 +48,8 @@ export function TransactionItem({
 }: TransactionItemProps) {
   const [detailsOpen, setDetailsOpen] = React.useState(false)
   const [editOpen, setEditOpen] = React.useState(false)
+  const [copyOpen, setCopyOpen] = React.useState(false)
+  const [copyDraft, setCopyDraft] = React.useState<TransactionDraft>()
   const { category, icon, color } = getTransactionVisual(transaction, categoryGroups)
 
   return (
@@ -91,7 +95,22 @@ export function TransactionItem({
       />
 
       <TransactionDetailsSheet
+        accounts={accounts}
         category={category}
+        icon={icon}
+        tone={color}
+        onCopy={() => {
+          setDetailsOpen(false)
+          setCopyDraft({
+            kind: transaction.kind,
+            amount: Math.abs(transaction.amount),
+            note: transaction.note ?? "",
+            occurredAt: new Date().toISOString(),
+            requestId: crypto.randomUUID(),
+            copyOf: transaction,
+          })
+          setCopyOpen(true)
+        }}
         onDeleted={() => setDetailsOpen(false)}
         onEdit={() => {
           setDetailsOpen(false)
@@ -101,6 +120,18 @@ export function TransactionItem({
         open={detailsOpen}
         transaction={transaction}
       />
+
+      {/* Written again: a new transaction filled in from this one, dated now. One per copy, so each opens fresh. */}
+      {copyDraft ? (
+        <AddTransactionSheet
+          key={copyDraft.requestId}
+          accounts={accounts}
+          categoryGroups={categoryGroups}
+          draft={copyDraft}
+          open={copyOpen}
+          onOpenChange={setCopyOpen}
+        />
+      ) : null}
 
       <EditTransactionSheet
         accounts={accounts}

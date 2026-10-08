@@ -25,13 +25,15 @@ export type TransactionFieldProps = {
   onManageCategories?: () => void
 }
 
-/** A new transaction filled in ahead, e.g. a Pro purchase to write down. */
+/** A new transaction filled in ahead, e.g. a Pro purchase to write down, or one written again. */
 export type TransactionDraft = {
-  kind: "expense" | "income"
+  kind: Transaction["kind"]
   amount: number
   note: string
   /** ISO time the money moved. */
   occurredAt: string
   /** Fixed per draft, so writing it down twice keeps one transaction. */
   requestId: string
+  /** Written again from this one: its accounts, category and fee are filled in too. */
+  copyOf?: Transaction
 }
