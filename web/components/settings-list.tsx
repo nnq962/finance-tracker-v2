@@ -189,8 +189,9 @@ type SettingsRowProps = {
    */
   collapsed?: boolean
   /**
-   * Not read yet, as in Mail: a blue dot in the margin before the icon and
-   * the title in semibold. Read, the row is like any other.
+   * Not read yet: a blue dot on the icon's corner, as on an app icon, and
+   * the title in semibold (a row without an icon has the dot before its
+   * title). Read, the row is like any other.
    */
   unread?: boolean
 }
@@ -222,19 +223,23 @@ function SettingsRow({
   collapsed,
   unread = false,
 }: SettingsRowProps) {
+  const hasMedia = Boolean(icon || media)
+  // Ringed in the card's colour, so it is cut out of the icon's corner.
+  const unreadDot = (className: string) => (
+    <span aria-hidden="true" className={cn("rounded-full bg-transfer", className)} />
+  )
   const content = (
     <>
-      {unread ? (
-        <span aria-hidden="true" className="absolute top-1/2 left-1 size-2 -translate-y-1/2 rounded-full bg-transfer" />
-      ) : null}
-      {icon || media ? (
+      {hasMedia ? (
         // Centred on the row, also beside a two-line title and description.
-        <ItemMedia className="group-has-data-[slot=item-description]/item:translate-y-0 group-has-data-[slot=item-description]/item:self-center">
+        <ItemMedia className="relative group-has-data-[slot=item-description]/item:translate-y-0 group-has-data-[slot=item-description]/item:self-center">
           {icon ? <IconTile icon={icon} tone={tone} size="sm" /> : media}
+          {unread ? unreadDot("absolute -top-1 -right-1 size-3 ring-2 ring-card") : null}
         </ItemMedia>
       ) : null}
       <ItemContent className={cn("gap-0.5", destructive && "items-center")}>
         <ItemTitle className={cn(destructive && "text-destructive", unread && "font-semibold")}>
+          {unread && !hasMedia ? unreadDot("mr-1.5 inline-block size-2 shrink-0") : null}
           {title}
           {unread ? <span className="sr-only">, chưa đọc</span> : null}
         </ItemTitle>

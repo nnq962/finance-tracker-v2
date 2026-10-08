@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { BellIcon, GiftIcon, HandCoinsIcon, PencilLineIcon, SparklesIcon, type LucideIcon } from "lucide-react"
+import { BellIcon, CheckCheckIcon, GiftIcon, HandCoinsIcon, PencilLineIcon, SparklesIcon, type LucideIcon } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 
 import type { IconTileTone } from "@/components/app/icon-tile"
@@ -85,8 +85,8 @@ function sampleNotices(): Notice[] {
 
 /**
  * The bell, with the unread count while there is any, and the page sheet it
- * opens: new notices first, unread ones as in Mail (a blue dot, the title in
- * semibold), each with when it came. A tap marks it read and opens what it is
+ * opens: new notices first, unread ones with a blue dot on their icon and the
+ * title in semibold, each with when it came; ✓✓ in the bar reads them all. A tap marks it read and opens what it is
  * about, closing the sheet: the debts, the add-transaction sheet, the plans. On phones it
  * sits at the top of the overview, a grey round button; on wider screens in
  * the top bar beside the theme switch, bare like it (`variant="ghost"`).
@@ -154,9 +154,9 @@ export function NotificationsButton({ variant = "secondary" }: { variant?: "seco
       }
       action={
         unread > 0 ? (
-          // A pill as tall as ✕ and floating like it, so it is as easy to reach.
-          <Button type="button" variant="secondary" onClick={() => markRead()}>
-            Đọc hết
+          // A round button like ✕, its double tick saying "all read".
+          <Button type="button" variant="secondary" size="icon" aria-label="Đánh dấu tất cả đã đọc" onClick={() => markRead()}>
+            <CheckCheckIcon />
           </Button>
         ) : null
       }
