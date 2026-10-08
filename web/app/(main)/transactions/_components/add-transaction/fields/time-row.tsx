@@ -73,7 +73,7 @@ export function TimeRows({
         onClick={() => setOpen((current) => !current)}
       />
       {/* No divider: the chips and the fields belong to the row above, with
-          8px above and below the chips. */}
+          8px above and below the chips, and 8px under the fields to the line. */}
       <li className="flex flex-col px-4 py-2">
         <ToggleGroup
           type="single"
@@ -91,7 +91,7 @@ export function TimeRows({
           ))}
         </ToggleGroup>
         <Collapse open={open}>
-          <div className="grid grid-cols-2 gap-3 py-2">
+          <div className="grid grid-cols-2 gap-3 pt-2">
             <Input
               id="transaction-date"
               aria-label="Ngày"
