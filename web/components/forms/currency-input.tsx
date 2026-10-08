@@ -1,14 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { CoinsIcon, XIcon } from "lucide-react"
+import { XIcon } from "lucide-react"
 
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-  InputGroupText,
 } from "@/components/ui/input-group"
 import { formatCurrency } from "@/lib/format-currency"
 
@@ -38,11 +37,10 @@ function formatInputValue(value: string) {
 }
 
 /**
- * An amount in đồng, grouped as it is typed (1.250.000) on the number pad. A
- * coin at the start says it is money (not in a field under 13rem, where the
- * number needs the room), "đ" follows the number, and once there is a number
- * a ✕ clears it in one tap, keeping the keyboard up. With `onNegativeChange`
- * the start holds the +/− button instead of the coin.
+ * An amount in đồng, grouped as it is typed (1.250.000) on the number pad;
+ * its label says it is money, so the field holds only the number. Once there
+ * is one, a ✕ at the end clears it in one tap, keeping the keyboard up. With
+ * `onNegativeChange` a +/− button at the start flips its sign.
  */
 export function CurrencyInput({
   value: controlledValue,
@@ -67,8 +65,7 @@ export function CurrencyInput({
 
   return (
     <>
-      {/* A container, so the coin gives way to the number in a narrow field (two side by side). */}
-      <InputGroup className="@container/amount">
+      <InputGroup>
         {signed ? (
           <InputGroupAddon align="inline-start">
             <InputGroupButton
@@ -79,16 +76,10 @@ export function CurrencyInput({
               +/−
             </InputGroupButton>
           </InputGroupAddon>
-        ) : (
-          <InputGroupAddon align="inline-start" className="hidden @[13rem]/amount:flex">
-            <CoinsIcon aria-hidden="true" />
-          </InputGroupAddon>
-        )}
+        ) : null}
         <InputGroupInput
           ref={inputRef}
           id={id}
-          // Without the coin (narrow, unsigned), the number keeps the field's own inset.
-          className={signed ? undefined : "@max-[13rem]/amount:pl-[var(--control-px,1rem)]!"}
           type="text"
           inputMode="numeric"
           autoComplete="off"
@@ -109,9 +100,8 @@ export function CurrencyInput({
           required={required}
           aria-invalid={invalid || undefined}
         />
-        <InputGroupAddon align="inline-end">
-          <InputGroupText>đ</InputGroupText>
-          {value ? (
+        {value ? (
+          <InputGroupAddon align="inline-end">
             <InputGroupButton
               size="icon-xs"
               aria-label="Xoá số tiền"
@@ -123,8 +113,8 @@ export function CurrencyInput({
             >
               <XIcon />
             </InputGroupButton>
-          ) : null}
-        </InputGroupAddon>
+          </InputGroupAddon>
+        ) : null}
       </InputGroup>
       <input type="hidden" name={name} value={value && minus + value} />
     </>

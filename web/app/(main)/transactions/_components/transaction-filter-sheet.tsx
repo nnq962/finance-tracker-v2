@@ -225,31 +225,33 @@ export function TransactionFilterSheet({
             {/* The range typed, sliding open under Tuỳ chỉnh. */}
             <Collapse open={custom} className="-mt-6 data-[state=open]:mt-0">
               <FormSection>
-                <FieldGroup className="grid grid-cols-2 gap-3">
-                  <Field data-invalid={amountRangeReversed || undefined}>
-                    <FieldLabel htmlFor="transaction-sheet-min-amount">Từ</FieldLabel>
-                    <CurrencyInput
-                      id="transaction-sheet-min-amount"
-                      name="minAmount"
-                      value={minAmount}
-                      onValueChange={(value) => change({ minAmount: value })}
-                      placeholder="0"
-                      invalid={amountRangeReversed}
-                    />
-                  </Field>
-                  <Field data-invalid={amountRangeReversed || undefined}>
-                    <FieldLabel htmlFor="transaction-sheet-max-amount">Đến</FieldLabel>
-                    <CurrencyInput
-                      id="transaction-sheet-max-amount"
-                      name="maxAmount"
-                      value={maxAmount}
-                      onValueChange={(value) => change({ maxAmount: value })}
-                      placeholder="Không giới hạn"
-                      invalid={amountRangeReversed}
-                    />
-                  </Field>
+                <FieldGroup className="gap-2">
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field data-invalid={amountRangeReversed || undefined}>
+                      <FieldLabel htmlFor="transaction-sheet-min-amount">Từ</FieldLabel>
+                      <CurrencyInput
+                        id="transaction-sheet-min-amount"
+                        name="minAmount"
+                        value={minAmount}
+                        onValueChange={(value) => change({ minAmount: value })}
+                        placeholder="0"
+                        invalid={amountRangeReversed}
+                      />
+                    </Field>
+                    <Field data-invalid={amountRangeReversed || undefined}>
+                      <FieldLabel htmlFor="transaction-sheet-max-amount">Đến</FieldLabel>
+                      <CurrencyInput
+                        id="transaction-sheet-max-amount"
+                        name="maxAmount"
+                        value={maxAmount}
+                        onValueChange={(value) => change({ maxAmount: value })}
+                        placeholder="Không giới hạn"
+                        invalid={amountRangeReversed}
+                      />
+                    </Field>
+                  </div>
+                  {amountRangeReversed ? <FieldError>Số tiền đến phải lớn hơn số tiền từ.</FieldError> : null}
                 </FieldGroup>
-                {amountRangeReversed ? <FieldError>Số tiền đến phải lớn hơn số tiền từ.</FieldError> : null}
               </FormSection>
             </Collapse>
           </>

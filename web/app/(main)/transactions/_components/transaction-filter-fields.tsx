@@ -193,41 +193,43 @@ export function TransactionFilterFields({
         </ToggleGroup>
         {/* Under the chips, 12px off them open; folded, it takes back the fieldset's gap too. */}
         <Collapse open={custom} className="-mt-3 data-[state=closed]:-mt-6">
-          <div className="grid grid-cols-2 gap-3">
-            <Field data-invalid={amountRangeReversed || undefined}>
-              <FieldLabel htmlFor={`${idPrefix}-min-amount`} className="sr-only">
-                Từ
-              </FieldLabel>
-              <CurrencyInput
-                id={`${idPrefix}-min-amount`}
-                name="minAmount"
-                value={minAmount}
-                onValueChange={(value) =>
-                  onSearchFiltersChange({ ...searchFilters, minAmount: value })
-                }
-                placeholder="Từ"
-                invalid={amountRangeReversed}
-              />
-            </Field>
-            <Field data-invalid={amountRangeReversed || undefined}>
-              <FieldLabel htmlFor={`${idPrefix}-max-amount`} className="sr-only">
-                Đến
-              </FieldLabel>
-              <CurrencyInput
-                id={`${idPrefix}-max-amount`}
-                name="maxAmount"
-                value={maxAmount}
-                onValueChange={(value) =>
-                  onSearchFiltersChange({ ...searchFilters, maxAmount: value })
-                }
-                placeholder="Đến"
-                invalid={amountRangeReversed}
-              />
-            </Field>
+          <div className="flex flex-col gap-2">
+            <div className="grid grid-cols-2 gap-3">
+              <Field data-invalid={amountRangeReversed || undefined}>
+                <FieldLabel htmlFor={`${idPrefix}-min-amount`} className="sr-only">
+                  Từ
+                </FieldLabel>
+                <CurrencyInput
+                  id={`${idPrefix}-min-amount`}
+                  name="minAmount"
+                  value={minAmount}
+                  onValueChange={(value) =>
+                    onSearchFiltersChange({ ...searchFilters, minAmount: value })
+                  }
+                  placeholder="Từ"
+                  invalid={amountRangeReversed}
+                />
+              </Field>
+              <Field data-invalid={amountRangeReversed || undefined}>
+                <FieldLabel htmlFor={`${idPrefix}-max-amount`} className="sr-only">
+                  Đến
+                </FieldLabel>
+                <CurrencyInput
+                  id={`${idPrefix}-max-amount`}
+                  name="maxAmount"
+                  value={maxAmount}
+                  onValueChange={(value) =>
+                    onSearchFiltersChange({ ...searchFilters, maxAmount: value })
+                  }
+                  placeholder="Đến"
+                  invalid={amountRangeReversed}
+                />
+              </Field>
+            </div>
+            {amountRangeReversed ? (
+              <FieldError>Số tiền đến phải lớn hơn số tiền từ.</FieldError>
+            ) : null}
           </div>
-          {amountRangeReversed ? (
-            <FieldError>Số tiền đến phải lớn hơn số tiền từ.</FieldError>
-          ) : null}
         </Collapse>
       </FieldSet>
 
