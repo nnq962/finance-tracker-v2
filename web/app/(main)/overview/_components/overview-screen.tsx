@@ -29,7 +29,7 @@ function TrendSection({ cashFlow }: { cashFlow: OverviewSummary["cashFlow"] }) {
               Thu
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-expense" />
+              <span className="size-2 rounded-full bg-chart-neutral" />
               Chi
             </span>
           </span>

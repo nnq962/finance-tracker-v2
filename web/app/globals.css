@@ -34,6 +34,7 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+  --color-chart-neutral: var(--chart-neutral);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -106,6 +107,11 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --chart-3: oklch(0.769 0.165 70.1);
   --chart-4: oklch(0.623 0.188 259.8);
   --chart-5: oklch(0.656 0.212 354.3);
+  /*
+   * Ordinary spending in charts: the calendar's grey (muted-foreground), so
+   * red stays for warnings; dark enough for 3:1 against the card.
+   */
+  --chart-neutral: oklch(0.617 0 0);
   --radius: 0.625rem;
   --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.205 0 0);
@@ -164,6 +170,7 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --chart-3: oklch(0.837 0.164 84.4);
   --chart-4: oklch(0.714 0.143 254.6);
   --chart-5: oklch(0.725 0.175 349.8);
+  --chart-neutral: oklch(0.66 0 0);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(1 0 0);
   --sidebar-primary: oklch(1 0 0);

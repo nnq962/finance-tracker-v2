@@ -58,13 +58,18 @@ function ChartContainer({
   const uniqueId = React.useId()
   const chartId = `chart-${id ?? uniqueId.replace(/:/g, "")}`
 
+  // Recharts 3 draws bars and tooltips into <g class="recharts-zIndex-layer_N"
+  // tabIndex={-1}> layers, which a tap focuses, so their outline is hidden
+  // along with the other layers'. Its tick labels are no longer inside
+  // .recharts-cartesian-axis-tick, so they are found by their own class; one a
+  // chart marks data-active (a selected category) is drawn in the foreground.
   return (
     <ChartContext.Provider value={{ config }}>
       <div
         data-slot="chart"
         data-chart={chartId}
         className={cn(
-          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden",
+          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick-value]:fill-muted-foreground [&_.recharts-cartesian-axis-tick-value[data-active]]:fill-foreground [&_.recharts-cartesian-axis-tick-value[data-active]]:font-medium [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_[class*=recharts-zIndex-layer]]:outline-hidden [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden",
           className
         )}
         {...props}

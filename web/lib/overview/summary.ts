@@ -5,12 +5,17 @@ import type { Transaction } from "@/lib/transactions/types"
 
 import { toDateKey as dateKey } from "@/lib/format-date"
 
+/**
+ * The last six months, oldest first. The short label is "Th10", not "T10":
+ * the calendar on the same page already uses T2…T7 for weekdays.
+ */
 function monthKeys(today: string) {
   const [year, month] = today.split("-").map(Number)
   return Array.from({ length: 6 }, (_, index) => {
     const date = new Date(Date.UTC(year, month - 6 + index, 1))
-    const key = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`
-    return { key, label: `T${date.getUTCMonth() + 1}` }
+    const number = date.getUTCMonth() + 1
+    const key = `${date.getUTCFullYear()}-${String(number).padStart(2, "0")}`
+    return { key, label: `Th${number}`, name: `Tháng ${number}` }
   })
 }
 
