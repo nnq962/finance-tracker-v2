@@ -1,13 +1,27 @@
+import { FloatingActionsSkeleton } from "@/components/app/floating-actions"
 import { FlowTilesSkeleton } from "@/components/app/flow-tiles"
-import { Card, CardContent } from "@/components/ui/card"
 import { Page, PageHeaderSkeleton } from "@/components/page"
+import { SettingsGroupSkeleton } from "@/components/settings-list"
+import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { settingsSeparatorClassName } from "@/components/settings-list"
 import { cn } from "@/lib/utils"
 
 import { TransactionsLayout } from "./_components/transactions-layout"
 
-/** Same footprint as the desktop filter panel: a caption, then rows of chips. */
+/**
+ * The desktop filter panel's fields, in order: the kind's five chips, the
+ * amount range's two fields, then the accounts' and the categories' chips,
+ * as wide as their usual names.
+ */
+const filterFieldChips = [
+  ["w-16", "w-20", "w-20", "w-28", "w-16"],
+  null,
+  ["w-28", "w-20", "w-24"],
+  ["w-20", "w-20", "w-16", "w-20"],
+  ["w-16", "w-24", "w-16", "w-20"],
+]
+
+/** Same footprint as the desktop filter panel: its caption, then each field's label over its chips or fields. */
 function FilterPanelSkeleton() {
   return (
     <div className="space-y-2">
@@ -16,46 +30,26 @@ function FilterPanelSkeleton() {
       </div>
       <Card>
         <CardContent className="space-y-6">
-          {[3, 2, 4].map((chips, index) => (
+          {filterFieldChips.map((chips, index) => (
             <div key={index} className="space-y-3">
-              <Skeleton className="h-4 w-24" />
-              <div className="flex flex-wrap gap-2">
-                {Array.from({ length: chips }, (_, chip) => (
-                  <Skeleton key={chip} className="h-7 w-20" />
-                ))}
+              <div className="flex h-5 items-center">
+                <Skeleton className="h-3.5 w-24" />
               </div>
+              {chips ? (
+                <div className="flex flex-wrap gap-2">
+                  {chips.map((width, chip) => (
+                    <Skeleton key={chip} className={cn("h-9 rounded-full", width)} />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <Skeleton className="h-11 rounded-xl" />
+                  <Skeleton className="h-11 rounded-xl" />
+                </div>
+              )}
             </div>
           ))}
         </CardContent>
-      </Card>
-    </div>
-  )
-}
-
-/** Same footprint as a day's SettingsGroup of transaction rows. */
-function DayGroupSkeleton({ rows }: { rows: number }) {
-  return (
-    <div className="space-y-2">
-      <div className="flex justify-between px-3">
-        <Skeleton className="h-3 w-28" />
-        <Skeleton className="h-3 w-20" />
-      </div>
-      <Card size="sm" className="gap-0 py-0">
-        <div className="px-1">
-          {Array.from({ length: rows }, (_, row) => (
-            <div key={row} className={cn("flex items-center gap-2.5 px-3 py-3.5 not-first:pt-4", settingsSeparatorClassName(true))}>
-              <Skeleton className="size-8 shrink-0" />
-              <div className="min-w-0 flex-1 space-y-1.5">
-                <Skeleton className="h-4 w-32 max-w-full" />
-                <Skeleton className="h-3.5 w-40 max-w-full" />
-              </div>
-              <div className="flex flex-col items-end gap-1.5">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-3.5 w-10" />
-              </div>
-            </div>
-          ))}
-        </div>
       </Card>
     </div>
   )
@@ -69,20 +63,25 @@ export default function TransactionsLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <PageHeaderSkeleton title="Giao dịch" tools={2} action />
+        <PageHeaderSkeleton title="Giao dịch" tools={["pill"]} accessory={1} actions={["w-52", "w-44"]} />
         <TransactionsLayout
           summary={<FlowTilesSkeleton />}
           filters={<FilterPanelSkeleton />}
         >
+          {/* The round search field, and on phones the filter button. */}
           <div className="flex gap-2">
-            <Skeleton className="h-11 flex-1 rounded-xl" />
+            <Skeleton className="h-11 flex-1 rounded-full" />
             <Skeleton className="size-11 rounded-full lg:hidden" />
           </div>
+          {/* Days: the date and the day's totals as the caption, then rows
+              with the category's icon, name and account, amount and time. */}
           <div className="space-y-6 md:space-y-8">
-            <DayGroupSkeleton rows={3} />
-            <DayGroupSkeleton rows={2} />
+            {[3, 2, 2].map((rows, index) => (
+              <SettingsGroupSkeleton key={index} rows={rows} captionAction description trailing="amount" />
+            ))}
           </div>
         </TransactionsLayout>
+        <FloatingActionsSkeleton />
       </div>
 
       <span className="sr-only">Đang tải dữ liệu giao dịch...</span>

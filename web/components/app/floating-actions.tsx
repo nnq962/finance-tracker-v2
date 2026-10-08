@@ -1,5 +1,7 @@
 import type * as React from "react"
+import { PlusIcon } from "lucide-react"
 
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 /**
@@ -24,5 +26,20 @@ export function FloatingActions({ className, children }: { className?: string; c
         {children}
       </div>
     </>
+  )
+}
+
+/**
+ * A page's floating + in its loading state, in place so it does not pop in
+ * when the page arrives; inert until then. Not `disabled`: its dimmed look
+ * would itself change when the page loads.
+ */
+export function FloatingActionsSkeleton() {
+  return (
+    <FloatingActions>
+      <Button type="button" size="fab" tabIndex={-1} aria-hidden="true">
+        <PlusIcon />
+      </Button>
+    </FloatingActions>
   )
 }

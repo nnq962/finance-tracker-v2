@@ -1,26 +1,40 @@
 import type * as React from "react"
 
-import { Card, CardContent } from "@/components/ui/card"
+import { Stat, StatGroup } from "@/components/app/stat-group"
 import { Page, PageHeaderSkeleton } from "@/components/page"
+import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { cn } from "@/lib/utils"
+import { toDateKey } from "@/lib/format-date"
 
 import { OverviewLayout } from "./_components/overview-layout"
 
-/** The label, the total and its three parts, on the dark lead card. */
+/**
+ * Same footprint as NetWorth on the dark lead card: the label's 20px line,
+ * the total's 42.5px one (34px at leading-tight), the month's change, then
+ * the three parts under a line.
+ */
 function NetWorthSkeleton() {
-  const shade = "bg-inverse-foreground/15"
   return (
     <Card size="lg" variant="inverse">
       <CardContent>
-        <Skeleton className={cn("h-4 w-24", shade)} />
-        <Skeleton className={cn("mt-2 h-9 w-56 max-w-full", shade)} />
-        <Skeleton className={cn("mt-2 h-4 w-36", shade)} />
-        <div className="mt-5 grid grid-cols-3 gap-4 border-t border-inverse-foreground/15 pt-5">
-          {Array.from({ length: 3 }, (_, index) => (
-            <Skeleton key={index} className={cn("h-10", shade)} />
-          ))}
+        <div className="flex h-5 items-center">
+          <Skeleton className="h-3.5 w-24" />
         </div>
+        <div className="mt-1.5 flex h-[42.5px] items-center">
+          <Skeleton className="h-8 w-56 max-w-full" />
+        </div>
+        <div className="mt-0.5 flex h-5 items-center">
+          <Skeleton className="h-3.5 w-32" />
+        </div>
+        <StatGroup separated className="mt-5">
+          {[0, 1, 2].map((index) => (
+            <Stat
+              key={index}
+              value={<Skeleton className="h-3.5 w-12" />}
+              label={<Skeleton className="mt-1.5 h-3 w-14 max-w-full" />}
+            />
+          ))}
+        </StatGroup>
       </CardContent>
     </Card>
   )
@@ -39,7 +53,19 @@ function SectionSkeleton({ action, children }: { action?: React.ReactNode; child
   )
 }
 
+const weekdays = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
+
+/**
+ * The calendar opens on this month (in Vietnam time), so its weeks are known
+ * before the data: the same leading blanks and days as CashFlowCalendar, so
+ * a month of four or six weeks does not move what is below when it arrives.
+ */
 function CalendarSkeleton() {
+  const [year, month] = toDateKey(new Date()).split("-").map(Number)
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate()
+  // Monday-first: getUTCDay() is 0 for Sunday.
+  const leadingBlanks = (new Date(Date.UTC(year, month - 1, 1)).getUTCDay() + 6) % 7
+
   return (
     <SectionSkeleton
       action={
@@ -51,8 +77,17 @@ function CalendarSkeleton() {
     >
       <Card size="lg">
         <CardContent className="@container">
-          <div className="grid grid-cols-7 gap-1">
-            {Array.from({ length: 35 }, (_, index) => (
+          {/* The weekdays are known, so they show as in CashFlowCalendar. */}
+          <div className="grid grid-cols-7 gap-1 text-center">
+            {weekdays.map((weekday) => (
+              <span key={weekday} className="pb-1 text-[11px] text-muted-foreground">
+                {weekday}
+              </span>
+            ))}
+            {Array.from({ length: leadingBlanks }, (_, index) => (
+              <span key={`blank-${index}`} aria-hidden="true" />
+            ))}
+            {Array.from({ length: daysInMonth }, (_, index) => (
               <div key={index} className="flex min-h-14 flex-col items-center gap-1 pt-1 @lg:min-h-20 @lg:pt-2">
                 <Skeleton className="size-7 rounded-full" />
                 <Skeleton className="h-2.5 w-8" />
@@ -65,11 +100,11 @@ function CalendarSkeleton() {
   )
 }
 
-/** The switch, then the ring with its list beside it. */
+/** The switch (TabsList, 52 high), then the ring with its list beside it. */
 function CategoriesSkeleton() {
   return (
     <SectionSkeleton>
-      <Skeleton className="h-11 rounded-full" />
+      <Skeleton className="h-[52px] rounded-full" />
       <Card size="lg">
         <CardContent className="flex items-center gap-6">
           <Skeleton className="size-32 shrink-0 rounded-full" />
@@ -84,11 +119,20 @@ function CategoriesSkeleton() {
   )
 }
 
+/** The chosen month's readout (its name, then its two figures, on 20px lines) over the chart. */
 function TrendSkeleton() {
   return (
     <SectionSkeleton>
       <Card size="lg">
-        <CardContent>
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex flex-col gap-0.5">
+            <div className="flex h-5 items-center">
+              <Skeleton className="h-3.5 w-20" />
+            </div>
+            <div className="flex h-5 items-center">
+              <Skeleton className="h-3.5 w-48 max-w-full" />
+            </div>
+          </div>
           <Skeleton className="h-44 w-full sm:h-56" />
         </CardContent>
       </Card>
@@ -104,7 +148,7 @@ export default function OverviewLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <PageHeaderSkeleton lead tools={1} />
+        <PageHeaderSkeleton lead tools={["round"]} />
         <OverviewLayout
           netWorth={<NetWorthSkeleton />}
           calendar={<CalendarSkeleton />}

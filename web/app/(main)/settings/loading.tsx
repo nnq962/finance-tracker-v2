@@ -1,32 +1,23 @@
-import { Card } from "@/components/ui/card"
 import { Page, PageHeaderSkeleton } from "@/components/page"
+import { SettingsGroupSkeleton, settingsSeparatorClassName } from "@/components/settings-list"
 import { Skeleton } from "@/components/ui/skeleton"
+import { cn } from "@/lib/utils"
 
-/** Same footprint as a SettingsGroup caption. */
-function CaptionSkeleton() {
+/**
+ * Same footprint as AiQuotaGroup's UsageMeter: the allowance and what is left
+ * of it on a 24px line, the bar, and the note on a 16px one.
+ */
+function UsageMeterSkeleton() {
   return (
-    <div className="flex min-h-6 items-center px-3">
-      <Skeleton className="h-3 w-20" />
-    </div>
-  )
-}
-
-/** Same footprint as SettingsGroup with `rows` SettingsRow items. */
-function GroupSkeleton({ rows }: { rows: number }) {
-  return (
-    <div className="space-y-2">
-      <CaptionSkeleton />
-      <Card size="sm" className="gap-0 py-0">
-        <div className="px-1">
-          {Array.from({ length: rows }, (_, row) => (
-            <div key={row} className="flex items-center gap-3.5 px-4 py-3.5">
-              <Skeleton className="size-8 shrink-0" />
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="ml-auto h-4 w-14" />
-            </div>
-          ))}
-        </div>
-      </Card>
+    <div className={cn("space-y-3 px-4 py-3", settingsSeparatorClassName())}>
+      <div className="flex h-6 items-center justify-between gap-3">
+        <Skeleton className="h-3.5 w-28" />
+        <Skeleton className="h-3.5 w-14" />
+      </div>
+      <Skeleton className="h-2 rounded-full" />
+      <div className="flex h-4 items-center">
+        <Skeleton className="h-3 w-40 max-w-full" />
+      </div>
     </div>
   )
 }
@@ -40,16 +31,27 @@ export default function SettingsLoading() {
     >
       <PageHeaderSkeleton title="Cài đặt" />
 
-      <div
-        aria-hidden="true"
-        className="grid items-start gap-6 md:grid-cols-2 md:gap-8"
-      >
-        <GroupSkeleton rows={2} />
-        <GroupSkeleton rows={2} />
-        <GroupSkeleton rows={2} />
-        <GroupSkeleton rows={1} />
-        <GroupSkeleton rows={1} />
-        <GroupSkeleton rows={1} />
+      {/* The groups of SettingsView, in its one capped column. */}
+      <div aria-hidden="true" className="grid gap-6 md:max-w-2xl md:gap-8">
+        {/* The profile: the 48 avatar, name and email, the plan and the chevron. */}
+        <SettingsGroupSkeleton caption={false} rows={1} media="avatar-lg" description trailing="value" chevron />
+        {/* "Lượt AI": this month's requests, then the credits from missions. */}
+        <SettingsGroupSkeleton>
+          <UsageMeterSkeleton />
+          <UsageMeterSkeleton />
+        </SettingsGroupSkeleton>
+        {/* "Chung" and "Thông báo": a value and a chevron on each row. */}
+        <SettingsGroupSkeleton rows={2} trailing="value" chevron />
+        <SettingsGroupSkeleton rows={2} trailing="value" chevron />
+        {/* "Ứng dụng": screens to open. */}
+        <SettingsGroupSkeleton rows={2} chevron />
+        {/* Signing out, centred, with the version under it. */}
+        <div className="space-y-2">
+          <SettingsGroupSkeleton caption={false} rows={1} align="center" />
+          <div className="flex h-4 items-center justify-center px-4">
+            <Skeleton className="h-3 w-44" />
+          </div>
+        </div>
       </div>
 
       <span className="sr-only">Đang tải dữ liệu cài đặt...</span>

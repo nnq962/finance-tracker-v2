@@ -75,16 +75,19 @@ const pageTitleClassName = "min-w-0 truncate text-2xl leading-8 font-semibold tr
 function PageHeaderSkeleton({
   title,
   lead = false,
-  tools = 0,
-  action = false,
+  tools = [],
+  accessory = 0,
+  actions = [],
 }: {
   title?: string
   /** The home's avatar and greeting in the title's place. */
   lead?: boolean
-  /** How many round tools sit on the right on phones. */
-  tools?: number
-  /** The page has labelled actions from md up. */
-  action?: boolean
+  /** The tools shown on every size, in order: a round button or a pill (the month). */
+  tools?: Array<"round" | "pill">
+  /** How many round buttons stand in for the actions below md. */
+  accessory?: number
+  /** The labelled actions from md up, as each one's width class in order, e.g. ["w-52", "w-44"]. */
+  actions?: string[]
 }) {
   return (
     <div aria-hidden="true" className={pageHeaderClassName}>
@@ -99,12 +102,17 @@ function PageHeaderSkeleton({
       ) : (
         <p className={pageTitleClassName}>{title}</p>
       )}
-      {tools > 0 || action ? (
-        <div className="flex shrink-0 gap-2">
-          {Array.from({ length: tools }, (_, index) => (
-            <Skeleton key={index} className={cn("size-11 rounded-full", action && "md:hidden")} />
+      {tools.length > 0 || accessory > 0 || actions.length > 0 ? (
+        <div className="flex shrink-0 items-center gap-2">
+          {tools.map((tool, index) => (
+            <Skeleton key={`tool-${index}`} className={cn("h-11 rounded-full", tool === "pill" ? "w-32" : "w-11")} />
           ))}
-          {action ? <Skeleton className="hidden h-11 w-36 rounded-full md:block" /> : null}
+          {Array.from({ length: accessory }, (_, index) => (
+            <Skeleton key={`accessory-${index}`} className={cn("size-11 rounded-full", actions.length > 0 && "md:hidden")} />
+          ))}
+          {actions.map((width, index) => (
+            <Skeleton key={`action-${index}`} className={cn("hidden h-11 rounded-full md:block", width)} />
+          ))}
         </div>
       ) : null}
     </div>
