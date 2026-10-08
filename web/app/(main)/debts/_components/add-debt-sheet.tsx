@@ -447,22 +447,38 @@ function DebtForm({
 
           <div className="flex flex-col gap-2">
             <SettingsGroup>
-              {isOpening ? null : (
-                <SettingsRow
-                  id="debt-account"
-                  title={lent ? "Tiền ra từ" : "Tiền vào"}
-                  value={
-                    <span className={cn("flex min-w-0 items-center gap-2", errors.accountId && "text-destructive")}>
-                      {account ? <AccountLogo account={account} size="xs" /> : null}
-                      <span className="min-w-0 truncate">
-                        {account?.name ?? (activeAccounts.length === 0 ? "Chưa có tài khoản" : "Chọn tài khoản")}
-                      </span>
+              {/* First: owed from before, it needs no account, which folds away under it. */}
+              <SettingsRow
+                title="Nợ có sẵn"
+                description={debt ? "Không đổi được sau khi đã ghi" : "Vay từ trước, không đổi số dư"}
+                action={
+                  <Switch
+                    aria-label="Nợ có sẵn"
+                    checked={isOpening}
+                    // How it was recorded moved (or did not move) an account's balance; it stays.
+                    disabled={pending || Boolean(debt)}
+                    onCheckedChange={(checked) => {
+                      setIsOpening(checked)
+                      clear("accountId")
+                    }}
+                  />
+                }
+              />
+              <SettingsRow
+                collapsed={isOpening}
+                id="debt-account"
+                title={lent ? "Tiền ra từ" : "Tiền vào"}
+                value={
+                  <span className={cn("flex min-w-0 items-center gap-2", errors.accountId && "text-destructive")}>
+                    {account ? <AccountLogo account={account} size="xs" /> : null}
+                    <span className="min-w-0 truncate">
+                      {account?.name ?? (activeAccounts.length === 0 ? "Chưa có tài khoản" : "Chọn tài khoản")}
                     </span>
-                  }
-                  disabled={activeAccounts.length === 0}
-                  onClick={() => setScreen("account")}
-                />
-              )}
+                  </span>
+                }
+                disabled={activeAccounts.length === 0}
+                onClick={() => setScreen("account")}
+              />
               <TimeRows
                 idPrefix="debt-recorded-at"
                 title={isOpening ? "Bắt đầu theo dõi" : lent ? "Ngày cho vay" : "Ngày vay"}
@@ -511,22 +527,6 @@ function DebtForm({
 
           <div className="flex flex-col gap-2">
             <SettingsGroup>
-              <SettingsRow
-                title="Nợ có sẵn"
-                description={debt ? "Không đổi được sau khi đã ghi" : "Vay từ trước, không đổi số dư"}
-                action={
-                  <Switch
-                    aria-label="Nợ có sẵn"
-                    checked={isOpening}
-                    // How it was recorded moved (or did not move) an account's balance; it stays.
-                    disabled={pending || Boolean(debt)}
-                    onCheckedChange={(checked) => {
-                      setIsOpening(checked)
-                      clear("accountId")
-                    }}
-                  />
-                }
-              />
               <SettingsRow
                 title="Tính lãi"
                 description={isOpening && hasInterest ? "Tính từ ngày bắt đầu theo dõi" : undefined}

@@ -277,10 +277,11 @@ Trước khi báo xong một màn mới, kiểm tra:
 - **Thêm / sửa khoản nợ** (`AddDebtSheet`), cùng bố cục với form giao dịch: "Cho vay | Đi vay", số tiền
   lớn ("Số tiền cho vay", "Số tiền đi vay", hoặc "Tiền gốc còn nợ" với nợ có sẵn) kèm gợi ý; "CHO AI VAY" /
   "VAY CỦA AI" là `PickGrid` một hàng (3 người ghi gần nhất, avatar tròn, ô "Tất cả" mở màn "Chọn người"
-  có tìm kiếm và "Thêm người mới"; chưa có ai thì ô cuối là "Thêm người"). Nhóm dòng: "Tiền ra từ" /
-  "Tiền vào" (logo, màn sâu chọn tài khoản), ngày vay (`TimeRows` chỉ ngày, chip Hôm nay · Hôm qua · Hôm
-  kia), Hẹn trả ("Không hẹn"; mở ra chip 1 · 3 · 6 tháng tính từ ngày vay, ô ngày, "Bỏ hẹn"), ghi chú.
-  Nhóm công tắc: Nợ có sẵn (ẩn dòng tài khoản, ngày thành "Bắt đầu theo dõi"; khoá khi sửa), Tính lãi
+  có tìm kiếm và "Thêm người mới"; chưa có ai thì ô cuối là "Thêm người"). Nhóm dòng, theo thứ tự cần
+  quyết định: Nợ có sẵn (công tắc, đứng đầu vì nó quyết định có cần tài khoản không; bật thì dòng tài
+  khoản gập lại, ngày thành "Bắt đầu theo dõi"; khoá khi sửa), "Tiền ra từ" / "Tiền vào" (logo, màn sâu
+  chọn tài khoản), ngày vay (`TimeRows` chỉ ngày, chip Hôm nay · Hôm qua · Hôm kia), Hẹn trả ("Không
+  hẹn"; mở ra chip 1 · 3 · 6 tháng tính từ ngày vay, ô ngày, "Bỏ hẹn"), ghi chú. Nhóm cuối: Tính lãi
   (dòng lãi suất "%" với "/tháng | /năm", dòng "Đến hạn …" tính sẵn gốc + lãi, hoặc lãi mỗi kỳ). Khi
   sửa, loại khoá lại nếu đã có lần thu hoặc trả.
 - **Ghi nhận thu / trả nợ** (`RecordDebtPaymentSheet`, cả khi sửa một lần): tiêu đề "Thu nợ" / "Trả nợ" /
