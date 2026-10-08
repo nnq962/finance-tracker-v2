@@ -78,6 +78,10 @@ function TabsList({
     const element = list.current
     if (!element) return
     const measure = () => {
+      // Hidden (display: none, e.g. under a deeper screen of a sheet), the
+      // list measures nothing: keep the last box, or the indicator would
+      // spring from nothing back to its size when the list shows again.
+      if (element.offsetWidth === 0) return
       const chosen = element.querySelector<HTMLElement>('[data-slot="tabs-trigger"][data-state="active"]')
       setBox(chosen ? { x: chosen.offsetLeft, width: chosen.offsetWidth } : null)
     }
