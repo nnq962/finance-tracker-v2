@@ -43,7 +43,8 @@ export function MonthPickerSheet({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent aria-describedby={undefined}>
+      {/* Grey as every sheet; its month tiles turn white on it. */}
+      <DrawerContent surface="grouped" aria-describedby={undefined}>
         <div className="px-4 pt-3 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
           <DrawerTitle className="text-center text-base">Chọn tháng</DrawerTitle>
 
