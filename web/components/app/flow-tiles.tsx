@@ -19,10 +19,20 @@ export type FlowTile<T extends string> = {
 }
 
 /**
+ * The card both halves sit in, split by a hairline inset from the top and
+ * bottom as in the Figma summary card, so the halves read as one card rather
+ * than two cells of a table. The line belongs to the card, so a shaded or
+ * dimmed half leaves it alone.
+ */
+const splitCardClassName =
+  "relative grid grid-cols-2 gap-0 p-0 before:pointer-events-none before:absolute before:inset-y-4 before:left-1/2 before:w-px before:bg-border"
+
+/**
  * Money one way and the other, as the two halves of one card split by a thin
  * line, as in banking apps. Each half also switches the list below: a tap
  * shows only that side, its half shaded and the other dimmed; a second tap
- * shows all again (`null`). Only money coming in is coloured.
+ * shows all again (`null`). Only money coming in is coloured. Each half is a
+ * container its amount fits to, so a long one never breaks across lines.
  */
 export function FlowTiles<T extends string>({
   tiles,
@@ -36,7 +46,7 @@ export function FlowTiles<T extends string>({
   className?: string
 }) {
   return (
-    <Card className={cn("grid grid-cols-2 gap-0 divide-x p-0", className)}>
+    <Card className={cn(splitCardClassName, className)}>
       {tiles.map((tile) => {
         const selected = value === tile.value
         return (
@@ -46,7 +56,7 @@ export function FlowTiles<T extends string>({
             aria-pressed={selected}
             onClick={() => onValueChange(selected ? null : tile.value)}
             className={cn(
-              "flex min-w-0 flex-col gap-3 p-4 text-left transition-[background-color,opacity] duration-200 outline-none focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:ring-inset active:bg-muted motion-reduce:transition-none",
+              "@container flex min-w-0 flex-col gap-3 p-4 text-left transition-[background-color,opacity] duration-200 outline-none focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:ring-inset active:bg-muted motion-reduce:transition-none",
               selected && "bg-muted",
               value !== null && !selected && "opacity-45",
             )}
@@ -62,6 +72,7 @@ export function FlowTiles<T extends string>({
                 amount={tile.tone === "expense" ? -Math.abs(tile.amount) : tile.amount}
                 sign={tile.amount === 0 ? "never" : "always"}
                 size="lg"
+                fit
                 tone={tile.tone === "income" && tile.amount !== 0 ? "income" : "default"}
               />
               <CardLabel as="span" className="text-xs">
@@ -78,16 +89,21 @@ export function FlowTiles<T extends string>({
 /** Same footprint as FlowTiles, for loading states. */
 export function FlowTilesSkeleton() {
   return (
-    <Card aria-hidden="true" className="grid grid-cols-2 gap-0 divide-x p-0">
+    <Card aria-hidden="true" className={splitCardClassName}>
       {[0, 1].map((index) => (
         <div key={index} className="flex flex-col gap-3 p-4">
           <div className="flex items-center gap-2">
             <Skeleton className="size-9 rounded-[10px]" />
             <Skeleton className="h-4 w-16" />
           </div>
-          <div className="space-y-1.5">
-            <Skeleton className="h-6 w-28 max-w-full" />
-            <Skeleton className="h-3 w-16" />
+          {/* On the amount's 28px line and the caption's 16px one, 2px apart, as in FlowTiles. */}
+          <div className="flex flex-col gap-0.5">
+            <div className="flex h-7 items-center">
+              <Skeleton className="h-6 w-28 max-w-full" />
+            </div>
+            <div className="flex h-4 items-center">
+              <Skeleton className="h-3 w-16" />
+            </div>
           </div>
         </div>
       ))}
