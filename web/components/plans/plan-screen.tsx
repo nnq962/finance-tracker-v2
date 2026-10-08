@@ -38,7 +38,6 @@ import {
   type PlanState,
 } from "@/lib/plans/plans"
 import type { PaymentOutcome } from "@/lib/plans/payos"
-import { scrollIntoViewWithin } from "@/lib/scroll-into-view"
 
 type PlanScreenProps = {
   planState: PlanState
@@ -137,7 +136,6 @@ const faqs = [
  */
 export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanScreenProps) {
   const [period, setPeriod] = React.useState<PlanPeriod>("year")
-  const [openFaq, setOpenFaq] = React.useState("")
   const isPro = planState.plan === "pro"
   const outcome = paymentOutcome ? outcomeMessages[paymentOutcome] : undefined
   // Paid through payOS: the order the user came back with writes the payment down as an expense.
@@ -157,17 +155,6 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanS
       : period === "year"
         ? `Chỉ ${formatCurrency(Math.round(proPrices.year.amount / 12))} mỗi tháng. Không tự động gia hạn`
         : "Kích hoạt ngay sau khi thanh toán. Không tự động gia hạn"
-
-  // From the link under Pro's features: opens the answer and brings it into view, now and again
-  // once it has opened below the question, so it is not left under the bottom edge. Only the
-  // sheet's content scrolls; the sheet stays where it is.
-  const showFaq = (id: string) => {
-    setOpenFaq(id)
-    const item = document.getElementById(`plan-faq-${id}`)
-    if (!item) return
-    scrollIntoViewWithin(item)
-    item.addEventListener("animationend", () => scrollIntoViewWithin(item, { block: "nearest" }), { once: true })
-  }
 
   return (
     <div className="space-y-6">
@@ -231,13 +218,6 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanS
             <CardFooter className="flex-col items-start gap-3 border-t">
               <p className="font-medium text-muted-foreground">Mọi thứ của gói {plans.free.label}, thêm:</p>
               <FeatureList features={proFeatures} />
-              <button
-                type="button"
-                onClick={() => showFaq("quota")}
-                className="relative mt-1 text-muted-foreground underline underline-offset-4 outline-none after:absolute after:-inset-x-2 after:-inset-y-3 focus-visible:text-foreground active:opacity-60"
-              >
-                Lượt AI được tính thế nào?
-              </button>
             </CardFooter>
           </section>
         </Card>
@@ -262,11 +242,11 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanS
         Thanh toán bảo mật qua payOS, mọi ngân hàng
       </p>
 
-      <Accordion type="single" collapsible value={openFaq} onValueChange={setOpenFaq}>
+      <Accordion type="single" collapsible>
         <SettingsGroup title="Câu hỏi thường gặp" listClassName="px-4">
           {faqs.map((faq) => (
             <AccordionItem key={faq.id} value={faq.id} asChild>
-              <li id={`plan-faq-${faq.id}`}>
+              <li>
                 <AccordionTrigger>{faq.question}</AccordionTrigger>
                 <AccordionContent>{faq.answer}</AccordionContent>
               </li>
