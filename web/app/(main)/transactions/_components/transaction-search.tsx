@@ -3,6 +3,7 @@
 import { SearchIcon, XIcon } from "lucide-react"
 import * as React from "react"
 
+import { Collapse } from "@/components/app/collapse"
 import { FormSection } from "@/components/app/form-section"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Button } from "@/components/ui/button"
@@ -32,6 +33,7 @@ export function TransactionSearchBar({
   query,
   onQueryChange,
   onCancel,
+  cancelable = false,
   onFocus,
   autoFocus,
 }: {
@@ -39,6 +41,8 @@ export function TransactionSearchBar({
   query: string
   onQueryChange: (query: string) => void
   onCancel?: () => void
+  /** Shows Huỷ, sliding in beside the field (the search screen is open). */
+  cancelable?: boolean
   /** The field taking focus, which opens the search screen on phones. */
   onFocus?: () => void
   autoFocus?: boolean
@@ -48,7 +52,7 @@ export function TransactionSearchBar({
   return (
     <form
       role="search"
-      className="flex min-w-0 items-center gap-2"
+      className="flex min-w-0 items-center"
       onSubmit={(event) => {
         event.preventDefault()
         if (window.matchMedia("(pointer: coarse)").matches) inputRef.current?.blur()
@@ -83,9 +87,11 @@ export function TransactionSearchBar({
         ) : null}
       </InputGroup>
       {onCancel ? (
-        <Button type="button" variant="ghost" className="shrink-0 px-3" onClick={onCancel}>
-          Huỷ
-        </Button>
+        <Collapse open={cancelable} axis="x" className="shrink-0">
+          <Button type="button" variant="ghost" className="ml-1 px-3" onClick={onCancel}>
+            Huỷ
+          </Button>
+        </Collapse>
       ) : null}
     </form>
   )

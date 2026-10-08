@@ -4,6 +4,7 @@ import * as React from "react"
 import { ArrowUpDownIcon, BanknoteIcon, CheckIcon, CreditCardIcon, EyeIcon, EyeOffIcon, LockIcon, MailIcon, SearchIcon, UserIcon, WalletIcon, XIcon } from "lucide-react"
 
 import { ActionSheet } from "@/components/app/action-sheet"
+import { Collapse } from "@/components/app/collapse"
 import { DateStrip } from "@/components/app/date-strip"
 import { IconTile } from "@/components/app/icon-tile"
 import { InlineSelect } from "@/components/app/inline-select"
@@ -90,6 +91,7 @@ function InputSection() {
   const [password, setPassword] = React.useState("fina2026")
   const [showPassword, setShowPassword] = React.useState(false)
   const [query, setQuery] = React.useState("")
+  const [searching, setSearching] = React.useState(false)
   const [note, setNote] = React.useState("Ăn trưa cùng team")
   const [amount, setAmount] = React.useState<number | null>(250_000)
   const [code, setCode] = React.useState("38")
@@ -139,6 +141,26 @@ function InputSection() {
             </InputGroupAddon>
           ) : null}
         </InputGroup>
+      </Block>
+      <Block label="Màn tìm (Collapse): khối trên thu gọn, Huỷ trượt ra khi chạm ô tìm">
+        <div className="flex flex-col">
+          <Collapse open={!searching}>
+            <div className="mb-3 rounded-2xl bg-card p-4 text-sm text-muted-foreground">Đầu trang và thẻ tổng</div>
+          </Collapse>
+          <div className="flex items-center">
+            <InputGroup className="min-w-0 flex-1">
+              <InputGroupAddon>
+                <SearchIcon />
+              </InputGroupAddon>
+              <InputGroupInput aria-label="Tìm (mẫu)" placeholder="Tìm giao dịch" onFocus={() => setSearching(true)} />
+            </InputGroup>
+            <Collapse open={searching} axis="x" className="shrink-0">
+              <Button type="button" variant="ghost" className="ml-1 px-3" onClick={() => setSearching(false)}>
+                Huỷ
+              </Button>
+            </Collapse>
+          </div>
+        </div>
       </Block>
       <Block label="Lỗi · hợp lệ · mật khẩu" wide>
         <FieldGroup>

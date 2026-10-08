@@ -136,6 +136,7 @@ component ở đó là cả app đổi theo.
 | `InlineSelect` | Dropdown mở tại chỗ, đẩy nội dung bên dưới xuống: chọn trong vài tài khoản, ví. Hiệu ứng chiều cao đơn giản (300ms ease-out); trên iOS kém mượt hơn transform, đã chấp nhận. Danh sách dài vẫn dùng `Select`/`Combobox` |
 | `CardLabel` | Nhãn nhỏ trong thẻ ("Tài sản ròng", "Tiền vào"): chữ thường cỡ Body, màu phụ; trên thẻ `inverse` thì sáng 60%. Mọi thẻ có nhãn dùng nó |
 | `Chip` | Chip tĩnh cho thứ đã chọn hoặc gắn kèm (người, thẻ #): có thể có avatar và nút × |
+| `Collapse` | Thu gọn và mở lại một khối: chiều cao (hoặc rộng, `axis="x"`) trượt về 0 kèm mờ dần trong 300ms, phần bên dưới trôi lên mượt thay vì nhảy; khi đóng vẫn giữ trong cây nhưng `inert`. Dùng cho màn tìm ở Giao dịch (đầu trang và thẻ tổng thu lại, "Huỷ" trượt ra). Tức thì khi giảm chuyển động |
 | `ChipRow` | Hàng chip cuộn ngang, chạy tới mép màn (bù `--main-content-px`), chip đầu vẫn thẳng hàng trang; có chừa 4px trên dưới cho viền focus. Đi kèm `ChipButton` (chip mở một thứ, như sheet lọc; `active` tô đậm khi điều kiện đang bật, ghi "Lọc · 2") và `ChipRowDivider` (vạch đứng giữa nút lọc và các chip loại). Chip chọn là `ToggleGroup` `size="sm"` |
 | `MonthPickerSheet` | Chọn tháng từ sheet đáy: năm với ‹ ›, lưới 12 tháng, tháng chưa tới mờ đi, nút "Về tháng này" |
 | `MonthSelect` | Tháng đang xem dạng nút viên thuốc "Tháng 10, 2026 ▾", chạm mở `MonthPickerSheet`; tới tháng nào cũng hai chạm. Một cách đổi tháng duy nhất cho trang có tháng, không kèm mũi tên ‹ ›. `size="bar"`: cao 44 và gọn ("Tháng 10", năm khác thì "Tháng 10/2025") cho đầu trang |
@@ -210,14 +211,16 @@ Trước khi báo xong một màn mới, kiểm tra:
   nhau 24px.
 - **Trang danh sách** (Giao dịch, Tài khoản, Vay nợ, Cài đặt): đầu trang, thẻ dẫn đầu, rồi các
   `SettingsGroup` có tiêu đề nhóm. Ngày ghi "Hôm nay, 08/10", "Hôm qua, 07/10", rồi "Thứ Ba,
-  06/10" (`formatDayLabel`); bên phải tiêu đề ngày là một số ròng của ngày (vào trừ ra, như thẻ
-  tổng), xanh khi dương; tiêu đề ngày bám khi cuộn. Ô tìm ở Giao dịch nằm trong `<form
+  06/10" (`formatDayLabel`); bên phải tiêu đề ngày là tổng vào (xanh) và tổng ra của ngày;
+  tiêu đề ngày bám khi cuộn, thành một dải cao 44. Ô tìm ở Giao dịch nằm trong `<form
   role="search">`: phím Tìm trên bàn phím ẩn bàn phím (kết quả lọc ngay khi gõ).
 - **Lọc và tìm ở Giao dịch** (điện thoại): thẻ Tiền vào / Tiền ra chỉ hiển thị; dưới ô tìm là
   `ChipRow`: chip "Lọc" mở sheet điều kiện khác (tài khoản, hạng mục, số tiền; không có loại),
   vạch chia, rồi Tất cả · Tiền vào · Tiền ra · Chuyển khoản · Vay nợ. Điều kiện của sheet đang
-  bật hiện thành chip có × ở hàng dưới. Chạm ô tìm mở màn tìm: đầu trang, thẻ tổng, thanh tab
-  và nút + nhường chỗ (`data-hide-tab-bar`), ô tìm lên đầu kèm "Huỷ" (xoá chữ, đóng màn). Khi có
+  bật hiện thành chip có × ở hàng dưới. Chạm ô tìm mở màn tìm: đầu trang và thẻ tổng thu gọn
+  (`Collapse`) để ô tìm trôi lên đầu, "Huỷ" trượt ra bên cạnh (xoá chữ, đóng màn), thanh tab
+  (`data-hide-tab-bar`) và nút + (`FloatingActions concealed`) trượt xuống khỏi màn; Huỷ đảo
+  ngược tất cả. Khi có
   chữ, kết quả là một list phẳng, mới nhất trước: chữ khớp tô nền `warning/25`, bên phải ghi
   ngày thay giờ (năm khác thì có năm); trên list là "N kết quả trong Tháng 10 · tổng …" và "Tìm
   mọi tháng" (tải mọi giao dịch khi cần, `loadAllTransactionsAction`). Không có kết quả: nói đã

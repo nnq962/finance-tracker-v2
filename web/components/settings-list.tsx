@@ -88,7 +88,9 @@ function SettingsGroup({
         className={cn(
           captionRowClassName,
           stickyCaption &&
-            "sticky top-[env(safe-area-inset-top,0px)] z-10 bg-background/90 backdrop-blur-md max-md:-mx-(--main-content-px) max-md:px-[calc(var(--main-content-px)+--spacing(4))] max-md:-mt-2 max-md:pt-2 md:top-16",
+            // A 44px band on phones (12 above the caption, 8 below it, which
+            // stands in for the gap to the card), so a pinned day reads as a bar.
+            "sticky top-[env(safe-area-inset-top,0px)] z-10 bg-background/90 pb-2 backdrop-blur-md max-md:-mx-(--main-content-px) max-md:-mt-3 max-md:min-h-11 max-md:px-[calc(var(--main-content-px)+--spacing(4))] max-md:pt-3 md:top-16",
         )}
       >
         {title ? (
@@ -109,7 +111,7 @@ function SettingsGroup({
         </ul>
       </Card>
       {footer ? (
-        <p className="px-4 text-xs text-muted-foreground">
+        <p className={cn("px-4 text-xs text-muted-foreground", stickyCaption && "mt-2")}>
           {footer}
         </p>
       ) : null}
@@ -141,7 +143,8 @@ function SettingsGroup({
   }
 
   return (
-    <section className="space-y-2">
+    // A sticky caption brings its own space below it in its band.
+    <section className={stickyCaption ? "flex flex-col" : "space-y-2"}>
       {caption(action)}
       {body}
     </section>

@@ -6,6 +6,7 @@ import { PlusIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { AiAssistButton } from "@/components/ai-assist/ai-assist-button"
+import { Collapse } from "@/components/app/collapse"
 import { FloatingActions } from "@/components/app/floating-actions"
 import { MonthSelect } from "@/components/app/month-select"
 import { PageHeader } from "@/components/page"
@@ -230,7 +231,8 @@ export function TransactionsScreen({
     <TransactionHistoryProvider transactions={transactions}>
       {/* Searching on a phone the field takes the top, and the tab bar makes way. */}
       {searching ? <div data-hide-tab-bar hidden /> : null}
-      {searching ? null : (
+      {/* Folds away while searching, so the field slides up to the top. */}
+      <Collapse open={!searching} className="max-md:mb-0">
         <PageHeader
           title="Giao dịch"
           tools={<MonthSelect size="bar" value={shownMonth} max={thisMonth} onValueChange={changeMonth} />}
@@ -247,7 +249,7 @@ export function TransactionsScreen({
             </AiAssistButton>
           }
         />
-      )}
+      </Collapse>
 
       <TransactionsLayout
         listOnly={searching}
@@ -271,7 +273,8 @@ export function TransactionsScreen({
             query={searchFilters.query}
             onQueryChange={changeQuery}
             onFocus={openSearch}
-            onCancel={searching ? closeSearch : undefined}
+            onCancel={closeSearch}
+            cancelable={searching}
           />
           {/* From lg up the filter panel beside the list holds these. */}
           <TransactionKindChips
@@ -302,13 +305,11 @@ export function TransactionsScreen({
         </div>
       </TransactionsLayout>
 
-      {searching ? null : (
-        <FloatingActions>
-          <Button type="button" size="fab" aria-label="Thêm giao dịch" onClick={() => setAddOpen(true)}>
-            <PlusIcon />
-          </Button>
-        </FloatingActions>
-      )}
+      <FloatingActions concealed={searching}>
+        <Button type="button" size="fab" aria-label="Thêm giao dịch" onClick={() => setAddOpen(true)}>
+          <PlusIcon />
+        </Button>
+      </FloatingActions>
 
       <AddTransactionSheet accounts={accounts} categoryGroups={categoryGroups} open={addOpen} onOpenChange={setAddOpen} />
       <TransactionFilterSheet
