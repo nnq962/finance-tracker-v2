@@ -16,15 +16,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { FormSection } from "@/components/app/form-section"
+import { PageSheet, PageSheetFooter } from "@/components/app/page-sheet"
 import { RequiredMark } from "@/components/forms/required-mark"
 import { useFieldErrors } from "@/components/forms/use-field-errors"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
-import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Button } from "@/components/ui/button"
 import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group"
-import { Sheet, SheetContent, SheetFooter } from "@/components/ui/sheet"
 import { Switch } from "@/components/ui/switch"
 import { Spinner } from "@/components/ui/spinner"
 import { formatCurrency } from "@/lib/format-currency"
@@ -86,27 +85,19 @@ export function AdminCoupons({ coupons }: { coupons: AdminCoupon[] }) {
         )}
       </SettingsGroup>
 
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent
-          showCloseButton={false}
-          aria-describedby={undefined}
-          variant="screen"
-          onOpenAutoFocus={(event) => event.preventDefault()}
-        >
-          <SheetNavHeader title={coupon ? `Mã ${coupon.code}` : "Tạo mã giảm giá"} />
-          {/* Keyed, so each opening starts from the code's saved values. */}
-          {editing && (editing === "new" || coupon) ? (
-            <CouponForm
-              key={editing}
-              coupon={coupon}
-              onDone={() => {
-                setOpen(false)
-                router.refresh()
-              }}
-            />
-          ) : null}
-        </SheetContent>
-      </Sheet>
+      <PageSheet title={coupon ? `Mã ${coupon.code}` : "Tạo mã giảm giá"} open={open} onOpenChange={setOpen}>
+        {/* Keyed, so each opening starts from the code's saved values. */}
+        {editing && (editing === "new" || coupon) ? (
+          <CouponForm
+            key={editing}
+            coupon={coupon}
+            onDone={() => {
+              setOpen(false)
+              router.refresh()
+            }}
+          />
+        ) : null}
+      </PageSheet>
     </>
   )
 }
@@ -127,7 +118,7 @@ function CouponForm({ coupon, onDone }: { coupon?: AdminCoupon; onDone: () => vo
   return (
     <form
       noValidate
-      className="flex min-h-0 flex-1 flex-col"
+      className="flex flex-1 flex-col"
       onSubmit={async (event) => {
         event.preventDefault()
         setErrorMessage(null)
@@ -170,7 +161,7 @@ function CouponForm({ coupon, onDone }: { coupon?: AdminCoupon; onDone: () => vo
         onDone()
       }}
     >
-      <fieldset disabled={pending} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
+      <fieldset disabled={pending} className="min-w-0 pb-4">
         <FormSection>
           <FieldGroup>
             <Field data-invalid={Boolean(errors.code) || undefined}>
@@ -273,13 +264,13 @@ function CouponForm({ coupon, onDone }: { coupon?: AdminCoupon; onDone: () => vo
           </FieldGroup>
         </FormSection>
       </fieldset>
-      <SheetFooter>
+      <PageSheetFooter>
         {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
         <Button type="submit" className="w-full" disabled={pending}>
           {pending ? <Spinner /> : <SaveIcon />}
           {coupon ? "Lưu thay đổi" : "Tạo mã"}
         </Button>
-      </SheetFooter>
+      </PageSheetFooter>
 
       {coupon ? (
         <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>

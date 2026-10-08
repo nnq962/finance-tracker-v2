@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { Money } from "@/components/app/money"
+import { PageSheet } from "@/components/app/page-sheet"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
-import { SheetNavHeader } from "@/components/sheet-nav-header"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { accountTypeLabels } from "@/lib/accounts/labels"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
@@ -69,95 +68,85 @@ export function AccountSheet({ account, transactions, categoryGroups, onOpenChan
 
   return (
     <>
-      <Sheet open={account !== undefined} onOpenChange={onOpenChange}>
-        <SheetContent
-          showCloseButton={false}
-          aria-describedby={undefined}
-          variant="screen"
-          onOpenAutoFocus={(event) => event.preventDefault()}
-        >
-          <SheetNavHeader title={shown.name} />
-          <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-px pb-4">
-            <div className="px-3">
-              <p className="text-sm text-muted-foreground">
-                Số dư
-              </p>
-              <Money amount={shown.balance} size="xl" tone={shown.balance < 0 ? "expense" : "default"} />
-            </div>
+      <PageSheet title={shown.name} open={account !== undefined} onOpenChange={onOpenChange} className="gap-6">
+        <div className="px-3">
+          <p className="text-sm text-muted-foreground">
+            Số dư
+          </p>
+          <Money amount={shown.balance} size="xl" tone={shown.balance < 0 ? "expense" : "default"} />
+        </div>
 
-            <SettingsGroup>
-              {/* "Ngân hàng: Vietcombank", or just the type for cash. */}
-              <SettingsRow
-                title={shown.institutionName ? accountTypeLabels[shown.type] : "Loại"}
-                value={shown.institutionName ?? accountTypeLabels[shown.type]}
-              />
-              <SettingsRow title="Ngày tạo" value={formatDate(toDateKey(shown.openedAt))} />
-              <SettingsRow title="Số dư ban đầu" value={formatCurrency(shown.openingBalance)} />
-              {shown.note ? <SettingsRow title="Ghi chú" description={<span className="select-text">{shown.note}</span>} fullDescription /> : null}
-            </SettingsGroup>
+        <SettingsGroup>
+          {/* "Ngân hàng: Vietcombank", or just the type for cash. */}
+          <SettingsRow
+            title={shown.institutionName ? accountTypeLabels[shown.type] : "Loại"}
+            value={shown.institutionName ?? accountTypeLabels[shown.type]}
+          />
+          <SettingsRow title="Ngày tạo" value={formatDate(toDateKey(shown.openedAt))} />
+          <SettingsRow title="Số dư ban đầu" value={formatCurrency(shown.openingBalance)} />
+          {shown.note ? <SettingsRow title="Ghi chú" description={<span className="select-text">{shown.note}</span>} fullDescription /> : null}
+        </SettingsGroup>
 
-            <SettingsGroup title="Giao dịch gần đây">
-              {transactions.length > 0 ? (
-                <>
-                  {transactions.map((transaction) => {
-                    // The category's icon, as in the transactions list.
-                    const { icon, color } = getTransactionVisual(transaction, categoryGroups)
-                    const amount = getAccountAmount(transaction, shown.id)
+        <SettingsGroup title="Giao dịch gần đây">
+          {transactions.length > 0 ? (
+            <>
+              {transactions.map((transaction) => {
+                // The category's icon, as in the transactions list.
+                const { icon, color } = getTransactionVisual(transaction, categoryGroups)
+                const amount = getAccountAmount(transaction, shown.id)
 
-                    return (
-                      <SettingsRow
-                        key={transaction.id}
-                        icon={icon}
-                        tone={color}
-                        title={transaction.title}
-                        description={`${formatShortDate(toDateKey(transaction.occurredAt))} · ${formatTime(transaction.occurredAt)}`}
-                        chevron={false}
-                        // As in the transactions list: only money coming in is coloured.
-                        action={
-                          <Money
-                            amount={amount}
-                            sign="always"
-                            size="sm"
-                            tone={transaction.kind === "income" ? "income" : "default"}
-                          />
-                        }
-                      />
-                    )
-                  })}
+                return (
                   <SettingsRow
-                    title="Xem tất cả"
-                    onClick={() => router.push(`/transactions?account=${encodeURIComponent(shown.id)}`)}
+                    key={transaction.id}
+                    icon={icon}
+                    tone={color}
+                    title={transaction.title}
+                    description={`${formatShortDate(toDateKey(transaction.occurredAt))} · ${formatTime(transaction.occurredAt)}`}
+                    chevron={false}
+                    // As in the transactions list: only money coming in is coloured.
+                    action={
+                      <Money
+                        amount={amount}
+                        sign="always"
+                        size="sm"
+                        tone={transaction.kind === "income" ? "income" : "default"}
+                      />
+                    }
                   />
-                </>
-              ) : (
-                <SettingsRow title="Chưa có giao dịch" />
-              )}
-            </SettingsGroup>
+                )
+              })}
+              <SettingsRow
+                title="Xem tất cả"
+                onClick={() => router.push(`/transactions?account=${encodeURIComponent(shown.id)}`)}
+              />
+            </>
+          ) : (
+            <SettingsRow title="Chưa có giao dịch" />
+          )}
+        </SettingsGroup>
 
-            <SettingsGroup>
-              <SettingsRow
-                title="Chỉnh sửa"
-                disabled={isLocked || isPending}
-                onClick={() => setEditOpen(true)}
-              />
-              <SettingsRow
-                title={isLocked ? "Tiếp tục sử dụng" : "Ngừng sử dụng"}
-                chevron={false}
-                disabled={isPending}
-                onClick={handleArchivedChange}
-              />
-            </SettingsGroup>
-            <SettingsGroup>
-              <SettingsRow
-                destructive
-                title="Xoá tài khoản"
-                disabled={isPending}
-                onClick={() => setDeleteOpen(true)}
-              />
-            </SettingsGroup>
-          </div>
-        </SheetContent>
-      </Sheet>
+        <SettingsGroup>
+          <SettingsRow
+            title="Chỉnh sửa"
+            disabled={isLocked || isPending}
+            onClick={() => setEditOpen(true)}
+          />
+          <SettingsRow
+            title={isLocked ? "Tiếp tục sử dụng" : "Ngừng sử dụng"}
+            chevron={false}
+            disabled={isPending}
+            onClick={handleArchivedChange}
+          />
+        </SettingsGroup>
+        <SettingsGroup>
+          <SettingsRow
+            destructive
+            title="Xoá tài khoản"
+            disabled={isPending}
+            onClick={() => setDeleteOpen(true)}
+          />
+        </SettingsGroup>
+      </PageSheet>
       <EditAccountSheet account={shown} open={editOpen} onOpenChange={setEditOpen} />
       <DeleteAccountAlert
         account={shown}

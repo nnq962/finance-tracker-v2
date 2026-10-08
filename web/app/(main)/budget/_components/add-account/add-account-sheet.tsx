@@ -2,12 +2,7 @@
 
 import * as React from "react"
 
-import { SheetNavHeader } from "@/components/sheet-nav-header"
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet"
+import { PageSheet } from "@/components/app/page-sheet"
 
 import { AccountForm } from "../account-form/account-form"
 import { createAccountAction } from "../../actions"
@@ -25,21 +20,12 @@ export function AddAccountSheet({ trigger, open: controlledOpen, onOpenChange }:
   const setOpen = onOpenChange ?? setInternalOpen
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      {trigger ? <SheetTrigger asChild>{trigger}</SheetTrigger> : null}
-      <SheetContent
-        showCloseButton={false}
-        aria-describedby={undefined}
-        variant="screen"
-        onOpenAutoFocus={(event) => event.preventDefault()}
-      >
-        <SheetNavHeader title="Thêm tài khoản" />
-        <AccountForm
-          action={createAccountAction}
-          onSuccess={() => setOpen(false)}
-          successMessage="Đã thêm tài khoản."
-        />
-      </SheetContent>
-    </Sheet>
+    <PageSheet title="Thêm tài khoản" open={open} onOpenChange={setOpen} trigger={trigger}>
+      <AccountForm
+        action={createAccountAction}
+        onSuccess={() => setOpen(false)}
+        successMessage="Đã thêm tài khoản."
+      />
+    </PageSheet>
   )
 }

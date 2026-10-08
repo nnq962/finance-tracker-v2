@@ -4,6 +4,7 @@ import * as React from "react"
 import { PlusIcon, SaveIcon } from "lucide-react"
 
 import { FormSection } from "@/components/app/form-section"
+import { PageSheet, PageSheetFooter } from "@/components/app/page-sheet"
 import { AccountSelectGroups } from "@/components/account-select-groups"
 import { AmountSuggestions, useAmountQuickPick } from "@/components/forms/amount-suggestions"
 import { DatePreview } from "@/components/forms/date-preview"
@@ -41,13 +42,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { SheetNavHeader } from "@/components/sheet-nav-header"
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetTrigger,
-} from "@/components/ui/sheet"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import type { Account } from "@/lib/accounts/types"
@@ -157,31 +151,31 @@ export function AddDebtSheet({
   const isDisabled = contacts.length === 0 && !onAddContact
 
   return (
-    <Sheet open={open} onOpenChange={(nextOpen) => {
-      if (submitting.current) return
-      if (nextOpen) setErrorMessage(null)
-      setOpen(nextOpen)
-    }}>
-      {controlledOpen === undefined ? <SheetTrigger asChild>
-        {trigger ?? <Button
-          type="button"
-          className="w-full sm:w-auto"
-          disabled={isDisabled}
-          title={
-            contacts.length === 0
-              ? "Thêm người liên quan trước khi tạo khoản nợ"
-              : undefined
-          }
-        >
-          <PlusIcon />
-          Thêm khoản nợ
-        </Button>}
-      </SheetTrigger> : null}
-      <SheetContent
-        variant="screen"
-        showCloseButton={false}
-        aria-describedby={undefined}
-        onOpenAutoFocus={(event) => event.preventDefault()}
+    <>
+      <PageSheet
+        title={debt ? "Sửa khoản nợ" : "Thêm khoản nợ"}
+        disabled={pending}
+        open={open}
+        onOpenChange={(nextOpen) => {
+          if (submitting.current) return
+          if (nextOpen) setErrorMessage(null)
+          setOpen(nextOpen)
+        }}
+        trigger={controlledOpen === undefined ? (
+          trigger ?? <Button
+            type="button"
+            className="w-full sm:w-auto"
+            disabled={isDisabled}
+            title={
+              contacts.length === 0
+                ? "Thêm người liên quan trước khi tạo khoản nợ"
+                : undefined
+            }
+          >
+            <PlusIcon />
+            Thêm khoản nợ
+          </Button>
+        ) : undefined}
         onCloseAutoFocus={(event) => {
           if (returnFocusRef?.current) {
             event.preventDefault()
@@ -189,12 +183,8 @@ export function AddDebtSheet({
           }
         }}
       >
-        <SheetNavHeader
-          title={debt ? "Sửa khoản nợ" : "Thêm khoản nợ"}
-          disabled={pending}
-        />
         {/* Tabs, as for a transaction's kind; fixed once payments exist. */}
-        <div className="space-y-2 px-4 pb-4">
+        <div className="space-y-2 pb-4">
           <Tabs
             value={direction}
             onValueChange={(value) => setDirection(value as DebtDirection)}
@@ -219,7 +209,7 @@ export function AddDebtSheet({
 
         <form
           noValidate
-          className="flex min-h-0 flex-1 flex-col"
+          className="flex flex-1 flex-col"
           aria-busy={pending}
           onSubmit={async (event) => {
             event.preventDefault()
@@ -282,7 +272,7 @@ export function AddDebtSheet({
             }
           }}
         >
-          <fieldset disabled={pending} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
+          <fieldset disabled={pending} className="min-w-0 pb-4">
             <FormSection>
               <FieldGroup>
                 <Field>
@@ -535,23 +525,24 @@ export function AddDebtSheet({
             </FormSection>
           </fieldset>
 
-          <SheetFooter>
+          <PageSheetFooter>
             {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
             <Button type="submit" className="w-full" disabled={pending || (!isOpening && activeAccounts.length === 0)}>
               <SaveIcon />
               {pending ? "Đang lưu…" : "Lưu khoản nợ"}
             </Button>
-          </SheetFooter>
+          </PageSheetFooter>
         </form>
-        {onAddContact ? (
-          <AddContactSheet
-            open={addingContact}
-            onOpenChange={setAddingContact}
-            onAddContact={async (values) => setContactId((await onAddContact(values)).id)}
-          />
-        ) : null}
-      </SheetContent>
-    </Sheet>
+      </PageSheet>
+      {/* Stacked over this sheet; the new person is picked once saved. */}
+      {onAddContact ? (
+        <AddContactSheet
+          open={addingContact}
+          onOpenChange={setAddingContact}
+          onAddContact={async (values) => setContactId((await onAddContact(values)).id)}
+        />
+      ) : null}
+    </>
   )
 }
 

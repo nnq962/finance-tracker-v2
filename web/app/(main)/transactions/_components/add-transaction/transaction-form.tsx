@@ -11,7 +11,7 @@ import { DateTimeFields } from "@/components/forms/date-time-fields"
 import { RequiredMark } from "@/components/forms/required-mark"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { SheetFooter } from "@/components/ui/sheet"
+import { PageSheetFooter } from "@/components/app/page-sheet"
 import { Textarea } from "@/components/ui/textarea"
 import { Spinner } from "@/components/ui/spinner"
 import type { Account } from "@/lib/accounts/types"
@@ -126,7 +126,7 @@ export function TransactionForm({
   return (
     <form
       noValidate
-      className="flex min-h-0 flex-1 flex-col"
+      className="flex flex-1 flex-col"
       onSubmit={(event) => {
         event.preventDefault()
         const formData = new FormData(event.currentTarget)
@@ -162,7 +162,7 @@ export function TransactionForm({
     >
       <input type="hidden" name="kind" value={kind} />
       {isCreating ? <input type="hidden" name="requestId" value={requestId} /> : null}
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
+      <div className="pb-4">
         <FormSection>
           <FieldGroup>
             <Field data-invalid={Boolean(errors.amount) || undefined}>
@@ -242,7 +242,7 @@ export function TransactionForm({
           </FieldGroup>
         </FormSection>
       </div>
-      <SheetFooter>
+      <PageSheetFooter>
         {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
         {/* Back is in the header, so the footer only saves. */}
         <Button type="submit" className="w-full" disabled={isPending || blocked}>
@@ -253,7 +253,7 @@ export function TransactionForm({
           )}
           {isPending ? "Đang lưu..." : submitLabel}
         </Button>
-      </SheetFooter>
+      </PageSheetFooter>
     </form>
   )
 }

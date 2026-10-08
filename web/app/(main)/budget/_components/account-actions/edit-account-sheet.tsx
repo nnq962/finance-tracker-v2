@@ -1,10 +1,6 @@
 "use client"
 
-import { SheetNavHeader } from "@/components/sheet-nav-header"
-import {
-  Sheet,
-  SheetContent,
-} from "@/components/ui/sheet"
+import { PageSheet } from "@/components/app/page-sheet"
 import type { Account } from "@/lib/accounts/types"
 
 import { AccountForm } from "../account-form/account-form"
@@ -18,30 +14,22 @@ type EditAccountSheetProps = {
 
 export function EditAccountSheet({ account, onOpenChange, open }: EditAccountSheetProps) {
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        showCloseButton={false}
-        aria-describedby={undefined}
-        variant="screen"
-        onOpenAutoFocus={(event) => event.preventDefault()}
-      >
-        <SheetNavHeader title="Chỉnh sửa tài khoản" />
-        <AccountForm
-          defaultValues={{
-            name: account.name,
-            type: account.type,
-            institutionId: account.institutionId,
-            balance: account.balance,
-            note: account.note,
-            openedAt: new Date(account.openedAt),
-          }}
-          expectedBalance={account.balance}
-          submitLabel="Lưu thay đổi"
-          action={updateAccountAction.bind(null, account.id)}
-          onSuccess={() => onOpenChange(false)}
-          successMessage="Đã cập nhật tài khoản."
-        />
-      </SheetContent>
-    </Sheet>
+    <PageSheet title="Chỉnh sửa tài khoản" open={open} onOpenChange={onOpenChange}>
+      <AccountForm
+        defaultValues={{
+          name: account.name,
+          type: account.type,
+          institutionId: account.institutionId,
+          balance: account.balance,
+          note: account.note,
+          openedAt: new Date(account.openedAt),
+        }}
+        expectedBalance={account.balance}
+        submitLabel="Lưu thay đổi"
+        action={updateAccountAction.bind(null, account.id)}
+        onSuccess={() => onOpenChange(false)}
+        successMessage="Đã cập nhật tài khoản."
+      />
+    </PageSheet>
   )
 }

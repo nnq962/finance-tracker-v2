@@ -850,7 +850,7 @@ function ScreenSheetSample() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="secondary">Màn hình</Button>
+        <Button variant="secondary">Màn hình (chỉ màn chào mừng)</Button>
       </SheetTrigger>
       <SheetContent
         variant="screen"

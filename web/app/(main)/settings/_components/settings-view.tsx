@@ -15,16 +15,12 @@ import {
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 
+import { PageSheet } from "@/components/app/page-sheet"
 import { CategoryManagementSheet } from "@/components/categories/category-management-sheet"
 import { PlanOverlay } from "@/components/plans/plan-overlay"
 import { useWelcome } from "@/components/onboarding/welcome"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { SheetNavHeader } from "@/components/sheet-nav-header"
-import {
-  Sheet,
-  SheetContent,
-} from "@/components/ui/sheet"
 import type { SessionUser } from "@/lib/auth/session"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { NotificationState } from "@/lib/notifications/types"
@@ -265,26 +261,13 @@ export function SettingsView({
       </div>
 
       {/* Screens slide in like native navigation. */}
-      <Sheet open={sheetScreen !== null} onOpenChange={(next) => !next && setSheetScreen(null)}>
-        <SheetContent
-          showCloseButton={false}
-          aria-describedby={undefined}
-          variant="screen"
-          onOpenAutoFocus={(event) => event.preventDefault()}
-        >
-          {sheetScreen ? (
-            <>
-              <SheetNavHeader
-                backLabel="Cài đặt"
-                title={screens[sheetScreen].title}
-              />
-              <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-[max(1rem,env(safe-area-inset-bottom,0px))]">
-                {renderScreen(sheetScreen)}
-              </div>
-            </>
-          ) : null}
-        </SheetContent>
-      </Sheet>
+      <PageSheet
+        title={sheetScreen ? screens[sheetScreen].title : null}
+        open={sheetScreen !== null}
+        onOpenChange={(next) => !next && setSheetScreen(null)}
+      >
+        {sheetScreen ? renderScreen(sheetScreen) : null}
+      </PageSheet>
 
       <PlanOverlay
         open={planOpen}

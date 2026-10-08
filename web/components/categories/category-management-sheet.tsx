@@ -20,21 +20,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { FormSection } from "@/components/app/form-section"
+import { PageSheet, PageSheetFooter } from "@/components/app/page-sheet"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ColorPicker } from "@/components/forms/color-picker"
 import { IconPicker } from "@/components/forms/icon-picker"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
-import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetTrigger,
-} from "@/components/ui/sheet"
 import { TabsContent } from "@/components/ui/tabs"
 import { Spinner } from "@/components/ui/spinner"
 import {
@@ -101,20 +95,30 @@ export function CategoryManagementSheet({
     ? editingGroup?.items.find((item) => item.id === editor.itemId)
     : undefined
 
-  // The list unmounts while an editor is open; its scroll position is kept
-  // here and put back when the list returns, so it reopens where it was.
-  const listRefs = React.useRef<Partial<Record<CategoryType, HTMLDivElement | null>>>({})
-  const savedScroll = React.useRef<{ type: CategoryType; top: number } | null>(null)
+  // The list and the editor share the sheet's one scroller. The list
+  // unmounts while an editor is open; its scroll position is kept here and
+  // put back when the list returns, so it reopens where it was, while the
+  // editor and a newly chosen tab start at the top.
+  const contentRef = React.useRef<HTMLElement | null>(null)
+  const savedScroll = React.useRef<number | null>(null)
+  function getScroller() {
+    return contentRef.current?.closest<HTMLElement>("[data-slot=page-sheet-body]") ?? null
+  }
   function rememberScroll() {
-    savedScroll.current = { type: activeType, top: listRefs.current[activeType]?.scrollTop ?? 0 }
+    savedScroll.current = getScroller()?.scrollTop ?? 0
   }
   React.useLayoutEffect(() => {
+    const scroller = getScroller()
+    if (editor) {
+      if (scroller) scroller.scrollTop = 0
+      return
+    }
     const saved = savedScroll.current
-    if (editor || !saved) return
+    if (saved === null) return
     savedScroll.current = null
     const restore = () => {
-      const list = listRefs.current[saved.type]
-      if (list) list.scrollTop = saved.top
+      const list = getScroller()
+      if (list) list.scrollTop = saved
     }
     restore()
     // Once more after the list has its full height (the tab content lays out
@@ -216,213 +220,212 @@ export function CategoryManagementSheet({
   const canDelete = editor?.kind === "group" ? Boolean(editor.groupId) : Boolean(editor?.itemId)
 
   return (
-    <Sheet open={open} onOpenChange={(nextOpen) => {
-      if (isPending) return
-      if (controlledOpen === undefined) setInternalOpen(nextOpen)
-      onOpenChange?.(nextOpen)
-      if (!nextOpen) setEditor(null)
-    }}>
-      {triggerContent ? (
-        <SheetTrigger asChild>
-          <Button type="button">{triggerContent}</Button>
-        </SheetTrigger>
-      ) : null}
-      <SheetContent
-        showCloseButton={false}
-        aria-describedby={undefined}
-        variant="screen"
-        onOpenAutoFocus={(event) => event.preventDefault()}
-      >
-        <SheetNavHeader
-          title={editor ? editorTitle : "Quản lý hạng mục"}
-          // In the editor, back returns to the list instead of closing.
-          onBack={editor ? () => setEditor(null) : undefined}
-          disabled={isPending}
-        />
-
-        {editor ? (
-          <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSave}>
-            <div className="flex-1 space-y-6 overflow-y-auto px-4 pt-px pb-4">
-              <FormSection>
-                <FieldGroup>
-                  <Field data-invalid={Boolean(error)}>
-                    <FieldLabel htmlFor="category-name">
-                      {editor.kind === "group" ? "Tên nhóm" : "Tên hạng mục"}
-                    </FieldLabel>
-                    <Input
-                      id="category-name"
-                      value={name}
-                      onChange={(event) => {
-                        setName(event.target.value)
-                        setError("")
-                      }}
-                      maxLength={80}
-                      disabled={isPending}
-                      aria-invalid={Boolean(error)}
-                    />
-                    {error ? <FieldError>{error}</FieldError> : null}
-                  </Field>
-                  {editor.kind === "group" ? (
-                    <Field>
-                      <FieldLabel>Màu</FieldLabel>
-                      <ColorPicker value={colorName} onValueChange={setColorName} />
-                    </Field>
-                  ) : null}
-                  <Field>
-                    <FieldLabel>Biểu tượng</FieldLabel>
-                    <IconPicker color={colorName} value={iconName} onValueChange={setIconName} />
-                  </Field>
-                </FieldGroup>
-              </FormSection>
-
-              {canDelete ? (
-                <SettingsGroup>
-                  <SettingsRow
-                    destructive
-                    title={editor.kind === "group" ? "Xoá nhóm" : "Xoá hạng mục"}
-                    disabled={isPending}
-                    onClick={() => {
-                      setDeleteError("")
-                      setDeleteOpen(true)
+    <PageSheet
+      title={editor ? editorTitle : "Quản lý hạng mục"}
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (isPending) return
+        if (controlledOpen === undefined) setInternalOpen(nextOpen)
+        onOpenChange?.(nextOpen)
+        if (!nextOpen) setEditor(null)
+      }}
+      trigger={triggerContent ? <Button type="button">{triggerContent}</Button> : undefined}
+      // In the editor, back returns to the list instead of closing.
+      onBack={editor ? () => setEditor(null) : undefined}
+      disabled={isPending}
+    >
+      {editor ? (
+        <form
+          ref={(element) => {
+            contentRef.current = element
+          }}
+          className="flex flex-1 flex-col"
+          onSubmit={handleSave}
+        >
+          <div className="space-y-6 pb-4">
+            <FormSection>
+              <FieldGroup>
+                <Field data-invalid={Boolean(error)}>
+                  <FieldLabel htmlFor="category-name">
+                    {editor.kind === "group" ? "Tên nhóm" : "Tên hạng mục"}
+                  </FieldLabel>
+                  <Input
+                    id="category-name"
+                    value={name}
+                    onChange={(event) => {
+                      setName(event.target.value)
+                      setError("")
                     }}
+                    maxLength={80}
+                    disabled={isPending}
+                    aria-invalid={Boolean(error)}
                   />
-                </SettingsGroup>
-              ) : null}
-            </div>
-            <SheetFooter>
-              <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? <Spinner /> : null}
-                {isPending ? "Đang lưu..." : "Lưu"}
-              </Button>
-            </SheetFooter>
+                  {error ? <FieldError>{error}</FieldError> : null}
+                </Field>
+                {editor.kind === "group" ? (
+                  <Field>
+                    <FieldLabel>Màu</FieldLabel>
+                    <ColorPicker value={colorName} onValueChange={setColorName} />
+                  </Field>
+                ) : null}
+                <Field>
+                  <FieldLabel>Biểu tượng</FieldLabel>
+                  <IconPicker color={colorName} value={iconName} onValueChange={setIconName} />
+                </Field>
+              </FieldGroup>
+            </FormSection>
 
-            <AlertDialog open={deleteOpen} onOpenChange={(nextOpen) => {
-              if (!isPending) setDeleteOpen(nextOpen)
-            }}>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Xoá {editor.kind === "group" ? "nhóm" : "hạng mục"}?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {editor.kind === "group"
-                      ? `Nhóm “${editingGroup?.name ?? ""}” cùng ${editingGroup?.items.length ?? 0} hạng mục bên trong sẽ bị xoá. Các giao dịch cũ vẫn được giữ lại.`
-                      : `Hạng mục “${editingItem?.name ?? ""}” sẽ bị xoá. Các giao dịch cũ vẫn được giữ lại.`}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                {deleteError ? <FieldError>{deleteError}</FieldError> : null}
-                <AlertDialogFooter>
-                  <AlertDialogCancel disabled={isPending}>Huỷ</AlertDialogCancel>
-                  <AlertDialogAction
-                    type="button"
-                    disabled={isPending}
-                    onClick={(event) => {
-                      event.preventDefault()
-                      handleDelete()
-                    }}
-                  >
-                    {isPending ? <Spinner /> : <Trash2Icon />}
-                    {isPending ? "Đang xoá..." : "Xoá"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </form>
-        ) : (
-          <Tabs
-            value={activeType}
-            onValueChange={(value) => setActiveType(value as CategoryType)}
-            className="min-h-0 flex-1 gap-0"
-          >
-            <div className="px-4 pb-4">
-              <TabsList className="w-full">
-                {sections.map(({ type, label, icon: Icon }) => (
-                  <TabsTrigger key={type} value={type}>
-                    <Icon />
-                    {label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </div>
-            {sections.map(({ type }) => {
-              const visibleGroups = groups.filter((group) => group.type === type)
-              return (
-                <TabsContent
-                  key={type}
-                  value={type}
-                  ref={(element) => {
-                    listRefs.current[type] = element
+            {canDelete ? (
+              <SettingsGroup>
+                <SettingsRow
+                  destructive
+                  title={editor.kind === "group" ? "Xoá nhóm" : "Xoá hạng mục"}
+                  disabled={isPending}
+                  onClick={() => {
+                    setDeleteError("")
+                    setDeleteOpen(true)
                   }}
-                  className="min-h-0 overflow-y-auto px-4 pt-px pb-4"
+                />
+              </SettingsGroup>
+            ) : null}
+          </div>
+          <AlertDialog open={deleteOpen} onOpenChange={(nextOpen) => {
+            if (!isPending) setDeleteOpen(nextOpen)
+          }}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Xoá {editor.kind === "group" ? "nhóm" : "hạng mục"}?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {editor.kind === "group"
+                    ? `Nhóm “${editingGroup?.name ?? ""}” cùng ${editingGroup?.items.length ?? 0} hạng mục bên trong sẽ bị xoá. Các giao dịch cũ vẫn được giữ lại.`
+                    : `Hạng mục “${editingItem?.name ?? ""}” sẽ bị xoá. Các giao dịch cũ vẫn được giữ lại.`}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              {deleteError ? <FieldError>{deleteError}</FieldError> : null}
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isPending}>Huỷ</AlertDialogCancel>
+                <AlertDialogAction
+                  type="button"
+                  disabled={isPending}
+                  onClick={(event) => {
+                    event.preventDefault()
+                    handleDelete()
+                  }}
                 >
-                  {visibleGroups.length ? (
-                    // Every group at once, so all categories are one scroll away.
-                    <div className="space-y-6">
-                      {visibleGroups.map((group) => {
-                        const GroupIcon = categoryIconRegistry[group.iconName]
-                        return (
-                          <SettingsGroup
-                            key={group.id}
-                            title={
-                              <>
-                                <GroupIcon
-                                  className={`size-3.5 shrink-0 ${getCategoryColor(group.colorName).iconClassName}`}
-                                  aria-hidden="true"
-                                />
-                                <span className="truncate">{group.name}</span>
-                              </>
-                            }
-                            action={
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="xs"
-                                aria-label={`Sửa nhóm ${group.name}`}
-                                onClick={() => openGroupEditor(group)}
-                              >
-                                Sửa
-                              </Button>
-                            }
-                          >
-                            {group.items.map((item) => (
-                              <SettingsRow
-                                key={item.id}
-                                icon={categoryIconRegistry[item.iconName]}
-                                tone={group.colorName}
-                                title={item.name}
-                                onClick={() => openItemEditor(group, item)}
+                  {isPending ? <Spinner /> : <Trash2Icon />}
+                  {isPending ? "Đang xoá..." : "Xoá"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <PageSheetFooter>
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? <Spinner /> : null}
+              {isPending ? "Đang lưu..." : "Lưu"}
+            </Button>
+          </PageSheetFooter>
+        </form>
+      ) : (
+        <Tabs
+          ref={(element) => {
+            contentRef.current = element
+          }}
+          value={activeType}
+          onValueChange={(value) => {
+            setActiveType(value as CategoryType)
+            // Each tab is its own list, read from the top.
+            const scroller = getScroller()
+            if (scroller) scroller.scrollTop = 0
+          }}
+          className="flex-1 gap-0"
+        >
+          <div className="pb-4">
+            <TabsList className="w-full">
+              {sections.map(({ type, label, icon: Icon }) => (
+                <TabsTrigger key={type} value={type}>
+                  <Icon />
+                  {label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+          {sections.map(({ type }) => {
+            const visibleGroups = groups.filter((group) => group.type === type)
+            return (
+              <TabsContent
+                key={type}
+                value={type}
+                className="pb-4"
+              >
+                {visibleGroups.length ? (
+                  // Every group at once, so all categories are one scroll away.
+                  <div className="space-y-6">
+                    {visibleGroups.map((group) => {
+                      const GroupIcon = categoryIconRegistry[group.iconName]
+                      return (
+                        <SettingsGroup
+                          key={group.id}
+                          title={
+                            <>
+                              <GroupIcon
+                                className={`size-3.5 shrink-0 ${getCategoryColor(group.colorName).iconClassName}`}
+                                aria-hidden="true"
                               />
-                            ))}
+                              <span className="truncate">{group.name}</span>
+                            </>
+                          }
+                          action={
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="xs"
+                              aria-label={`Sửa nhóm ${group.name}`}
+                              onClick={() => openGroupEditor(group)}
+                            >
+                              Sửa
+                            </Button>
+                          }
+                        >
+                          {group.items.map((item) => (
                             <SettingsRow
-                              icon={PlusIcon}
-                              title="Thêm hạng mục"
-                              chevron={false}
-                              onClick={() => openItemEditor(group)}
+                              key={item.id}
+                              icon={categoryIconRegistry[item.iconName]}
+                              tone={group.colorName}
+                              title={item.name}
+                              onClick={() => openItemEditor(group, item)}
                             />
-                          </SettingsGroup>
-                        )
-                      })}
-                    </div>
-                  ) : (
-                    <Empty>
-                      <EmptyHeader>
-                        <EmptyTitle>Chưa có nhóm hạng mục</EmptyTitle>
-                        <EmptyDescription>Thêm nhóm để bắt đầu sắp xếp các hạng mục.</EmptyDescription>
-                      </EmptyHeader>
-                    </Empty>
-                  )}
-                </TabsContent>
-              )
-            })}
-            <SheetFooter>
-              <Button type="button" className="w-full" onClick={() => openGroupEditor()}>
-                <PlusIcon />
-                Thêm nhóm {typeLabel}
-              </Button>
-            </SheetFooter>
-          </Tabs>
-        )}
-      </SheetContent>
-    </Sheet>
+                          ))}
+                          <SettingsRow
+                            icon={PlusIcon}
+                            title="Thêm hạng mục"
+                            chevron={false}
+                            onClick={() => openItemEditor(group)}
+                          />
+                        </SettingsGroup>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <Empty>
+                    <EmptyHeader>
+                      <EmptyTitle>Chưa có nhóm hạng mục</EmptyTitle>
+                      <EmptyDescription>Thêm nhóm để bắt đầu sắp xếp các hạng mục.</EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                )}
+              </TabsContent>
+            )
+          })}
+          <PageSheetFooter>
+            <Button type="button" className="w-full" onClick={() => openGroupEditor()}>
+              <PlusIcon />
+              Thêm nhóm {typeLabel}
+            </Button>
+          </PageSheetFooter>
+        </Tabs>
+      )}
+    </PageSheet>
   )
 }

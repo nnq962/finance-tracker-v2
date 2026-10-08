@@ -8,6 +8,7 @@ import {
 import { toast } from "sonner"
 
 import { FormSection } from "@/components/app/form-section"
+import { PageSheetFooter } from "@/components/app/page-sheet"
 import { AmountSuggestions, useAmountQuickPick } from "@/components/forms/amount-suggestions"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
@@ -30,7 +31,6 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { InputGroupAddon } from "@/components/ui/input-group"
-import { SheetFooter } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Tabs,
@@ -144,7 +144,7 @@ export function AccountForm({
     <form
       ref={formRef}
       noValidate
-      className="flex min-h-0 flex-1 flex-col"
+      className="flex flex-1 flex-col"
       onSubmit={(event) => {
         event.preventDefault()
         const formData = new FormData(event.currentTarget)
@@ -193,7 +193,7 @@ export function AccountForm({
       }}
     >
       {!defaultValues ? <input type="hidden" name="requestId" value={requestId} /> : null}
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
+      <div className="pb-4">
         <FormSection>
           <FieldGroup>
             {/* Tabs, as for a transaction's kind. */}
@@ -390,7 +390,7 @@ export function AccountForm({
         </FormSection>
       </div>
 
-      <SheetFooter>
+      <PageSheetFooter>
         {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
         {/* Back is in the header, so the footer only saves. */}
         <Button type="submit" className="w-full" disabled={isPending}>
@@ -401,7 +401,7 @@ export function AccountForm({
           )}
           {isPending ? "Đang lưu..." : submitLabel}
         </Button>
-      </SheetFooter>
+      </PageSheetFooter>
     </form>
   )
 }

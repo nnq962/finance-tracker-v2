@@ -4,6 +4,7 @@ import * as React from "react"
 import { CheckIcon } from "lucide-react"
 import { toast } from "sonner"
 import { FormSection } from "@/components/app/form-section"
+import { PageSheet, PageSheetFooter } from "@/components/app/page-sheet"
 import { AccountSelectGroups } from "@/components/account-select-groups"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { RequiredMark } from "@/components/forms/required-mark"
@@ -12,13 +13,6 @@ import { DateTimeFields } from "@/components/forms/date-time-fields"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { SheetNavHeader } from "@/components/sheet-nav-header"
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetTrigger,
-} from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 import type { Account } from "@/lib/accounts/types"
 import { getLocalDateTime } from "@/lib/date-time"
@@ -67,19 +61,23 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
   }
 
   return (
-    <Sheet open={open} onOpenChange={changeOpen}>
-      {typeof trigger === "function" ? trigger(() => changeOpen(true)) : <SheetTrigger asChild>{trigger}</SheetTrigger>}
-      <SheetContent showCloseButton={false} aria-describedby={undefined} variant="screen" onOpenAutoFocus={(event) => event.preventDefault()} onCloseAutoFocus={(event) => {
-        if (returnFocusRef?.current) {
-          event.preventDefault()
-          returnFocusRef.current.focus()
-        }
-      }}>
-        <SheetNavHeader
-          title={actionLabel}
-          disabled={pending}
-        />
-        <form noValidate className="flex min-h-0 flex-1 flex-col" aria-busy={pending} onSubmit={async (event) => {
+    <>
+      {/* A trigger given as a function opens the sheet itself, from outside it. */}
+      {typeof trigger === "function" ? trigger(() => changeOpen(true)) : null}
+      <PageSheet
+        title={actionLabel}
+        disabled={pending}
+        open={open}
+        onOpenChange={changeOpen}
+        trigger={typeof trigger === "function" ? undefined : trigger}
+        onCloseAutoFocus={(event) => {
+          if (returnFocusRef?.current) {
+            event.preventDefault()
+            returnFocusRef.current.focus()
+          }
+        }}
+      >
+        <form noValidate className="flex flex-1 flex-col" aria-busy={pending} onSubmit={async (event) => {
           event.preventDefault()
           if (submitting.current) return
           const data = new FormData(event.currentTarget)
@@ -105,7 +103,7 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
             setPending(false)
           }
         }}>
-          <fieldset disabled={pending} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
+          <fieldset disabled={pending} className="min-w-0 pb-4">
             <FormSection>
               <FieldGroup>
                 <Field data-invalid={Boolean(errors.amount) || undefined}>
@@ -160,12 +158,12 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
               </FieldGroup>
             </FormSection>
           </fieldset>
-          <SheetFooter>
+          <PageSheetFooter>
             {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
             <Button type="submit" className="w-full" disabled={pending}><CheckIcon />{pending ? "Đang lưu…" : payment ? "Lưu thay đổi" : isCollection ? "Xác nhận đã thu" : "Xác nhận đã trả"}</Button>
-          </SheetFooter>
+          </PageSheetFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </PageSheet>
+    </>
   )
 }

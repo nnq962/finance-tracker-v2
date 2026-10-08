@@ -4,10 +4,9 @@ import * as React from "react"
 import { toast } from "sonner"
 
 import { Money } from "@/components/app/money"
+import { PageSheet } from "@/components/app/page-sheet"
 import { SettingsGroup } from "@/components/settings-list"
-import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Card, CardContent } from "@/components/ui/card"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
@@ -159,49 +158,46 @@ export function CashFlowCalendar({
           })}
         </div>
 
-        <Sheet open={openTotals !== undefined} onOpenChange={(open) => { if (!open) setOpenDay(null) }}>
-          <SheetContent
-            showCloseButton={false}
-            aria-describedby={undefined}
-            variant="screen"
-            onOpenAutoFocus={(event) => event.preventDefault()}
-          >
-            <SheetNavHeader title={sheetTitle} />
-            {openTotals ? (
-              <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-px pb-4">
-                <div className="grid grid-cols-2 gap-4 px-3 text-sm">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Đã thu</p>
-                    <Money amount={openTotals.income} size="lg" tone="income" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Đã chi</p>
-                    <Money amount={openTotals.expense} size="lg" />
-                  </div>
+        <PageSheet
+          title={sheetTitle}
+          open={openTotals !== undefined}
+          onOpenChange={(open) => { if (!open) setOpenDay(null) }}
+          className="gap-6"
+        >
+          {openTotals ? (
+            <>
+              <div className="grid grid-cols-2 gap-4 px-3 text-sm">
+                <div>
+                  <p className="text-xs text-muted-foreground">Đã thu</p>
+                  <Money amount={openTotals.income} size="lg" tone="income" />
                 </div>
-                {dayItems && dayItems.length === 0 ? (
-                  <p className="px-3 text-sm text-muted-foreground">Chưa có giao dịch</p>
-                ) : dayItems ? (
-                  <SettingsGroup title={`${dayItems.length} giao dịch`}>
-                    {dayItems.map((transaction) => (
-                      <TransactionItem
-                        key={transaction.id}
-                        accounts={accounts}
-                        categoryGroups={categoryGroups}
-                        transaction={transaction}
-                      />
-                    ))}
-                  </SettingsGroup>
-                ) : (
-                  <div className="space-y-2" role="status" aria-label="Đang tải giao dịch">
-                    <Skeleton className="mx-3 h-3 w-24" />
-                    <Skeleton className="h-36 w-full" />
-                  </div>
-                )}
+                <div>
+                  <p className="text-xs text-muted-foreground">Đã chi</p>
+                  <Money amount={openTotals.expense} size="lg" />
+                </div>
               </div>
-            ) : null}
-          </SheetContent>
-        </Sheet>
+              {dayItems && dayItems.length === 0 ? (
+                <p className="px-3 text-sm text-muted-foreground">Chưa có giao dịch</p>
+              ) : dayItems ? (
+                <SettingsGroup title={`${dayItems.length} giao dịch`}>
+                  {dayItems.map((transaction) => (
+                    <TransactionItem
+                      key={transaction.id}
+                      accounts={accounts}
+                      categoryGroups={categoryGroups}
+                      transaction={transaction}
+                    />
+                  ))}
+                </SettingsGroup>
+              ) : (
+                <div className="space-y-2" role="status" aria-label="Đang tải giao dịch">
+                  <Skeleton className="mx-3 h-3 w-24" />
+                  <Skeleton className="h-36 w-full" />
+                </div>
+              )}
+            </>
+          ) : null}
+        </PageSheet>
       </CardContent>
     </Card>
   )

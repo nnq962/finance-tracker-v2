@@ -5,10 +5,9 @@ import * as React from "react"
 
 import { Collapse } from "@/components/app/collapse"
 import { FormSection } from "@/components/app/form-section"
-import { SheetNavHeader } from "@/components/sheet-nav-header"
+import { PageSheet } from "@/components/app/page-sheet"
 import { Button } from "@/components/ui/button"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
-import { Sheet, SheetContent, SheetFooter } from "@/components/ui/sheet"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 
@@ -127,44 +126,38 @@ export function TransactionFilterSheet({
   onReset: () => void
 }) {
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        showCloseButton={false}
-        aria-describedby={undefined}
-        variant="screen"
-        onOpenAutoFocus={(event) => event.preventDefault()}
-      >
-        <SheetNavHeader title="Bộ lọc" />
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
-          <FormSection>
-            <TransactionFilterFields
-              idPrefix="transaction-sheet"
-              accounts={accounts}
-              categoryGroups={categoryGroups}
-              filter={filter}
-              searchFilters={searchFilters}
-              onFilterChange={onFilterChange}
-              onSearchFiltersChange={onSearchFiltersChange}
-              showKind={false}
-            />
-          </FormSection>
+    <PageSheet
+      title="Bộ lọc"
+      open={open}
+      onOpenChange={onOpenChange}
+      footer={
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={countSheetFilters(filter, searchFilters) === 0}
+            onClick={onReset}
+          >
+            Đặt lại
+          </Button>
+          <Button type="button" onClick={() => onOpenChange(false)}>
+            Xem {transactionCount} giao dịch
+          </Button>
         </div>
-        <SheetFooter>
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={countSheetFilters(filter, searchFilters) === 0}
-              onClick={onReset}
-            >
-              Đặt lại
-            </Button>
-            <Button type="button" onClick={() => onOpenChange(false)}>
-              Xem {transactionCount} giao dịch
-            </Button>
-          </div>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+      }
+    >
+      <FormSection>
+        <TransactionFilterFields
+          idPrefix="transaction-sheet"
+          accounts={accounts}
+          categoryGroups={categoryGroups}
+          filter={filter}
+          searchFilters={searchFilters}
+          onFilterChange={onFilterChange}
+          onSearchFiltersChange={onSearchFiltersChange}
+          showKind={false}
+        />
+      </FormSection>
+    </PageSheet>
   )
 }

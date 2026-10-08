@@ -9,10 +9,9 @@ import { AiAssistButton } from "@/components/ai-assist/ai-assist-button"
 import { Collapse } from "@/components/app/collapse"
 import { FloatingActions } from "@/components/app/floating-actions"
 import { MonthSelect } from "@/components/app/month-select"
+import { PageSheet } from "@/components/app/page-sheet"
 import { PageHeader } from "@/components/page"
-import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { cn } from "@/lib/utils"
@@ -337,19 +336,11 @@ export function TransactionsScreen({
         onSearchFiltersChange={setSearchFilters}
         onReset={resetSheetFilters}
       />
-      <Sheet open={needAccountOpen && !hasAccount} onOpenChange={setNeedAccountOpen}>
-        <SheetContent
-          showCloseButton={false}
-          aria-describedby={undefined}
-          variant="screen"
-          onOpenAutoFocus={(event) => event.preventDefault()}
-        >
-          <SheetNavHeader title="Nhập bằng AI" />
-          <div className="flex min-h-0 flex-1 flex-col justify-center overflow-y-auto px-4 pb-8">
-            <NeedAccountState />
-          </div>
-        </SheetContent>
-      </Sheet>
+      <PageSheet title="Nhập bằng AI" open={needAccountOpen && !hasAccount} onOpenChange={setNeedAccountOpen}>
+        <div className="flex flex-1 flex-col justify-center pb-8">
+          <NeedAccountState />
+        </div>
+      </PageSheet>
       {draft && !draft.recorded ? (
         <AddTransactionSheet
           accounts={accounts}

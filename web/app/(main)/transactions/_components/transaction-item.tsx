@@ -4,7 +4,6 @@ import * as React from "react"
 
 import { Money } from "@/components/app/money"
 import { SettingsRow } from "@/components/settings-list"
-import { Sheet } from "@/components/ui/sheet"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatTime } from "@/lib/format-date"
@@ -91,17 +90,17 @@ export function TransactionItem({
         }
       />
 
-      <Sheet open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <TransactionDetailsSheet
-          category={category}
-          onDeleted={() => setDetailsOpen(false)}
-          onEdit={() => {
-            setDetailsOpen(false)
-            setEditOpen(true)
-          }}
-          transaction={transaction}
-        />
-      </Sheet>
+      <TransactionDetailsSheet
+        category={category}
+        onDeleted={() => setDetailsOpen(false)}
+        onEdit={() => {
+          setDetailsOpen(false)
+          setEditOpen(true)
+        }}
+        onOpenChange={setDetailsOpen}
+        open={detailsOpen}
+        transaction={transaction}
+      />
 
       <EditTransactionSheet
         accounts={accounts}

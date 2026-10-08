@@ -12,8 +12,8 @@ import { useRouter } from "next/navigation"
 import type { Account } from "@/lib/accounts/types"
 import { FlowTiles } from "@/components/app/flow-tiles"
 import { NoticeBanner } from "@/components/app/notice-banner"
+import { PageSheet, PageSheetFooter } from "@/components/app/page-sheet"
 import { SettingsGroup } from "@/components/settings-list"
-import { SheetNavHeader } from "@/components/sheet-nav-header"
 import {
   Empty,
   EmptyDescription,
@@ -21,7 +21,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
-import { Sheet, SheetContent, SheetFooter } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 
 import {
@@ -249,41 +248,34 @@ export function DebtsView({
         ) : null}
       </div>
 
-      <Sheet
+      <PageSheet
+        title={sheetContact?.name ?? "Chi tiết khoản nợ"}
         open={sheetDebt !== undefined}
         onOpenChange={(open) => {
           if (!open) setSheetDebtId(null)
         }}
       >
-        <SheetContent
-          showCloseButton={false}
-          aria-describedby={undefined}
-          variant="screen"
-          onOpenAutoFocus={(event) => event.preventDefault()}
-        >
-          <SheetNavHeader title={sheetContact?.name ?? "Chi tiết khoản nợ"} />
-          {isSheetReady && sheetDebt && sheetContact ? (
-            <React.Fragment key={sheetDebt.id}>
-              <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
-                <DebtDetailInfo {...getDetailProps(sheetDebt, sheetContact)} />
-              </div>
-              <SheetFooter>
-                <DebtRecordPaymentButton {...getDetailProps(sheetDebt, sheetContact)} />
-              </SheetFooter>
-            </React.Fragment>
-          ) : (
-            <div
-              className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-px pb-4"
-              role="status"
-              aria-label="Đang tải chi tiết khoản nợ"
-            >
-              <Skeleton className="h-36 w-full" />
-              <Skeleton className="h-48 w-full" />
-              <Skeleton className="h-36 w-full" />
+        {isSheetReady && sheetDebt && sheetContact ? (
+          <React.Fragment key={sheetDebt.id}>
+            <div className="pb-4">
+              <DebtDetailInfo {...getDetailProps(sheetDebt, sheetContact)} />
             </div>
-          )}
-        </SheetContent>
-      </Sheet>
+            <PageSheetFooter>
+              <DebtRecordPaymentButton {...getDetailProps(sheetDebt, sheetContact)} />
+            </PageSheetFooter>
+          </React.Fragment>
+        ) : (
+          <div
+            className="space-y-6 pb-4"
+            role="status"
+            aria-label="Đang tải chi tiết khoản nợ"
+          >
+            <Skeleton className="h-36 w-full" />
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-36 w-full" />
+          </div>
+        )}
+      </PageSheet>
     </div>
   )
 }

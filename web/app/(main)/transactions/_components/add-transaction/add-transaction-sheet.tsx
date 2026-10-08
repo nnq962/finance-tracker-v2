@@ -3,14 +3,9 @@
 import * as React from "react"
 import { PlusIcon } from "lucide-react"
 
+import { PageSheet } from "@/components/app/page-sheet"
 import { CategoryManagementSheet } from "@/components/categories/category-management-sheet"
 import { Button } from "@/components/ui/button"
-import { SheetNavHeader } from "@/components/sheet-nav-header"
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { SupportedTransactionKind } from "@/lib/transactions/types"
@@ -50,43 +45,44 @@ export function AddTransactionSheet({
 
   return (
     <>
-      <Sheet open={open} onOpenChange={setOpen}>
-        {controlledOpen === undefined ? (
-          <SheetTrigger asChild>
+      <PageSheet
+        title="Giao dịch mới"
+        open={open}
+        onOpenChange={setOpen}
+        trigger={
+          controlledOpen === undefined ? (
             <Button type="button" className="w-full sm:w-auto">
               <PlusIcon />
               {/* Only the + on tablets, where the header's row is short of room. */}
               <span className="md:max-lg:sr-only">Thêm giao dịch</span>
             </Button>
-          </SheetTrigger>
-        ) : null}
-        <SheetContent showCloseButton={false} aria-describedby={undefined} onOpenAutoFocus={(event) => event.preventDefault()} variant="screen">
-          <SheetNavHeader title="Giao dịch mới" />
-          {hasAccount ? (
-            <>
-              <div className="px-4 pb-4">
-                <TransactionKindSelector value={kind} onValueChange={setKind} />
-              </div>
-              {/* Switching tabs keeps what was filled in; closing the sheet starts over. */}
-              <TransactionForm
-                accounts={accounts}
-                action={createTransactionAction}
-                categoryGroups={categoryGroups}
-                draft={draft}
-                isCreating
-                kind={kind}
-                onManageCategories={() => setCategoryManagementOpen(true)}
-                onSuccess={() => setOpen(false)}
-                successMessage="Đã thêm giao dịch."
-              />
-            </>
-          ) : (
-            <div className="flex min-h-0 flex-1 flex-col justify-center overflow-y-auto px-4 pb-8">
-              <NeedAccountState />
+          ) : undefined
+        }
+      >
+        {hasAccount ? (
+          <>
+            <div className="pb-4">
+              <TransactionKindSelector value={kind} onValueChange={setKind} />
             </div>
-          )}
-        </SheetContent>
-      </Sheet>
+            {/* Switching tabs keeps what was filled in; closing the sheet starts over. */}
+            <TransactionForm
+              accounts={accounts}
+              action={createTransactionAction}
+              categoryGroups={categoryGroups}
+              draft={draft}
+              isCreating
+              kind={kind}
+              onManageCategories={() => setCategoryManagementOpen(true)}
+              onSuccess={() => setOpen(false)}
+              successMessage="Đã thêm giao dịch."
+            />
+          </>
+        ) : (
+          <div className="flex flex-1 flex-col justify-center pb-8">
+            <NeedAccountState />
+          </div>
+        )}
+      </PageSheet>
       <CategoryManagementSheet
         key={kind}
         groups={categoryGroups}

@@ -3,8 +3,8 @@
 import * as React from "react"
 import { BookUserIcon, PlusIcon } from "lucide-react"
 
+import { PageSheet } from "@/components/app/page-sheet"
 import { SettingsGroup } from "@/components/settings-list"
-import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Button } from "@/components/ui/button"
 import {
   Empty,
@@ -12,7 +12,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
-import { Sheet, SheetContent, SheetFooter } from "@/components/ui/sheet"
 
 import type { Contact, Debt, NewContact } from "../_types/debt"
 import { AddContactSheet } from "./add-contact-sheet"
@@ -33,44 +32,40 @@ export function ContactsSheet({ open, onOpenChange, contacts, debts, onAdd, onEd
   const [adding, setAdding] = React.useState(false)
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        showCloseButton={false}
-        aria-describedby={undefined}
-        variant="screen"
-        onOpenAutoFocus={(event) => event.preventDefault()}
-      >
-        <SheetNavHeader title="Danh bạ" />
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-px pb-4">
-          {contacts.length === 0 ? (
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia variant="icon"><BookUserIcon /></EmptyMedia>
-                <EmptyTitle>Chưa có người liên hệ</EmptyTitle>
-              </EmptyHeader>
-            </Empty>
-          ) : (
-            <SettingsGroup title={`${contacts.length} người`}>
-              {contacts.map((contact) => (
-                <ContactRow
-                  key={contact.id}
-                  contact={contact}
-                  hasDebts={debts.some((debt) => debt.contactId === contact.id)}
-                  onEdit={(values) => onEdit(contact.id, values)}
-                  onDelete={() => onDelete(contact.id)}
-                />
-              ))}
-            </SettingsGroup>
-          )}
-        </div>
-        <SheetFooter>
+    <>
+      <PageSheet
+        title="Danh bạ"
+        open={open}
+        onOpenChange={onOpenChange}
+        footer={
           <Button type="button" className="w-full" onClick={() => setAdding(true)}>
             <PlusIcon />
             Thêm người
           </Button>
-        </SheetFooter>
-        <AddContactSheet open={adding} onOpenChange={setAdding} onAddContact={onAdd} />
-      </SheetContent>
-    </Sheet>
+        }
+      >
+        {contacts.length === 0 ? (
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon"><BookUserIcon /></EmptyMedia>
+              <EmptyTitle>Chưa có người liên hệ</EmptyTitle>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          <SettingsGroup title={`${contacts.length} người`}>
+            {contacts.map((contact) => (
+              <ContactRow
+                key={contact.id}
+                contact={contact}
+                hasDebts={debts.some((debt) => debt.contactId === contact.id)}
+                onEdit={(values) => onEdit(contact.id, values)}
+                onDelete={() => onDelete(contact.id)}
+              />
+            ))}
+          </SettingsGroup>
+        )}
+      </PageSheet>
+      <AddContactSheet open={adding} onOpenChange={setAdding} onAddContact={onAdd} />
+    </>
   )
 }

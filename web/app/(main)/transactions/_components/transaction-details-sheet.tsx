@@ -2,9 +2,8 @@
 
 import { useRouter } from "next/navigation"
 
+import { PageSheet } from "@/components/app/page-sheet"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
-import { SheetNavHeader } from "@/components/sheet-nav-header"
-import { SheetContent } from "@/components/ui/sheet"
 import { getCategoryColor } from "@/lib/categories/category-colors"
 import type { CategoryItem } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
@@ -21,6 +20,8 @@ type TransactionDetailsSheetProps = {
   category?: CategoryItem
   onDeleted: () => void
   onEdit: () => void
+  onOpenChange: (open: boolean) => void
+  open: boolean
   transaction: Transaction
 }
 
@@ -28,6 +29,8 @@ export function TransactionDetailsSheet({
   category,
   onDeleted,
   onEdit,
+  onOpenChange,
+  open,
   transaction,
 }: TransactionDetailsSheetProps) {
   const router = useRouter()
@@ -99,71 +102,67 @@ export function TransactionDetailsSheet({
   }
 
   return (
-    <SheetContent showCloseButton={false} aria-describedby={undefined} onOpenAutoFocus={(event) => event.preventDefault()} variant="screen">
-      <SheetNavHeader title="Chi tiết giao dịch" />
-
-      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-px pb-4">
-        <div className="flex flex-col items-center text-center">
-          <div
-            className={cn(
-              "flex size-16 items-center justify-center rounded-xl",
-              categoryColor ? cn("tile-tinted", categoryColor.tileClassName) : presentation.iconClassName,
-            )}
-          >
-            <Icon className="size-7" aria-hidden="true" />
-          </div>
-          <p
-            className={cn("mt-5 text-[34px] leading-tight font-semibold tracking-tight tabular-nums", presentation.amountClassName)}
-          >
-            {/* Signed as in the list, so spending and income read apart without colour. */}
-            {transaction.kind === "expense" ? "−" : transaction.kind === "income" ? "+" : ""}
-            {formatCurrency(Math.abs(transaction.amount), {
-              signDisplay: "never",
-            })}
-          </p>
-          <p className="mt-3 text-base font-medium">{transaction.title}</p>
-          <time
-            className="mt-1 text-sm text-muted-foreground"
-            dateTime={transaction.occurredAt}
-          >
-            {formatLongDate(toDateKey(occurredAt))} · {formatTime(occurredAt)}
-          </time>
+    <PageSheet title="Chi tiết giao dịch" open={open} onOpenChange={onOpenChange} className="gap-6">
+      <div className="flex flex-col items-center text-center">
+        <div
+          className={cn(
+            "flex size-16 items-center justify-center rounded-xl",
+            categoryColor ? cn("tile-tinted", categoryColor.tileClassName) : presentation.iconClassName,
+          )}
+        >
+          <Icon className="size-7" aria-hidden="true" />
         </div>
-
-        <SettingsGroup>
-          <SettingsRow title="Loại giao dịch" value={isDebt ? "Vay nợ" : presentation.label} />
-          {details.map((detail) => (
-            <SettingsRow key={detail.label} title={detail.label} value={detail.value} />
-          ))}
-          {transaction.note ? (
-            <SettingsRow
-              title="Ghi chú"
-              description={<span className="whitespace-pre-wrap select-text">{transaction.note}</span>}
-              fullDescription
-            />
-          ) : null}
-        </SettingsGroup>
-
-        {/* Edit and delete as rows at the end, like the other detail sheets. */}
-        {isDebt ? (
-          // A loan is changed on the debts page.
-          <SettingsGroup>
-            <SettingsRow
-              title="Mở trong Vay nợ"
-              onClick={() => router.push(`/debts?debt=${encodeURIComponent(transaction.debtId ?? "")}`)}
-            />
-          </SettingsGroup>
-        ) : (
-          <>
-            <SettingsGroup>
-              <SettingsRow title="Sửa giao dịch" onClick={onEdit} />
-            </SettingsGroup>
-            <SettingsGroup>
-              <SettingsRow destructive title="Xoá giao dịch" onClick={handleDelete} />
-            </SettingsGroup>
-          </>
-        )}
+        <p
+          className={cn("mt-5 text-[34px] leading-tight font-semibold tracking-tight tabular-nums", presentation.amountClassName)}
+        >
+          {/* Signed as in the list, so spending and income read apart without colour. */}
+          {transaction.kind === "expense" ? "−" : transaction.kind === "income" ? "+" : ""}
+          {formatCurrency(Math.abs(transaction.amount), {
+            signDisplay: "never",
+          })}
+        </p>
+        <p className="mt-3 text-base font-medium">{transaction.title}</p>
+        <time
+          className="mt-1 text-sm text-muted-foreground"
+          dateTime={transaction.occurredAt}
+        >
+          {formatLongDate(toDateKey(occurredAt))} · {formatTime(occurredAt)}
+        </time>
       </div>
-    </SheetContent>
+
+      <SettingsGroup>
+        <SettingsRow title="Loại giao dịch" value={isDebt ? "Vay nợ" : presentation.label} />
+        {details.map((detail) => (
+          <SettingsRow key={detail.label} title={detail.label} value={detail.value} />
+        ))}
+        {transaction.note ? (
+          <SettingsRow
+            title="Ghi chú"
+            description={<span className="whitespace-pre-wrap select-text">{transaction.note}</span>}
+            fullDescription
+          />
+        ) : null}
+      </SettingsGroup>
+
+      {/* Edit and delete as rows at the end, like the other detail sheets. */}
+      {isDebt ? (
+        // A loan is changed on the debts page.
+        <SettingsGroup>
+          <SettingsRow
+            title="Mở trong Vay nợ"
+            onClick={() => router.push(`/debts?debt=${encodeURIComponent(transaction.debtId ?? "")}`)}
+          />
+        </SettingsGroup>
+      ) : (
+        <>
+          <SettingsGroup>
+            <SettingsRow title="Sửa giao dịch" onClick={onEdit} />
+          </SettingsGroup>
+          <SettingsGroup>
+            <SettingsRow destructive title="Xoá giao dịch" onClick={handleDelete} />
+          </SettingsGroup>
+        </>
+      )}
+    </PageSheet>
   )
 }

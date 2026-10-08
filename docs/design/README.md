@@ -97,9 +97,10 @@ component ở đó là cả app đổi theo.
   `transfer`, `ai`, `warning`; `count` là số đỏ đặc trên icon. Có cái mới mà không cần số (chuông
   thông báo): chấm cam 6px như mockup.
 - **Sheet:**
-  - `variant="screen"`: một màn hình đẩy từ phải, phủ cả điện thoại, có safe-area, nền xám như
-    trang; panel 28rem trên desktop. Dùng cho form và màn chi tiết, kèm `SheetNavHeader` (nút
-    quay lại tròn ở bên trái, tiêu đề giữa).
+  - Form và màn chi tiết dùng `PageSheet` (xem bảng khối), không dùng `Sheet` trực tiếp
+    (đổi 2026-10-08: mọi sheet của app chuyển sang `PageSheet`).
+  - `variant="screen"`: một màn hình đẩy từ phải, phủ cả điện thoại; chỉ còn màn chào mừng lần
+    đầu dùng, kèm `SheetNavHeader`.
   - `variant="bottom"`: thẻ trồi từ đáy, bo 28, có thanh kéo, nền xám để nhóm dòng trắng nổi
     lên. Dùng cho lựa chọn ngắn và hành động.
 - **Drawer mặc định (sheet đáy):** như half sheet của mockup: sát hai mép, đầu bo 32, thanh kéo
@@ -241,7 +242,8 @@ Trước khi báo xong một màn mới, kiểm tra:
   chọn kỳ (mặc định theo năm), nút `lg` rộng hết, ghi chú nhỏ, rồi đường kẻ và "Mọi thứ của gói
   Free, thêm:"; thẻ Free gọn hơn; cuối là dòng payOS và câu hỏi thường gặp (`Accordion` trong
   `SettingsGroup`). Kết quả thanh toán là `NoticeBanner` ở đầu.
-- **Form:** sheet `screen` nền xám với `SheetNavHeader`; các trường gom trong một `FormSection`
-  (thẻ trắng, ô nhập xám bên trong), dòng chọn và công tắc trong `SettingsGroup`; một nút `lg`
-  rộng hết ở cuối. Không bọc một ô lẻ trong thẻ riêng. Nút quay lại là cách huỷ, không cần nút
-  "Huỷ".
+- **Form:** `PageSheet` nền xám; các trường gom trong một `FormSection` (thẻ trắng, ô nhập
+  xám bên trong), dòng chọn và công tắc trong `SettingsGroup`; form `flex flex-1 flex-col`, nút
+  lưu cỡ thường rộng hết trong `PageSheetFooter` cuối form, nổi ở đáy sheet. Không bọc một ô lẻ
+  trong thẻ riêng. Nút ✕ là cách huỷ, không cần nút "Huỷ"; màn con trong sheet (sửa hạng mục)
+  dùng `onBack` để nút trái thành ‹.
