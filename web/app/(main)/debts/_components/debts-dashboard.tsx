@@ -100,8 +100,19 @@ export function DebtsDashboard({
     await execute(JSON.stringify(["payment", debtId, paymentId, values]), (id) => saveDebtPaymentAction(debtId, paymentId, values, id))
   }
 
+  // The people debts were last recorded with, latest first, to lead the form's grid.
+  const recentContactIds = [
+    ...new Set([...debts].sort((left, right) => right.recordedAt.localeCompare(left.recordedAt)).map((debt) => debt.contactId)),
+  ]
   const addDebtSheet = (trigger?: React.ReactNode) => (
-    <AddDebtSheet accounts={accounts} contacts={contacts} onAddDebt={addDebt} onAddContact={addContact} trigger={trigger} />
+    <AddDebtSheet
+      accounts={accounts}
+      contacts={contacts}
+      recentContactIds={recentContactIds}
+      onAddDebt={addDebt}
+      onAddContact={addContact}
+      trigger={trigger}
+    />
   )
   const contactsLabel = `Người liên hệ, ${contacts.length} người`
 
@@ -174,6 +185,7 @@ export function DebtsDashboard({
         accounts={accounts}
         contacts={contacts}
         defaultContactId={newDebtFor ?? undefined}
+        recentContactIds={recentContactIds}
         open={newDebtFor !== null}
         onOpenChange={(next) => {
           if (!next) setNewDebtFor(null)

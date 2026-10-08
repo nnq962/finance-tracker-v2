@@ -66,9 +66,11 @@ function DrawerOverlay({
 // and is dragged down to close. It never covers the status bar, so the
 // status bar keeps the page's colour. The grabber floats over the content,
 // which may scroll up to the sheet's top edge (PageSheet), clipped to its
-// corners.
+// corners. Clipped rather than hidden where it can be: a hidden box can still
+// be scrolled from code (a focus or scrollIntoView reaching for something
+// under the footer), which slid the whole sheet, bar and all, up out of view.
 const pageSheetClassName =
-  "fixed inset-x-0 bottom-0 top-[calc(env(safe-area-inset-top,0px)+0.625rem)] z-50 flex flex-col overflow-hidden rounded-t-[28px] bg-popover pb-[env(safe-area-inset-bottom,0px)] text-sm text-popover-foreground shadow-xl outline-none sm:inset-x-auto sm:left-1/2 sm:top-[6dvh] sm:w-full sm:max-w-lg sm:-translate-x-1/2"
+  "fixed inset-x-0 bottom-0 top-[calc(env(safe-area-inset-top,0px)+0.625rem)] z-50 flex flex-col overflow-hidden supports-[overflow:clip]:overflow-clip rounded-t-[28px] bg-popover pb-[env(safe-area-inset-bottom,0px)] text-sm text-popover-foreground shadow-xl outline-none sm:inset-x-auto sm:left-1/2 sm:top-[6dvh] sm:w-full sm:max-w-lg sm:-translate-x-1/2"
 
 function DrawerContent({
   className,

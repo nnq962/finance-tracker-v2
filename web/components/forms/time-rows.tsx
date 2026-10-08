@@ -16,10 +16,15 @@ function shiftDate(dateKey: string, days: number) {
   return new Date(Date.UTC(year, month - 1, day - days)).toISOString().slice(0, 10)
 }
 
-/** "Hôm nay, 20:02", "Hôm qua, 12:30", else "Thứ Ba, 06/10 · 17:00". */
-function timeLabel(date: string, time: string, today: string) {
+/** "Hôm nay, 20:02", "Hôm qua, 12:30", else "Thứ Ba, 06/10 · 17:00"; without a time "Hôm nay", "Thứ Ba, 06/10". */
+function timeLabel(date: string, time: string | undefined, today: string) {
   // A field cleared (a picker's Clear, a deleted segment) leaves nothing to name.
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return "Chọn ngày"
+  if (time === undefined) {
+    if (date === today) return "Hôm nay"
+    if (date === shiftDate(today, 1)) return "Hôm qua"
+    return formatDayLabel(date)
+  }
   if (!/^\d{2}:\d{2}/.test(time)) time = "--:--"
   if (date === today) return `Hôm nay, ${time}`
   if (date === shiftDate(today, 1)) return `Hôm qua, ${time}`
@@ -31,7 +36,9 @@ function timeLabel(date: string, time: string, today: string) {
  * 20:02", with today, yesterday and the day before as chips under it (unless
  * `quickDays` is off), and the date and time fields (the phone's own pickers)
  * folded under the row, open from a tap on it. Submitted as date and time,
- * from 2000 through today. Rendered as list items of the group it sits in.
+ * from 2000 (or `min`) through today. Without `time` it is a day alone (a
+ * debt's), with the date field only. Rendered as list items of the group it
+ * sits in.
  */
 export function TimeRows({
   idPrefix,
@@ -40,6 +47,7 @@ export function TimeRows({
   date,
   time,
   today,
+  min = "2000-01-01",
   onDateChange,
   onTimeChange,
   invalid,
@@ -51,12 +59,14 @@ export function TimeRows({
   quickDays?: boolean
   /** "YYYY-MM-DD". */
   date: string
-  /** "HH:mm". */
-  time: string
+  /** "HH:mm"; none for a day alone. */
+  time?: string
   /** "YYYY-MM-DD" in Vietnam time, the latest day that can be chosen. */
   today: string
+  /** The earliest day that can be chosen. */
+  min?: string
   onDateChange: (date: string) => void
-  onTimeChange: (time: string) => void
+  onTimeChange?: (time: string) => void
   invalid: boolean
 }) {
   const [open, setOpen] = React.useState(false)
@@ -107,27 +117,29 @@ export function TimeRows({
           </ToggleGroup>
         ) : null}
         <Collapse open={open}>
-          <div className={cn("grid grid-cols-2 gap-3", withQuickDays ? "pt-2" : "py-2")}>
+          <div className={cn("grid gap-3", time === undefined ? "grid-cols-1" : "grid-cols-2", withQuickDays ? "pt-2" : "py-2")}>
             <Input
               id={`${idPrefix}-date`}
               aria-label="Ngày"
               type="date"
               name="date"
               value={date}
-              min="2000-01-01"
+              min={min}
               max={today}
               onChange={(event) => onDateChange(event.target.value)}
               aria-invalid={invalid || undefined}
             />
-            <Input
-              id={`${idPrefix}-time`}
-              aria-label="Giờ"
-              type="time"
-              name="time"
-              value={time}
-              onChange={(event) => onTimeChange(event.target.value)}
-              aria-invalid={invalid || undefined}
-            />
+            {time === undefined ? null : (
+              <Input
+                id={`${idPrefix}-time`}
+                aria-label="Giờ"
+                type="time"
+                name="time"
+                value={time}
+                onChange={(event) => onTimeChange?.(event.target.value)}
+                aria-invalid={invalid || undefined}
+              />
+            )}
           </div>
         </Collapse>
       </li>

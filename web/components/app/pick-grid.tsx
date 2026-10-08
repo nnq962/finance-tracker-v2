@@ -1,7 +1,7 @@
 "use client"
 
 import type * as React from "react"
-import { LayoutGridIcon } from "lucide-react"
+import { LayoutGridIcon, type LucideIcon } from "lucide-react"
 
 import { IconTile } from "@/components/app/icon-tile"
 import { groupCaptionClassName } from "@/components/settings-list"
@@ -31,6 +31,9 @@ export function PickGrid({
   onShowAll,
   labelLines = 2,
   tileSize = "md",
+  tileShape = "rounded",
+  allIcon = LayoutGridIcon,
+  allLabel = "Tất cả",
   error,
 }: {
   /** The first cell's id, for focusing the grid when nothing is chosen. */
@@ -41,6 +44,11 @@ export function PickGrid({
   labelLines?: 1 | 2
   /** The size of the cells' tiles, for "Tất cả" to match them: md (IconTile's own) or sm (36, AccountLogo). */
   tileSize?: "sm" | "md"
+  /** circle: the cells are people (ContactAvatar), so "Tất cả" is round too. */
+  tileShape?: "rounded" | "circle"
+  /** The last cell's icon and name, e.g. a person with a plus when there is no one to show yet. */
+  allIcon?: LucideIcon
+  allLabel?: string
   value: string
   onValueChange: (id: string) => void
   onShowAll: () => void
@@ -71,8 +79,8 @@ export function PickGrid({
           </button>
         ))}
         <button type="button" id={items.length === 0 ? id : undefined} onClick={onShowAll} className={cellClassName}>
-          <IconTile icon={LayoutGridIcon} size={tileSize} />
-          <span className="text-xs leading-tight">Tất cả</span>
+          <IconTile icon={allIcon} size={tileSize} shape={tileShape} />
+          <span className="text-xs leading-tight">{allLabel}</span>
         </button>
       </div>
       {error ? <FieldError className="px-4">{error}</FieldError> : null}
@@ -83,9 +91,12 @@ export function PickGrid({
 /** How many choices the grid shows before "Tất cả": two rows of four, the last cell being it. */
 export const PICK_GRID_COUNT = 7
 
-/** The first of `ordered` to fill the grid, `taken` cells fewer; the chosen one always among them, so it shows as chosen. */
-export function gridChoices<T extends { id: string }>(ordered: readonly T[], chosenId: string, taken = 0) {
-  const shown = ordered.slice(0, PICK_GRID_COUNT - taken)
+/**
+ * The first of `ordered` to fill the grid, `taken` cells fewer; the chosen one
+ * always among them, so it shows as chosen. `count`: 3 for one row.
+ */
+export function gridChoices<T extends { id: string }>(ordered: readonly T[], chosenId: string, taken = 0, count = PICK_GRID_COUNT) {
+  const shown = ordered.slice(0, count - taken)
   const chosen = ordered.find((item) => item.id === chosenId)
   if (chosen && !shown.includes(chosen)) shown[shown.length - 1] = chosen
   return shown
