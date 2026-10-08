@@ -39,6 +39,12 @@ component ở đó là cả app đổi theo.
 7. **Ít chữ.** Nhãn, mô tả, thông báo ngắn và dễ hiểu, giọng trung tính ("Thêm tài khoản", không
    "Chỉ cần…", "Ví dụ…"). Mô tả dưới dòng chỉ ghi điều tiêu đề chưa nói hoặc điều cần làm trước.
    Một thứ gọi một tên trong cả app: "hạng mục", "lượt AI".
+8. **Nút xoá không đứng cạnh nút khác kiểu** (2026-10-09). Sheet không có nút ở chân (chi tiết giao
+   dịch, chi tiết tài khoản): dòng "Xoá …" đỏ ở cuối nội dung, như cuối trang Cài đặt iOS. Sheet
+   chi tiết có nút hành động ở chân (chi tiết khoản nợ, "Ghi nhận thu"): không đặt xoá ở cuối mà
+   đưa vào sheet sửa (bút chì), như Danh bạ iOS. Sheet sửa / form có nút Lưu ở chân: xoá là nút
+   tròn thùng rác `Button variant="destructive" size="icon"` (44, bằng nút Lưu) đứng bên trái nút
+   Lưu trên cùng hàng. Xoá luôn có hoàn tác, không hộp xác nhận.
 
 ## Nền tảng
 
@@ -290,7 +296,7 @@ Trước khi báo xong một màn mới, kiểm tra:
   trả: "−"), chip "Toàn bộ 3.500.000đ · 1/2 · 1/3" (chip Toàn bộ ghi luôn số còn lại) thay cho gợi ý
   theo chữ số, dòng "Sau lần này còn …" hoặc "✓ Tất toán khoản này"; vượt số còn lại thì báo ngay. Dòng
   "Vào tài khoản" / "Trả từ" (mặc định tài khoản của khoản vay nếu còn dùng; màn sâu chọn tài khoản),
-  "Thời gian" (`TimeRows`, không trước ngày ghi khoản nợ), ghi chú; khi sửa có "Xoá lần thu này".
+  "Thời gian" (`TimeRows`, không trước ngày ghi khoản nợ), ghi chú; khi sửa có nút tròn xoá cạnh "Lưu thay đổi".
 - **Chi tiết khoản nợ** (`DebtDetailInfo`, sheet trên điện thoại, khung bên phải từ xl), kiểu biên lai:
   thanh "Chi tiết khoản nợ" có bút chì (khung bên phải: "Sửa" cạnh tên); avatar `lg`, câu nói ai nợ ai
   ("Lan Anh nợ bạn", "Bạn nợ Chị Hà"), số còn lại `xl` ở giữa ("Gồm … lãi tính đến hôm nay" khi có lãi),
@@ -300,7 +306,8 @@ Trước khi báo xong một màn mới, kiểm tra:
   và lãi, Đến hạn (khi có hẹn). Nhóm thông tin: "Tiền ra từ" / "Tiền vào" kèm logo tài khoản (nợ có
   sẵn: "Không đổi số dư"), ngày vay hay bắt đầu theo dõi, Hẹn trả, ghi chú. "Lịch sử thu / trả": icon
   mũi tên, số có dấu, ngày giờ · tài khoản; chạm mở sheet sửa (có "Xoá lần thu này"), vuốt trái xoá;
-  xoá đều có hoàn tác, không hộp xác nhận. Cuối là "Xoá khoản nợ" (hoàn tác).
+  xoá đều có hoàn tác, không hộp xác nhận. Xoá khoản nợ nằm trong sheet sửa (nút tròn cạnh "Lưu thay
+  đổi"), không ở cuối chi tiết vì cuối đã có nút "Ghi nhận thu".
 - **Chi tiết tài khoản** (`AccountSheet`), cùng kiểu biên lai với chi tiết giao dịch: thanh "Chi tiết
   tài khoản" có bút chì tròn để sửa (mờ khi đã ngừng dùng); đầu sheet là logo `lg`, tên, số dư `xl`
   ở giữa (âm thì đỏ, ngừng dùng thì mờ), dòng phụ loại · ngân hàng (bỏ phần tên đã nói) và "Đã

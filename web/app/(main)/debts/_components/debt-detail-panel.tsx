@@ -86,6 +86,11 @@ export function DebtEditButton({
         contacts={contacts}
         accounts={accounts}
         onAddDebt={onChangeDebt}
+        // Deleting is in the edit sheet, beside saving, not at the end of the details by their action.
+        onDelete={() => {
+          setEditing(false)
+          void onChangeDebt(null)
+        }}
         open={editing}
         onOpenChange={setEditing}
       />
@@ -107,11 +112,12 @@ function standingLabel(debt: Debt, settled: boolean) {
  * a badge for where it stands (days left, overdue, settled);
  * how much is paid; the interest, when it has some, as one group; where its
  * money came from or went, when, and the note; every collection or
- * repayment (tap to edit, swipe to delete); then deleting it, with an undo.
+ * repayment (tap to edit, swipe to delete). Deleting the debt is in its edit
+ * sheet, beside saving.
  * Shared by the side panel and the sheet.
  */
 export function DebtDetailInfo(props: DebtDetailPanelProps) {
-  const { contact, debt, accounts, onEditPayment, onDeletePayment, onChangeDebt } = props
+  const { contact, debt, accounts, onEditPayment, onDeletePayment } = props
   const { paidAmount, remainingAmount, paymentProgress, interestAmount, interestDate, totalAmount, days } = getDebtMetrics(debt)
   const deadline = getDebtDeadline(debt)
   const collecting = debt.direction === "lent"
@@ -203,9 +209,6 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
 
       <DebtPaymentHistory debt={debt} contact={contact} accounts={accounts} onEdit={onEditPayment} onDelete={onDeletePayment} />
 
-      <SettingsGroup>
-        <SettingsRow destructive title="Xoá khoản nợ" onClick={() => void onChangeDebt(null)} />
-      </SettingsGroup>
     </div>
   )
 }

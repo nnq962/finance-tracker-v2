@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronDownIcon, PlusIcon, SaveIcon, UserPlusIcon, UsersIcon } from "lucide-react"
+import { ChevronDownIcon, PlusIcon, SaveIcon, Trash2Icon, UserPlusIcon, UsersIcon } from "lucide-react"
 
 import { AccountLogo } from "@/components/account-logo"
 import { Collapse } from "@/components/app/collapse"
@@ -58,6 +58,8 @@ type AddDebtSheetProps = {
   defaultContactId?: string
   /** The people debts were last recorded with, latest first: they lead the grid. */
   recentContactIds?: string[]
+  /** When editing: a round delete button beside saving (with an undo). */
+  onDelete?: () => void
   /** Controlled mode (no trigger), e.g. opened from an actions menu. */
   open?: boolean
   onOpenChange?: (open: boolean) => void
@@ -252,6 +254,7 @@ function DebtForm({
   onAddContact,
   defaultContactId,
   recentContactIds = [],
+  onDelete,
   pending,
   onPendingChange,
   onDone,
@@ -578,10 +581,18 @@ function DebtForm({
         {screen ? null : (
           <PageSheetFooter>
             {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
-            <Button type="submit" className="w-full" disabled={pending || (!isOpening && activeAccounts.length === 0)}>
-              <SaveIcon />
-              {pending ? "Đang lưu…" : debt ? "Lưu thay đổi" : "Lưu khoản nợ"}
-            </Button>
+            {/* Deleting sits beside saving, as tall as it (with an undo, so the two side by side are safe). */}
+            <div className="flex items-center gap-2">
+              {debt && onDelete ? (
+                <Button type="button" variant="destructive" size="icon" aria-label="Xoá khoản nợ" disabled={pending} onClick={onDelete}>
+                  <Trash2Icon />
+                </Button>
+              ) : null}
+              <Button type="submit" className="flex-1" disabled={pending || (!isOpening && activeAccounts.length === 0)}>
+                <SaveIcon />
+                {pending ? "Đang lưu…" : debt ? "Lưu thay đổi" : "Lưu khoản nợ"}
+              </Button>
+            </div>
           </PageSheetFooter>
         )}
 

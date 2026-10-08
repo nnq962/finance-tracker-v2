@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { CheckIcon, CircleCheckIcon } from "lucide-react"
+import { CheckIcon, CircleCheckIcon, Trash2Icon } from "lucide-react"
 import { toast } from "sonner"
 
 import { AccountLogo } from "@/components/account-logo"
@@ -334,27 +334,33 @@ function PaymentForm({
           ) : null}
         </div>
 
-        {payment && onDelete ? (
-          <SettingsGroup>
-            <SettingsRow
-              destructive
-              title={collecting ? "Xoá lần thu này" : "Xoá lần trả này"}
-              onClick={() => {
-                onDone()
-                onDelete()
-              }}
-            />
-          </SettingsGroup>
-        ) : null}
       </fieldset>
 
       {picking ? null : (
         <PageSheetFooter>
           {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
-          <Button type="submit" className="w-full" disabled={pending}>
-            <CheckIcon />
-            {pending ? "Đang lưu…" : payment ? "Lưu thay đổi" : collecting ? "Xác nhận đã thu" : "Xác nhận đã trả"}
-          </Button>
+          {/* Deleting sits beside saving, as tall as it (with an undo, so the two side by side are safe). */}
+          <div className="flex items-center gap-2">
+            {payment && onDelete ? (
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                aria-label={collecting ? "Xoá lần thu này" : "Xoá lần trả này"}
+                disabled={pending}
+                onClick={() => {
+                  onDone()
+                  onDelete()
+                }}
+              >
+                <Trash2Icon />
+              </Button>
+            ) : null}
+            <Button type="submit" className="flex-1" disabled={pending}>
+              <CheckIcon />
+              {pending ? "Đang lưu…" : payment ? "Lưu thay đổi" : collecting ? "Xác nhận đã thu" : "Xác nhận đã trả"}
+            </Button>
+          </div>
         </PageSheetFooter>
       )}
     </form>
