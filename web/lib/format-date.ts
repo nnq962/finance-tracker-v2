@@ -5,6 +5,7 @@
 //   formatDayLabel    Hôm nay, 02/10 · Hôm qua, 01/10 · Thứ Sáu, 25/09
 //   formatLongDate    Thứ Sáu, 02/10/2026
 //   formatTime        14:05 (24-hour)
+//   formatMomentLabel 14:05 today · Hôm qua · 05/10, for when something happened
 // Date-only values are "YYYY-MM-DD" keys; moments are ISO strings or Dates.
 
 const TIME_ZONE = "Asia/Ho_Chi_Minh"
@@ -88,4 +89,17 @@ export function formatLongDate(dateKey: string) {
 /** "14:05" in Vietnam time. */
 export function formatTime(value: string | Date) {
   return momentParts(value).time
+}
+
+/**
+ * When something happened, short, as a list of messages says it: the time
+ * for today ("14:05"), "Hôm qua" for the day before, the date before that
+ * ("05/10").
+ */
+export function formatMomentLabel(value: string | Date, now: string | Date = new Date()) {
+  const { dateKey, time } = momentParts(value)
+  const today = toDateKey(now)
+  if (dateKey === today) return time
+  if (dateKey === previousDateKey(today)) return "Hôm qua"
+  return formatShortDate(dateKey)
 }

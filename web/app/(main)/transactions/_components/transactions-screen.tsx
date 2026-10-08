@@ -12,6 +12,7 @@ import { MonthSelect } from "@/components/app/month-select"
 import { PageSheet } from "@/components/app/page-sheet"
 import { PageHeader } from "@/components/page"
 import { Button } from "@/components/ui/button"
+import { appEvents, listenToAppEvent } from "@/lib/app-events"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { cn } from "@/lib/utils"
@@ -52,6 +53,8 @@ type TransactionsScreenProps = {
   aiQuota: AiQuota
   /** Opens the AI assistant straight away. */
   initialAiOpen?: boolean
+  /** Opened from a reminder to write something down. */
+  initialAddOpen?: boolean
   /** A Pro purchase to write down, opened from the plan screen or an admin's sale notice. */
   purchaseDraft?: PurchaseDraft
 }
@@ -85,6 +88,7 @@ export function TransactionsScreen({
   transactions,
   aiQuota: initialAiQuota,
   initialAiOpen = false,
+  initialAddOpen = false,
   purchaseDraft,
 }: TransactionsScreenProps) {
   const router = useRouter()
@@ -97,7 +101,13 @@ export function TransactionsScreen({
     accountIds: initialAccountId ? [initialAccountId] : [],
   }))
   const [filterOpen, setFilterOpen] = React.useState(false)
-  const [addOpen, setAddOpen] = React.useState(false)
+  const [addOpen, setAddOpen] = React.useState(initialAddOpen)
+  // A reminder tapped while this page is shown opens the sheet here.
+  React.useEffect(() => listenToAppEvent(appEvents.addTransaction, () => setAddOpen(true)), [])
+  // Reloading the page should not open the sheet again.
+  React.useEffect(() => {
+    if (initialAddOpen) window.history.replaceState(null, "", window.location.pathname)
+  }, [initialAddOpen])
   // The month tapped, shown on the tabs while it loads.
   const [requestedMonth, setRequestedMonth] = React.useState(selectedMonth)
   // The phone's search screen, open from a tap on the field until Huỷ.

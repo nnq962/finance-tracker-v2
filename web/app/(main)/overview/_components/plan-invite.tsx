@@ -6,6 +6,7 @@ import { SparklesIcon } from "lucide-react"
 import { PromoBanner } from "@/components/app/promo-banner"
 import { SettingsRow } from "@/components/settings-list"
 import { PlanOverlay } from "@/components/plans/plan-overlay"
+import { appEvents, listenToAppEvent } from "@/lib/app-events"
 import type { PaymentOutcome } from "@/lib/plans/payos"
 import { plans, type PlanState } from "@/lib/plans/plans"
 
@@ -39,6 +40,8 @@ export function PlanInviteProvider({
 }) {
   const [open, setOpen] = React.useState(initialOpen)
   const openPlans = React.useCallback(() => setOpen(true), [])
+  // From a notification about AI credits, while the overview is shown.
+  React.useEffect(() => listenToAppEvent(appEvents.openPlans, openPlans), [openPlans])
 
   return (
     <PlanInviteContext value={planState.plan === "free" ? openPlans : null}>

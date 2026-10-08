@@ -11,12 +11,14 @@ export type TransactionsSearchParams = {
   month?: string
   account?: string
   ai?: string
+  /** "1": opens the add-transaction sheet, e.g. from the daily reminder. */
+  add?: string
   order?: string
   grant?: string
 }
 
 /** Everything the transactions page shows, for the month in the address (this month by default). */
-export async function loadTransactions({ month, account, ai, order, grant }: TransactionsSearchParams) {
+export async function loadTransactions({ month, account, ai, add, order, grant }: TransactionsSearchParams) {
   const todayDateKey = getTransactionDateKey(new Date())
   const selectedMonth = getTransactionMonthKey(month, todayDateKey)
   const range = getTransactionMonthRange(selectedMonth, 1)
@@ -51,6 +53,7 @@ export async function loadTransactions({ month, account, ai, order, grant }: Tra
     aiQuota: { used: planState.aiUsed, limit: planState.aiLimit, credits: planState.aiCredits },
     // Opened from the AI mission on the overview.
     initialAiOpen: ai === "1",
+    initialAddOpen: add === "1",
     purchaseDraft,
   }
 }

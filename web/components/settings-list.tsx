@@ -188,6 +188,11 @@ type SettingsRowProps = {
    * always shows.
    */
   collapsed?: boolean
+  /**
+   * Not read yet, as in Mail: a blue dot in the margin before the icon and
+   * the title in semibold. Read, the row is like any other.
+   */
+  unread?: boolean
 }
 
 const rowClassName = "min-h-16 gap-3 py-3"
@@ -215,9 +220,13 @@ function SettingsRow({
   destructive = false,
   swipeAction,
   collapsed,
+  unread = false,
 }: SettingsRowProps) {
   const content = (
     <>
+      {unread ? (
+        <span aria-hidden="true" className="absolute top-1/2 left-1 size-2 -translate-y-1/2 rounded-full bg-transfer" />
+      ) : null}
       {icon || media ? (
         // Centred on the row, also beside a two-line title and description.
         <ItemMedia className="group-has-data-[slot=item-description]/item:translate-y-0 group-has-data-[slot=item-description]/item:self-center">
@@ -225,8 +234,9 @@ function SettingsRow({
         </ItemMedia>
       ) : null}
       <ItemContent className={cn("gap-0.5", destructive && "items-center")}>
-        <ItemTitle className={cn(destructive && "text-destructive")}>
+        <ItemTitle className={cn(destructive && "text-destructive", unread && "font-semibold")}>
           {title}
+          {unread ? <span className="sr-only">, chưa đọc</span> : null}
         </ItemTitle>
         {description ? (
           <ItemDescription lines={fullDescription ? "all" : 1} className="text-xs">

@@ -446,6 +446,11 @@ function ListSection() {
           </li>
         ) : null}
       </SettingsGroup>
+      {/* As the notifications: unread rows have a blue dot in the margin and a semibold title. */}
+      <SettingsGroup title="Chưa đọc (unread)" size="lg">
+        <SettingsRow icon={BellRingIcon} tone="amber" title="Chưa đọc" description="Chấm xanh, tiêu đề đậm" value="08:00" unread onClick={() => toast("Mở")} />
+        <SettingsRow icon={BellRingIcon} tone="amber" title="Đã đọc" description="Như mọi dòng khác" value="Hôm qua" onClick={() => toast("Mở")} />
+      </SettingsGroup>
       {/* As the overview's missions: rows shown on request slide open and shut, the dividers follow. */}
       <SettingsGroup
         title="Dòng gập (collapsed)"
