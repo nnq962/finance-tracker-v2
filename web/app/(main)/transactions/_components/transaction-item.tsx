@@ -25,6 +25,10 @@ type TransactionItemProps = {
   dateLabel?: string
   /** The search text, marked where it appears in the title. */
   highlight?: string
+  /** In place of the account (or a transfer's two accounts), e.g. in an account's own sheet, where the account goes without saying. */
+  description?: string
+  /** The amount as it moved one account, signed: a transfer out of it is minus, with its fee. */
+  amount?: number
 }
 
 /** The title with the searched text marked, as search results do in native apps. */
@@ -48,6 +52,8 @@ export function TransactionItem({
   transaction,
   dateLabel,
   highlight,
+  description,
+  amount,
 }: TransactionItemProps) {
   const [detailsOpen, setDetailsOpen] = React.useState(false)
   const [editOpen, setEditOpen] = React.useState(false)
@@ -63,9 +69,10 @@ export function TransactionItem({
         title={<MarkedTitle title={transaction.title} query={highlight} />}
         // The account; the icon already shows the category's group.
         description={
-          transaction.kind === "transfer"
+          description ??
+          (transaction.kind === "transfer"
             ? transaction.description
-            : (transaction.accountName ?? transaction.description)
+            : (transaction.accountName ?? transaction.description))
         }
         chevron={false}
         onClick={() => setDetailsOpen(true)}
@@ -80,8 +87,10 @@ export function TransactionItem({
             ) : null}
             <span className="flex flex-col items-end">
               <Money
-                amount={transaction.kind === "expense" ? -Math.abs(transaction.amount) : Math.abs(transaction.amount)}
-                sign={transaction.kind === "transfer" ? "never" : "always"}
+                amount={
+                  amount ?? (transaction.kind === "expense" ? -Math.abs(transaction.amount) : Math.abs(transaction.amount))
+                }
+                sign={transaction.kind === "transfer" && amount === undefined ? "never" : "always"}
                 size="sm"
                 // Only money coming in is coloured, as in the mockup.
                 tone={transaction.kind === "income" ? "income" : "default"}

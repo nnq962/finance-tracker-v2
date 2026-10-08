@@ -10,12 +10,13 @@ type AccountLogoProps = {
     Account,
     "institutionName" | "logoFallback" | "logoUrl" | "name" | "type"
   >
-  /** sm: a list row's tile (36, as IconTile sm); xs: beside a name in a select. */
-  size?: "sm" | "xs"
+  /** lg: the head of the account's sheet (48, as IconTile lg); sm: a list row's tile (36, as IconTile sm); xs: beside a name in a select. */
+  size?: "lg" | "sm" | "xs"
   className?: string
 }
 
 const tileClassName = {
+  lg: "size-12 rounded-[14px] text-sm",
   sm: "size-9 rounded-[10px] text-xs",
   xs: "size-5 rounded-[6px] text-[9px]",
 } as const
@@ -29,7 +30,12 @@ export function AccountLogo({ account, size = "sm", className }: AccountLogoProp
   if (account.type === "cash") {
     return (
       <span role="img" aria-label="Tiền mặt" className={className}>
-        <IconTile icon={BanknoteIcon} tone="emerald" size="sm" className={cn(size === "xs" && "size-5 rounded-[6px] [&_svg]:size-3")} />
+        <IconTile
+          icon={BanknoteIcon}
+          tone="emerald"
+          size={size === "lg" ? "lg" : "sm"}
+          className={cn(size === "xs" && "size-5 rounded-[6px] [&_svg]:size-3")}
+        />
       </span>
     )
   }
@@ -49,8 +55,8 @@ export function AccountLogo({ account, size = "sm", className }: AccountLogoProp
         <Image
           src={account.logoUrl}
           alt={account.institutionName ?? account.name}
-          width={36}
-          height={36}
+          width={size === "lg" ? 48 : 36}
+          height={size === "lg" ? 48 : 36}
           className="size-full object-contain p-[14%]"
         />
       ) : (

@@ -75,3 +75,6 @@ export type TransactionDateGroup = {
 export type TransactionActionResult =
   | { success: true }
   | { success: false; error: string }
+
+/** Money into and out of an account over a range, and how many movements each way. */
+export type AccountFlow = { moneyIn: number; moneyOut: number; inCount: number; outCount: number }

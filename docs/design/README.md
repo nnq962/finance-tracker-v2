@@ -172,7 +172,7 @@ Danh sách nằm ở `components/settings-list.tsx`. `SettingsGroup` là nhóm d
 iOS ("HÔM NAY", "CHUNG"; `groupCaptionClassName`, dùng chung cho `FormSection` và bộ lọc); đường kẻ giữa các dòng thụt 16 vào từ hai bên. `SettingsRow` là **mọi** dòng list (cài đặt, giao dịch, nhiệm vụ…), nên các list đồng nhất: cao 64
 (tiêu đề và mô tả mỗi thứ một dòng, cắt bằng "…"; `fullDescription` cho chữ mà dòng tồn tại để hiện: ghi chú trong chi tiết tài khoản, khoản vay, giao dịch, câu trả lời của máy tính lương, thông báo; dòng đó cao hơn 64), lề ngang 16, `icon` tự đặt trong `IconTile` cỡ `sm` (36,
 bo 12) màu theo `tone` (xám nếu không truyền), tiêu đề 14 (Body, đậm 500), mô tả 12 (Caption), rồi giá trị, công tắc, số
-tiền hoặc mũi tên ở bên phải. `media` cho avatar và logo tài khoản (`AccountLogo`: ô vuông bo 10 cỡ 36 như `IconTile sm`, logo trên nền trắng, tiền mặt là tờ tiền xanh; `size="xs"` 20 trong select). `swipeAction` cho dòng vuốt để xoá. Dòng ở
+tiền hoặc mũi tên ở bên phải. `media` cho avatar và logo tài khoản (`AccountLogo`: ô vuông bo 10 cỡ 36 như `IconTile sm`, logo trên nền trắng, tiền mặt là tờ tiền xanh; `size="xs"` 20 trong select; `size="lg"` 48 bo 14 ở đầu sheet chi tiết tài khoản). `swipeAction` cho dòng vuốt để xoá. Dòng ở
 trang Cài đặt mỗi mục một `tone`, như mockup. `SettingsGroup stickyCaption`: tiêu đề nhóm bám đỉnh màn khi các dòng cuộn dưới nó, tới khi tiêu đề nhóm sau đẩy đi, như list iOS (các ngày ở Giao dịch); nền màu trang hơi trong và mờ phía sau, trên điện thoại trải hết bề ngang; desktop bám dưới thanh trên 64px. `SettingsGroup collapsible`: nhóm ẩn dòng tới khi cần (khoản đã tất toán, tài khoản ngừng dùng); tiêu đề vẫn thẳng hàng với các nhóm khác, cuối tiêu đề là "Hiện …" / "Ẩn"; thẻ trượt mở và đóng (tức thì khi giảm chuyển động). `footer` cỡ Caption 12. Dòng Vay nợ: bên phải là hạn trả; không có hạn thì lãi suất, hoặc phần trăm đã trả, hoặc "Không hạn trả"; lãi suất hay dự tính đứng trước ghi chú ở mô tả.
 
 Màn tải: `SettingsGroupSkeleton` / `SettingsRowSkeleton` (cùng file) có đúng kích thước nhóm và dòng thật (dòng tiêu đề, bo thẻ, dòng 64, ô 36 hoặc avatar, avatar 48 `avatar-lg` cho hồ sơ, `align="center"` cho dòng như Đăng xuất, đường kẻ thụt, giá trị hay số tiền bên phải). Mỗi `loading.tsx` dựng lại từ chính bố cục của trang (`OverviewLayout`, `TransactionsLayout`, `BudgetLayout`) và các skeleton này, cùng `PageHeaderSkeleton` (tên trang thật; công cụ tròn hay viên thuốc, nút có chữ theo độ rộng), `FlowTilesSkeleton`, `FloatingActionsSkeleton`, nên khung trang không nhảy khi dữ liệu tới. Những khối chỉ có khi có dữ liệu (Nhiệm vụ, Sắp đến hạn, cảnh báo quá hạn) không có chỗ chờ sẵn, nên khi có chúng, phần bên dưới vẫn dời xuống.
@@ -264,6 +264,15 @@ Trước khi báo xong một màn mới, kiểm tra:
   `lib/search-text.ts`). Rồi một nhóm dòng: Tên (gõ tại chỗ, canh phải; tự lấy tên ngân hàng, ví,
   hoặc "Tiền mặt", tới khi người dùng tự gõ), Số dư âm (công tắc, "Đang nợ, thấu chi"; bật thì số
   đỏ có dấu −), Bắt đầu từ (`TimeRows` không chip), ghi chú gõ tại chỗ. Lỗi hiện tại chỗ.
+- **Chi tiết tài khoản** (`AccountSheet`), cùng kiểu biên lai với chi tiết giao dịch: thanh "Chi tiết
+  tài khoản" có bút chì tròn để sửa (mờ khi đã ngừng dùng); đầu sheet là logo `lg`, tên, số dư `xl`
+  ở giữa (âm thì đỏ, ngừng dùng thì mờ), dòng phụ loại · ngân hàng (bỏ phần tên đã nói) và "Đã
+  ngừng sử dụng". Rồi "THÁNG 10" với `FlowTiles` Tiền vào / Tiền ra của tháng (`getAccountFlows`:
+  thu, chi, hai đầu chuyển khoản kèm phí, thu và trả nợ); nhóm Bắt đầu từ, Số dư ban đầu, Đã tăng /
+  Đã giảm (số dư trừ số dư ban đầu), ghi chú; "Giao dịch gần đây" là `TransactionItem` (chạm mở chi
+  tiết giao dịch), mô tả là đầu kia của chuyển khoản ("Đến Ví MoMo") hay nhóm hạng mục, số tiền theo
+  tài khoản này, ngày dưới số tiền; "Ngừng sử dụng" / "Dùng lại tài khoản" có icon và chú thích nói
+  rõ nó làm gì; cuối cùng "Xoá tài khoản".
 - **Chi tiết giao dịch** (`TransactionDetailsSheet`), như biên lai: icon lớn, tên, số tiền lớn, ngày
   giờ; Sửa là nút bút chì tròn bên phải thanh. Thông tin dạng nhãn trái, giá trị phải: Tài khoản
   (logo `xs` + tên), Hạng mục (`IconTile xs` + tên), Nhóm; ghi chú xuống dòng đầy đủ. Chuyển khoản

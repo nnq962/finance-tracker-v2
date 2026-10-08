@@ -6,6 +6,7 @@ import { lockAccounts, setBalance, shiftBalance, type LockedAccount } from "@/li
 import { getDb } from "@/lib/db/client"
 import type { DB } from "@/lib/db/types"
 import type {
+  AccountFlow,
   SupportedTransactionKind,
   Transaction,
   TransactionFormValues,
@@ -203,6 +204,46 @@ export async function getRecentTransactionsByAccount(
     }
   }
   return byAccount
+}
+
+/**
+ * What came into and left each account over a range, as its sheet sums up
+ * a month: income and spending, both ends of a transfer (the fee leaving with
+ * it), and loan repayments received or made. Accounts with nothing are left out.
+ */
+export async function getAccountFlows(userId: string, start: Date, end: Date): Promise<Record<string, AccountFlow>> {
+  const paidAt = sql`(p.paid_at + p.paid_time) AT TIME ZONE 'Asia/Ho_Chi_Minh'`
+  const result = await sql<{ accountId: string; moneyIn: number; moneyOut: number; inCount: number; outCount: number }>`
+    SELECT account_id,
+      sum(money_in)::bigint AS money_in,
+      sum(money_out)::bigint AS money_out,
+      count(*) FILTER (WHERE money_in > 0)::int AS in_count,
+      count(*) FILTER (WHERE money_out > 0)::int AS out_count
+    FROM (
+      SELECT account_id,
+        CASE WHEN kind = 'income' THEN amount ELSE 0 END AS money_in,
+        CASE WHEN kind = 'expense' THEN amount ELSE 0 END AS money_out
+      FROM transactions
+      WHERE user_id = ${userId} AND account_id IS NOT NULL AND occurred_at >= ${start} AND occurred_at < ${end}
+      UNION ALL
+      SELECT from_account_id, 0, amount + fee FROM transactions
+      WHERE user_id = ${userId} AND kind = 'transfer' AND occurred_at >= ${start} AND occurred_at < ${end}
+      UNION ALL
+      SELECT to_account_id, amount, 0 FROM transactions
+      WHERE user_id = ${userId} AND kind = 'transfer' AND occurred_at >= ${start} AND occurred_at < ${end}
+      UNION ALL
+      SELECT p.account_id,
+        CASE WHEN d.direction = 'lent' THEN p.amount ELSE 0 END,
+        CASE WHEN d.direction = 'lent' THEN 0 ELSE p.amount END
+      FROM debt_payments p JOIN debts d ON d.id = p.debt_id
+      WHERE p.user_id = ${userId} AND ${paidAt} >= ${start} AND ${paidAt} < ${end}
+    ) AS movements (account_id, money_in, money_out)
+    GROUP BY account_id
+  `.execute(getDb())
+
+  return Object.fromEntries(
+    result.rows.map(({ accountId, ...flow }) => [accountId, flow]),
+  )
 }
 
 export async function getTransactionsInRange(

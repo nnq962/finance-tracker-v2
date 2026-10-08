@@ -14,24 +14,21 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
-import { accountTypeLabels } from "@/lib/accounts/labels"
+import { accountDescription } from "@/lib/accounts/labels"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
-import type { Transaction } from "@/lib/transactions/types"
+import type { AccountFlow, Transaction } from "@/lib/transactions/types"
 
 import { AccountSheet } from "./account-sheet"
 
 type AccountListProps = {
   accounts: Account[]
   recentTransactions: Record<string, Transaction[]>
+  /** This month's money in and out of each account. */
+  flows: Record<string, AccountFlow>
+  /** The month `flows` covers, e.g. "Tháng 10". */
+  monthLabel: string
   categoryGroups: CategoryGroup[]
-}
-
-/** The type, and the bank or wallet, leaving out what the name already says. */
-function accountDescription(account: Account) {
-  const type = accountTypeLabels[account.type]
-  if (account.institutionName && account.institutionName !== account.name) return `${type} · ${account.institutionName}`
-  return type === account.name ? undefined : type
 }
 
 function AccountRow({ account, onSelect }: { account: Account; onSelect: () => void }) {
@@ -55,7 +52,7 @@ function AccountRow({ account, onSelect }: { account: Account; onSelect: () => v
   )
 }
 
-export function AccountList({ accounts, recentTransactions, categoryGroups }: AccountListProps) {
+export function AccountList({ accounts, recentTransactions, flows, monthLabel, categoryGroups }: AccountListProps) {
   const [openAccountId, setOpenAccountId] = React.useState<string | null>(null)
   // One list, largest balance first.
   const activeAccounts = accounts
@@ -106,7 +103,10 @@ export function AccountList({ accounts, recentTransactions, categoryGroups }: Ac
 
       <AccountSheet
         account={openAccount}
+        accounts={accounts}
         transactions={openAccount ? recentTransactions[openAccount.id] ?? [] : []}
+        flow={openAccount ? flows[openAccount.id] : undefined}
+        monthLabel={monthLabel}
         categoryGroups={categoryGroups}
         onOpenChange={(open) => {
           if (!open) setOpenAccountId(null)
