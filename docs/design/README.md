@@ -70,7 +70,7 @@ component ở đó là cả app đổi theo.
   bo 12, cùng cao với nút mặc định, trong form cũng như đứng riêng (thanh tìm kiếm); `Textarea` và
   `InlineSelect` khi cao lên vẫn giữ góc 12. Khi focus, ô chuyển nền trắng (màu thẻ) và có viền đậm
   2px màu nhấn; khi lỗi, viền 2px màu `destructive`. Kích thước đặt qua biến `--control-h`,
-  `--control-radius`, `--control-px` (mặc định 44, 12, 16). `InputGroup variant="search"`: ô tìm kiếm đứng riêng (trang Giao dịch), tròn như nút
+  `--control-radius`, `--control-px` (mặc định 44, 12, 16). `CurrencyInput` (mọi ô số tiền): bàn phím số, nhóm hàng nghìn khi gõ (1.250.000), icon đồng tiền ở đầu (ẩn khi ô hẹp hơn 13rem, như hai ô Từ / Đến cạnh nhau, để số đủ chỗ), "đ" sau số, và khi đã có số thì nút ✕ xoá nhanh, giữ bàn phím; ô có thể âm (`onNegativeChange`) có nút +/− ở đầu thay cho icon. `InputGroup variant="search"`: ô tìm kiếm đứng riêng (trang Giao dịch), tròn như nút
   và không đổi nền, không viền khi focus.
 - **Màu ô nhập theo bề mặt** (token `field`, `track` và utility `surface-grouped` / `surface-plain`
   trong `globals.css`): trên nền xám (trang, sheet) ô nhập, chip, nút phụ màu trắng; trên thẻ
