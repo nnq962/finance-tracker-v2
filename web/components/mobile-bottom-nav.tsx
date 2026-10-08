@@ -194,7 +194,7 @@ export function MobileBottomNav() {
                 )}
               >
                 <Icon className="size-[22px] shrink-0" strokeWidth={isActive ? 2 : 1.75} aria-hidden="true" />
-                <span className={cn("max-w-full truncate px-1 text-[11px] leading-none font-medium", isActive && "font-semibold")}>
+                <span className={cn("max-w-full truncate text-[11px] leading-none font-medium tracking-tight", isActive && "font-semibold")}>
                   {item.mobileTitle}
                 </span>
               </Link>
