@@ -4,6 +4,7 @@ import * as React from "react"
 import { WalletCardsIcon } from "lucide-react"
 
 import { AccountLogo } from "@/components/account-logo"
+import { Money } from "@/components/app/money"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Card } from "@/components/ui/card"
 import {
@@ -15,10 +16,8 @@ import {
 } from "@/components/ui/empty"
 import { accountTypeLabels } from "@/lib/accounts/labels"
 import type { Account } from "@/lib/accounts/types"
-import { formatCurrency } from "@/lib/format-currency"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { Transaction } from "@/lib/transactions/types"
-import { cn } from "@/lib/utils"
 
 import { AccountSheet } from "./account-sheet"
 
@@ -44,14 +43,12 @@ function AccountRow({ account, onSelect }: { account: Account; onSelect: () => v
       title={account.name}
       description={accountDescription(account)}
       action={
-        <span
-          className={cn(
-            "text-sm font-medium tabular-nums",
-            isLocked ? "text-muted-foreground" : account.balance < 0 && "text-expense",
-          )}
-        >
-          {formatCurrency(account.balance)}
-        </span>
+        <Money
+          amount={account.balance}
+          size="sm"
+          // Below zero is a warning; an archived account's balance no longer counts.
+          tone={isLocked ? "muted" : account.balance < 0 ? "expense" : "default"}
+        />
       }
       onClick={onSelect}
     />

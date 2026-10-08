@@ -19,6 +19,8 @@ const moneyVariants = cva("inline-flex min-w-0 font-semibold tabular-nums [overf
       income: "text-income",
       expense: "text-expense",
       transfer: "text-transfer",
+      // Figures that no longer count, e.g. an archived account's balance.
+      muted: "text-muted-foreground",
     },
     // A fitted figure keeps its size's line height, centred in it, whatever
     // size it is set at, so figures side by side keep what is under them level.

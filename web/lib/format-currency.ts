@@ -8,6 +8,7 @@ const numberFormatter = new Intl.NumberFormat("vi-VN", {
   maximumFractionDigits: 0,
 })
 
+/** "−55.000đ", "+1.200.000đ": the minus sign (−), not a hyphen, as Money writes it. */
 export function formatCurrency(
   amount: number,
   { signDisplay = "auto" }: FormatCurrencyOptions = {},
@@ -16,7 +17,7 @@ export function formatCurrency(
     signDisplay === "never"
       ? ""
       : amount < 0
-        ? "-"
+        ? "−"
         : amount > 0 && signDisplay === "always"
           ? "+"
           : ""
@@ -30,8 +31,8 @@ export function formatCurrency(
  * (128,5tr rather than 128tr).
  */
 export function formatCompactCurrency(value: number, extraDigits = 0): string {
-  // A balance below zero reads -1,2tr.
-  if (value < 0) return `-${formatCompactCurrency(-value, extraDigits)}`
+  // A balance below zero reads −1,2tr, with the minus sign as Money writes it.
+  if (value < 0) return `−${formatCompactCurrency(-value, extraDigits)}`
 
   const format = (amount: number, unit: string) =>
     `${Number(amount.toFixed((amount < 10 ? 1 : 0) + extraDigits)).toLocaleString("vi-VN")}${unit}`
