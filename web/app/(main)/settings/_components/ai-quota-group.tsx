@@ -11,7 +11,9 @@ function UsageMeter({ label, left, total, note }: { label: string; left: number;
     <div className={cn("space-y-3 px-4 py-3", settingsSeparatorClassName())}>
       <div className="flex items-baseline justify-between gap-3">
         <p className="text-sm font-medium">{label}</p>
+        {/* "Còn" says the figure is what is left, so a full bar reads as untouched, not used up. */}
         <p className="text-base font-medium tabular-nums">
+          <span className="text-sm font-normal text-muted-foreground">Còn </span>
           {left}
           <span className="text-sm font-normal text-muted-foreground">/{total}</span>
         </p>

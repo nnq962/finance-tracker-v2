@@ -69,8 +69,6 @@ export type TransactionSummaryData = {
 
 export type TransactionDateGroup = {
   dateKey: string
-  weekdayLabel: string
-  dateLabel: string
   transactions: Transaction[]
 }
 

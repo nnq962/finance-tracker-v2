@@ -40,15 +40,15 @@ const localSeptemberTransaction = {
 
 assert.equal(getTransactionDateKey(localSeptemberTransaction.occurredAt), '2026-09-01')
 assert.equal(groupTransactionsByDate([localSeptemberTransaction])[0].dateKey, '2026-09-01')
-assert.equal(groupTransactionsByDate([localSeptemberTransaction])[0].weekdayLabel, 'Thứ Ba')
-assert.equal(groupTransactionsByDate([localSeptemberTransaction])[0].dateLabel, '01/09')
 
 // One way of writing dates across the app, in Vietnam time.
 const dates = require('../lib/format-date.ts')
 assert.equal(dates.formatDate('2026-09-01'), '01/09/2026')
 assert.equal(dates.formatLongDate('2026-10-04'), 'Chủ Nhật, 04/10/2026')
 assert.equal(dates.formatDayLabel('2026-10-02', '2026-10-02'), 'Hôm nay, 02/10')
-assert.equal(dates.formatDayLabel('2026-10-01', '2026-10-02'), 'Thứ Năm, 01/10')
+assert.equal(dates.formatDayLabel('2026-10-01', '2026-10-02'), 'Hôm qua, 01/10')
+assert.equal(dates.formatDayLabel('2026-09-30', '2026-10-02'), 'Thứ Tư, 30/09')
+assert.equal(dates.formatDayLabel('2026-10-01'), 'Thứ Năm, 01/10')
 assert.equal(dates.toDateKey(localSeptemberTransaction.occurredAt), '2026-09-01')
 assert.equal(dates.formatTime(localSeptemberTransaction.occurredAt), '00:30')
 assert.equal(dates.formatTime('2026-09-01T10:05:00.000Z'), '17:05')

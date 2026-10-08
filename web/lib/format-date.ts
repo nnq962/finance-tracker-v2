@@ -2,7 +2,7 @@
 //   formatDate        02/10/2026
 //   formatShortDate   02/10
 //   formatWeekday     Thứ Sáu
-//   formatDayLabel    Hôm nay, 02/10 · Thứ Sáu, 02/10
+//   formatDayLabel    Hôm nay, 02/10 · Hôm qua, 01/10 · Thứ Sáu, 25/09
 //   formatLongDate    Thứ Sáu, 02/10/2026
 //   formatTime        14:05 (24-hour)
 // Date-only values are "YYYY-MM-DD" keys; moments are ISO strings or Dates.
@@ -60,9 +60,25 @@ export function formatWeekday(dateKey: string) {
   return weekday.charAt(0).toUpperCase() + weekday.slice(1)
 }
 
-/** "Hôm nay, 02/10" for today, else "Thứ Sáu, 02/10". */
+/** The date key of the day before, across months and years. */
+function previousDateKey(dateKey: string) {
+  const { year, month, day } = splitKey(dateKey)
+  return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day) - 1)).toISOString().slice(0, 10)
+}
+
+/**
+ * "Hôm nay, 02/10" for today and "Hôm qua, 01/10" for the day before, as
+ * phone apps say them; other days by weekday, "Thứ Sáu, 25/09". Without
+ * `today` every day goes by its weekday.
+ */
 export function formatDayLabel(dateKey: string, today?: string) {
-  return `${dateKey === today ? "Hôm nay" : formatWeekday(dateKey)}, ${formatShortDate(dateKey)}`
+  return `${dayName(dateKey, today)}, ${formatShortDate(dateKey)}`
+}
+
+function dayName(dateKey: string, today?: string) {
+  if (dateKey === today) return "Hôm nay"
+  if (today && dateKey === previousDateKey(today)) return "Hôm qua"
+  return formatWeekday(dateKey)
 }
 
 export function formatLongDate(dateKey: string) {

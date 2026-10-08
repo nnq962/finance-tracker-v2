@@ -2,7 +2,6 @@ import type {
   Transaction,
   TransactionDateGroup,
 } from "../_types/transaction"
-import { formatShortDate, formatWeekday } from "@/lib/format-date"
 
 import { getTransactionDateKey } from "./get-transaction-period"
 
@@ -24,8 +23,6 @@ export function groupTransactionsByDate(
   return Array.from(groups, ([dateKey, groupedTransactions]) => {
     return {
       dateKey,
-      weekdayLabel: formatWeekday(dateKey),
-      dateLabel: formatShortDate(dateKey),
       transactions: groupedTransactions,
     }
   })

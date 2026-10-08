@@ -1,3 +1,4 @@
+import { ChevronRightIcon } from "lucide-react"
 import Link from "next/link"
 import * as React from "react"
 
@@ -15,7 +16,7 @@ type SectionHeaderProps = {
 
 /**
  * A section's title on a dashboard-like page: larger and in the text colour,
- * as in native apps, with an optional note and a "see all" link at the end.
+ * as in native apps, with an optional note and a "see all ›" link at the end.
  * Lists that read like settings keep SettingsGroup's small grey caption.
  * Pages use it through Section, which spaces the content below.
  */
@@ -35,11 +36,14 @@ export function SectionHeader({
       </h2>
       {action ??
         (href ? (
+          // Darker than the grey notes and with a chevron, as in iOS, so it reads
+          // as something to tap rather than a faint web link.
           <Link
             href={href}
-            className="flex min-h-11 shrink-0 items-center text-sm text-muted-foreground transition-colors hover:text-foreground active:opacity-60"
+            className="flex min-h-11 shrink-0 items-center gap-0.5 text-sm font-medium text-foreground/70 transition-colors hover:text-foreground active:opacity-60"
           >
             {linkLabel}
+            <ChevronRightIcon aria-hidden="true" className="size-4" />
           </Link>
         ) : null)}
     </div>

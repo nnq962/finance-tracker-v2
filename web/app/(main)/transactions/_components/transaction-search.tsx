@@ -1,6 +1,7 @@
 "use client"
 
 import { SearchIcon, XIcon } from "lucide-react"
+import * as React from "react"
 
 import { FormSection } from "@/components/app/form-section"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
@@ -21,6 +22,10 @@ export function countSheetFilters(filter: TransactionFilter, searchFilters: Tran
 /**
  * The search field. On phones it opens from the header's search button and
  * `onCancel` closes it again, clearing the text; from lg up it stays.
+ * The list filters as you type, so the keyboard's Search key only puts the
+ * keyboard away to show the results, as in native search bars. With a mouse
+ * and a hardware keyboard there is nothing to put away: Enter keeps focus in
+ * the field so typing and screen readers stay where they were.
  */
 export function TransactionSearchBar({
   id,
@@ -35,8 +40,17 @@ export function TransactionSearchBar({
   onCancel?: () => void
   autoFocus?: boolean
 }) {
+  const inputRef = React.useRef<HTMLInputElement>(null)
+
   return (
-    <div className="flex min-w-0 items-center gap-2">
+    <form
+      role="search"
+      className="flex min-w-0 items-center gap-2"
+      onSubmit={(event) => {
+        event.preventDefault()
+        if (window.matchMedia("(pointer: coarse)").matches) inputRef.current?.blur()
+      }}
+    >
       <label htmlFor={id} className="sr-only">
         Tìm giao dịch
       </label>
@@ -45,9 +59,11 @@ export function TransactionSearchBar({
           <SearchIcon aria-hidden="true" />
         </InputGroupAddon>
         <InputGroupInput
+          ref={inputRef}
           id={id}
           type="text"
           inputMode="search"
+          enterKeyHint="search"
           // Opened by a tap on the search button, it takes the keyboard straight away.
           autoFocus={autoFocus}
           value={query}
@@ -67,7 +83,7 @@ export function TransactionSearchBar({
           Huỷ
         </Button>
       ) : null}
-    </div>
+    </form>
   )
 }
 

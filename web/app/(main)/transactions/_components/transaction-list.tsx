@@ -73,7 +73,7 @@ export function TransactionList({
           categoryGroups={categoryGroups}
           key={group.dateKey}
           group={group}
-          isToday={group.dateKey === todayDateKey}
+          todayDateKey={todayDateKey}
         />
       ))}
     </div>
