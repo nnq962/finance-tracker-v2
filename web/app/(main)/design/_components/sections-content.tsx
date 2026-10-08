@@ -23,6 +23,7 @@ import {
   SparklesIcon,
   Trash2Icon,
   TrendingUpIcon,
+  TriangleAlertIcon,
   UtensilsCrossedIcon,
   WalletCardsIcon,
 } from "lucide-react"
@@ -552,6 +553,17 @@ function FeedbackSection() {
             Hiện lại banner
           </Button>
         )}
+      </Wide>
+      <Wide>
+        <NoticeBanner
+          tone="expense"
+          surface="card"
+          icon={TriangleAlertIcon}
+          title="1 khoản quá hạn"
+          onClick={() => toast("Mở khoản quá hạn")}
+        >
+          Minh Tuấn
+        </NoticeBanner>
       </Wide>
       <Wide>
         <NoticeBanner tone="warning" icon={BellRingIcon} title="Sắp đến hạn">

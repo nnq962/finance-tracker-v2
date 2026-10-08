@@ -204,7 +204,9 @@ export function DebtsView({
 
         {overdueDebts.length > 0 ? (
           <NoticeBanner
-            tone="warning"
+            // A white card among the lists, red as the overdue rows' "Quá N ngày".
+            tone="expense"
+            surface="card"
             icon={TriangleAlertIcon}
             title={`${overdueDebts.length} khoản quá hạn`}
             // Opens the one overdue the longest; the rest sit at the top of their sections.
