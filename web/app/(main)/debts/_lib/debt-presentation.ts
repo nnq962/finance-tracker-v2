@@ -15,14 +15,14 @@ export function getDebtDeadline(debt: Debt) {
   }
 
   if (!debt.dueAt) {
-    return { label: "Không có hạn trả", isOverdue: false }
+    return { label: "Không hạn trả", isOverdue: false }
   }
 
   const daysUntilDue = getDaysUntilDue(debt.dueAt)
 
   if (debt.status === "overdue" || daysUntilDue < 0) {
     return {
-      label: `Quá ${Math.abs(daysUntilDue)} ngày`,
+      label: `Quá hạn ${Math.abs(daysUntilDue)} ngày`,
       isOverdue: true,
     }
   }

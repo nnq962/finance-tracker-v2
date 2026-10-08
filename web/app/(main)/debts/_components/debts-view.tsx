@@ -21,7 +21,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
-import { Skeleton } from "@/components/ui/skeleton"
 
 import {
   compareDebtsByUrgency,
@@ -32,6 +31,7 @@ import type { Contact, Debt, DebtDirection, NewDebt, NewDebtPayment } from "../_
 import {
   DebtDetailInfo,
   DebtDetailPanel,
+  DebtDetailSkeleton,
   DebtEditButton,
   DebtRecordPaymentButton,
 } from "./debt-detail-panel"
@@ -291,9 +291,7 @@ export function DebtsView({
             role="status"
             aria-label="Đang tải chi tiết khoản nợ"
           >
-            <Skeleton className="h-36 w-full" />
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-36 w-full" />
+            <DebtDetailSkeleton />
           </div>
         )}
       </PageSheet>

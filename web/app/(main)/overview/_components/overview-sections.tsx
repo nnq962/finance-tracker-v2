@@ -74,7 +74,7 @@ export function NetWorth({
 }
 
 function getDueLabel(daysUntilDue: number) {
-  if (daysUntilDue < 0) return `Quá ${Math.abs(daysUntilDue)} ngày`
+  if (daysUntilDue < 0) return `Quá hạn ${Math.abs(daysUntilDue)} ngày`
   if (daysUntilDue === 0) return "Đến hạn hôm nay"
   return `Còn ${daysUntilDue} ngày`
 }

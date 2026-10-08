@@ -5,11 +5,12 @@ import { CheckIcon, PencilIcon } from "lucide-react"
 
 import { AccountLogo } from "@/components/account-logo"
 import { Money } from "@/components/app/money"
-import { groupCaptionClassName, SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { groupCaptionClassName, SettingsGroup, SettingsGroupSkeleton, SettingsRow } from "@/components/settings-list"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { Skeleton } from "@/components/ui/skeleton"
 import type { Account } from "@/lib/accounts/types"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatShortDate } from "@/lib/format-date"
@@ -41,8 +42,9 @@ export function DebtDetailPanel(props: DebtDetailPanelProps) {
     <section aria-labelledby="debt-detail-title" className="space-y-2">
       {/* A caption like the summary's beside it, so both columns start on one line. */}
       <div className="flex min-h-6 items-center justify-between gap-3 px-3">
+        {/* The person is named under it, so the caption says what this is, as the sheet's bar does. */}
         <h2 id="debt-detail-title" className={cn("truncate", groupCaptionClassName)}>
-          {props.contact.name}
+          Chi tiết khoản nợ
         </h2>
         <DebtEditButton {...props} variant="text" />
       </div>
@@ -98,12 +100,42 @@ export function DebtEditButton({
   )
 }
 
+/**
+ * Same footprint as DebtDetailInfo while a debt loads: the round avatar, who
+ * owes whom, the amount and its badge, the paid card, then rows of a title
+ * and a value and the history.
+ */
+export function DebtDetailSkeleton() {
+  return (
+    <div aria-hidden="true" className="space-y-6">
+      <div className="flex flex-col items-center pt-2">
+        <Skeleton className="size-12 rounded-full" />
+        <div className="mt-3 flex h-6 items-center">
+          <Skeleton className="h-4 w-32" />
+        </div>
+        <div className="flex h-[42.5px] items-center">
+          <Skeleton className="h-8 w-44" />
+        </div>
+        <Skeleton className="mt-2 h-6 w-24 rounded-full" />
+      </div>
+      <Card className="gap-2 px-4 py-4">
+        <Skeleton className="h-2 rounded-full" />
+        <div className="flex h-4 items-center justify-between">
+          <Skeleton className="h-3 w-28" />
+          <Skeleton className="h-3 w-24" />
+        </div>
+      </Card>
+      <SettingsGroupSkeleton caption={false} rows={3} media="none" trailing="value" />
+      <SettingsGroupSkeleton rows={1} description />
+    </div>
+  )
+}
+
 /** Where a debt stands, for the badge under its amount: "Còn 11 ngày", "Quá hạn 6 ngày", "Đến hạn hôm nay", "Không hạn trả", "Đã tất toán". */
 function standingLabel(debt: Debt, settled: boolean) {
   if (settled) return "Đã tất toán"
   if (!debt.dueAt) return "Không hạn trả"
-  const { label } = getDebtDeadline(debt)
-  return label.startsWith("Quá ") ? label.replace("Quá ", "Quá hạn ") : label
+  return getDebtDeadline(debt).label
 }
 
 /**

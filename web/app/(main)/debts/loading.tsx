@@ -2,38 +2,18 @@ import { FloatingActionsSkeleton } from "@/components/app/floating-actions"
 import { FlowTilesSkeleton } from "@/components/app/flow-tiles"
 import { Page, PageHeaderSkeleton } from "@/components/page"
 import { SettingsGroupSkeleton } from "@/components/settings-list"
-import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 
-/**
- * Same footprint as the side panel's start: the person as its caption, the
- * card of what is left (label, total, bar, what is paid), then the figures
- * and dates as rows of a title and a value.
- */
+import { DebtDetailSkeleton } from "./_components/debt-detail-panel"
+
+/** The side panel's caption and its details, as DebtDetailPanel lays them out. */
 function DetailSkeleton() {
   return (
     <div className="space-y-2">
       <div className="flex min-h-6 items-center px-3">
-        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-3 w-28" />
       </div>
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="space-y-2">
-            <div className="flex h-5 items-center">
-              <Skeleton className="h-3.5 w-20" />
-            </div>
-            <div className="flex h-[42.5px] items-center">
-              <Skeleton className="h-8 w-48 max-w-full" />
-            </div>
-            <Skeleton className="h-2 rounded-full" />
-            <div className="flex h-4 items-center">
-              <Skeleton className="h-3 w-40 max-w-full" />
-            </div>
-          </CardContent>
-        </Card>
-        <SettingsGroupSkeleton caption={false} rows={3} media="none" trailing="value" />
-        <SettingsGroupSkeleton caption={false} rows={2} media="none" trailing="value" />
-      </div>
+      <DebtDetailSkeleton />
     </div>
   )
 }
