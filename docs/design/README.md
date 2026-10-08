@@ -269,10 +269,12 @@ Trước khi báo xong một màn mới, kiểm tra:
   ở giữa (âm thì đỏ, ngừng dùng thì mờ), dòng phụ loại · ngân hàng (bỏ phần tên đã nói) và "Đã
   ngừng sử dụng". Rồi "THÁNG 10" với `FlowTiles` Tiền vào / Tiền ra của tháng (`getAccountFlows`:
   thu, chi, hai đầu chuyển khoản kèm phí, thu và trả nợ); nhóm Bắt đầu từ, Số dư ban đầu, Đã tăng /
-  Đã giảm (số dư trừ số dư ban đầu), ghi chú; "Giao dịch gần đây" là `TransactionItem` (chạm mở chi
-  tiết giao dịch), mô tả là đầu kia của chuyển khoản ("Đến Ví MoMo") hay nhóm hạng mục, số tiền theo
+  Đã giảm (số dư trừ số dư ban đầu; sửa số dư thì số dư ban đầu dời theo đúng phần chênh, nên dòng
+  này chỉ phản ánh giao dịch), ghi chú; "Giao dịch gần đây" là `TransactionItem` (chạm mở chi
+  tiết giao dịch; có cả các lần thu, trả nợ như trang Giao dịch), mô tả là đầu kia của chuyển khoản ("Đến Ví MoMo") hay nhóm hạng mục, số tiền theo
   tài khoản này, ngày dưới số tiền; "Ngừng sử dụng" / "Dùng lại tài khoản" có icon và chú thích nói
-  rõ nó làm gì; cuối cùng "Xoá tài khoản".
+  rõ nó làm gì; cuối cùng "Xoá tài khoản" (xoá giao dịch, khoản vay ghi vào tài khoản này và các
+  lần trả nợ từ nó; khoản vay ghi vào tài khoản khác thì giữ).
 - **Chi tiết giao dịch** (`TransactionDetailsSheet`), như biên lai: icon lớn, tên, số tiền lớn, ngày
   giờ; Sửa là nút bút chì tròn bên phải thanh. Thông tin dạng nhãn trái, giá trị phải: Tài khoản
   (logo `xs` + tên), Hạng mục (`IconTile xs` + tên), Nhóm; ghi chú xuống dòng đầy đủ. Chuyển khoản

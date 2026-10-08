@@ -16,11 +16,10 @@ function label(institution: FinancialInstitution) {
   return institution.shortName ?? institution.name
 }
 
-/** The bank's or wallet's logo as an account's tile, the same as in the account list; its name is beside it, so it is not read out. */
+/** The bank's or wallet's logo as an account's tile, the same as in the account list. */
 export function InstitutionLogo({ institution }: { institution: FinancialInstitution }) {
   return (
-    <span aria-hidden="true" className="contents">
-      <AccountLogo
+    <AccountLogo
       account={{
         type: institution.type,
         logoUrl: institution.logoPath,
@@ -28,8 +27,7 @@ export function InstitutionLogo({ institution }: { institution: FinancialInstitu
         institutionName: institution.name,
         logoFallback: label(institution).slice(0, 2),
       }}
-      />
-    </span>
+    />
   )
 }
 

@@ -24,12 +24,13 @@ const tileClassName = {
 /**
  * An account's mark as a tile, the same soft square as the icons in every
  * list (IconTile): the bank's or wallet's logo on white, cash as a green
- * banknote, or the initials when there is no logo.
+ * banknote, or the initials when there is no logo. Its name is always
+ * written beside it, so it is not read out a second time.
  */
 export function AccountLogo({ account, size = "sm", className }: AccountLogoProps) {
   if (account.type === "cash") {
     return (
-      <span role="img" aria-label="Tiền mặt" className={className}>
+      <span aria-hidden="true" className={className}>
         <IconTile
           icon={BanknoteIcon}
           tone="emerald"
@@ -42,6 +43,7 @@ export function AccountLogo({ account, size = "sm", className }: AccountLogoProp
 
   return (
     <span
+      aria-hidden="true"
       className={cn(
         "inline-flex shrink-0 items-center justify-center overflow-hidden font-medium",
         tileClassName[size],
@@ -54,7 +56,7 @@ export function AccountLogo({ account, size = "sm", className }: AccountLogoProp
       {account.logoUrl ? (
         <Image
           src={account.logoUrl}
-          alt={account.institutionName ?? account.name}
+          alt=""
           width={size === "lg" ? 48 : 36}
           height={size === "lg" ? 48 : 36}
           className="size-full object-contain p-[14%]"

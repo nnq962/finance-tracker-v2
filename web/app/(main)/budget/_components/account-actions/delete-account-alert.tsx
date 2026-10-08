@@ -57,7 +57,7 @@ export function DeleteAccountAlert({
         <AlertDialogHeader>
           <AlertDialogTitle>Xoá tài khoản?</AlertDialogTitle>
           <AlertDialogDescription>
-            Mọi giao dịch và khoản vay nợ của {account.name} cũng sẽ bị xoá.
+            Mọi giao dịch, khoản vay nợ và lần trả nợ ghi vào {account.name} cũng sẽ bị xoá.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

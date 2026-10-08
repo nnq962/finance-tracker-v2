@@ -159,49 +159,61 @@ export async function getTransactions(userId: string): Promise<Transaction[]> {
   return rows.map(toTransaction)
 }
 
+/** A payment is dated by its Vietnam day and time. */
+const debtPaymentPaidAt = sql<Date>`(p.paid_at + p.paid_time) AT TIME ZONE 'Asia/Ho_Chi_Minh'`
+
 /**
- * The latest transactions that moved money in or out of each account, in two
- * queries whatever the number of accounts: rank every account movement (a
- * transfer counts for both of its accounts), then load the top ones.
+ * The latest movements of money in or out of each account, in three queries
+ * whatever the number of accounts: rank every account movement (a transfer
+ * counts for both of its accounts, and loan payments count, shaped as on the
+ * transactions page), then load the top ones.
  */
 export async function getRecentTransactionsByAccount(
   userId: string,
   limit = 5,
 ): Promise<Record<string, Transaction[]>> {
-  const ranked = await sql<{ accountId: string; id: string }>`
-    SELECT account_id, id FROM (
-      SELECT m.account_id, m.id, row_number() OVER (
+  const ranked = await sql<{ accountId: string; id: string; payment: boolean }>`
+    SELECT account_id, id, payment FROM (
+      SELECT m.account_id, m.id, m.payment, row_number() OVER (
         PARTITION BY m.account_id ORDER BY m.occurred_at DESC, m.id DESC
       ) AS position
       FROM (
-        SELECT id, occurred_at, account_id FROM transactions
+        SELECT id, occurred_at, account_id, false FROM transactions
         WHERE user_id = ${userId} AND account_id IS NOT NULL
         UNION ALL
-        SELECT id, occurred_at, from_account_id FROM transactions
+        SELECT id, occurred_at, from_account_id, false FROM transactions
         WHERE user_id = ${userId} AND from_account_id IS NOT NULL
         UNION ALL
-        SELECT id, occurred_at, to_account_id FROM transactions
+        SELECT id, occurred_at, to_account_id, false FROM transactions
         WHERE user_id = ${userId} AND to_account_id IS NOT NULL
-      ) AS m (id, occurred_at, account_id)
+        UNION ALL
+        SELECT p.id, ${debtPaymentPaidAt}, p.account_id, true FROM debt_payments p
+        WHERE p.user_id = ${userId}
+      ) AS m (id, occurred_at, account_id, payment)
     ) AS ranked
     WHERE position <= ${limit}
   `.execute(getDb())
   if (ranked.rows.length === 0) return {}
 
-  const rows = await selectTransactions(userId)
-    .where("t.id", "in", [...new Set(ranked.rows.map((row) => row.id))])
-    .execute()
-  const accountsById = new Map<string, string[]>()
-  for (const { accountId, id } of ranked.rows) {
-    accountsById.set(id, [...(accountsById.get(id) ?? []), accountId])
-  }
+  const ids = (payment: boolean) => [...new Set(ranked.rows.filter((row) => row.payment === payment).map((row) => row.id))]
+  const [transactionIds, paymentIds] = [ids(false), ids(true)]
+  const [transactionRows, paymentRows] = await Promise.all([
+    transactionIds.length ? selectTransactions(userId).where("t.id", "in", transactionIds).execute() : [],
+    paymentIds.length ? selectDebtPayments(userId).where("p.id", "in", paymentIds).execute() : [],
+  ])
+  const byId = new Map<string, Transaction>([
+    ...transactionRows.map((row) => [row.id, toTransaction(row)] as const),
+    ...paymentRows.map((row) => [row.id, toDebtPaymentTransaction(row)] as const),
+  ])
+
   const byAccount: Record<string, Transaction[]> = {}
-  // selectTransactions orders newest first; that order is kept per account.
-  for (const row of rows) {
-    const transaction = toTransaction(row)
-    for (const accountId of accountsById.get(row.id) ?? []) {
-      (byAccount[accountId] ??= []).push(transaction)
-    }
+  for (const { accountId, id } of ranked.rows) {
+    const transaction = byId.get(id)
+    if (transaction) (byAccount[accountId] ??= []).push(transaction)
+  }
+  // Newest first, as the ranking ordered them.
+  for (const list of Object.values(byAccount)) {
+    list.sort((left, right) => right.occurredAt.localeCompare(left.occurredAt) || right.id.localeCompare(left.id))
   }
   return byAccount
 }
@@ -212,7 +224,7 @@ export async function getRecentTransactionsByAccount(
  * it), and loan repayments received or made. Accounts with nothing are left out.
  */
 export async function getAccountFlows(userId: string, start: Date, end: Date): Promise<Record<string, AccountFlow>> {
-  const paidAt = sql`(p.paid_at + p.paid_time) AT TIME ZONE 'Asia/Ho_Chi_Minh'`
+  const paidAt = debtPaymentPaidAt
   const result = await sql<{ accountId: string; moneyIn: number; moneyOut: number; inCount: number; outCount: number }>`
     SELECT account_id,
       sum(money_in)::bigint AS money_in,
@@ -268,41 +280,47 @@ export async function getTransactionsInRange(
  * comes in, money paid back on a loan taken goes out. They are kept as debt
  * payments, so they are changed on the debts page.
  */
-export async function getDebtPaymentsInRange(userId: string, start: Date, end: Date): Promise<Transaction[]> {
-  // A payment is dated by its Vietnam day and time.
-  const paidAt = sql<Date>`(p.paid_at + p.paid_time) AT TIME ZONE 'Asia/Ho_Chi_Minh'`
-  const rows = await getDb()
+function selectDebtPayments(userId: string) {
+  return getDb()
     .selectFrom("debtPayments as p")
     .innerJoin("debts as d", "d.id", "p.debtId")
     .leftJoin("contacts as c", "c.id", "d.contactId")
     .leftJoin("accounts as a", "a.id", "p.accountId")
     .select(["p.id", "p.debtId", "p.amount", "p.accountId", "p.note", "d.direction", "c.name as contactName", "a.name as accountName"])
-    .select(paidAt.as("occurredAt"))
+    .select(debtPaymentPaidAt.as("occurredAt"))
     .where("p.userId", "=", userId)
-    .where(paidAt, ">=", start)
-    .where(paidAt, "<", end)
+}
+
+type DebtPaymentRow = Awaited<ReturnType<ReturnType<typeof selectDebtPayments>["execute"]>>[number]
+
+function toDebtPaymentTransaction(row: DebtPaymentRow): Transaction {
+  const comesIn = row.direction === "lent"
+  const accountName = row.accountName ?? undefined
+  const title = `${comesIn ? "Thu nợ" : "Trả nợ"} · ${row.contactName ?? "Người liên hệ"}`
+  return {
+    id: row.id,
+    source: "debt" as const,
+    debtId: row.debtId,
+    kind: comesIn ? ("income" as const) : ("expense" as const),
+    title,
+    description: `Vay & nợ · ${accountName ?? "Tài khoản"}`,
+    amount: comesIn ? row.amount : -row.amount,
+    accountId: row.accountId,
+    accountName,
+    categoryName: title,
+    categoryGroupName: "Vay & nợ",
+    ...(row.note ? { note: row.note } : {}),
+    occurredAt: new Date(row.occurredAt).toISOString(),
+  }
+}
+
+export async function getDebtPaymentsInRange(userId: string, start: Date, end: Date): Promise<Transaction[]> {
+  const rows = await selectDebtPayments(userId)
+    .where(debtPaymentPaidAt, ">=", start)
+    .where(debtPaymentPaidAt, "<", end)
     .execute()
 
-  return rows.map((row) => {
-    const comesIn = row.direction === "lent"
-    const accountName = row.accountName ?? undefined
-    const title = `${comesIn ? "Thu nợ" : "Trả nợ"} · ${row.contactName ?? "Người liên hệ"}`
-    return {
-      id: row.id,
-      source: "debt" as const,
-      debtId: row.debtId,
-      kind: comesIn ? ("income" as const) : ("expense" as const),
-      title,
-      description: `Vay & nợ · ${accountName ?? "Tài khoản"}`,
-      amount: comesIn ? row.amount : -row.amount,
-      accountId: row.accountId,
-      accountName,
-      categoryName: title,
-      categoryGroupName: "Vay & nợ",
-      ...(row.note ? { note: row.note } : {}),
-      occurredAt: new Date(row.occurredAt).toISOString(),
-    }
-  })
+  return rows.map(toDebtPaymentTransaction)
 }
 
 /**

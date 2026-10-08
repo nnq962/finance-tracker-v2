@@ -110,10 +110,26 @@ export async function updateAccount(
       throw new AccountValidationError("Số dư tài khoản vừa thay đổi. Vui lòng tải lại trang rồi thử lại.")
     }
 
+    // A corrected balance means the account started with that much more or
+    // less: the opening balance moves with it, so the opening balance and the
+    // transactions still add up to the balance, and what the account shows
+    // as having moved since is only what its transactions moved.
+    let openingBalance: number | undefined
+    if (balanceChanged) {
+      const { openingBalance: current } = await trx
+        .selectFrom("accounts")
+        .select("openingBalance")
+        .where("id", "=", accountId)
+        .executeTakeFirstOrThrow()
+      const shifted = shiftBalance(current, values.balance - account.balance)
+      if (shifted === null) throw new AccountValidationError("Số dư không hợp lệ.")
+      openingBalance = shifted
+    }
+
     await trx
       .updateTable("accounts")
       .set({
-        ...(balanceChanged ? { balance: values.balance } : {}),
+        ...(balanceChanged ? { balance: values.balance, openingBalance } : {}),
         name: values.name,
         type: values.type,
         institutionId: values.institutionId ?? null,
@@ -130,19 +146,43 @@ export async function setAccountArchived(
   accountId: string,
   archived: boolean,
 ) {
-  await getDb()
+  const result = await getDb()
     .updateTable("accounts")
     .set({ status: archived ? "archived" : "active" })
     .where("id", "=", accountId)
     .where("userId", "=", userId)
-    .execute()
+    .executeTakeFirst()
+
+  // Deleted meanwhile (on another device): say so rather than claim it was done.
+  if (result.numUpdatedRows === BigInt(0)) {
+    throw new AccountValidationError("Không tìm thấy tài khoản. Vui lòng tải lại trang.")
+  }
+}
+
+/** Postgres gave up one of two transactions waiting on each other: running it again succeeds. */
+function isDeadlock(error: unknown) {
+  return typeof error === "object" && error !== null && "code" in error && error.code === "40P01"
 }
 
 /**
- * Deletes the account with every transaction, loan and payment that touches
- * it, and reverses their effect on the user's other accounts, atomically.
+ * Deletes the account with every transaction that touches it and every loan
+ * recorded into it (with all of that loan's payments), and reverses their
+ * effect on the user's other accounts, atomically. A loan recorded into
+ * another account stays: only its payments from this account go, which moved
+ * no other account. Should the database break a deadlock with a concurrent
+ * change (a transfer, a loan payment, locking in another order), it runs again.
  */
 export async function deleteAccount(userId: string, accountId: string) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await deleteAccountOnce(userId, accountId)
+    } catch (error) {
+      if (!isDeadlock(error) || attempt === 3) throw error
+    }
+  }
+}
+
+async function deleteAccountOnce(userId: string, accountId: string) {
   await getDb().transaction().execute(async (trx) => {
     const account = (await lockAccounts(trx, userId, [accountId])).get(accountId)
     if (!account) return
@@ -160,19 +200,12 @@ export async function deleteAccount(userId: string, accountId: string) {
       ]))
       .execute()
 
+    // The loans recorded into this account go whole.
     const debts = await trx
       .selectFrom("debts")
       .select(["id", "direction", "recordingMode", "accountId", "amount"])
       .where("userId", "=", userId)
-      .where((eb) => eb.or([
-        eb("accountId", "=", accountId),
-        eb.exists(
-          eb.selectFrom("debtPayments")
-            .select("debtPayments.id")
-            .whereRef("debtPayments.debtId", "=", "debts.id")
-            .where("debtPayments.accountId", "=", accountId),
-        ),
-      ]))
+      .where("accountId", "=", accountId)
       .forUpdate()
       .execute()
 
@@ -235,6 +268,12 @@ export async function deleteAccount(userId: string, accountId: string) {
         .where("id", "in", debts.map((debt) => debt.id))
         .execute()
     }
+    // Other loans' payments from this account: they only moved this account.
+    await trx
+      .deleteFrom("debtPayments")
+      .where("userId", "=", userId)
+      .where("accountId", "=", accountId)
+      .execute()
     await trx.deleteFrom("accounts").where("id", "=", accountId).execute()
   })
 }

@@ -58,7 +58,7 @@ function getMoney(formData: FormData, name: string, label: string, allowNegative
   return value
 }
 
-/** The opening date and time, in Vietnam time, from 2000 through today. */
+/** The opening date and time, in Vietnam time, from 2000 up to now. */
 function getOpenedAt(formData: FormData) {
   const date = getText(formData, "date")
   const time = getText(formData, "time")
@@ -70,13 +70,14 @@ function getOpenedAt(formData: FormData) {
     Number.isNaN(openedAt.getTime()) ||
     openedAt.toLocaleDateString("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }) !== date
   ) {
-    throw new AccountValidationError("Thời gian tạo không hợp lệ.")
+    throw new AccountValidationError("Thời gian bắt đầu không hợp lệ.")
   }
-  if (date > toDateKey(new Date())) {
-    throw new AccountValidationError("Thời gian tạo không được sau hôm nay.")
+  // Today counts up to now, with the minute being typed.
+  if (date > toDateKey(new Date()) || openedAt.getTime() > Date.now() + 60_000) {
+    throw new AccountValidationError("Thời gian bắt đầu không được sau bây giờ.")
   }
   if (date < "2000-01-01") {
-    throw new AccountValidationError("Thời gian tạo phải từ năm 2000 trở đi.")
+    throw new AccountValidationError("Thời gian bắt đầu phải từ năm 2000 trở đi.")
   }
   return openedAt
 }
