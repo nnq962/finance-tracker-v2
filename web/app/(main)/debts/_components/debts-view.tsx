@@ -4,7 +4,7 @@ import * as React from "react"
 import {
   ArrowDownLeftIcon,
   ArrowUpRightIcon,
-  HandCoinsIcon,
+  HandshakeIcon,
   TriangleAlertIcon,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -187,7 +187,7 @@ export function DebtsView({
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <HandCoinsIcon />
+              <HandshakeIcon />
             </EmptyMedia>
             <EmptyTitle>Chưa có khoản nợ</EmptyTitle>
             <EmptyDescription>Khoản cho vay và đi vay hiện ở đây, kèm hạn trả.</EmptyDescription>

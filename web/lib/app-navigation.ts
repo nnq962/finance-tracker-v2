@@ -1,6 +1,6 @@
 import {
   ArrowLeftRightIcon,
-  HandCoinsIcon,
+  HandshakeIcon,
   LayoutDashboardIcon,
   WalletCardsIcon,
   type LucideIcon,
@@ -36,7 +36,8 @@ export const appNavigationItems: AppNavigationItem[] = [
     title: "Vay nợ",
     mobileTitle: "Vay nợ",
     url: "/debts",
-    icon: HandCoinsIcon,
+    // A deal between two people: read at a glance on the icon-only tab bar.
+    icon: HandshakeIcon,
   },
 ]
 
