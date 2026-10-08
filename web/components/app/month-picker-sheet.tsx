@@ -94,13 +94,11 @@ export function MonthPickerSheet({
 
           <Button
             type="button"
-            variant="secondary"
-            size="lg"
             className="mt-5 w-full"
             disabled={value === max}
             onClick={() => choose(max)}
           >
-            Về tháng này
+            Tháng hiện tại
           </Button>
         </div>
       </DrawerContent>
