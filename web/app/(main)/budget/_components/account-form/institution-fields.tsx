@@ -79,6 +79,8 @@ export function InstitutionGrid({
       value={value}
       onValueChange={onValueChange}
       onShowAll={onShowAll}
+      labelLines={1}
+      tileSize="sm"
       error={error}
     />
   )

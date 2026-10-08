@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils"
 export type PickGridItem = {
   id: string
   label: string
-  /** The cell's 36 tile: an IconTile, an AccountLogo. */
+  /** The cell's tile: an IconTile (40), an AccountLogo (36; set `tileSize="sm"`). */
   media: React.ReactNode
 }
 
@@ -29,12 +29,18 @@ export function PickGrid({
   value,
   onValueChange,
   onShowAll,
+  labelLines = 2,
+  tileSize = "md",
   error,
 }: {
   /** The first cell's id, for focusing the grid when nothing is chosen. */
   id: string
   caption: string
   items: PickGridItem[]
+  /** 2: names wrap to a second line (categories); 1: one line, a long one cut with "…" (banks, wallets). */
+  labelLines?: 1 | 2
+  /** The size of the cells' tiles, for "Tất cả" to match them: md (IconTile's own) or sm (36, AccountLogo). */
+  tileSize?: "sm" | "md"
   value: string
   onValueChange: (id: string) => void
   onShowAll: () => void
@@ -59,19 +65,13 @@ export function PickGrid({
             className={cn(cellClassName, item.id === value && "bg-muted ring-2 ring-foreground ring-inset")}
           >
             {item.media}
-            {/* A name of one long word (Techcombank) a size down on phones, as it cannot wrap. */}
-            <span
-              className={cn(
-                "line-clamp-2 w-full px-0.5 text-xs leading-tight",
-                item.label.split(" ").some((word) => word.length > 9) && "max-sm:text-[11px] max-sm:tracking-tight",
-              )}
-            >
+            <span className={cn("w-full px-1 text-xs leading-tight", labelLines === 1 ? "truncate" : "line-clamp-2")}>
               {item.label}
             </span>
           </button>
         ))}
         <button type="button" id={items.length === 0 ? id : undefined} onClick={onShowAll} className={cellClassName}>
-          <IconTile icon={LayoutGridIcon} />
+          <IconTile icon={LayoutGridIcon} size={tileSize} />
           <span className="text-xs leading-tight">Tất cả</span>
         </button>
       </div>
