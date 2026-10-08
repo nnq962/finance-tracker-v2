@@ -202,6 +202,8 @@ type SettingsRowProps = {
    * pressed or unpressed button. Leave it unset for other rows.
    */
   checked?: boolean
+  /** A row that unfolds something under it: whether it is unfolded, read out as such. */
+  expanded?: boolean
 }
 
 const rowClassName = "min-h-16 gap-3 py-3"
@@ -225,6 +227,7 @@ function SettingsRow({
   action,
   onClick,
   checked,
+  expanded,
   chevron = Boolean(onClick) && checked === undefined,
   active = false,
   disabled = false,
@@ -286,6 +289,7 @@ function SettingsRow({
         data-active={active}
         aria-current={active ? "page" : undefined}
         aria-pressed={checked}
+        aria-expanded={expanded}
         className={pressableRow}
       >
         {content}

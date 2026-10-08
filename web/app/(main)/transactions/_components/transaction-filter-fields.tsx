@@ -329,6 +329,8 @@ export function TransactionFilterPanel({
     props.filter,
     props.searchFilters,
   )
+  // Each reset starts the fields over, "Tuỳ chỉnh" closed with the rest.
+  const [resets, setResets] = React.useState(0)
 
   return (
     <section aria-labelledby="transaction-filters-title" className="space-y-2">
@@ -337,14 +339,22 @@ export function TransactionFilterPanel({
           Bộ lọc
         </h2>
         {activeFilterCount > 0 ? (
-          <Button type="button" variant="ghost" size="xs" onClick={onReset}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            onClick={() => {
+              onReset()
+              setResets((count) => count + 1)
+            }}
+          >
             Đặt lại
           </Button>
         ) : null}
       </div>
       <Card>
         <CardContent>
-          <TransactionFilterFields idPrefix="transaction-panel" {...props} />
+          <TransactionFilterFields key={resets} idPrefix="transaction-panel" {...props} />
         </CardContent>
       </Card>
     </section>

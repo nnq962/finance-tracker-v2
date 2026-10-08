@@ -18,6 +18,9 @@ function shiftDate(dateKey: string, days: number) {
 
 /** "Hôm nay, 20:02", "Hôm qua, 12:30", else "Thứ Ba, 06/10 · 17:00". */
 function timeLabel(date: string, time: string, today: string) {
+  // A field cleared (a picker's Clear, a deleted segment) leaves nothing to name.
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return "Chọn ngày"
+  if (!/^\d{2}:\d{2}/.test(time)) time = "--:--"
   if (date === today) return `Hôm nay, ${time}`
   if (date === shiftDate(today, 1)) return `Hôm qua, ${time}`
   return `${formatDayLabel(date)} · ${time}`
@@ -70,6 +73,7 @@ export function TimeRows({
           </span>
         }
         chevron={false}
+        expanded={open}
         onClick={() => setOpen((current) => !current)}
       />
       {/* No divider: the chips and the fields belong to the row above, with

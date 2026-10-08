@@ -19,9 +19,10 @@ export type RetiredCategory = { id: string; name: string; groupName?: string }
  * The categories to show first: the most used for this kind, then the
  * catalogue's order; the chosen one always among them, so it shows as chosen.
  */
-export function gridCategories(items: CategoryItem[], usage: Map<string, number>, chosenId: string) {
+export function gridCategories(items: CategoryItem[], usage: Map<string, number>, chosenId: string, taken = 0) {
   const ordered = [...items].sort((left, right) => (usage.get(right.id) ?? 0) - (usage.get(left.id) ?? 0))
-  const shown = ordered.slice(0, GRID_COUNT)
+  // `taken`: cells used before these (a retired category), so the grid stays two rows.
+  const shown = ordered.slice(0, GRID_COUNT - taken)
   const chosen = ordered.find((item) => item.id === chosenId)
   if (chosen && !shown.includes(chosen)) shown[shown.length - 1] = chosen
   return shown

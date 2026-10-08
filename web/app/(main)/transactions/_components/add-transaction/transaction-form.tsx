@@ -118,7 +118,12 @@ export function TransactionForm({
     transfer: useTransactionHistory("transfer", defaultValues?.id),
   }
   const historyAmounts = histories[kind].map((transaction) => Math.abs(transaction.amount))
-  const keptIds = [base(kind)?.accountId, base(kind)?.fromAccountId, base(kind)?.toAccountId].filter(Boolean) as string[]
+  // Only the transaction edited keeps an archived account or a retired
+  // category: written again, it is a new one, which the server refuses them.
+  const editedIds = defaultValues
+    ? ([defaultValues.accountId, defaultValues.fromAccountId, defaultValues.toAccountId].filter(Boolean) as string[])
+    : []
+  const keptIds = editedIds
   const usable = (account: Account, keep: string[]) => account.status === "active" || keep.includes(account.id)
 
   const [amount, setAmount] = React.useState<number | null>(
@@ -127,29 +132,44 @@ export function TransactionForm({
   // Each spending and income keeps its own account and category; a new one
   // starts on the account last used for that kind.
   const [picks, setPicks] = React.useState(() => {
+    const isActive = (id?: string) => accounts.some((account) => account.status === "active" && account.id === id)
+    // The edited transaction's own, whatever their state; else an active one.
+    const startAccount = (id?: string) => (id && (editedIds.includes(id) || isActive(id)) ? id : undefined)
+    const liveCategory = (id?: string) =>
+      id && (defaultValues?.categoryId === id || categoryGroups.some((group) => group.items.some((item) => item.id === id)))
+        ? id
+        : undefined
     const cashFlow = (formKind: CashFlowKind) => {
       const start = base(formKind)
-      const lastUsed = start
-        ? undefined
-        : histories[formKind].find((transaction) =>
-            accounts.some((account) => account.status === "active" && account.id === transaction.accountId),
-          )?.accountId
-      return { accountId: start?.accountId ?? lastUsed ?? "", categoryId: start?.categoryId ?? "" }
+      const lastUsed = histories[formKind].find((transaction) => isActive(transaction.accountId))?.accountId
+      return {
+        accountId: startAccount(start?.accountId) ?? lastUsed ?? "",
+        categoryId: liveCategory(start?.categoryId) ?? "",
+      }
     }
     const transfer = base("transfer")
-    const lastFrom = transfer
-      ? undefined
-      : histories.transfer.find((transaction) =>
-          accounts.some((account) => account.status === "active" && account.id === transaction.fromAccountId),
-        )?.fromAccountId
+    const lastFrom = histories.transfer.find((transaction) => isActive(transaction.fromAccountId))?.fromAccountId
+    const from = startAccount(transfer?.fromAccountId) ?? lastFrom ?? ""
+    const to = startAccount(transfer?.toAccountId)
     return {
       expense: cashFlow("expense"),
       income: cashFlow("income"),
-      fromAccountId: transfer?.fromAccountId ?? lastFrom ?? "",
-      toAccountId: transfer?.toAccountId && transfer.toAccountId !== transfer.fromAccountId ? transfer.toAccountId : "",
+      fromAccountId: from,
+      toAccountId: to && to !== from ? to : "",
+      // Kept here, so it survives switching kinds like the rest.
+      fee: base("transfer")?.fee || null,
     }
   })
   const [feeOpen, setFeeOpen] = React.useState(Boolean(base("transfer")?.fee))
+  // The note as tall as what it holds, also a note of several lines being edited.
+  const noteRef = React.useRef<HTMLTextAreaElement>(null)
+  const fitNote = (area: HTMLTextAreaElement) => {
+    area.style.height = "auto"
+    area.style.height = `${area.scrollHeight}px`
+  }
+  React.useLayoutEffect(() => {
+    if (noteRef.current) fitNote(noteRef.current)
+  }, [])
   const feeRef = React.useRef<HTMLLIElement>(null)
 
   const startTime = defaultValues?.occurredAt ?? draft?.occurredAt
@@ -185,7 +205,8 @@ export function TransactionForm({
       if (transaction.categoryId) usage.set(transaction.categoryId, (usage.get(transaction.categoryId) ?? 0) + 1)
     }
   }
-  const startCategory = cashFlowKind ? base(cashFlowKind) : undefined
+  // Only an edited transaction keeps a category no longer in the catalogue.
+  const startCategory = cashFlowKind && defaultValues?.kind === cashFlowKind ? defaultValues : undefined
   const retired: RetiredCategory | undefined =
     startCategory?.categoryId && !items.some((item) => item.id === startCategory.categoryId)
       ? {
@@ -304,7 +325,7 @@ export function TransactionForm({
             ) : (
               <CategoryGrid
                 id="transaction-category"
-                items={gridCategories(items, usage, cashFlowPick?.categoryId ?? "")}
+                items={gridCategories(items, usage, cashFlowPick?.categoryId ?? "", retired ? 1 : 0)}
                 retired={retired}
                 value={cashFlowPick?.categoryId ?? ""}
                 onValueChange={(id) => {
@@ -344,7 +365,8 @@ export function TransactionForm({
                   <CurrencyInput
                     id="transfer-fee"
                     name="fee"
-                    defaultValue={base("transfer")?.fee || undefined}
+                    value={picks.fee}
+                    onValueChange={(fee) => setPicks((current) => ({ ...current, fee }))}
                     suggestions={false}
                   />
                 </li>
@@ -392,22 +414,20 @@ export function TransactionForm({
               }}
               invalid={Boolean(errors.date)}
             />
-            {/* The note typed in place, growing with what is written. */}
-            <li className={cn("px-4 py-3", settingsSeparatorClassName())}>
+            {/* The note typed in place, as tall as a row of the list (64) and
+                growing with what is written. */}
+            <li className={cn("flex min-h-16 items-center px-4 py-3", settingsSeparatorClassName())}>
               <label htmlFor="transaction-note" className="sr-only">
                 Ghi chú
               </label>
               <textarea
+                ref={noteRef}
                 id="transaction-note"
                 name="note"
                 rows={1}
                 defaultValue={defaultValues?.note ?? draft?.note}
                 placeholder="Ghi chú (tuỳ chọn)"
-                onInput={(event) => {
-                  const area = event.currentTarget
-                  area.style.height = "auto"
-                  area.style.height = `${area.scrollHeight}px`
-                }}
+                onInput={(event) => fitNote(event.currentTarget)}
                 className="block min-h-6 w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
               />
             </li>

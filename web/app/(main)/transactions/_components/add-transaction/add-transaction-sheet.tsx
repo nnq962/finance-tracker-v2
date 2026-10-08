@@ -48,7 +48,11 @@ export function AddTransactionSheet({
       <PageSheet
         title="Giao dịch mới"
         open={open}
-        onOpenChange={setOpen}
+        onOpenChange={(next) => {
+          setOpen(next)
+          // Closing starts over, on the tab it opens on.
+          if (!next) setKind(draft?.kind ?? initialKind)
+        }}
         trigger={
           controlledOpen === undefined ? (
             <Button type="button" className="w-full sm:w-auto">

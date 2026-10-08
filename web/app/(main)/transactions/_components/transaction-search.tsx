@@ -56,13 +56,26 @@ export function TransactionSearchBar({
   // the keyboard into a hidden field at the screen's top (nothing to move
   // for), and once the real one has slid up, focus moves to it: the keyboard
   // stays up and iOS has nothing to scroll.
+  // Where the touch began: a swipe or a scroll that starts on the field is not a tap.
+  const touchStart = React.useRef<{ x: number; y: number } | null>(null)
+  const pendingFocus = React.useRef<number | undefined>(undefined)
+  React.useEffect(() => () => window.clearTimeout(pendingFocus.current), [])
+  // Huỷ before the field has taken the keyboard: it no longer should.
+  React.useEffect(() => {
+    if (!cancelable) window.clearTimeout(pendingFocus.current)
+  }, [cancelable])
   const openFromTouch = (event: React.TouchEvent<HTMLInputElement>) => {
     if (cancelable || !onFocus || document.activeElement === inputRef.current) return
     if (!window.matchMedia("(width < 64rem)").matches) return
+    const start = touchStart.current
+    const touch = event.changedTouches[0]
+    if (!event.cancelable || !start || !touch) return
+    if (Math.hypot(touch.clientX - start.x, touch.clientY - start.y) > 10) return
     event.preventDefault()
     proxyRef.current?.focus({ preventScroll: true })
     onFocus()
-    window.setTimeout(() => {
+    window.clearTimeout(pendingFocus.current)
+    pendingFocus.current = window.setTimeout(() => {
       // Anything typed in the meantime goes along.
       const proxy = proxyRef.current
       if (proxy?.value) {
@@ -92,6 +105,10 @@ export function TransactionSearchBar({
         <InputGroupInput
           ref={inputRef}
           id={id}
+          onTouchStart={(event) => {
+            const touch = event.touches[0]
+            touchStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null
+          }}
           onTouchEnd={openFromTouch}
           type="text"
           inputMode="search"

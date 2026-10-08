@@ -112,18 +112,20 @@ export function TransactionFilterSheet({
         ? () => change({ categoryGroupIds: [] })
         : undefined
 
+  // Opened again, it starts from its first screen; every way of closing goes through here.
+  const changeOpen = (next: boolean) => {
+    onOpenChange(next)
+    if (!next) {
+      setScreen("filters")
+      setCustomOpen(false)
+    }
+  }
+
   return (
     <PageSheet
       title={titles[screen]}
       open={open}
-      onOpenChange={(next) => {
-        onOpenChange(next)
-        // Opened again, it starts from its first screen.
-        if (!next) {
-          setScreen("filters")
-          setCustomOpen(false)
-        }
-      }}
+      onOpenChange={changeOpen}
       onBack={screen === "filters" ? undefined : () => go("filters")}
       action={
         clearPicks ? (
@@ -144,11 +146,17 @@ export function TransactionFilterSheet({
               hasFilters ? "mr-2 basis-1/3" : "mr-0 basis-0 opacity-0",
             )}
           >
-            <Button type="button" variant="secondary" className="w-full whitespace-nowrap" onClick={onReset}>
+            <Button type="button" variant="secondary" className="w-full whitespace-nowrap"
+              onClick={() => {
+                onReset()
+                // Cleared, the amount is "Bất kỳ" again, not a range being typed.
+                setCustomOpen(false)
+              }}
+            >
               Xoá lọc
             </Button>
           </div>
-          <Button type="button" className="min-w-0 flex-1" onClick={() => onOpenChange(false)}>
+          <Button type="button" className="min-w-0 flex-1" onClick={() => changeOpen(false)}>
             Xem {transactionCount} giao dịch
           </Button>
         </div>
