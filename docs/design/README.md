@@ -257,7 +257,11 @@ Trước khi báo xong một màn mới, kiểm tra:
   Tiền mặt · Ngân hàng · Ví điện tử, "Số dư ban đầu" ("Số dư hiện tại" khi sửa) là số lớn
   (`CurrencyInput variant="hero"`) kèm gợi ý; ngân hàng và ví có `PickGrid` logo (7 phổ biến, "Tất
   cả" mở màn sâu "Chọn ngân hàng" có ô tìm theo tên, viết tắt, chia Phổ biến · Ngân hàng số ·
-  Ngân hàng khác A–Z). Rồi một nhóm dòng: Tên (gõ tại chỗ, canh phải; tự lấy tên ngân hàng, ví,
+  Ngân hàng khác A–Z). Kết quả tìm xếp theo độ khớp (`searchInstitutions`): trùng tên ngắn hay
+  viết tắt ("mb", "vcb"), tên ngắn bắt đầu bằng chữ gõ ("mb" ra MB Bank trước Vietcombank), mỗi
+  từ gõ là đầu một từ của tên ngắn, viết tắt ("nam a"), rồi của tên đầy đủ ("quan doi"), cuối
+  cùng là khớp giữa từ; bằng nhau thì giữ thứ tự phổ biến; dấu theo quy tắc chung (`searchKey`,
+  `lib/search-text.ts`). Rồi một nhóm dòng: Tên (gõ tại chỗ, canh phải; tự lấy tên ngân hàng, ví,
   hoặc "Tiền mặt", tới khi người dùng tự gõ), Số dư âm (công tắc, "Đang nợ, thấu chi"; bật thì số
   đỏ có dấu −), Bắt đầu từ (`TimeRows` không chip), ghi chú gõ tại chỗ. Lỗi hiện tại chỗ.
 - **Chi tiết giao dịch** (`TransactionDetailsSheet`), như biên lai: icon lớn, tên, số tiền lớn, ngày

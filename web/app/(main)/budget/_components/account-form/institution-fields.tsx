@@ -7,7 +7,7 @@ import { AccountLogo } from "@/components/account-logo"
 import { gridChoices, PickGrid } from "@/components/app/pick-grid"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
-import type { FinancialInstitution } from "@/lib/institutions"
+import { searchInstitutions, type FinancialInstitution } from "@/lib/institutions"
 
 /** How many of the catalogue, in its order (the most used first), count as the common ones. */
 const COMMON_COUNT = 7
@@ -31,19 +31,6 @@ export function InstitutionLogo({ institution }: { institution: FinancialInstitu
       />
     </span>
   )
-}
-
-function normalizeSearchText(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[đĐ]/g, "d")
-    .toLocaleLowerCase("vi-VN")
-}
-
-function matches(institution: FinancialInstitution, query: string) {
-  const text = [institution.shortName, institution.name, institution.id, ...(institution.keywords ?? [])].join(" ")
-  return normalizeSearchText(text).includes(normalizeSearchText(query.trim()))
 }
 
 /**
@@ -87,8 +74,9 @@ export function InstitutionGrid({
 }
 
 /**
- * Every bank or wallet, on a deeper screen of the sheet: a search by name or
- * short name over the common ones, digital banks, then the rest A–Z. A tap
+ * Every bank or wallet, on a deeper screen of the sheet: a search by name,
+ * short name or alias (searchInstitutions, the best match first) over the
+ * common ones, digital banks, then the rest A–Z. A tap
  * picks one and goes back.
  */
 export function InstitutionPicker({
@@ -107,7 +95,7 @@ export function InstitutionPicker({
 
   const groups: Array<{ title: string; items: readonly FinancialInstitution[] }> = []
   if (query.trim()) {
-    groups.push({ title: "Kết quả", items: institutions.filter((institution) => matches(institution, query)) })
+    groups.push({ title: "Kết quả", items: searchInstitutions(institutions, query) })
   } else {
     const common = institutions.slice(0, COMMON_COUNT)
     const rest = institutions.slice(COMMON_COUNT)

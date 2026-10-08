@@ -1,4 +1,4 @@
-import { searchKey } from "./filter-transactions"
+import { searchKey } from "@/lib/search-text"
 
 /**
  * Where `query` first appears in `text`, matched as the search matches

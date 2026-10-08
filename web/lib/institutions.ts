@@ -1,3 +1,5 @@
+import { searchKey } from "@/lib/search-text"
+
 export type InstitutionType = "bank" | "e-wallet"
 
 export type FinancialInstitution = {
@@ -117,4 +119,49 @@ export function getInstitution(
   id: string,
 ): FinancialInstitution | undefined {
   return getInstitutionsByType(type).find((institution) => institution.id === id)
+}
+
+const words = (text: string) => text.split(/[\s\-]+/).filter(Boolean)
+const compact = (text: string) => text.replace(/[\s\-]+/g, "")
+
+/**
+ * The banks or wallets matching what was typed, the best match first, as a
+ * bank app's search: the short name or an alias exactly ("mb", "vcb"), then
+ * a short name starting with it ("mb" → MB Bank before Vietcombank), then
+ * every word typed starting a word of the short name or an alias ("nam a"),
+ * then of the full name ("quan doi"), and last the text anywhere inside a
+ * word ("comb"). Ties keep the catalogue's order, the most used first.
+ * Accents count only when typed, any case (searchKey).
+ */
+export function searchInstitutions(
+  institutions: readonly FinancialInstitution[],
+  query: string,
+): FinancialInstitution[] {
+  const key = searchKey(query)
+  const typed = key(query.trim())
+  if (!typed) return [...institutions]
+  const typedWords = words(typed)
+  const typedCompact = compact(typed)
+  const startsWords = (text: string) => {
+    const own = words(text)
+    return typedWords.every((typedWord) => own.some((word) => word.startsWith(typedWord)))
+  }
+
+  const rank = (institution: FinancialInstitution) => {
+    const short = key(institution.shortName ?? institution.name)
+    const aliases = [institution.id, ...(institution.keywords ?? [])].map(key)
+    const full = key(institution.name)
+    if ([short, ...aliases].some((text) => compact(text) === typedCompact)) return 0
+    if (compact(short).startsWith(typedCompact)) return 1
+    if ([short, ...aliases].some(startsWords)) return 2
+    if (startsWords(full)) return 3
+    if ([short, full, ...aliases].some((text) => text.includes(typed) || compact(text).includes(typedCompact))) return 4
+    return -1
+  }
+
+  return institutions
+    .map((institution, index) => ({ institution, index, rank: rank(institution) }))
+    .filter((entry) => entry.rank >= 0)
+    .sort((left, right) => left.rank - right.rank || left.index - right.index)
+    .map((entry) => entry.institution)
 }
