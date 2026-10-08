@@ -4,6 +4,22 @@ Viết 2026-10-08. Finance Tracker vẫn là PWA (chưa có tài khoản Apple D
 native). Chấp nhận không có rung, vuốt lại native và chuyển cảnh như app thật; mục tiêu là **nhìn
 vào thấy giống app**, như các bản thiết kế app trên Figma.
 
+## Tiến độ
+
+Làm 2026-10-08, người dùng giao làm hết và tự chọn phương án (không chờ duyệt mockup):
+
+- **Giai đoạn 1:** bỏ qua mockup HTML; ảnh chụp app thật thay cho mockup. Đã chọn: thanh tab có
+  nhãn; màu danh mục làm dịu về xám (`tile-tinted`); tiền chi màu chữ thường; Tổng quan: tài sản
+  ròng dẫn đầu, nhiệm vụ ngay sau, lời mời Pro cuối trang; nút AI ở Giao dịch lên cạnh tiêu đề.
+- **Giai đoạn 2, 3:** xong (`05f0673`). Thêm ngoài plan: thẻ dẫn đầu ở theme tối là xám nổi thay
+  cho khối trắng (token `inverse`); segmented control kiểu iOS (viên trắng trên rãnh xám).
+- **Giai đoạn 4:** các sheet và màn chi tiết tự theo khuôn nhờ khối dùng chung; sửa thêm avatar
+  người liên hệ, số tiền ở sheet tài khoản và chi tiết khoản vay (`247bf46`).
+- **Giai đoạn 5:** dòng list xám đi khi chạm, giữ lâu không chọn chữ giao diện, không chớp khi chạm.
+- **Giai đoạn 6:** đã xem desktop sáng và tối, không có gì vỡ.
+
+Còn lại: màn giới thiệu lần đầu (cần user mới để xem), trạng thái trống của từng trang.
+
 ## Vì sao bây giờ chưa giống app
 
 Các khối đơn lẻ (dòng list, thẻ, nút) đã đúng cỡ của app. Thứ thiếu là **khuôn trang**: cách xếp

@@ -37,7 +37,8 @@ Với `DEV_LOGIN=1` trong `web/.env.local`, mở
 `dev-user` của database dev, kèm dữ liệu mẫu khoảng hai tháng (tạo ở lần đầu).
 Chỉ hoạt động với `next dev` và request tới localhost; bản build production bỏ qua.
 
-Chụp màn hình một trang (cần dev server đang chạy và Google Chrome):
+Chụp màn hình một trang (cần dev server đang chạy, và Google Chrome hoặc Chromium của Playwright:
+`npx playwright-core install chromium` trên máy không có Chrome, như Linux ARM):
 
 ```sh
 node scripts/screenshot.mjs /transactions --device=phone --theme=dark --full

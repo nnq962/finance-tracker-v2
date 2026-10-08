@@ -1,7 +1,8 @@
 /*
  * Screenshots a page of the dev server, signed in as the seeded dev user
  * (DEV_LOGIN=1 in .env.local, `npm run dev` running). Uses the installed
- * Google Chrome through playwright-core.
+ * Google Chrome through playwright-core, or Playwright's own Chromium where
+ * there is no Chrome (Linux on ARM; `npx playwright-core install chromium`).
  *
  * Run: node scripts/screenshot.mjs /transactions [options]
  *   --device=phone|desktop  phone: 390×844 at 3x with touch (default); desktop: 1440×900
@@ -32,7 +33,9 @@ const out = option("out", path.join("screenshots", `${slug}-${device}-${theme}.p
 
 const viewport = device === "desktop" ? { width: 1440, height: 900 } : { width: 390, height: 844 }
 
-const browser = await chromium.launch({ channel: "chrome", headless: true })
+const browser = await chromium
+  .launch({ channel: "chrome", headless: true })
+  .catch(() => chromium.launch({ headless: true }))
 try {
   const context = await browser.newContext({
     viewport,
