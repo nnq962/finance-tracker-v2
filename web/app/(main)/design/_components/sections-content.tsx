@@ -473,6 +473,15 @@ function AvatarSection() {
           </Avatar>
         </div>
       </Block>
+      <Block label="Màu theo người (AvatarFallback colorKey), như hồ sơ ở Cài đặt và Tổng quan">
+        <div className="flex items-end gap-3">
+          {["user-1", "user-2", "user-3", "user-4"].map((id, index) => (
+            <Avatar key={id} size="xl">
+              <AvatarFallback colorKey={id}>{["MA", "HL", "TT", "QN"][index]}</AvatarFallback>
+            </Avatar>
+          ))}
+        </div>
+      </Block>
       <Block label="Nhóm">
         <div className="flex items-center justify-between gap-3">
           <AvatarGroup>

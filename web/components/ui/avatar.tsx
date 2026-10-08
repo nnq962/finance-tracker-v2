@@ -4,6 +4,8 @@ import * as React from "react"
 import { cn } from "cn"
 import { Avatar as AvatarPrimitive } from "radix-ui"
 
+import { personTileClassName } from "@/lib/person-color"
+
 function Avatar({
   className,
   size = "default",
@@ -42,13 +44,18 @@ function AvatarImage({
 
 function AvatarFallback({
   className,
+  colorKey,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+}: React.ComponentProps<typeof AvatarPrimitive.Fallback> & {
+  /** A person's id: their initials then sit on their own toned-down colour, as a contact's do, instead of grey. */
+  colorKey?: string
+}) {
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
       className={cn(
-        "flex size-full items-center justify-center rounded-full bg-muted text-sm text-muted-foreground group-data-[size=sm]/avatar:text-xs group-data-[size=xl]/avatar:text-lg",
+        "flex size-full items-center justify-center rounded-full text-sm group-data-[size=sm]/avatar:text-xs group-data-[size=xl]/avatar:text-lg",
+        colorKey ? cn("tile-tinted font-medium", personTileClassName(colorKey)) : "bg-muted text-muted-foreground",
         className
       )}
       {...props}

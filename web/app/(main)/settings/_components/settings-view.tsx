@@ -158,7 +158,7 @@ export function SettingsView({
             media={
               <Avatar size="xl">
                 <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback>{initials}</AvatarFallback>
+                <AvatarFallback colorKey={user.uid}>{initials}</AvatarFallback>
               </Avatar>
             }
             title={
@@ -175,7 +175,7 @@ export function SettingsView({
           />
         </SettingsGroup>
 
-        <AiQuotaGroup planState={planState} />
+        <AiQuotaGroup planState={planState} onOpenPlan={() => setPlanOpen(true)} />
 
         <SettingsGroup title="Chung">
           <SettingsRow
@@ -253,7 +253,7 @@ export function SettingsView({
               </>
             ) : null}
             {showDesign ? (
-              <SettingsRow icon={SwatchBookIcon} tone="neutral" title="Thiết kế" onClick={() => router.push("/design")} />
+              <SettingsRow icon={SwatchBookIcon} tone="blue" title="Thiết kế" onClick={() => router.push("/design")} />
             ) : null}
           </SettingsGroup>
         ) : null}

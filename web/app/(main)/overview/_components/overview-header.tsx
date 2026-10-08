@@ -39,7 +39,7 @@ export function OverviewHeader({
         >
           <Avatar size="lg">
             <AvatarImage src={user.avatar} alt="" />
-            <AvatarFallback>{initialsOf(name) || "?"}</AvatarFallback>
+            <AvatarFallback colorKey={user.uid}>{initialsOf(name) || "?"}</AvatarFallback>
           </Avatar>
           <span className="min-w-0">
             <span className="block text-xs text-muted-foreground">{greeting}</span>

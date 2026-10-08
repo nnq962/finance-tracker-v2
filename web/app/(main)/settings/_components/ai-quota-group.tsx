@@ -1,8 +1,10 @@
-import { SettingsGroup, settingsSeparatorClassName } from "@/components/settings-list"
+import { SparklesIcon } from "lucide-react"
+
+import { SettingsGroup, SettingsRow, settingsSeparatorClassName } from "@/components/settings-list"
 import { Progress } from "@/components/ui/progress"
 import { formatDate, toDateKey } from "@/lib/format-date"
 import { cn } from "@/lib/utils"
-import type { PlanState } from "@/lib/plans/plans"
+import { plans, type PlanState } from "@/lib/plans/plans"
 
 /** One allowance counting down: what is left of it, a bar that empties, and a note. */
 function UsageMeter({ label, left, total, note }: { label: string; left: number; total: number; note: string }) {
@@ -31,9 +33,11 @@ function UsageMeter({ label, left, total, note }: { label: string; left: number;
 /**
  * The AI allowances, each counting down as it is used, as usage meters
  * usually do: this month's requests, then the credits from missions, used
- * once the month's run out (shown once any were earned).
+ * once the month's run out (shown once any were earned). A row under them
+ * opens the plan, as storage screens end with the way to get more.
  */
-export function AiQuotaGroup({ planState }: { planState: PlanState }) {
+export function AiQuotaGroup({ planState, onOpenPlan }: { planState: PlanState; onOpenPlan: () => void }) {
+  const isPro = planState.plan === "pro"
   const monthLeft = Math.max(0, planState.aiLimit - planState.aiUsed)
   // The first of next month, Vietnam time, when the count starts over.
   const month = Number(toDateKey(new Date()).slice(5, 7))
@@ -42,6 +46,8 @@ export function AiQuotaGroup({ planState }: { planState: PlanState }) {
   return (
     <SettingsGroup
       title="Lượt AI"
+      // The meters' inset divider above the row too.
+      listClassName="relative before:absolute before:inset-x-4 before:top-0 before:h-px before:bg-border"
       header={
         <div>
           <UsageMeter
@@ -61,7 +67,13 @@ export function AiQuotaGroup({ planState }: { planState: PlanState }) {
         </div>
       }
     >
-      {null}
+      <SettingsRow
+        icon={SparklesIcon}
+        tone="ai"
+        title={isPro ? "Gói Pro" : "Nâng cấp Pro"}
+        description={isPro ? undefined : `${plans.pro.aiMonthlyLimit} lượt mỗi tháng`}
+        onClick={onOpenPlan}
+      />
     </SettingsGroup>
   )
 }

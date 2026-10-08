@@ -1,5 +1,5 @@
 import { Page, PageHeaderSkeleton } from "@/components/page"
-import { SettingsGroupSkeleton, settingsSeparatorClassName } from "@/components/settings-list"
+import { SettingsGroupSkeleton, SettingsRowSkeleton, settingsSeparatorClassName } from "@/components/settings-list"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
@@ -35,10 +35,11 @@ export default function SettingsLoading() {
       <div aria-hidden="true" className="grid gap-6 md:max-w-2xl md:gap-8">
         {/* The profile: the 48 avatar, name and email, the plan and the chevron. */}
         <SettingsGroupSkeleton caption={false} rows={1} media="avatar-lg" description trailing="value" chevron />
-        {/* "Lượt AI": this month's requests, then the credits from missions. */}
+        {/* "Lượt AI": this month's requests, the credits from missions, then the row to the plan. */}
         <SettingsGroupSkeleton>
           <UsageMeterSkeleton />
           <UsageMeterSkeleton />
+          <SettingsRowSkeleton description chevron index={1} />
         </SettingsGroupSkeleton>
         {/* "Chung" and "Thông báo": a value and a chevron on each row. */}
         <SettingsGroupSkeleton rows={2} trailing="value" chevron />
