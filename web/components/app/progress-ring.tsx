@@ -1,3 +1,7 @@
+"use client"
+
+import * as React from "react"
+
 import { cn } from "@/lib/utils"
 
 const sizeClassName = {
@@ -8,6 +12,7 @@ const sizeClassName = {
 /**
  * Progress as a thin ring around its count, e.g. missions done: a light
  * track and a dark arc from twelve o'clock, the value and a label inside.
+ * The arc sweeps in when the ring first shows, and moves on to a new value.
  */
 export function ProgressRing({
   value,
@@ -25,7 +30,17 @@ export function ProgressRing({
 }) {
   // The circle's length for r=16, so the dash is the share done.
   const length = 2 * Math.PI * 16
-  const share = max > 0 ? Math.min(value / max, 1) : 0
+  // The arc is drawn empty first and sweeps to its value a frame later, each
+  // time the ring appears (opening the page from the tab bar too); after the
+  // page has come to life, as a sweep while it loads would stall and jump.
+  const [ready, setReady] = React.useState(false)
+  React.useEffect(() => {
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => setReady(true))
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [])
+  const share = ready && max > 0 ? Math.min(value / max, 1) : 0
 
   return (
     <div
@@ -44,7 +59,11 @@ export function ProgressRing({
           strokeWidth="1.6"
           strokeLinecap="round"
           strokeDasharray={`${share * length} ${length}`}
-          className="stroke-primary motion-safe:transition-[stroke-dasharray] motion-safe:duration-500"
+          className={cn(
+            "stroke-primary motion-safe:transition-[stroke-dasharray] motion-safe:duration-900 motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]",
+            // An empty arc's round cap would still draw a dot at twelve o'clock.
+            share === 0 && "opacity-0",
+          )}
         />
       </svg>
       <div aria-hidden="true" className="absolute inset-0 grid place-content-center text-center">
