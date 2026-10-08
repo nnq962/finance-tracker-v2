@@ -254,6 +254,17 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
     @apply font-sans;
   }
 
+  /*
+   * The app's colour on the root too, not only on <body>. iOS tints the
+   * status bar from what sits at the screen's top edge; under a dimmed,
+   * see-through veil (dialogs, sheets) it falls back to the root's
+   * background, which was unset and so white. A sheet that covers the
+   * screen with its own colour was never affected.
+   */
+  html:has([data-app-shell="main"]) {
+    @apply bg-background;
+  }
+
   /* Anchor targets start exactly below the sticky landing header (h-16 + 1px border). */
   html:has([data-landing-shell]) {
     scroll-padding-top: calc(4rem + 1px + env(safe-area-inset-top, 0px));
