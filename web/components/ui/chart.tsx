@@ -8,7 +8,6 @@ import type { TooltipValueType } from "recharts"
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const
 
-const INITIAL_DIMENSION = { width: 320, height: 200 } as const
 type TooltipNameType = number | string
 
 export type ChartConfig = Record<
@@ -43,20 +42,26 @@ function ChartContainer({
   className,
   children,
   config,
-  initialDimension = INITIAL_DIMENSION,
   ...props
 }: React.ComponentProps<"div"> & {
   config: ChartConfig
   children: React.ComponentProps<
     typeof RechartsPrimitive.ResponsiveContainer
   >["children"]
-  initialDimension?: {
-    width: number
-    height: number
-  }
 }) {
   const uniqueId = React.useId()
   const chartId = `chart-${id ?? uniqueId.replace(/:/g, "")}`
+  // Recharts first draws at a guessed size (320×200) and measures the box
+  // only after that frame is painted, so a chart flashed squeezed, or small,
+  // before snapping to its place. The box is measured here before the first
+  // paint instead, and the chart starts at that size: it is drawn once, in
+  // place, and its entrance animation plays there.
+  const containerRef = React.useRef<HTMLDivElement>(null)
+  const [size, setSize] = React.useState<{ width: number; height: number }>()
+  React.useLayoutEffect(() => {
+    const box = containerRef.current
+    if (box) setSize({ width: box.clientWidth, height: box.clientHeight })
+  }, [])
 
   // Recharts 3 draws bars and tooltips into <g class="recharts-zIndex-layer_N"
   // tabIndex={-1}> layers, which a tap focuses, so their outline is hidden
@@ -66,6 +71,7 @@ function ChartContainer({
   return (
     <ChartContext.Provider value={{ config }}>
       <div
+        ref={containerRef}
         data-slot="chart"
         data-chart={chartId}
         className={cn(
@@ -75,11 +81,11 @@ function ChartContainer({
         {...props}
       >
         <ChartStyle id={chartId} config={config} />
-        <RechartsPrimitive.ResponsiveContainer
-          initialDimension={initialDimension}
-        >
-          {children}
-        </RechartsPrimitive.ResponsiveContainer>
+        {size ? (
+          <RechartsPrimitive.ResponsiveContainer initialDimension={size}>
+            {children}
+          </RechartsPrimitive.ResponsiveContainer>
+        ) : null}
       </div>
     </ChartContext.Provider>
   )

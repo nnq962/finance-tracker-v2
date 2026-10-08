@@ -47,13 +47,7 @@ export function CategoryBreakdown({
           {slices.length > 0 ? (
             <div className="flex items-center gap-6">
               {/* The list beside it says the same for screen readers. */}
-              <ChartContainer
-                config={chartConfig}
-                aria-hidden="true"
-                // Its real size from the first frame, so the ring is drawn once at 128px and sweeps in rather than jumping.
-                initialDimension={{ width: 128, height: 128 }}
-                className="aspect-square w-32 shrink-0"
-              >
+              <ChartContainer config={chartConfig} aria-hidden="true" className="aspect-square w-32 shrink-0">
                 <PieChart>
                   <ChartTooltip
                     content={
