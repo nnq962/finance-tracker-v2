@@ -24,11 +24,13 @@ import { getDayTransactionsAction } from "../actions"
 const weekdays = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
 
 // A new month's days slide in from the side its arrow points to, the old
-// ones out the other way, as in Calendar.
+// ones out the other way, as in Calendar. `transform` rather than `x`, so the
+// browser runs the slide on its own (hardware accelerated) and it stays
+// smooth while the page is busy with the new month.
 const slide = {
-  enter: (direction: number) => ({ x: direction * 48, opacity: 0 }),
-  center: { x: 0, opacity: 1 },
-  exit: (direction: number) => ({ x: direction * -48, opacity: 0 }),
+  enter: (direction: number) => ({ transform: `translateX(${direction * 48}px)`, opacity: 0 }),
+  center: { transform: "translateX(0px)", opacity: 1 },
+  exit: (direction: number) => ({ transform: `translateX(${direction * -48}px)`, opacity: 0 }),
 }
 
 // Tiny on a phone-sized card, where seven days share the width; larger once

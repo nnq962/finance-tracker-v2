@@ -31,6 +31,10 @@ export function CategoryBreakdown({
   month: string
 }) {
   const [type, setType] = React.useState<CategoryType>("expense")
+  // The ring sweeps in once, when it first shows. After that a new month or
+  // type redraws it at once: Recharts animates by re-rendering every frame,
+  // which held up taps on the calendar's arrows.
+  const [sweptIn, setSweptIn] = React.useState(false)
   const { slices, total } = allocationSlices(categoryGroups, allocation, month, type)
   const typeLabel = type === "expense" ? "chi" : "thu"
 
@@ -77,6 +81,8 @@ export function CategoryBreakdown({
                     // is a full ring with no seam.
                     stroke="var(--card)"
                     strokeWidth={slices.length > 1 ? 2 : 0}
+                    isAnimationActive={sweptIn ? false : "auto"}
+                    onAnimationEnd={() => setSweptIn(true)}
                   >
                     {slices.map((slice) => (
                       <Cell key={slice.key} fill={slice.fill} />

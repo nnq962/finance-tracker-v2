@@ -79,10 +79,30 @@ export function OverviewScreen({
   missions?: React.ReactNode
 }) {
   const [month, setMonth] = React.useState(today.slice(0, 7))
+  // The calendar takes the new month at once; the categories' ring follows
+  // once it has, so a tap on the arrows answers straight away.
+  const categoriesMonth = React.useDeferredValue(month)
+  // Each block is made again only when its own data changes, so a new month
+  // redraws the calendar first and the categories after, never the rest.
+  const { netWorth: netWorthData, cashFlow, dueDebts: dueDebtsData } = summary
+  const { current: thisMonth } = cashFlow
+  const netWorth = React.useMemo(
+    () => <NetWorth data={netWorthData} month={thisMonth} />,
+    [netWorthData, thisMonth],
+  )
+  const dueDebts = React.useMemo(
+    () => (dueDebtsData.length > 0 ? <DueDebts debts={dueDebtsData} /> : undefined),
+    [dueDebtsData],
+  )
+  const trend = React.useMemo(() => <TrendSection cashFlow={cashFlow} />, [cashFlow])
+  const categories = React.useMemo(
+    () => <CategoryBreakdown categoryGroups={categoryGroups} allocation={allocation} month={categoriesMonth} />,
+    [categoryGroups, allocation, categoriesMonth],
+  )
 
   return (
     <OverviewLayout
-      netWorth={<NetWorth data={summary.netWorth} month={summary.cashFlow.current} />}
+      netWorth={netWorth}
       missions={missions}
       calendar={
         <MonthSection
@@ -95,9 +115,9 @@ export function OverviewScreen({
           onMonthChange={setMonth}
         />
       }
-      dueDebts={summary.dueDebts.length > 0 ? <DueDebts debts={summary.dueDebts} /> : undefined}
-      allocation={<CategoryBreakdown categoryGroups={categoryGroups} allocation={allocation} month={month} />}
-      trend={<TrendSection cashFlow={summary.cashFlow} />}
+      dueDebts={dueDebts}
+      allocation={categories}
+      trend={trend}
     />
   )
 }
