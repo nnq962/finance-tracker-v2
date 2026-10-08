@@ -18,6 +18,7 @@ import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { getLocalDateTime } from "@/lib/date-time"
 import { toDateKey } from "@/lib/format-date"
+import { scrollIntoViewWithin } from "@/lib/scroll-into-view"
 import type {
   SupportedTransactionKind,
   Transaction,
@@ -138,7 +139,7 @@ export function TransactionForm({
         if (first) {
           const element = document.getElementById(fieldElementId(first, kind))
           element?.focus({ preventScroll: true })
-          element?.scrollIntoView({ block: "center", behavior: "smooth" })
+          if (element) scrollIntoViewWithin(element)
           return
         }
 

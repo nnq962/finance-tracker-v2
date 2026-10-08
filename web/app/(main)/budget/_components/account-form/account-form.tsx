@@ -45,6 +45,7 @@ import type {
 } from "@/lib/accounts/types"
 import { getLocalDateTime } from "@/lib/date-time"
 import { toDateKey } from "@/lib/format-date"
+import { scrollIntoViewWithin } from "@/lib/scroll-into-view"
 import {
   getInstitutionsByType,
   type FinancialInstitution,
@@ -170,7 +171,7 @@ export function AccountForm({
             }[first],
           )
           element?.focus({ preventScroll: true })
-          element?.scrollIntoView({ block: "center", behavior: "smooth" })
+          if (element) scrollIntoViewWithin(element)
           return
         }
 

@@ -38,6 +38,7 @@ import {
   type PlanState,
 } from "@/lib/plans/plans"
 import type { PaymentOutcome } from "@/lib/plans/payos"
+import { scrollIntoViewWithin } from "@/lib/scroll-into-view"
 
 type PlanScreenProps = {
   planState: PlanState
@@ -158,13 +159,14 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanS
         : "Kích hoạt ngay sau khi thanh toán. Không tự động gia hạn"
 
   // From the link under Pro's features: opens the answer and brings it into view, now and again
-  // once it has opened below the question, so it is not left under the bottom edge.
+  // once it has opened below the question, so it is not left under the bottom edge. Only the
+  // sheet's content scrolls; the sheet stays where it is.
   const showFaq = (id: string) => {
     setOpenFaq(id)
-    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
     const item = document.getElementById(`plan-faq-${id}`)
-    item?.scrollIntoView({ behavior, block: "center" })
-    item?.addEventListener("animationend", () => item.scrollIntoView({ behavior, block: "nearest" }), { once: true })
+    if (!item) return
+    scrollIntoViewWithin(item)
+    item.addEventListener("animationend", () => scrollIntoViewWithin(item, { block: "nearest" }), { once: true })
   }
 
   return (
@@ -217,7 +219,6 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanS
               <div className="space-y-2.5">
                 <Button
                   type="button"
-                  size="lg"
                   className="w-full"
                   disabled={!checkoutEnabled}
                   onClick={() => setConfirmOpen(true)}
