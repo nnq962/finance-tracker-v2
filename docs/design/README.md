@@ -274,6 +274,15 @@ Trước khi báo xong một màn mới, kiểm tra:
   khoản; xoá có hoàn tác); bút chì trên thanh để sửa. Thêm / sửa người (`AddContactSheet`): avatar xem
   trước, chữ cái theo tên đang gõ (lưu cũng cập nhật chữ cái); dòng gõ tại chỗ Tên, Mối quan hệ (chip
   Bạn bè · Gia đình · Đồng nghiệp · Hàng xóm), Số điện thoại, ghi chú.
+- **Chi tiết khoản nợ** (`DebtDetailInfo`, sheet trên điện thoại, khung bên phải từ xl), kiểu biên lai:
+  thanh "Chi tiết khoản nợ" có bút chì (khung bên phải: "Sửa" cạnh tên); avatar `lg`, "Cho vay · Lan
+  Anh", số còn lại `xl` ở giữa, dòng phụ "Còn phải thu · hẹn 19/10, còn 11 ngày" (đỏ khi quá hạn; đã
+  tất toán thì số mờ, ghi "Đã tất toán", không có nút ghi nhận). Thẻ tiến độ: thanh, "Đã thu …" và "30%
+  của …". Có lãi thì nhóm "LÃI 1%/THÁNG": Tiền gốc, Lãi đến hôm nay (số ngày · lãi mỗi kỳ), Tổng gốc
+  và lãi, Đến hạn (khi có hẹn). Nhóm thông tin: "Tiền ra từ" / "Tiền vào" kèm logo tài khoản (nợ có
+  sẵn: "Không đổi số dư"), ngày vay hay bắt đầu theo dõi, Hẹn trả, ghi chú. "Lịch sử thu / trả": icon
+  mũi tên, số có dấu, ngày giờ · tài khoản; chạm mở sheet sửa (có "Xoá lần thu này"), vuốt trái xoá;
+  xoá đều có hoàn tác, không hộp xác nhận. Cuối là "Xoá khoản nợ" (hoàn tác).
 - **Chi tiết tài khoản** (`AccountSheet`), cùng kiểu biên lai với chi tiết giao dịch: thanh "Chi tiết
   tài khoản" có bút chì tròn để sửa (mờ khi đã ngừng dùng); đầu sheet là logo `lg`, tên, số dư `xl`
   ở giữa (âm thì đỏ, ngừng dùng thì mờ), dòng phụ loại · ngân hàng (bỏ phần tên đã nói) và "Đã

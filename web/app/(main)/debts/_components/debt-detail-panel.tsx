@@ -1,34 +1,30 @@
 "use client"
 
 import * as React from "react"
-import { AddDebtSheet } from "./add-debt-sheet"
-import { FieldError } from "@/components/ui/field"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
-import { CheckIcon } from "lucide-react"
+import { CheckIcon, PencilIcon } from "lucide-react"
 
-import type { Account } from "@/lib/accounts/types"
-import { DebtPaymentHistory } from "./debt-payment-history"
-import { CardLabel } from "@/components/app/card-label"
+import { AccountLogo } from "@/components/account-logo"
 import { Money } from "@/components/app/money"
 import { groupCaptionClassName, SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import type { Account } from "@/lib/accounts/types"
 import { formatCurrency } from "@/lib/format-currency"
-import { actionErrorMessage } from "@/lib/stale-deploy"
+import { formatShortDate } from "@/lib/format-date"
 import { cn } from "@/lib/utils"
 
-import {
-  formatDebtDate,
-  getDebtDeadline,
-  getDebtMetrics,
-} from "../_lib/debt-presentation"
-import type { Contact, Debt, NewDebt, NewDebtPayment } from "../_types/debt"
-import { RecordDebtPaymentSheet } from "./record-debt-payment-sheet"
 import { getDueProjection, todayDate } from "../_lib/debt-payments"
+import { formatDebtDate, getDebtDeadline, getDebtMetrics } from "../_lib/debt-presentation"
+import type { Contact, Debt, NewDebt, NewDebtPayment } from "../_types/debt"
+import { AddDebtSheet } from "./add-debt-sheet"
+import { ContactAvatar } from "./contact-avatar"
+import { DebtPaymentHistory } from "./debt-payment-history"
+import { RecordDebtPaymentSheet } from "./record-debt-payment-sheet"
 
 type DebtDetailPanelProps = {
   contacts: Contact[]
+  /** Saves the debt edited, or deletes it (`null`, with an undo). */
   onChangeDebt: (values: NewDebt | null) => Promise<void>
   accounts: Account[]
   onEditPayment: (id: string, values: NewDebtPayment) => Promise<void>
@@ -38,110 +34,172 @@ type DebtDetailPanelProps = {
   onRecordPayment: (payment: NewDebtPayment) => Promise<void>
 }
 
-/** Side panel beside the list (xl and up); below xl the same content opens in a sheet. */
+/** Side panel beside the list (xl and up), its person and the edit button over it; below xl the same content opens in a sheet. */
 export function DebtDetailPanel(props: DebtDetailPanelProps) {
   return (
     <section aria-labelledby="debt-detail-title" className="space-y-2">
       {/* A caption like the summary's beside it, so both columns start on one line. */}
-      <div className="flex min-h-6 items-center px-3">
+      <div className="flex min-h-6 items-center justify-between gap-3 px-3">
         <h2 id="debt-detail-title" className={cn("truncate", groupCaptionClassName)}>
           {props.contact.name}
         </h2>
+        <DebtEditButton {...props} variant="text" />
       </div>
       <div className="space-y-6">
         <DebtDetailInfo {...props} />
-        <DebtRecordPaymentButton {...props} />
+        {getDebtMetrics(props.debt).remainingAmount > 0 && props.debt.status !== "settled" ? (
+          <DebtRecordPaymentButton {...props} />
+        ) : null}
       </div>
     </section>
   )
 }
 
-/** Debt figures, payment history and edit/delete; shared by the side panel and the sheet. */
+/**
+ * Edits the debt: a round pencil for a sheet's bar, or a small text button
+ * beside the side panel's caption.
+ */
+export function DebtEditButton({
+  variant,
+  accounts,
+  contacts,
+  debt,
+  onChangeDebt,
+}: DebtDetailPanelProps & { variant: "icon" | "text" }) {
+  const [editing, setEditing] = React.useState(false)
+
+  return (
+    <>
+      {variant === "icon" ? (
+        <Button type="button" variant="secondary" size="icon" aria-label="Sửa khoản nợ" onClick={() => setEditing(true)}>
+          <PencilIcon />
+        </Button>
+      ) : (
+        <Button type="button" variant="ghost" size="sm" className="-my-2" onClick={() => setEditing(true)}>
+          <PencilIcon />
+          Sửa
+        </Button>
+      )}
+      <AddDebtSheet
+        debt={debt}
+        contacts={contacts}
+        accounts={accounts}
+        onAddDebt={onChangeDebt}
+        open={editing}
+        onOpenChange={setEditing}
+      />
+    </>
+  )
+}
+
+/** "còn 11 ngày", "quá 6 ngày": a deadline label inside a sentence. */
+function lowerFirst(text: string) {
+  return text.charAt(0).toLocaleLowerCase("vi-VN") + text.slice(1)
+}
+
+/**
+ * A debt as a receipt, as a transaction's and an account's sheets show
+ * theirs: the person, which way, what is left in large and when it is due;
+ * how much is paid; the interest, when it has some, as one group; where its
+ * money came from or went, when, and the note; every collection or
+ * repayment (tap to edit, swipe to delete); then deleting it, with an undo.
+ * Shared by the side panel and the sheet.
+ */
 export function DebtDetailInfo(props: DebtDetailPanelProps) {
-  const { contact, debt, accounts, onEditPayment, onDeletePayment } = props
+  const { contact, debt, accounts, onEditPayment, onDeletePayment, onChangeDebt } = props
   const { paidAmount, remainingAmount, paymentProgress, interestAmount, interestDate, totalAmount, days } = getDebtMetrics(debt)
   const deadline = getDebtDeadline(debt)
   const collecting = debt.direction === "lent"
-  const paidLabel = collecting ? "Đã thu" : "Đã trả"
+  const way = collecting ? "Cho vay" : "Đi vay"
+  const settled = debt.status === "settled" || remainingAmount <= 0
   const projection = getDueProjection(debt, paidAmount)
+  const account = accounts.find((item) => item.id === debt.accountId)
+  const period = debt.interestPeriod === "year" ? "năm" : "tháng"
+  const perPeriod = Math.round((debt.amount * (debt.interestRate ?? 0)) / 100)
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardContent className="space-y-2">
-          <CardLabel as="p">{debt.hasInterest ? "Còn lại hôm nay" : "Còn lại"}</CardLabel>
-          <Money amount={remainingAmount} sign="never" size="xl" />
-          <Progress value={paymentProgress} />
-          <p className="text-xs text-muted-foreground">
-            {paidLabel} {formatCurrency(paidAmount, { signDisplay: "never" })} / {formatCurrency(totalAmount, { signDisplay: "never" })} · {Math.round(paymentProgress)}%
-          </p>
-          {debt.hasInterest ? (
-            <p className="text-xs text-muted-foreground">
-              Gốc {formatCurrency(debt.amount, { signDisplay: "never" })} + lãi {formatCurrency(interestAmount)}
-            </p>
-          ) : null}
-          {projection ? (
-            // What it comes to on the due date, as interest keeps accruing until then.
-            <p className="text-sm text-muted-foreground">
-              Đến hạn {formatDebtDate(projection.dueAt)}:{" "}
-              <span className="font-medium text-foreground tabular-nums">
-                {formatCurrency(projection.remainingAmount)}
-              </span>
-            </p>
-          ) : null}
-        </CardContent>
+      <div className="flex flex-col items-center pt-2 text-center">
+        <ContactAvatar contactId={contact.id} initials={contact.initials} size="lg" />
+        <p className="mt-3 text-base text-muted-foreground">
+          {way} · {contact.name}
+        </p>
+        <Money amount={settled ? totalAmount : remainingAmount} sign="never" size="xl" tone={settled ? "muted" : "default"} />
+        <p className={cn("mt-1 text-sm text-muted-foreground", !settled && deadline.isOverdue && "text-expense")}>
+          {settled
+            ? "Đã tất toán"
+            : [
+                `${collecting ? "Còn phải thu" : "Còn phải trả"}${debt.hasInterest ? " hôm nay" : ""}`,
+                debt.dueAt ? `hẹn ${formatShortDate(debt.dueAt)}, ${lowerFirst(deadline.label)}` : "không hạn trả",
+              ].join(" · ")}
+        </p>
+      </div>
+
+      {/* How much of it is paid. */}
+      <Card className="gap-2 px-4 py-4">
+        <Progress value={paymentProgress} aria-label={`${collecting ? "Đã thu" : "Đã trả"} ${Math.round(paymentProgress)}%`} />
+        <div className="flex items-baseline justify-between gap-3 text-xs text-muted-foreground">
+          <span>
+            {collecting ? "Đã thu" : "Đã trả"}{" "}
+            <span className="font-medium text-foreground tabular-nums">{formatCurrency(paidAmount, { signDisplay: "never" })}</span>
+          </span>
+          <span className="tabular-nums">
+            {Math.round(paymentProgress)}% của {formatCurrency(totalAmount, { signDisplay: "never" })}
+          </span>
+        </div>
       </Card>
 
-      <SettingsGroup
-        footer={debt.hasInterest
-          ? "Lãi đơn trên tiền gốc, cộng dồn theo ngày"
-          : undefined}
-      >
-        <SettingsRow title="Loại" value={collecting ? "Cho vay" : "Đi vay"} />
-        <SettingsRow title="Tiền gốc" value={formatCurrency(debt.amount, { signDisplay: "never" })} />
-        <SettingsRow
-          title="Lãi suất"
-          value={debt.hasInterest ? `${debt.interestRate ?? 0}%/${debt.interestPeriod === "year" ? "năm" : "tháng"}` : "Không tính lãi"}
-        />
-        {debt.hasInterest ? (
-          <>
-            {/* What a full period adds, so a loan opened today still shows its interest. */}
+      {debt.hasInterest ? (
+        <SettingsGroup title={`Lãi ${debt.interestRate ?? 0}%/${period}`} footer="Lãi đơn trên tiền gốc, cộng dồn theo ngày.">
+          <SettingsRow title="Tiền gốc" value={formatCurrency(debt.amount, { signDisplay: "never" })} />
+          <SettingsRow
+            title={`Lãi đến ${interestDate === todayDate() ? "hôm nay" : formatDebtDate(interestDate)}`}
+            description={`${days} ngày · ${formatCurrency(perPeriod)} mỗi ${period}`}
+            value={`+${formatCurrency(interestAmount, { signDisplay: "never" })}`}
+          />
+          <SettingsRow
+            title="Tổng gốc và lãi"
+            value={<span className="font-medium text-foreground">{formatCurrency(totalAmount, { signDisplay: "never" })}</span>}
+          />
+          {projection ? (
+            // What it comes to on the due date, as interest keeps accruing until then.
             <SettingsRow
-              title={`Lãi mỗi ${debt.interestPeriod === "year" ? "năm" : "tháng"}`}
-              value={formatCurrency(Math.round((debt.amount * (debt.interestRate ?? 0)) / 100))}
+              title={`Đến hạn ${formatShortDate(projection.dueAt)}`}
+              description={collecting ? "Còn phải thu khi đó" : "Còn phải trả khi đó"}
+              value={formatCurrency(projection.remainingAmount, { signDisplay: "never" })}
             />
-            <SettingsRow
-              title={`Lãi đến ${interestDate === todayDate() ? "hôm nay" : formatDebtDate(interestDate)}`}
-              description={`${days} ngày`}
-              value={formatCurrency(interestAmount)}
-            />
-            <SettingsRow title="Tổng gốc và lãi" value={formatCurrency(totalAmount)} />
-          </>
-        ) : null}
-        {debt.note ? <SettingsRow title="Ghi chú" description={<span className="select-text">{debt.note}</span>} fullDescription /> : null}
-      </SettingsGroup>
+          ) : null}
+        </SettingsGroup>
+      ) : null}
 
       <SettingsGroup>
+        {debt.recordingMode === "opening" ? (
+          // Recorded as owed already: no account's balance moved.
+          <SettingsRow title="Nợ có sẵn" value="Không đổi số dư" />
+        ) : (
+          <SettingsRow
+            title={collecting ? "Tiền ra từ" : "Tiền vào"}
+            value={
+              <span className="flex min-w-0 items-center gap-2">
+                {account ? <AccountLogo account={account} size="xs" /> : null}
+                <span className="min-w-0 truncate">{account?.name ?? "Không xác định"}</span>
+              </span>
+            }
+          />
+        )}
         <SettingsRow
-          title={debt.recordingMode === "opening" ? "Ngày bắt đầu theo dõi" : "Ngày ghi"}
+          title={debt.recordingMode === "opening" ? "Bắt đầu theo dõi" : collecting ? "Ngày cho vay" : "Ngày vay"}
           value={formatDebtDate(debt.recordedAt)}
         />
-        {debt.dueAt ? (
-          <SettingsRow
-            title="Hẹn trả"
-            description={debt.status !== "settled" ? deadline.label : undefined}
-            value={formatDebtDate(debt.dueAt)}
-          />
-        ) : null}
-        <SettingsRow
-          title="Cách ghi nhận"
-          value={debt.recordingMode === "opening" ? "Nợ có sẵn" : "Khoản vay mới"}
-        />
+        {debt.dueAt ? <SettingsRow title="Hẹn trả" value={formatDebtDate(debt.dueAt)} /> : null}
+        {debt.note ? <SettingsRow title="Ghi chú" description={<span className="select-text">{debt.note}</span>} fullDescription /> : null}
       </SettingsGroup>
 
       <DebtPaymentHistory debt={debt} contact={contact} accounts={accounts} onEdit={onEditPayment} onDelete={onDeletePayment} />
 
-      <DebtManageRows {...props} />
+      <SettingsGroup>
+        <SettingsRow destructive title="Xoá khoản nợ" onClick={() => void onChangeDebt(null)} />
+      </SettingsGroup>
     </div>
   )
 }
@@ -169,75 +227,5 @@ export function DebtRecordPaymentButton({
         </Button>
       }
     />
-  )
-}
-
-/** Edit and delete as rows at the end, like the other editors. */
-function DebtManageRows({
-  accounts,
-  contacts,
-  debt,
-  onChangeDebt,
-}: DebtDetailPanelProps) {
-  const [editing, setEditing] = React.useState(false)
-  const [deleting, setDeleting] = React.useState(false)
-  const [pending, setPending] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
-  const submitting = React.useRef(false)
-
-  return (
-    <>
-      <SettingsGroup>
-        <SettingsRow title="Sửa khoản nợ" onClick={() => setEditing(true)} />
-      </SettingsGroup>
-      <SettingsGroup>
-        <SettingsRow
-          destructive
-          title="Xoá khoản nợ"
-          onClick={() => {
-            setError(null)
-            setDeleting(true)
-          }}
-        />
-      </SettingsGroup>
-      <AddDebtSheet
-        debt={debt}
-        contacts={contacts}
-        accounts={accounts}
-        onAddDebt={onChangeDebt}
-        open={editing}
-        onOpenChange={setEditing}
-      />
-      <AlertDialog open={deleting} onOpenChange={(open) => { if (!submitting.current) setDeleting(open) }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Xoá khoản {debt.direction === "lent" ? "cho vay" : "đi vay"}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Xoá {debt.note ? `“${debt.note}”` : "khoản này"} cùng toàn bộ {debt.payments?.length ?? 0} lần thu/trả.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          {error ? <FieldError role="alert">{error}</FieldError> : null}
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={pending}>Huỷ</AlertDialogCancel>
-            <AlertDialogAction disabled={pending} onClick={async (event) => {
-              event.preventDefault()
-              if (submitting.current) return
-              submitting.current = true
-              setPending(true)
-              setError(null)
-              try {
-                await onChangeDebt(null)
-                setDeleting(false)
-              } catch (error) {
-                setError(actionErrorMessage(error, "Không thể xoá khoản nợ."))
-              } finally {
-                submitting.current = false
-                setPending(false)
-              }
-            }}>{pending ? "Đang xoá…" : "Xoá khoản nợ"}</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
   )
 }

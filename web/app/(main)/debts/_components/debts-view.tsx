@@ -32,6 +32,7 @@ import type { Contact, Debt, DebtDirection, NewDebt, NewDebtPayment } from "../_
 import {
   DebtDetailInfo,
   DebtDetailPanel,
+  DebtEditButton,
   DebtRecordPaymentButton,
 } from "./debt-detail-panel"
 import { getDebtSummary } from "../_lib/get-debt-summary"
@@ -261,7 +262,12 @@ export function DebtsView({
       </div>
 
       <PageSheet
-        title={sheetContact?.name ?? "Chi tiết khoản nợ"}
+        title="Chi tiết khoản nợ"
+        action={
+          isSheetReady && sheetDebt && sheetContact ? (
+            <DebtEditButton {...getDetailProps(sheetDebt, sheetContact)} variant="icon" />
+          ) : undefined
+        }
         open={sheetDebt !== undefined}
         onOpenChange={(open) => {
           if (!open) setSheetDebtId(null)
@@ -272,9 +278,12 @@ export function DebtsView({
             <div className="pb-4">
               <DebtDetailInfo {...getDetailProps(sheetDebt, sheetContact)} />
             </div>
-            <PageSheetFooter>
-              <DebtRecordPaymentButton {...getDetailProps(sheetDebt, sheetContact)} />
-            </PageSheetFooter>
+            {/* Nothing left to collect or repay once settled. */}
+            {isSettled(sheetDebt) ? null : (
+              <PageSheetFooter>
+                <DebtRecordPaymentButton {...getDetailProps(sheetDebt, sheetContact)} />
+              </PageSheetFooter>
+            )}
           </React.Fragment>
         ) : (
           <div

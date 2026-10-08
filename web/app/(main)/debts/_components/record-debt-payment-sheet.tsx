@@ -10,6 +10,7 @@ import { CurrencyInput } from "@/components/forms/currency-input"
 import { RequiredMark } from "@/components/forms/required-mark"
 import { useFieldErrors } from "@/components/forms/use-field-errors"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
+import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -29,9 +30,11 @@ type RecordDebtPaymentSheetProps = {
   onRecordPayment: (payment: NewDebtPayment) => Promise<void>
   trigger: React.ReactNode | ((openSheet: () => void) => React.ReactNode)
   returnFocusRef?: React.RefObject<HTMLButtonElement | null>
+  /** With `payment`: a row at the end deletes it (with an undo), for where it cannot be swiped away. */
+  onDelete?: () => void
 }
 
-export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRecordPayment, trigger, returnFocusRef }: RecordDebtPaymentSheetProps) {
+export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRecordPayment, trigger, returnFocusRef, onDelete }: RecordDebtPaymentSheetProps) {
   const [open, setOpen] = React.useState(false)
   const [amount, setAmount] = React.useState<number | null>(payment?.amount ?? null)
   const [paidAt, setPaidAt] = React.useState(payment?.paidAt ?? todayDate())
@@ -157,6 +160,20 @@ export function RecordDebtPaymentSheet({ contact, debt, accounts, payment, onRec
                 <Field><FieldLabel htmlFor={`${id}-note`}>Ghi chú</FieldLabel><Textarea id={`${id}-note`} name="note" defaultValue={payment?.note} maxLength={500} /></Field>
               </FieldGroup>
             </FormSection>
+            {payment && onDelete ? (
+              <div className="pt-6">
+                <SettingsGroup>
+                  <SettingsRow
+                    destructive
+                    title={isCollection ? "Xoá lần thu này" : "Xoá lần trả này"}
+                    onClick={() => {
+                      setOpen(false)
+                      onDelete()
+                    }}
+                  />
+                </SettingsGroup>
+              </div>
+            ) : null}
           </fieldset>
           <PageSheetFooter>
             {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
