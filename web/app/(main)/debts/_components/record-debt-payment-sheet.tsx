@@ -218,7 +218,7 @@ function PaymentForm({
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{[contact.name, debt.note].filter(Boolean).join(" · ")}</p>
             <p className="text-xs text-muted-foreground">
-              {collecting ? "Còn phải thu" : "Còn phải trả"} {formatCurrency(payment ? leftNow : remainingAmount, { signDisplay: "never" })}
+              {collecting ? "Còn nợ bạn" : "Bạn còn nợ"} {formatCurrency(payment ? leftNow : remainingAmount, { signDisplay: "never" })}
               {debt.hasInterest ? " (gồm lãi)" : ""}
             </p>
           </div>

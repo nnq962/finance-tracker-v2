@@ -6,6 +6,7 @@ import { CheckIcon, PencilIcon } from "lucide-react"
 import { AccountLogo } from "@/components/account-logo"
 import { Money } from "@/components/app/money"
 import { groupCaptionClassName, SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -92,14 +93,18 @@ export function DebtEditButton({
   )
 }
 
-/** "còn 11 ngày", "quá 6 ngày": a deadline label inside a sentence. */
-function lowerFirst(text: string) {
-  return text.charAt(0).toLocaleLowerCase("vi-VN") + text.slice(1)
+/** Where a debt stands, for the badge under its amount: "Còn 11 ngày", "Quá hạn 6 ngày", "Đến hạn hôm nay", "Không hạn trả", "Đã tất toán". */
+function standingLabel(debt: Debt, settled: boolean) {
+  if (settled) return "Đã tất toán"
+  if (!debt.dueAt) return "Không hạn trả"
+  const { label } = getDebtDeadline(debt)
+  return label.startsWith("Quá ") ? label.replace("Quá ", "Quá hạn ") : label
 }
 
 /**
  * A debt as a receipt, as a transaction's and an account's sheets show
- * theirs: the person, which way, what is left in large and when it is due;
+ * theirs: who owes whom, what is left in large (with the interest in it) and
+ * a badge for where it stands (days left, overdue, settled);
  * how much is paid; the interest, when it has some, as one group; where its
  * money came from or went, when, and the note; every collection or
  * repayment (tap to edit, swipe to delete); then deleting it, with an undo.
@@ -110,7 +115,6 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
   const { paidAmount, remainingAmount, paymentProgress, interestAmount, interestDate, totalAmount, days } = getDebtMetrics(debt)
   const deadline = getDebtDeadline(debt)
   const collecting = debt.direction === "lent"
-  const way = collecting ? "Cho vay" : "Đi vay"
   const settled = debt.status === "settled" || remainingAmount <= 0
   const projection = getDueProjection(debt, paidAmount)
   const account = accounts.find((item) => item.id === debt.accountId)
@@ -119,20 +123,22 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
 
   return (
     <div className="space-y-6">
+      {/* Who owes whom, how much, and where it stands; the dates are in the rows below. */}
       <div className="flex flex-col items-center pt-2 text-center">
         <ContactAvatar contactId={contact.id} initials={contact.initials} size="lg" />
         <p className="mt-3 text-base text-muted-foreground">
-          {way} · {contact.name}
+          {collecting ? `${contact.name} nợ bạn` : `Bạn nợ ${contact.name}`}
         </p>
         <Money amount={settled ? totalAmount : remainingAmount} sign="never" size="xl" tone={settled ? "muted" : "default"} />
-        <p className={cn("mt-1 text-sm text-muted-foreground", !settled && deadline.isOverdue && "text-expense")}>
-          {settled
-            ? "Đã tất toán"
-            : [
-                `${collecting ? "Còn phải thu" : "Còn phải trả"}${debt.hasInterest ? " hôm nay" : ""}`,
-                debt.dueAt ? `hẹn ${formatShortDate(debt.dueAt)}, ${lowerFirst(deadline.label)}` : "không hạn trả",
-              ].join(" · ")}
-        </p>
+        {!settled && debt.hasInterest && interestAmount > 0 ? (
+          <p className="text-xs text-muted-foreground">
+            Gồm {formatCurrency(interestAmount, { signDisplay: "never" })} lãi tính đến{" "}
+            {interestDate === todayDate() ? "hôm nay" : formatDebtDate(interestDate)}
+          </p>
+        ) : null}
+        <Badge className="mt-2" variant={settled ? "income" : deadline.isOverdue ? "expense" : "secondary"}>
+          {standingLabel(debt, settled)}
+        </Badge>
       </div>
 
       {/* How much of it is paid. */}
@@ -165,7 +171,7 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
             // What it comes to on the due date, as interest keeps accruing until then.
             <SettingsRow
               title={`Đến hạn ${formatShortDate(projection.dueAt)}`}
-              description={collecting ? "Còn phải thu khi đó" : "Còn phải trả khi đó"}
+              description="Gốc và lãi còn lại vào ngày đó"
               value={formatCurrency(projection.remainingAmount, { signDisplay: "never" })}
             />
           ) : null}

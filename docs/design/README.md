@@ -285,15 +285,16 @@ Trước khi báo xong một màn mới, kiểm tra:
   (dòng lãi suất "%" với "/tháng | /năm", dòng "Đến hạn …" tính sẵn gốc + lãi, hoặc lãi mỗi kỳ). Khi
   sửa, loại khoá lại nếu đã có lần thu hoặc trả.
 - **Ghi nhận thu / trả nợ** (`RecordDebtPaymentSheet`, cả khi sửa một lần): tiêu đề "Thu nợ" / "Trả nợ" /
-  "Sửa lần thu"; thẻ khoản nợ ở đầu (avatar, "Lan Anh · Tiền cọc phòng", "Còn phải thu …", "gồm lãi" khi
+  "Sửa lần thu"; thẻ khoản nợ ở đầu (avatar, "Lan Anh · Tiền cọc phòng", "Còn nợ bạn …" / "Bạn còn nợ …", "gồm lãi" khi
   có lãi); số tiền lớn (thu: "+" xanh, trả: "−"), chip "Toàn bộ · 1/2 · 1/3" của số còn lại thay cho gợi ý
   theo chữ số, dòng "Sau lần này còn …" hoặc "✓ Tất toán khoản này"; vượt số còn lại thì báo ngay. Dòng
   "Vào tài khoản" / "Trả từ" (mặc định tài khoản của khoản vay nếu còn dùng; màn sâu chọn tài khoản),
   "Thời gian" (`TimeRows`, không trước ngày ghi khoản nợ), ghi chú; khi sửa có "Xoá lần thu này".
 - **Chi tiết khoản nợ** (`DebtDetailInfo`, sheet trên điện thoại, khung bên phải từ xl), kiểu biên lai:
-  thanh "Chi tiết khoản nợ" có bút chì (khung bên phải: "Sửa" cạnh tên); avatar `lg`, "Cho vay · Lan
-  Anh", số còn lại `xl` ở giữa, dòng phụ "Còn phải thu · hẹn 19/10, còn 11 ngày" (đỏ khi quá hạn; đã
-  tất toán thì số mờ, ghi "Đã tất toán", không có nút ghi nhận). Thẻ tiến độ: thanh, "Đã thu …" và "30%
+  thanh "Chi tiết khoản nợ" có bút chì (khung bên phải: "Sửa" cạnh tên); avatar `lg`, câu nói ai nợ ai
+  ("Lan Anh nợ bạn", "Bạn nợ Chị Hà"), số còn lại `xl` ở giữa ("Gồm … lãi tính đến hôm nay" khi có lãi),
+  rồi một nhãn trạng thái: "Còn 11 ngày", "Không hạn trả" (xám), "Quá hạn 7 ngày", "Đến hạn hôm nay"
+  (đỏ), "Đã tất toán" (xanh; số mờ, không có nút ghi nhận). Ngày cụ thể chỉ ở dòng Hẹn trả, không lặp. Thẻ tiến độ: thanh, "Đã thu …" và "30%
   của …". Có lãi thì nhóm "LÃI 1%/THÁNG": Tiền gốc, Lãi đến hôm nay (số ngày · lãi mỗi kỳ), Tổng gốc
   và lãi, Đến hạn (khi có hẹn). Nhóm thông tin: "Tiền ra từ" / "Tiền vào" kèm logo tài khoản (nợ có
   sẵn: "Không đổi số dư"), ngày vay hay bắt đầu theo dõi, Hẹn trả, ghi chú. "Lịch sử thu / trả": icon
