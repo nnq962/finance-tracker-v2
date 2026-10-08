@@ -155,6 +155,7 @@ component ở đó là cả app đổi theo.
 | `PageDots` | Chỉ báo trang; chấm hiện tại kéo dài thành vạch |
 | `Carousel` | Thẻ vuốt ngang, bắt từng thẻ, kèm `PageDots` |
 | `SwipeRow` | Vuốt trái để lộ một hành động (mặc định Xoá); dùng qua `SettingsRow swipeAction` để dòng vuốt giống mọi dòng khác |
+| `SettingsRow checked` | Dòng của list chọn như iOS: ✓ ở cuối khi đang chọn, không có gì khi không, không có mũi tên; chạm là chọn (`onClick`), trình đọc màn hình nghe nút bật/tắt (`aria-pressed`). Dùng cho các màn chọn trong sheet lọc Giao dịch |
 | `SettingsRow unread` | Dòng chưa đọc: chấm `transfer` 12px trên góc phải trên của ô icon như chấm trên icon app, viền 2px màu thẻ cắt nó khỏi ô (dòng không icon: chấm 8px trước tiêu đề), tiêu đề đậm 600; trình đọc màn hình nghe thêm "chưa đọc". Đọc rồi thì như mọi dòng. Dùng cho Thông báo; giờ ở `value` theo `formatMomentLabel` (hôm nay "14:05", "Hôm qua", cũ hơn "05/10") |
 | `SettingsRow collapsed` | Dòng gập lại (`true`) hay mở ra (`false`): chiều cao trượt trong 300ms và mờ dần, nên các dòng bên dưới dịch dần thay vì nhảy; khi gập thì `inert`. Cho dòng hiện khi người dùng yêu cầu (nhiệm vụ còn lại sau "Xem nhiệm vụ") và dòng rời đi khi xong (nhiệm vụ vừa nhận thưởng). Không truyền với dòng luôn hiện. Đường kẻ tự theo: dòng đầu tiên đang hiện không có kẻ phía trên |
 | `ActionSheet` | Danh sách lựa chọn ngắn trồi từ đáy, Huỷ tách riêng bên dưới (vaul) |
@@ -224,17 +225,23 @@ Trước khi báo xong một màn mới, kiểm tra:
   tiêu đề ngày bám khi cuộn, thành một dải cao 44. Ô tìm ở Giao dịch nằm trong `<form
   role="search">`: phím Tìm trên bàn phím ẩn bàn phím (kết quả lọc ngay khi gõ).
 - **Lọc và tìm ở Giao dịch** (điện thoại): thẻ Tiền vào / Tiền ra chỉ hiển thị; dưới ô tìm là
-  `ChipRow`: chip "Lọc" mở sheet điều kiện khác (tài khoản, hạng mục, số tiền; không có loại),
-  vạch chia, rồi Tất cả · Tiền vào · Tiền ra · Chuyển khoản · Vay nợ. Điều kiện của sheet đang
-  bật hiện thành chip có × ở hàng dưới. Chạm ô tìm mở màn tìm: đầu trang và thẻ tổng thu gọn
+  `ChipRow`: chip "Lọc" mở sheet điều kiện khác (không có loại), vạch chia, rồi Tất cả · Tiền vào · Tiền ra · Chuyển khoản · Vay nợ. Sheet lọc
+  (`TransactionFilterSheet`) theo kiểu bộ lọc iOS: màn đầu là ba dòng Tài khoản · Hạng mục · Số
+  tiền, bên phải ghi đang lọc gì ("Tất cả", "Ví MoMo", "2 hạng mục", "100k – 1tr"); chạm một dòng
+  mở màn con (‹ quay lại, "Bỏ chọn" bên phải khi có chọn) là list chọn (`SettingsRow checked`):
+  tài khoản có logo, hạng mục có icon và màu, chia Chi tiêu / Thu nhập (ẩn khi lọc chuyển khoản,
+  vay nợ); số tiền chọn một mức (Bất kỳ, Dưới 100k, 100k – 1tr, Trên 1tr) hoặc "Tuỳ chỉnh" mở hai
+  ô Từ / Đến. Chọn là áp ngay; chân sheet "Xoá lọc" (chỉ khi có lọc) và "Xem N giao dịch". Điều
+  kiện của sheet đang bật hiện thành chip có × ở hàng dưới. Chạm ô tìm mở màn tìm: đầu trang và thẻ tổng thu gọn
   (`Collapse`) để ô tìm trôi lên đầu, "Huỷ" trượt ra bên cạnh (xoá chữ, đóng màn), thanh tab
   (`data-hide-tab-bar`) và nút + (`FloatingActions concealed`) trượt xuống khỏi màn; Huỷ đảo
   ngược tất cả. Khi có
   chữ, kết quả là một list phẳng, mới nhất trước: chữ khớp tô nền `warning/25`, bên phải ghi
   ngày thay giờ (năm khác thì có năm); trên list là "N kết quả trong Tháng 10 · tổng …" và "Tìm
   mọi tháng" (tải mọi giao dịch khi cần, `loadAllTransactionsAction`). Không có kết quả: nói đã
-  tìm gì, ở đâu, đang lọc gì, kèm "Bỏ lọc" và "Tìm mọi tháng". Desktop giữ bảng lọc bên trái,
-  kết quả tìm cũng là list phẳng như trên.
+  tìm gì, ở đâu, đang lọc gì, kèm "Bỏ lọc" và "Tìm mọi tháng". Desktop giữ bảng lọc bên trái
+  trên một màn: loại, số tiền (cùng các mức, "Tuỳ chỉnh" trượt mở hai ô), tài khoản có logo và
+  hạng mục có icon màu trên chip; kết quả tìm cũng là list phẳng như trên.
 - **Biểu đồ "Thu và chi theo tháng"** (Tổng quan): không có tooltip nổi; chạm một cột tháng (hoặc
   phím mũi tên, đây là radio group) để chọn, mặc định tháng này; hai dòng trong thẻ ghi "Tháng N"
   và "Thu … Chi …"; cột tháng đang chọn được tô nền nhạt, các cột giữ nguyên màu. Cột chi màu `chart-neutral`, không đỏ. Tháng ghi

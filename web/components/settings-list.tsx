@@ -1,5 +1,5 @@
 import type * as React from "react"
-import { ChevronDownIcon, ChevronRightIcon, type LucideIcon } from "lucide-react"
+import { CheckIcon, ChevronDownIcon, ChevronRightIcon, type LucideIcon } from "lucide-react"
 
 import { IconTile, type IconTileTone } from "@/components/app/icon-tile"
 import { SwipeRow } from "@/components/app/swipe-row"
@@ -194,6 +194,12 @@ type SettingsRowProps = {
    * title). Read, the row is like any other.
    */
   unread?: boolean
+  /**
+   * A row of a pick list, as in iOS: a tick at the end while chosen, nothing
+   * when not, and no chevron; the tap chooses (`onClick`). Read out as a
+   * pressed or unpressed button. Leave it unset for other rows.
+   */
+  checked?: boolean
 }
 
 const rowClassName = "min-h-16 gap-3 py-3"
@@ -215,7 +221,8 @@ function SettingsRow({
   value,
   action,
   onClick,
-  chevron = Boolean(onClick),
+  checked,
+  chevron = Boolean(onClick) && checked === undefined,
   active = false,
   disabled = false,
   destructive = false,
@@ -249,12 +256,13 @@ function SettingsRow({
           </ItemDescription>
         ) : null}
       </ItemContent>
-      {value || action || (chevron && !destructive) ? (
+      {value || action || checked || (chevron && !destructive) ? (
         <ItemActions className="shrink-0">
           {value ? (
             <span className="text-sm text-muted-foreground">{value}</span>
           ) : null}
           {action}
+          {checked ? <CheckIcon className="size-5 text-foreground" aria-hidden="true" /> : null}
           {chevron && !destructive ? (
             <ChevronRightIcon className="size-4 text-muted-foreground" aria-hidden="true" />
           ) : null}
@@ -273,6 +281,7 @@ function SettingsRow({
         disabled={disabled}
         data-active={active}
         aria-current={active ? "page" : undefined}
+        aria-pressed={checked}
         className={pressableRow}
       >
         {content}

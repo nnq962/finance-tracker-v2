@@ -38,7 +38,8 @@ import {
 } from "./transaction-filter-fields"
 import { TransactionKindChips } from "./transaction-kind-chips"
 import type { TransactionSearchResults } from "./transaction-list"
-import { countSheetFilters, TransactionFilterSheet, TransactionSearchBar } from "./transaction-search"
+import { TransactionFilterSheet } from "./transaction-filter-sheet"
+import { countSheetFilters, TransactionSearchBar } from "./transaction-search"
 import { TransactionsLayout } from "./transactions-layout"
 import { TransactionsView } from "./transactions-view"
 
@@ -342,7 +343,6 @@ export function TransactionsScreen({
         filter={filter}
         searchFilters={searchFilters}
         transactionCount={visibleTransactions.length}
-        onFilterChange={changeKind}
         onSearchFiltersChange={setSearchFilters}
         onReset={resetSheetFilters}
       />

@@ -302,6 +302,7 @@ const dueSamples = [
 function ListSection() {
   const [rows, setRows] = React.useState<readonly (typeof swipeRows)[number][]>(swipeRows)
   const [moreShown, setMoreShown] = React.useState(false)
+  const [picked, setPicked] = React.useState(["Ví MoMo"])
   const [reminder, setReminder] = React.useState(true)
 
   return (
@@ -446,7 +447,20 @@ function ListSection() {
           </li>
         ) : null}
       </SettingsGroup>
-      {/* As the notifications: unread rows have a blue dot in the margin and a semibold title. */}
+      {/* As the transactions' filter screens: a pick list, the chosen rows ticked. */}
+      <SettingsGroup title="List chọn (checked)" size="lg">
+        {["Vietcombank", "Ví MoMo", "Tiền mặt"].map((name) => (
+          <SettingsRow
+            key={name}
+            icon={WalletCardsIcon}
+            tone="blue"
+            title={name}
+            checked={picked.includes(name)}
+            onClick={() => setPicked(picked.includes(name) ? picked.filter((item) => item !== name) : [...picked, name])}
+          />
+        ))}
+      </SettingsGroup>
+      {/* As the notifications: unread rows have a blue dot on their icon and a semibold title. */}
       <SettingsGroup title="Chưa đọc (unread)" size="lg">
         <SettingsRow icon={BellRingIcon} tone="amber" title="Chưa đọc" description="Chấm xanh, tiêu đề đậm" value="08:00" unread onClick={() => toast("Mở")} />
         <SettingsRow icon={BellRingIcon} tone="amber" title="Đã đọc" description="Như mọi dòng khác" value="Hôm qua" onClick={() => toast("Mở")} />

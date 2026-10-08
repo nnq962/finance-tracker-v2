@@ -4,15 +4,11 @@ import { SearchIcon, XIcon } from "lucide-react"
 import * as React from "react"
 
 import { Collapse } from "@/components/app/collapse"
-import { FormSection } from "@/components/app/form-section"
-import { PageSheet } from "@/components/app/page-sheet"
 import { Button } from "@/components/ui/button"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
-import type { Account } from "@/lib/accounts/types"
-import type { CategoryGroup } from "@/lib/categories/types"
 
 import type { TransactionFilter, TransactionSearchFilters } from "../_types/transaction"
-import { countActiveFilters, TransactionFilterFields } from "./transaction-filter-fields"
+import { countActiveFilters } from "./transaction-filter-fields"
 
 /** The conditions to count on the filter chip: all but the kind, which the kind chips beside it show. */
 export function countSheetFilters(filter: TransactionFilter, searchFilters: TransactionSearchFilters) {
@@ -93,71 +89,5 @@ export function TransactionSearchBar({
         </Collapse>
       ) : null}
     </form>
-  )
-}
-
-/**
- * The filters a phone keeps out of view, in a sheet opened from the filter
- * chip: amount, accounts and categories (the kind chips beside it choose the
- * kind). "Đặt lại" clears these and leaves the kind and the search.
- */
-export function TransactionFilterSheet({
-  open,
-  onOpenChange,
-  accounts,
-  categoryGroups,
-  filter,
-  searchFilters,
-  transactionCount,
-  onFilterChange,
-  onSearchFiltersChange,
-  onReset,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  accounts: Account[]
-  categoryGroups: CategoryGroup[]
-  filter: TransactionFilter
-  searchFilters: TransactionSearchFilters
-  /** How many transactions the search and filters leave. */
-  transactionCount: number
-  onFilterChange: (filter: TransactionFilter) => void
-  onSearchFiltersChange: (filters: TransactionSearchFilters) => void
-  onReset: () => void
-}) {
-  return (
-    <PageSheet
-      title="Bộ lọc"
-      open={open}
-      onOpenChange={onOpenChange}
-      footer={
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={countSheetFilters(filter, searchFilters) === 0}
-            onClick={onReset}
-          >
-            Đặt lại
-          </Button>
-          <Button type="button" onClick={() => onOpenChange(false)}>
-            Xem {transactionCount} giao dịch
-          </Button>
-        </div>
-      }
-    >
-      <FormSection>
-        <TransactionFilterFields
-          idPrefix="transaction-sheet"
-          accounts={accounts}
-          categoryGroups={categoryGroups}
-          filter={filter}
-          searchFilters={searchFilters}
-          onFilterChange={onFilterChange}
-          onSearchFiltersChange={onSearchFiltersChange}
-          showKind={false}
-        />
-      </FormSection>
-    </PageSheet>
   )
 }

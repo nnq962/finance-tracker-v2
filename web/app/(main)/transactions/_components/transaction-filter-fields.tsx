@@ -1,5 +1,9 @@
 "use client"
 
+import * as React from "react"
+
+import { Collapse } from "@/components/app/collapse"
+import { AccountLogo } from "@/components/account-logo"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { groupCaptionClassName } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
@@ -14,8 +18,11 @@ import {
 } from "@/components/ui/field"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { Account } from "@/lib/accounts/types"
+import { getCategoryColor } from "@/lib/categories/category-colors"
 import type { CategoryGroup } from "@/lib/categories/types"
+import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 
+import { amountPreset, amountPresets } from "../_lib/amount-presets"
 import type {
   TransactionFilter,
   TransactionSearchFilters,
@@ -76,8 +83,10 @@ export type TransactionFilterFieldsProps = {
 }
 
 /**
- * The filter conditions, applied as they change. Shown in a sheet on phones
- * and beside the list on desktop; `idPrefix` keeps the two sets of ids apart.
+ * The filter conditions on one screen, applied as they change, beside the
+ * list on desktop (phones pick them in TransactionFilterSheet): the kind, the
+ * amount from a few ranges or typed, and the accounts and categories as chips
+ * with their logos and icons.
  */
 export function TransactionFilterFields({
   accounts,
@@ -87,11 +96,8 @@ export function TransactionFilterFields({
   onFilterChange,
   onSearchFiltersChange,
   idPrefix,
-  showKind = true,
 }: TransactionFilterFieldsProps & {
   idPrefix: string
-  /** False where the kind chips above the list already choose it (the phone's sheet). */
-  showKind?: boolean
 }) {
   const expenseCategoryGroups = categoryGroups.filter(
     (group) => group.type === "expense",
@@ -107,6 +113,10 @@ export function TransactionFilterFields({
   const { minAmount, maxAmount } = searchFilters
   const amountRangeReversed =
     minAmount !== null && maxAmount !== null && minAmount > maxAmount
+  const preset = amountPreset(searchFilters)
+  // Typing a range: open from a tap on Tuỳ chỉnh, and whenever the range is not a preset.
+  const [customOpen, setCustomOpen] = React.useState(false)
+  const custom = customOpen || !preset
 
   /** Changes the kind, dropping categories that cannot match it. */
   function changeFilter(next: TransactionFilter) {
@@ -137,65 +147,88 @@ export function TransactionFilterFields({
 
   return (
     <FieldGroup>
-      {showKind ? (
-        <Field aria-label="Lọc loại giao dịch">
-          <FieldLabel>Loại giao dịch</FieldLabel>
-          <ToggleGroup
-            type="single"
-            size="sm"
-            value={filter}
-            onValueChange={(value) => {
-              if (value) changeFilter(value as TransactionFilter)
-            }}
-            className="flex-wrap"
-            aria-label="Lọc loại giao dịch"
-          >
-            {transactionKindOptions.map((item) => (
-              <ToggleGroupItem key={item.value} value={item.value}>
-                {item.label}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-        </Field>
-      ) : null}
+      <Field aria-label="Lọc loại giao dịch">
+        <FieldLabel>Loại giao dịch</FieldLabel>
+        <ToggleGroup
+          type="single"
+          size="sm"
+          value={filter}
+          onValueChange={(value) => {
+            if (value) changeFilter(value as TransactionFilter)
+          }}
+          className="flex-wrap"
+          aria-label="Lọc loại giao dịch"
+        >
+          {transactionKindOptions.map((item) => (
+            <ToggleGroupItem key={item.value} value={item.value}>
+              {item.label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      </Field>
 
       <FieldSet>
-        <FieldLegend variant="label">Khoảng số tiền</FieldLegend>
-        <div className="grid grid-cols-2 gap-3">
-          <Field data-invalid={amountRangeReversed || undefined}>
-            <FieldLabel htmlFor={`${idPrefix}-min-amount`} className="sr-only">
-              Từ
-            </FieldLabel>
-            <CurrencyInput
-              id={`${idPrefix}-min-amount`}
-              name="minAmount"
-              value={minAmount}
-              onValueChange={(value) =>
-                onSearchFiltersChange({ ...searchFilters, minAmount: value })
-              }
-              placeholder="Từ"
-              invalid={amountRangeReversed}
-            />
-          </Field>
-          <Field data-invalid={amountRangeReversed || undefined}>
-            <FieldLabel htmlFor={`${idPrefix}-max-amount`} className="sr-only">
-              Đến
-            </FieldLabel>
-            <CurrencyInput
-              id={`${idPrefix}-max-amount`}
-              name="maxAmount"
-              value={maxAmount}
-              onValueChange={(value) =>
-                onSearchFiltersChange({ ...searchFilters, maxAmount: value })
-              }
-              placeholder="Đến"
-              invalid={amountRangeReversed}
-            />
-          </Field>
-        </div>
-        {amountRangeReversed ? (
-          <FieldError>Số tiền đến phải lớn hơn số tiền từ.</FieldError>
-        ) : null}
+        <FieldLegend variant="label">Số tiền</FieldLegend>
+        <ToggleGroup
+          type="single"
+          size="sm"
+          value={custom ? "custom" : preset?.key}
+          onValueChange={(value) => {
+            if (!value) return
+            if (value === "custom") return setCustomOpen(true)
+            const next = amountPresets.find((option) => option.key === value)
+            if (!next) return
+            setCustomOpen(false)
+            onSearchFiltersChange({ ...searchFilters, minAmount: next.min, maxAmount: next.max })
+          }}
+          className="flex-wrap"
+          aria-label="Lọc theo số tiền"
+        >
+          {amountPresets.map((option) => (
+            <ToggleGroupItem key={option.key} value={option.key}>
+              {option.label}
+            </ToggleGroupItem>
+          ))}
+          <ToggleGroupItem value="custom">Tuỳ chỉnh</ToggleGroupItem>
+        </ToggleGroup>
+        {/* Under the chips, 12px off them open; folded, it takes back the fieldset's gap too. */}
+        <Collapse open={custom} className="-mt-3 data-[state=closed]:-mt-6">
+          <div className="grid grid-cols-2 gap-3">
+            <Field data-invalid={amountRangeReversed || undefined}>
+              <FieldLabel htmlFor={`${idPrefix}-min-amount`} className="sr-only">
+                Từ
+              </FieldLabel>
+              <CurrencyInput
+                id={`${idPrefix}-min-amount`}
+                name="minAmount"
+                value={minAmount}
+                onValueChange={(value) =>
+                  onSearchFiltersChange({ ...searchFilters, minAmount: value })
+                }
+                placeholder="Từ"
+                invalid={amountRangeReversed}
+              />
+            </Field>
+            <Field data-invalid={amountRangeReversed || undefined}>
+              <FieldLabel htmlFor={`${idPrefix}-max-amount`} className="sr-only">
+                Đến
+              </FieldLabel>
+              <CurrencyInput
+                id={`${idPrefix}-max-amount`}
+                name="maxAmount"
+                value={maxAmount}
+                onValueChange={(value) =>
+                  onSearchFiltersChange({ ...searchFilters, maxAmount: value })
+                }
+                placeholder="Đến"
+                invalid={amountRangeReversed}
+              />
+            </Field>
+          </div>
+          {amountRangeReversed ? (
+            <FieldError>Số tiền đến phải lớn hơn số tiền từ.</FieldError>
+          ) : null}
+        </Collapse>
       </FieldSet>
 
       <Field aria-label="Lọc theo tài khoản">
@@ -212,6 +245,7 @@ export function TransactionFilterFields({
         >
           {sortedAccounts.map((account) => (
             <ToggleGroupItem key={account.id} value={account.id}>
+              <AccountLogo account={account} size="xs" />
               {account.name}
               {account.status === "archived" ? " (đã lưu trữ)" : ""}
             </ToggleGroupItem>
@@ -237,6 +271,7 @@ export function TransactionFilterFields({
           >
             {expenseCategoryGroups.map((group) => (
               <ToggleGroupItem key={group.id} value={group.id}>
+                <CategoryGlyph group={group} />
                 {group.name}
               </ToggleGroupItem>
             ))}
@@ -262,6 +297,7 @@ export function TransactionFilterFields({
           >
             {incomeCategoryGroups.map((group) => (
               <ToggleGroupItem key={group.id} value={group.id}>
+                <CategoryGlyph group={group} />
                 {group.name}
               </ToggleGroupItem>
             ))}
@@ -270,6 +306,12 @@ export function TransactionFilterFields({
       ) : null}
     </FieldGroup>
   )
+}
+
+/** A category group's icon in its colour, at the start of its chip. */
+function CategoryGlyph({ group }: { group: CategoryGroup }) {
+  const Icon = categoryIconRegistry[group.iconName]
+  return <Icon aria-hidden="true" className={getCategoryColor(group.colorName).iconClassName} />
 }
 
 /**
