@@ -130,7 +130,7 @@ component ở đó là cả app đổi theo.
 | `StatGroup` + `Stat` | 2–4 chỉ số chia cột bằng vạch mảnh, mỗi cột có thể mở trang |
 | `ProgressRing` | Tiến độ dạng vòng mảnh có số ở giữa |
 | `FormSection` | Các trường của một form trong thẻ trắng, có tiêu đề nhỏ, ghi chú và nội dung phụ bên dưới |
-| `PromoBanner` | Thẻ sáng cho một điều đáng chú ý, như lời mời Pro (cuối Tổng quan): ô icon `lg` màu `tone` (mặc định `ai`), tiêu đề, một dòng, mũi tên. Sáng để không tranh với thẻ dẫn đầu. Luôn rộng hết chỗ chứa; nơi dùng không đặt độ rộng |
+| `PromoBanner` | Thẻ sáng cho một điều đáng chú ý, như lời mời Pro (dưới tài sản ròng ở Tổng quan, khi đã xong nhiệm vụ): ô icon `lg` màu `tone` (mặc định `ai`), tiêu đề, một dòng, mũi tên. Sáng để không tranh với thẻ dẫn đầu. Luôn rộng hết chỗ chứa; nơi dùng không đặt độ rộng |
 | `FloatingActions` | Nút hành động chính nổi phía trên thanh tab, trên điện thoại; tự chừa một khoảng cuối trang để dòng cuối cuộn lên khỏi nút. `FloatingActionsSkeleton`: nút + đứng sẵn chỗ trong màn tải, không bấm được, để khỏi bật ra khi trang tới |
 | `MobileBottomNav` | Thanh tab nổi trên điện thoại (`components/mobile-bottom-nav.tsx`): viên thuốc mờ rộng ngang màn hình (tối đa 28rem), mỗi tab chỉ có icon 24 (bỏ tên dưới icon theo yêu cầu, 2026-10-08; tên vẫn là nhãn cho trình đọc màn hình, và đầu trang luôn ghi tên trang); viên xám nhạt trượt tới tab đang mở, tab đó icon nét đậm màu chữ. Mỗi tab nhớ vị trí cuộn (theo URL, kể cả query; trang con như /design, /settings/plan luôn mở ở đầu); chạm lại tab đang mở thì cuộn về đầu (mượt, tức thì khi giảm chuyển động); trượt ngón ra khỏi tab trước khi nhấc thì huỷ |
 | `PageHeader` | Đầu mọi trang (`components/page.tsx`), kiểu app ngân hàng Việt Nam (Cake, Timo), chọn 2026-10-08: một hàng cao 44 (64 từ md), cuộn cùng trang (không dính, không thu gọn). Bên trái tên trang 24 đậm 600, hoặc `lead` thay chỗ đó (Tổng quan: avatar, lời chào theo giờ, tên đầy đủ, mở Cài đặt; tên trang vẫn là h1 cho trình đọc màn hình). Bên phải: `tools` (mọi cỡ: tháng, chuông), `accessory` (nút tròn 44, dạng điện thoại của `actions`: dưới md khi có `actions`), `actions` (nút có chữ từ md). Cách nội dung 16 trên điện thoại. `PageHeaderSkeleton` hiện tên trang thật. Số đếm không nằm ở đầu trang mà trong tiêu đề nhóm ("ĐANG DÙNG · 3") |
@@ -208,9 +208,10 @@ Trước khi báo xong một màn mới, kiểm tra:
 ### Các màn khác
 
 - **Trang dạng bảng tin** (Tổng quan): đầu trang, thẻ tài sản ròng (nhãn `CardLabel`, con số
-  chính, ba phần chia cột), nhiệm vụ, rồi các `Section`: tháng (chỉ lịch), sắp đến hạn, theo hạng
-  mục (biểu đồ tròn, không list), thu và chi theo tháng; cuối cùng lời mời Pro. Các khối cách
-  nhau 24px.
+  chính, ba phần chia cột), nhiệm vụ, rồi các `Section`: sắp đến hạn, tháng (chỉ lịch), theo hạng
+  mục (biểu đồ tròn, không list), thu và chi theo tháng. Lời mời Pro (gói Free) đi cùng thứ khác
+  cho thêm lượt AI: dòng cuối của thẻ nhiệm vụ khi còn nhiệm vụ; nhận hết thì thẻ nhiệm vụ biến
+  mất và `PromoBanner` Pro đứng vào chỗ đó, ngay dưới tài sản ròng. Các khối cách nhau 24px.
 - **Trang danh sách** (Giao dịch, Tài khoản, Vay nợ, Cài đặt): đầu trang, thẻ dẫn đầu, rồi các
   `SettingsGroup` có tiêu đề nhóm. Ngày ghi "Hôm nay, 08/10", "Hôm qua, 07/10", rồi "Thứ Ba,
   06/10" (`formatDayLabel`); bên phải tiêu đề ngày là tổng vào (xanh) và tổng ra của ngày;

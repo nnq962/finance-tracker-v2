@@ -39,6 +39,7 @@ import { MISSION_REWARD, type MissionKey, type MissionState } from "@/lib/onboar
 import { cn } from "@/lib/utils"
 
 import { AddTransactionSheet } from "../../transactions/_components/add-transaction/add-transaction-sheet"
+import { PlanInviteBanner, PlanInviteRow, useHasPlanInvite } from "./plan-invite"
 
 type Mission = {
   key: MissionKey
@@ -70,6 +71,8 @@ function unwrap<T>(result: { success: true; data: T } | { success: false; error:
 /**
  * Missions that walk a new user through the app, each worth AI credits once
  * done and claimed. They cannot be hidden, and leave once every reward is in.
+ * On Free, Pro ends the card as the other way to more credits; once the
+ * missions are gone, its banner takes their place.
  */
 export function Missions({ state, accounts, contacts, categoryGroups }: MissionsProps) {
   const router = useRouter()
@@ -81,6 +84,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
   // Folded by default: the progress shows, and rewards waiting to be claimed.
   const [expanded, setExpanded] = React.useState(false)
   const { available, isStandalone, isIOS, install } = usePwaInstall()
+  const hasPlanInvite = useHasPlanInvite()
 
   const hasAccount = accounts.length > 0
   const needAccount = "Cần thêm tài khoản trước"
@@ -178,7 +182,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
   const claimed = new Set([...state.claimed, ...claimedNow])
   const isClaimed = (mission: Mission) => claimed.has(mission.key)
   const claimedCount = missions.filter(isClaimed).length
-  if (claimedCount === missions.length) return null
+  if (claimedCount === missions.length) return <PlanInviteBanner />
 
   // Claimed missions leave the list; rewards waiting come first and always
   // show, the rest only when unfolded.
@@ -205,7 +209,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
     <>
       <SettingsGroup
         size="lg"
-        listClassName={shown.length > 0 ? "border-t" : undefined}
+        listClassName={shown.length > 0 || hasPlanInvite ? "border-t" : undefined}
         header={
           <div className="flex items-center gap-4 p-6">
             <div className="min-w-0 flex-1">
@@ -269,6 +273,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
             />
           ),
         )}
+        <PlanInviteRow />
       </SettingsGroup>
 
       <AddAccountSheet {...sheetProps("account")} />

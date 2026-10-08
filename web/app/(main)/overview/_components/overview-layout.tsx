@@ -2,22 +2,20 @@ import type * as React from "react"
 
 type OverviewLayoutProps = {
   netWorth: React.ReactNode
-  /** The new user's missions; gone once every reward is in. */
+  /** The new user's missions, with Pro at their end; Pro's banner once every reward is in. */
   missions?: React.ReactNode
   calendar: React.ReactNode
   /** Debts coming due; left out when there are none. */
   dueDebts?: React.ReactNode
   allocation: React.ReactNode
   trend: React.ReactNode
-  /** The invitation to Pro, last: on Free only. */
-  planInvite?: React.ReactNode
 }
 
 /**
  * The overview's sections, shared with its loading state. Below lg they stack
- * in one column: net worth (the page's dark lead card), missions, due debts
- * (what needs acting on comes before the browsing), calendar, allocation,
- * trend, the Pro invitation. From lg up the lists form a rail on the left
+ * in one column: net worth (the page's dark lead card), missions (or, once
+ * they are done, the Pro invitation), due debts (what needs acting on comes
+ * before the browsing), calendar, allocation, trend. From lg up the lists form a rail on the left
  * (24rem wide from xl) and the calendar and trend chart, which read better
  * wide, take the rest. A slot whose content renders nothing
  * (missions all claimed, Pro already) leaves no gap.
@@ -29,7 +27,6 @@ export function OverviewLayout({
   dueDebts,
   allocation,
   trend,
-  planInvite,
 }: OverviewLayoutProps) {
   // Below lg the two columns dissolve (`contents`) and `order` interleaves
   // their sections; inside a column the same order values keep their sequence.
@@ -42,7 +39,6 @@ export function OverviewLayout({
         {missions ? <div className="order-2 empty:hidden">{missions}</div> : null}
         {dueDebts ? <div className="order-3">{dueDebts}</div> : null}
         <div className="order-5">{allocation}</div>
-        {planInvite ? <div className="order-7 empty:hidden">{planInvite}</div> : null}
       </div>
       <div className={columnClassName}>
         <div className="order-4">{calendar}</div>
