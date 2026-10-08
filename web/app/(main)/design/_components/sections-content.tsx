@@ -21,6 +21,7 @@ import {
   PlusIcon,
   ShieldCheckIcon,
   SparklesIcon,
+  TagIcon,
   Trash2Icon,
   TrendingUpIcon,
   TriangleAlertIcon,
@@ -300,6 +301,7 @@ const dueSamples = [
 
 function ListSection() {
   const [rows, setRows] = React.useState<readonly (typeof swipeRows)[number][]>(swipeRows)
+  const [moreShown, setMoreShown] = React.useState(false)
   const [reminder, setReminder] = React.useState(true)
 
   return (
@@ -443,6 +445,21 @@ function ListSection() {
             </Button>
           </li>
         ) : null}
+      </SettingsGroup>
+      {/* As the overview's missions: rows shown on request slide open and shut, the dividers follow. */}
+      <SettingsGroup
+        title="Dòng gập (collapsed)"
+        size="lg"
+        action={
+          <Button size="sm" variant="ghost" onClick={() => setMoreShown((shown) => !shown)}>
+            {moreShown ? "Ẩn bớt" : "Hiện thêm"}
+          </Button>
+        }
+      >
+        <SettingsRow icon={WalletCardsIcon} tone="blue" title="Luôn hiện" />
+        <SettingsRow icon={TagIcon} tone="orange" title="Hiện khi mở" collapsed={!moreShown} />
+        <SettingsRow icon={BellRingIcon} tone="amber" title="Hiện khi mở" collapsed={!moreShown} />
+        <SettingsRow icon={SparklesIcon} tone="ai" title="Luôn hiện" />
       </SettingsGroup>
       <Block label="Accordion">
         <Accordion type="single" collapsible defaultValue={faq[0][0]}>

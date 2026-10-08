@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { toast } from "sonner"
 
 import { Money } from "@/components/app/money"
@@ -21,6 +22,14 @@ import { cashFlowColors } from "../../transactions/_lib/transaction-presentation
 import { getDayTransactionsAction } from "../actions"
 
 const weekdays = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
+
+// A new month's days slide in from the side its arrow points to, the old
+// ones out the other way, as in Calendar.
+const slide = {
+  enter: (direction: number) => ({ x: direction * 48, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (direction: number) => ({ x: direction * -48, opacity: 0 }),
+}
 
 // Tiny on a phone-sized card, where seven days share the width; larger once
 // the card is wide (32rem and up).
@@ -52,6 +61,14 @@ export function CashFlowCalendar({
   month,
 }: CashFlowCalendarProps) {
   const [openDay, setOpenDay] = React.useState<string | null>(null)
+  const reduceMotion = useReducedMotion()
+  // Which way the month moved: later months come from the right.
+  const [shownMonth, setShownMonth] = React.useState(month)
+  const [direction, setDirection] = React.useState(1)
+  if (month !== shownMonth) {
+    setShownMonth(month)
+    setDirection(month > shownMonth ? 1 : -1)
+  }
 
   // The open day's transactions, loaded when it opens and again whenever
   // the totals change (an edit or delete in the sheet revalidates the page).
@@ -89,73 +106,94 @@ export function CashFlowCalendar({
   return (
     <Card
       size="lg"
+      // The days sliding between months are clipped at the card's edge.
+      className="overflow-hidden"
       role="region"
       aria-label={`Lịch thu chi tháng ${monthNumber}, ${year}`}
     >
       {/* A container, so the days grow with the card rather than the screen. */}
       <CardContent className="@container space-y-5">
-        <div className="grid grid-cols-7 gap-1 text-center">
-          {weekdays.map((weekday) => (
-            <span key={weekday} className="pb-1 text-[11px] text-muted-foreground">
-              {weekday}
-            </span>
-          ))}
-          {Array.from({ length: leadingBlanks }, (_, index) => (
-            <span key={`blank-${index}`} aria-hidden="true" />
-          ))}
-          {monthDays.map(({ key, day, totals }) => {
-            const isToday = key === today
-            const content = (
-              <>
-                <span
-                  className={cn(
-                    "flex size-7 items-center justify-center rounded-full text-sm",
-                    isToday && "bg-primary font-medium text-primary-foreground",
-                    key > today && "text-muted-foreground",
-                  )}
-                >
-                  {day}
-                </span>
-                {totals?.income ? (
-                  <span className={cn(amountClassName, cashFlowColors.income.text)}>
-                    +{formatCompactCurrency(totals.income)}
-                  </span>
-                ) : null}
-                {/* Spending in grey: the minus says it, and red is kept for warnings. */}
-                {totals?.expense ? (
-                  <span className={cn(amountClassName, "text-muted-foreground")}>
-                    −{formatCompactCurrency(totals.expense)}
-                  </span>
-                ) : null}
-              </>
-            )
-            const cellClassName =
-              "flex min-h-14 min-w-0 flex-col items-center gap-0.5 rounded-2xl pt-1 @lg:min-h-20 @lg:pt-2"
-
-            // Every day up to today opens its sheet, also one without transactions.
-            return key <= today ? (
-              <button
-                key={key}
-                type="button"
-                className={cn(
-                  cellClassName,
-                  "outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/30 active:bg-muted",
-                )}
-                aria-label={
-                  totals
-                    ? `Ngày ${day}: thu ${formatCurrency(totals.income)}, chi ${formatCurrency(totals.expense)}`
-                    : `Ngày ${day}: chưa có giao dịch`
-                }
-                onClick={() => setOpenDay(key)}
+        <div className="flex flex-col gap-1">
+          <div className="grid grid-cols-7 gap-1 text-center">
+            {weekdays.map((weekday) => (
+              <span key={weekday} className="pb-1 text-[11px] text-muted-foreground">
+                {weekday}
+              </span>
+            ))}
+          </div>
+          {/* The weekdays stay; the days slide. The old month leaves the flow
+              as it goes (popLayout), so the card takes the new one's height. */}
+          <div className="relative">
+            <AnimatePresence initial={false} custom={direction} mode="popLayout">
+              <motion.div
+                key={month}
+                custom={direction}
+                variants={slide}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={reduceMotion ? { duration: 0 } : { duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className="grid grid-cols-7 gap-1 text-center"
               >
-                {content}
-              </button>
-            ) : (
-              <div key={key} className={cellClassName}>
-                {content}
-              </div>
-            )
-          })}
+                {Array.from({ length: leadingBlanks }, (_, index) => (
+                  <span key={`blank-${index}`} aria-hidden="true" />
+                ))}
+                {monthDays.map(({ key, day, totals }) => {
+                  const isToday = key === today
+                  const content = (
+                    <>
+                      <span
+                        className={cn(
+                          "flex size-7 items-center justify-center rounded-full text-sm",
+                          isToday && "bg-primary font-medium text-primary-foreground",
+                          key > today && "text-muted-foreground",
+                        )}
+                      >
+                        {day}
+                      </span>
+                      {totals?.income ? (
+                        <span className={cn(amountClassName, cashFlowColors.income.text)}>
+                          +{formatCompactCurrency(totals.income)}
+                        </span>
+                      ) : null}
+                      {/* Spending in grey: the minus says it, and red is kept for warnings. */}
+                      {totals?.expense ? (
+                        <span className={cn(amountClassName, "text-muted-foreground")}>
+                          −{formatCompactCurrency(totals.expense)}
+                        </span>
+                      ) : null}
+                    </>
+                  )
+                  const cellClassName =
+                    "flex min-h-14 min-w-0 flex-col items-center gap-0.5 rounded-2xl pt-1 @lg:min-h-20 @lg:pt-2"
+
+                  // Every day up to today opens its sheet, also one without transactions.
+                  return key <= today ? (
+                    <button
+                      key={key}
+                      type="button"
+                      className={cn(
+                        cellClassName,
+                        "outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/30 active:bg-muted",
+                      )}
+                      aria-label={
+                        totals
+                          ? `Ngày ${day}: thu ${formatCurrency(totals.income)}, chi ${formatCurrency(totals.expense)}`
+                          : `Ngày ${day}: chưa có giao dịch`
+                      }
+                      onClick={() => setOpenDay(key)}
+                    >
+                      {content}
+                    </button>
+                  ) : (
+                    <div key={key} className={cellClassName}>
+                      {content}
+                    </div>
+                  )
+                })}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
 
         <PageSheet

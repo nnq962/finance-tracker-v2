@@ -25,7 +25,10 @@ import { cn } from "@/lib/utils"
  */
 export function settingsSeparatorClassName(hasMedia?: boolean) {
   return cn(
-    "relative before:absolute before:top-0 before:right-4 before:left-4 before:h-px before:bg-border first:before:hidden has-[[data-slot=item-media]]:before:left-16",
+    "relative before:absolute before:top-0 before:right-4 before:left-4 before:h-px before:bg-border has-[[data-slot=item-media]]:before:left-16",
+    // No divider above the first row showing: the first row, or one with only
+    // folded-away rows (SettingsRow `collapsed`) before it.
+    "[&:not(:not([data-collapsed])~*)]:before:hidden",
     // A highlighted row's grey runs edge to edge, as in iOS, with no divider
     // against it: the row under the finger, and on wide screens the one whose
     // screen is shown beside the list. Each row draws the divider above it, so
@@ -178,6 +181,13 @@ type SettingsRowProps = {
   destructive?: boolean
   /** An action revealed by swiping the row left, e.g. delete. */
   swipeAction?: { label?: string; onAction: () => void }
+  /**
+   * Folds the row away (true) or out (false), its height sliding as it fades,
+   * so the rows below move rather than jump: rows shown on request, a row
+   * leaving once done. Folded, it is inert. Leave it unset for a row that
+   * always shows.
+   */
+  collapsed?: boolean
 }
 
 const rowClassName = "min-h-16 gap-3 py-3"
@@ -204,6 +214,7 @@ function SettingsRow({
   disabled = false,
   destructive = false,
   swipeAction,
+  collapsed,
 }: SettingsRowProps) {
   const content = (
     <>
@@ -256,15 +267,28 @@ function SettingsRow({
     <Item shape="flush" className={rowClassName}>{content}</Item>
   )
 
+  const body = swipeAction ? (
+    <SwipeRow onAction={swipeAction.onAction} actionLabel={swipeAction.label}>
+      {row}
+    </SwipeRow>
+  ) : (
+    row
+  )
+
+  if (collapsed === undefined) return <li className={settingsSeparatorClassName()}>{body}</li>
+
+  // As Collapse does, on the row itself so the list stays one list.
   return (
-    <li className={settingsSeparatorClassName()}>
-      {swipeAction ? (
-        <SwipeRow onAction={swipeAction.onAction} actionLabel={swipeAction.label}>
-          {row}
-        </SwipeRow>
-      ) : (
-        row
+    <li
+      data-collapsed={collapsed || undefined}
+      inert={collapsed}
+      className={cn(
+        settingsSeparatorClassName(),
+        "grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none",
+        collapsed ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr]",
       )}
+    >
+      <div className="min-h-0 overflow-hidden">{body}</div>
     </li>
   )
 }

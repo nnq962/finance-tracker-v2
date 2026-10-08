@@ -155,6 +155,7 @@ component ở đó là cả app đổi theo.
 | `PageDots` | Chỉ báo trang; chấm hiện tại kéo dài thành vạch |
 | `Carousel` | Thẻ vuốt ngang, bắt từng thẻ, kèm `PageDots` |
 | `SwipeRow` | Vuốt trái để lộ một hành động (mặc định Xoá); dùng qua `SettingsRow swipeAction` để dòng vuốt giống mọi dòng khác |
+| `SettingsRow collapsed` | Dòng gập lại (`true`) hay mở ra (`false`): chiều cao trượt trong 300ms và mờ dần, nên các dòng bên dưới dịch dần thay vì nhảy; khi gập thì `inert`. Cho dòng hiện khi người dùng yêu cầu (nhiệm vụ còn lại sau "Xem nhiệm vụ") và dòng rời đi khi xong (nhiệm vụ vừa nhận thưởng). Không truyền với dòng luôn hiện. Đường kẻ tự theo: dòng đầu tiên đang hiện không có kẻ phía trên |
 | `ActionSheet` | Danh sách lựa chọn ngắn trồi từ đáy, Huỷ tách riêng bên dưới (vaul) |
 | `NoticeBanner` | Thông báo trong trang trên nền nhạt theo `tone`, đóng được (`onDismiss`), hoặc bấm cả khối kèm mũi tên để mở thứ nó nói tới (`onClick`), hoặc kèm một nút nhỏ ở cuối cho bước tiếp theo (`action`, như "Ghi khoản chi" sau khi thanh toán gói). `surface="card"`: thẻ trắng như một dòng list (cao 64, bo 20), màu chỉ ở ô icon và tiêu đề, cho cảnh báo nằm giữa các list; khoản quá hạn ở Vay nợ dùng `tone="expense"`, đỏ như chữ "Quá N ngày" ở dòng nợ, thay cho nền be |
 | `PageSheet` | Sheet dùng chung của app, kiểu page sheet iOS (`Drawer variant="page"`): thanh trên cùng có nút ✕ tròn (cách mép trên và trái 16), tiêu đề nhỏ ở giữa (kiểu chính), `action` bên phải; các nút tròn trên thanh luôn có bóng mềm (theme tối: viền mảnh), lúc mở cũng như khi cuộn. `hideTitle` chỉ cho sheet cần tiêu đề lớn trong nội dung (màn gói). Nội dung cuộn xuyên dưới thanh, như sheet của app Claude: khi đã cuộn, một lớp màu nền sheet phủ từ mép trên qua cả thanh, đậm nhất ở mép trên rồi nhạt dần về 0 ở 16px dưới thanh, không có đường kẻ; sau tiêu đề lớp phủ giữ dày qua dòng chữ. `footer` (một nút cỡ thường, rộng hết) nổi trên cuối nội dung với lớp mờ tương tự từ mép dưới lên qua nút; nội dung chừa đúng chiều cao chân nên dòng cuối cuộn lên khỏi nút. Nền mặc định `grouped` (xám như trang, thẻ trắng và nhóm dòng trên đó, form dùng `FormSection`); `plain` (trắng) chỉ cho sheet là một form trần. Thanh trạng thái giữ màu nền app khi mở mọi lớp phủ (sheet, hộp thoại) nhờ `<html>` cũng mang màu nền: dưới lớp phủ mờ iOS lấy màu của gốc trang. Dùng cho màn gói, Thông báo. Trong `/design` (mục Feedback & Overlay) có sheet mẫu tổng hợp (`sheet-playground.tsx`): đổi ngay trong sheet giữa tiêu đề trên thanh và tiêu đề lớn, nền xám và trắng, bật tắt nút phải và nút chân; kèm khối tóm tắt, segmented, form, dòng, công tắc, thông báo, danh sách dài, dòng xoá |
@@ -213,7 +214,9 @@ Trước khi báo xong một màn mới, kiểm tra:
   chính, ba phần chia cột), nhiệm vụ, rồi các `Section`: sắp đến hạn, tháng (chỉ lịch), theo hạng
   mục (biểu đồ tròn, không list), thu và chi theo tháng. Lời mời Pro (gói Free) đi cùng thứ khác
   cho thêm lượt AI: dòng cuối của thẻ nhiệm vụ khi còn nhiệm vụ; nhận hết thì thẻ nhiệm vụ biến
-  mất và `PromoBanner` Pro đứng vào chỗ đó, ngay dưới tài sản ròng. Các khối cách nhau 24px.
+  mất và `PromoBanner` Pro đứng vào chỗ đó, ngay dưới tài sản ròng. Đổi tháng ở lịch (‹ ›)
+  thì lưới ngày trượt ngang theo hướng bấm (tháng sau vào từ phải), hàng thứ đứng yên. Các khối
+  cách nhau 24px.
 - **Trang danh sách** (Giao dịch, Tài khoản, Vay nợ, Cài đặt): đầu trang, thẻ dẫn đầu, rồi các
   `SettingsGroup` có tiêu đề nhóm. Ngày ghi "Hôm nay, 08/10", "Hôm qua, 07/10", rồi "Thứ Ba,
   06/10" (`formatDayLabel`); bên phải tiêu đề ngày là tổng vào (xanh) và tổng ra của ngày;

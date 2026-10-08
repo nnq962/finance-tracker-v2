@@ -184,11 +184,15 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
   const claimedCount = missions.filter(isClaimed).length
   if (claimedCount === missions.length) return <PlanInviteBanner />
 
-  // Claimed missions leave the list; rewards waiting come first and always
-  // show, the rest only when unfolded.
+  // Rewards waiting come first and always show, the rest only when unfolded;
+  // both slide open and shut. A reward just claimed folds its row away
+  // (until the page reloads without it) while the ring moves on.
   const claimable = missions.filter((mission) => mission.done && !isClaimed(mission))
   const remaining = missions.filter((mission) => !mission.done && !isClaimed(mission))
-  const shown = expanded ? [...claimable, ...remaining] : claimable
+  const leaving = missions.filter((mission) => claimedNow.includes(mission.key) && !state.claimed.includes(mission.key))
+  const rows = [...claimable, ...leaving, ...remaining]
+  const isShown = (mission: Mission) => claimable.includes(mission) || (expanded && remaining.includes(mission))
+  const shownCount = rows.filter(isShown).length
 
   const claim = async (mission: Mission) => {
     setClaiming(mission.key)
@@ -209,7 +213,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
     <>
       <SettingsGroup
         size="lg"
-        listClassName={shown.length > 0 || hasPlanInvite ? "border-t" : undefined}
+        listClassName={shownCount > 0 || hasPlanInvite ? "border-t" : undefined}
         header={
           <div className="flex items-center gap-4 p-6">
             <div className="min-w-0 flex-1">
@@ -241,10 +245,11 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
           </div>
         }
       >
-        {shown.map((mission) =>
+        {rows.map((mission) =>
           mission.done ? (
             <SettingsRow
               key={mission.key}
+              collapsed={!isShown(mission)}
               icon={mission.icon}
               tone={mission.color}
               title={mission.title}
@@ -264,6 +269,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
           ) : (
             <SettingsRow
               key={mission.key}
+              collapsed={!isShown(mission)}
               icon={mission.icon}
               tone={mission.color}
               title={mission.title}
