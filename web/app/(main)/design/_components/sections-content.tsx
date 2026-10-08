@@ -28,6 +28,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
+import { ContactAvatar } from "@/app/(main)/debts/_components/contact-avatar"
 import { CardLabel } from "@/components/app/card-label"
 import { Carousel } from "@/components/app/carousel"
 import { ChoiceTiles } from "@/components/app/choice-tiles"
@@ -46,7 +47,7 @@ import { Section } from "@/components/app/section-header"
 import { Stat, StatGroup } from "@/components/app/stat-group"
 import { Steps } from "@/components/app/steps"
 import { PageHeader } from "@/components/page"
-import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { SettingsGroup, SettingsGroupSkeleton, SettingsRow } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import {
@@ -142,6 +143,8 @@ export function ContentSections() {
 
 function CardSection() {
   const [flow, setFlow] = React.useState<"in" | "out" | null>(null)
+  const [longFlow, setLongFlow] = React.useState<"in" | "out" | null>(null)
+  const [hugeFlow, setHugeFlow] = React.useState<"in" | "out" | null>(null)
   const [period, setPeriod] = React.useState<"month" | "year">("year")
   const [reminder, setReminder] = React.useState<"morning" | "noon" | "evening">("evening")
 
@@ -157,6 +160,33 @@ function CardSection() {
             { value: "out", label: "Tiền ra", amount: 5_152_000, caption: "16 giao dịch", icon: ArrowUpRightIcon, tone: "expense" },
           ]}
         />
+      </Wide>
+      <Wide>
+        <BlockLabel className="px-1">FlowTiles · số tiền dài, rộng như màn 360px: nhỏ lại cho vừa một dòng</BlockLabel>
+        {/* As wide as the card on a 360px phone, so the sample shows the same at every viewport. */}
+        <div className="max-w-[328px]">
+          <FlowTiles
+            value={longFlow}
+            onValueChange={setLongFlow}
+            tiles={[
+              { value: "in", label: "Cần thu", amount: 125_000_000, caption: "3 khoản", icon: ArrowDownLeftIcon, tone: "income" },
+              { value: "out", label: "Cần trả", amount: 1_250_000_000, caption: "1 khoản", icon: ArrowUpRightIcon, tone: "expense" },
+            ]}
+          />
+        </div>
+      </Wide>
+      <Wide>
+        <BlockLabel className="px-1">FlowTiles · rộng như màn 360px, nhỏ hết cỡ vẫn không vừa: rút gọn (125tỷ), số đầy đủ cho trình đọc màn hình</BlockLabel>
+        <div className="max-w-[328px]">
+          <FlowTiles
+            value={hugeFlow}
+            onValueChange={setHugeFlow}
+            tiles={[
+              { value: "in", label: "Tiền vào", amount: 48_500_000, caption: "12 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
+              { value: "out", label: "Tiền ra", amount: 125_000_000_000, caption: "1 giao dịch", icon: ArrowUpRightIcon, tone: "expense" },
+            ]}
+          />
+        </div>
       </Wide>
       <Block label="Chọn một trong vài ô (ChoiceTiles) · tone ai, như kỳ thanh toán Pro">
         <ChoiceTiles
@@ -307,14 +337,9 @@ function ListSection() {
           {dueSamples.map(([name, direction, amount, due]) => (
             <SettingsRow
               key={name}
-              media={
-                <Avatar size="lg">
-                  <AvatarFallback>{name.split(" ").map((word) => word[0]).join("")}</AvatarFallback>
-                </Avatar>
-              }
+              media={<ContactAvatar contactId={name} initials={name.split(" ").map((word) => word[0]).join("")} />}
               title={name}
               description={direction}
-              chevron={false}
               onClick={() => toast(`Mở khoản của ${name}`)}
               action={
                 <span className="flex flex-col items-end">
@@ -353,6 +378,24 @@ function ListSection() {
           <SettingsRow key={name} title={name} description={kind} value={<Money amount={amount} size="sm" />} />
         ))}
       </SettingsGroup>
+      <SettingsGroup title="Mô tả một dòng, hoặc đầy đủ (fullDescription)" size="lg">
+        <SettingsRow
+          icon={WalletCardsIcon}
+          title="Tài khoản tiết kiệm có kỳ hạn 12 tháng ở Vietcombank"
+          description="Mở ngày 08/10/2025 · lãi 5,5%/năm · tự tái tục gốc và lãi"
+          onClick={() => toast("Mở tài khoản")}
+        />
+        <SettingsRow
+          title="Ghi chú"
+          description="Tiền đặt cọc thuê nhà, trả lại khi hết hợp đồng vào tháng 6 năm sau; hợp đồng ở https://drive.google.com/file/d/1A2b3C4d5E6f7G8h9I0jKlMnOp/view"
+          fullDescription
+        />
+      </SettingsGroup>
+      <div className="grid gap-3">
+        <BlockLabel className="px-1">Khung chờ của nhóm (SettingsGroupSkeleton), cùng kích thước nhóm thật</BlockLabel>
+        <SettingsGroupSkeleton rows={2} description trailing="amount" />
+        <SettingsGroupSkeleton caption={false} rows={1} media="avatar-lg" description trailing="value" chevron />
+      </div>
       <SettingsGroup title="Vuốt trái để xoá (swipeAction)" size="lg">
         {rows.map(([name, time, amount]) => (
           <SettingsRow

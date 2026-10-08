@@ -35,6 +35,7 @@ Bảng màu cho thiết kế lại (10/2026), theo mockup đã duyệt (xem [`RE
 | `ai` | xanh ngọc, `oklch(0.6 0.115 195)` | `oklch(0.76 0.12 192)` | AI và gói Pro (đổi từ tím ngày 2026-10-07) |
 | `warning` | amber-500 `#f59e0b` | amber-400 | Cảnh báo, nhắc nhở, chấm "có cái mới" |
 | `chart-1…5` | tím, xanh ngọc, cam, xanh dương, hồng | bản sáng hơn | Biểu đồ nhiều màu |
+| `chart-neutral` | `#858585` | `#929292` | Tiền chi bình thường trong biểu đồ (cột, chấm chú thích), để đỏ chỉ còn cho cảnh báo; cùng màu chữ phụ như số chi trong lịch, đủ tương phản 3:1 trên thẻ (2026-10-08) |
 | `sidebar` | `#ffffff` | `#171717` | Sidebar desktop |
 
 ## Chỉnh trong `components/ui` (chỉ màu)
