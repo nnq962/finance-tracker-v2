@@ -151,7 +151,16 @@ function CardSection() {
   return (
     <CatalogSection id="card">
       <Wide>
-        <BlockLabel className="px-1">Hai chiều tiền, chạm để lọc danh sách (FlowTiles)</BlockLabel>
+        <BlockLabel className="px-1">Hai chiều tiền, chỉ hiển thị số (FlowTiles không có onValueChange), như ở Giao dịch</BlockLabel>
+        <FlowTiles
+          tiles={[
+            { value: "in", label: "Tiền vào", amount: 18_000_000, caption: "1 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
+            { value: "out", label: "Tiền ra", amount: 5_152_000, caption: "16 giao dịch", icon: ArrowUpRightIcon, tone: "expense" },
+          ]}
+        />
+      </Wide>
+      <Wide>
+        <BlockLabel className="px-1">Hai chiều tiền, chạm để lọc danh sách (FlowTiles có onValueChange), như ở Vay nợ</BlockLabel>
         <FlowTiles
           value={flow}
           onValueChange={setFlow}
@@ -372,6 +381,11 @@ function ListSection() {
           action={<Switch checked={reminder} onCheckedChange={setReminder} aria-label="Nhắc ghi chi tiêu" />}
         />
         <SettingsRow title="Đăng xuất" destructive onClick={() => toast("Đăng xuất")} />
+      </SettingsGroup>
+      <SettingsGroup title="Tiêu đề bám khi cuộn (stickyCaption)" size="lg" stickyCaption action="−4.637.000đ">
+        {dueSamples.map(([name, kind, amount]) => (
+          <SettingsRow key={name} title={name} description={kind} value={<Money amount={amount} size="sm" />} />
+        ))}
       </SettingsGroup>
       <SettingsGroup title="Đã tất toán (collapsible)" size="lg" collapsible={{ showLabel: "Hiện 2 khoản" }}>
         {dueSamples.map(([name, kind, amount]) => (

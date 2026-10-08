@@ -24,8 +24,8 @@ import type {
 /** The kinds a list can be narrowed to, as chips. */
 export const transactionKindOptions = [
   { label: "Tất cả", value: "all" },
-  { label: "Chi tiêu", value: "expense" },
-  { label: "Thu nhập", value: "income" },
+  { label: "Tiền vào", value: "income" },
+  { label: "Tiền ra", value: "expense" },
   { label: "Chuyển khoản", value: "transfer" },
   { label: "Vay nợ", value: "debt" },
 ] as const satisfies readonly { label: string; value: TransactionFilter }[]
@@ -87,7 +87,12 @@ export function TransactionFilterFields({
   onFilterChange,
   onSearchFiltersChange,
   idPrefix,
-}: TransactionFilterFieldsProps & { idPrefix: string }) {
+  showKind = true,
+}: TransactionFilterFieldsProps & {
+  idPrefix: string
+  /** False where the kind chips above the list already choose it (the phone's sheet). */
+  showKind?: boolean
+}) {
   const expenseCategoryGroups = categoryGroups.filter(
     (group) => group.type === "expense",
   )
@@ -132,25 +137,27 @@ export function TransactionFilterFields({
 
   return (
     <FieldGroup>
-      <Field aria-label="Lọc loại giao dịch">
-        <FieldLabel>Loại giao dịch</FieldLabel>
-        <ToggleGroup
-          type="single"
-          size="sm"
-          value={filter}
-          onValueChange={(value) => {
-            if (value) changeFilter(value as TransactionFilter)
-          }}
-          className="flex-wrap"
-          aria-label="Lọc loại giao dịch"
-        >
-          {transactionKindOptions.map((item) => (
-            <ToggleGroupItem key={item.value} value={item.value}>
-              {item.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </Field>
+      {showKind ? (
+        <Field aria-label="Lọc loại giao dịch">
+          <FieldLabel>Loại giao dịch</FieldLabel>
+          <ToggleGroup
+            type="single"
+            size="sm"
+            value={filter}
+            onValueChange={(value) => {
+              if (value) changeFilter(value as TransactionFilter)
+            }}
+            className="flex-wrap"
+            aria-label="Lọc loại giao dịch"
+          >
+            {transactionKindOptions.map((item) => (
+              <ToggleGroupItem key={item.value} value={item.value}>
+                {item.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </Field>
+      ) : null}
 
       <FieldSet>
         <FieldLegend variant="label">Khoảng số tiền</FieldLegend>

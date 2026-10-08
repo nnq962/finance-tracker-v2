@@ -12,9 +12,11 @@ import { releaseAiRequest, reserveAiRequest } from "@/lib/plans/repository"
 import {
   createTransaction,
   deleteTransaction,
+  getDebtPaymentsInRange,
+  getTransactionsInRange,
   updateTransaction,
 } from "@/lib/transactions/repository"
-import type { TransactionActionResult } from "@/lib/transactions/types"
+import type { Transaction, TransactionActionResult } from "@/lib/transactions/types"
 import {
   assertTransactionId,
   parseTransactionFormData,
@@ -164,4 +166,21 @@ export async function parseTransactionWithAiAction(
   return draft
     ? { success: true, draft, quota }
     : { success: false, quota, error: "AI chưa hiểu yêu cầu này, thử nói rõ hơn nhé." }
+}
+
+/**
+ * Every transaction the user has, loans' repayments included, newest first:
+ * what a search through every month reads. Asked for only from a search that
+ * found nothing in the chosen month, or on request, so the page itself still
+ * loads one month.
+ */
+export async function loadAllTransactionsAction(): Promise<Transaction[]> {
+  const user = await requireSession()
+  const start = new Date(Date.UTC(2000, 0, 1))
+  const end = new Date(Date.UTC(2100, 0, 1))
+  const [own, repayments] = await Promise.all([
+    getTransactionsInRange(user.uid, start, end),
+    getDebtPaymentsInRange(user.uid, start, end),
+  ])
+  return [...own, ...repayments].sort((left, right) => right.occurredAt.localeCompare(left.occurredAt))
 }

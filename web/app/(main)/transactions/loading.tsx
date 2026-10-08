@@ -68,10 +68,17 @@ export default function TransactionsLoading() {
           summary={<FlowTilesSkeleton />}
           filters={<FilterPanelSkeleton />}
         >
-          {/* The round search field, and on phones the filter button. */}
-          <div className="flex gap-2">
-            <Skeleton className="h-11 flex-1 rounded-full" />
-            <Skeleton className="size-11 rounded-full lg:hidden" />
+          {/* The round search field, and on phones the chip row: the filter
+              chip, its divider, then the kinds, as wide as their names. */}
+          <div className="flex flex-col gap-3">
+            <Skeleton className="h-11 rounded-full" />
+            <div className="-mx-(--main-content-px) flex items-center gap-2 overflow-hidden px-(--main-content-px) lg:hidden">
+              <Skeleton className="h-9 w-[4.5rem] shrink-0 rounded-full" />
+              <span className="h-5 w-px shrink-0 bg-foreground/15" />
+              {["w-[4.5rem]", "w-[5.25rem]", "w-[4.5rem]", "w-[7.5rem]", "w-[4.5rem]"].map((width, index) => (
+                <Skeleton key={index} className={cn("h-9 shrink-0 rounded-full", width)} />
+              ))}
+            </div>
           </div>
           {/* Days: the date and the day's totals as the caption, then rows
               with the category's icon, name and account, amount and time. */}

@@ -3,22 +3,18 @@ import { ArrowDownLeftIcon, ArrowUpRightIcon } from "lucide-react"
 import { FlowTiles } from "@/components/app/flow-tiles"
 
 import { getTransactionSummary } from "../_lib/get-transaction-summary"
-import type { Transaction, TransactionFilter } from "../_types/transaction"
+import type { Transaction } from "../_types/transaction"
 
 /**
- * The month's money in and money out as two tiles that also narrow the list
- * to that kind. `transactions` are the month's after every filter but the
- * kind, so both tiles keep their figures while one is chosen.
+ * The month's money in and money out, as figures only: the kind chips above
+ * the list narrow it. `transactions` are the month's after every filter but
+ * the kind, so both figures stay while a kind is chosen.
  */
 export function MonthSummary({
   transactions,
-  filter,
-  onFilterChange,
   className,
 }: {
   transactions: Transaction[]
-  filter: TransactionFilter
-  onFilterChange: (filter: TransactionFilter) => void
   className?: string
 }) {
   const totals = getTransactionSummary(transactions)
@@ -29,8 +25,6 @@ export function MonthSummary({
   return (
     <FlowTiles
       className={className}
-      value={filter === "income" || filter === "expense" ? filter : null}
-      onValueChange={(kind) => onFilterChange(kind ?? "all")}
       tiles={[
         {
           value: "income",

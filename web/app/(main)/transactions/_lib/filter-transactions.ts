@@ -4,7 +4,7 @@ import type {
   TransactionSearchFilters,
 } from "../_types/transaction"
 
-function normalizeSearchValue(value: string) {
+export function normalizeSearchValue(value: string) {
   return value
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")

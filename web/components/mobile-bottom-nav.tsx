@@ -263,10 +263,11 @@ export function MobileBottomNav() {
   return (
     // Icon and name on a capsule across the screen, floating over the page;
     // the shell reserves its height in --tab-bar-space so the end of a page
-    // can scroll above it.
+    // can scroll above it. A screen that takes the whole height for a while
+    // (searching) hides it by rendering an element with data-hide-tab-bar.
     <nav
       aria-label="Điều hướng chính trên di động"
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:hidden"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:hidden [body:has([data-hide-tab-bar])_&]:hidden"
     >
       <ul
         style={

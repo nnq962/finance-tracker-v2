@@ -1,19 +1,12 @@
 "use client"
 
 import { Chip } from "@/components/app/chip"
+import { ChipRow } from "@/components/app/chip-row"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
-import { cn } from "@/lib/utils"
 
-import type { TransactionFilter, TransactionSearchFilters } from "../_types/transaction"
-
-const kindLabels: Record<Exclude<TransactionFilter, "all">, string> = {
-  income: "Chỉ tiền vào",
-  expense: "Chỉ tiền ra",
-  transfer: "Chỉ chuyển khoản",
-  debt: "Chỉ vay nợ",
-}
+import type { TransactionSearchFilters } from "../_types/transaction"
 
 function amountLabel(minAmount: number | null, maxAmount: number | null) {
   if (minAmount !== null && maxAmount !== null) return `${formatCurrency(minAmount)} – ${formatCurrency(maxAmount)}`
@@ -21,73 +14,76 @@ function amountLabel(minAmount: number | null, maxAmount: number | null) {
 }
 
 /**
- * The filters in force as a row of chips, each with an × that lifts it, so a
- * list narrowed elsewhere (the filter sheet, an account's sheet) says so and
- * is one tap from whole. Nothing when no filter is on; the search text shows
- * in its own field.
+ * The filters from the filter sheet that are in force (accounts, categories,
+ * amount), each with what lifts it. The kind is not among them: the kind
+ * chips above the list show it.
  */
-export function TransactionActiveFilters({
-  accounts,
-  categoryGroups,
-  filter,
-  searchFilters,
-  onFilterChange,
-  onSearchFiltersChange,
-  className,
-}: {
-  accounts: Account[]
-  categoryGroups: CategoryGroup[]
-  filter: TransactionFilter
-  searchFilters: TransactionSearchFilters
-  onFilterChange: (filter: TransactionFilter) => void
-  onSearchFiltersChange: (filters: TransactionSearchFilters) => void
-  className?: string
-}) {
+export function getSheetFilterChips(
+  accounts: Account[],
+  categoryGroups: CategoryGroup[],
+  searchFilters: TransactionSearchFilters,
+) {
   const { accountIds, categoryGroupIds, minAmount, maxAmount } = searchFilters
-  const chips: { key: string; label: string; onRemove: () => void }[] = []
+  const chips: { key: string; label: string; remove: () => TransactionSearchFilters }[] = []
 
-  if (filter !== "all") {
-    chips.push({ key: "kind", label: kindLabels[filter], onRemove: () => onFilterChange("all") })
-  }
   for (const account of accounts.filter((item) => accountIds.includes(item.id))) {
     chips.push({
       key: `account-${account.id}`,
       label: account.name,
-      onRemove: () =>
-        onSearchFiltersChange({ ...searchFilters, accountIds: accountIds.filter((id) => id !== account.id) }),
+      remove: () => ({ ...searchFilters, accountIds: accountIds.filter((id) => id !== account.id) }),
     })
   }
   for (const group of categoryGroups.filter((item) => categoryGroupIds.includes(item.id))) {
     chips.push({
       key: `category-${group.id}`,
       label: group.name,
-      onRemove: () =>
-        onSearchFiltersChange({ ...searchFilters, categoryGroupIds: categoryGroupIds.filter((id) => id !== group.id) }),
+      remove: () => ({ ...searchFilters, categoryGroupIds: categoryGroupIds.filter((id) => id !== group.id) }),
     })
   }
   if (minAmount !== null || maxAmount !== null) {
     chips.push({
       key: "amount",
       label: amountLabel(minAmount, maxAmount),
-      onRemove: () => onSearchFiltersChange({ ...searchFilters, minAmount: null, maxAmount: null }),
+      remove: () => ({ ...searchFilters, minAmount: null, maxAmount: null }),
     })
   }
+  return chips
+}
 
+/**
+ * The sheet's filters in force as a row of chips, each with an × that lifts
+ * it, so a list narrowed elsewhere (the filter sheet, an account's sheet)
+ * says so and is one tap from whole. Nothing when none is on; the search text
+ * shows in its own field and the kind in the kind chips.
+ */
+export function TransactionActiveFilters({
+  accounts,
+  categoryGroups,
+  searchFilters,
+  onSearchFiltersChange,
+  className,
+}: {
+  accounts: Account[]
+  categoryGroups: CategoryGroup[]
+  searchFilters: TransactionSearchFilters
+  onSearchFiltersChange: (filters: TransactionSearchFilters) => void
+  className?: string
+}) {
+  const chips = getSheetFilterChips(accounts, categoryGroups, searchFilters)
   if (chips.length === 0) return null
 
   return (
-    // Bleeds to the screen's edges, so chips scroll out of view rather than stop at the margin.
-    <div
-      className={cn(
-        "-mx-(--main-content-px) flex gap-2 overflow-x-auto px-(--main-content-px) [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-        className,
-      )}
-    >
+    <ChipRow className={className}>
       {chips.map((chip) => (
-        <Chip key={chip.key} removeLabel="Bỏ lọc" onRemove={chip.onRemove} className="shrink-0">
+        <Chip
+          key={chip.key}
+          removeLabel="Bỏ lọc"
+          onRemove={() => onSearchFiltersChange(chip.remove())}
+          className="shrink-0"
+        >
           {chip.label}
         </Chip>
       ))}
-    </div>
+    </ChipRow>
   )
 }

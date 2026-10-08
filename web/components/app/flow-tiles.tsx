@@ -29,10 +29,12 @@ const splitCardClassName =
 
 /**
  * Money one way and the other, as the two halves of one card split by a thin
- * line, as in banking apps. Each half also switches the list below: a tap
- * shows only that side, its half shaded and the other dimmed; a second tap
- * shows all again (`null`). Only money coming in is coloured. Each half is a
+ * line, as in banking apps. Only money coming in is coloured. Each half is a
  * container its amount fits to, so a long one never breaks across lines.
+ * Without `onValueChange` the card only shows the figures (the transactions
+ * page filters with a chip row instead). With it, each half also switches the
+ * list below: a tap shows only that side, its half shaded and the other
+ * dimmed; a second tap shows all again (`null`).
  */
 export function FlowTiles<T extends string>({
   tiles,
@@ -41,24 +43,31 @@ export function FlowTiles<T extends string>({
   className,
 }: {
   tiles: FlowTile<T>[]
-  value: T | null
-  onValueChange: (value: T | null) => void
+  value?: T | null
+  onValueChange?: (value: T | null) => void
   className?: string
 }) {
   return (
     <Card className={cn(splitCardClassName, className)}>
       {tiles.map((tile) => {
         const selected = value === tile.value
+        const Half = onValueChange ? "button" : "div"
         return (
-          <button
+          <Half
             key={tile.value}
-            type="button"
-            aria-pressed={selected}
-            onClick={() => onValueChange(selected ? null : tile.value)}
+            {...(onValueChange
+              ? {
+                  type: "button" as const,
+                  "aria-pressed": selected,
+                  onClick: () => onValueChange(selected ? null : tile.value),
+                }
+              : {})}
             className={cn(
-              "@container flex min-w-0 flex-col gap-3 p-4 text-left transition-[background-color,opacity] duration-200 outline-none focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:ring-inset active:bg-muted motion-reduce:transition-none",
+              "@container flex min-w-0 flex-col gap-3 p-4 text-left",
+              onValueChange &&
+                "transition-[background-color,opacity] duration-200 outline-none focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:ring-inset active:bg-muted motion-reduce:transition-none",
               selected && "bg-muted",
-              value !== null && !selected && "opacity-45",
+              value != null && !selected && "opacity-45",
             )}
           >
             <span className="flex min-w-0 items-center gap-2">
@@ -79,7 +88,7 @@ export function FlowTiles<T extends string>({
                 {tile.caption}
               </CardLabel>
             </span>
-          </button>
+          </Half>
         )
       })}
     </Card>

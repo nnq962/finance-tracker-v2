@@ -1,5 +1,7 @@
 import type * as React from "react"
 
+import { cn } from "@/lib/utils"
+
 type TransactionsLayoutProps = {
   /** The month and its totals. */
   summary: React.ReactNode
@@ -7,6 +9,8 @@ type TransactionsLayoutProps = {
   filters?: React.ReactNode
   /** The search, then the list. */
   children: React.ReactNode
+  /** Searching on a phone: the list alone, the summary out of the way. */
+  listOnly?: boolean
 }
 
 /**
@@ -14,7 +18,7 @@ type TransactionsLayoutProps = {
  * they stack. From lg up the summary and filters form a rail on the left that
  * stays in view while the list scrolls beside it, as on the overview.
  */
-export function TransactionsLayout({ summary, filters, children }: TransactionsLayoutProps) {
+export function TransactionsLayout({ summary, filters, children, listOnly = false }: TransactionsLayoutProps) {
   return (
     <div className="grid min-w-0 items-start gap-6 md:gap-8 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
       {/* 5rem clears the app shell's sticky header (4rem) with room to spare.
@@ -24,7 +28,7 @@ export function TransactionsLayout({ summary, filters, children }: TransactionsL
           summary card, which clips its overflow, would be cut or vanish.
           Gaps, not space-y: the filters hidden below lg must not leave a
           margin. */}
-      <div className="flex min-w-0 flex-col gap-6 *:shrink-0 md:gap-8 lg:sticky lg:top-20 lg:-m-1 lg:max-h-[calc(100svh-6rem)] lg:overflow-y-auto lg:p-1 lg:[scrollbar-width:thin]">
+      <div className={cn("flex min-w-0 flex-col gap-6 *:shrink-0 md:gap-8 lg:sticky lg:top-20 lg:-m-1 lg:max-h-[calc(100svh-6rem)] lg:overflow-y-auto lg:p-1 lg:[scrollbar-width:thin]", listOnly && "max-lg:hidden")}>
         {summary}
         {filters ? <div className="hidden lg:block">{filters}</div> : null}
       </div>

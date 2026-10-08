@@ -2,7 +2,7 @@ import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 
 import type { Transaction } from "../_types/transaction"
-import { TransactionList } from "./transaction-list"
+import { TransactionList, type TransactionSearchResults } from "./transaction-list"
 
 type TransactionsViewProps = {
   accounts: Account[]
@@ -11,6 +11,7 @@ type TransactionsViewProps = {
   transactions: Transaction[]
   isFiltering: boolean
   onClearFilters: () => void
+  search?: TransactionSearchResults
 }
 
 export function TransactionsView({
@@ -20,6 +21,7 @@ export function TransactionsView({
   transactions,
   isFiltering,
   onClearFilters,
+  search,
 }: TransactionsViewProps) {
   return (
     <section>
@@ -30,6 +32,7 @@ export function TransactionsView({
         transactions={transactions}
         isFiltering={isFiltering}
         onClearFilters={onClearFilters}
+        search={search}
       />
     </section>
   )

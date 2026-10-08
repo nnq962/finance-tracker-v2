@@ -57,6 +57,7 @@ function SettingsGroup({
   listClassName,
   size,
   collapsible,
+  stickyCaption = false,
   children,
 }: {
   title?: React.ReactNode
@@ -72,11 +73,24 @@ function SettingsGroup({
   size?: "default" | "lg"
   /** The rows hidden behind the caption; `showLabel` says what opens, e.g. "Hiện 2 khoản". */
   collapsible?: { showLabel: string; defaultOpen?: boolean }
+  /**
+   * The caption stays at the top of the screen while its rows scroll under
+   * it, until the next group's caption pushes it off, as section headers do in
+   * iOS lists (the days of a long list). It sits on the page's own colour,
+   * slightly see-through, across the screen's width on phones.
+   */
+  stickyCaption?: boolean
   children: React.ReactNode
 }) {
   const caption = (end: React.ReactNode) =>
     title || end ? (
-      <div className={captionRowClassName}>
+      <div
+        className={cn(
+          captionRowClassName,
+          stickyCaption &&
+            "sticky top-[env(safe-area-inset-top,0px)] z-10 bg-background/90 backdrop-blur-md max-md:-mx-(--main-content-px) max-md:px-[calc(var(--main-content-px)+--spacing(4))] max-md:-mt-2 max-md:pt-2 md:top-16",
+        )}
+      >
         {title ? (
           <h2 className={cn("flex min-w-0 items-center gap-1.5", groupCaptionClassName)}>
             {title}

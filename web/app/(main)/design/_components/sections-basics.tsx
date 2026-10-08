@@ -13,6 +13,7 @@ import {
   FingerprintIcon,
   HeartIcon,
   ItalicIcon,
+  ListFilterIcon,
   MailIcon,
   PlusIcon,
   RefreshCwIcon,
@@ -24,6 +25,7 @@ import {
 import { toast } from "sonner"
 
 import { Chip } from "@/components/app/chip"
+import { ChipButton, ChipRow, ChipRowDivider } from "@/components/app/chip-row"
 import { DeltaBadge } from "@/components/app/delta-badge"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -269,9 +271,38 @@ function ButtonSection() {
 function ChipSection() {
   const [chosen, setChosen] = React.useState(["Ăn uống", "Cà phê"])
   const [tags, setTags] = React.useState(["Công tác", "Gia đình", "Du lịch"])
+  const [kind, setKind] = React.useState("all")
+  const [filterCount, setFilterCount] = React.useState(0)
 
   return (
     <CatalogSection id="chip">
+      <Block label="Hàng chip cuộn ngang (ChipRow) · nút lọc (ChipButton, đậm khi đang lọc), vạch chia, loại chọn một" wide>
+        <ChipRow>
+          <ChipButton
+            active={filterCount > 0}
+            className="shrink-0"
+            onClick={() => setFilterCount((count) => (count + 1) % 3)}
+          >
+            <ListFilterIcon data-icon="inline-start" />
+            {filterCount > 0 ? `Lọc · ${filterCount}` : "Lọc"}
+          </ChipButton>
+          <ChipRowDivider />
+          <ToggleGroup
+            type="single"
+            size="sm"
+            value={kind}
+            onValueChange={(value) => value && setKind(value)}
+            aria-label="Loại giao dịch"
+            className="shrink-0"
+          >
+            {["Tất cả", "Tiền vào", "Tiền ra", "Chuyển khoản", "Vay nợ"].map((label, index) => (
+              <ToggleGroupItem key={label} value={index === 0 ? "all" : label}>
+                {label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </ChipRow>
+      </Block>
       <Block label="Filter chip · chọn nhiều (ToggleGroup)" wide>
         <ToggleGroup type="multiple" size="sm" value={chosen} onValueChange={setChosen} className="flex-wrap">
           {filters.map((filter) => (

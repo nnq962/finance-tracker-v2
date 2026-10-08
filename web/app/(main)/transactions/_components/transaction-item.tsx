@@ -9,6 +9,7 @@ import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatTime } from "@/lib/format-date"
 
+import { findMatch } from "../_lib/find-match"
 import { getTransactionVisual } from "../_lib/transaction-presentation"
 import type { Transaction } from "../_types/transaction"
 import { EditTransactionSheet } from "./edit-transaction-sheet"
@@ -18,12 +19,31 @@ type TransactionItemProps = {
   accounts: Account[]
   categoryGroups: CategoryGroup[]
   transaction: Transaction
+  /** In search results, which are not grouped by day: the day, in place of the time. */
+  dateLabel?: string
+  /** The search text, marked where it appears in the title. */
+  highlight?: string
+}
+
+/** The title with the searched text marked, as search results do in native apps. */
+function MarkedTitle({ title, query }: { title: string; query?: string }) {
+  const match = query ? findMatch(title, query) : null
+  if (!match) return title
+  return (
+    <>
+      {title.slice(0, match.start)}
+      <mark className="rounded-[3px] bg-warning/25 text-inherit">{title.slice(match.start, match.end)}</mark>
+      {title.slice(match.end)}
+    </>
+  )
 }
 
 export function TransactionItem({
   accounts,
   categoryGroups,
   transaction,
+  dateLabel,
+  highlight,
 }: TransactionItemProps) {
   const [detailsOpen, setDetailsOpen] = React.useState(false)
   const [editOpen, setEditOpen] = React.useState(false)
@@ -34,7 +54,7 @@ export function TransactionItem({
       <SettingsRow
         icon={icon}
         tone={color}
-        title={transaction.title}
+        title={<MarkedTitle title={transaction.title} query={highlight} />}
         // The account; the icon already shows the category's group.
         description={
           transaction.kind === "transfer"
@@ -64,7 +84,7 @@ export function TransactionItem({
                 className="text-xs text-muted-foreground"
                 dateTime={transaction.occurredAt}
               >
-                {formatTime(transaction.occurredAt)}
+                {dateLabel ?? formatTime(transaction.occurredAt)}
               </time>
             </span>
           </span>

@@ -14,14 +14,14 @@ import type { CategoryGroup } from "@/lib/categories/types"
 import type { TransactionFilter, TransactionSearchFilters } from "../_types/transaction"
 import { countActiveFilters, TransactionFilterFields } from "./transaction-filter-fields"
 
-/** The conditions to count on the filter button: all but spending or income, which the tiles above the list show. */
+/** The conditions to count on the filter chip: all but the kind, which the kind chips beside it show. */
 export function countSheetFilters(filter: TransactionFilter, searchFilters: TransactionSearchFilters) {
-  return countActiveFilters(filter, searchFilters) - Number(filter === "expense" || filter === "income")
+  return countActiveFilters(filter, searchFilters) - Number(filter !== "all")
 }
 
 /**
- * The search field. On phones it opens from the header's search button and
- * `onCancel` closes it again, clearing the text; from lg up it stays.
+ * The search field. On phones a tap on it opens the search screen (`onFocus`)
+ * and `onCancel` (Huỷ) closes it again, clearing the text; from lg up it stays.
  * The list filters as you type, so the keyboard's Search key only puts the
  * keyboard away to show the results, as in native search bars. With a mouse
  * and a hardware keyboard there is nothing to put away: Enter keeps focus in
@@ -32,12 +32,15 @@ export function TransactionSearchBar({
   query,
   onQueryChange,
   onCancel,
+  onFocus,
   autoFocus,
 }: {
   id: string
   query: string
   onQueryChange: (query: string) => void
   onCancel?: () => void
+  /** The field taking focus, which opens the search screen on phones. */
+  onFocus?: () => void
   autoFocus?: boolean
 }) {
   const inputRef = React.useRef<HTMLInputElement>(null)
@@ -67,6 +70,7 @@ export function TransactionSearchBar({
           // Opened by a tap on the search button, it takes the keyboard straight away.
           autoFocus={autoFocus}
           value={query}
+          onFocus={onFocus}
           onChange={(event) => onQueryChange(event.target.value)}
           placeholder="Tìm giao dịch"
         />
@@ -88,8 +92,9 @@ export function TransactionSearchBar({
 }
 
 /**
- * The filters a phone keeps out of view, in a sheet opened from the header:
- * the kind, amount, accounts and categories. "Đặt lại" leaves the search.
+ * The filters a phone keeps out of view, in a sheet opened from the filter
+ * chip: amount, accounts and categories (the kind chips beside it choose the
+ * kind). "Đặt lại" clears these and leaves the kind and the search.
  */
 export function TransactionFilterSheet({
   open,
@@ -134,6 +139,7 @@ export function TransactionFilterSheet({
               searchFilters={searchFilters}
               onFilterChange={onFilterChange}
               onSearchFiltersChange={onSearchFiltersChange}
+              showKind={false}
             />
           </FormSection>
         </div>
@@ -142,7 +148,7 @@ export function TransactionFilterSheet({
             <Button
               type="button"
               variant="outline"
-              disabled={countActiveFilters(filter, searchFilters) === 0}
+              disabled={countSheetFilters(filter, searchFilters) === 0}
               onClick={onReset}
             >
               Đặt lại

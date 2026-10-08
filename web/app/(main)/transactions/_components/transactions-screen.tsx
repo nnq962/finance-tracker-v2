@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { usePathname, useRouter } from "next/navigation"
-import { ListFilterIcon, PlusIcon } from "lucide-react"
+import { PlusIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { AiAssistButton } from "@/components/ai-assist/ai-assist-button"
@@ -10,7 +10,6 @@ import { FloatingActions } from "@/components/app/floating-actions"
 import { MonthSelect } from "@/components/app/month-select"
 import { PageHeader } from "@/components/page"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import type { Account } from "@/lib/accounts/types"
@@ -18,7 +17,7 @@ import type { CategoryGroup } from "@/lib/categories/types"
 import { cn } from "@/lib/utils"
 import type { PurchaseDraft } from "@/lib/plans/purchase-draft"
 
-import type { AiQuota } from "../actions"
+import { loadAllTransactionsAction, type AiQuota } from "../actions"
 
 import { filterTransactions } from "../_lib/filter-transactions"
 import { getTransactionPeriod } from "../_lib/get-transaction-period"
@@ -29,8 +28,15 @@ import { AiTransactionDrawer } from "./ai-transaction/ai-transaction-drawer"
 import { NeedAccountState } from "./add-transaction/need-account-state"
 import { TransactionHistoryProvider } from "./add-transaction/transaction-history-context"
 import { MonthSummary } from "./month-summary"
-import { TransactionActiveFilters } from "./transaction-active-filters"
-import { countActiveFilters, filtersForKind, TransactionFilterPanel } from "./transaction-filter-fields"
+import { getSheetFilterChips, TransactionActiveFilters } from "./transaction-active-filters"
+import {
+  countActiveFilters,
+  filtersForKind,
+  TransactionFilterPanel,
+  transactionKindOptions,
+} from "./transaction-filter-fields"
+import { TransactionKindChips } from "./transaction-kind-chips"
+import type { TransactionSearchResults } from "./transaction-list"
 import { countSheetFilters, TransactionFilterSheet, TransactionSearchBar } from "./transaction-search"
 import { TransactionsLayout } from "./transactions-layout"
 import { TransactionsView } from "./transactions-view"
@@ -60,12 +66,15 @@ const initialSearchFilters: TransactionSearchFilters = {
 
 /**
  * The transactions page, as in banking apps: the month as a pill in the bar
- * (a tap changes it), then its money in and money out as one card whose halves
- * also narrow the list to that kind, then the days. On phones the AI sits in
- * the bar too and adding is the one floating button; the search field and the
- * button for the other filters (category, account, amount) sit under the
- * card, and the filters in force show as chips above the list. A month chosen
- * loads while the list stays put, dimmed.
+ * (a tap changes it), then its money in and money out as one card, then the
+ * days, each day's caption staying at the top while its rows scroll. On
+ * phones the AI sits in the bar too and adding is the one floating button;
+ * under the card come the search field and a chip row: the filter chip for
+ * the other conditions (category, account, amount), then the kinds. A tap on
+ * the search field opens the search screen: the bar, card, tab bar and
+ * floating button make way, Huỷ closes it. Results list as one, the match
+ * marked, and can be widened to every month. A month chosen loads while the
+ * list stays put, dimmed.
  */
 export function TransactionsScreen({
   accounts,
@@ -91,6 +100,21 @@ export function TransactionsScreen({
   const [addOpen, setAddOpen] = React.useState(false)
   // The month tapped, shown on the tabs while it loads.
   const [requestedMonth, setRequestedMonth] = React.useState(selectedMonth)
+  // The phone's search screen, open from a tap on the field until Huỷ.
+  const [searching, setSearching] = React.useState(false)
+  // Searching every month: loaded on request, for the transactions the page
+  // had then, so a change to them (one added, edited) loads them again.
+  const [allMonths, setAllMonths] = React.useState(false)
+  const [everyMonth, setEveryMonth] = React.useState<{ from: Transaction[]; list: Transaction[] }>()
+  const [isLoadingAll, startLoadingAll] = React.useTransition()
+  const everyTransaction = everyMonth?.from === transactions ? everyMonth.list : undefined
+  React.useEffect(() => {
+    if (!allMonths || everyTransaction) return
+    startLoadingAll(async () => {
+      const list = await loadAllTransactionsAction()
+      setEveryMonth({ from: transactions, list })
+    })
+  }, [allMonths, everyTransaction, transactions])
 
   const hasAccount = accounts.some((account) => account.status === "active")
   const [aiOpen, setAiOpen] = React.useState(initialAiOpen && hasAccount)
@@ -119,8 +143,9 @@ export function TransactionsScreen({
     [selectedMonth, todayDateKey, transactions],
   )
   const visibleTransactions = React.useMemo(
-    () => filterTransactions(monthTransactions, filter, searchFilters),
-    [filter, monthTransactions, searchFilters],
+    () =>
+      filterTransactions(allMonths ? (everyTransaction ?? []) : monthTransactions, filter, searchFilters),
+    [allMonths, everyTransaction, filter, monthTransactions, searchFilters],
   )
   // Every filter but the kind, for the tiles: the kind is what they switch.
   const summaryTransactions = React.useMemo(
@@ -133,7 +158,11 @@ export function TransactionsScreen({
     const narrowed = filtersForKind(kind, searchFilters, categoryGroups)
     if (narrowed !== searchFilters) setSearchFilters(narrowed)
   }
-  const changeQuery = (query: string) => setSearchFilters({ ...searchFilters, query })
+  const changeQuery = (query: string) => {
+    setSearchFilters({ ...searchFilters, query })
+    // Every month is for one search; a new one starts in the chosen month.
+    if (!query.trim()) setAllMonths(false)
+  }
   // Clears the filter conditions; the search text and month stay.
   const resetFilters = () => {
     setFilter("all")
@@ -144,31 +173,48 @@ export function TransactionsScreen({
     setFilter("all")
     setSearchFilters(initialSearchFilters)
   }
+  // Clears the sheet's conditions; the kind and search stay.
+  const resetSheetFilters = () =>
+    setSearchFilters({ ...initialSearchFilters, query: searchFilters.query })
   const isFiltering = countActiveFilters(filter, searchFilters) > 0 || searchFilters.query.trim() !== ""
   const sheetFilterCount = countSheetFilters(filter, searchFilters)
+
+  const openSearch = () => {
+    // Only phones have a search screen; from lg up the field sits beside the list.
+    if (searching || !window.matchMedia("(width < 64rem)").matches) return
+    setSearching(true)
+    document.querySelector("[data-main-scroll-viewport]")?.scrollTo({ top: 0 })
+  }
+  const closeSearch = () => {
+    setSearching(false)
+    setAllMonths(false)
+    changeQuery("")
+  }
+  const shownMonthNumber = Number(selectedMonth.slice(5))
+  const search: TransactionSearchResults | undefined = searchFilters.query.trim()
+    ? {
+        query: searchFilters.query,
+        scopeLabel: allMonths
+          ? "mọi tháng"
+          : `Tháng ${shownMonthNumber}${selectedMonth.slice(0, 4) === thisMonth.slice(0, 4) ? "" : `/${selectedMonth.slice(0, 4)}`}`,
+        onSearchAllMonths: allMonths ? undefined : () => setAllMonths(true),
+        loading: allMonths && !everyTransaction && isLoadingAll,
+        filterLabels: [
+          ...(filter === "all" ? [] : transactionKindOptions.filter((item) => item.value === filter).map((item) => item.label)),
+          ...getSheetFilterChips(accounts, categoryGroups, searchFilters).map((chip) => chip.label),
+        ],
+        onClearFilters: () => {
+          setFilter("all")
+          resetSheetFilters()
+        },
+      }
+    : undefined
 
   const changeMonth = (month: string) => {
     setRequestedMonth(month)
     startNavigation(() => router.push(month === thisMonth ? pathname : `${pathname}?month=${month}`, { scroll: false }))
   }
   const shownMonth = isNavigating ? requestedMonth : selectedMonth
-  const filterButton = (
-    <Button
-      type="button"
-      variant="secondary"
-      size="icon"
-      className="relative"
-      aria-label={sheetFilterCount > 0 ? `Bộ lọc, ${sheetFilterCount} điều kiện` : "Bộ lọc"}
-      onClick={() => setFilterOpen(true)}
-    >
-      <ListFilterIcon />
-      {sheetFilterCount > 0 ? (
-        <Badge variant="count" className="absolute -top-1 -right-1">
-          {sheetFilterCount}
-        </Badge>
-      ) : null}
-    </Button>
-  )
   const headerActions = (
     <>
       <AiAssistButton variant="outline" remaining={aiRemaining} onClick={openAi}>
@@ -182,32 +228,30 @@ export function TransactionsScreen({
 
   return (
     <TransactionHistoryProvider transactions={transactions}>
-      <PageHeader
-        title="Giao dịch"
-        tools={<MonthSelect size="bar" value={shownMonth} max={thisMonth} onValueChange={changeMonth} />}
-        actions={headerActions}
-        accessory={
-          <AiAssistButton
-            variant="secondary"
-            size="icon"
-            className="text-ai"
-            aria-label={`Nhập bằng AI, còn ${aiRemaining} lượt`}
-            onClick={openAi}
-          >
-            {null}
-          </AiAssistButton>
-        }
-      />
+      {/* Searching on a phone the field takes the top, and the tab bar makes way. */}
+      {searching ? <div data-hide-tab-bar hidden /> : null}
+      {searching ? null : (
+        <PageHeader
+          title="Giao dịch"
+          tools={<MonthSelect size="bar" value={shownMonth} max={thisMonth} onValueChange={changeMonth} />}
+          actions={headerActions}
+          accessory={
+            <AiAssistButton
+              variant="secondary"
+              size="icon"
+              className="text-ai"
+              aria-label={`Nhập bằng AI, còn ${aiRemaining} lượt`}
+              onClick={openAi}
+            >
+              {null}
+            </AiAssistButton>
+          }
+        />
+      )}
 
       <TransactionsLayout
-        summary={
-          <MonthSummary
-            transactions={summaryTransactions}
-            filter={filter}
-            onFilterChange={changeKind}
-            className={loadingClassName}
-          />
-        }
+        listOnly={searching}
+        summary={<MonthSummary transactions={summaryTransactions} className={loadingClassName} />}
         filters={
           <TransactionFilterPanel
             accounts={accounts}
@@ -220,23 +264,31 @@ export function TransactionsScreen({
           />
         }
       >
-        {/* Under the tiles on phones, above the list beside the filter panel from lg up. */}
-        <div className="flex items-center gap-2">
-          <div className="min-w-0 flex-1">
-            <TransactionSearchBar id="transaction-search" query={searchFilters.query} onQueryChange={changeQuery} />
-          </div>
-          <div className="lg:hidden">{filterButton}</div>
+        {/* Under the card on phones, above the list beside the filter panel from lg up. */}
+        <div className="flex flex-col gap-3">
+          <TransactionSearchBar
+            id="transaction-search"
+            query={searchFilters.query}
+            onQueryChange={changeQuery}
+            onFocus={openSearch}
+            onCancel={searching ? closeSearch : undefined}
+          />
+          {/* From lg up the filter panel beside the list holds these. */}
+          <TransactionKindChips
+            className="lg:hidden"
+            filter={filter}
+            onFilterChange={changeKind}
+            sheetFilterCount={sheetFilterCount}
+            onOpenFilters={() => setFilterOpen(true)}
+          />
+          <TransactionActiveFilters
+            className="lg:hidden"
+            accounts={accounts}
+            categoryGroups={categoryGroups}
+            searchFilters={searchFilters}
+            onSearchFiltersChange={setSearchFilters}
+          />
         </div>
-        {/* From lg up the filter panel beside the list shows them instead. */}
-        <TransactionActiveFilters
-          className="lg:hidden"
-          accounts={accounts}
-          categoryGroups={categoryGroups}
-          filter={filter}
-          searchFilters={searchFilters}
-          onFilterChange={changeKind}
-          onSearchFiltersChange={setSearchFilters}
-        />
         <div className={loadingClassName}>
           <TransactionsView
             accounts={accounts}
@@ -245,15 +297,18 @@ export function TransactionsScreen({
             transactions={visibleTransactions}
             isFiltering={isFiltering}
             onClearFilters={clearFilters}
+            search={search}
           />
         </div>
       </TransactionsLayout>
 
-      <FloatingActions>
-        <Button type="button" size="fab" aria-label="Thêm giao dịch" onClick={() => setAddOpen(true)}>
-          <PlusIcon />
-        </Button>
-      </FloatingActions>
+      {searching ? null : (
+        <FloatingActions>
+          <Button type="button" size="fab" aria-label="Thêm giao dịch" onClick={() => setAddOpen(true)}>
+            <PlusIcon />
+          </Button>
+        </FloatingActions>
+      )}
 
       <AddTransactionSheet accounts={accounts} categoryGroups={categoryGroups} open={addOpen} onOpenChange={setAddOpen} />
       <TransactionFilterSheet
@@ -266,7 +321,7 @@ export function TransactionsScreen({
         transactionCount={visibleTransactions.length}
         onFilterChange={changeKind}
         onSearchFiltersChange={setSearchFilters}
-        onReset={resetFilters}
+        onReset={resetSheetFilters}
       />
       <Sheet open={needAccountOpen && !hasAccount} onOpenChange={setNeedAccountOpen}>
         <SheetContent
