@@ -136,52 +136,76 @@ export function CurrencyInput({
 
     return (
       <>
-        <div
-          className={cn(
-            "flex max-w-full items-baseline justify-center leading-tight font-semibold tracking-tight tabular-nums",
-            // Smaller as the number grows, so tens of billions still fit a phone's width.
-            shown.length > 15 ? "text-[26px]" : shown.length > 11 ? "text-[32px]" : "text-[40px]",
-            invalid ? "text-destructive" : tone === "income" && value ? "text-income" : undefined,
-          )}
-          // A tap anywhere on the amount brings the keyboard up.
-          onClick={() => inputRef.current?.focus()}
-        >
-          {sign && value ? <span aria-hidden="true">{sign}</span> : null}
-          {/* The field exactly as wide as what it holds, so the sign, the number
-              and "đ" stay centred together, typing or not: an invisible copy of
-              the text sizes the cell the field fills. An estimate fell short on
-              Safari, which then scrolled the number sideways once typing ended. */}
-          {/* 8px wider than the text, shared on both sides and taken back by the
-              negative margin: Safari keeps a little room inside a field, so a
-              field exactly as wide as its text still scrolled it a pixel or two. */}
-          <span className="-mx-1 inline-grid">
-            <span aria-hidden="true" className="invisible col-start-1 row-start-1 px-1 whitespace-pre">
-              {shown || placeholder}
+        {/* The number centred in the row, with room on both sides for the ✕ at its right edge. */}
+        <div className="relative flex w-full justify-center px-11">
+          <div
+            className={cn(
+              "flex max-w-full items-baseline justify-center leading-tight font-semibold tracking-tight tabular-nums",
+              // Smaller as the number grows, so hundreds of billions still fit a phone's width.
+              shown.length > 15 ? "text-[22px]" : shown.length > 11 ? "text-[30px]" : "text-[40px]",
+              invalid ? "text-destructive" : tone === "income" && value ? "text-income" : undefined,
+            )}
+            // A tap anywhere on the amount brings the keyboard up.
+            onClick={() => inputRef.current?.focus()}
+          >
+            {sign && value ? <span aria-hidden="true">{sign}</span> : null}
+            {/* The field exactly as wide as what it holds, so the sign, the number
+                and "đ" stay centred together, typing or not: an invisible copy of
+                the text sizes the cell the field fills, 8px wider than the text
+                (shared on both sides, taken back by the negative margin) as
+                Safari keeps a little room inside a field and would otherwise
+                scroll the number sideways. */}
+            <span className="-mx-1 inline-grid">
+              <span aria-hidden="true" className="invisible col-start-1 row-start-1 px-1 whitespace-pre">
+                {shown || placeholder}
+              </span>
+              <input
+                ref={inputRef}
+                id={id}
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                autoFocus={autoFocus}
+                value={shown}
+                onChange={onChange}
+                // An amount already there (edited, written again, picked) is
+                // selected on a tap, so the first key typed replaces it.
+                onFocus={(event) => {
+                  const field = event.currentTarget
+                  if (field.value) requestAnimationFrame(() => field.select())
+                }}
+                placeholder={placeholder}
+                required={required}
+                aria-invalid={invalid || undefined}
+                // size=1: no width of its own, so the copy alone sizes the cell.
+                size={1}
+                // Nothing to scroll; and should Safari have, the number is back in place once typing ends.
+                onBlur={(event) => {
+                  event.currentTarget.scrollLeft = 0
+                }}
+                className="col-start-1 row-start-1 w-full min-w-0 bg-transparent p-0 text-center caret-foreground outline-none placeholder:text-muted-foreground/40"
+              />
             </span>
-            <input
-            ref={inputRef}
-            id={id}
-            type="text"
-            inputMode="numeric"
-            autoComplete="off"
-            autoFocus={autoFocus}
-            value={shown}
-            onChange={onChange}
-            placeholder={placeholder}
-            required={required}
-            aria-invalid={invalid || undefined}
-            // size=1: no width of its own, so the copy alone sizes the cell.
-            size={1}
-            // Nothing to scroll; and should Safari have, the number is back in place once typing ends.
-            onBlur={(event) => {
-              event.currentTarget.scrollLeft = 0
-            }}
-            className="col-start-1 row-start-1 w-full min-w-0 bg-transparent p-0 text-center caret-foreground outline-none placeholder:text-muted-foreground/40"
-          />
-          </span>
-          <span aria-hidden="true" className="text-[0.6em] opacity-50">
-            đ
-          </span>
+            <span aria-hidden="true" className="text-[0.6em] opacity-50">
+              đ
+            </span>
+          </div>
+          {value ? (
+            // At the row's edge, not after "đ", so it does not push the number off centre.
+            <button
+              type="button"
+              aria-label="Xoá số tiền"
+              onClick={() => {
+                emit(null, true)
+                inputRef.current?.focus()
+              }}
+              className="absolute top-1/2 right-0 grid size-11 -translate-y-1/2 place-items-center rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/30 active:opacity-60"
+            >
+              <span className="grid size-6 place-items-center rounded-full bg-muted-foreground/15 text-muted-foreground">
+                <XIcon className="size-3.5" aria-hidden="true" />
+              </span>
+            </button>
+          ) : null}
         </div>
         <input type="hidden" name={name} value={value} />
         {chips}
