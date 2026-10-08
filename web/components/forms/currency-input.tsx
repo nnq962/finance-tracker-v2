@@ -171,13 +171,14 @@ export function CurrencyInput({
                 placeholder={placeholder}
                 required={required}
                 aria-invalid={invalid || undefined}
-                // size=1: no width of its own, so the copy alone sizes the cell.
+                // No width of its own (w-0, then the cell's full width), so the
+                // copy alone sizes the cell, the empty field's placeholder too.
                 size={1}
                 // Nothing to scroll; and should Safari have, the number is back in place once typing ends.
                 onBlur={(event) => {
                   event.currentTarget.scrollLeft = 0
                 }}
-                className="col-start-1 row-start-1 w-full min-w-0 bg-transparent p-0 text-center caret-foreground outline-none placeholder:text-muted-foreground/40"
+                className="col-start-1 row-start-1 w-0 min-w-full bg-transparent p-0 text-center caret-foreground outline-none placeholder:text-muted-foreground/40"
               />
             </span>
             <span aria-hidden="true" className="text-[0.6em] opacity-50">
