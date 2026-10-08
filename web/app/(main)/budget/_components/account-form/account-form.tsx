@@ -45,6 +45,7 @@ import type {
 import { getLocalDateTime } from "@/lib/date-time"
 import { toDateKey } from "@/lib/format-date"
 import { scrollIntoViewWithin } from "@/lib/scroll-into-view"
+import { randomId } from "@/lib/random-id"
 import {
   getInstitutionsByType,
   type FinancialInstitution,
@@ -103,7 +104,7 @@ export function AccountForm({
   const [isPending, startTransition] = React.useTransition()
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   // A new account keeps one request id across retries, so it is added once.
-  const [requestId, setRequestId] = React.useState(() => crypto.randomUUID())
+  const [requestId, setRequestId] = React.useState(() => randomId())
   const [accountType, setAccountType] = React.useState<AccountType>(
     defaultValues?.type ?? "cash",
   )
@@ -178,7 +179,7 @@ export function AccountForm({
 
             if (result.success) {
               toast.success(successMessage)
-              setRequestId(crypto.randomUUID())
+              setRequestId(randomId())
               onSuccess()
               return
             }

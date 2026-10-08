@@ -21,6 +21,7 @@ import { formatCurrency } from "@/lib/format-currency"
 import { formatDayLabel } from "@/lib/format-date"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { cn } from "@/lib/utils"
+import { randomId } from "@/lib/random-id"
 
 import { shiftDate, type AiTransactionDraft } from "../../_lib/ai-transaction-draft"
 import { createTransactionAction } from "../../actions"
@@ -151,7 +152,7 @@ export function TransactionMadLibs({
   const [managingCategories, setManagingCategories] = React.useState(false)
   const [saving, startSaving] = React.useTransition()
   // Kept across retries of this draft so the server records it only once.
-  const [requestId] = React.useState(() => crypto.randomUUID())
+  const [requestId] = React.useState(() => randomId())
 
   const activeAccounts = accounts.filter((account) => account.status === "active")
   const findAccount = (id: string | undefined) => activeAccounts.find((item) => item.id === id)

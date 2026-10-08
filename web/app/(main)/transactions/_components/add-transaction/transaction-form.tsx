@@ -18,6 +18,7 @@ import type { CategoryGroup } from "@/lib/categories/types"
 import { getLocalDateTime } from "@/lib/date-time"
 import { toDateKey } from "@/lib/format-date"
 import { scrollIntoViewWithin } from "@/lib/scroll-into-view"
+import { randomId } from "@/lib/random-id"
 import type {
   SupportedTransactionKind,
   Transaction,
@@ -89,7 +90,7 @@ export function TransactionForm({
 }: TransactionFormProps) {
   const [isPending, startTransition] = React.useTransition()
   // Kept across retries of one entry so the server records it only once.
-  const [requestId, setRequestId] = React.useState(() => draft?.requestId ?? crypto.randomUUID())
+  const [requestId, setRequestId] = React.useState(() => draft?.requestId ?? randomId())
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   // Errors belong to the kind they were found on; another kind starts clean.
   const [checked, setChecked] = React.useState<{ kind: SupportedTransactionKind; errors: TransactionFieldErrors }>({
@@ -147,7 +148,7 @@ export function TransactionForm({
 
             if (result.success) {
               toast.success(successMessage)
-              setRequestId(crypto.randomUUID())
+              setRequestId(randomId())
               onSuccess()
               return
             }

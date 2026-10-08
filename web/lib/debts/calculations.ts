@@ -1,4 +1,5 @@
 import { toDateKey } from "@/lib/format-date"
+import { randomId } from "@/lib/random-id"
 
 import type { Debt, DebtPayment, NewDebtPayment } from "./types"
 
@@ -74,7 +75,7 @@ export function updateDebtPayment(debt: Debt, paymentId: string | undefined, val
     if (!values.accountId) throw new Error("Vui lòng chọn tài khoản.")
     if (!Number.isSafeInteger(values.amount) || values.amount <= 0) throw new Error("Số tiền phải là số nguyên lớn hơn 0.")
     if (!/^\d{4}-\d{2}-\d{2}$/.test(values.paidAt) || !Number.isFinite(Date.parse(values.paidAt)) || new Date(values.paidAt).toISOString().slice(0, 10) !== values.paidAt || values.paidAt < debt.recordedAt || values.paidAt > todayDate()) throw new Error("Ngày thanh toán phải từ ngày ghi khoản nợ đến hôm nay.")
-    payments.push({ ...values, id: paymentId ?? crypto.randomUUID() })
+    payments.push({ ...values, id: paymentId ?? randomId() })
   }
   payments.sort((a, b) => `${a.paidAt}T${a.paidTime ?? "00:00"}`.localeCompare(`${b.paidAt}T${b.paidTime ?? "00:00"}`))
   let paidAmount = getOpeningPaidAmount(debt)

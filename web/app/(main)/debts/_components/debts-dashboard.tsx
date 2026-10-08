@@ -11,6 +11,7 @@ import type { Account } from "@/lib/accounts/types"
 import { toast } from "sonner"
 import { createContactAction, updateContactAction, deleteContactAction, createDebtAction, saveDebtPaymentAction, changeDebtAction } from "../actions"
 import { scheduleUndoableDelete } from "@/lib/undoable-delete"
+import { randomId } from "@/lib/random-id"
 import type {
   Contact,
   Debt,
@@ -43,7 +44,7 @@ export function DebtsDashboard({
 
   // Keep the same request ID after a lost response; successful requests release it.
   async function execute<T>(key: string, action: (operationId: string) => Promise<{ success: true; data: T } | { success: false; error: string }>) {
-    const operationId = operations.current.get(key) ?? crypto.randomUUID()
+    const operationId = operations.current.get(key) ?? randomId()
     operations.current.set(key, operationId)
     const result = await action(operationId)
     if (!result.success) throw new Error(result.error)

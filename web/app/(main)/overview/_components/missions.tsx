@@ -37,6 +37,7 @@ import { claimMissionRewardAction } from "@/lib/onboarding/actions"
 import { MISSION_REWARD, type MissionKey, type MissionState } from "@/lib/onboarding/missions"
 
 import { cn } from "@/lib/utils"
+import { randomId } from "@/lib/random-id"
 
 import { AddTransactionSheet } from "../../transactions/_components/add-transaction/add-transaction-sheet"
 import { PlanInviteBanner, PlanInviteRow, useHasPlanInvite } from "./plan-invite"
@@ -293,7 +294,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       <AddContactSheet
         {...sheetProps("contact")}
         onAddContact={async (values: NewContact) => {
-          const contact = unwrap(await createContactAction(values, crypto.randomUUID()))
+          const contact = unwrap(await createContactAction(values, randomId()))
           toast.success("Đã thêm người liên hệ.")
           return contact
         }}
@@ -303,14 +304,14 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
         accounts={accounts}
         contacts={contacts}
         onAddDebt={async (values: NewDebt) => {
-          unwrap(await createDebtAction(values, crypto.randomUUID()))
+          unwrap(await createDebtAction(values, randomId()))
           toast.success(
             values.recordingMode === "opening"
               ? "Đã ghi nhận nợ có sẵn. Số dư tài khoản giữ nguyên."
               : "Đã tạo khoản nợ và cập nhật số dư.",
           )
         }}
-        onAddContact={async (values: NewContact) => unwrap(await createContactAction(values, crypto.randomUUID()))}
+        onAddContact={async (values: NewContact) => unwrap(await createContactAction(values, randomId()))}
       />
       <CategoryManagementSheet groups={categoryGroups} {...sheetProps("category")} />
       {isIOS ? <IosInstallDialog open={installGuideOpen} onOpenChange={setInstallGuideOpen} /> : null}

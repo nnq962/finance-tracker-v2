@@ -7,6 +7,7 @@ import { SettingsRow } from "@/components/settings-list"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatTime } from "@/lib/format-date"
+import { randomId } from "@/lib/random-id"
 
 import { findMatch } from "../_lib/find-match"
 import { getTransactionVisual } from "../_lib/transaction-presentation"
@@ -106,7 +107,7 @@ export function TransactionItem({
             amount: Math.abs(transaction.amount),
             note: transaction.note ?? "",
             occurredAt: new Date().toISOString(),
-            requestId: crypto.randomUUID(),
+            requestId: randomId(),
             copyOf: transaction,
           })
           setCopyOpen(true)
