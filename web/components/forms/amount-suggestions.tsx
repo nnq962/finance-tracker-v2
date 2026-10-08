@@ -2,12 +2,15 @@
 
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { formatCurrency } from "@/lib/format-currency"
+import { cn } from "@/lib/utils"
 
 type AmountSuggestionsProps = {
   suggestions: number[]
   value: number | null
   onSelect: (amount: number) => void
   "aria-label"?: string
+  /** Lays the row out, e.g. centred under a large amount. */
+  className?: string
 }
 
 /** Quick-pick chips, as CurrencyInput shows them under itself; renders nothing without suggestions. */
@@ -16,11 +19,12 @@ export function AmountSuggestions({
   value,
   onSelect,
   "aria-label": ariaLabel = "Gợi ý số tiền",
+  className,
 }: AmountSuggestionsProps) {
   if (suggestions.length === 0) return null
 
   return (
-    <div className="-mx-1 min-w-0 overflow-x-auto px-1 pt-1 pb-1">
+    <div className={cn("-mx-1 min-w-0 overflow-x-auto px-1 pt-1 pb-1", className)}>
       <ToggleGroup
         type="single"
         size="sm"

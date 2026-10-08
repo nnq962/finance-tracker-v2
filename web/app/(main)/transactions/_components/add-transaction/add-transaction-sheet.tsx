@@ -61,15 +61,13 @@ export function AddTransactionSheet({
       >
         {hasAccount ? (
           <>
-            <div className="pb-4">
-              <TransactionKindSelector value={kind} onValueChange={setKind} />
-            </div>
             {/* Switching tabs keeps what was filled in; closing the sheet starts over. */}
             <TransactionForm
               accounts={accounts}
               action={createTransactionAction}
               categoryGroups={categoryGroups}
               draft={draft}
+              header={<TransactionKindSelector value={kind} onValueChange={setKind} />}
               isCreating
               kind={kind}
               onManageCategories={() => setCategoryManagementOpen(true)}

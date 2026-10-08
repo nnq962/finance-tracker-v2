@@ -12,6 +12,7 @@ import {
 import { AmountSuggestions } from "@/components/forms/amount-suggestions"
 import { getAmountSuggestions } from "@/lib/amount-suggestions"
 import { formatCurrency } from "@/lib/format-currency"
+import { cn } from "@/lib/utils"
 
 type CurrencyInputProps = {
   value?: number | null
@@ -38,6 +39,18 @@ type CurrencyInputProps = {
   suggestions?: boolean
   /** Past amounts, newest first: the most frequent show before anything is typed, and lead the picks that match. */
   history?: number[]
+  /**
+   * field: a form's field. hero: the screen's one amount, as a money app
+   * opens on it: a large number in the middle, its sign before it and a
+   * faded "đ" after, on no field, the suggestions centred under it.
+   */
+  variant?: "field" | "hero"
+  /** hero only: the sign shown before the number once there is one, e.g. − for spending. */
+  sign?: "+" | "−"
+  /** hero only: income in its colour, as Money shows it. */
+  tone?: "default" | "income"
+  /** hero only: the keyboard comes up with the field, as a money app opens on its amount. */
+  autoFocus?: boolean
 }
 
 function formatInputValue(value: string) {
@@ -70,6 +83,10 @@ export function CurrencyInput({
   onNegativeChange,
   suggestions = true,
   history,
+  variant = "field",
+  sign,
+  tone = "default",
+  autoFocus = false,
 }: CurrencyInputProps) {
   const [internalValue, setValue] = React.useState(
     defaultValue === undefined ? "" : String(defaultValue),
@@ -93,6 +110,70 @@ export function CurrencyInput({
   const signed = Boolean(onNegativeChange)
   const minus = signed && negative ? "-" : ""
 
+  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (signed) {
+      const typedNegative = event.target.value.trimStart().startsWith("-")
+      if (typedNegative !== negative) onNegativeChange?.(typedNegative)
+    }
+    const digits = event.target.value
+      .replace(/\D/g, "")
+      .replace(/^0+(?=\d)/, "")
+      .slice(0, 15)
+
+    emit(digits ? Number(digits) : null, true)
+  }
+  const chips = suggestions ? (
+    <AmountSuggestions
+      suggestions={getAmountSuggestions(typed, history ?? [])}
+      value={value ? Number(value) : null}
+      onSelect={(amount) => emit(amount, false)}
+      className={variant === "hero" ? "mx-auto w-fit max-w-full" : undefined}
+    />
+  ) : null
+
+  if (variant === "hero") {
+    const shown = formatInputValue(value)
+    // The field as wide as what it holds, so the sign, the number and "đ" stay centred together.
+    const digitCount = (shown || placeholder).replace(/\D/g, "").length || 1
+    const separatorCount = shown.length - shown.replace(/\D/g, "").length
+
+    return (
+      <>
+        <div
+          className={cn(
+            "flex max-w-full items-baseline justify-center text-[40px] leading-tight font-semibold tracking-tight tabular-nums",
+            invalid ? "text-destructive" : tone === "income" && value ? "text-income" : undefined,
+          )}
+          // A tap anywhere on the amount brings the keyboard up.
+          onClick={() => inputRef.current?.focus()}
+        >
+          {sign && value ? <span aria-hidden="true">{sign}</span> : null}
+          <input
+            ref={inputRef}
+            id={id}
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            autoFocus={autoFocus}
+            value={shown}
+            onChange={onChange}
+            placeholder={placeholder}
+            required={required}
+            aria-invalid={invalid || undefined}
+            // As wide as what it holds; an estimate where the browser cannot size it to its content.
+            style={{ "--amount-width": `calc(${digitCount}ch + ${separatorCount * 0.3}ch)` } as React.CSSProperties}
+            className="w-(--amount-width) min-w-[1ch] bg-transparent text-center caret-foreground outline-none field-sizing-content placeholder:text-muted-foreground/40 supports-[field-sizing:content]:w-auto"
+          />
+          <span aria-hidden="true" className="text-[0.6em] opacity-50">
+            đ
+          </span>
+        </div>
+        <input type="hidden" name={name} value={value} />
+        {chips}
+      </>
+    )
+  }
+
   return (
     <>
       <InputGroup>
@@ -114,18 +195,7 @@ export function CurrencyInput({
           inputMode="numeric"
           autoComplete="off"
           value={minus + formatInputValue(value)}
-          onChange={(event) => {
-            if (signed) {
-              const typedNegative = event.target.value.trimStart().startsWith("-")
-              if (typedNegative !== negative) onNegativeChange?.(typedNegative)
-            }
-            const digits = event.target.value
-              .replace(/\D/g, "")
-              .replace(/^0+(?=\d)/, "")
-              .slice(0, 15)
-
-            emit(digits ? Number(digits) : null, true)
-          }}
+          onChange={onChange}
           placeholder={placeholder}
           required={required}
           aria-invalid={invalid || undefined}
@@ -146,13 +216,7 @@ export function CurrencyInput({
         ) : null}
       </InputGroup>
       <input type="hidden" name={name} value={value && minus + value} />
-      {suggestions ? (
-        <AmountSuggestions
-          suggestions={getAmountSuggestions(typed, history ?? [])}
-          value={value ? Number(value) : null}
-          onSelect={(amount) => emit(amount, false)}
-        />
-      ) : null}
+      {chips}
     </>
   )
 }

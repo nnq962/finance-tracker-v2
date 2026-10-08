@@ -42,9 +42,6 @@ export function EditTransactionSheet({
         onOpenChange(nextOpen)
       }}
     >
-      <div className="pb-4">
-        <TransactionKindSelector value={kind} onValueChange={setKind} />
-      </div>
       {/* Switching tabs keeps the amount, time and note, as in the add sheet. */}
       <TransactionForm
         key={transaction.id}
@@ -52,6 +49,7 @@ export function EditTransactionSheet({
         action={updateTransactionAction.bind(null, transaction.id)}
         categoryGroups={categoryGroups}
         defaultValues={transaction}
+        header={<TransactionKindSelector value={kind} onValueChange={setKind} />}
         kind={kind}
         onSuccess={() => onOpenChange(false)}
         submitLabel="Lưu thay đổi"

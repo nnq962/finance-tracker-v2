@@ -54,6 +54,33 @@ export function PageSheetFooter({ className, style, ...props }: React.ComponentP
   )
 }
 
+type PageSheetScreen = { title: React.ReactNode; onBack: () => void }
+
+const PageSheetScreenContext = React.createContext<((screen: PageSheetScreen | null) => void) | null>(null)
+
+/**
+ * A screen deeper than the sheet's first, opened by something inside it (a
+ * form's "pick a category" list): while `screen` is set, the bar shows its
+ * title and a ‹ that calls its `onBack`, and the content opens at its top;
+ * back on the first screen, the bar is the sheet's own again and the content
+ * is where it was left. The caller shows the deeper screen's content itself.
+ */
+export function usePageSheetScreen(screen: PageSheetScreen | null) {
+  const setScreen = React.useContext(PageSheetScreenContext)
+  // The latest onBack, without re-registering the screen on every render.
+  const onBack = React.useRef(screen?.onBack)
+  React.useEffect(() => {
+    onBack.current = screen?.onBack
+  })
+  const title = screen?.title ?? null
+  const open = screen !== null
+  React.useEffect(() => {
+    if (!setScreen || !open) return
+    setScreen({ title, onBack: () => onBack.current?.() })
+    return () => setScreen(null)
+  }, [setScreen, open, title])
+}
+
 /**
  * iOS's page sheet, the app's one sheet: it rises to just below the status
  * bar over the dimmed page and is dragged down or closed with the round ✕ at
@@ -115,6 +142,21 @@ export function PageSheet({
 }) {
   // The fade shows once the content has moved, so nothing at rest sits in it.
   const [scrolled, setScrolled] = React.useState(false)
+  // A deeper screen opened from inside (usePageSheetScreen) takes over the bar.
+  const [screen, setScreenState] = React.useState<PageSheetScreen | null>(null)
+  const bodyRef = React.useRef<HTMLDivElement>(null)
+  const firstScreenTop = React.useRef(0)
+  const setScreen = React.useCallback((next: PageSheetScreen | null) => {
+    const body = bodyRef.current
+    setScreenState((current) => {
+      if (body && !current && next) firstScreenTop.current = body.scrollTop
+      return next
+    })
+    // After the content has changed: the deeper screen at its top, the first where it was.
+    requestAnimationFrame(() => body?.scrollTo({ top: next ? 0 : firstScreenTop.current }))
+  }, [])
+  const shownTitle = screen ? screen.title : title
+  const back = screen ? screen.onBack : onBack
   const surfaceColor = surface === "grouped" ? "var(--background)" : "var(--popover)"
 
   return (
@@ -132,13 +174,14 @@ export function PageSheet({
           {/* One scroller for the whole sheet; its column fills it, so a footer
               last in the content reaches the bottom however short it is. */}
           <div
+            ref={bodyRef}
             data-slot="page-sheet-body"
             onScroll={(event) => setScrolled(event.currentTarget.scrollTop > 0)}
             className="absolute inset-0 overflow-y-auto"
           >
             <div className={cn("flex min-h-full flex-col px-4 pt-17 pb-4", className)}>
-              {children}
-              {footer ? <PageSheetFooter>{footer}</PageSheetFooter> : null}
+              <PageSheetScreenContext value={setScreen}>{children}</PageSheetScreenContext>
+              {footer && !screen ? <PageSheetFooter>{footer}</PageSheetFooter> : null}
             </div>
           </div>
           <div
@@ -147,13 +190,13 @@ export function PageSheet({
               "pointer-events-none absolute inset-x-0 top-0 h-21 opacity-0 transition-opacity duration-200 ease-out",
               scrolled && "opacity-100",
             )}
-            style={{ backgroundImage: fadeGradient(surfaceColor, !hideTitle) }}
+            style={{ backgroundImage: fadeGradient(surfaceColor, !hideTitle || Boolean(screen)) }}
           />
           {/* 16 above (the grabber floats in it) and 8 below a 44 button: ✕ sits 16 from the sheet's top and side.
               Its round buttons always float: a soft shadow, a hairline in the dark, so they look the same at rest and scrolled. */}
           <div className="absolute inset-x-0 top-0 grid h-17 grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2 px-4 pt-4 pb-2 [&_[data-variant=secondary]]:shadow-[0_4px_16px_rgb(0_0_0/0.1)] dark:[&_[data-variant=secondary]]:ring-1 dark:[&_[data-variant=secondary]]:ring-foreground/10">
-            {onBack ? (
-              <Button type="button" variant="secondary" size="icon" aria-label={backLabel} disabled={disabled} onClick={onBack}>
+            {back ? (
+              <Button type="button" variant="secondary" size="icon" aria-label={backLabel} disabled={disabled} onClick={back}>
                 <ChevronLeftIcon />
               </Button>
             ) : (
@@ -165,9 +208,9 @@ export function PageSheet({
             )}
             {/* Its own cell even when hidden (sr-only takes it out of the grid), so the action stays on the right. */}
             <div className="min-w-0">
-              <DrawerTitle className={cn("truncate text-center text-base", hideTitle && "sr-only")}>{title}</DrawerTitle>
+              <DrawerTitle className={cn("truncate text-center text-base", hideTitle && !screen && "sr-only")}>{shownTitle}</DrawerTitle>
             </div>
-            <div className="flex justify-end">{action}</div>
+            <div className="flex justify-end">{screen ? null : action}</div>
           </div>
         </div>
       </DrawerContent>

@@ -155,6 +155,8 @@ function SettingsGroup({
 }
 
 type SettingsRowProps = {
+  /** The row's button, e.g. to bring it into view and focus it when its field is wrong. */
+  id?: string
   icon?: LucideIcon
   /** Leading content in place of the icon, e.g. an avatar. */
   media?: React.ReactNode
@@ -212,6 +214,7 @@ const pressableRow =
   "text-left transition-colors duration-150 hover:bg-muted active:bg-muted disabled:pointer-events-none disabled:opacity-50 md:data-[active=true]:bg-muted"
 
 function SettingsRow({
+  id,
   icon,
   tone,
   media,
@@ -276,6 +279,7 @@ function SettingsRow({
   const row = onClick ? (
     <Item asChild shape="flush" className={rowClassName}>
       <button
+        id={id}
         type="button"
         onClick={onClick}
         disabled={disabled}

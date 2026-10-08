@@ -233,6 +233,12 @@ function InputSection() {
           <CurrencyInput id="ds-amount" name="amount" value={amount} onValueChange={setAmount} history={[50_000, 100_000, 50_000, 500_000]} />
         </Field>
       </Block>
+      <Block label="Số tiền lớn · CurrencyInput variant=hero">
+        {/* The screen's one amount, as the add-transaction sheet opens on it. */}
+        <div className="flex flex-col items-center gap-2">
+          <CurrencyInput variant="hero" id="ds-hero-amount" name="heroAmount" sign="−" history={[45_000, 32_000, 45_000]} />
+        </div>
+      </Block>
       <Block label="Mã OTP" wide>
         <OtpInput value={code} onValueChange={setCode} />
         <p className="mt-3 text-center text-xs text-muted-foreground">

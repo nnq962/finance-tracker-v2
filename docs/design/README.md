@@ -70,7 +70,7 @@ component ở đó là cả app đổi theo.
   bo 12, cùng cao với nút mặc định, trong form cũng như đứng riêng (thanh tìm kiếm); `Textarea` và
   `InlineSelect` khi cao lên vẫn giữ góc 12. Khi focus, ô chuyển nền trắng (màu thẻ) và có viền đậm
   2px màu nhấn; khi lỗi, viền 2px màu `destructive`. Kích thước đặt qua biến `--control-h`,
-  `--control-radius`, `--control-px` (mặc định 44, 12, 16). `CurrencyInput` (mọi ô số tiền): bàn phím số, nhóm hàng nghìn khi gõ (1.250.000), trong ô chỉ có con số (nhãn đã nói là tiền; không icon, không "đ"); khi đã có số thì nút ✕ ở cuối xoá nhanh, giữ bàn phím; ô có thể âm (`onNegativeChange`) có nút +/− ở đầu. Dưới ô luôn có chip gợi ý (`suggestions`, mặc định bật, `false` để tắt): gõ 3 thì 3.000đ, 30.000đ, 300.000đ…; truyền `history` (số tiền cũ, mới nhất trước) thì ô trống gợi ý các số hay dùng và số cũ khớp chữ số lên trước. Gợi ý theo số đã gõ, không theo số vừa chọn, nên chọn một chip thì hàng đứng yên và chip đó được tô; form đặt lại giá trị (mở lại sheet) thì gợi ý cũng xoá. Lỗi dưới một cặp ô (Từ / Đến) cách ô 8px như lỗi dưới một ô. `InputGroup variant="search"`: ô tìm kiếm đứng riêng (trang Giao dịch), tròn như nút
+  `--control-radius`, `--control-px` (mặc định 44, 12, 16). `CurrencyInput` (mọi ô số tiền): bàn phím số, nhóm hàng nghìn khi gõ (1.250.000), trong ô chỉ có con số (nhãn đã nói là tiền; không icon, không "đ"); khi đã có số thì nút ✕ ở cuối xoá nhanh, giữ bàn phím; ô có thể âm (`onNegativeChange`) có nút +/− ở đầu. `variant="hero"`: số tiền chính của màn (sheet thêm giao dịch): số 40 đậm ở giữa, không khung, dấu `sign` (− chi, + thu) trước và "đ" mờ sau, ô tự rộng theo số (`field-sizing: content`, máy cũ ước theo `ch`), gợi ý canh giữa; `tone="income"` tô xanh; `autoFocus` khi thêm mới. Dưới ô luôn có chip gợi ý (`suggestions`, mặc định bật, `false` để tắt): gõ 3 thì 3.000đ, 30.000đ, 300.000đ…; truyền `history` (số tiền cũ, mới nhất trước) thì ô trống gợi ý các số hay dùng và số cũ khớp chữ số lên trước. Gợi ý theo số đã gõ, không theo số vừa chọn, nên chọn một chip thì hàng đứng yên và chip đó được tô; form đặt lại giá trị (mở lại sheet) thì gợi ý cũng xoá. Lỗi dưới một cặp ô (Từ / Đến) cách ô 8px như lỗi dưới một ô. `InputGroup variant="search"`: ô tìm kiếm đứng riêng (trang Giao dịch), tròn như nút
   và không đổi nền, không viền khi focus.
 - **Màu ô nhập theo bề mặt** (token `field`, `track` và utility `surface-grouped` / `surface-plain`
   trong `globals.css`): trên nền xám (trang, sheet) ô nhập, chip, nút phụ màu trắng; trên thẻ
@@ -155,6 +155,7 @@ component ở đó là cả app đổi theo.
 | `PageDots` | Chỉ báo trang; chấm hiện tại kéo dài thành vạch |
 | `Carousel` | Thẻ vuốt ngang, bắt từng thẻ, kèm `PageDots` |
 | `SwipeRow` | Vuốt trái để lộ một hành động (mặc định Xoá); dùng qua `SettingsRow swipeAction` để dòng vuốt giống mọi dòng khác |
+| `usePageSheetScreen` | Màn sâu hơn trong một `PageSheet`, mở từ bên trong (danh sách hạng mục, danh sách tài khoản của form giao dịch): khi đặt `{ title, onBack }`, thanh trên đổi tiêu đề và nút trái thành ‹, nút phải và chân sheet ẩn, nội dung về đầu; quay lại thì thanh trở lại và nội dung về chỗ cũ. Nơi gọi tự hiện nội dung màn sâu và ẩn (không gỡ) màn đầu để giữ những gì đã nhập |
 | `SettingsRow checked` | Dòng của list chọn như iOS: ✓ ở cuối khi đang chọn, không có gì khi không, không có mũi tên; chạm là chọn (`onClick`), trình đọc màn hình nghe nút bật/tắt (`aria-pressed`). Dùng cho các màn chọn trong sheet lọc Giao dịch |
 | `SettingsRow unread` | Dòng chưa đọc: chấm `transfer` 12px trên góc phải trên của ô icon như chấm trên icon app, viền 2px màu thẻ cắt nó khỏi ô (dòng không icon: chấm 8px trước tiêu đề), tiêu đề đậm 600; trình đọc màn hình nghe thêm "chưa đọc". Đọc rồi thì như mọi dòng. Dùng cho Thông báo; giờ ở `value` theo `formatMomentLabel` (hôm nay "14:05", "Hôm qua", cũ hơn "05/10") |
 | `SettingsRow collapsed` | Dòng gập lại (`true`) hay mở ra (`false`): chiều cao trượt trong 300ms và mờ dần, nên các dòng bên dưới dịch dần thay vì nhảy; khi gập thì `inert`. Cho dòng hiện khi người dùng yêu cầu (nhiệm vụ còn lại sau "Xem nhiệm vụ") và dòng rời đi khi xong (nhiệm vụ vừa nhận thưởng). Không truyền với dòng luôn hiện. Đường kẻ tự theo: dòng đầu tiên đang hiện không có kẻ phía trên |
@@ -242,6 +243,14 @@ Trước khi báo xong một màn mới, kiểm tra:
   tìm gì, ở đâu, đang lọc gì, kèm "Bỏ lọc" và "Tìm mọi tháng". Desktop giữ bảng lọc bên trái
   trên một màn: loại, số tiền (cùng các mức, "Tuỳ chỉnh" trượt mở hai ô), tài khoản có logo và
   hạng mục có icon màu trên chip; kết quả tìm cũng là list phẳng như trên.
+- **Thêm / sửa giao dịch** (`TransactionForm`, dùng chung cho Thêm, Sửa và Ghi lại), như app tiền:
+  bộ chọn Chi tiền · Thu tiền · Chuyển khoản, số tiền lớn (`CurrencyInput variant="hero"`, bàn phím
+  bật sẵn khi thêm mới) và gợi ý; chi/thu có lưới hạng mục 4 cột (7 hay dùng nhất, đang chọn viền
+  đậm, ô cuối "Tất cả" mở màn sâu chia theo nhóm, cuối có "Quản lý hạng mục"), rồi một nhóm dòng:
+  Tài khoản (logo, mở màn sâu chọn tài khoản có số dư), Thời gian ("Hôm nay, 20:02", chip Hôm nay
+  · Hôm qua · Hôm kia, chạm dòng mở ô ngày giờ của máy), ghi chú gõ tại chỗ "Ghi chú (tuỳ chọn)",
+  tự cao dần. Chuyển khoản: thẻ Từ ⇄ Đến có logo (nút giữa đổi chiều), phí gập thành "+ Thêm phí
+  chuyển khoản". Không dấu \* bắt buộc; lỗi hiện tại chỗ (số tiền, khung lưới đỏ, dòng đỏ).
 - **Chi tiết giao dịch** (`TransactionDetailsSheet`), như biên lai: icon lớn, tên, số tiền lớn, ngày
   giờ; Sửa là nút bút chì tròn bên phải thanh. Thông tin dạng nhãn trái, giá trị phải: Tài khoản
   (logo `xs` + tên), Hạng mục (`IconTile xs` + tên), Nhóm; ghi chú xuống dòng đầy đủ. Chuyển khoản
