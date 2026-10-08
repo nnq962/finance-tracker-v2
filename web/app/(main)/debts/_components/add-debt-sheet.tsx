@@ -6,7 +6,6 @@ import { PlusIcon, SaveIcon } from "lucide-react"
 import { FormSection } from "@/components/app/form-section"
 import { PageSheet, PageSheetFooter } from "@/components/app/page-sheet"
 import { AccountSelectGroups } from "@/components/account-select-groups"
-import { AmountSuggestions, useAmountQuickPick } from "@/components/forms/amount-suggestions"
 import { DatePreview } from "@/components/forms/date-preview"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { RequiredMark } from "@/components/forms/required-mark"
@@ -61,7 +60,6 @@ import type {
 } from "../_types/debt"
 import { AddContactSheet } from "./add-contact-sheet"
 
-const NO_HISTORY: number[] = []
 
 const directionOptions = [
   { value: "lent", label: "Cho vay" },
@@ -111,7 +109,7 @@ export function AddDebtSheet({
   const [recordingMode, setRecordingMode] = React.useState<DebtRecordingMode>(debt?.recordingMode ?? "cash-flow")
   const isOpening = recordingMode === "opening"
   const [hasInterest, setHasInterest] = React.useState(debt?.hasInterest ?? false)
-  const amountPick = useAmountQuickPick(debt?.amount ?? null, NO_HISTORY)
+  const [amount, setAmount] = React.useState<number | null>(debt?.amount ?? null)
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   const [wasOpen, setWasOpen] = React.useState(open)
   const [contactId, setContactId] = React.useState(debt?.contactId ?? "")
@@ -139,7 +137,7 @@ export function AddDebtSheet({
       setDueAt(debt?.dueAt ?? "")
       setInterestRate(debt?.interestRate?.toString() ?? "")
       setInterestPeriod(debt?.interestPeriod ?? "month")
-      amountPick.reset(debt?.amount ?? null)
+      setAmount(debt?.amount ?? null)
     }
   }
   const [pending, setPending] = React.useState(false)
@@ -220,7 +218,7 @@ export function AddDebtSheet({
 
             const found: Partial<Record<DebtField, string>> = {}
             if (!contactId) found.contactId = "Chọn người liên quan."
-            if (!(amountPick.amount && amountPick.amount > 0)) found.amount = "Nhập số tiền."
+            if (!(amount && amount > 0)) found.amount = "Nhập số tiền."
             if (!isOpening && !formData.get("accountId")) found.accountId = "Chọn tài khoản."
             const recorded = String(formData.get("recordedAt") || "")
             if (!recorded) found.recordedAt = "Chọn ngày."
@@ -341,21 +339,13 @@ export function AddDebtSheet({
                   <CurrencyInput
                     id="debt-amount"
                     name="amount"
-                    value={amountPick.amount}
+                    value={amount}
                     onValueChange={(value) => {
-                      amountPick.onType(value)
+                      setAmount(value)
                       clear("amount")
                     }}
                     invalid={Boolean(errors.amount)}
                     required
-                  />
-                  <AmountSuggestions
-                    suggestions={amountPick.suggestions}
-                    value={amountPick.amount}
-                    onSelect={(value) => {
-                      amountPick.onPick(value)
-                      clear("amount")
-                    }}
                   />
                   {errors.amount ? <FieldError>{errors.amount}</FieldError> : null}
                 </Field>
@@ -514,7 +504,7 @@ export function AddDebtSheet({
                 ) : null}
                 {hasInterest ? (
                   <InterestPreview
-                    amount={amountPick.amount}
+                    amount={amount}
                     rate={Number(interestRate.replace(",", "."))}
                     period={interestPeriod}
                     recordedAt={recordedAt}

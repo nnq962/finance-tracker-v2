@@ -9,6 +9,8 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group"
+import { AmountSuggestions } from "@/components/forms/amount-suggestions"
+import { getAmountSuggestions } from "@/lib/amount-suggestions"
 import { formatCurrency } from "@/lib/format-currency"
 
 type CurrencyInputProps = {
@@ -28,6 +30,14 @@ type CurrencyInputProps = {
    */
   negative?: boolean
   onNegativeChange?: (negative: boolean) => void
+  /**
+   * Quick picks under the field (default on): the digits typed scaled up,
+   * 3 → 3.000, 30.000, 300.000…, as Vietnamese banking apps offer them.
+   * False where the field needs none.
+   */
+  suggestions?: boolean
+  /** Past amounts, newest first: the most frequent show before anything is typed, and lead the picks that match. */
+  history?: number[]
 }
 
 function formatInputValue(value: string) {
@@ -41,6 +51,11 @@ function formatInputValue(value: string) {
  * its label says it is money, so the field holds only the number. Once there
  * is one, a ✕ at the end clears it in one tap, keeping the keyboard up. With
  * `onNegativeChange` a +/− button at the start flips its sign.
+ *
+ * Under it, chips suggest amounts from the digits typed. They follow what was
+ * typed, not what was picked, so picking one keeps the row still and marks
+ * the choice; a value set from outside (a form reset, a sheet opened again)
+ * clears what was typed, and the chips with it.
  */
 export function CurrencyInput({
   value: controlledValue,
@@ -53,10 +68,25 @@ export function CurrencyInput({
   invalid = false,
   negative = false,
   onNegativeChange,
+  suggestions = true,
+  history,
 }: CurrencyInputProps) {
   const [internalValue, setValue] = React.useState(
     defaultValue === undefined ? "" : String(defaultValue),
   )
+  // The digits typed, and the value last sent up: a value from outside that is not it clears them.
+  const [typed, setTyped] = React.useState<number | null>(null)
+  const [sent, setSent] = React.useState(controlledValue)
+  if (controlledValue !== undefined && controlledValue !== sent) {
+    setSent(controlledValue)
+    setTyped(null)
+  }
+  const emit = (next: number | null, byTyping: boolean) => {
+    setValue(next === null ? "" : String(next))
+    setSent(next)
+    if (byTyping) setTyped(next)
+    onValueChange?.(next)
+  }
 
   const value = controlledValue === undefined ? internalValue : controlledValue === null ? "" : String(controlledValue)
   const inputRef = React.useRef<HTMLInputElement>(null)
@@ -92,9 +122,9 @@ export function CurrencyInput({
             const digits = event.target.value
               .replace(/\D/g, "")
               .replace(/^0+(?=\d)/, "")
+              .slice(0, 15)
 
-            setValue(digits.slice(0, 15))
-            onValueChange?.(digits ? Number(digits.slice(0, 15)) : null)
+            emit(digits ? Number(digits) : null, true)
           }}
           placeholder={placeholder}
           required={required}
@@ -106,8 +136,7 @@ export function CurrencyInput({
               size="icon-xs"
               aria-label="Xoá số tiền"
               onClick={() => {
-                setValue("")
-                onValueChange?.(null)
+                emit(null, true)
                 inputRef.current?.focus()
               }}
             >
@@ -117,6 +146,13 @@ export function CurrencyInput({
         ) : null}
       </InputGroup>
       <input type="hidden" name={name} value={value && minus + value} />
+      {suggestions ? (
+        <AmountSuggestions
+          suggestions={getAmountSuggestions(typed, history ?? [])}
+          value={value ? Number(value) : null}
+          onSelect={(amount) => emit(amount, false)}
+        />
+      ) : null}
     </>
   )
 }

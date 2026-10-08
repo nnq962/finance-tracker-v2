@@ -5,7 +5,6 @@ import { SaveIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { FormSection } from "@/components/app/form-section"
-import { AmountSuggestions, useAmountQuickPick } from "@/components/forms/amount-suggestions"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
 import { RequiredMark } from "@/components/forms/required-mark"
@@ -111,9 +110,8 @@ export function TransactionForm({
     () => history.map((transaction) => Math.abs(transaction.amount)),
     [history],
   )
-  const amountPick = useAmountQuickPick(
+  const [amount, setAmount] = React.useState<number | null>(
     defaultValues ? Math.abs(defaultValues.amount) : (draft?.amount ?? null),
-    historyAmounts,
   )
   const defaultOccurredAt = defaultValues?.occurredAt ?? draft?.occurredAt
   const defaultDateTime = defaultOccurredAt
@@ -173,21 +171,14 @@ export function TransactionForm({
               <CurrencyInput
                 id="transaction-amount"
                 name="amount"
-                value={amountPick.amount}
+                value={amount}
+                history={historyAmounts}
                 onValueChange={(value) => {
-                  amountPick.onType(value)
+                  setAmount(value)
                   clearError("amount")
                 }}
                 invalid={Boolean(errors.amount)}
                 required
-              />
-              <AmountSuggestions
-                suggestions={amountPick.suggestions}
-                value={amountPick.amount}
-                onSelect={(value) => {
-                  amountPick.onPick(value)
-                  clearError("amount")
-                }}
               />
               {errors.amount ? <FieldError>{errors.amount}</FieldError> : null}
             </Field>

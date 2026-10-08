@@ -14,6 +14,7 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
+import { cn } from "@/lib/utils"
 
 import { amountPreset, amountPresets, amountSummary } from "../_lib/amount-presets"
 import type { TransactionFilter, TransactionSearchFilters } from "../_types/transaction"
@@ -94,6 +95,7 @@ export function TransactionFilterSheet({
   const [customOpen, setCustomOpen] = React.useState(false)
   const custom = customOpen || !preset
   const amountRangeReversed = minAmount !== null && maxAmount !== null && minAmount > maxAmount
+  const hasFilters = countSheetFilters(filter, searchFilters) > 0
   const change = (next: Partial<TransactionSearchFilters>) => onSearchFiltersChange({ ...searchFilters, ...next })
 
   const titles: Record<Screen, string> = {
@@ -131,14 +133,22 @@ export function TransactionFilterSheet({
         ) : null
       }
       footer={
-        // Xoá lọc only when there is something to clear.
-        <div className="flex gap-2">
-          {countSheetFilters(filter, searchFilters) > 0 ? (
-            <Button type="button" variant="secondary" className="flex-1" onClick={onReset}>
+        // Xoá lọc only when there is something to clear: cleared, it narrows
+        // away as Xem widens to the full width, and slides back in when a
+        // filter is picked again.
+        <div className="flex">
+          <div
+            inert={!hasFilters}
+            className={cn(
+              "min-w-0 overflow-hidden transition-[flex-basis,margin,opacity] duration-300 ease-out motion-reduce:transition-none",
+              hasFilters ? "mr-2 basis-1/3" : "mr-0 basis-0 opacity-0",
+            )}
+          >
+            <Button type="button" variant="secondary" className="w-full whitespace-nowrap" onClick={onReset}>
               Xoá lọc
             </Button>
-          ) : null}
-          <Button type="button" className="flex-2" onClick={() => onOpenChange(false)}>
+          </div>
+          <Button type="button" className="min-w-0 flex-1" onClick={() => onOpenChange(false)}>
             Xem {transactionCount} giao dịch
           </Button>
         </div>

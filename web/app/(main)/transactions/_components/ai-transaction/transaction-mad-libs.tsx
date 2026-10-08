@@ -6,7 +6,6 @@ import { AnimatePresence, motion, type Variants } from "motion/react"
 import { toast } from "sonner"
 
 import { CategoryManagementSheet } from "@/components/categories/category-management-sheet"
-import { AmountSuggestions } from "@/components/forms/amount-suggestions"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
 import { Button } from "@/components/ui/button"
@@ -16,7 +15,6 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Spinner } from "@/components/ui/spinner"
 import type { Account } from "@/lib/accounts/types"
 import { createSuggestedCategoryAction } from "@/lib/categories/actions"
-import { getAmountSuggestions } from "@/lib/amount-suggestions"
 import { getCategoryColor } from "@/lib/categories/category-colors"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCurrency } from "@/lib/format-currency"
@@ -573,21 +571,10 @@ function BlankEditor({
 }
 
 function AmountEditor({ amount, onChange }: { amount: number | null; onChange: (amount: number | null) => void }) {
-  // Suggestions follow the digits typed here, not the amount heard.
-  const [typed, setTyped] = React.useState<number | null>(null)
-
+  // Its suggestions follow the digits typed here, not the amount heard.
   return (
     <div className="space-y-1">
-      <CurrencyInput
-        id="ai-amount"
-        name="amount"
-        value={amount}
-        onValueChange={(value) => {
-          setTyped(value)
-          onChange(value)
-        }}
-      />
-      <AmountSuggestions suggestions={getAmountSuggestions(typed, [])} value={amount} onSelect={onChange} />
+      <CurrencyInput id="ai-amount" name="amount" value={amount} onValueChange={onChange} />
     </div>
   )
 }

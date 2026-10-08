@@ -15,7 +15,6 @@ import { RulerSlider } from "@/components/app/ruler-slider"
 import { SegmentedProgress } from "@/components/app/steps"
 import { Stepper } from "@/components/app/stepper"
 import { WheelPicker, WheelPickerGroup } from "@/components/app/wheel-picker"
-import { AmountSuggestions } from "@/components/forms/amount-suggestions"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
@@ -230,8 +229,8 @@ function InputSection() {
       <Block label="Số tiền · CurrencyInput và gợi ý">
         <Field>
           <FieldLabel htmlFor="ds-amount">Số tiền</FieldLabel>
-          <CurrencyInput id="ds-amount" name="amount" value={amount} onValueChange={setAmount} />
-          <AmountSuggestions suggestions={[50_000, 100_000, 500_000]} value={amount} onSelect={setAmount} />
+          {/* Gõ 3: gợi ý 3.000, 30.000, 300.000…; lịch sử đưa các số hay dùng lên trước. */}
+          <CurrencyInput id="ds-amount" name="amount" value={amount} onValueChange={setAmount} history={[50_000, 100_000, 50_000, 500_000]} />
         </Field>
       </Block>
       <Block label="Mã OTP" wide>

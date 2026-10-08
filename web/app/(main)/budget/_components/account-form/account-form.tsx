@@ -9,7 +9,6 @@ import { toast } from "sonner"
 
 import { FormSection } from "@/components/app/form-section"
 import { PageSheetFooter } from "@/components/app/page-sheet"
-import { AmountSuggestions, useAmountQuickPick } from "@/components/forms/amount-suggestions"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { DateTimeFields } from "@/components/forms/date-time-fields"
 import { RequiredMark } from "@/components/forms/required-mark"
@@ -51,7 +50,6 @@ import {
   type FinancialInstitution,
 } from "@/lib/institutions"
 
-const NO_HISTORY: number[] = []
 
 const accountTypeOptions = [
   { value: "cash", label: "Tiền mặt" },
@@ -115,9 +113,8 @@ export function AccountForm({
   const [name, setName] = React.useState(defaultValues?.name ?? "")
   const [nameEdited, setNameEdited] = React.useState(Boolean(defaultValues?.name))
   // The amount is typed without a sign; the input's +/− button puts it below zero.
-  const balancePick = useAmountQuickPick(
+  const [balance, setBalance] = React.useState<number | null>(
     defaultValues?.balance === undefined ? null : Math.abs(defaultValues.balance),
-    NO_HISTORY,
   )
   const [balanceNegative, setBalanceNegative] = React.useState(
     (defaultValues?.balance ?? 0) < 0,
@@ -154,7 +151,7 @@ export function AccountForm({
         const found: typeof errors = {}
         if (institutionOptions && !institutionId) found.institutionId = `Chọn ${institutionLabel.toLowerCase()}.`
         if (!name.trim()) found.name = "Nhập tên tài khoản."
-        if (balancePick.amount === null) found.balance = "Nhập số dư."
+        if (balance === null) found.balance = "Nhập số dư."
         const date = String(formData.get("date") ?? "")
         if (!date || !formData.get("time")) found.openedAt = "Chọn ngày và giờ."
         else if (date > toDateKey(new Date())) found.openedAt = "Không thể chọn ngày sau hôm nay."
@@ -343,23 +340,15 @@ export function AccountForm({
               <CurrencyInput
                 id="account-balance"
                 name="balance"
-                value={balancePick.amount}
+                value={balance}
                 onValueChange={(value) => {
-                  balancePick.onType(value)
+                  setBalance(value)
                   clearError("balance")
                 }}
                 invalid={Boolean(errors.balance)}
                 negative={balanceNegative}
                 onNegativeChange={setBalanceNegative}
                 required
-              />
-              <AmountSuggestions
-                suggestions={balancePick.suggestions}
-                value={balancePick.amount}
-                onSelect={(value) => {
-                  balancePick.onPick(value)
-                  clearError("balance")
-                }}
               />
               {errors.balance ? <FieldError>{errors.balance}</FieldError> : null}
             </Field>
