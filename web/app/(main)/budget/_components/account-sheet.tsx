@@ -93,7 +93,7 @@ export function AccountSheet({ account, transactions, categoryGroups, onOpenChan
               />
               <SettingsRow title="Ngày tạo" value={formatDate(toDateKey(shown.openedAt))} />
               <SettingsRow title="Số dư ban đầu" value={formatCurrency(shown.openingBalance)} />
-              {shown.note ? <SettingsRow title="Ghi chú" description={<span className="select-text">{shown.note}</span>} /> : null}
+              {shown.note ? <SettingsRow title="Ghi chú" description={<span className="select-text">{shown.note}</span>} fullDescription /> : null}
             </SettingsGroup>
 
             <SettingsGroup title="Giao dịch gần đây">

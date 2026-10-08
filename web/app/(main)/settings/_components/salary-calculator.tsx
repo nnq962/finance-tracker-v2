@@ -416,8 +416,10 @@ export function SalaryCalculator() {
                         description={
                           hours === null
                             ? "Nhập lương theo hợp đồng để tính."
-                            : `+${formatCurrency(perHour)}/giờ · khoảng ${formatNumber(hours / input.hoursPerDay)} ngày làm${overLimit ? " · vượt giới hạn" : ""}`
+                            : `${overLimit ? "Vượt giới hạn · " : ""}khoảng ${formatNumber(hours / input.hoursPerDay)} ngày làm · +${formatCurrency(perHour)}/giờ`
                         }
+                        // The row's answer: shown whole, the warning first.
+                        fullDescription
                         value={hours === null ? "—" : formatHours(hours)}
                       />
                     )

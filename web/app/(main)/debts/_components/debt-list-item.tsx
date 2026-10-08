@@ -15,7 +15,15 @@ type DebtListItemProps = {
   onSelect: () => void
 }
 
-/** What a row says under the amount: the deadline, else how much is paid. */
+function getInterestLabel(debt: Debt) {
+  return `Lãi ${debt.interestRate}%/${debt.interestPeriod === "year" ? "năm" : "tháng"}`
+}
+
+/**
+ * What a row says under the amount: the deadline, else how much is paid. A loan
+ * with interest that has neither shows its rate there instead of "Không hạn
+ * trả", so it reads apart and the description keeps just its note.
+ */
 function getDebtStatus(debt: Debt) {
   const { remainingAmount, paymentProgress } = getDebtMetrics(debt)
 
@@ -27,13 +35,20 @@ function getDebtStatus(debt: Debt) {
     return { ...getDebtDeadline(debt), isSettled: false }
   }
 
-  const paidLabel = debt.direction === "lent" ? "Đã thu" : "Đã trả"
-
-  return {
-    label: paymentProgress > 0 ? `${paidLabel} ${Math.round(paymentProgress)}%` : "Không hạn trả",
-    isOverdue: false,
-    isSettled: false,
+  if (paymentProgress > 0) {
+    const paidLabel = debt.direction === "lent" ? "Đã thu" : "Đã trả"
+    return {
+      label: `${paidLabel} ${Math.round(paymentProgress)}%`,
+      isOverdue: false,
+      isSettled: false,
+    }
   }
+
+  if (debt.hasInterest) {
+    return { label: getInterestLabel(debt), isOverdue: false, isSettled: false, showsRate: true }
+  }
+
+  return { label: "Không hạn trả", isOverdue: false, isSettled: false }
 }
 
 export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemProps) {
@@ -44,24 +59,21 @@ export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemPr
   const amount = formatCurrency(status.isSettled ? totalAmount : remainingAmount, {
     signDisplay: "never",
   })
+  // Unless the rate already shows on the right, interest goes under the name:
+  // what the debt will come to on its due date, else its rate. It leads, as it
+  // is short and the note is free text of any length, which the one-line
+  // description cuts.
+  const interest = projection
+    ? `Đến hạn: ${formatCompactCurrency(projection.remainingAmount, 1)}`
+    : debt.hasInterest && !status.isSettled && !status.showsRate
+      ? getInterestLabel(debt)
+      : null
 
   return (
     <SettingsRow
       media={<ContactAvatar contactId={contact.id} initials={contact.initials} />}
       title={contact.name}
-      // The rate shows on open debts, so a loan with interest reads apart.
-      description={
-        [
-          debt.note,
-          projection
-            ? `Đến hạn: ${formatCompactCurrency(projection.remainingAmount, 1)}`
-            : debt.hasInterest && !status.isSettled
-              ? `Lãi ${debt.interestRate}%/${debt.interestPeriod === "year" ? "năm" : "tháng"}`
-              : null,
-        ]
-          .filter(Boolean)
-          .join(" · ") || undefined
-      }
+      description={[interest, debt.note].filter(Boolean).join(" · ") || undefined}
       action={
         <span className="flex flex-col items-end">
           <span

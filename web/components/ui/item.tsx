@@ -34,7 +34,7 @@ function ItemSeparator({
 }
 
 const itemVariants = cva(
-  "group/item flex w-full flex-wrap items-center rounded-2xl border text-sm transition-colors duration-100 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 [a]:transition-colors [a]:hover:bg-muted",
+  "group/item flex w-full flex-wrap items-center border text-sm transition-colors duration-100 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 [a]:transition-colors [a]:hover:bg-muted",
   {
     variants: {
       variant: {
@@ -47,10 +47,18 @@ const itemVariants = cva(
         sm: "gap-3.5 px-3.5 py-3",
         xs: "gap-2 px-2.5 py-2 in-data-[slot=dropdown-menu-content]:p-0",
       },
+      // flush: a row of a native grouped list, square and edge to edge, so its
+      // pressed grey fills the row and the list's card rounds the corners. The
+      // focus ring goes inside, where the card does not clip it.
+      shape: {
+        rounded: "rounded-2xl",
+        flush: "rounded-none focus-visible:ring-inset",
+      },
     },
     defaultVariants: {
       variant: "default",
       size: "default",
+      shape: "rounded",
     },
   }
 )
@@ -59,6 +67,7 @@ function Item({
   className,
   variant = "default",
   size = "default",
+  shape = "rounded",
   asChild = false,
   ...props
 }: React.ComponentProps<"div"> &
@@ -69,7 +78,8 @@ function Item({
       data-slot="item"
       data-variant={variant}
       data-size={size}
-      className={cn(itemVariants({ variant, size, className }))}
+      data-shape={shape}
+      className={cn(itemVariants({ variant, size, shape, className }))}
       {...props}
     />
   )
@@ -112,7 +122,8 @@ function ItemContent({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="item-content"
       className={cn(
-        "flex flex-1 flex-col gap-1 group-data-[size=xs]/item:gap-0.5 [&+[data-slot=item-content]]:flex-none",
+        // min-w-0: the content gives way to the actions, so a long title is cut, not pushed out.
+        "flex min-w-0 flex-1 flex-col gap-1 group-data-[size=xs]/item:gap-0.5 [&+[data-slot=item-content]]:flex-none",
         className
       )}
       {...props}
@@ -120,12 +131,17 @@ function ItemContent({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+/**
+ * One line, cut with an ellipsis. A block, not flex: display:flex undoes
+ * line-clamp and text-overflow, so long titles used to wrap. A title with an
+ * icon or badge lays them out in its own inline-flex or flex child.
+ */
 function ItemTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="item-title"
       className={cn(
-        "line-clamp-1 flex w-fit items-center gap-2 text-sm leading-snug font-medium underline-offset-4",
+        "w-fit max-w-full truncate text-sm leading-snug font-medium underline-offset-4",
         className
       )}
       {...props}
@@ -133,14 +149,34 @@ function ItemTitle({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function ItemDescription({ className, ...props }: React.ComponentProps<"p">) {
+const itemDescriptionVariants = cva(
+  "text-left text-sm font-normal text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
+  {
+    variants: {
+      // How many lines show before the ellipsis; all: the whole text, e.g. a
+      // note. One line truncates rather than clamps, so a long unbroken word
+      // such as an email address ends in an ellipsis too.
+      lines: {
+        1: "truncate",
+        2: "line-clamp-2",
+        all: "line-clamp-none wrap-anywhere",
+      },
+    },
+    defaultVariants: {
+      lines: 2,
+    },
+  }
+)
+
+function ItemDescription({
+  className,
+  lines = 2,
+  ...props
+}: React.ComponentProps<"p"> & VariantProps<typeof itemDescriptionVariants>) {
   return (
     <p
       data-slot="item-description"
-      className={cn(
-        "line-clamp-2 text-left text-sm font-normal text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
-        className
-      )}
+      className={cn(itemDescriptionVariants({ lines, className }))}
       {...props}
     />
   )

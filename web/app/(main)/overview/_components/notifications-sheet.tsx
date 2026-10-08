@@ -85,6 +85,8 @@ export function NotificationsButton() {
             tone={notice.tone}
             title={notice.title}
             description={notice.body}
+            // A notice is read here, so its body shows whole.
+            fullDescription
             chevron={false}
             onClick={() => markRead(notice.id)}
             action={

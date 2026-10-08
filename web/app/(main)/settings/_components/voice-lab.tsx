@@ -267,7 +267,7 @@ export function VoiceLab() {
         />
         <SettingsRow title="Truy cập micro" value={environment ? yesNo(environment.getUserMedia) : "…"} />
         <SettingsRow title="Quyền micro" value={environment?.permission ?? "…"} />
-        <SettingsRow title="Trình duyệt" description={environment?.userAgent} />
+        <SettingsRow title="Trình duyệt" description={environment?.userAgent} fullDescription />
       </SettingsGroup>
 
       <WhisperLab onRun={(run) => setWhisperRuns((runs) => [...runs, run])} />

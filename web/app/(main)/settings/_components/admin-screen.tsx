@@ -237,7 +237,8 @@ function AdminUserDetail({ user }: { user: AdminUser }) {
             <SettingsRow
               key={item.id}
               title={`${dateOf(item.startsAt)} → ${dateOf(item.endsAt)}`}
-              description={[item.note, item.revoked ? "Đã thu hồi" : null].filter(Boolean).join(" · ") || undefined}
+              // The status first: the note may be cut to one line.
+              description={[item.revoked ? "Đã thu hồi" : null, item.note].filter(Boolean).join(" · ") || undefined}
               value={formatCurrency(item.amount)}
               // Money came in: open it as an income to write down.
               onClick={item.amount > 0 && !item.revoked ? () => router.push(`/transactions?grant=${item.id}`) : undefined}

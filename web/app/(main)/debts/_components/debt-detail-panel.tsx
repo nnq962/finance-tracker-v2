@@ -118,7 +118,7 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
             <SettingsRow title="Tổng gốc và lãi" value={formatCurrency(totalAmount)} />
           </>
         ) : null}
-        {debt.note ? <SettingsRow title="Ghi chú" description={<span className="select-text">{debt.note}</span>} /> : null}
+        {debt.note ? <SettingsRow title="Ghi chú" description={<span className="select-text">{debt.note}</span>} fullDescription /> : null}
       </SettingsGroup>
 
       <SettingsGroup>

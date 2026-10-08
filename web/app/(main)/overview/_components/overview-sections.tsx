@@ -94,7 +94,6 @@ export function DueDebts({ debts }: { debts: OverviewSummary["dueDebts"] }) {
             media={<ContactAvatar contactId={debt.contactId} initials={debt.contactInitials} />}
             title={debt.contactName}
             description={debt.direction === "lent" ? "Cho vay" : "Đi vay"}
-            chevron={false}
             action={
               <span className="flex flex-col items-end">
                 <Money amount={debt.remainingAmount} size="sm" />

@@ -233,8 +233,10 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
               {run.segments.map((segment, index) => (
                 <SettingsRow
                   key={index}
-                  title={segment.text.trim() || "—"}
-                  description={`Khả năng im lặng ${Math.round(segment.no_speech_prob * 100)}% · logprob ${segment.avg_logprob.toFixed(2)}`}
+                  // Titles keep to one line, so the transcript goes in the description, in full.
+                  title={`Đoạn ${index + 1} · im lặng ${Math.round(segment.no_speech_prob * 100)}% · logprob ${segment.avg_logprob.toFixed(2)}`}
+                  description={segment.text.trim() || "—"}
+                  fullDescription
                 />
               ))}
             </SettingsGroup>
