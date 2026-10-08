@@ -68,7 +68,7 @@ type TransactionFormProps = {
 
 /**
  * One form for every kind, laid out as a money app's: the amount large at
- * the top (the keyboard up on a new entry) with its suggestions; for spending
+ * the top with its suggestions (the keyboard waits for a tap on it); for spending
  * and income the category as a grid of icons, then rows for the account,
  * the time (with today, yesterday, the day before) and an inline note; for a
  * transfer its two accounts side by side, swappable, and a fee only when
@@ -287,7 +287,6 @@ export function TransactionForm({
             history={historyAmounts}
             sign={kind === "expense" ? "−" : kind === "income" ? "+" : undefined}
             tone={kind === "income" ? "income" : "default"}
-            autoFocus={isCreating && !draft}
             onValueChange={(value) => {
               setAmount(value)
               clearError("amount")
