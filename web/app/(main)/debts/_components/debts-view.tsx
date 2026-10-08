@@ -224,7 +224,7 @@ export function DebtsView({
           if (items.length === 0) return null
 
           return (
-            <SettingsGroup key={side} title={label}>
+            <SettingsGroup key={side} title={`${label} · ${items.length}`}>
               {renderRows(items)}
             </SettingsGroup>
           )

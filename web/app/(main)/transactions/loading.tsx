@@ -69,7 +69,7 @@ export default function TransactionsLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <PageHeaderSkeleton action accessory={1} />
+        <PageHeaderSkeleton title="Giao dịch" tools={2} action />
         <TransactionsLayout
           summary={<FlowTilesSkeleton />}
           filters={<FilterPanelSkeleton />}

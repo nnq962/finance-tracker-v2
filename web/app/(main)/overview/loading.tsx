@@ -104,7 +104,7 @@ export default function OverviewLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <PageHeaderSkeleton accessory={1} />
+        <PageHeaderSkeleton lead tools={1} />
         <OverviewLayout
           netWorth={<NetWorthSkeleton />}
           calendar={<CalendarSkeleton />}

@@ -35,6 +35,7 @@ export async function loadOverview(order?: string) {
   const today = todayDate()
   const transactionRange = getOverviewTransactionRange(today)
   const {
+    user,
     data: [accounts, debts, contacts, transactions, categoryGroups, missions, planState, paymentOutcome],
   } = await loadWithSession(async (user) => {
     // Back from payOS: settled first, so the plan read next already shows it.
@@ -52,6 +53,7 @@ export async function loadOverview(order?: string) {
   })
 
   return {
+    user,
     today,
     accounts,
     contacts,

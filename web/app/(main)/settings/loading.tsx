@@ -38,7 +38,7 @@ export default function SettingsLoading() {
       aria-label="Đang tải cài đặt"
       aria-busy="true"
     >
-      <PageHeaderSkeleton />
+      <PageHeaderSkeleton title="Cài đặt" />
 
       <div
         aria-hidden="true"

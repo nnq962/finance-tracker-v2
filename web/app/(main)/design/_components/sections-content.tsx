@@ -19,7 +19,6 @@ import {
   PencilIcon,
   PiggyBankIcon,
   PlusIcon,
-  SearchIcon,
   ShieldCheckIcon,
   SparklesIcon,
   Trash2Icon,
@@ -457,23 +456,22 @@ function NavSection() {
           <Steps steps={["Thông tin", "Xác minh", "Hoàn tất"]} current={step} />
         </button>
       </Block>
-      <Block label="Đầu trang (PageHeader) · nhãn nhỏ, tiêu đề lớn, nút tròn" wide>
+      <Block label="Đầu trang (PageHeader) · tên trang, công cụ bên phải" wide>
         <PageHeader
-          eyebrow={<MonthSelect variant="eyebrow" value={month} max="2026-10" onValueChange={setMonth} />}
-          // Not plain text, so no second compact bar on this page.
           title={<span>Giao dịch</span>}
+          tools={<MonthSelect size="bar" value={month} max="2026-10" onValueChange={setMonth} />}
           accessory={
-            <Button type="button" variant="secondary" size="icon" aria-label="Tìm" onClick={() => toast("Tìm")}>
-              <SearchIcon />
+            <Button type="button" variant="secondary" size="icon" className="text-ai" aria-label="Nhập bằng AI" onClick={() => toast("Nhập bằng AI")}>
+              <SparklesIcon />
             </Button>
           }
         />
       </Block>
-      <Block label="Thanh tab và tiêu đề thu gọn" wide>
+      <Block label="Thanh tab" wide>
         <p className="text-sm text-muted-foreground">
-          Thanh tab nổi ở đáy màn hình (MobileBottomNav: icon và tên, tab đang mở trên viên xám nhạt) và
-          tiêu đề nhỏ hiện khi tiêu đề lớn cuộn đi (CompactTitleBar) là khung của app; xem trực tiếp ở các
-          trang chính. Tabs dạng gạch chân ở mục Toggle group.
+          Thanh tab nổi ở đáy màn hình (MobileBottomNav: icon và tên, tab đang mở trên viên xám nhạt) là
+          khung của app; xem trực tiếp ở các trang chính. Đầu trang cuộn cùng trang; Tổng quan đặt avatar,
+          lời chào và tên vào chỗ tên trang. Tabs dạng gạch chân ở mục Toggle group.
         </p>
       </Block>
     </CatalogSection>

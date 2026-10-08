@@ -47,7 +47,7 @@ export default function AccountsLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <PageHeaderSkeleton action />
+        <PageHeaderSkeleton title="Tài khoản" action />
         <BudgetLayout summary={<BalanceHeroSkeleton />}>
           <AccountListSkeleton rows={3} />
         </BudgetLayout>

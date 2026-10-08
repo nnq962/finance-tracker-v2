@@ -9,7 +9,6 @@ import { WelcomeProvider } from "@/components/onboarding/welcome"
 import { PwaThemeColor } from "@/components/pwa-theme-color"
 import { PushMessageListener } from "@/components/push-message-listener"
 import { ThemeSelect } from "@/components/theme-select"
-import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
   SidebarProvider,
@@ -58,10 +57,6 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
                 <div className="flex w-full items-center justify-between gap-3 px-(--main-content-px) transition-[padding] duration-200 ease-linear">
                   <div className="flex items-center gap-2">
                     <SidebarTrigger className="-ml-1" />
-                    <Separator
-                      orientation="vertical"
-                      className="mr-2 data-vertical:h-4 data-vertical:self-auto"
-                    />
                     <MainBreadcrumb />
                   </div>
                   <ThemeSelect />

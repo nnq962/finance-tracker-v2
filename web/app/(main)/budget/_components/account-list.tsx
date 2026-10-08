@@ -88,7 +88,7 @@ export function AccountList({ accounts, recentTransactions, categoryGroups }: Ac
     <div className="space-y-6 md:space-y-8">
       {activeAccounts.length > 0 ? (
         // Named like the "Ngừng sử dụng" group below it.
-        <SettingsGroup title="Đang dùng">
+        <SettingsGroup title={`Đang dùng · ${activeAccounts.length}`}>
           {activeAccounts.map((account) => (
             <AccountRow key={account.id} account={account} onSelect={() => setOpenAccountId(account.id)} />
           ))}

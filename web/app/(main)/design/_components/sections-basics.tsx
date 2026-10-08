@@ -40,9 +40,9 @@ import { Block, CatalogSection, Wide } from "./catalog-kit"
 
 const principles = [
   ["Thẻ mềm trên nền xám", "Thẻ trắng bo tròn, không viền, không bóng; tách khỏi nền nhờ chênh màu."],
-  ["Một khuôn trang", "Nhãn nhỏ in hoa, tiêu đề lớn, một nút tròn; rồi một thẻ dẫn đầu và các nhóm."],
+  ["Một khuôn trang", "Tên trang gọn bên trái, công cụ bên phải; rồi một thẻ dẫn đầu và các nhóm."],
   ["Một mảng đen", "Gần đen cho thẻ dẫn đầu, nút chính, chip đang chọn, công tắc bật; mỗi màn một khối đen."],
-  ["Chữ rõ thứ bậc", "Tiêu đề trang 32 và số tiền đậm; chữ thường 14px, phụ 12px."],
+  ["Chữ rõ thứ bậc", "Số tiền dẫn đầu lớn nhất, tên trang 24; chữ thường 14px, phụ 12px."],
   ["Màu dịu, có ý nghĩa", "Ô icon pastel ngả xám; xanh lá là tiền vào; đỏ chỉ để cảnh báo (quá hạn, số âm)."],
   ["Vừa ngón tay", "Mọi thứ bấm được cao từ 44px; mọi nút là viên thuốc; chạm thì hơi lún."],
   ["Ít chữ", "Nhãn và mô tả ngắn, dễ hiểu; một thứ gọi một tên trong cả app."],
@@ -63,17 +63,17 @@ const colors = [
   ["border", "Đường kẻ", "bg-border"],
 ] as const
 
-// Display 32 · Title 20 · Headline 16 · Body 14 · Caption 12, plus the large amount (34), the
-// input text (16, so iOS does not zoom in) and the eyebrow and group captions (12, small capitals).
+// Page name 24 · Title 20 · Headline 16 · Body 14 · Caption 12, plus the large amount (34), the
+// input text (16, so iOS does not zoom in) and the group captions (12, small capitals).
 // Figures and headings 600, text 400; list titles 500.
 const typeScale = [
   ["Số tiền lớn", "text-[34px] font-semibold tracking-tight", "34"],
-  ["Display · trang", "text-[32px] font-semibold tracking-tight", "32"],
+  ["Tên trang", "text-2xl font-semibold tracking-tight", "24"],
   ["Title · nhóm", "text-xl font-semibold", "20"],
   ["Headline · thẻ", "text-base font-semibold", "16"],
   ["Body · nội dung", "text-sm", "14"],
   ["Caption · mô tả, lỗi", "text-xs text-muted-foreground", "12"],
-  ["Nhãn đầu trang, đầu nhóm", "text-xs font-semibold tracking-wider text-muted-foreground uppercase", "12"],
+  ["Nhãn đầu nhóm", "text-xs font-semibold tracking-wider text-muted-foreground uppercase", "12"],
 ] as const
 
 // Every gap is a multiple of 4, chosen by what it separates.

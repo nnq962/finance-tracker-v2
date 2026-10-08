@@ -116,7 +116,7 @@ export function NotificationsButton() {
         >
           <BellIcon />
           {unread > 0 ? (
-            <span aria-hidden="true" className="absolute top-3 right-3 size-1.5 rounded-full bg-warning" />
+            <span aria-hidden="true" className="absolute top-2.5 right-2.5 size-2 rounded-full bg-warning ring-2 ring-field" />
           ) : null}
         </Button>
       }

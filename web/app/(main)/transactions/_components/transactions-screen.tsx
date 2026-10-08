@@ -59,10 +59,10 @@ const initialSearchFilters: TransactionSearchFilters = {
 }
 
 /**
- * The transactions page, as in banking apps: the month above the title (a tap
- * changes it), then its money in and money out as one card whose halves also
- * narrow the list to that kind, then the days. On phones the AI sits beside
- * the title and adding is the one floating button; the search field and the
+ * The transactions page, as in banking apps: the month as a pill in the bar
+ * (a tap changes it), then its money in and money out as one card whose halves
+ * also narrow the list to that kind, then the days. On phones the AI sits in
+ * the bar too and adding is the one floating button; the search field and the
  * button for the other filters (category, account, amount) sit under the
  * card, and the filters in force show as chips above the list. A month chosen
  * loads while the list stays put, dimmed.
@@ -183,8 +183,8 @@ export function TransactionsScreen({
   return (
     <TransactionHistoryProvider transactions={transactions}>
       <PageHeader
-        eyebrow={<MonthSelect variant="eyebrow" value={shownMonth} max={thisMonth} onValueChange={changeMonth} />}
         title="Giao dịch"
+        tools={<MonthSelect size="bar" value={shownMonth} max={thisMonth} onValueChange={changeMonth} />}
         actions={headerActions}
         accessory={
           <AiAssistButton

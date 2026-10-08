@@ -17,7 +17,7 @@ export default async function OverviewPage({
 
   return (
     <Page>
-      <OverviewHeader greeting={greetingFor(new Date())} today={data.today} />
+      <OverviewHeader user={data.user} planState={data.planState} greeting={greetingFor(new Date())} />
       <OverviewScreen
         accounts={data.accounts}
         categoryGroups={data.categoryGroups}

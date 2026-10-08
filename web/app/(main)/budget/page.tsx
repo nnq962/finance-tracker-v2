@@ -22,12 +22,10 @@ export default async function AccountsPage() {
     ]),
   )
   const balanceSummary = getBalanceSummary(accounts)
-  const activeCount = accounts.filter((account) => account.status === "active").length
 
   return (
     <Page>
       <PageHeader
-        eyebrow={activeCount > 0 ? `${activeCount} tài khoản đang dùng` : "Tiền của bạn"}
         title="Tài khoản"
         actions={<AddAccountButton />}
       />

@@ -19,7 +19,6 @@ import type {
   NewDebtPayment,
 } from "../_types/debt"
 
-import { getDebtMetrics } from "../_lib/debt-presentation"
 import { AddDebtSheet } from "./add-debt-sheet"
 import { ContactsSheet } from "./contacts-sheet"
 import { DebtsView } from "./debts-view"
@@ -101,12 +100,10 @@ export function DebtsDashboard({
     <AddDebtSheet accounts={accounts} contacts={contacts} onAddDebt={addDebt} onAddContact={addContact} trigger={trigger} />
   )
   const contactsLabel = `Người liên hệ, ${contacts.length} người`
-  const openCount = debts.filter((debt) => debt.status !== "settled" && getDebtMetrics(debt).remainingAmount > 0).length
 
   return (
     <Page>
       <PageHeader
-        eyebrow={openCount > 0 ? `${openCount} khoản đang mở` : "Cho vay và đi vay"}
         title="Vay nợ"
         actions={
           <>

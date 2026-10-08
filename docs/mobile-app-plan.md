@@ -20,6 +20,11 @@ Làm 2026-10-08, người dùng giao làm hết và tự chọn phương án (kh
 
 Còn lại: màn giới thiệu lần đầu (cần user mới để xem), trạng thái trống của từng trang.
 
+Vòng 2 (cùng ngày): đầu trang đổi sang kiểu app ngân hàng (phương án C trên canvas "Đầu trang: các
+phong cách"): một hàng gọn, tên trang 24 bên trái, công cụ bên phải, cuộn cùng trang. Phần "Khuôn
+trang" bên dưới mô tả kiểu cũ (nhãn nhỏ in hoa và tiêu đề lớn); bản đúng nằm trong
+`docs/design/README.md`. Danh sách khối chưa giống app: `docs/design/ra-soat-2026-10-08.md`.
+
 ## Vì sao bây giờ chưa giống app
 
 Các khối đơn lẻ (dòng list, thẻ, nút) đã đúng cỡ của app. Thứ thiếu là **khuôn trang**: cách xếp
