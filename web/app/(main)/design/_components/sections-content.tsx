@@ -111,6 +111,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 import { Block, BlockLabel, CatalogSection, Wide } from "./catalog-kit"
+import { PageSheetPlayground } from "./sheet-playground"
 
 const swipeRows = [
   ["Highlands Coffee", "08:42", -59_000],
@@ -552,6 +553,12 @@ function FeedbackSection() {
 
   return (
     <CatalogSection id="feedback">
+      <Wide>
+        <BlockLabel className="px-1">
+          Sheet dùng chung (PageSheet) · mẫu tổng hợp: tiêu đề, nút, nền, form, dòng, danh sách dài; đổi kiểu ngay trong sheet
+        </BlockLabel>
+        <PageSheetPlayground />
+      </Wide>
       <Wide>
         {banner ? (
           <NoticeBanner title="Cập nhật mới" onDismiss={() => setBanner(false)}>

@@ -100,7 +100,10 @@ export function PageSheet({
                 <XIcon />
               </Button>
             </DrawerClose>
-            <DrawerTitle className={cn("truncate text-center text-base", hideTitle && "sr-only")}>{title}</DrawerTitle>
+            {/* Its own cell even when hidden (sr-only takes it out of the grid), so the action stays on the right. */}
+            <div className="min-w-0">
+              <DrawerTitle className={cn("truncate text-center text-base", hideTitle && "sr-only")}>{title}</DrawerTitle>
+            </div>
             <div className="flex justify-end">{action}</div>
           </div>
         </div>
