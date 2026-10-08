@@ -55,7 +55,8 @@ export function AddTransactionSheet({
           <SheetTrigger asChild>
             <Button type="button" className="w-full sm:w-auto">
               <PlusIcon />
-              Thêm giao dịch
+              {/* Only the + on tablets, where the header's row is short of room. */}
+              <span className="md:max-lg:sr-only">Thêm giao dịch</span>
             </Button>
           </SheetTrigger>
         ) : null}

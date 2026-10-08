@@ -229,8 +229,9 @@ export function TransactionsScreen({
   const shownMonth = isNavigating ? requestedMonth : selectedMonth
   const headerActions = (
     <>
+      {/* On tablets the sparkle and count only, as the row is short of room. */}
       <AiAssistButton variant="outline" remaining={aiRemaining} onClick={openAi}>
-        Nhập bằng AI
+        <span className="md:max-lg:sr-only">Nhập bằng AI</span>
       </AiAssistButton>
       <AddTransactionButton accounts={accounts} categoryGroups={categoryGroups} />
     </>
@@ -243,7 +244,8 @@ export function TransactionsScreen({
       {/* Searching on a phone the field takes the top, and the tab bar makes way. */}
       {searching ? <div data-hide-tab-bar hidden /> : null}
       {/* Folds away while searching, so the field slides up to the top. */}
-      <Collapse open={!searching} className="max-md:mb-0">
+      {/* Its own space below goes with it, from md up too (the page's gap). */}
+      <Collapse open={!searching} className={searching ? "mb-0" : "max-md:mb-0"}>
         <PageHeader
           title="Giao dịch"
           tools={<MonthSelect size="bar" value={shownMonth} max={thisMonth} onValueChange={changeMonth} />}

@@ -7,16 +7,18 @@ import { cn } from "@/lib/utils"
  * A row of chips that scrolls sideways, as filter rows do in native apps: it
  * runs to the screen's edges (the page's side padding, --main-content-px) so
  * chips slide out under the edge rather than stop short of it, and its first
- * chip still lines up with the page. Its own few pixels above and below keep
- * the chips' focus rings and press scale from being clipped. Holds Toggle
- * Group chips, a ChipButton, a ChipRowDivider between kinds of chip.
+ * chip still lines up with the page; a chip scrolled into view (a tap on one
+ * half out of view) stops that far from the edge too. Its own few pixels
+ * above and below keep the chips' focus rings and press scale from being
+ * clipped. Holds ToggleGroup chips, a ChipButton, a ChipRowDivider between
+ * kinds of chip.
  */
 export function ChipRow({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="chip-row"
       className={cn(
-        "-mx-(--main-content-px) -my-1 flex min-w-0 items-center gap-2 overflow-x-auto px-(--main-content-px) py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        "-mx-(--main-content-px) -my-1 flex min-w-0 scroll-px-(--main-content-px) items-center gap-2 overflow-x-auto px-(--main-content-px) py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
         className,
       )}
       {...props}
