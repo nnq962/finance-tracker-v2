@@ -231,7 +231,7 @@ Trước khi báo xong một màn mới, kiểm tra:
   mở màn con (‹ quay lại, "Bỏ chọn" bên phải khi có chọn) là list chọn (`SettingsRow checked`):
   tài khoản có logo, hạng mục có icon và màu, chia Chi tiêu / Thu nhập (ẩn khi lọc chuyển khoản,
   vay nợ); số tiền chọn một mức (Bất kỳ, Dưới 100k, 100k – 1tr, Trên 1tr) hoặc "Tuỳ chỉnh" mở hai
-  ô Từ / Đến. Chọn là áp ngay; chân sheet "Xoá lọc" (chỉ khi có lọc: bấm thì nó thu hẹp và mờ đi trong 300ms còn "Xem N giao dịch" giãn ra hết chiều rộng; chọn lọc lại thì trượt ra) và "Xem N giao dịch". Điều
+  ô Từ / Đến, xếp chồng để mỗi ô và hàng gợi ý của nó rộng hết. Chọn là áp ngay; chân sheet "Xoá lọc" (chỉ khi có lọc: bấm thì nó thu hẹp và mờ đi trong 300ms còn "Xem N giao dịch" giãn ra hết chiều rộng; chọn lọc lại thì trượt ra) và "Xem N giao dịch". Điều
   kiện của sheet đang bật hiện thành chip có × ở hàng dưới. Chạm ô tìm mở màn tìm: đầu trang và thẻ tổng thu gọn
   (`Collapse`) để ô tìm trôi lên đầu, "Huỷ" trượt ra bên cạnh (xoá chữ, đóng màn), thanh tab
   (`data-hide-tab-bar`) và nút + (`FloatingActions concealed`) trượt xuống khỏi màn; Huỷ đảo

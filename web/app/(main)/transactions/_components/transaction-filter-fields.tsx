@@ -194,7 +194,8 @@ export function TransactionFilterFields({
         {/* Under the chips, 12px off them open; folded, it takes back the fieldset's gap too. */}
         <Collapse open={custom} className="-mt-3 data-[state=closed]:-mt-6">
           <div className="flex flex-col gap-2">
-            <div className="grid grid-cols-2 gap-3">
+            {/* One above the other, so each field and its suggestions have the full width. */}
+            <div className="flex flex-col gap-3">
               <Field data-invalid={amountRangeReversed || undefined}>
                 <FieldLabel htmlFor={`${idPrefix}-min-amount`} className="sr-only">
                   Từ

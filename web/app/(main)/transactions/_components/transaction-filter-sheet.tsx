@@ -235,8 +235,9 @@ export function TransactionFilterSheet({
             {/* The range typed, sliding open under Tuỳ chỉnh. */}
             <Collapse open={custom} className="-mt-6 data-[state=open]:mt-0">
               <FormSection>
+                {/* One above the other, so each field and its suggestions have the full width. */}
                 <FieldGroup className="gap-2">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-5">
                     <Field data-invalid={amountRangeReversed || undefined}>
                       <FieldLabel htmlFor="transaction-sheet-min-amount">Từ</FieldLabel>
                       <CurrencyInput
