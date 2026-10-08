@@ -283,6 +283,12 @@ Trước khi báo xong một màn mới, kiểm tra:
   Nhóm công tắc: Nợ có sẵn (ẩn dòng tài khoản, ngày thành "Bắt đầu theo dõi"; khoá khi sửa), Tính lãi
   (dòng lãi suất "%" với "/tháng | /năm", dòng "Đến hạn …" tính sẵn gốc + lãi, hoặc lãi mỗi kỳ). Khi
   sửa, loại khoá lại nếu đã có lần thu hoặc trả.
+- **Ghi nhận thu / trả nợ** (`RecordDebtPaymentSheet`, cả khi sửa một lần): tiêu đề "Thu nợ" / "Trả nợ" /
+  "Sửa lần thu"; thẻ khoản nợ ở đầu (avatar, "Lan Anh · Tiền cọc phòng", "Còn phải thu …", "gồm lãi" khi
+  có lãi); số tiền lớn (thu: "+" xanh, trả: "−"), chip "Toàn bộ · 1/2 · 1/3" của số còn lại thay cho gợi ý
+  theo chữ số, dòng "Sau lần này còn …" hoặc "✓ Tất toán khoản này"; vượt số còn lại thì báo ngay. Dòng
+  "Vào tài khoản" / "Trả từ" (mặc định tài khoản của khoản vay nếu còn dùng; màn sâu chọn tài khoản),
+  "Thời gian" (`TimeRows`, không trước ngày ghi khoản nợ), ghi chú; khi sửa có "Xoá lần thu này".
 - **Chi tiết khoản nợ** (`DebtDetailInfo`, sheet trên điện thoại, khung bên phải từ xl), kiểu biên lai:
   thanh "Chi tiết khoản nợ" có bút chì (khung bên phải: "Sửa" cạnh tên); avatar `lg`, "Cho vay · Lan
   Anh", số còn lại `xl` ở giữa, dòng phụ "Còn phải thu · hẹn 19/10, còn 11 ngày" (đỏ khi quá hạn; đã
