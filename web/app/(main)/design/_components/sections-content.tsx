@@ -151,7 +151,7 @@ function CardSection() {
   return (
     <CatalogSection id="card">
       <Wide>
-        <BlockLabel className="px-1">Hai chiều tiền, chỉ hiển thị số (FlowTiles không có onValueChange), như ở Giao dịch</BlockLabel>
+        <BlockLabel className="px-1">Hai chiều tiền, chỉ hiển thị số (FlowTiles không có onValueChange), như ở Giao dịch và Vay nợ</BlockLabel>
         <FlowTiles
           tiles={[
             { value: "in", label: "Tiền vào", amount: 18_000_000, caption: "1 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
@@ -160,7 +160,7 @@ function CardSection() {
         />
       </Wide>
       <Wide>
-        <BlockLabel className="px-1">Hai chiều tiền, chạm để lọc danh sách (FlowTiles có onValueChange), như ở Vay nợ</BlockLabel>
+        <BlockLabel className="px-1">Hai chiều tiền, chạm để lọc danh sách (FlowTiles có onValueChange)</BlockLabel>
         <FlowTiles
           value={flow}
           onValueChange={setFlow}

@@ -95,16 +95,12 @@ export function DebtsView({
   const settledDebts = debts
     .filter(isSettled)
     .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt))
-  // A tile chosen shows only that side, its overdue and settled loans included.
-  const [direction, setDirection] = React.useState<DebtDirection | null>(null)
-  const shown = (items: Debt[]) => (direction ? items.filter((debt) => debt.direction === direction) : items)
-  const overdueDebts = shown(openDebts).filter((debt) => getDebtDeadline(debt).isOverdue)
+  const overdueDebts = openDebts.filter((debt) => getDebtDeadline(debt).isOverdue)
   const summary = getDebtSummary(debts)
   const openCount = (side: DebtDirection) => openDebts.filter((debt) => debt.direction === side).length
   const tiles = (
+    // Figures only: the list below is already split into the two sides.
     <FlowTiles
-      value={direction}
-      onValueChange={setDirection}
       tiles={[
         {
           value: "lent",
@@ -220,7 +216,7 @@ export function DebtsView({
 
         {/* The totals are on the tiles above. */}
         {sections.map(({ direction: side, label }) => {
-          const items = shown(openDebts).filter((debt) => debt.direction === side)
+          const items = openDebts.filter((debt) => debt.direction === side)
           if (items.length === 0) return null
 
           return (
@@ -230,12 +226,12 @@ export function DebtsView({
           )
         })}
 
-        {shown(settledDebts).length > 0 ? (
+        {settledDebts.length > 0 ? (
           <SettingsGroup
             title="Đã tất toán"
-            collapsible={{ showLabel: `Hiện ${shown(settledDebts).length} khoản`, defaultOpen: openDebts.length === 0 }}
+            collapsible={{ showLabel: `Hiện ${settledDebts.length} khoản`, defaultOpen: openDebts.length === 0 }}
           >
-            {renderRows(shown(settledDebts))}
+            {renderRows(settledDebts)}
           </SettingsGroup>
         ) : null}
 

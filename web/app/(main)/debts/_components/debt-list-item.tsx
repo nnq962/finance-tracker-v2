@@ -1,5 +1,6 @@
+import { Money } from "@/components/app/money"
 import { SettingsRow } from "@/components/settings-list"
-import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
+import { formatCompactCurrency } from "@/lib/format-currency"
 import { cn } from "@/lib/utils"
 
 import { getDueProjection } from "../_lib/debt-payments"
@@ -56,9 +57,6 @@ export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemPr
   // With interest and a due date ahead: what it will come to then.
   const projection = getDueProjection(debt, paidAmount)
   const status = getDebtStatus(debt)
-  const amount = formatCurrency(status.isSettled ? totalAmount : remainingAmount, {
-    signDisplay: "never",
-  })
   // Unless the rate already shows on the right, interest goes under the name:
   // what the debt will come to on its due date, else its rate. It leads, as it
   // is short and the note is free text of any length, which the one-line
@@ -76,14 +74,12 @@ export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemPr
       description={[interest, debt.note].filter(Boolean).join(" · ") || undefined}
       action={
         <span className="flex flex-col items-end">
-          <span
-            className={cn(
-              "text-sm font-medium tabular-nums",
-              status.isSettled && "text-muted-foreground",
-            )}
-          >
-            {amount}
-          </span>
+          <Money
+            amount={status.isSettled ? totalAmount : remainingAmount}
+            sign="never"
+            size="sm"
+            tone={status.isSettled ? "muted" : "default"}
+          />
           <span
             className={cn(
               "text-xs text-muted-foreground",
