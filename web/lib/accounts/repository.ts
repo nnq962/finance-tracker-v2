@@ -9,6 +9,7 @@ import type {
 import { AccountValidationError } from "@/lib/accounts/validation"
 import { lockAccounts, setBalance, shiftBalance } from "@/lib/db/accounts"
 import { getDb } from "@/lib/db/client"
+import { retryOnDeadlock } from "@/lib/db/retry"
 import { getInstitution } from "@/lib/institutions"
 
 function getLogoFallback(name: string, institutionName?: string) {
@@ -159,11 +160,6 @@ export async function setAccountArchived(
   }
 }
 
-/** Postgres gave up one of two transactions waiting on each other: running it again succeeds. */
-function isDeadlock(error: unknown) {
-  return typeof error === "object" && error !== null && "code" in error && error.code === "40P01"
-}
-
 /**
  * Deletes the account with every transaction that touches it and every loan
  * recorded into it (with all of that loan's payments), and reverses their
@@ -173,13 +169,7 @@ function isDeadlock(error: unknown) {
  * change (a transfer, a loan payment, locking in another order), it runs again.
  */
 export async function deleteAccount(userId: string, accountId: string) {
-  for (let attempt = 1; ; attempt++) {
-    try {
-      return await deleteAccountOnce(userId, accountId)
-    } catch (error) {
-      if (!isDeadlock(error) || attempt === 3) throw error
-    }
-  }
+  return retryOnDeadlock(() => deleteAccountOnce(userId, accountId))
 }
 
 async function deleteAccountOnce(userId: string, accountId: string) {

@@ -5,6 +5,7 @@ import type { Transaction } from "kysely"
 
 import { lockAccounts, setBalance, shiftBalance, type LockedAccount } from "@/lib/db/accounts"
 import { getDb } from "@/lib/db/client"
+import { retryOnDeadlock } from "@/lib/db/retry"
 import type { DB } from "@/lib/db/types"
 import { getPaymentMetrics, todayDate, updateDebtPayment } from "./calculations"
 import { getInitials } from "./initials"
@@ -226,6 +227,19 @@ function debtColumns(values: NewDebt) {
   }
 }
 
+/**
+ * Refuses a change that takes principal plus interest past what the app can
+ * count, but only when the change makes it larger: interest left to run on a
+ * huge debt can pass the limit by itself over time, and editing or deleting
+ * its payments must still work then.
+ */
+function assertWithinLimit(before: Debt, after: Debt) {
+  const total = getPaymentMetrics(after).totalAmount
+  if (total > MAX_MONEY && total > getPaymentMetrics(before).totalAmount) {
+    throw new DebtValidationError("Tổng gốc và lãi vượt giới hạn cho phép.")
+  }
+}
+
 /** The loan's own cash movement, shown on the Transactions page. */
 function movementColumns(debt: Pick<Debt, "direction" | "amount" | "note" | "recordedAt">, accountId: string) {
   return {
@@ -256,16 +270,25 @@ export async function createDebt(userId: string, input: unknown, operationId: st
   })
 }
 
-export async function saveDebtPayment(userId: string, debtId: string, paymentId: string | undefined, input: unknown | null, operationId: string): Promise<Debt> {
+/**
+ * Records, edits (`paymentId`) or deletes (`input` null) a payment. A retry
+ * of one already applied returns the debt as it is now, or null when the
+ * debt has been deleted since. Rerun when Postgres breaks a deadlock.
+ */
+export async function saveDebtPayment(userId: string, debtId: string, paymentId: string | undefined, input: unknown | null, operationId: string): Promise<Debt | null> {
   assertDebtId(debtId)
   assertDebtId(operationId)
   if (paymentId !== undefined) assertDebtId(paymentId)
   if (input === null && !paymentId) throw new DebtValidationError("Thiếu thanh toán cần xoá.")
   const values = input === null ? null : parsePayment(input)
   const hash = fingerprint("saveDebtPayment", { debtId, paymentId, values })
-  return getDb().transaction().execute(async (trx) => {
+  return retryOnDeadlock(() => getDb().transaction().execute(async (trx) => {
+    // Checked first, as changeDebt does: a retry finds its payment applied even once the debt is gone.
+    if (await alreadyApplied(trx, userId, operationId, hash)) {
+      const row = await selectDebts(trx, userId).where("id", "=", debtId).executeTakeFirst()
+      return row ? lockDebt(trx, userId, debtId) : null
+    }
     const debt = await lockDebt(trx, userId, debtId)
-    if (await alreadyApplied(trx, userId, operationId, hash)) return debt
     const previous = paymentId ? debt.payments?.find((payment) => payment.id === paymentId) : undefined
     if (paymentId && !previous) throw new DebtValidationError("Thanh toán không còn tồn tại. Vui lòng tải lại trang.")
     const accounts = await lockAccounts(trx, userId, [previous?.accountId, values?.accountId].filter((id): id is string => Boolean(id)))
@@ -283,7 +306,7 @@ export async function saveDebtPayment(userId: string, debtId: string, paymentId:
     if (!paymentId && values) {
       updated.payments = updated.payments?.map((payment) => debt.payments?.some((old) => old.id === payment.id) ? payment : { ...payment, id: savedPaymentId })
     }
-    if (getPaymentMetrics(updated).totalAmount > MAX_MONEY) throw new DebtValidationError("Tổng gốc và lãi vượt giới hạn cho phép.")
+    assertWithinLimit(debt, updated)
     // Collecting (lent) brings money in; repaying (borrowed) sends it out.
     const sign = debt.direction === "lent" ? 1 : -1
     for (const account of accounts.values()) {
@@ -301,7 +324,7 @@ export async function saveDebtPayment(userId: string, debtId: string, paymentId:
       await trx.deleteFrom("debtPayments").where("id", "=", savedPaymentId).execute()
     }
     return updated
-  })
+  }))
 }
 
 // Apply the original cash movement and all repayments as one atomic correction.
@@ -310,7 +333,7 @@ export async function changeDebt(userId: string, debtId: string, input: unknown 
   assertDebtId(operationId)
   const values = input === null ? null : parseDebt(input)
   const hash = fingerprint("changeDebt", { debtId, values })
-  await getDb().transaction().execute(async (trx) => {
+  await retryOnDeadlock(() => getDb().transaction().execute(async (trx) => {
     // Checked first: a retried delete finds the debt already gone.
     if (await alreadyApplied(trx, userId, operationId, hash)) return
     const debt = await lockDebt(trx, userId, debtId)
@@ -325,7 +348,7 @@ export async function changeDebt(userId: string, debtId: string, input: unknown 
       } catch (error) {
         throw new DebtValidationError(error instanceof Error ? error.message : "Lịch sử thanh toán không hợp lệ.")
       }
-      if (getPaymentMetrics(updated).totalAmount > MAX_MONEY) throw new DebtValidationError("Tổng gốc và lãi vượt giới hạn cho phép.")
+      assertWithinLimit(debt, updated)
       await getContact(trx, userId, values.contactId)
     }
     // Undo the old principal movement, then apply the new one (edit) or undo
@@ -363,5 +386,5 @@ export async function changeDebt(userId: string, debtId: string, input: unknown 
       // Cascades to the payments and the loan's cash movement.
       await trx.deleteFrom("debts").where("id", "=", debtId).execute()
     }
-  })
+  }))
 }

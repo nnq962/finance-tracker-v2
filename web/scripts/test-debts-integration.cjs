@@ -323,6 +323,23 @@ async function run() {
     equal((await sql('SELECT note FROM debts WHERE id = $1', [noNote.id])).rows[0].note, null)
     equal((await getTransactions(uid)).find(item => item.debtId === noNote.id).note, undefined)
     await repository.changeDebt(uid, noNote.id, null, randomUUID())
+    // A retried payment whose debt has been deleted since reports it applied, as a retried change does.
+    const goneDebt = await repository.createDebt(uid, {...values, accountId:acc.b, amount:100000, hasInterest:false}, randomUUID())
+    const goneOp = randomUUID()
+    const goneValues = {...payment, accountId:acc.b, amount:10000, paidAt:todayDate()}
+    await repository.saveDebtPayment(uid, goneDebt.id, undefined, goneValues, goneOp)
+    await repository.changeDebt(uid, goneDebt.id, null, randomUUID())
+    equal(await repository.saveDebtPayment(uid, goneDebt.id, undefined, goneValues, goneOp), null)
+    // Interest left to run past the limit by itself still lets the debt's payments be deleted.
+    const huge = await repository.createDebt(uid, {...values, recordingMode:'opening', accountId:undefined, amount:999999999000000, hasInterest:true, interestRate:10, interestPeriod:'month', recordedAt:todayDate()}, randomUUID())
+    const hugePaid = await repository.saveDebtPayment(uid, huge.id, undefined, {...payment, accountId:acc.b, amount:1000, paidAt:todayDate()}, randomUUID())
+    await sql('UPDATE debts SET recorded_at = recorded_at - 365 WHERE id = $1', [huge.id])
+    await repository.saveDebtPayment(uid, huge.id, hugePaid.payments[0].id, null, randomUUID())
+    equal(await count('debt_payments', 'debt_id', huge.id), 0)
+    await repository.changeDebt(uid, huge.id, null, randomUUID())
+    // Settled with no payments to date it: the days of interest come from the interest it closed with.
+    const settledOld = getPaymentMetrics({amount:1000000, paidAmount:1020000, status:'settled', hasInterest:true, interestRate:2, interestPeriod:'month', recordedAt:'2026-01-01'})
+    equal([settledOld.days, settledOld.interestDate, settledOld.interestAmount], [30, '2026-01-31', 20000])
     console.log(`${checks} integration checks passed: persistence, isolation, balances, linked ledger, retries, concurrency, validation, and settlement.`)
   } finally {
     await cleanup()

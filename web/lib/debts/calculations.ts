@@ -34,11 +34,16 @@ export function getOpeningPaidAmount(debt: Debt) {
 export function getPaymentMetrics(debt: Debt, date = todayDate()) {
   if (debt.payments === undefined && debt.status === "settled") {
     const totalAmount = Math.max(debt.amount, debt.paidAmount)
+    const interestAmount = Math.max(0, totalAmount - debt.amount)
+    // Settled with no payments to date it: the interest it closed with says
+    // how many days ran, so they are not counted on to today.
+    const perDay = debt.hasInterest ? (debt.amount * Math.max(0, debt.interestRate ?? 0)) / 100 / (debt.interestPeriod === "year" ? 365 : 30) : 0
+    const days = perDay > 0 ? Math.round(interestAmount / perDay) : 0
 
     return {
-      ...getInterest(debt, date),
-      interestAmount: Math.max(0, totalAmount - debt.amount),
-      interestDate: date,
+      days,
+      interestAmount,
+      interestDate: new Date(Date.parse(debt.recordedAt) + days * 86_400_000).toISOString().slice(0, 10),
       totalAmount,
       paidAmount: debt.paidAmount,
       remainingAmount: 0,
