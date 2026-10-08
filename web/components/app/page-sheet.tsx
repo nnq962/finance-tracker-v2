@@ -24,15 +24,30 @@ function fadeGradient(surface: string, behindTitle: boolean) {
 }
 
 /**
- * iOS's page sheet: it rises to just below the status bar over the dimmed
- * page and is dragged down or closed with the round ✕ at the top left; the
- * title is centred and an action may sit on the right. Content scrolls under
- * the bar and fades into it. Centred, 32rem wide, on wider screens.
+ * The same veil at the foot, under a footer's button: thick from the
+ * sheet's bottom edge up through the button, thinning above it to nothing,
+ * so the content scrolling under the button fades rather than being cut.
+ * Over the end of the content, which stops above it, it shows nothing.
+ */
+function footerFadeGradient(surface: string) {
+  const mix = (percent: number) => `color-mix(in oklab, ${surface} ${percent}%, transparent)`
+  const stops = [[96, 0], [94, 45], [82, 64], [50, 78], [20, 90], [0, 100]]
+  return `linear-gradient(to top, ${stops.map(([percent, at]) => `${mix(percent)} ${at}%`).join(", ")})`
+}
+
+/**
+ * iOS's page sheet, the app's one sheet: it rises to just below the status
+ * bar over the dimmed page and is dragged down or closed with the round ✕ at
+ * the top left; the title is centred and an action may sit on the right.
+ * Content scrolls under the bar and fades into it. Centred, 32rem wide, on
+ * wider screens.
  *
- * `hideTitle` when the content opens with its own large title (the plans):
- * the bar then shows only its buttons. `surface="grouped"`: the page's grey,
- * for white cards and groups of rows; plain (white) for forms. `footer`
- * stays below the scrolling content, e.g. a Save button.
+ * The small title in the bar is the usual one; `hideTitle` when the content
+ * opens with its own large title (the plans), and the bar then shows only its
+ * buttons. `surface`: the page's grey by default, white cards and groups of
+ * rows on it, as on the pages; `plain` (white) only for a sheet that is one
+ * bare form. `footer`, e.g. a Save button (default size, full width), floats
+ * over the end of the content, which scrolls under it and fades.
  */
 export function PageSheet({
   title,
@@ -42,7 +57,7 @@ export function PageSheet({
   trigger,
   open,
   onOpenChange,
-  surface = "plain",
+  surface = "grouped",
   footer,
   className,
   children,
@@ -65,6 +80,16 @@ export function PageSheet({
   // The fade shows once the content has moved, so nothing at rest sits in it.
   const [scrolled, setScrolled] = React.useState(false)
   const surfaceColor = surface === "grouped" ? "var(--background)" : "var(--popover)"
+  // The footer floats over the content, which keeps that much room at its end
+  // so its last row can scroll clear of the button.
+  const [footerHeight, setFooterHeight] = React.useState(0)
+  const footerObserver = React.useRef<ResizeObserver | null>(null)
+  const footerRef = React.useCallback((node: HTMLDivElement | null) => {
+    footerObserver.current?.disconnect()
+    if (!node) return
+    footerObserver.current = new ResizeObserver(([entry]) => setFooterHeight(entry.borderBoxSize[0].blockSize))
+    footerObserver.current.observe(node)
+  }, [])
 
   return (
     <Drawer variant="page" open={open} onOpenChange={onOpenChange}>
@@ -75,6 +100,7 @@ export function PageSheet({
             data-slot="page-sheet-body"
             onScroll={(event) => setScrolled(event.currentTarget.scrollTop > 0)}
             className={cn("absolute inset-0 overflow-y-auto px-4 pt-17 pb-4", className)}
+            style={footer ? { paddingBottom: footerHeight } : undefined}
           >
             {children}
           </div>
@@ -87,14 +113,8 @@ export function PageSheet({
             style={{ backgroundImage: fadeGradient(surfaceColor, !hideTitle) }}
           />
           {/* 16 above (the grabber floats in it) and 8 below a 44 button: ✕ sits 16 from the sheet's top and side.
-              Scrolled, its round buttons lift off the content passing under them: a soft shadow, a hairline in the dark. */}
-          <div
-            className={cn(
-              "absolute inset-x-0 top-0 grid h-17 grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2 px-4 pt-4 pb-2",
-              scrolled &&
-                "[&_[data-variant=secondary]]:shadow-[0_4px_16px_rgb(0_0_0/0.1)] dark:[&_[data-variant=secondary]]:ring-1 dark:[&_[data-variant=secondary]]:ring-foreground/10",
-            )}
-          >
+              Its round buttons always float: a soft shadow, a hairline in the dark, so they look the same at rest and scrolled. */}
+          <div className="absolute inset-x-0 top-0 grid h-17 grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2 px-4 pt-4 pb-2 [&_[data-variant=secondary]]:shadow-[0_4px_16px_rgb(0_0_0/0.1)] dark:[&_[data-variant=secondary]]:ring-1 dark:[&_[data-variant=secondary]]:ring-foreground/10">
             <DrawerClose asChild>
               <Button type="button" variant="secondary" size="icon" aria-label={closeLabel}>
                 <XIcon />
@@ -106,8 +126,16 @@ export function PageSheet({
             </div>
             <div className="flex justify-end">{action}</div>
           </div>
+          {footer ? (
+            <div
+              ref={footerRef}
+              className="absolute inset-x-0 bottom-0 px-4 pt-8 pb-4"
+              style={{ backgroundImage: footerFadeGradient(surfaceColor) }}
+            >
+              {footer}
+            </div>
+          ) : null}
         </div>
-        {footer ? <div className="shrink-0 p-4">{footer}</div> : null}
       </DrawerContent>
     </Drawer>
   )

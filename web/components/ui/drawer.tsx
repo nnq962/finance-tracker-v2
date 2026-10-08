@@ -85,6 +85,15 @@ function DrawerContent({
     return (
       <DrawerPortal data-slot="drawer-portal">
         <DrawerOverlay />
+        {/* The app's colour along the screen's top edge, above the dimmed page:
+            iOS tints the status bar from what sits there, so it keeps the
+            page's colour instead of taking the veil's or the sheet's. Phones
+            only, where the edge is under the status bar. */}
+        <div
+          aria-hidden="true"
+          data-slot="drawer-status-bar"
+          className="fixed inset-x-0 top-0 z-50 h-[max(env(safe-area-inset-top,0px),1px)] bg-background md:hidden"
+        />
         <DrawerPrimitive.Content
           data-slot="drawer-content"
           data-variant="page"

@@ -889,10 +889,11 @@ function PageSheetFormSample() {
   return (
     <PageSheet
       title="Giao dịch mới"
+      surface="plain"
       className="space-y-6"
       trigger={<Button variant="secondary">PageSheet · form</Button>}
       footer={
-        <Button size="lg" className="w-full">
+        <Button className="w-full">
           Lưu giao dịch
         </Button>
       }

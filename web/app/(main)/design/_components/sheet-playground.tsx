@@ -63,7 +63,7 @@ export function PageSheetPlayground() {
       }
       footer={
         withFooter ? (
-          <Button size="lg" className="w-full" onClick={() => toast.success("Đã lưu")}>
+          <Button className="w-full" onClick={() => toast.success("Đã lưu")}>
             Lưu thay đổi
           </Button>
         ) : null
