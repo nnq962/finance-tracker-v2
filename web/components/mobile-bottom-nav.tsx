@@ -261,7 +261,7 @@ export function MobileBottomNav() {
   const activeIndex = mobileNavigationItems.findIndex((item) => item.url === menuUrlFor(activePathname))
 
   return (
-    // Icon and name on a capsule across the screen, floating over the page;
+    // Icons on a capsule across the screen, floating over the page;
     // the shell reserves its height in --tab-bar-space so the end of a page
     // can scroll above it. A screen that takes the whole height for a while
     // (searching) slides it off the bottom by rendering an element with
@@ -329,14 +329,13 @@ export function MobileBottomNav() {
                 onClick={(event) => navigateTo(event, item.url)}
                 aria-current={pathname === item.url ? "page" : undefined}
                 className={cn(
-                  "flex h-[52px] min-w-0 touch-manipulation flex-col items-center justify-center gap-1 rounded-full text-muted-foreground transition-colors duration-300 outline-none select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:duration-150",
+                  "flex h-[52px] min-w-0 touch-manipulation items-center justify-center rounded-full text-muted-foreground transition-colors duration-300 outline-none select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:duration-150",
                   isActive && "text-foreground",
                 )}
               >
-                <Icon className="size-[22px] shrink-0" strokeWidth={isActive ? 2 : 1.75} aria-hidden="true" />
-                <span className={cn("max-w-full truncate text-[11px] leading-none font-medium tracking-tight", isActive && "font-semibold")}>
-                  {item.mobileTitle}
-                </span>
+                <Icon className="size-6 shrink-0" strokeWidth={isActive ? 2.25 : 1.75} aria-hidden="true" />
+                {/* Icons alone on screen; the name is still each tab's accessible name. */}
+                <span className="sr-only">{item.mobileTitle}</span>
               </Link>
             </li>
           )

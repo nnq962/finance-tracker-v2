@@ -56,7 +56,7 @@ Mọi màn tab theo cùng một thứ tự, để học một màn là đoán đ
    - nhãn nhỏ in hoa, cho nhóm ngày (giao dịch) và nhóm cài đặt.
 4. **Thẻ gợi ý (tuỳ màn):** nền xám, không viền, một icon, một câu, một mũi tên.
 5. **Một nút nổi** nếu màn có thao tác chính; list luôn chừa đủ chỗ để dòng cuối không bị che.
-6. **Thanh tab có nhãn** dưới icon; tab đang chọn là viên xám nhạt, icon và chữ đậm.
+6. **Thanh tab** chỉ icon (đã thử có nhãn, người dùng chọn bỏ nhãn); tab đang chọn là viên xám nhạt, icon nét đậm.
 
 Màu:
 
