@@ -207,8 +207,8 @@ export function AccountSheet({
         <SettingsGroup
           footer={
             isLocked
-              ? "Dùng lại thì tài khoản trở lại danh sách chọn khi ghi giao dịch và được tính vào tổng số dư."
-              : "Ẩn khỏi danh sách chọn khi ghi giao dịch và không tính vào tổng số dư. Số dư và lịch sử vẫn giữ, dùng lại lúc nào cũng được."
+              ? "Hiện lại khi ghi giao dịch và tính vào tổng số dư."
+              : "Ẩn khi ghi giao dịch, không tính vào tổng số dư. Lịch sử vẫn giữ."
           }
         >
           <SettingsRow
