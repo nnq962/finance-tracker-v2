@@ -28,7 +28,9 @@ type TransactionItemProps = {
 }
 
 /** The title with the searched text marked, as search results do in native apps. */
-function MarkedTitle({ title, query }: { title: string; query?: string }) {
+function MarkedTitle({ title: raw, query }: { title: string; query?: string }) {
+  // Composed, as findMatch counts its characters.
+  const title = raw.normalize("NFC")
   const match = query ? findMatch(title, query) : null
   if (!match) return title
   return (

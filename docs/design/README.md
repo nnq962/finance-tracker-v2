@@ -237,7 +237,7 @@ Trước khi báo xong một màn mới, kiểm tra:
   (`Collapse`) để ô tìm trôi lên đầu, "Huỷ" trượt ra bên cạnh (xoá chữ, đóng màn), thanh tab
   (`data-hide-tab-bar`) và nút + (`FloatingActions concealed`) trượt xuống khỏi màn; Huỷ đảo
   ngược tất cả. Khi có
-  chữ, kết quả là một list phẳng, mới nhất trước: chữ khớp tô nền `warning/25`, bên phải ghi
+  chữ, kết quả là một list phẳng, mới nhất trước: so khớp như app Việt: gõ có dấu (kể cả đ) thì dấu phải đúng ("ăn" không ra "khoản", "Lan"), gõ không dấu thì bỏ dấu và đ là d ("di lai" ra "Đi lại"), không phân biệt hoa thường (`searchKey`); chữ khớp tô nền `warning/25`, bên phải ghi
   ngày thay giờ (năm khác thì có năm); trên list là "N kết quả trong Tháng 10 · tổng …" và "Tìm
   mọi tháng" (tải mọi giao dịch khi cần, `loadAllTransactionsAction`). Không có kết quả: nói đã
   tìm gì, ở đâu, đang lọc gì, kèm "Bỏ lọc" và "Tìm mọi tháng". Desktop giữ bảng lọc bên trái
