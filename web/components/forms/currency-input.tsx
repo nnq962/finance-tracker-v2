@@ -151,8 +151,11 @@ export function CurrencyInput({
               and "đ" stay centred together, typing or not: an invisible copy of
               the text sizes the cell the field fills. An estimate fell short on
               Safari, which then scrolled the number sideways once typing ended. */}
-          <span className="inline-grid">
-            <span aria-hidden="true" className="invisible col-start-1 row-start-1 pr-px whitespace-pre">
+          {/* 8px wider than the text, shared on both sides and taken back by the
+              negative margin: Safari keeps a little room inside a field, so a
+              field exactly as wide as its text still scrolled it a pixel or two. */}
+          <span className="-mx-1 inline-grid">
+            <span aria-hidden="true" className="invisible col-start-1 row-start-1 px-1 whitespace-pre">
               {shown || placeholder}
             </span>
             <input
@@ -169,6 +172,10 @@ export function CurrencyInput({
             aria-invalid={invalid || undefined}
             // size=1: no width of its own, so the copy alone sizes the cell.
             size={1}
+            // Nothing to scroll; and should Safari have, the number is back in place once typing ends.
+            onBlur={(event) => {
+              event.currentTarget.scrollLeft = 0
+            }}
             className="col-start-1 row-start-1 w-full min-w-0 bg-transparent p-0 text-center caret-foreground outline-none placeholder:text-muted-foreground/40"
           />
           </span>
