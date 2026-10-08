@@ -85,8 +85,9 @@ export function TimeRows({
         onClick={() => setOpen((current) => !current)}
       />
       {/* No divider: the chips and the fields belong to the row above, with
-          8px above and below the chips, and 8px under the fields to the line
-          (inside the fold without chips, so nothing is left once folded). */}
+          8px above and below the chips, and 8px under the fields to the line;
+          without chips, 8px above and below the fields, inside the fold so
+          nothing is left once folded. */}
       <li className={cn("flex flex-col px-4", withQuickDays && "py-2")}>
         {withQuickDays ? (
           <ToggleGroup
@@ -106,7 +107,7 @@ export function TimeRows({
           </ToggleGroup>
         ) : null}
         <Collapse open={open}>
-          <div className={cn("grid grid-cols-2 gap-3", withQuickDays ? "pt-2" : "pb-2")}>
+          <div className={cn("grid grid-cols-2 gap-3", withQuickDays ? "pt-2" : "py-2")}>
             <Input
               id={`${idPrefix}-date`}
               aria-label="Ngày"
