@@ -136,6 +136,7 @@ component ở đó là cả app đổi theo.
 | `InlineSelect` | Dropdown mở tại chỗ, đẩy nội dung bên dưới xuống: chọn trong vài tài khoản, ví. Hiệu ứng chiều cao đơn giản (300ms ease-out); trên iOS kém mượt hơn transform, đã chấp nhận. Danh sách dài vẫn dùng `Select`/`Combobox` |
 | `CardLabel` | Nhãn nhỏ trong thẻ ("Tài sản ròng", "Tiền vào"): chữ thường cỡ Body, màu phụ; trên thẻ `inverse` thì sáng 60%. Mọi thẻ có nhãn dùng nó |
 | `Chip` | Chip tĩnh cho thứ đã chọn hoặc gắn kèm (người, thẻ #): có thể có avatar và nút × |
+| `ChipRow` | Hàng chip cuộn ngang, chạy tới mép màn (bù `--main-content-px`), chip đầu vẫn thẳng hàng trang; có chừa 4px trên dưới cho viền focus. Đi kèm `ChipButton` (chip mở một thứ, như sheet lọc; `active` tô đậm khi điều kiện đang bật, ghi "Lọc · 2") và `ChipRowDivider` (vạch đứng giữa nút lọc và các chip loại). Chip chọn là `ToggleGroup` `size="sm"` |
 | `MonthPickerSheet` | Chọn tháng từ sheet đáy: năm với ‹ ›, lưới 12 tháng, tháng chưa tới mờ đi, nút "Về tháng này" |
 | `MonthSelect` | Tháng đang xem dạng nút viên thuốc "Tháng 10, 2026 ▾", chạm mở `MonthPickerSheet`; tới tháng nào cũng hai chạm. Một cách đổi tháng duy nhất cho trang có tháng, không kèm mũi tên ‹ ›. `size="bar"`: cao 44 và gọn ("Tháng 10", năm khác thì "Tháng 10/2025") cho đầu trang |
 | `Stepper` | Đếm từng bước bằng − / + (số người, số tháng) |
@@ -153,7 +154,7 @@ component ở đó là cả app đổi theo.
 | `NoticeBanner` | Thông báo trong trang trên nền nhạt theo `tone`, đóng được (`onDismiss`), hoặc bấm cả khối kèm mũi tên để mở thứ nó nói tới (`onClick`, như khoản quá hạn ở Vay nợ), hoặc kèm một nút nhỏ ở cuối cho bước tiếp theo (`action`, như "Ghi khoản chi" sau khi thanh toán gói) |
 | `PageSheet` | Page sheet iOS (`Drawer variant="page"`), tên theo thiết kế: thanh trên cùng có nút ✕ tròn (cách mép trên và trái 16), tiêu đề giữa, `action` bên phải; `hideTitle` khi nội dung tự mở đầu bằng tiêu đề lớn (màn gói). Nội dung cuộn xuyên dưới thanh, như sheet của app Claude: nội dung cuộn lên tới tận mép trên của sheet, thanh kéo nổi bên trên; khi đã cuộn, một lớp màu nền sheet phủ từ mép trên (cả chỗ thanh kéo) qua cả thanh, đậm nhất ở mép trên rồi nhạt đều qua hết thanh, về 0 ở 16px dưới thanh; nội dung vẫn thấp thoáng bên dưới, không có đường kẻ. Khi thanh có tiêu đề, lớp phủ giữ dày qua dòng tiêu đề để chữ rõ. Nút tròn trên thanh khi đó có bóng mềm (theme tối: viền mảnh). `surface="grouped"` (xám, cho thẻ trắng) hoặc trắng cho form; `footer` cho nút Lưu. Dùng cho màn gói, Thông báo |
 | `ChoiceTiles` | Vài ô cạnh nhau, chọn một, như bảng giá: vòng radio ở đầu, chip đối diện (ngắn, như "Giảm 28%"), rồi con số và một dòng mô tả. Radio group bên dưới (phím mũi tên, trình đọc màn hình). `tone="ai"` tô ô đang chọn màu `ai` (kỳ thanh toán Pro); mặc định viền đen |
-| `FlowTiles` | Tiền theo hai chiều (Tiền vào / Tiền ra ở Giao dịch, Cần thu / Cần trả ở Vay nợ) là hai nửa của một thẻ, chia bằng vạch mảnh thụt 16 trên dưới (như Figma). Mỗi nửa là `@container`, số tiền dùng `Money fit` nên không bao giờ ngắt giữa số: ô icon, nhãn, số tiền `lg` có dấu (chỉ tiền vào có màu) và ghi chú; chạm một nửa để danh sách chỉ còn chiều đó (nửa đó nền xám, nửa kia mờ đi), chạm lại để bỏ. `FlowTilesSkeleton` cho màn tải |
+| `FlowTiles` | Tiền theo hai chiều (Tiền vào / Tiền ra ở Giao dịch, Cần thu / Cần trả ở Vay nợ) là hai nửa của một thẻ, chia bằng vạch mảnh thụt 16 trên dưới (như Figma). Mỗi nửa là `@container`, số tiền dùng `Money fit` nên không bao giờ ngắt giữa số: ô icon, nhãn, số tiền `lg` có dấu (chỉ tiền vào có màu) và ghi chú; không có `onValueChange` thì thẻ chỉ hiển thị số (Giao dịch: lọc bằng hàng chip); có thì chạm một nửa để danh sách chỉ còn chiều đó (nửa đó nền xám, nửa kia mờ đi), chạm lại để bỏ (Vay nợ). `FlowTilesSkeleton` cho màn tải |
 
 Danh sách nằm ở `components/settings-list.tsx`. `SettingsGroup` là nhóm dòng trong một thẻ
 (`size="lg"` cho trang dạng bảng tin), tiêu đề nhóm là nhãn 12 in hoa giãn chữ như list nhóm của
@@ -161,7 +162,7 @@ iOS ("HÔM NAY", "CHUNG"; `groupCaptionClassName`, dùng chung cho `FormSection`
 (tiêu đề và mô tả mỗi thứ một dòng, cắt bằng "…"; `fullDescription` cho chữ mà dòng tồn tại để hiện: ghi chú trong chi tiết tài khoản, khoản vay, giao dịch, câu trả lời của máy tính lương, thông báo; dòng đó cao hơn 64), lề ngang 16, `icon` tự đặt trong `IconTile` cỡ `sm` (36,
 bo 12) màu theo `tone` (xám nếu không truyền), tiêu đề 14 (Body, đậm 500), mô tả 12 (Caption), rồi giá trị, công tắc, số
 tiền hoặc mũi tên ở bên phải. `media` cho avatar và logo tài khoản (`AccountLogo`: ô vuông bo 10 cỡ 36 như `IconTile sm`, logo trên nền trắng, tiền mặt là tờ tiền xanh; `size="xs"` 20 trong select). `swipeAction` cho dòng vuốt để xoá. Dòng ở
-trang Cài đặt mỗi mục một `tone`, như mockup. `SettingsGroup collapsible`: nhóm ẩn dòng tới khi cần (khoản đã tất toán, tài khoản ngừng dùng); tiêu đề vẫn thẳng hàng với các nhóm khác, cuối tiêu đề là "Hiện …" / "Ẩn"; thẻ trượt mở và đóng (tức thì khi giảm chuyển động). `footer` cỡ Caption 12. Dòng Vay nợ: bên phải là hạn trả; không có hạn thì lãi suất, hoặc phần trăm đã trả, hoặc "Không hạn trả"; lãi suất hay dự tính đứng trước ghi chú ở mô tả.
+trang Cài đặt mỗi mục một `tone`, như mockup. `SettingsGroup stickyCaption`: tiêu đề nhóm bám đỉnh màn khi các dòng cuộn dưới nó, tới khi tiêu đề nhóm sau đẩy đi, như list iOS (các ngày ở Giao dịch); nền màu trang hơi trong và mờ phía sau, trên điện thoại trải hết bề ngang; desktop bám dưới thanh trên 64px. `SettingsGroup collapsible`: nhóm ẩn dòng tới khi cần (khoản đã tất toán, tài khoản ngừng dùng); tiêu đề vẫn thẳng hàng với các nhóm khác, cuối tiêu đề là "Hiện …" / "Ẩn"; thẻ trượt mở và đóng (tức thì khi giảm chuyển động). `footer` cỡ Caption 12. Dòng Vay nợ: bên phải là hạn trả; không có hạn thì lãi suất, hoặc phần trăm đã trả, hoặc "Không hạn trả"; lãi suất hay dự tính đứng trước ghi chú ở mô tả.
 
 Màn tải: `SettingsGroupSkeleton` / `SettingsRowSkeleton` (cùng file) có đúng kích thước nhóm và dòng thật (dòng tiêu đề, bo thẻ, dòng 64, ô 36 hoặc avatar, avatar 48 `avatar-lg` cho hồ sơ, `align="center"` cho dòng như Đăng xuất, đường kẻ thụt, giá trị hay số tiền bên phải). Mỗi `loading.tsx` dựng lại từ chính bố cục của trang (`OverviewLayout`, `TransactionsLayout`, `BudgetLayout`) và các skeleton này, cùng `PageHeaderSkeleton` (tên trang thật; công cụ tròn hay viên thuốc, nút có chữ theo độ rộng), `FlowTilesSkeleton`, `FloatingActionsSkeleton`, nên khung trang không nhảy khi dữ liệu tới. Những khối chỉ có khi có dữ liệu (Nhiệm vụ, Sắp đến hạn, cảnh báo quá hạn) không có chỗ chờ sẵn, nên khi có chúng, phần bên dưới vẫn dời xuống.
 
@@ -209,8 +210,19 @@ Trước khi báo xong một màn mới, kiểm tra:
   nhau 24px.
 - **Trang danh sách** (Giao dịch, Tài khoản, Vay nợ, Cài đặt): đầu trang, thẻ dẫn đầu, rồi các
   `SettingsGroup` có tiêu đề nhóm. Ngày ghi "Hôm nay, 08/10", "Hôm qua, 07/10", rồi "Thứ Ba,
-  06/10" (`formatDayLabel`). Ô tìm ở Giao dịch nằm trong `<form role="search">`: phím Tìm trên bàn
-  phím ẩn bàn phím (kết quả lọc ngay khi gõ).
+  06/10" (`formatDayLabel`); bên phải tiêu đề ngày là một số ròng của ngày (vào trừ ra, như thẻ
+  tổng), xanh khi dương; tiêu đề ngày bám khi cuộn. Ô tìm ở Giao dịch nằm trong `<form
+  role="search">`: phím Tìm trên bàn phím ẩn bàn phím (kết quả lọc ngay khi gõ).
+- **Lọc và tìm ở Giao dịch** (điện thoại): thẻ Tiền vào / Tiền ra chỉ hiển thị; dưới ô tìm là
+  `ChipRow`: chip "Lọc" mở sheet điều kiện khác (tài khoản, hạng mục, số tiền; không có loại),
+  vạch chia, rồi Tất cả · Tiền vào · Tiền ra · Chuyển khoản · Vay nợ. Điều kiện của sheet đang
+  bật hiện thành chip có × ở hàng dưới. Chạm ô tìm mở màn tìm: đầu trang, thẻ tổng, thanh tab
+  và nút + nhường chỗ (`data-hide-tab-bar`), ô tìm lên đầu kèm "Huỷ" (xoá chữ, đóng màn). Khi có
+  chữ, kết quả là một list phẳng, mới nhất trước: chữ khớp tô nền `warning/25`, bên phải ghi
+  ngày thay giờ (năm khác thì có năm); trên list là "N kết quả trong Tháng 10 · tổng …" và "Tìm
+  mọi tháng" (tải mọi giao dịch khi cần, `loadAllTransactionsAction`). Không có kết quả: nói đã
+  tìm gì, ở đâu, đang lọc gì, kèm "Bỏ lọc" và "Tìm mọi tháng". Desktop giữ bảng lọc bên trái,
+  kết quả tìm cũng là list phẳng như trên.
 - **Biểu đồ "Thu và chi theo tháng"** (Tổng quan): không có tooltip nổi; chạm một cột tháng (hoặc
   phím mũi tên, đây là radio group) để chọn, mặc định tháng này; hai dòng trong thẻ ghi "Tháng N"
   và "Thu … Chi …"; cột tháng đang chọn được tô nền nhạt, các cột giữ nguyên màu. Cột chi màu `chart-neutral`, không đỏ. Tháng ghi
