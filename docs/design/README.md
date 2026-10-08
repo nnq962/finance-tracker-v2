@@ -285,8 +285,9 @@ Trước khi báo xong một màn mới, kiểm tra:
   (dòng lãi suất "%" với "/tháng | /năm", dòng "Đến hạn …" tính sẵn gốc + lãi, hoặc lãi mỗi kỳ). Khi
   sửa, loại khoá lại nếu đã có lần thu hoặc trả.
 - **Ghi nhận thu / trả nợ** (`RecordDebtPaymentSheet`, cả khi sửa một lần): tiêu đề "Thu nợ" / "Trả nợ" /
-  "Sửa lần thu"; thẻ khoản nợ ở đầu (avatar, "Lan Anh · Tiền cọc phòng", "Còn nợ bạn …" / "Bạn còn nợ …", "gồm lãi" khi
-  có lãi); số tiền lớn (thu: "+" xanh, trả: "−"), chip "Toàn bộ · 1/2 · 1/3" của số còn lại thay cho gợi ý
+  "Sửa lần thu"; trên số tiền là người, như màn chuyển tiền của app ngân hàng: avatar `lg`, "Lan Anh trả
+  bạn" / "Bạn trả Chị Hà", ghi chú của khoản ("· tính cả lãi" khi có lãi); số tiền lớn (thu: "+" xanh,
+  trả: "−"), chip "Toàn bộ 3.500.000đ · 1/2 · 1/3" (chip Toàn bộ ghi luôn số còn lại) thay cho gợi ý
   theo chữ số, dòng "Sau lần này còn …" hoặc "✓ Tất toán khoản này"; vượt số còn lại thì báo ngay. Dòng
   "Vào tài khoản" / "Trả từ" (mặc định tài khoản của khoản vay nếu còn dùng; màn sâu chọn tài khoản),
   "Thời gian" (`TimeRows`, không trước ngày ghi khoản nợ), ghi chú; khi sửa có "Xoá lần thu này".

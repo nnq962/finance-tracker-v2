@@ -10,7 +10,6 @@ import { CurrencyInput } from "@/components/forms/currency-input"
 import { TimeRows } from "@/components/forms/time-rows"
 import { SettingsGroup, SettingsRow, settingsSeparatorClassName } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { FieldError, FieldLabel } from "@/components/ui/field"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { Account } from "@/lib/accounts/types"
@@ -39,8 +38,9 @@ type RecordDebtPaymentSheetProps = {
 
 /**
  * A collection or repayment of a debt, recorded or edited, laid out as the
- * other money forms: the debt it is for and what is left on it, the amount
- * large with all, half or a third of what is left a tap away and what it
+ * other money forms: who pays whom over the amount, as payment apps show
+ * the person, the amount large with all of what is left (how much it is on
+ * the chip), half or a third a tap away, and what it
  * leaves (or that it settles the debt), then rows for the account it came
  * into or left, when, and a note.
  */
@@ -135,8 +135,6 @@ function PaymentForm({
     : debt
   const { remainingAmount } = getPaymentMetrics(baseDebt, /^\d{4}-\d{2}-\d{2}$/.test(paidAt) ? paidAt : today)
   const account = eligibleAccounts.find((item) => item.id === accountId)
-  // What is left on the debt as it stands, this payment included when edited.
-  const leftNow = getPaymentMetrics(debt).remainingAmount
 
   const [picking, setPicking] = React.useState(false)
   usePageSheetScreen(picking ? { title: collecting ? "Vào tài khoản" : "Trả từ", onBack: () => setPicking(false) } : null)
@@ -212,20 +210,18 @@ function PaymentForm({
       ) : null}
 
       <fieldset disabled={pending} className={cn("flex min-w-0 flex-col gap-6 pb-4", picking && "hidden")}>
-        {/* The debt it is for, and what is left on it. */}
-        <Card className="flex-row items-center gap-3 px-4 py-3">
-          <ContactAvatar contactId={contact.id} initials={contact.initials} />
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium">{[contact.name, debt.note].filter(Boolean).join(" · ")}</p>
-            <p className="text-xs text-muted-foreground">
-              {collecting ? "Còn nợ bạn" : "Bạn còn nợ"} {formatCurrency(payment ? leftNow : remainingAmount, { signDisplay: "never" })}
-              {debt.hasInterest ? " (gồm lãi)" : ""}
-            </p>
-          </div>
-        </Card>
-
+        {/* Who pays whom, over the amount, as payment apps show the person above it; what is left is on "Toàn bộ". */}
         <div className="flex flex-col items-center gap-3">
-          <FieldLabel htmlFor="payment-amount" className="text-xs font-normal text-muted-foreground">
+          <div className="flex flex-col items-center pt-2 text-center">
+            <ContactAvatar contactId={contact.id} initials={contact.initials} size="lg" />
+            <p className="mt-3 text-base font-medium">{collecting ? `${contact.name} trả bạn` : `Bạn trả ${contact.name}`}</p>
+            {debt.note || debt.hasInterest ? (
+              <p className="text-sm text-muted-foreground">
+                {[debt.note, debt.hasInterest ? "tính cả lãi" : undefined].filter(Boolean).join(" · ")}
+              </p>
+            ) : null}
+          </div>
+          <FieldLabel htmlFor="payment-amount" className="sr-only">
             {collecting ? "Số tiền thu" : "Số tiền trả"}
           </FieldLabel>
           <CurrencyInput
@@ -258,7 +254,8 @@ function PaymentForm({
           >
             {SHARES.map((share) => (
               <ToggleGroupItem key={share.label} value={share.label}>
-                {share.label}
+                {/* All of it says how much that is: what is left on the debt. */}
+                {share.divisor === 1 ? `${share.label} ${formatCurrency(remainingAmount, { signDisplay: "never" })}` : share.label}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
