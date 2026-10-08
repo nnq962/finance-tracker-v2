@@ -41,6 +41,9 @@ export function DebtsDashboard({
   const debts = initialDebts
   const operations = React.useRef(new Map<string, string>())
   const [contactsOpen, setContactsOpen] = React.useState(false)
+  // From the contacts: a debt to show, and the person a new debt is with.
+  const [openRequest, setOpenRequest] = React.useState<{ debtId: string; key: number }>()
+  const [newDebtFor, setNewDebtFor] = React.useState<string | null>(null)
 
   // Keep the same request ID after a lost response; successful requests release it.
   async function execute<T>(key: string, action: (operationId: string) => Promise<{ success: true; data: T } | { success: false; error: string }>) {
@@ -122,6 +125,7 @@ export function DebtsDashboard({
         }
       />
       <DebtsView
+        openRequest={openRequest}
         initialSelectedDebtId={selectedDebtId}
         contacts={contacts}
         debts={debts}
@@ -160,6 +164,22 @@ export function DebtsDashboard({
         onAdd={addContact}
         onEdit={editContact}
         onDelete={deleteContact}
+        onOpenDebt={(debtId) => {
+          setContactsOpen(false)
+          setOpenRequest((current) => ({ debtId, key: (current?.key ?? 0) + 1 }))
+        }}
+        onNewDebt={(contactId) => setNewDebtFor(contactId)}
+      />
+      <AddDebtSheet
+        accounts={accounts}
+        contacts={contacts}
+        defaultContactId={newDebtFor ?? undefined}
+        open={newDebtFor !== null}
+        onOpenChange={(next) => {
+          if (!next) setNewDebtFor(null)
+        }}
+        onAddDebt={addDebt}
+        onAddContact={addContact}
       />
       <FloatingActions>
         {addDebtSheet(

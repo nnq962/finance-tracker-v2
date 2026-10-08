@@ -25,7 +25,7 @@ function getInterestLabel(debt: Debt) {
  * with interest that has neither shows its rate there instead of "Không hạn
  * trả", so it reads apart and the description keeps just its note.
  */
-function getDebtStatus(debt: Debt) {
+export function getDebtStatus(debt: Debt) {
   const { remainingAmount, paymentProgress } = getDebtMetrics(debt)
 
   if (debt.status === "settled" || remainingAmount <= 0) {

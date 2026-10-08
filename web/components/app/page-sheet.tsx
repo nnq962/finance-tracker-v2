@@ -54,7 +54,16 @@ export function PageSheetFooter({ className, style, ...props }: React.ComponentP
   )
 }
 
-type PageSheetScreen = { title: React.ReactNode; onBack: () => void }
+type PageSheetScreen = {
+  title: React.ReactNode
+  onBack: () => void
+  /**
+   * On the right of the bar, in place of the sheet's own action, e.g. a
+   * pencil to edit what the screen shows. Taken when the screen opens or its
+   * title changes, so its handlers should only call stable setters.
+   */
+  action?: React.ReactNode
+}
 
 const PageSheetScreenContext = React.createContext<((screen: PageSheetScreen | null) => void) | null>(null)
 
@@ -63,7 +72,9 @@ const PageSheetScreenContext = React.createContext<((screen: PageSheetScreen | n
  * form's "pick a category" list): while `screen` is set, the bar shows its
  * title and a ‹ that calls its `onBack`, and the content opens at its top;
  * back on the first screen, the bar is the sheet's own again and the content
- * is where it was left. The caller shows the deeper screen's content itself.
+ * is where it was left. The sheet's action and footer are hidden meanwhile;
+ * the screen may bring its own action. The caller shows the deeper screen's
+ * content itself.
  */
 export function usePageSheetScreen(screen: PageSheetScreen | null) {
   const setScreen = React.useContext(PageSheetScreenContext)
@@ -74,9 +85,13 @@ export function usePageSheetScreen(screen: PageSheetScreen | null) {
   })
   const title = screen?.title ?? null
   const open = screen !== null
+  const action = React.useRef(screen?.action)
+  React.useEffect(() => {
+    action.current = screen?.action
+  })
   React.useEffect(() => {
     if (!setScreen || !open) return
-    setScreen({ title, onBack: () => onBack.current?.() })
+    setScreen({ title, onBack: () => onBack.current?.(), action: action.current })
     return () => setScreen(null)
   }, [setScreen, open, title])
 }
@@ -210,7 +225,7 @@ export function PageSheet({
             <div className="min-w-0">
               <DrawerTitle className={cn("truncate text-center text-base", hideTitle && !screen && "sr-only")}>{shownTitle}</DrawerTitle>
             </div>
-            <div className="flex justify-end">{screen ? null : action}</div>
+            <div className="flex justify-end">{screen ? (screen.action ?? null) : action}</div>
           </div>
         </div>
       </DrawerContent>

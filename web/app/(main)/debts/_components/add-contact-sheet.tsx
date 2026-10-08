@@ -1,52 +1,88 @@
 "use client"
 
 import * as React from "react"
-import { PencilIcon, PlusIcon, SaveIcon } from "lucide-react"
-import { FormSection } from "@/components/app/form-section"
+import { SaveIcon } from "lucide-react"
+
 import { PageSheet, PageSheetFooter } from "@/components/app/page-sheet"
+import { SettingsGroup, settingsSeparatorClassName } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { RequiredMark } from "@/components/forms/required-mark"
-import { Input } from "@/components/ui/input"
+import { FieldError } from "@/components/ui/field"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { getInitials } from "@/lib/debts/initials"
 import { actionErrorMessage } from "@/lib/stale-deploy"
+import { cn } from "@/lib/utils"
+
 import type { Contact, NewContact } from "../_types/debt"
+import { ContactAvatar } from "./contact-avatar"
+
+/** The relationships most people are, a tap away; any other is typed. */
+const RELATIONSHIPS = ["Bạn bè", "Gia đình", "Đồng nghiệp", "Hàng xóm"]
 
 type AddContactSheetProps = {
+  /** The person being edited; none adds one. */
   contact?: Contact
-  open?: boolean
-  onOpenChange?: (open: boolean) => void
-  returnFocusRef?: React.RefObject<HTMLButtonElement | null>
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  returnFocusRef?: React.RefObject<HTMLElement | null>
   onAddContact: (contact: NewContact) => Promise<unknown>
 }
 
-export function AddContactSheet({ contact, onAddContact, open: controlledOpen, onOpenChange, returnFocusRef }: AddContactSheetProps) {
-  const [internalOpen, setInternalOpen] = React.useState(false)
+/** A field typed in place on a row of the group, its label on the left, as iOS settings do. */
+function InlineRow({ id, label, invalid, children }: { id: string; label: string; invalid?: boolean; children: React.ReactNode }) {
+  return (
+    <li className={cn("flex min-h-16 items-center gap-3 px-4 py-3", settingsSeparatorClassName())}>
+      <label htmlFor={id} className={cn("shrink-0 text-sm font-medium", invalid && "text-destructive")}>
+        {label}
+      </label>
+      {children}
+    </li>
+  )
+}
+
+const inlineInputClassName =
+  "min-w-0 flex-1 bg-transparent text-right text-sm outline-none placeholder:text-muted-foreground"
+
+/**
+ * A person of the debts' contacts, added or edited as rows of a group: their
+ * avatar at the top, its initials following the name as it is typed; the
+ * name; the relationship, with the usual ones as chips; a phone number to
+ * call them from their screen; and a note.
+ */
+export function AddContactSheet({ contact, onAddContact, open, onOpenChange, returnFocusRef }: AddContactSheetProps) {
   const [pending, setPending] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
-  const submitting = React.useRef(false)
-  const open = controlledOpen ?? internalOpen
-  const setOpen = onOpenChange ?? setInternalOpen
-  const id = React.useId()
   const [nameError, setNameError] = React.useState<string | null>(null)
+  const [name, setName] = React.useState(contact?.name ?? "")
+  const [relationship, setRelationship] = React.useState(contact?.relationship ?? "")
+  const submitting = React.useRef(false)
+  const id = React.useId()
+
+  // Each opening starts from the person as saved, or empty.
+  const [wasOpen, setWasOpen] = React.useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) {
+      setErrorMessage(null)
+      setNameError(null)
+      setName(contact?.name ?? "")
+      setRelationship(contact?.relationship ?? "")
+    }
+  }
+
+  const fitNote = (area: HTMLTextAreaElement) => {
+    area.style.height = "auto"
+    area.style.height = `${area.scrollHeight}px`
+  }
 
   return (
     <PageSheet
-      title={contact ? "Sửa người liên hệ" : "Thêm người vào danh bạ"}
+      title={contact ? "Sửa người" : "Thêm người"}
       disabled={pending}
       open={open}
       onOpenChange={(nextOpen) => {
         if (submitting.current) return
-        if (nextOpen) {
-          setErrorMessage(null)
-          setNameError(null)
-        }
-        setOpen(nextOpen)
+        onOpenChange(nextOpen)
       }}
-      trigger={controlledOpen === undefined ? (
-        <Button type="button" variant="ghost" size={contact ? "icon-sm" : "sm"} aria-label={contact ? `Sửa ${contact.name}` : undefined}>
-          {contact ? <PencilIcon /> : <><PlusIcon />Thêm người</>}
-        </Button>
-      ) : undefined}
       onCloseAutoFocus={(event) => {
         if (returnFocusRef?.current) {
           event.preventDefault()
@@ -54,52 +90,135 @@ export function AddContactSheet({ contact, onAddContact, open: controlledOpen, o
         }
       }}
     >
-      <form noValidate className="flex flex-1 flex-col" aria-busy={pending} onSubmit={async (event) => {
-        event.preventDefault()
-        if (submitting.current) return
-        const form = event.currentTarget
-        const data = new FormData(form)
-        const name = String(data.get("name") || "").trim()
-        if (!name) {
-          setNameError("Nhập họ và tên.")
-          const input = form.elements.namedItem("name") as HTMLInputElement
-          input.focus()
-          return
-        }
-        submitting.current = true
-        setPending(true)
-        setErrorMessage(null)
-        try {
-          await onAddContact({
-            name,
-            relationship: String(data.get("relationship") || "").trim() || undefined,
-          })
-          setOpen(false)
-        } catch (error) {
-          setErrorMessage(actionErrorMessage(error, "Không thể lưu người liên hệ."))
-        } finally {
-          submitting.current = false
-          setPending(false)
-        }
-      }}>
-        <fieldset disabled={pending} className="min-w-0 pb-4">
-          <FormSection>
-            <FieldGroup>
-              <Field data-invalid={Boolean(nameError) || undefined}>
-                <FieldLabel htmlFor={`${id}-name`}>Họ và tên <RequiredMark /></FieldLabel>
-                <Input id={`${id}-name`} name="name" defaultValue={contact?.name} required maxLength={80} autoComplete="name" aria-invalid={Boolean(nameError) || undefined} onInput={() => setNameError(null)} />
-                {nameError ? <FieldError>{nameError}</FieldError> : null}
-              </Field>
-              <Field>
-                <FieldLabel htmlFor={`${id}-relationship`}>Mối quan hệ</FieldLabel>
-                <Input id={`${id}-relationship`} name="relationship" defaultValue={contact?.relationship} maxLength={80} />
-              </Field>
-            </FieldGroup>
-          </FormSection>
+      <form
+        noValidate
+        className="flex flex-1 flex-col"
+        aria-busy={pending}
+        onSubmit={async (event) => {
+          event.preventDefault()
+          if (submitting.current) return
+          const data = new FormData(event.currentTarget)
+          if (!name.trim()) {
+            setNameError("Nhập tên.")
+            document.getElementById(`${id}-name`)?.focus()
+            return
+          }
+          submitting.current = true
+          setPending(true)
+          setErrorMessage(null)
+          try {
+            await onAddContact({
+              name: name.trim(),
+              relationship: relationship.trim() || undefined,
+              phone: String(data.get("phone") || "").trim() || undefined,
+              note: String(data.get("note") || "").trim() || undefined,
+            })
+            onOpenChange(false)
+          } catch (error) {
+            setErrorMessage(actionErrorMessage(error, "Không thể lưu người liên hệ."))
+          } finally {
+            submitting.current = false
+            setPending(false)
+          }
+        }}
+      >
+        <fieldset disabled={pending} className="flex min-w-0 flex-col gap-6 pb-4">
+          <div className="flex justify-center pt-2">
+            {/* The initials the person will have, from the name being typed. */}
+            <ContactAvatar contactId={contact?.id} initials={getInitials(name)} size="lg" />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <SettingsGroup>
+              <InlineRow id={`${id}-name`} label="Tên" invalid={Boolean(nameError)}>
+                <input
+                  id={`${id}-name`}
+                  name="name"
+                  value={name}
+                  onChange={(event) => {
+                    setName(event.target.value)
+                    setNameError(null)
+                  }}
+                  placeholder="Họ và tên"
+                  maxLength={80}
+                  autoComplete="off"
+                  required
+                  aria-invalid={Boolean(nameError) || undefined}
+                  className={inlineInputClassName}
+                />
+              </InlineRow>
+              <InlineRow id={`${id}-relationship`} label="Mối quan hệ">
+                <input
+                  id={`${id}-relationship`}
+                  name="relationship"
+                  value={relationship}
+                  onChange={(event) => setRelationship(event.target.value)}
+                  placeholder="Tuỳ chọn"
+                  maxLength={80}
+                  autoComplete="off"
+                  className={inlineInputClassName}
+                />
+              </InlineRow>
+              {/* The usual ones, under their row with no line between. */}
+              <li className="px-4 pb-3">
+                <ToggleGroup
+                  type="single"
+                  size="sm"
+                  className="flex-wrap"
+                  value={RELATIONSHIPS.includes(relationship.trim()) ? relationship.trim() : ""}
+                  onValueChange={(value) => setRelationship(value)}
+                  aria-label="Chọn nhanh mối quan hệ"
+                >
+                  {RELATIONSHIPS.map((item) => (
+                    <ToggleGroupItem key={item} value={item}>
+                      {item}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              </li>
+              <InlineRow id={`${id}-phone`} label="Số điện thoại">
+                <input
+                  id={`${id}-phone`}
+                  name="phone"
+                  type="tel"
+                  inputMode="tel"
+                  defaultValue={contact?.phone}
+                  placeholder="Tuỳ chọn"
+                  maxLength={30}
+                  autoComplete="off"
+                  className={inlineInputClassName}
+                />
+              </InlineRow>
+              {/* The note typed in place, as tall as a row (64) and growing with what is written. */}
+              <li className={cn("flex min-h-16 items-center px-4 py-3", settingsSeparatorClassName())}>
+                <label htmlFor={`${id}-note`} className="sr-only">
+                  Ghi chú
+                </label>
+                <textarea
+                  // Fitted once mounted: an edited person's note of several lines shows whole.
+                  ref={(area) => {
+                    if (area) fitNote(area)
+                  }}
+                  id={`${id}-note`}
+                  name="note"
+                  rows={1}
+                  defaultValue={contact?.note}
+                  placeholder="Ghi chú (tuỳ chọn)"
+                  maxLength={500}
+                  onInput={(event) => fitNote(event.currentTarget)}
+                  className="block min-h-6 w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                />
+              </li>
+            </SettingsGroup>
+            {nameError ? <FieldError className="px-4">{nameError}</FieldError> : null}
+          </div>
         </fieldset>
         <PageSheetFooter>
           {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
-          <Button type="submit" className="w-full" disabled={pending}><SaveIcon />{pending ? "Đang lưu…" : contact ? "Lưu thay đổi" : "Lưu người liên hệ"}</Button>
+          <Button type="submit" className="w-full" disabled={pending}>
+            <SaveIcon />
+            {pending ? "Đang lưu…" : contact ? "Lưu thay đổi" : "Lưu người"}
+          </Button>
         </PageSheetFooter>
       </form>
     </PageSheet>

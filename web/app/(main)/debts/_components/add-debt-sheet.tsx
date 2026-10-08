@@ -85,6 +85,8 @@ type AddDebtSheetProps = {
   onAddDebt: (debt: NewDebt) => Promise<void>
   /** Lets the form add a person on the spot; the new contact is then selected. */
   onAddContact?: (contact: NewContact) => Promise<Contact>
+  /** A new debt's person, chosen ahead: opened from that person's screen in the contacts. */
+  defaultContactId?: string
   /** Controlled mode (no trigger), e.g. opened from an actions menu. */
   open?: boolean
   onOpenChange?: (open: boolean) => void
@@ -98,6 +100,7 @@ export function AddDebtSheet({
   contacts,
   onAddDebt,
   onAddContact,
+  defaultContactId,
   open: controlledOpen,
   onOpenChange,
   returnFocusRef,
@@ -112,7 +115,7 @@ export function AddDebtSheet({
   const [amount, setAmount] = React.useState<number | null>(debt?.amount ?? null)
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   const [wasOpen, setWasOpen] = React.useState(open)
-  const [contactId, setContactId] = React.useState(debt?.contactId ?? "")
+  const [contactId, setContactId] = React.useState(debt?.contactId ?? defaultContactId ?? "")
   // For the written-out dates under the date inputs.
   const [recordedAt, setRecordedAt] = React.useState(debt?.recordedAt ?? todayDate())
   const [dueAt, setDueAt] = React.useState(debt?.dueAt ?? "")
@@ -132,7 +135,7 @@ export function AddDebtSheet({
       setDirection(debt?.direction ?? "lent")
       setRecordingMode(debt?.recordingMode ?? "cash-flow")
       setHasInterest(debt?.hasInterest ?? false)
-      setContactId(debt?.contactId ?? "")
+      setContactId(debt?.contactId ?? defaultContactId ?? "")
       setRecordedAt(debt?.recordedAt ?? todayDate())
       setDueAt(debt?.dueAt ?? "")
       setInterestRate(debt?.interestRate?.toString() ?? "")

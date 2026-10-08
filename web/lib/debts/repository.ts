@@ -7,6 +7,7 @@ import { lockAccounts, setBalance, shiftBalance, type LockedAccount } from "@/li
 import { getDb } from "@/lib/db/client"
 import type { DB } from "@/lib/db/types"
 import { getPaymentMetrics, todayDate, updateDebtPayment } from "./calculations"
+import { getInitials } from "./initials"
 import type { Contact, Debt, DebtPayment, NewDebt } from "./types"
 import { assertDebtId, DebtValidationError, MAX_MONEY, parseContact, parseDebt, parsePayment } from "./validation"
 
@@ -45,10 +46,6 @@ async function alreadyApplied(trx: Trx, userId: string, operationId: string, has
 }
 
 const optional = (value: string | undefined) => value || null
-
-function getInitials(name: string) {
-  return name.split(/\s+/).slice(-2).map((part) => part[0]).join("").toLocaleUpperCase("vi-VN")
-}
 
 type ContactRow = { id: string; name: string; initials: string; relationship: string | null; phone: string | null; note: string | null }
 
@@ -177,10 +174,10 @@ export async function createContact(userId: string, input: unknown, operationId:
 export async function updateContact(userId: string, contactId: string, input: unknown): Promise<Contact> {
   assertDebtId(contactId)
   const values = parseContact(input)
-  // Avatar initials remain unchanged when editing contact details.
+  // A new name brings its initials, as the form's avatar shows while typing.
   const row = await getDb()
     .updateTable("contacts")
-    .set({ name: values.name, relationship: optional(values.relationship), phone: optional(values.phone), note: optional(values.note) })
+    .set({ name: values.name, initials: getInitials(values.name), relationship: optional(values.relationship), phone: optional(values.phone), note: optional(values.note) })
     .where("userId", "=", userId)
     .where("id", "=", contactId)
     .returning(contactColumns)

@@ -55,6 +55,8 @@ function useHasSidePanel() {
 }
 
 type DebtsViewProps = {
+  /** A debt to show, asked from outside the list (the contacts); a new `key` asks again for the same one. */
+  openRequest?: { debtId: string; key: number }
   onChangeDebt: (id: string, values: NewDebt | null) => Promise<void>
   initialSelectedDebtId?: string
   accounts: Account[]
@@ -75,6 +77,7 @@ const sections: Array<{ direction: DebtDirection; label: string }> = [
 ]
 
 export function DebtsView({
+  openRequest,
   onChangeDebt,
   contacts,
   initialSelectedDebtId,
@@ -143,6 +146,15 @@ export function DebtsView({
       }),
     )
   }
+
+  // Shown as a tap on its row would: the sheet on phones, the panel beside the list on wide screens.
+  const selectDebtRef = React.useRef(selectDebt)
+  React.useEffect(() => {
+    selectDebtRef.current = selectDebt
+  })
+  React.useEffect(() => {
+    if (openRequest) selectDebtRef.current(openRequest.debtId)
+  }, [openRequest])
 
   function getDetailProps(debt: Debt, contact: Contact) {
     return {

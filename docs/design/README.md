@@ -155,7 +155,7 @@ component ở đó là cả app đổi theo.
 | `PageDots` | Chỉ báo trang; chấm hiện tại kéo dài thành vạch |
 | `Carousel` | Thẻ vuốt ngang, bắt từng thẻ, kèm `PageDots` |
 | `SwipeRow` | Vuốt trái để lộ một hành động (mặc định Xoá); dùng qua `SettingsRow swipeAction` để dòng vuốt giống mọi dòng khác |
-| `usePageSheetScreen` | Màn sâu hơn trong một `PageSheet`, mở từ bên trong (danh sách hạng mục, danh sách tài khoản của form giao dịch): khi đặt `{ title, onBack }`, thanh trên đổi tiêu đề và nút trái thành ‹, nút phải và chân sheet ẩn, nội dung về đầu; quay lại thì thanh trở lại và nội dung về chỗ cũ. Nơi gọi tự hiện nội dung màn sâu và ẩn (không gỡ) màn đầu để giữ những gì đã nhập |
+| `usePageSheetScreen` | Màn sâu hơn trong một `PageSheet`, mở từ bên trong (danh sách hạng mục, danh sách tài khoản của form giao dịch): khi đặt `{ title, onBack }`, thanh trên đổi tiêu đề và nút trái thành ‹, nút phải và chân sheet ẩn, nội dung về đầu; quay lại thì thanh trở lại và nội dung về chỗ cũ. Nơi gọi tự hiện nội dung màn sâu và ẩn (không gỡ) màn đầu để giữ những gì đã nhập. Màn sâu có thể mang nút riêng ở bên phải thanh (`action`, như bút chì sửa một người trong Danh bạ); nút lấy lúc màn mở hoặc đổi tiêu đề, nên chỉ gọi setter ổn định. Hook phải gọi từ component nằm trong sheet |
 | `SettingsRow checked` | Dòng của list chọn như iOS: ✓ ở cuối khi đang chọn, không có gì khi không, không có mũi tên; chạm là chọn (`onClick`), trình đọc màn hình nghe nút bật/tắt (`aria-pressed`). Dùng cho các màn chọn trong sheet lọc Giao dịch |
 | `SettingsRow unread` | Dòng chưa đọc: chấm `transfer` 12px trên góc phải trên của ô icon như chấm trên icon app, viền 2px màu thẻ cắt nó khỏi ô (dòng không icon: chấm 8px trước tiêu đề), tiêu đề đậm 600; trình đọc màn hình nghe thêm "chưa đọc". Đọc rồi thì như mọi dòng. Dùng cho Thông báo; giờ ở `value` theo `formatMomentLabel` (hôm nay "14:05", "Hôm qua", cũ hơn "05/10") |
 | `SettingsRow collapsed` | Dòng gập lại (`true`) hay mở ra (`false`): chiều cao trượt trong 300ms và mờ dần, nên các dòng bên dưới dịch dần thay vì nhảy; khi gập thì `inert`. Cho dòng hiện khi người dùng yêu cầu (nhiệm vụ còn lại sau "Xem nhiệm vụ") và dòng rời đi khi xong (nhiệm vụ vừa nhận thưởng). Không truyền với dòng luôn hiện. Đường kẻ tự theo: dòng đầu tiên đang hiện không có kẻ phía trên |
@@ -264,6 +264,16 @@ Trước khi báo xong một màn mới, kiểm tra:
   `lib/search-text.ts`). Rồi một nhóm dòng: Tên (gõ tại chỗ, canh phải; tự lấy tên ngân hàng, ví,
   hoặc "Tiền mặt", tới khi người dùng tự gõ), Số dư âm (công tắc, "Đang nợ, thấu chi"; bật thì số
   đỏ có dấu −), Bắt đầu từ (`TimeRows` không chip), ghi chú gõ tại chỗ. Lỗi hiện tại chỗ.
+- **Danh bạ** (`ContactsSheet`, Vay nợ): nút người + trên thanh để thêm; ô "Tìm người" (tên, mối quan
+  hệ, số điện thoại; dấu theo `searchKey`); nhóm "Đang có khoản" và "Không có khoản", theo tên A–Z;
+  mỗi dòng là avatar, tên, mối quan hệ, bên phải số còn lại sau khi bù hai chiều ("+3.500.000đ Cần
+  thu" xanh, "−800.000đ Cần trả", "Quá hạn" đỏ khi có khoản trễ). Chạm một người mở màn sâu: avatar
+  `lg`, tên, mối quan hệ · số điện thoại, `FlowTiles` Cần thu / Cần trả với người đó, "Khoản đang mở"
+  (chạm thì đóng sheet và mở khoản đó như chạm dòng ở trang), "Đã tất toán" gập, ghi chú, "Ghi khoản
+  mới với …" (form khoản nợ chọn sẵn người), "Gọi …" khi có số, "Xoá người" (mờ kèm chú thích khi còn
+  khoản; xoá có hoàn tác); bút chì trên thanh để sửa. Thêm / sửa người (`AddContactSheet`): avatar xem
+  trước, chữ cái theo tên đang gõ (lưu cũng cập nhật chữ cái); dòng gõ tại chỗ Tên, Mối quan hệ (chip
+  Bạn bè · Gia đình · Đồng nghiệp · Hàng xóm), Số điện thoại, ghi chú.
 - **Chi tiết tài khoản** (`AccountSheet`), cùng kiểu biên lai với chi tiết giao dịch: thanh "Chi tiết
   tài khoản" có bút chì tròn để sửa (mờ khi đã ngừng dùng); đầu sheet là logo `lg`, tên, số dư `xl`
   ở giữa (âm thì đỏ, ngừng dùng thì mờ), dòng phụ loại · ngân hàng (bỏ phần tên đã nói) và "Đã
