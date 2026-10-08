@@ -133,22 +133,29 @@ export function CurrencyInput({
 
   if (variant === "hero") {
     const shown = formatInputValue(value)
-    // The field as wide as what it holds, so the sign, the number and "đ" stay centred together.
-    const digitCount = (shown || placeholder).replace(/\D/g, "").length || 1
-    const separatorCount = shown.length - shown.replace(/\D/g, "").length
 
     return (
       <>
         <div
           className={cn(
-            "flex max-w-full items-baseline justify-center text-[40px] leading-tight font-semibold tracking-tight tabular-nums",
+            "flex max-w-full items-baseline justify-center leading-tight font-semibold tracking-tight tabular-nums",
+            // Smaller as the number grows, so tens of billions still fit a phone's width.
+            shown.length > 15 ? "text-[26px]" : shown.length > 11 ? "text-[32px]" : "text-[40px]",
             invalid ? "text-destructive" : tone === "income" && value ? "text-income" : undefined,
           )}
           // A tap anywhere on the amount brings the keyboard up.
           onClick={() => inputRef.current?.focus()}
         >
           {sign && value ? <span aria-hidden="true">{sign}</span> : null}
-          <input
+          {/* The field exactly as wide as what it holds, so the sign, the number
+              and "đ" stay centred together, typing or not: an invisible copy of
+              the text sizes the cell the field fills. An estimate fell short on
+              Safari, which then scrolled the number sideways once typing ended. */}
+          <span className="inline-grid">
+            <span aria-hidden="true" className="invisible col-start-1 row-start-1 pr-px whitespace-pre">
+              {shown || placeholder}
+            </span>
+            <input
             ref={inputRef}
             id={id}
             type="text"
@@ -160,10 +167,11 @@ export function CurrencyInput({
             placeholder={placeholder}
             required={required}
             aria-invalid={invalid || undefined}
-            // As wide as what it holds; an estimate where the browser cannot size it to its content.
-            style={{ "--amount-width": `calc(${digitCount}ch + ${separatorCount * 0.3}ch)` } as React.CSSProperties}
-            className="w-(--amount-width) min-w-[1ch] bg-transparent text-center caret-foreground outline-none field-sizing-content placeholder:text-muted-foreground/40 supports-[field-sizing:content]:w-auto"
+            // size=1: no width of its own, so the copy alone sizes the cell.
+            size={1}
+            className="col-start-1 row-start-1 w-full min-w-0 bg-transparent p-0 text-center caret-foreground outline-none placeholder:text-muted-foreground/40"
           />
+          </span>
           <span aria-hidden="true" className="text-[0.6em] opacity-50">
             đ
           </span>
