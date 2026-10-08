@@ -6,7 +6,6 @@ import Image from "next/image"
 import { SettingsIcon } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
-import { Badge } from "@/components/ui/badge"
 import {
   Sidebar,
   SidebarContent,
@@ -49,10 +48,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
               >
                 <Image src="/icon.svg" alt="" width={32} height={32} className="size-8 shrink-0" />
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <span className="truncate font-medium">Finance Tracker</span>
-                    <Badge variant="secondary">Beta</Badge>
-                  </div>
+                  {/* Beta as part of the name, as beta builds of apps are
+                      named: a pill beside it left the name no room in the
+                      16rem sidebar and cut it to "Finance Track…". */}
+                  <span className="truncate font-medium">
+                    Finance Tracker <span className="font-normal text-muted-foreground">Beta</span>
+                  </span>
                   <span className="truncate text-xs">
                     Tài chính cá nhân · v{process.env.NEXT_PUBLIC_APP_VERSION}
                   </span>

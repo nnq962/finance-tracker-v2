@@ -9,7 +9,7 @@ import { getRecentTransactionsByAccount } from "@/lib/transactions/repository"
 import { AccountList } from "./_components/account-list"
 import { AddAccountButton } from "./_components/add-account-button"
 import { BalanceHero } from "./_components/balance-hero"
-import { BudgetLayout } from "./_components/budget-layout"
+import { BudgetLayout, budgetPageClassName } from "./_components/budget-layout"
 
 export default async function AccountsPage() {
   const { data: [accounts, recentTransactions, categoryGroups] } = await loadWithSession((user) =>
@@ -24,7 +24,7 @@ export default async function AccountsPage() {
   const balanceSummary = getBalanceSummary(accounts)
 
   return (
-    <Page>
+    <Page className={budgetPageClassName}>
       <PageHeader
         title="Tài khoản"
         actions={<AddAccountButton />}

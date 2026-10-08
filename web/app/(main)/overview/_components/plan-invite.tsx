@@ -30,7 +30,6 @@ export function PlanInvite({ planState, checkoutEnabled, paymentOutcome, initial
           title={`Nâng cấp ${plans.pro.label}`}
           description={`${plans.pro.aiMonthlyLimit} lượt AI mỗi tháng`}
           onClick={() => setOpen(true)}
-          className="lg:w-md lg:shrink-0"
         />
       ) : null}
 

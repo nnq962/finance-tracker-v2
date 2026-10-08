@@ -105,6 +105,8 @@ export function SettingsView({
 
   const open = (screen: Screen) => setSheetScreen(screen)
   const isPro = planState.plan === "pro"
+  // The design catalogue, like its page, is on the dev server only.
+  const showDesign = process.env.NODE_ENV !== "production"
 
   const renderScreen = (screen: Screen) => {
     switch (screen) {
@@ -146,9 +148,10 @@ export function SettingsView({
 
   return (
     <>
-      {/* From md up the groups pair up across the full width, the app
-          group last. */}
-      <div className="grid items-start gap-6 md:grid-cols-2 md:gap-8">
+      {/* One column at every width, as native settings are, so the groups
+          keep their order down to signing out. From md up it is capped and
+          stays left, in line with the page title. */}
+      <div className="grid gap-6 md:max-w-2xl md:gap-8">
         {/* The person first, as in native settings: a larger avatar, the plan beside. */}
         <SettingsGroup>
           <SettingsRow
@@ -173,25 +176,6 @@ export function SettingsView({
         </SettingsGroup>
 
         <AiQuotaGroup planState={planState} />
-
-        {adminData ? (
-          <SettingsGroup title="Quản trị">
-            <SettingsRow
-              icon={ShieldCheckIcon}
-              tone="violet"
-              title="Người dùng & gói"
-              value={String(adminData.users.length)}
-              onClick={() => open("admin")}
-            />
-            {/* A tool for checking speech recognition on a device, not for users. */}
-            <SettingsRow
-              icon={MicIcon}
-              tone="pink"
-              title="Thử giọng nói"
-              onClick={() => open("voice")}
-            />
-          </SettingsGroup>
-        ) : null}
 
         <SettingsGroup title="Chung">
           <SettingsRow
@@ -221,7 +205,8 @@ export function SettingsView({
           <SettingsRow
             icon={SmartphoneIcon}
             tone="cyan"
-            title="Thiết bị nhận thông báo"
+            // The group's caption already says THÔNG BÁO; the screen keeps the full name.
+            title="Thiết bị"
             value={devices.devices.length > 0 ? String(devices.devices.length) : "Chưa có"}
             onClick={() => open("devices")}
           />
@@ -243,11 +228,35 @@ export function SettingsView({
             onClick={openWelcome}
           />
           <InstallAppRow />
-          {/* The design catalogue, like its page, is on the dev server only. */}
-          {process.env.NODE_ENV === "production" ? null : (
-            <SettingsRow icon={SwatchBookIcon} tone="neutral" title="Thiết kế" onClick={() => router.push("/design")} />
-          )}
         </SettingsGroup>
+
+        {/* Tools for the people running the app, after the user's own
+            settings: the admin's, and on the dev server the design catalogue. */}
+        {adminData || showDesign ? (
+          <SettingsGroup title={adminData ? "Quản trị" : "Nhà phát triển"}>
+            {adminData ? (
+              <>
+                <SettingsRow
+                  icon={ShieldCheckIcon}
+                  tone="violet"
+                  title="Người dùng & gói"
+                  value={String(adminData.users.length)}
+                  onClick={() => open("admin")}
+                />
+                {/* A tool for checking speech recognition on a device, not for users. */}
+                <SettingsRow
+                  icon={MicIcon}
+                  tone="pink"
+                  title="Thử giọng nói"
+                  onClick={() => open("voice")}
+                />
+              </>
+            ) : null}
+            {showDesign ? (
+              <SettingsRow icon={SwatchBookIcon} tone="neutral" title="Thiết kế" onClick={() => router.push("/design")} />
+            ) : null}
+          </SettingsGroup>
+        ) : null}
 
         {/* Signing out last and alone, as in native settings, with the version under it. */}
         <SettingsGroup footer={<span className="block text-center">Finance Tracker {process.env.NEXT_PUBLIC_APP_VERSION} · Beta</span>}>
