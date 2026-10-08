@@ -57,20 +57,29 @@ export function TimeRows({
 
   return (
     <>
+      {/* Only the value is the button: a whole-row button greyed the full
+          width when pressed or hovered, its edge right on the chips below. */}
       <SettingsRow
-        id="transaction-date-row"
         title="Thời gian"
-        value={
-          <span className={cn("flex items-center gap-1", invalid && "text-destructive")}>
+        action={
+          <button
+            id="transaction-date-row"
+            type="button"
+            aria-expanded={open}
+            aria-label={`Thời gian: ${timeLabel(date, time, today)}. Chọn ngày giờ`}
+            onClick={() => setOpen((current) => !current)}
+            className={cn(
+              "-mr-2 inline-flex h-11 items-center gap-1 rounded-full px-2 text-sm text-muted-foreground outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/30 active:bg-muted",
+              invalid && "text-destructive",
+            )}
+          >
             {timeLabel(date, time, today)}
             <ChevronDownIcon
               aria-hidden="true"
               className={cn("size-4 transition-transform motion-reduce:transition-none", open && "rotate-180")}
             />
-          </span>
+          </button>
         }
-        chevron={false}
-        onClick={() => setOpen((current) => !current)}
       />
       {/* No divider: the chips and the fields belong to the row above. The
           same 24px above the chips (from the row's text, the row keeping its
