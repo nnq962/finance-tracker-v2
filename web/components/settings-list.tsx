@@ -308,9 +308,13 @@ function SettingsRow({
     row
   )
 
-  if (collapsed === undefined) return <li className={settingsSeparatorClassName()}>{body}</li>
+  return <RowItem collapsed={collapsed}>{body}</RowItem>
+}
 
-  // As Collapse does, on the row itself so the list stays one list.
+/** A row's place in the list, with the divider above it; `collapsed` folds it as Collapse does, on the row itself so the list stays one list. */
+function RowItem({ collapsed, children }: { collapsed?: boolean; children: React.ReactNode }) {
+  if (collapsed === undefined) return <li className={settingsSeparatorClassName()}>{children}</li>
+
   return (
     <li
       data-collapsed={collapsed || undefined}
@@ -321,8 +325,59 @@ function SettingsRow({
         collapsed ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr]",
       )}
     >
-      <div className="min-h-0 overflow-hidden">{body}</div>
+      <div className="min-h-0 overflow-hidden">{children}</div>
     </li>
+  )
+}
+
+/**
+ * A field set in place on a row of a group, as iOS settings do: the label on
+ * the left (with an icon and a description, as SettingsRow has them), the
+ * control at the end. A field typed in place (InlineInput, CurrencyInput
+ * `inline`) fills the row up to the label, so a tap anywhere there brings the
+ * keyboard up; a Stepper or chips sit at the end. `htmlFor` ties the label to
+ * a field; leave it out for a control that names itself.
+ */
+function SettingsFieldRow({
+  htmlFor,
+  icon,
+  tone,
+  title,
+  description,
+  invalid = false,
+  collapsed,
+  children,
+}: {
+  htmlFor?: string
+  icon?: LucideIcon
+  tone?: IconTileTone
+  title: React.ReactNode
+  /** One line under the label, e.g. what the field counts in. */
+  description?: React.ReactNode
+  /** The label in red, for the field's error under the group. */
+  invalid?: boolean
+  /** As SettingsRow's: folds the row away (true) or out (false). */
+  collapsed?: boolean
+  children: React.ReactNode
+}) {
+  const Label = htmlFor ? "label" : "span"
+  return (
+    <RowItem collapsed={collapsed}>
+      <div className="flex min-h-16 items-center gap-3 px-4 py-3">
+        {icon ? (
+          <span data-slot="item-media" className="flex shrink-0">
+            <IconTile icon={icon} tone={tone} size="sm" />
+          </span>
+        ) : null}
+        {/* The control keeps its width (a field at least 64), the label gives way. */}
+        <Label htmlFor={htmlFor} className="flex min-w-0 shrink flex-col gap-0.5">
+          <span className={cn("text-sm font-medium", invalid && "text-destructive")}>{title}</span>
+          {/* Clamped rather than truncated: a long description gives way instead of widening the card. */}
+          {description ? <span className="line-clamp-1 text-xs text-muted-foreground">{description}</span> : null}
+        </Label>
+        <div className="flex min-w-fit flex-1 items-center justify-end">{children}</div>
+      </div>
+    </RowItem>
   )
 }
 
@@ -450,4 +505,4 @@ function SettingsGroupSkeleton({
   )
 }
 
-export { SettingsGroup, SettingsGroupSkeleton, SettingsRow, SettingsRowSkeleton, pressableRow }
+export { SettingsFieldRow, SettingsGroup, SettingsGroupSkeleton, SettingsRow, SettingsRowSkeleton, pressableRow }

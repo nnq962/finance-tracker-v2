@@ -10,6 +10,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group"
 import { AmountSuggestions } from "@/components/forms/amount-suggestions"
+import { InlineInput } from "@/components/forms/inline-input"
 import { getAmountSuggestions } from "@/lib/amount-suggestions"
 import { formatCurrency } from "@/lib/format-currency"
 import { cn } from "@/lib/utils"
@@ -45,8 +46,10 @@ type CurrencyInputProps = {
    * field: a form's field. hero: the screen's one amount, as a money app
    * opens on it: a large number in the middle, its sign before it and a
    * faded "đ" after, on no field, the suggestions centred under it.
+   * inline: typed in place at the end of a row (SettingsFieldRow), as
+   * InlineInput, "đ" after the number; no suggestions, no ✕.
    */
-  variant?: "field" | "hero"
+  variant?: "field" | "hero" | "inline"
   /** hero only: the sign shown before the number once there is one, e.g. − for spending. */
   sign?: "+" | "−"
   /** hero only: income or money owed in its colour, as Money shows it. */
@@ -124,7 +127,7 @@ export function CurrencyInput({
 
     emit(digits ? Number(digits) : null, true)
   }
-  const chips = suggestions ? (
+  const chips = suggestions && variant !== "inline" ? (
     <AmountSuggestions
       suggestions={getAmountSuggestions(typed, history ?? [])}
       value={value ? Number(value) : null}
@@ -132,6 +135,25 @@ export function CurrencyInput({
       className={variant === "hero" ? "mx-auto w-fit max-w-full" : undefined}
     />
   ) : null
+
+  if (variant === "inline") {
+    return (
+      <>
+        <InlineInput
+          ref={inputRef}
+          id={id}
+          inputMode="numeric"
+          unit="đ"
+          value={minus + formatInputValue(value)}
+          onChange={onChange}
+          placeholder={placeholder}
+          required={required}
+          aria-invalid={invalid || undefined}
+        />
+        <input type="hidden" name={name} value={value && minus + value} />
+      </>
+    )
+  }
 
   if (variant === "hero") {
     const shown = formatInputValue(value)

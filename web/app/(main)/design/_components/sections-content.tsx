@@ -6,6 +6,7 @@ import {
   ArrowLeftRightIcon,
   ArrowUpRightIcon,
   BellRingIcon,
+  BriefcaseIcon,
   CalendarDaysIcon,
   CircleCheckIcon,
   CopyIcon,
@@ -48,9 +49,12 @@ import { PageDots } from "@/components/app/page-dots"
 import { PromoBanner } from "@/components/app/promo-banner"
 import { Section } from "@/components/app/section-header"
 import { Stat, StatGroup } from "@/components/app/stat-group"
+import { Stepper } from "@/components/app/stepper"
 import { Steps } from "@/components/app/steps"
+import { CurrencyInput } from "@/components/forms/currency-input"
+import { InlineInput } from "@/components/forms/inline-input"
 import { PageHeader } from "@/components/page"
-import { SettingsGroup, SettingsGroupSkeleton, SettingsRow } from "@/components/settings-list"
+import { SettingsFieldRow, SettingsGroup, SettingsGroupSkeleton, SettingsRow } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import {
@@ -324,6 +328,10 @@ function ListSection() {
   const [moreShown, setMoreShown] = React.useState(false)
   const [picked, setPicked] = React.useState(["Ví MoMo"])
   const [reminder, setReminder] = React.useState(true)
+  const [rowAmount, setRowAmount] = React.useState<number | null>(730_000)
+  const [rowHours, setRowHours] = React.useState("6")
+  const [rowCount, setRowCount] = React.useState(1)
+  const [rowRegion, setRowRegion] = React.useState("I")
 
   return (
     <CatalogSection id="list">
@@ -499,6 +507,27 @@ function ListSection() {
         <SettingsRow icon={TagIcon} tone="orange" title="Hiện khi mở" collapsed={!moreShown} />
         <SettingsRow icon={BellRingIcon} tone="amber" title="Hiện khi mở" collapsed={!moreShown} />
         <SettingsRow icon={SparklesIcon} tone="ai" title="Luôn hiện" />
+      </SettingsGroup>
+      {/* As the salary calculator and the contact form: fields set in place on rows. */}
+      <SettingsGroup title="Dòng nhập tại chỗ (SettingsFieldRow)" size="lg" footer="Ô gõ lấp đầy dòng tới nhãn; đơn vị hiện khi đã có số.">
+        <SettingsFieldRow htmlFor="ds-field-row-amount" title="Phụ cấp">
+          <CurrencyInput variant="inline" id="ds-field-row-amount" name="allowance" value={rowAmount} onValueChange={setRowAmount} />
+        </SettingsFieldRow>
+        <SettingsFieldRow htmlFor="ds-field-row-hours" icon={BriefcaseIcon} title="Ngày thường" description="150% lương giờ">
+          <InlineInput id="ds-field-row-hours" inputMode="decimal" unit="giờ" placeholder="0" value={rowHours} onChange={(event) => setRowHours(event.target.value)} />
+        </SettingsFieldRow>
+        <SettingsFieldRow title="Người phụ thuộc">
+          <Stepper label="Người phụ thuộc" value={rowCount} onValueChange={setRowCount} className="w-32" />
+        </SettingsFieldRow>
+        <SettingsFieldRow title="Vùng" description="Tối thiểu 5.310.000đ">
+          <ToggleGroup type="single" size="sm" value={rowRegion} onValueChange={(value) => value && setRowRegion(value)} aria-label="Vùng">
+            {["I", "II", "III", "IV"].map((region) => (
+              <ToggleGroupItem key={region} value={region}>
+                {region}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </SettingsFieldRow>
       </SettingsGroup>
       <Block label="Accordion">
         <Accordion type="single" collapsible defaultValue={faq[0][0]}>

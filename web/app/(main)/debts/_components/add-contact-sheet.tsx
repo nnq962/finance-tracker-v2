@@ -4,7 +4,8 @@ import * as React from "react"
 import { SaveIcon } from "lucide-react"
 
 import { PageSheet, PageSheetFooter } from "@/components/app/page-sheet"
-import { SettingsGroup, settingsSeparatorClassName } from "@/components/settings-list"
+import { InlineInput } from "@/components/forms/inline-input"
+import { SettingsFieldRow, SettingsGroup, settingsSeparatorClassName } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
@@ -26,21 +27,6 @@ type AddContactSheetProps = {
   returnFocusRef?: React.RefObject<HTMLElement | null>
   onAddContact: (contact: NewContact) => Promise<unknown>
 }
-
-/** A field typed in place on a row of the group, its label on the left, as iOS settings do. */
-function InlineRow({ id, label, invalid, children }: { id: string; label: string; invalid?: boolean; children: React.ReactNode }) {
-  return (
-    <li className={cn("flex min-h-16 items-center gap-3 px-4 py-3", settingsSeparatorClassName())}>
-      <label htmlFor={id} className={cn("shrink-0 text-sm font-medium", invalid && "text-destructive")}>
-        {label}
-      </label>
-      {children}
-    </li>
-  )
-}
-
-const inlineInputClassName =
-  "min-w-0 flex-1 bg-transparent text-right text-sm outline-none placeholder:text-muted-foreground"
 
 /**
  * A person of the debts' contacts, added or edited as rows of a group: their
@@ -130,8 +116,8 @@ export function AddContactSheet({ contact, onAddContact, open, onOpenChange, ret
 
           <div className="flex flex-col gap-2">
             <SettingsGroup>
-              <InlineRow id={`${id}-name`} label="Tên" invalid={Boolean(nameError)}>
-                <input
+              <SettingsFieldRow htmlFor={`${id}-name`} title="Tên" invalid={Boolean(nameError)}>
+                <InlineInput
                   id={`${id}-name`}
                   name="name"
                   value={name}
@@ -144,11 +130,10 @@ export function AddContactSheet({ contact, onAddContact, open, onOpenChange, ret
                   autoComplete="off"
                   required
                   aria-invalid={Boolean(nameError) || undefined}
-                  className={inlineInputClassName}
                 />
-              </InlineRow>
-              <InlineRow id={`${id}-relationship`} label="Mối quan hệ">
-                <input
+              </SettingsFieldRow>
+              <SettingsFieldRow htmlFor={`${id}-relationship`} title="Mối quan hệ">
+                <InlineInput
                   id={`${id}-relationship`}
                   name="relationship"
                   value={relationship}
@@ -156,9 +141,8 @@ export function AddContactSheet({ contact, onAddContact, open, onOpenChange, ret
                   placeholder="Tuỳ chọn"
                   maxLength={80}
                   autoComplete="off"
-                  className={inlineInputClassName}
                 />
-              </InlineRow>
+              </SettingsFieldRow>
               {/* The usual ones, under their row with no line between. */}
               <li className="px-4 pb-3">
                 <ToggleGroup
@@ -176,8 +160,8 @@ export function AddContactSheet({ contact, onAddContact, open, onOpenChange, ret
                   ))}
                 </ToggleGroup>
               </li>
-              <InlineRow id={`${id}-phone`} label="Số điện thoại">
-                <input
+              <SettingsFieldRow htmlFor={`${id}-phone`} title="Số điện thoại">
+                <InlineInput
                   id={`${id}-phone`}
                   name="phone"
                   type="tel"
@@ -186,9 +170,8 @@ export function AddContactSheet({ contact, onAddContact, open, onOpenChange, ret
                   placeholder="Tuỳ chọn"
                   maxLength={30}
                   autoComplete="off"
-                  className={inlineInputClassName}
                 />
-              </InlineRow>
+              </SettingsFieldRow>
               {/* The note typed in place, as tall as a row (64) and growing with what is written. */}
               <li className={cn("flex min-h-16 items-center px-4 py-3", settingsSeparatorClassName())}>
                 <label htmlFor={`${id}-note`} className="sr-only">
