@@ -168,12 +168,6 @@ export function CurrencyInput({
                 autoFocus={autoFocus}
                 value={shown}
                 onChange={onChange}
-                // An amount already there (edited, written again, picked) is
-                // selected on a tap, so the first key typed replaces it.
-                onFocus={(event) => {
-                  const field = event.currentTarget
-                  if (field.value) requestAnimationFrame(() => field.select())
-                }}
                 placeholder={placeholder}
                 required={required}
                 aria-invalid={invalid || undefined}
