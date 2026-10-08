@@ -2,6 +2,7 @@
 
 import { SearchIcon, XIcon } from "lucide-react"
 import * as React from "react"
+import { createPortal } from "react-dom"
 
 import { Collapse } from "@/components/app/collapse"
 import { Button } from "@/components/ui/button"
@@ -14,6 +15,8 @@ import { countActiveFilters } from "./transaction-filter-fields"
 export function countSheetFilters(filter: TransactionFilter, searchFilters: TransactionSearchFilters) {
   return countActiveFilters(filter, searchFilters) - Number(filter !== "all")
 }
+
+const subscribeNever = () => () => {}
 
 /**
  * The search field. On phones a tap on it opens the search screen (`onFocus`)
@@ -43,6 +46,32 @@ export function TransactionSearchBar({
   autoFocus?: boolean
 }) {
   const inputRef = React.useRef<HTMLInputElement>(null)
+  const proxyRef = React.useRef<HTMLInputElement>(null)
+  const mounted = React.useSyncExternalStore(subscribeNever, () => true, () => false)
+
+  // iOS Safari moves the whole view up to keep a focused field above the
+  // keyboard. The field is still low when first tapped (the header has yet
+  // to fold), so it moved, and once the header folded the field ended under
+  // the Dynamic Island. So the first tap that opens the search screen takes
+  // the keyboard into a hidden field at the screen's top (nothing to move
+  // for), and once the real one has slid up, focus moves to it: the keyboard
+  // stays up and iOS has nothing to scroll.
+  const openFromTouch = (event: React.TouchEvent<HTMLInputElement>) => {
+    if (cancelable || !onFocus || document.activeElement === inputRef.current) return
+    if (!window.matchMedia("(width < 64rem)").matches) return
+    event.preventDefault()
+    proxyRef.current?.focus({ preventScroll: true })
+    onFocus()
+    window.setTimeout(() => {
+      // Anything typed in the meantime goes along.
+      const proxy = proxyRef.current
+      if (proxy?.value) {
+        onQueryChange(proxy.value)
+        proxy.value = ""
+      }
+      inputRef.current?.focus({ preventScroll: true })
+    }, 350)
+  }
 
   return (
     <form
@@ -63,6 +92,7 @@ export function TransactionSearchBar({
         <InputGroupInput
           ref={inputRef}
           id={id}
+          onTouchEnd={openFromTouch}
           type="text"
           inputMode="search"
           enterKeyHint="search"
@@ -88,6 +118,20 @@ export function TransactionSearchBar({
           </Button>
         </Collapse>
       ) : null}
+      {mounted
+        ? createPortal(
+            <input
+              ref={proxyRef}
+              aria-hidden="true"
+              tabIndex={-1}
+              type="text"
+              inputMode="search"
+              // 16px, or iOS would zoom in on it.
+              className="pointer-events-none fixed top-0 left-0 size-px text-base opacity-0"
+            />,
+            document.body,
+          )
+        : null}
     </form>
   )
 }

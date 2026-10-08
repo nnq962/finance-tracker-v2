@@ -203,26 +203,7 @@ export function TransactionsScreen({
     // Only phones have a search screen; from lg up the field sits beside the list.
     if (searching || !window.matchMedia("(width < 64rem)").matches) return
     setSearching(true)
-    // iOS Safari scrolls the whole page up to keep a focused field above the
-    // keyboard. On the first tap the field is still low (the header has yet
-    // to fold), so it scrolled, the fold then lifted the field too, and the
-    // two together put it under the Dynamic Island; a second tap, the field
-    // already at the top, did not scroll. While the keyboard rises and the
-    // header folds, the page is held at the top, then set there once more.
-    const pane = document.querySelector("[data-main-scroll-viewport]")
-    const toTop = () => {
-      if (window.scrollY !== 0) window.scrollTo(0, 0)
-      pane?.scrollTo({ top: 0 })
-    }
-    toTop()
-    const viewport = window.visualViewport
-    viewport?.addEventListener("resize", toTop)
-    viewport?.addEventListener("scroll", toTop)
-    window.setTimeout(() => {
-      viewport?.removeEventListener("resize", toTop)
-      viewport?.removeEventListener("scroll", toTop)
-      toTop()
-    }, 700)
+    document.querySelector("[data-main-scroll-viewport]")?.scrollTo({ top: 0 })
   }
   const closeSearch = () => {
     setSearching(false)
