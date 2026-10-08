@@ -72,8 +72,9 @@ export function TimeRows({
         chevron={false}
         onClick={() => setOpen((current) => !current)}
       />
-      {/* No divider: the chips and the fields belong to the row above. */}
-      <li className="flex flex-col px-4 pb-3">
+      {/* No divider: the chips and the fields belong to the row above, 8px
+          under it so they do not touch its grey when it is pressed. */}
+      <li className="flex flex-col px-4 pt-2 pb-3">
         <ToggleGroup
           type="single"
           size="sm"
