@@ -102,8 +102,8 @@ export function SettingsView({
 
   const open = (screen: Screen) => setSheetScreen(screen)
   const isPro = planState.plan === "pro"
-  // The design catalogue, like its page, is on the dev server only.
-  const showDesign = process.env.NODE_ENV !== "production"
+  // The design catalogue, like its page: for admins, and anyone on the dev server.
+  const showDesign = Boolean(adminData) || process.env.NODE_ENV !== "production"
 
   const renderScreen = (screen: Screen) => {
     switch (screen) {
@@ -229,7 +229,8 @@ export function SettingsView({
         </SettingsGroup>
 
         {/* Tools for the people running the app, after the user's own
-            settings: the admin's, and on the dev server the design catalogue. */}
+            settings: the admin's, the design catalogue among them (on the dev
+            server for anyone). */}
         {adminData || showDesign ? (
           <SettingsGroup title={adminData ? "Quản trị" : "Nhà phát triển"}>
             {adminData ? (
