@@ -349,7 +349,8 @@ Trước khi báo xong một màn mới, kiểm tra:
   Sáng / Tối cạnh nhau (vẽ bằng token của chính theme đó: `.light` / `.dark` trên hình, nên luôn đúng dù trang
   đang sáng hay tối), tên và vòng chọn dưới mỗi màn, màn đang hiện có ✓; chạm là chọn. Dưới là dòng "Tự động ·
   Theo cài đặt sáng tối của máy" có công tắc; bật thì theo máy (vòng chọn theo màn máy đang dùng), tắt thì giữ
-  màn đang hiện. Dòng ở Cài đặt ghi "Sáng" / "Tối" / "Tự động".
+  màn đang hiện. Công tắc gạt ngay, theme đổi sau khi núm trượt xong (500ms): đổi theme tắt mọi chuyển động một
+  khoảnh khắc (`disableTransitionOnChange`) và sẽ cắt ngang cú trượt. Dòng ở Cài đặt ghi "Sáng" / "Tối" / "Tự động".
 - **Biểu đồ "Thu và chi theo tháng"** (Tổng quan): không có tooltip nổi; chạm một cột tháng (hoặc
   phím mũi tên, đây là radio group) để chọn, mặc định tháng này; hai dòng trong thẻ ghi "Tháng N"
   và "Thu … Chi …"; cột tháng đang chọn được tô nền nhạt, các cột giữ nguyên màu. Cột chi màu `chart-neutral`, không đỏ. Tháng ghi

@@ -73,8 +73,28 @@ function ThemePreview({ theme }: { theme: "light" | "dark" }) {
  * side by side, the one showing ticked; a tap picks it. Under them Tự động
  * follows the device's setting, the screens then ticking whichever it is.
  */
+// How long the switch's knob takes to slide (Switch: 500ms).
+const SWITCH_SLIDE_MS = 500
+
 export function ThemeOptions() {
   const { choice, shown, choose } = useThemeChoice()
+  // The switch moves at once; the theme follows once its knob has slid, as
+  // changing the theme stops every transition for a moment (no colours
+  // fading across the app) and would cut the slide short.
+  const [autoPending, setAutoPending] = React.useState<boolean | null>(null)
+  const timer = React.useRef<number | undefined>(undefined)
+  React.useEffect(() => () => window.clearTimeout(timer.current), [])
+
+  const setAuto = (on: boolean) => {
+    const next = on ? "system" : shown
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return choose(next)
+    setAutoPending(on)
+    window.clearTimeout(timer.current)
+    timer.current = window.setTimeout(() => {
+      choose(next)
+      setAutoPending(null)
+    }, SWITCH_SLIDE_MS)
+  }
 
   return (
     <SettingsGroup
@@ -116,9 +136,9 @@ export function ThemeOptions() {
         action={
           <Switch
             aria-label="Tự động theo máy"
-            checked={choice === "system"}
+            checked={autoPending ?? choice === "system"}
             // Off keeps what shows now, as iOS does.
-            onCheckedChange={(on) => choose(on ? "system" : shown)}
+            onCheckedChange={setAuto}
           />
         }
       />
