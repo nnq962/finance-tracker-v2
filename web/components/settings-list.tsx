@@ -29,11 +29,10 @@ export function settingsSeparatorClassName(hasMedia?: boolean) {
     // No divider above the first row showing: the first row, or one with only
     // folded-away rows (SettingsRow `collapsed`) before it.
     "[&:not(:not([data-collapsed])~*)]:before:hidden",
-    // A highlighted row's grey runs edge to edge, as in iOS, with no divider
-    // against it: the row under the finger, and on wide screens the one whose
-    // screen is shown beside the list. Each row draws the divider above it, so
-    // the row after a highlighted one hides its own too.
-    "has-[button[data-slot=item]:active]:before:hidden [:has(button[data-slot=item]:active)+&]:before:hidden",
+    // The dividers stay while a row is pressed (2026-10-10): hiding the two
+    // around the row under the finger, as iOS does, read as lines flickering
+    // away on every tap. A row shown beside the list on wide screens still
+    // hides them, its grey running edge to edge.
     "md:has-[button[data-slot=item][data-active=true]]:before:hidden md:[:has(button[data-slot=item][data-active=true])+&]:before:hidden",
     hasMedia && "before:left-16",
   )

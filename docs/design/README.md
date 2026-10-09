@@ -197,7 +197,7 @@ trang Cài đặt dùng ô xám trung tính cho mọi mục (2026-10-09), trừ 
 Màn tải: `SettingsGroupSkeleton` / `SettingsRowSkeleton` (cùng file) có đúng kích thước nhóm và dòng thật (dòng tiêu đề, bo thẻ, dòng 64, ô 36 hoặc avatar, avatar 48 `avatar-lg` cho hồ sơ, `align="center"` cho dòng như Đăng xuất, đường kẻ thụt, giá trị hay số tiền bên phải). Mỗi `loading.tsx` dựng lại từ chính bố cục của trang (`OverviewLayout`, `TransactionsLayout`, `BudgetLayout`) và các skeleton này, cùng `PageHeaderSkeleton` (tên trang thật; công cụ tròn hay viên thuốc, nút có chữ theo độ rộng), `FlowTilesSkeleton`, `FloatingActionsSkeleton`, nên khung trang không nhảy khi dữ liệu tới. Những khối chỉ có khi có dữ liệu (Nhiệm vụ, Sắp đến hạn, cảnh báo quá hạn) không có chỗ chờ sẵn, nên khi có chúng, phần bên dưới vẫn dời xuống.
 
 Utility `pressable` (trong `globals.css`) cho phản hồi chạm của thẻ và ô bấm được không phải
-`Button`. Dòng list bấm được xám đi khi chạm (`active:bg-muted`), phẳng hết bề ngang và cắt theo góc thẻ, ẩn các đường kẻ chạm vào nó, như dòng của iOS (`Item shape="flush"`); từ md, dòng đang mở bên cạnh cũng vậy. Trên màn cảm
+`Button`. Dòng list bấm được xám đi khi chạm (`active:bg-muted`), phẳng hết bề ngang và cắt theo góc thẻ, đường kẻ hai bên vẫn giữ khi chạm (2026-10-10: ẩn đi trông như kẻ nháy mỗi lần chạm) (`Item shape="flush"`); từ md, dòng đang mở bên cạnh cũng vậy. Trên màn cảm
 ứng, giữ lâu không chọn chữ của giao diện và không mở xem trước liên kết (`globals.css`); ô nhập
 và chữ có `select-text` (ghi chú của giao dịch, tài khoản, khoản vay) vẫn chọn được.
 
