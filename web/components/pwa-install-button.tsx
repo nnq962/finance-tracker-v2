@@ -284,9 +284,15 @@ export function IosInstallSheet({
   ]
   const last = step === steps.length - 1
 
+  // The step a button is sliding to: until it is there, the scroll passing
+  // the steps between does not change the step (which would shrink and grow
+  // the footer and flip its label on the way).
+  const sliding = useRef<number | null>(null)
+
   const goTo = (index: number) => {
     const panel = scroller.current?.children[index] as HTMLElement | undefined
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    sliding.current = index
     scroller.current?.scrollTo({ left: panel?.offsetLeft ?? 0, behavior: reduce ? "auto" : "smooth" })
     setStep(index)
   }
@@ -310,7 +316,16 @@ export function IosInstallSheet({
             aria-label="Các bước cài"
             onScroll={(event) => {
               const element = event.currentTarget
+              if (sliding.current !== null) {
+                // There: the finger has the steps again.
+                if (Math.abs(element.scrollLeft - sliding.current * element.clientWidth) < 2) sliding.current = null
+                return
+              }
               setStep(Math.min(steps.length - 1, Math.round(element.scrollLeft / element.clientWidth)))
+            }}
+            // A finger taking over mid-slide decides the step itself.
+            onPointerDown={() => {
+              sliding.current = null
             }}
             className="mt-5 flex w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
@@ -349,7 +364,8 @@ export function IosInstallSheet({
               </Button>
             </div>
             <Button type="button" className="min-w-0 flex-1" onClick={() => (last ? setOpen(false) : goTo(step + 1))}>
-              {/* Both words in one cell, crossfading, so the label changes without a jump. */}
+              {/* Both words in one cell, so the button keeps its size: the old one
+                  fades out first, then the new one in, never the two over each other. */}
               <span className="grid">
                 {[
                   { label: "Tiếp", shown: !last },
@@ -359,8 +375,8 @@ export function IosInstallSheet({
                     key={label}
                     aria-hidden={!shown}
                     className={cn(
-                      "col-start-1 row-start-1 transition-opacity duration-200 ease-out motion-reduce:transition-none",
-                      !shown && "opacity-0",
+                      "col-start-1 row-start-1 transition-opacity ease-out motion-reduce:transition-none",
+                      shown ? "delay-100 duration-150" : "opacity-0 duration-100",
                     )}
                   >
                     {label}
