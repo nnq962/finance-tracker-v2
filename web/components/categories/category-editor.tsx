@@ -30,8 +30,8 @@ function Caption({ children }: { children: React.ReactNode }) {
 /**
  * Adding or editing a group of categories (name, colour, icon) or a category
  * in a group (name and icon; its colour is the group's), as the app's other
- * forms: the tile it will have, large at the top with its name, following
- * what is chosen; the name typed in place; the colours; the icons as a grid
+ * forms: the tile it will have, large at the top, following what is
+ * chosen; the name typed in place; the colours; the icons as a grid
  * of two rows (the chosen one, those matching the name, the group's), the
  * last cell opening every icon on a deeper screen with a search. Saving at
  * the foot, deleting beside it, asked again in an action sheet since a
@@ -103,12 +103,11 @@ export function CategoryEditor({
       {/* Hidden, not removed, under every icon: the grid keeps its order. */}
       <form hidden={allIcons} className="flex flex-1 flex-col" onSubmit={submit}>
         <fieldset disabled={pending} className="flex min-w-0 flex-col gap-6 pb-4">
-          {/* What it will look like, following each choice. */}
-          <div className="flex flex-col items-center gap-1 pt-2 text-center">
+          {/* What it will look like, following each choice. The name is not
+              repeated here: it is typed on the row below, and a name here
+              would look like the place to change it. */}
+          <div className="flex flex-col items-center gap-2 pt-2 text-center">
             <IconTile icon={categoryIconRegistry[iconName]} tone={colorName} size="lg" />
-            <p className={cn("mt-2 max-w-full truncate text-base font-semibold", !name.trim() && "text-muted-foreground")}>
-              {name.trim() || (kind === "group" ? "Tên nhóm" : "Tên hạng mục")}
-            </p>
             <p className="text-xs text-muted-foreground">{caption}</p>
           </div>
 

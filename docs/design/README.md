@@ -273,8 +273,8 @@ Trước khi báo xong một màn mới, kiểm tra:
   hoặc "Tiền mặt", tới khi người dùng tự gõ), Số dư âm (công tắc, "Đang nợ, thấu chi"; bật thì số
   đỏ có dấu −), Bắt đầu từ (`TimeRows` không chip), ghi chú gõ tại chỗ. Lỗi hiện tại chỗ.
 - **Thêm / sửa nhóm và hạng mục** (`CategoryEditor`, `components/categories/category-editor.tsx`, 2026-10-09; từ
-  Cài đặt → Hạng mục), cùng kiểu form người, tài khoản: ô biểu tượng `lg` đúng màu ở đầu, tên và "3 hạng mục" /
-  "Trong nhóm Ăn uống" dưới, đổi theo mỗi lựa chọn; dòng "Tên" gõ tại chỗ; "MÀU" (chỉ nhóm; hạng mục lấy màu nhóm)
+  Cài đặt → Hạng mục), cùng kiểu form người, tài khoản: ô biểu tượng `lg` đúng màu ở đầu và "3 hạng mục" /
+  "Trong nhóm Ăn uống" dưới, đổi theo mỗi lựa chọn (không lặp tên ở đây: tên dưới ô lớn trông như chỗ để sửa); dòng "Tên" gõ tại chỗ; "MÀU" (chỉ nhóm; hạng mục lấy màu nhóm)
   là `ColorPicker`: 10 chấm tròn trên thẻ trắng, chấm đang chọn có vòng và ✓; "BIỂU TƯỢNG" là `IconPicker`: lưới
   6 cột hai hàng trên thẻ trắng (không khung cuộn lồng), ô đầu là biểu tượng lúc mở form; các ô giữ chỗ khi chọn, ô đang chọn sáng tại
   chỗ (màu nhóm, vòng quanh ô như chấm màu; chọn từ màn "Tất cả" mà không có trong lưới thì vào ô cuối), rồi gợi ý theo tên đang gõ (so từ với nhãn tiếng Việt của biểu tượng, bỏ từ đệm "và", "của"…; có dấu
