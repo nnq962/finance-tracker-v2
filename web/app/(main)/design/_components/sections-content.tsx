@@ -509,7 +509,7 @@ function ListSection() {
         <SettingsRow icon={SparklesIcon} tone="ai" title="Luôn hiện" />
       </SettingsGroup>
       {/* As the salary calculator and the contact form: fields set in place on rows. */}
-      <SettingsGroup title="Dòng nhập tại chỗ (SettingsFieldRow)" size="lg" footer="Ô gõ lấp đầy dòng tới nhãn; đơn vị hiện khi đã có số.">
+      <SettingsGroup title="Dòng nhập tại chỗ (SettingsFieldRow)" size="lg" footer="Ô gõ lấp đầy dòng tới nhãn; đơn vị luôn hiện, kể cả khi ô trống.">
         <SettingsFieldRow htmlFor="ds-field-row-amount" title="Phụ cấp">
           <CurrencyInput variant="inline" id="ds-field-row-amount" name="allowance" value={rowAmount} onValueChange={setRowAmount} />
         </SettingsFieldRow>

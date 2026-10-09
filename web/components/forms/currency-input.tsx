@@ -143,7 +143,8 @@ export function CurrencyInput({
           ref={inputRef}
           id={id}
           inputMode="numeric"
-          unit="đ"
+          // Not after a placeholder in words, e.g. "Như lương gross".
+          unit={value || /^\d/.test(placeholder) ? "đ" : undefined}
           value={minus + formatInputValue(value)}
           onChange={onChange}
           placeholder={placeholder}
