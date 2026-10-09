@@ -56,13 +56,15 @@ function DrawerOverlay({
   return (
     <DrawerPrimitive.Overlay
       data-slot="drawer-overlay"
-      // The dim and blur are on ::before, not on this fixed layer: Safari 26
+      // A plain dim, as shadcn's drawer, no blur: a backdrop blur under a layer
+      // fading in only shows once the fade ends, so the page dimmed and then
+      // went blurry. The dim is on ::before, not on this fixed layer: Safari 26
       // tints the status bar from the background and backdrop-filter of a
       // fixed element at the screen's top edge (theme-color is ignored), and
       // took the veil's, so the bar turned white under every overlay. It
       // skips pseudo-elements.
       className={cn(
-        "fixed inset-0 z-50 before:absolute before:inset-0 before:bg-black/30 supports-backdrop-filter:before:backdrop-blur-[2px] data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 z-50 before:absolute before:inset-0 before:bg-black/50 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}

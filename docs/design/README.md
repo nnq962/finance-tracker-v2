@@ -120,7 +120,7 @@ component ở đó là cả app đổi theo.
   đổi được màu status bar mượt theo chuyển động: Safari 26 bỏ qua `theme-color`, tô thanh theo
   `background-color`/`backdrop-filter` của phần tử `fixed` sát mép trên, và chỉ lấy màu mới khi
   hiệu ứng đã xong (đã thử trên iPhone 2026-10-09: đổi màu từng khung hình, mỗi giây, kèm cuộn 1px
-  đều không tới thanh). Nên lớp phủ tối (Drawer, Sheet, Dialog, AlertDialog) đặt nền mờ và blur ở
+  đều không tới thanh). Nên lớp phủ tối (Drawer, Sheet, Dialog, AlertDialog) đặt lớp tối (không blur từ 2026-10-09: blur dưới lớp đang hiện dần chỉ hiện khi hiện xong, nên trang tối rồi mới nhoè; như drawer gốc của shadcn, đen 50%) ở
   `::before`, không ở chính lớp `fixed` (không thì thanh chuyển trắng), và `PageSheet` phủ kín
   màn hình trên điện thoại: khi sheet lên hết, thanh lấy màu của sheet, mà nền `grouped` trùng màu
   trang nên thanh không đổi. Safari lấy màu vào một lúc bất kỳ khi sheet đang chạy, nên lớp phủ của
