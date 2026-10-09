@@ -47,34 +47,33 @@ type MoneyProps = {
 const unitScale = { lg: 14 / 20, xl: 20 / 34 } as const
 
 /**
- * How wide each character of a figure is, in em, in Be Vietnam Pro SemiBold
- * (measured in Chrome). Its digits are proportional (the font has no tabular
- * figures), so a fitted figure is sized from these rather than from a count of
- * digits. Anything not listed counts as the widest digit.
+ * How wide each character of a figure is, in em, in Manrope at the figure's
+ * weight (font-semibold, 700) with tabular digits (measured in Chrome). Anything
+ * not listed counts as a digit.
  */
 const glyphWidths: Record<string, number> = {
-  "0": 0.692,
-  "1": 0.415,
-  "2": 0.66,
-  "3": 0.674,
-  "4": 0.716,
-  "5": 0.674,
-  "6": 0.693,
-  "7": 0.596,
-  "8": 0.656,
-  "9": 0.693,
-  ".": 0.319,
-  ",": 0.332,
-  "+": 0.637,
-  "−": 0.653,
-  đ: 0.677,
-  k: 0.584,
-  r: 0.416,
-  t: 0.434,
-  ỷ: 0.592,
+  "0": 0.62,
+  "1": 0.62,
+  "2": 0.62,
+  "3": 0.62,
+  "4": 0.62,
+  "5": 0.62,
+  "6": 0.62,
+  "7": 0.62,
+  "8": 0.62,
+  "9": 0.62,
+  ".": 0.304,
+  ",": 0.304,
+  "+": 0.572,
+  "−": 0.54,
+  đ: 0.617,
+  k: 0.538,
+  r: 0.399,
+  t: 0.433,
+  ỷ: 0.56,
 }
 
-const widthOf = (text: string) => Array.from(text).reduce((sum, char) => sum + (glyphWidths[char] ?? 0.716), 0)
+const widthOf = (text: string) => Array.from(text).reduce((sum, char) => sum + (glyphWidths[char] ?? 0.62), 0)
 
 /**
  * The tracking of the large sizes (tracking-tight, -0.025em). It is resolved

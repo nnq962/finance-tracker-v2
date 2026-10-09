@@ -147,7 +147,7 @@ function FoundationSection() {
           ))}
         </div>
       </Block>
-      <Block label="Thang chữ · Be Vietnam Pro" wide>
+      <Block label="Thang chữ · Manrope" wide>
         <div className="space-y-2.5">
           {typeScale.map(([name, className, size]) => (
             <div key={name} className="flex items-baseline justify-between gap-3">

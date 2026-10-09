@@ -48,7 +48,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - Vùng chạm tối thiểu 44px; tôn trọng safe-area (`env(safe-area-inset-*)`); hỗ trợ cả theme sáng lẫn tối.
 - Chuyển động ngắn, có ý nghĩa, tôn trọng `prefers-reduced-motion`.
-- Chữ tiếng Việt dùng Be Vietnam Pro (`font-sans`); số tiền dùng `tabular-nums`.
+- Chữ dùng Manrope (`font-sans`, có tiếng Việt); số tiền dùng `tabular-nums`.
 
 ### Quy trình cho thay đổi giao diện
 
