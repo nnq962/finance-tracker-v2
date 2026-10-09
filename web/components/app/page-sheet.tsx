@@ -194,7 +194,7 @@ export function PageSheet({
             onScroll={(event) => setScrolled(event.currentTarget.scrollTop > 0)}
             className="absolute inset-0 overflow-y-auto"
           >
-            <div className={cn("flex min-h-full flex-col px-4 pt-17 pb-4", className)}>
+            <div className={cn("flex min-h-full flex-col px-4 pt-20 pb-4", className)}>
               <PageSheetScreenContext value={setScreen}>{children}</PageSheetScreenContext>
               {footer && !screen ? <PageSheetFooter>{footer}</PageSheetFooter> : null}
             </div>
