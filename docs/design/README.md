@@ -157,6 +157,7 @@ component ở đó là cả app đổi theo.
 | `RulerSlider` | Thước vạch kéo để chọn giá trị, kim màu `warning` |
 | `Rating` | Sao 1–5 |
 | `SegmentedProgress` | Tiến độ chia đoạn: các bước của một luồng, độ mạnh mật khẩu |
+| `StepFlow` | Đi từng bước như onboarding hay hướng dẫn (`components/app/step-flow.tsx`, 2026-10-09): các bước vuốt ngang và bắt từng bước, `PageDots` dưới (chạm để tới), rồi chân: ‹ co giãn vào từ bước hai như "Xoá lọc" ở Bộ lọc (nút chính nhường chỗ), nút chính "Tiếp" mờ đi rồi `doneLabel` hiện lên ở bước cuối và gọi `onDone`. `step` do nơi dùng giữ (về bước đầu mỗi lần mở, ẩn "Bỏ qua" ở bước cuối); bấm nút thì bước đổi ngay, cuộn trong lúc trượt không đổi lại bước (tránh nút co rồi giãn, nhãn nháy), chỉ ngón tay mới đổi. Cho `className="flex-1"` trong một cột thì mỗi bước cao hết chỗ. Dùng cho hướng dẫn cài trên iPhone và màn giới thiệu |
 | `Steps` | Các bước có tên nối bằng đường kẻ: xong có ✓, đang làm có viền |
 | `PageDots` | Chỉ báo trang; chấm hiện tại kéo dài thành vạch |
 | `Carousel` | Thẻ vuốt ngang, bắt từng thẻ, kèm `PageDots` |
@@ -344,14 +345,21 @@ Trước khi báo xong một màn mới, kiểm tra:
   chạm mở màn sâu "Bảng lương": số thực nhận lớn ở giữa, thẻ thanh tỷ lệ Nhận · Bảo hiểm · Thuế (đen,
   `warning`, `expense`) có chú thích phần trăm, rồi ba nhóm Thu nhập, Bảo hiểm, Thuế TNCN và ghi chú
   quy định. Số đã nhập nhớ trên máy.
+- **Giới thiệu / Hướng dẫn sử dụng** (`WelcomeProvider`, `components/onboarding/welcome.tsx`, 2026-10-09; lần
+  đầu vào app và từ "Hướng dẫn sử dụng" ở Cài đặt): màn toàn phần, "Bỏ qua" trên cùng bên phải (mờ đi ở màn
+  cuối), rồi `StepFlow` năm màn. Mỗi màn: khối minh hoạ lớn bo 28 trên nền nhạt một màu ý nghĩa (`transfer`,
+  `warning`, `ai`, `income`, `expense`), dựng bằng chính khối của app với số giả (`welcome-pictures.tsx`: thẻ tài
+  sản ròng và tài khoản; số tiền lớn, lưới hạng mục và dòng tài khoản, thời gian; câu nói với AI thành giao
+  dịch; thu chi theo tháng và theo hạng mục; thông báo nhắc tối và dòng vay nợ), không bấm được, trình đọc màn
+  hình bỏ qua; dưới là tiêu đề 24 và một câu. Màn AI ghi số lượt của gói Free. Màn cuối "Bắt đầu"; lần đầu thì
+  mở tiếp "Thêm tài khoản".
 - **Hướng dẫn cài trên iPhone** (`IosInstallSheet`, `components/pwa-install-button.tsx`, 2026-10-09; mở từ
   "Cài ứng dụng" ở Cài đặt, nhiệm vụ ở Tổng quan, trang giới thiệu): sheet đáy nền xám, không ✕ (kéo
   xuống hay "Đã hiểu" để đóng); icon app, "Cài Finance Tracker", "N bước để mở như một ứng dụng"; rồi
   từng bước như onboarding: thẻ trắng vẽ nhỏ đúng màn hình của bước (thanh dưới Safari với ••• và
   menu Chia sẻ, danh sách chia sẻ, màn Thêm vào MH chính), chỗ cần chạm viền xanh `transfer`, vòng sáng
-  toả ra rồi mờ dần mỗi 1,6 giây (`animate-tap-ring` trong `globals.css`; đứng yên khi giảm chuyển động), dưới thẻ "Bước 2/3", tiêu đề và một dòng gợi ý. Vuốt ngang
-  hay "Tiếp" để qua bước, ‹ để lùi (‹ co giãn vào từ bước hai như "Xoá lọc" ở chân Bộ lọc, "Tiếp" mờ đi rồi
-  "Đã hiểu" hiện lên ở bước cuối; bấm nút thì bước đổi ngay, vị trí cuộn trong lúc trượt không đổi lại bước), `PageDots` chỉ chỗ; mỗi lần mở lại từ bước đầu. Mở trong trình duyệt
+  toả ra rồi mờ dần mỗi 1,6 giây (`animate-tap-ring` trong `globals.css`; đứng yên khi giảm chuyển động), dưới thẻ "Bước 2/3", tiêu đề và một dòng gợi ý. Các bước đi
+  bằng `StepFlow` (vuốt, chấm, ‹ co giãn, "Tiếp" thành "Đã hiểu" ở bước cuối); mỗi lần mở lại từ bước đầu. Mở trong trình duyệt
   khác (Chrome, Zalo, Facebook…) thì có thêm bước đầu "Mở trang này bằng Safari" với nút "Chép liên kết".
 - **Cài đặt:** một cột căn trái, tối đa `md:max-w-2xl`, thẳng với tên trang. Thứ tự: hồ sơ, Lượt AI,
   Chung, Thông báo, Ứng dụng, Quản trị (hoặc Nhà phát triển trên dev server), Đăng xuất cuối.

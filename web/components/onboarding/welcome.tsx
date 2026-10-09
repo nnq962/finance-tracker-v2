@@ -1,47 +1,61 @@
 "use client"
 
 import * as React from "react"
-import {
-  BellRingIcon,
-  CalendarDaysIcon,
-  ReceiptTextIcon,
-  WalletCardsIcon,
-  type LucideIcon,
-} from "lucide-react"
 
 import { AddAccountSheet } from "@/app/(main)/budget/_components/add-account/add-account-sheet"
+import { StepFlow } from "@/components/app/step-flow"
 import { Button } from "@/components/ui/button"
-import { EmptyMedia } from "@/components/ui/empty"
-import { Sheet, SheetContent, SheetFooter, SheetTitle } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { markOnboardingSeenAction } from "@/lib/onboarding/actions"
+import { plans } from "@/lib/plans/plans"
 import { cn } from "@/lib/utils"
 
+import {
+  AccountsPicture,
+  AddTransactionPicture,
+  AiPicture,
+  DebtsPicture,
+  OverviewPicture,
+} from "./welcome-pictures"
+
 type Slide = {
-  icon: LucideIcon
   title: string
   body: string
+  picture: React.ReactNode
+  /** The picture's backdrop, a light wash of a meaning colour, a different one each screen. */
+  backdrop: string
 }
 
 const slides: Slide[] = [
   {
-    icon: WalletCardsIcon,
-    title: "Chào mừng đến với Finance Tracker",
-    body: "Theo dõi số dư, thu chi và các khoản vay nợ của bạn ở một nơi.",
+    title: "Mọi đồng tiền, một nơi",
+    body: "Số dư, thu chi và vay nợ của bạn, gọn trong một ứng dụng.",
+    picture: <AccountsPicture />,
+    backdrop: "bg-transfer/10",
   },
   {
-    icon: ReceiptTextIcon,
-    title: "Ghi thu chi trong vài giây",
-    body: "Bấm “Thêm giao dịch”, chọn hạng mục và nhập số tiền. Số dư tài khoản tự cập nhật.",
+    title: "Ghi một khoản trong vài giây",
+    body: "Chạm +, nhập số tiền, chọn hạng mục. Số dư tài khoản tự cập nhật.",
+    picture: <AddTransactionPicture />,
+    backdrop: "bg-warning/15",
   },
   {
-    icon: CalendarDaysIcon,
-    title: "Biết mỗi ngày tiêu bao nhiêu",
-    body: "Lịch và biểu đồ phân bổ ở trang Tổng quan cho thấy tiền đi đâu, vào ngày nào.",
+    title: "Hoặc chỉ cần nói",
+    body: `Nói hay gõ như nhắn tin, AI ghi giúp số tiền, hạng mục và tài khoản. Gói Free có ${plans.free.aiMonthlyLimit} lượt mỗi tháng.`,
+    picture: <AiPicture />,
+    backdrop: "bg-ai/10",
   },
   {
-    icon: BellRingIcon,
-    title: "Vay nợ và lời nhắc",
-    body: "Ghi lại khoản cho vay, đi vay kèm hạn trả, và bật lời nhắc mỗi tối để không quên ghi chi tiêu.",
+    title: "Biết tiền đi đâu",
+    body: "Tổng quan cho thấy thu chi từng tháng và mỗi hạng mục chiếm bao nhiêu.",
+    picture: <OverviewPicture />,
+    backdrop: "bg-income/10",
+  },
+  {
+    title: "Không quên khoản nào",
+    body: "Ghi cho vay, đi vay kèm hạn trả; mỗi tối nhắc bạn ghi chi tiêu.",
+    picture: <DebtsPicture />,
+    backdrop: "bg-expense/10",
   },
 ]
 
@@ -55,8 +69,11 @@ export function useWelcome() {
 }
 
 /**
- * The first-run welcome: four short screens shown once per user (on any
- * device). The first time, finishing opens "add account", which every other
+ * The first-run welcome, and the guide opened again from Settings: five
+ * screens, each a large picture of the app's own blocks on a light wash, a
+ * title and one line, stepped through with StepFlow (swipe, dots, ‹ and
+ * Tiếp). Bỏ qua at the top until the last screen. Shown once per user (on any
+ * device); the first time, finishing opens "add account", which every other
  * step needs.
  */
 export function WelcomeProvider({
@@ -67,13 +84,10 @@ export function WelcomeProvider({
   children: React.ReactNode
 }) {
   const [open, setOpen] = React.useState(firstRun)
-  const [index, setIndex] = React.useState(0)
+  const [step, setStep] = React.useState(0)
   const [addAccountOpen, setAddAccountOpen] = React.useState(false)
   const isFirstRun = React.useRef(firstRun)
-  const touchStart = React.useRef<number | null>(null)
-  const slide = slides[index]
-  const isLast = index === slides.length - 1
-  const Icon = slide.icon
+  const last = step === slides.length - 1
 
   const close = (finished: boolean) => {
     setOpen(false)
@@ -84,11 +98,9 @@ export function WelcomeProvider({
     }
   }
 
-  const go = (next: number) => setIndex(Math.min(Math.max(next, 0), slides.length - 1))
-
   const value = React.useMemo(() => ({
     openWelcome: () => {
-      setIndex(0)
+      setStep(0)
       setOpen(true)
     },
   }), [])
@@ -103,55 +115,48 @@ export function WelcomeProvider({
           variant="screen"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
-          <div className="flex justify-end p-4">
-            <Button type="button" variant="ghost" size="sm" onClick={() => close(false)}>
-              Bỏ qua
-            </Button>
-          </div>
-          {/* Swipe left or right to move between screens. */}
-          <div
-            className="flex min-h-0 flex-1 flex-col items-center justify-center gap-6 px-8 pb-8 text-center"
-            onTouchStart={(event) => { touchStart.current = event.touches[0].clientX }}
-            onTouchEnd={(event) => {
-              if (touchStart.current === null) return
-              const delta = event.changedTouches[0].clientX - touchStart.current
-              touchStart.current = null
-              if (Math.abs(delta) > 50) go(index + (delta < 0 ? 1 : -1))
-            }}
-          >
-            <EmptyMedia variant="icon">
-              <Icon aria-hidden="true" />
-            </EmptyMedia>
-            <div className="space-y-2">
-              <SheetTitle>{slide.title}</SheetTitle>
-              <p className="text-sm text-muted-foreground" aria-live="polite">{slide.body}</p>
+          <SheetTitle className="sr-only">Hướng dẫn sử dụng</SheetTitle>
+          <div className="flex min-h-0 flex-1 flex-col px-4 pb-4">
+            {/* Bỏ qua fades out on the last screen, where Bắt đầu does the same. */}
+            <div className="flex h-15 shrink-0 items-center justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                inert={last}
+                className={cn("transition-opacity duration-200 motion-reduce:transition-none", last && "opacity-0")}
+                onClick={() => close(false)}
+              >
+                Bỏ qua
+              </Button>
             </div>
+            <StepFlow
+              label="Giới thiệu Finance Tracker"
+              step={step}
+              onStepChange={setStep}
+              doneLabel="Bắt đầu"
+              onDone={() => close(true)}
+              className="flex-1"
+              steps={slides.map(({ title, body, picture, backdrop }) => ({
+                key: title,
+                label: title,
+                content: (
+                  <>
+                    {/* A drawing of the app: not to be tapped or read, the words under it say it. */}
+                    <div
+                      inert
+                      aria-hidden="true"
+                      className={cn("flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-[28px] px-5 py-6", backdrop)}
+                    >
+                      {picture}
+                    </div>
+                    <h2 className="mt-6 text-center text-2xl font-semibold tracking-tight text-balance">{title}</h2>
+                    <p className="mt-2 px-2 text-center text-[15px] text-muted-foreground text-balance">{body}</p>
+                  </>
+                ),
+              }))}
+            />
           </div>
-          {/* SheetFooter keeps the button clear of the Home indicator, as in other sheets. */}
-          <SheetFooter className="gap-4">
-            <div className="flex justify-center gap-2" aria-label={`Trang ${index + 1} trên ${slides.length}`}>
-              {slides.map((item, dot) => (
-                <button
-                  key={item.title}
-                  type="button"
-                  aria-label={`Trang ${dot + 1}`}
-                  aria-current={dot === index ? "step" : undefined}
-                  onClick={() => go(dot)}
-                  className={cn(
-                    "h-2 rounded-full bg-muted-foreground/30 transition-all",
-                    dot === index ? "w-6 bg-primary" : "w-2",
-                  )}
-                />
-              ))}
-            </div>
-            <Button
-              type="button"
-              className="w-full"
-              onClick={() => (isLast ? close(true) : go(index + 1))}
-            >
-              {isLast ? "Bắt đầu" : "Tiếp"}
-            </Button>
-          </SheetFooter>
         </SheetContent>
       </Sheet>
       <AddAccountSheet open={addAccountOpen} onOpenChange={setAddAccountOpen} />

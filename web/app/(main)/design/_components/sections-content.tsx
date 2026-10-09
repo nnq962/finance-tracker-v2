@@ -49,6 +49,7 @@ import { PageDots } from "@/components/app/page-dots"
 import { PromoBanner } from "@/components/app/promo-banner"
 import { Section } from "@/components/app/section-header"
 import { Stat, StatGroup } from "@/components/app/stat-group"
+import { StepFlow } from "@/components/app/step-flow"
 import { Stepper } from "@/components/app/stepper"
 import { Steps } from "@/components/app/steps"
 import { CurrencyInput } from "@/components/forms/currency-input"
@@ -591,6 +592,7 @@ function AvatarSection() {
 function NavSection() {
   const [page, setPage] = React.useState(1)
   const [step, setStep] = React.useState(1)
+  const [flowStep, setFlowStep] = React.useState(0)
   const [month, setMonth] = React.useState("2026-10")
 
   return (
@@ -603,6 +605,28 @@ function NavSection() {
           <PageDots count={4} value={page} onValueChange={setPage} />
           <span className="text-sm text-muted-foreground tabular-nums">{page + 1} / 4</span>
         </div>
+      </Block>
+      <Block label="Đi từng bước (StepFlow) · vuốt, chấm, ‹ co giãn, nhãn chuyển mờ">
+        <StepFlow
+          label="Mẫu các bước"
+          step={flowStep}
+          onStepChange={setFlowStep}
+          doneLabel="Xong"
+          onDone={() => {
+            setFlowStep(0)
+            toast("Xong")
+          }}
+          steps={["Mở", "Chọn", "Lưu"].map((title, index) => ({
+            key: title,
+            label: title,
+            content: (
+              <div className="flex h-32 flex-col items-center justify-center gap-1 rounded-3xl bg-transfer/10 text-center">
+                <span className="text-xs text-muted-foreground">Bước {index + 1}/3</span>
+                <span className="text-base font-semibold">{title}</span>
+              </div>
+            ),
+          }))}
+        />
       </Block>
       <Block label="Các bước · chạm để đổi bước">
         <button type="button" className="w-full" onClick={() => setStep((step + 1) % 4)}>

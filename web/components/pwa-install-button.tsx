@@ -1,7 +1,7 @@
 "use client"
 
 import type * as React from "react"
-import { useEffect, useRef, useState, useSyncExternalStore } from "react"
+import { useEffect, useState, useSyncExternalStore } from "react"
 import {
   BookmarkIcon,
   CheckIcon,
@@ -14,7 +14,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 
-import { PageDots } from "@/components/app/page-dots"
+import { StepFlow } from "@/components/app/step-flow"
 import { Button } from "@/components/ui/button"
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
 import { cn } from "@/lib/utils"
@@ -266,7 +266,6 @@ export function IosInstallSheet({
   const inSafari = useSyncExternalStore(subscribeToClientEnvironment, isIOSSafari, () => true)
   const origin = useSyncExternalStore(subscribeToClientEnvironment, () => window.location.host, () => "")
   const [step, setStep] = useState(0)
-  const scroller = useRef<HTMLDivElement>(null)
   // Each opening starts at the first step.
   const [shownFor, setShownFor] = useState(open)
   if (open !== shownFor) {
@@ -282,20 +281,6 @@ export function IosInstallSheet({
     { title: "Chọn Thêm vào Màn hình chính", hint: "Chưa thấy thì cuộn xuống danh sách.", picture: <ShareSheetPicture /> },
     { title: "Bật ứng dụng web, chạm Thêm", hint: "Finance Tracker sẽ nằm trên Màn hình chính.", picture: <AddScreenPicture /> },
   ]
-  const last = step === steps.length - 1
-
-  // The step a button is sliding to: until it is there, the scroll passing
-  // the steps between does not change the step (which would shrink and grow
-  // the footer and flip its label on the way).
-  const sliding = useRef<number | null>(null)
-
-  const goTo = (index: number) => {
-    const panel = scroller.current?.children[index] as HTMLElement | undefined
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    sliding.current = index
-    scroller.current?.scrollTo({ left: panel?.offsetLeft ?? 0, behavior: reduce ? "auto" : "smooth" })
-    setStep(index)
-  }
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
@@ -309,82 +294,28 @@ export function IosInstallSheet({
             {steps.length} bước để mở như một ứng dụng
           </DrawerDescription>
 
-          <div
-            ref={scroller}
-            role="region"
-            aria-roledescription="carousel"
-            aria-label="Các bước cài"
-            onScroll={(event) => {
-              const element = event.currentTarget
-              if (sliding.current !== null) {
-                // There: the finger has the steps again.
-                if (Math.abs(element.scrollLeft - sliding.current * element.clientWidth) < 2) sliding.current = null
-                return
-              }
-              setStep(Math.min(steps.length - 1, Math.round(element.scrollLeft / element.clientWidth)))
-            }}
-            // A finger taking over mid-slide decides the step itself.
-            onPointerDown={() => {
-              sliding.current = null
-            }}
-            className="mt-5 flex w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          >
-            {steps.map(({ title, hint, picture }, index) => (
-              <section
-                key={title}
-                aria-roledescription="slide"
-                aria-label={`Bước ${index + 1} / ${steps.length}`}
-                inert={index !== step}
-                className="w-full shrink-0 snap-center"
-              >
-                <div className="flex h-44 items-center justify-center rounded-3xl bg-card px-6">{picture}</div>
-                <p className="mt-4 text-xs font-medium text-muted-foreground">
-                  Bước {index + 1}/{steps.length}
-                </p>
-                <h3 className="mt-1 text-base font-semibold">{title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{hint}</p>
-              </section>
-            ))}
-          </div>
-
-          <PageDots count={steps.length} value={step} onValueChange={goTo} className="mt-5 justify-center" />
-
-          {/* As the filters' footer: ‹ narrows in from nothing past the first
-              step as the main button gives it room, and back out on the first. */}
-          <div className="mt-5 flex w-full items-center">
-            <div
-              inert={step === 0}
-              className={cn(
-                "min-w-0 shrink-0 overflow-hidden transition-[flex-basis,margin,opacity] duration-300 ease-out motion-reduce:transition-none",
-                step > 0 ? "mr-2 basis-11" : "mr-0 basis-0 opacity-0",
-              )}
-            >
-              <Button type="button" variant="secondary" size="icon" aria-label="Bước trước" onClick={() => goTo(step - 1)}>
-                <ChevronLeftIcon />
-              </Button>
-            </div>
-            <Button type="button" className="min-w-0 flex-1" onClick={() => (last ? setOpen(false) : goTo(step + 1))}>
-              {/* Both words in one cell, so the button keeps its size: the old one
-                  fades out first, then the new one in, never the two over each other. */}
-              <span className="grid">
-                {[
-                  { label: "Tiếp", shown: !last },
-                  { label: "Đã hiểu", shown: last },
-                ].map(({ label, shown }) => (
-                  <span
-                    key={label}
-                    aria-hidden={!shown}
-                    className={cn(
-                      "col-start-1 row-start-1 transition-opacity ease-out motion-reduce:transition-none",
-                      shown ? "delay-100 duration-150" : "opacity-0 duration-100",
-                    )}
-                  >
-                    {label}
-                  </span>
-                ))}
-              </span>
-            </Button>
-          </div>
+          <StepFlow
+            label="Các bước cài"
+            step={step}
+            onStepChange={setStep}
+            doneLabel="Đã hiểu"
+            onDone={() => setOpen(false)}
+            className="mt-5 w-full"
+            steps={steps.map(({ title, hint, picture }, index) => ({
+              key: title,
+              label: title,
+              content: (
+                <>
+                  <div className="flex h-44 items-center justify-center rounded-3xl bg-card px-6">{picture}</div>
+                  <p className="mt-4 text-xs font-medium text-muted-foreground">
+                    Bước {index + 1}/{steps.length}
+                  </p>
+                  <h3 className="mt-1 text-base font-semibold">{title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{hint}</p>
+                </>
+              ),
+            }))}
+          />
         </div>
       </DrawerContent>
     </Drawer>
