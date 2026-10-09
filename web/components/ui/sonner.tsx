@@ -1,24 +1,17 @@
 "use client"
 
-import type * as React from "react"
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 import { CheckIcon, InfoIcon, Loader2Icon, TriangleAlertIcon, XIcon } from "lucide-react"
 
-/** The round badge leading a toast: white glyph on the toast's meaning colour. */
-function ToastIcon({ className, children }: { className: string; children: React.ReactNode }) {
-  return (
-    <span className={`grid size-6 place-items-center rounded-full text-white [&_svg]:size-3.5 ${className}`}>
-      {children}
-    </span>
-  )
-}
-
 /**
- * Toasts as in the mockup, like an iOS banner rather than a web alert: a dark
- * pill (light in the dark theme) as wide as its text, centred at the top,
- * a round coloured badge with the status glyph on the left, a soft shadow.
- * Sonner keeps the behaviour (stacking, swipe to dismiss, timers, Undo).
+ * Toasts as a black island at the top, in both themes, like iOS's Dynamic
+ * Island (chosen 2026-10-09): every kind the same size, 52 high and 320 wide
+ * (less on a narrow screen), whatever its text. The status glyph sits bare
+ * in its meaning colour (success in the accent lime); the title takes up to
+ * two lines, or one above a one-line description, cut with "…"; an action
+ * such as Hoàn tác is lime text at the end. Sonner keeps the behaviour
+ * (stacking, swipe to dismiss, timers).
  */
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
@@ -28,46 +21,25 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       icons={{
-        success: (
-          <ToastIcon className="bg-income">
-            <CheckIcon strokeWidth={3} />
-          </ToastIcon>
-        ),
-        info: (
-          <ToastIcon className="bg-transfer">
-            <InfoIcon strokeWidth={2.5} />
-          </ToastIcon>
-        ),
-        warning: (
-          <ToastIcon className="bg-warning">
-            <TriangleAlertIcon strokeWidth={2.5} />
-          </ToastIcon>
-        ),
-        error: (
-          <ToastIcon className="bg-destructive">
-            <XIcon strokeWidth={3} />
-          </ToastIcon>
-        ),
-        loading: (
-          <ToastIcon className="bg-primary-foreground/15 text-primary-foreground">
-            <Loader2Icon className="animate-spin" />
-          </ToastIcon>
-        ),
+        success: <CheckIcon className="text-ai" strokeWidth={3} />,
+        info: <InfoIcon className="text-transfer" strokeWidth={2.5} />,
+        warning: <TriangleAlertIcon className="text-warning" strokeWidth={2.5} />,
+        error: <XIcon className="text-expense" strokeWidth={3} />,
+        loading: <Loader2Icon className="animate-spin text-island-foreground/70" strokeWidth={2.5} />,
       }}
       toastOptions={{
         unstyled: true,
         classNames: {
           toast:
-            "inset-x-0 mx-auto flex w-max! max-w-full items-center font-sans gap-2.5 rounded-[26px] bg-primary py-2.5 pr-5 pl-5 text-sm text-primary-foreground shadow-[0_10px_40px_rgb(0_0_0/0.25)] has-[[data-icon]]:pl-2.5 sm:max-w-md",
-          icon: "flex shrink-0 items-center justify-center",
-          content: "flex min-w-0 flex-col",
-          title: "leading-5 font-medium",
-          // Sonner colours descriptions per theme on its own; keep them on the pill's colour.
-          description: "text-xs leading-4 text-primary-foreground/60!",
-          actionButton:
-            "-mr-2.5 ml-1 h-8 shrink-0 rounded-full bg-primary-foreground/15 px-3 text-xs font-medium text-primary-foreground",
-          cancelButton:
-            "ml-1 h-8 shrink-0 rounded-full px-3 text-xs font-medium text-primary-foreground opacity-70",
+            "inset-x-0 mx-auto flex h-13 w-80! max-w-[calc(100vw-2rem)] items-center gap-3 rounded-full bg-island pr-2 pl-5 font-sans text-sm text-island-foreground shadow-[0_10px_40px_rgb(0_0_0/0.3)] has-[[data-icon]]:pl-4 dark:ring-1 dark:ring-island-foreground/10",
+          icon: "flex size-6 shrink-0 items-center justify-center [&_svg]:size-5",
+          content: "flex min-w-0 flex-1 flex-col justify-center pr-2",
+          // Two lines alone; one above a description, so the island never grows.
+          title: "line-clamp-2 leading-[18px] font-medium [[data-content]:has([data-description])>&]:line-clamp-1",
+          // Sonner colours descriptions per theme on its own; keep them on the island's colour.
+          description: "truncate text-xs leading-4 text-island-foreground/55!",
+          actionButton: "-ml-1 h-9 shrink-0 rounded-full px-3 text-sm font-semibold text-ai",
+          cancelButton: "-ml-1 h-9 shrink-0 rounded-full px-3 text-sm font-medium text-island-foreground/60",
         },
       }}
       {...props}

@@ -64,6 +64,8 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --color-ai: var(--ai);
   --color-ai-foreground: var(--ai-foreground);
   --color-ai-strong: var(--ai-strong);
+  --color-island: var(--island);
+  --color-island-foreground: var(--island-foreground);
   --color-warning: var(--warning);
   --color-field: var(--field);
   --color-track: var(--track);
@@ -167,6 +169,9 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --ai: oklch(0.911 0.1775 119.6);
   --ai-foreground: oklch(0.209 0.0042 264.5);
   --ai-strong: oklch(0.6 0.16 127);
+  /* Toasts: a black island in both themes (2026-10-09), as iOS's Dynamic Island. */
+  --island: oklch(0.18 0 0);
+  --island-foreground: oklch(1 0 0);
   --warning: oklch(0.769 0.188 70.08);
   /*
    * Fills that depend on the surface below (see the surface-* utilities):
@@ -227,6 +232,8 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --ai-foreground: oklch(0.209 0.0042 264.5);
   /* On the dark page the lime itself reads well. */
   --ai-strong: oklch(0.911 0.1775 119.6);
+  --island: oklch(0.18 0 0);
+  --island-foreground: oklch(1 0 0);
   --warning: oklch(0.828 0.189 84.429);
   /* On a dark card, white at 6%, as in the mockup. */
   --field-plain: oklch(1 0 0 / 0.06);
