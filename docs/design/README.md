@@ -129,11 +129,11 @@ component ở đó là cả app đổi theo.
   màu trang đã phủ tối sau khi lớp phủ hiện xong. Phần tử `fixed` mới chạm mép trên cũng đặt nền ở
   `::before`, trừ khi nó cố ý mang màu cho thanh.
 - **Toast (Sonner, `components/ui/sonner.tsx`):** đảo đen kiểu Dynamic Island (chọn 2026-10-09,
-  thay viên thuốc rộng vừa chữ), giữa phía trên, đen ở cả hai theme (token `island`). Mọi loại
+  thay viên thuốc rộng vừa chữ), giữa phía trên, ngược màu trang (token `island`): đen ở theme sáng, trắng ở theme tối. Mọi loại
   cùng một cỡ: cao 52, rộng 320 (hẹp hơn trên màn rất hẹp). Glyph trần theo màu ý nghĩa
-  (thành công `ai` xanh chanh, lỗi `expense`, cảnh báo `warning`, thông tin `transfer`, đang tải
+  (thành công `island-accent`: xanh chanh trên đen, xanh chanh đậm trên trắng; lỗi `expense`, cảnh báo `warning`, thông tin `transfer`, đang tải
   trắng mờ); tiêu đề tối đa hai dòng, hoặc một dòng trên một dòng mô tả, cắt bằng "…", nên
-  toast không bao giờ cao lên; nút Hoàn tác là chữ xanh chanh ở cuối. Sonner vẫn lo xếp chồng,
+  toast không bao giờ cao lên; nút Hoàn tác là chữ `island-accent` ở cuối. Sonner vẫn lo xếp chồng,
   vuốt để đóng, hẹn giờ.
 - **Dialog, AlertDialog:** bo 20. Chỉ để xác nhận hoặc nhập rất ngắn; nút huỷ màu xám.
 - **DropdownMenu, Select, Combobox (danh sách):** bo 20, dòng cao 40.
