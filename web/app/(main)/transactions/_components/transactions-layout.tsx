@@ -50,9 +50,10 @@ export function TransactionsLayout({ summary, filters, children, listOnly = fals
           up the search lines up with the top of the month's card, and the list
           is a pane pinned below the shell's sticky header (4rem, 5rem with
           room) down to 1rem above the window's bottom, scrolling on its own
-          and not handing the scroll on to the page at its ends. 4px of margin
+          and not handing the scroll on to the page at its ends, with no scroll
+          bar; the days' captions pin to its top. 4px of margin
           and padding keep the cards' rings from being clipped by the pane. */}
-      <div className="@container flex min-w-0 flex-col gap-6 md:gap-8 lg:sticky lg:top-20 lg:-m-1 lg:max-h-[calc(100svh-6rem)] lg:overflow-y-auto lg:overscroll-contain lg:p-1 lg:[scrollbar-width:thin]">
+      <div className="@container flex min-w-0 flex-col gap-6 md:gap-8 lg:sticky lg:top-20 lg:-m-1 lg:max-h-[calc(100svh-6rem)] lg:overflow-y-auto lg:overscroll-contain lg:p-1 lg:[scrollbar-width:none] lg:[--sticky-caption-pad:0.75rem] lg:[--sticky-caption-top:-0.25rem] lg:[&::-webkit-scrollbar]:hidden">
         {children}
       </div>
     </div>

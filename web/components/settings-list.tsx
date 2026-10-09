@@ -99,7 +99,10 @@ function SettingsGroup({
           stickyCaption &&
             // A 44px band on phones (12 above the caption, 8 below it, which
             // stands in for the gap to the card), so a pinned day reads as a bar.
-            "sticky top-[env(safe-area-inset-top,0px)] z-10 bg-background/90 pb-2 backdrop-blur-md max-md:-mx-(--main-content-px) max-md:-mt-3 max-md:min-h-11 max-md:px-[calc(var(--main-content-px)+--spacing(4))] max-md:pt-3 md:top-16",
+            // From md, under the shell's sticky header (4rem), unless a pane that
+            // scrolls on its own sets --sticky-caption-top and, for a band like
+            // the phone's, --sticky-caption-pad (the transactions list).
+            "sticky top-[env(safe-area-inset-top,0px)] z-10 bg-background/90 pb-2 backdrop-blur-md max-md:-mx-(--main-content-px) max-md:-mt-3 max-md:min-h-11 max-md:px-[calc(var(--main-content-px)+--spacing(4))] max-md:pt-3 md:top-[var(--sticky-caption-top,4rem)] md:-mt-[var(--sticky-caption-pad,0px)] md:pt-[var(--sticky-caption-pad,0px)]",
         )}
       >
         {title ? (
