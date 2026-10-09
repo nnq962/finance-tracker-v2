@@ -27,7 +27,11 @@ export function ProfileCard({
 }) {
   return (
     <Card size="lg" variant="inverse" discs={false}>
-      <span aria-hidden="true" className="pointer-events-none absolute -top-20 -left-16 -z-10 size-56 rounded-full bg-ai/20 blur-3xl" />
+      {/* A radial gradient, not a blurred disc: Safari lets a blur spill past the card's rounded corners. */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-28 -left-24 -z-10 size-72 bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--ai)_22%,transparent),transparent)]"
+      />
       <CardContent className="flex items-center gap-4">
         <Avatar size="xl" className="ring-4 ring-ai/25">
           <AvatarImage src={avatar} alt={name} />

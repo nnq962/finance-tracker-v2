@@ -21,7 +21,6 @@ function UsageMeter({ label, left, total, note }: { label: string; left: number;
         </p>
       </div>
       <Progress
-        tone="ai"
         value={total > 0 ? (left / total) * 100 : 0}
         aria-label={`${label}: còn ${left} trên ${total}`}
       />

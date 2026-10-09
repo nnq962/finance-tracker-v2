@@ -30,7 +30,7 @@ component ở đó là cả app đổi theo.
 4. **Chữ rõ thứ bậc.** Số tiền của thẻ dẫn đầu là chữ lớn nhất màn; tên trang 24, số tiền và
    tiêu đề đậm 600, chữ thường 400.
 5. **Màu dịu, có ý nghĩa.** `income` tiền vào (emerald), `expense` tiền ra (rose), `transfer`
-   chuyển khoản (sky), `ai` AI và Pro, cũng là điểm nhấn duy nhất của app (xanh chanh `#d4f25a`, 2026-10-09: chỉ làm nền với chữ mực `ai-foreground`, hoặc nằm trên màu đen: chip con số ở thẻ dẫn đầu, tab đang mở, nhãn Pro; chữ, icon, vạch màu AI trên nền sáng dùng `ai-strong`, xanh chanh đậm; theme tối `ai-strong` chính là xanh chanh), `warning` nhắc nhở (amber). Ô icon dùng màu
+   chuyển khoản (sky), `ai` AI và Pro, cũng là điểm nhấn duy nhất của app (xanh chanh `#d4f25a`, 2026-10-09: chỉ làm nền với chữ mực `ai-foreground`, hoặc nằm trên màu đen: chip con số ở thẻ dẫn đầu, tab đang mở, nhãn Pro; chữ và icon màu AI trên nền sáng dùng `ai-strong`, xanh chanh đậm; theme tối `ai-strong` chính là xanh chanh), `warning` nhắc nhở (amber). Ô icon dùng màu
    đó (hay màu hạng mục) đã làm dịu về xám, icon màu mực (`tile-tinted`), để list không thành cầu
    vồng. Số tiền: chỉ tiền vào có màu; tiền chi, chuyển khoản để màu chữ thường. Đỏ chỉ để cảnh
    báo thật: quá hạn, số dư âm.
@@ -97,7 +97,7 @@ component ở đó là cả app đổi theo.
 - **Slider:** rãnh dày 8, núm trắng; hai giá trị là khoảng; `formatValue` hiện bong bóng giá trị
   khi kéo.
 - **Accordion:** câu hỏi chữ 14, dòng cao từ 56, nút + trong vòng xám xoay thành × khi mở.
-- **Progress:** thanh dày 8; `tone="ai"` màu `ai-strong` cho lượt AI (Cài đặt), để không thành thêm một khối đen. **Empty:** icon mảnh trong ô 80 bo 20 nền `field` theo bề mặt (trắng trên nền xám của trang, sheet; xám trên thẻ trắng), tiêu đề 16. Đồng hồ lượt AI ghi "Còn N/M", nên thanh đầy là chưa dùng.
+- **Progress:** thanh dày 8, màu mực (trắng ở theme tối) trên rãnh xám, kể cả lượt AI ở Cài đặt (2026-10-09: bỏ `tone="ai"`). **Empty:** icon mảnh trong ô 80 bo 20 nền `field` theo bề mặt (trắng trên nền xám của trang, sheet; xám trên thẻ trắng), tiêu đề 16. Đồng hồ lượt AI ghi "Còn N/M", nên thanh đầy là chưa dùng.
 - **Skeleton:** nền theo bề mặt (`track`): đậm hơn nền xám của trang, xám rất nhạt trên thẻ trắng, sáng 15% trên thẻ dẫn đầu. Không truyền `bg-*` ở nơi dùng. Ngừng nhấp nháy khi giảm chuyển động.
 - **Badge:** viên thuốc cao 24 có chấm màu ở đầu; kiểu màu ý nghĩa `income`, `expense`,
   `transfer`, `ai`, `warning`. `count` là số trên vai icon như trên icon app (chuông thông báo):
