@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation"
 import type { Account } from "@/lib/accounts/types"
 import { NoticeBanner } from "@/components/app/notice-banner"
 import { PageSheet, PageSheetFooter } from "@/components/app/page-sheet"
-import { SettingsGroup } from "@/components/settings-list"
+import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import {
   Empty,
   EmptyDescription,
@@ -27,7 +27,6 @@ import {
 import type { Contact, Debt, DebtDirection, NewDebt, NewDebtPayment } from "../_types/debt"
 import {
   DebtDetailInfo,
-  DebtDetailPanel,
   DebtDetailSkeleton,
   DebtEditButton,
   DebtRecordPaymentButton,
@@ -35,23 +34,6 @@ import {
 import { getDebtSummary } from "../_lib/get-debt-summary"
 import { DebtBalance } from "./debt-balance"
 import { DebtListItem } from "./debt-list-item"
-
-// Matches Tailwind's `xl`, where the detail panel sits beside the list.
-const SIDE_PANEL_QUERY = "(min-width: 80rem)"
-
-function subscribeSidePanel(onChange: () => void) {
-  const query = window.matchMedia(SIDE_PANEL_QUERY)
-  query.addEventListener("change", onChange)
-  return () => query.removeEventListener("change", onChange)
-}
-
-function useHasSidePanel() {
-  return React.useSyncExternalStore(
-    subscribeSidePanel,
-    () => window.matchMedia(SIDE_PANEL_QUERY).matches,
-    () => false,
-  )
-}
 
 type DebtsViewProps = {
   /** A debt to show, asked from outside the list (the contacts); a new `key` asks again for the same one. */
@@ -89,7 +71,6 @@ export function DebtsView({
   const router = useRouter()
   const [, startNavigation] = React.useTransition()
   const [sheetDebtId, setSheetDebtId] = React.useState<string | null>(null)
-  const hasSidePanel = useHasSidePanel()
   const selectedDebtId = initialSelectedDebtId ?? debts[0]?.id
   const contactById = new Map(contacts.map((contact) => [contact.id, contact]))
   const openDebts = debts.filter((debt) => !isSettled(debt)).sort(compareDebtsByUrgency)
@@ -107,10 +88,6 @@ export function DebtsView({
       borrowedCount={openCount("borrowed")}
     />
   )
-  const selectedDebt = debts.find((debt) => debt.id === selectedDebtId)
-  const selectedContact = selectedDebt
-    ? contactById.get(selectedDebt.contactId)
-    : undefined
   // Payments are only loaded for the selected debt, so the sheet waits for
   // the navigation that selects it. A deleted debt closes the sheet.
   const sheetDebt = sheetDebtId ? debts.find((debt) => debt.id === sheetDebtId) : undefined
@@ -118,9 +95,7 @@ export function DebtsView({
   const isSheetReady = sheetDebt !== undefined && sheetDebt.id === selectedDebtId
 
   function selectDebt(debtId: string) {
-    if (!window.matchMedia(SIDE_PANEL_QUERY).matches) {
-      setSheetDebtId(debtId)
-    }
+    setSheetDebtId(debtId)
 
     if (debtId === selectedDebtId) return
 
@@ -131,7 +106,7 @@ export function DebtsView({
     )
   }
 
-  // Shown as a tap on its row would: the sheet on phones, the panel beside the list on wide screens.
+  // Shown as a tap on its row would: in its sheet.
   const selectDebtRef = React.useRef(selectDebt)
   React.useEffect(() => {
     selectDebtRef.current = selectDebt
@@ -168,7 +143,7 @@ export function DebtsView({
           key={debt.id}
           contact={contact}
           debt={debt}
-          active={hasSidePanel && debt.id === selectedDebt?.id}
+          active={false}
           onSelect={() => selectDebt(debt.id)}
         />
       )
@@ -193,9 +168,8 @@ export function DebtsView({
   }
 
   return (
-    <div className="grid items-start gap-6 md:gap-8 xl:grid-cols-[minmax(0,1fr)_24rem]">
-      <div className="min-w-0 space-y-6 md:space-y-8">
-        {tiles}
+    <div className="space-y-6 md:space-y-8">
+      {tiles}
 
         {overdueDebts.length > 0 ? (
           <NoticeBanner
@@ -211,10 +185,21 @@ export function DebtsView({
           </NoticeBanner>
         ) : null}
 
-        {/* The totals are on the tiles above. */}
+      {/* The totals are on the card above. Stacked on phones; from lg up the
+          two sides stand side by side, Cần thu | Cần trả, an empty side kept
+          with a line so the other stays in its column. */}
+      <div className="grid items-start gap-6 md:gap-8 lg:grid-cols-2">
         {sections.map(({ direction: side, label }) => {
           const items = openDebts.filter((debt) => debt.direction === side)
-          if (items.length === 0) return null
+          if (items.length === 0) {
+            return (
+              <div key={side} className="hidden lg:block">
+                <SettingsGroup title={`${label} · 0`}>
+                  <SettingsRow title="Không có khoản nào" />
+                </SettingsGroup>
+              </div>
+            )
+          }
 
           return (
             <SettingsGroup key={side} title={`${label} · ${items.length}`}>
@@ -222,6 +207,7 @@ export function DebtsView({
             </SettingsGroup>
           )
         })}
+      </div>
 
         {settledDebts.length > 0 ? (
           <SettingsGroup
@@ -232,23 +218,11 @@ export function DebtsView({
           </SettingsGroup>
         ) : null}
 
-      </div>
-
-      {/* Full height, scrolling with the page rather than on its own. */}
-      <div className="hidden xl:block">
-        {selectedDebt && selectedContact ? (
-          <DebtDetailPanel
-            key={selectedDebt.id}
-            {...getDetailProps(selectedDebt, selectedContact)}
-          />
-        ) : null}
-      </div>
-
       <PageSheet
         title="Chi tiết khoản nợ"
         action={
           isSheetReady && sheetDebt && sheetContact ? (
-            <DebtEditButton {...getDetailProps(sheetDebt, sheetContact)} variant="icon" />
+            <DebtEditButton {...getDetailProps(sheetDebt, sheetContact)} />
           ) : undefined
         }
         open={sheetDebt !== undefined}

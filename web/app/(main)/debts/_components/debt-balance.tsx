@@ -38,8 +38,10 @@ function balanceNote(net: number, total: number) {
 
 /**
  * The debts page's lead card: a half ring weighs what is owed to you (green)
- * against what you owe (ink), with the balance inside it; the two figures sit
- * under its ends and a line says which way it leans.
+ * against what you owe (ink). On phones the balance sits inside it, the two
+ * figures under its ends and a line says which way it leans. From lg up the
+ * card lies across the page (chosen 2026-10-09): the ring on the left, the
+ * balance, owed to you and owed by you as three figures on the right.
  */
 export function DebtBalance({
   lent,
@@ -56,17 +58,38 @@ export function DebtBalance({
   const net = lent - borrowed
   return (
     <Card size="lg" role="region" aria-label="Cần thu và cần trả">
-      <CardContent className="flex flex-col items-center">
+      <CardContent className="flex flex-col items-center lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-center lg:gap-10">
         <div className="relative w-full max-w-64">
           <svg viewBox="0 0 200 110" className="w-full" aria-hidden="true">
             <HalfRing share={total === 0 ? null : lent / total} />
           </svg>
-          <div className="absolute inset-x-0 bottom-1 flex flex-col items-center">
+          <div className="absolute inset-x-0 bottom-1 flex flex-col items-center lg:hidden">
             <CardLabel>Ròng</CardLabel>
             <Money amount={net} size="lg" sign={net === 0 ? "never" : "always"} />
           </div>
         </div>
-        <div className="mt-4 grid w-full grid-cols-2 gap-4">
+        <div className="hidden grid-cols-3 gap-6 lg:grid">
+          <div className="flex min-w-0 flex-col gap-1">
+            <CardLabel>Ròng</CardLabel>
+            <Money amount={net} size="lg" sign={net === 0 ? "never" : "always"} />
+            <span className="text-xs text-muted-foreground">{balanceNote(net, total)}</span>
+          </div>
+          <div className="flex min-w-0 flex-col gap-1">
+            <span className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
+              <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-income" />
+              <span className="truncate">Cần thu · {lentCount} khoản</span>
+            </span>
+            <Money amount={lent} size="lg" tone={lent > 0 ? "income" : "default"} />
+          </div>
+          <div className="flex min-w-0 flex-col gap-1">
+            <span className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
+              <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-foreground" />
+              <span className="truncate">Cần trả · {borrowedCount} khoản</span>
+            </span>
+            <Money amount={borrowed} size="lg" />
+          </div>
+        </div>
+        <div className="mt-4 grid w-full grid-cols-2 gap-4 lg:hidden">
           <div className="flex min-w-0 flex-col gap-0.5">
             <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
               <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-income" />
@@ -82,7 +105,9 @@ export function DebtBalance({
             <Money amount={borrowed} size="md" />
           </div>
         </div>
-        <span className="mt-4 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">{balanceNote(net, total)}</span>
+        <span className="mt-4 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground lg:hidden">
+          {balanceNote(net, total)}
+        </span>
       </CardContent>
     </Card>
   )
@@ -92,17 +117,25 @@ export function DebtBalance({
 export function DebtBalanceSkeleton() {
   return (
     <Card size="lg" aria-hidden="true">
-      <CardContent className="flex flex-col items-center">
+      <CardContent className="flex flex-col items-center lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-center lg:gap-10">
         <div className="relative w-full max-w-64">
           <svg viewBox="0 0 200 110" className="w-full">
             <HalfRing share={null} />
           </svg>
-          <div className="absolute inset-x-0 bottom-1 flex flex-col items-center gap-2">
+          <div className="absolute inset-x-0 bottom-1 flex flex-col items-center gap-2 lg:hidden">
             <Skeleton className="h-3 w-10" />
             <Skeleton className="h-5 w-32" />
           </div>
         </div>
-        <div className="mt-4 grid w-full grid-cols-2 gap-4">
+        <div className="hidden grid-cols-3 gap-6 lg:grid">
+          {[0, 1, 2].map((index) => (
+            <div key={index} className="flex flex-col gap-2">
+              <Skeleton className="h-3.5 w-24" />
+              <Skeleton className="h-5 w-32" />
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 grid w-full grid-cols-2 gap-4 lg:hidden">
           {[0, 1].map((index) => (
             <div key={index} className="flex flex-col gap-2 even:items-end">
               <Skeleton className="h-3 w-24" />
@@ -110,7 +143,7 @@ export function DebtBalanceSkeleton() {
             </div>
           ))}
         </div>
-        <Skeleton className="mt-4 h-6 w-48 rounded-full" />
+        <Skeleton className="mt-4 h-6 w-48 rounded-full lg:hidden" />
       </CardContent>
     </Card>
   )

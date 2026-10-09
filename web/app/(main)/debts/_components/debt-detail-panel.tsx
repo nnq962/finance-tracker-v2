@@ -5,7 +5,7 @@ import { CheckIcon, PencilIcon } from "lucide-react"
 
 import { AccountLogo } from "@/components/account-logo"
 import { Money } from "@/components/app/money"
-import { groupCaptionClassName, SettingsGroup, SettingsGroupSkeleton, SettingsRow } from "@/components/settings-list"
+import { SettingsGroup, SettingsGroupSkeleton, SettingsRow } from "@/components/settings-list"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -14,7 +14,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import type { Account } from "@/lib/accounts/types"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatShortDate } from "@/lib/format-date"
-import { cn } from "@/lib/utils"
 
 import { getDueProjection, todayDate } from "../_lib/debt-payments"
 import { formatDebtDate, getDebtDeadline, getDebtMetrics } from "../_lib/debt-presentation"
@@ -36,53 +35,22 @@ type DebtDetailPanelProps = {
   onRecordPayment: (payment: NewDebtPayment) => Promise<void>
 }
 
-/** Side panel beside the list (xl and up), its person and the edit button over it; below xl the same content opens in a sheet. */
-export function DebtDetailPanel(props: DebtDetailPanelProps) {
-  return (
-    <section aria-labelledby="debt-detail-title" className="space-y-2">
-      {/* A caption like the summary's beside it, so both columns start on one line. */}
-      <div className="flex min-h-6 items-center justify-between gap-3 px-3">
-        {/* The person is named under it, so the caption says what this is, as the sheet's bar does. */}
-        <h2 id="debt-detail-title" className={cn("truncate", groupCaptionClassName)}>
-          Chi tiết khoản nợ
-        </h2>
-        <DebtEditButton {...props} variant="text" />
-      </div>
-      <div className="space-y-6">
-        <DebtDetailInfo {...props} />
-        {getDebtMetrics(props.debt).remainingAmount > 0 && props.debt.status !== "settled" ? (
-          <DebtRecordPaymentButton {...props} />
-        ) : null}
-      </div>
-    </section>
-  )
-}
-
 /**
- * Edits the debt: a round pencil for a sheet's bar, or a small text button
- * beside the side panel's caption.
+ * Edits the debt: a round pencil for the sheet's bar.
  */
 export function DebtEditButton({
-  variant,
   accounts,
   contacts,
   debt,
   onChangeDebt,
-}: DebtDetailPanelProps & { variant: "icon" | "text" }) {
+}: DebtDetailPanelProps) {
   const [editing, setEditing] = React.useState(false)
 
   return (
     <>
-      {variant === "icon" ? (
-        <Button type="button" variant="secondary" size="icon" aria-label="Sửa khoản nợ" onClick={() => setEditing(true)}>
-          <PencilIcon />
-        </Button>
-      ) : (
-        <Button type="button" variant="ghost" size="sm" className="-my-2" onClick={() => setEditing(true)}>
-          <PencilIcon />
-          Sửa
-        </Button>
-      )}
+      <Button type="button" variant="secondary" size="icon" aria-label="Sửa khoản nợ" onClick={() => setEditing(true)}>
+        <PencilIcon />
+      </Button>
       <AddDebtSheet
         debt={debt}
         contacts={contacts}
