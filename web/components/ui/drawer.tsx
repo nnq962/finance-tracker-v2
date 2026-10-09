@@ -10,18 +10,22 @@ function Drawer({
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root> & {
   /**
-   * page: for DrawerContent variant="page". Nearly as tall as the screen, it
-   * leaves the keyboard to the browser, which scrolls the focused field into
-   * view as smoothly as in a Sheet; vaul's own repositioning and its styles
-   * on <body> made the sheet jump while the keyboard opened. Scrolling
-   * behind stays locked by the dialog underneath.
+   * page: for DrawerContent variant="page". Nearly as tall as the screen; its
+   * styles on <body> made the sheet jump while the keyboard opened, so they
+   * are off and scrolling behind stays locked by the dialog underneath.
    */
   variant?: "default" | "page"
 }) {
   return (
     <DrawerPrimitive.Root
       data-slot="drawer"
-      {...(variant === "page" ? { repositionInputs: false, noBodyStyles: true } : {})}
+      // Every drawer leaves the keyboard to the browser, which scrolls the
+      // focused field into view. vaul's repositioning set a fixed height on
+      // the sheet while the keyboard was up and, once it closed, put back the
+      // height measured before: content added meanwhile (a coupon taken at
+      // checkout) was cut off at the bottom, the pay button with it.
+      repositionInputs={false}
+      {...(variant === "page" ? { noBodyStyles: true } : {})}
       {...props}
     />
   )
@@ -122,7 +126,11 @@ function DrawerContent({
         {...props}
       >
         <div className="mx-auto mt-3 hidden h-1.5 w-10 shrink-0 rounded-full bg-input group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
-        {children}
+        {/* Content taller than the sheet's cap scrolls rather than being cut
+            off (vaul tells a scroll from a drag to close). Inside, not on the
+            sheet: vaul's ::after, which fills the gap under a sheet dragged up,
+            would scroll too. */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">{children}</div>
       </DrawerPrimitive.Content>
     </DrawerPortal>
   )
