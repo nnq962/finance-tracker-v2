@@ -61,6 +61,7 @@ const screens = {
 
 export type Screen = keyof typeof screens
 
+
 type SettingsViewProps = {
   user: SessionUser
   notifications: NotificationState
@@ -144,9 +145,9 @@ export function SettingsView({
   return (
     <>
       {/* One column at every width, as native settings are, so the groups
-          keep their order down to signing out. From md up it is capped and
-          stays left, in line with the page title. */}
-      <div className="grid gap-6 md:max-w-2xl md:gap-8">
+          keep their order down to signing out. From md up the page caps it
+          and centres it, title and all (settingsPageClassName). */}
+      <div className="grid gap-6 md:gap-8">
         {/* The person first, as the page's lead card; the plan opens from Lượt AI below. */}
         <ProfileCard
           name={user.name}

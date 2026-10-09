@@ -10,6 +10,7 @@ import { getAdminData } from "@/lib/plans/admin-data"
 import { checkReturningPayment, getPayOS } from "@/lib/plans/payos"
 import { getPlanState } from "@/lib/plans/repository"
 
+import { settingsPageClassName } from "./_components/settings-layout"
 import { SettingsView } from "./_components/settings-view"
 
 export const metadata: Metadata = {
@@ -40,7 +41,7 @@ export default async function SettingsPage({
   })
 
   return (
-    <Page>
+    <Page className={settingsPageClassName}>
       <PageHeader title="Cài đặt" />
 
       <SettingsView

@@ -222,7 +222,7 @@ Mọi trang tab theo cùng một thứ tự, như các thiết kế app trên Fi
 | Giao dịch | Giao dịch | tháng (viên thuốc), AI | Tiền vào / Tiền ra: hai ô, vào trên xanh chanh, ra trên đen (`FlowTiles variant="lead"`) |
 | Tài khoản | Tài khoản | | Tổng số dư: đen không vòng tròn (`discs={false}`), các loại đang có chồng như thẻ trong ví ở góc, mỗi loại một dòng với số đầy đủ, âm thì đỏ (`BalanceHero`). Từ lg (2026-10-09): thẻ trải hết chiều ngang, dưới là lưới thẻ tài khoản 2 cột (3 từ xl; `AccountCard`: logo, tên, số dư, vào / ra tháng này dưới vạch kẻ, bấm mở sheet chi tiết); "Ngừng sử dụng" vẫn là list gập, rộng tối đa 2xl |
 | Vay nợ | Vay nợ | người liên hệ | Cần thu / Cần trả: thẻ trắng, nửa vòng tròn xanh (cần thu) và mực (cần trả), số ròng ở giữa, một dòng nói nghiêng về bên nào (`DebtBalance`). Từ lg (2026-10-09): thẻ nằm ngang, nửa vòng bên trái, Ròng · Cần thu · Cần trả là ba con số bên phải; dưới là dải quá hạn rồi hai cột Cần thu | Cần trả (bên trống vẫn giữ cột với dòng "Không có khoản nào"); không còn khung chi tiết bên cạnh, khoản nợ mở sheet chi tiết như trên điện thoại |
-| Cài đặt | Cài đặt | | Hồ sơ: đen, quầng xanh chanh mờ sau avatar xanh chanh (`AvatarFallback accent`), nhãn gói `Badge inverse` / `ai` (`ProfileCard`) |
+| Cài đặt | Cài đặt | | Hồ sơ: đen, quầng xanh chanh mờ sau avatar xanh chanh (`AvatarFallback accent`), nhãn gói `Badge inverse` / `ai` (`ProfileCard`) ; từ md cả trang (tiêu đề và các nhóm) là một cột rộng 2xl nằm giữa màn (2026-10-10) |
 
 Mỗi trang một kiểu thẻ dẫn đầu (2026-10-09), cùng bộ màu mực, xanh chanh, màu tiền vào, để Tài sản ròng và Tổng số dư không còn giống nhau.
 

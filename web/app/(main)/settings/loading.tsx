@@ -4,6 +4,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
+import { settingsPageClassName } from "./_components/settings-layout"
+
 /**
  * Same footprint as AiQuotaGroup's UsageMeter: the allowance and what is left
  * of it on a 24px line, the bar, and the note on a 16px one.
@@ -26,6 +28,7 @@ function UsageMeterSkeleton() {
 export default function SettingsLoading() {
   return (
     <Page
+      className={settingsPageClassName}
       role="status"
       aria-label="Đang tải cài đặt"
       aria-busy="true"
@@ -33,7 +36,7 @@ export default function SettingsLoading() {
       <PageHeaderSkeleton title="Cài đặt" />
 
       {/* The groups of SettingsView, in its one capped column. */}
-      <div aria-hidden="true" className="grid gap-6 md:max-w-2xl md:gap-8">
+      <div aria-hidden="true" className="grid gap-6 md:gap-8">
         {/* The profile card: the 48 avatar, name and email, the plan's label. */}
         <Card size="lg" variant="inverse" discs={false}>
           <CardContent className="flex items-center gap-4">
