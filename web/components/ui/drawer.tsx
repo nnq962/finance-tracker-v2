@@ -58,13 +58,16 @@ function DrawerOverlay({
       data-slot="drawer-overlay"
       // A plain dim, as shadcn's drawer, no blur: a backdrop blur under a layer
       // fading in only shows once the fade ends, so the page dimmed and then
-      // went blurry. The dim is on ::before, not on this fixed layer: Safari 26
+      // went blurry. Closing, it lets taps through: while it faded out it took
+      // a tap meant for the sheet below as one outside it, which closed that
+      // sheet too (Xoá → Huỷ → Xoá again on an account); important, over the
+      // inline pointer-events Radix puts on it. The dim is on ::before, not on this fixed layer: Safari 26
       // tints the status bar from the background and backdrop-filter of a
       // fixed element at the screen's top edge (theme-color is ignored), and
       // took the veil's, so the bar turned white under every overlay. It
       // skips pseudo-elements.
       className={cn(
-        "fixed inset-0 z-50 before:absolute before:inset-0 before:bg-black/50 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 z-50 before:absolute before:inset-0 before:bg-black/50 data-[state=closed]:pointer-events-none! data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}

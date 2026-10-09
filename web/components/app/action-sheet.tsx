@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { CheckIcon } from "lucide-react"
 import { Drawer as DrawerPrimitive } from "vaul"
 
@@ -31,13 +32,23 @@ export function ActionSheet({
   onSelect: (value: string) => void
   cancelLabel?: string
 }) {
+  // Each opening gets a fresh sheet: opened again while the last one was
+  // still sliding away (Huỷ, then the same button at once), vaul let the
+  // closing finish and the sheet stayed shut although `open` was true.
+  const [openings, setOpenings] = React.useState(0)
+  const [wasOpen, setWasOpen] = React.useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) setOpenings(openings + 1)
+  }
+
   return (
-    <DrawerPrimitive.Root open={open} onOpenChange={onOpenChange}>
+    <DrawerPrimitive.Root key={openings} open={open} onOpenChange={onOpenChange}>
       <DrawerPortal>
         <DrawerOverlay />
         <DrawerPrimitive.Content
           aria-describedby={undefined}
-          className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-md space-y-2 px-3 pb-[max(env(safe-area-inset-bottom,0px),0.75rem)] outline-none"
+          className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-md space-y-2 px-3 data-[state=closed]:pointer-events-none! pb-[max(env(safe-area-inset-bottom,0px),0.75rem)] outline-none"
         >
           <div className="overflow-hidden rounded-3xl bg-popover text-popover-foreground">
             <DrawerPrimitive.Title className="px-4 py-3 text-center text-xs font-normal text-balance text-muted-foreground">

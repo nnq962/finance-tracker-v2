@@ -39,7 +39,7 @@ function AlertDialogOverlay({
       // Dim (no blur; see DrawerOverlay) on ::before so Safari 26 keeps the status bar's colour;
       // see DrawerOverlay.
       className={cn(
-        "fixed inset-0 z-50 before:absolute before:inset-0 before:bg-black/40 duration-100 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 z-50 before:absolute before:inset-0 before:bg-black/40 data-[state=closed]:pointer-events-none! duration-100 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}
