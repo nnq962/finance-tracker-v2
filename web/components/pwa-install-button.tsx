@@ -191,10 +191,11 @@ function ShareSheetPicture() {
 function AddScreenPicture() {
   return (
     <div className="flex w-full flex-col gap-2 rounded-xl bg-background p-3 text-xs">
-      <div className="flex items-center justify-between">
-        <span className="text-muted-foreground">Huỷ</span>
+      {/* Equal sides around the title, as iOS centres it on the screen whatever the buttons' widths. */}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+        <span className="justify-self-start text-muted-foreground">Huỷ</span>
         <span className="font-medium">Thêm vào MH chính</span>
-        <TapTarget>
+        <TapTarget className="justify-self-end">
           <span className="block px-2 py-0.5 font-semibold text-transfer">Thêm</span>
         </TapTarget>
       </div>
