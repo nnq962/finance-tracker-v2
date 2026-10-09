@@ -8,6 +8,44 @@ import { StatusBarTint } from "@/components/ui/status-bar-tint"
 
 type Mode = "sync" | "manual" | "off"
 
+type Probe = "off" | "plain" | "nudge"
+
+const probeLabels: Record<Probe, string> = {
+  off: "Tắt",
+  plain: "Đổi màu",
+  nudge: "Đổi màu + cuộn 1px",
+}
+
+/**
+ * A strip at the top that swaps colour every second with no touch at all, to
+ * see when Safari takes a new colour for the bar: on its own, or only when
+ * the page scrolls (nudge: 1px down and back with each swap).
+ */
+function SamplingProbe({ probe }: { probe: Probe }) {
+  const [tick, setTick] = React.useState(0)
+
+  React.useEffect(() => {
+    if (probe === "off") return
+    const timer = window.setInterval(() => {
+      setTick((value) => value + 1)
+      if (probe === "nudge") {
+        window.scrollBy(0, 1)
+        requestAnimationFrame(() => window.scrollBy(0, -1))
+      }
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [probe])
+
+  if (probe === "off") return null
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-[max(env(safe-area-inset-top,0px),1px)]"
+      style={{ backgroundColor: tick % 2 ? "var(--income)" : "var(--ai)" }}
+    />
+  )
+}
+
 const modeLabels: Record<Mode, string> = {
   sync: "Dải đồng bộ (như app)",
   manual: "Dải chỉnh tay",
@@ -29,6 +67,7 @@ export function StatusBarLab() {
   const [blur, setBlur] = React.useState(true)
   // Mounted transparent when it is about to fade in, so it never flashes.
   const [entering, setEntering] = React.useState(false)
+  const [probe, setProbe] = React.useState<Probe>("off")
 
   const fade = (to: 0 | 1) => {
     const veil = veilRef.current
@@ -66,6 +105,8 @@ export function StatusBarLab() {
         </div>
       ))}
 
+      <SamplingProbe probe={probe} />
+
       {shown ? (
         <div
           key={`${mode}-${dim}-${bias}-${blur}`}
@@ -89,6 +130,14 @@ export function StatusBarLab() {
       ) : null}
 
       <div className="fixed inset-x-2 bottom-[calc(var(--tab-bar-space)+0.5rem)] z-50 flex flex-col gap-3 rounded-2xl bg-card p-3 text-sm shadow-xl md:bottom-4">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="w-full text-muted-foreground">Thử lấy mẫu (tự đổi màu mỗi giây)</span>
+          {(Object.keys(probeLabels) as Probe[]).map((key) => (
+            <Button key={key} size="sm" variant={probe === key ? "default" : "secondary"} onClick={() => setProbe(key)}>
+              {probeLabels[key]}
+            </Button>
+          ))}
+        </div>
         <div className="flex flex-wrap gap-1.5">
           {(Object.keys(modeLabels) as Mode[]).map((key) => (
             <Button key={key} size="sm" variant={mode === key ? "default" : "secondary"} onClick={() => setMode(key)}>
