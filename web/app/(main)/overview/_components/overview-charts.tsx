@@ -126,12 +126,16 @@ export function CashFlowChart({ data }: { data: OverviewSummary["cashFlow"] }) {
               fill="var(--color-income)"
               radius={[6, 6, 2, 2]}
               maxBarSize={28}
+              // No growing in: see the categories' ring (iOS drops taps then).
+              isAnimationActive={false}
             />
             <Bar
               dataKey="expense"
               fill="var(--color-expense)"
               radius={[6, 6, 2, 2]}
               maxBarSize={28}
+              // No growing in: see the categories' ring (iOS drops taps then).
+              isAnimationActive={false}
             />
           </BarChart>
         </ChartContainer>

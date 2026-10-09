@@ -31,10 +31,6 @@ export function CategoryBreakdown({
   month: string
 }) {
   const [type, setType] = React.useState<CategoryType>("expense")
-  // The ring sweeps in once, when it first shows. After that a new month or
-  // type redraws it at once: Recharts animates by re-rendering every frame,
-  // which held up taps on the calendar's arrows.
-  const [sweptIn, setSweptIn] = React.useState(false)
   const { slices, total } = allocationSlices(categoryGroups, allocation, month, type)
   const typeLabel = type === "expense" ? "chi" : "thu"
 
@@ -81,8 +77,12 @@ export function CategoryBreakdown({
                     // is a full ring with no seam.
                     stroke="var(--card)"
                     strokeWidth={slices.length > 1 ? 2 : 0}
-                    isAnimationActive={sweptIn ? false : "auto"}
-                    onAnimationEnd={() => setSweptIn(true)}
+                    // Drawn at once, never swept in: while the slices grow from
+                    // nothing, iOS Safari takes a tap anywhere on the page as a
+                    // hover over appearing content and sends no click, so the
+                    // page's links missed taps for the ~2s the sweep took each
+                    // time the overview opened.
+                    isAnimationActive={false}
                   >
                     {slices.map((slice) => (
                       <Cell key={slice.key} fill={slice.fill} />
