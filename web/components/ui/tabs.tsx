@@ -46,7 +46,7 @@ const tabsListVariants = cva(
     variants: {
       variant: {
         // A segmented control, as in iOS: a white thumb slides on a grey track.
-        default: "rounded-full bg-track p-1 group-data-horizontal/tabs:h-[52px]",
+        default: "rounded-full bg-track p-1 group-data-horizontal/tabs:h-11",
         // Tabs over content: a short bar slides under the chosen one.
         line: "rounded-none border-b bg-transparent group-data-horizontal/tabs:h-11",
       },
