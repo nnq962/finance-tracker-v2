@@ -3,6 +3,7 @@
 import * as React from "react"
 import { cn } from "cn"
 import { Drawer as DrawerPrimitive } from "vaul"
+import { StatusBarTint } from "@/components/ui/status-bar-tint"
 
 
 function Drawer({
@@ -51,6 +52,7 @@ function DrawerClose({
 
 function DrawerOverlay({
   className,
+  children,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Overlay>) {
   return (
@@ -60,13 +62,16 @@ function DrawerOverlay({
       // tints the status bar from the background and backdrop-filter of a
       // fixed element at the screen's top edge (theme-color is ignored), and
       // took the veil's, so the bar turned white under every overlay. It
-      // skips pseudo-elements, so the bar keeps the app's colour from <html>.
+      // skips pseudo-elements; StatusBarTint gives it the app's colour.
       className={cn(
         "fixed inset-0 z-50 before:absolute before:inset-0 before:bg-black/30 supports-backdrop-filter:before:backdrop-blur-[2px] data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}
-    />
+    >
+      {children}
+      <StatusBarTint />
+    </DrawerPrimitive.Overlay>
   )
 }
 

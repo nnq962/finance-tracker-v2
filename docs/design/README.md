@@ -121,7 +121,10 @@ component ở đó là cả app đổi theo.
   `screen`) dùng chung nền xám với trang thay vì đổi màu. Safari 26 bỏ qua `theme-color` và tô
   thanh theo `background-color`/`backdrop-filter` của phần tử `fixed` sát mép trên, nên lớp phủ
   tối (Drawer, Sheet, Dialog, AlertDialog) đặt nền mờ và blur ở `::before`, không ở chính lớp
-  `fixed`. Phần tử `fixed` mới chạm mép trên cũng làm như vậy, trừ khi nó cố ý mang màu nền app.
+  `fixed`, và chứa `StatusBarTint` (`components/ui/status-bar-tint.tsx`): một dải `fixed` vô hình
+  (opacity 0) màu nền app ở mép trên, để Safari đọc màu đó thay vì tự tính màu xám dưới lớp phủ.
+  Thanh trạng thái vì vậy không đổi màu khi mở hay đóng lớp phủ; chỉ nội dung tối và mờ đi. Phần
+  tử `fixed` mới chạm mép trên cũng đặt nền ở `::before`, trừ khi nó cố ý mang màu nền app.
 - **Toast (Sonner, `components/ui/sonner.tsx`):** như mockup, kiểu banner iOS chứ không phải
   thông báo web: viên thuốc đen (trắng ở theme tối) rộng vừa chữ, giữa phía trên, ô tròn màu
   theo trạng thái (thành công `income`, lỗi `destructive`, cảnh báo `warning`, thông tin
