@@ -1,20 +1,15 @@
 "use client"
 
-import type { ReactNode } from "react"
-import { BellRingIcon, ClockIcon, SaveIcon } from "lucide-react"
+import { useState, type ReactNode } from "react"
+import { BellRingIcon, ChevronDownIcon, ClockIcon, SaveIcon } from "lucide-react"
 
+import { Collapse } from "@/components/app/collapse"
+import { WheelPicker, WheelPickerGroup } from "@/components/app/wheel-picker"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { type NotificationSettings } from "@/lib/notifications/types"
+import { cn } from "@/lib/utils"
 
 export { defaultNotificationSettings, type NotificationSettings } from "@/lib/notifications/types"
 
@@ -50,6 +45,9 @@ export function NotificationDialogContent({
     onSettingsChange({ ...settings, dailyReminderTime: `${hour}:${minute}` })
   }
   const timeDisabled = disabled || !notificationsEnabled
+  const [timeOpen, setTimeOpen] = useState(false)
+  // Folded while the time cannot be changed, e.g. with reminders off.
+  const wheelsOpen = timeOpen && !timeDisabled
 
   const updateSetting = <Key extends keyof NotificationSettings>(
     key: Key,
@@ -76,47 +74,48 @@ export function NotificationDialogContent({
             />
           }
         />
+        {/* As TimeRows and iOS: the time on the row, the wheels unfolding under it. */}
         <SettingsRow
           icon={ClockIcon}
           title="Giờ nhắc"
-          action={
-            <div className="flex items-center gap-1.5">
-              <Select
-                value={reminderHour}
-                onValueChange={(hour) => updateReminderTime(hour, reminderMinute)}
-                disabled={timeDisabled}
-              >
-                <SelectTrigger id="daily-reminder-hour" aria-label="Giờ nhắc" className="w-18">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent position="popper" showScrollButtons={false} className="max-h-[min(15rem,var(--radix-select-content-available-height))]">
-                  <SelectGroup>
-                    {reminderHours.map((hour) => (
-                      <SelectItem key={hour} value={hour}>{hour}</SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              <span aria-hidden="true" className="text-muted-foreground">:</span>
-              <Select
-                value={reminderMinute}
-                onValueChange={(minute) => updateReminderTime(reminderHour, minute)}
-                disabled={timeDisabled}
-              >
-                <SelectTrigger id="daily-reminder-minute" aria-label="Phút nhắc" className="w-18">
-                  <SelectValue>{reminderMinute}</SelectValue>
-                </SelectTrigger>
-                <SelectContent position="popper" showScrollButtons={false} className="max-h-[min(15rem,var(--radix-select-content-available-height))]">
-                  <SelectGroup>
-                    {reminderMinutes.map((minute) => (
-                      <SelectItem key={minute} value={minute}>{minute}</SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
+          value={
+            <span className="flex items-center gap-1 tabular-nums">
+              {settings.dailyReminderTime}
+              <ChevronDownIcon
+                aria-hidden="true"
+                className={cn("size-4 transition-transform motion-reduce:transition-none", wheelsOpen && "rotate-180")}
+              />
+            </span>
           }
+          chevron={false}
+          expanded={wheelsOpen}
+          disabled={timeDisabled}
+          onClick={() => setTimeOpen((open) => !open)}
         />
+        <li>
+          <Collapse open={wheelsOpen}>
+            {/* The row's 16 at the sides, around the band marking the chosen time too. */}
+            <div className="px-4 pb-3">
+              <WheelPickerGroup>
+                <WheelPicker
+                  items={reminderHours}
+                  value={Math.max(0, reminderHours.indexOf(reminderHour))}
+                  onValueChange={(index) => updateReminderTime(reminderHours[index], reminderMinute)}
+                  label="Giờ nhắc"
+                />
+                <span aria-hidden="true" className="relative text-xl font-medium">
+                  :
+                </span>
+                <WheelPicker
+                  items={reminderMinutes}
+                  value={Math.max(0, reminderMinutes.indexOf(reminderMinute))}
+                  onValueChange={(index) => updateReminderTime(reminderHour, reminderMinutes[index])}
+                  label="Phút nhắc"
+                />
+              </WheelPickerGroup>
+            </div>
+          </Collapse>
+        </li>
       </SettingsGroup>
       {onReminderTimeSave ? (
         <Button

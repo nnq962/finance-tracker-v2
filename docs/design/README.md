@@ -152,7 +152,7 @@ component ở đó là cả app đổi theo.
 | `MonthSelect` | Tháng đang xem dạng nút viên thuốc "Tháng 10, 2026 ▾", chạm mở `MonthPickerSheet`; tới tháng nào cũng hai chạm. Một cách đổi tháng duy nhất cho trang có tháng, không kèm mũi tên ‹ ›. `size="bar"`: cao 44 và gọn ("Tháng 10", năm khác thì "Tháng 10/2025") cho đầu trang |
 | `Stepper` | Đếm từng bước bằng − / + (số người, số tháng) |
 | `OtpInput` | Mã một lần trong các ô riêng; tự nhảy ô, dán được cả mã |
-| `WheelPicker` + `WheelPickerGroup` | Bánh xe cuộn kiểu iOS để chọn giờ, phút |
+| `WheelPicker` + `WheelPickerGroup` | Bánh xe cuộn kiểu iOS để chọn giờ, phút. Trong một nhóm dòng thì mở tại chỗ như iOS: dòng ghi giờ "20:00 ⌄" (như `TimeRows`), chạm thì bánh xe trượt mở ngay dưới (`Collapse`), dải chọn thụt 16 như lề dòng; dòng mờ và bánh xe gập khi không đổi được (giờ "Nhắc ghi chi tiêu" khi tắt nhắc) |
 | `DateStrip` | Một tuần ngày nằm ngang để chọn một ngày; chấm đánh dấu ngày có việc |
 | `RulerSlider` | Thước vạch kéo để chọn giá trị, kim màu `warning` |
 | `Rating` | Sao 1–5 |
