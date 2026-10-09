@@ -4,7 +4,7 @@ import { SettingsGroupSkeleton } from "@/components/settings-list"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 
-import { BudgetLayout, budgetPageClassName } from "./_components/budget-layout"
+import { BudgetLayout } from "./_components/budget-layout"
 
 /**
  * Same footprint as BalanceHero with its kinds listed: the label's 20px line,
@@ -43,7 +43,6 @@ function BalanceHeroSkeleton() {
 export default function AccountsLoading() {
   return (
     <Page
-      className={budgetPageClassName}
       role="status"
       aria-label="Đang tải tài khoản"
       aria-busy="true"
@@ -51,8 +50,39 @@ export default function AccountsLoading() {
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
         <PageHeaderSkeleton title="Tài khoản" actions={["w-44"]} />
         <BudgetLayout summary={<BalanceHeroSkeleton />}>
-          {/* "Đang dùng": each account's logo, name and kind, balance and chevron. */}
-          <SettingsGroupSkeleton rows={3} description trailing="value" chevron />
+          {/* "Đang dùng": on phones each account's logo, name and kind, balance
+              and chevron; from lg up AccountCard's footprint in the grid. */}
+          <div className="lg:hidden">
+            <SettingsGroupSkeleton rows={3} description trailing="value" chevron />
+          </div>
+          <div className="hidden flex-col gap-2 lg:flex">
+            <div className="flex h-4 items-center px-4">
+              <Skeleton className="h-3 w-24" />
+            </div>
+            <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
+              {[0, 1, 2].map((index) => (
+                <Card key={index} size="lg">
+                  <CardContent className="flex flex-col gap-5">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="size-9 rounded-[10px]" />
+                      <div className="flex flex-col gap-1.5">
+                        <Skeleton className="h-3.5 w-24" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <Skeleton className="h-3.5 w-12" />
+                      <Skeleton className="h-5 w-32" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 border-t border-separator pt-4">
+                      <Skeleton className="h-8 w-20" />
+                      <Skeleton className="h-8 w-20" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
         </BudgetLayout>
         <FloatingActionsSkeleton />
       </div>

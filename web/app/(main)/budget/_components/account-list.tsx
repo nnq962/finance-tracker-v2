@@ -5,7 +5,7 @@ import { WalletCardsIcon } from "lucide-react"
 
 import { AccountLogo } from "@/components/account-logo"
 import { Money } from "@/components/app/money"
-import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { SettingsGroup, SettingsRow, groupCaptionClassName } from "@/components/settings-list"
 import { Card } from "@/components/ui/card"
 import {
   Empty,
@@ -18,7 +18,9 @@ import { accountDescription } from "@/lib/accounts/labels"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { AccountFlow, Transaction } from "@/lib/transactions/types"
+import { cn } from "@/lib/utils"
 
+import { AccountCard } from "./account-card"
 import { AccountSheet } from "./account-sheet"
 
 type AccountListProps = {
@@ -81,24 +83,47 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
   return (
     <div className="space-y-6 md:space-y-8">
       {activeAccounts.length > 0 ? (
-        // Named like the "Ngừng sử dụng" group below it.
-        <SettingsGroup title={`Đang dùng · ${activeAccounts.length}`}>
-          {activeAccounts.map((account) => (
-            <AccountRow key={account.id} account={account} onSelect={() => setOpenAccountId(account.id)} />
-          ))}
-        </SettingsGroup>
+        <>
+          {/* Named like the "Ngừng sử dụng" group below it. A list on phones;
+              from lg up a grid of cards with this month's in and out, so the
+              page uses its width. */}
+          <div className="lg:hidden">
+            <SettingsGroup title={`Đang dùng · ${activeAccounts.length}`}>
+              {activeAccounts.map((account) => (
+                <AccountRow key={account.id} account={account} onSelect={() => setOpenAccountId(account.id)} />
+              ))}
+            </SettingsGroup>
+          </div>
+          <section className="hidden flex-col gap-2 lg:flex">
+            <h2 className={cn("px-4", groupCaptionClassName)}>Đang dùng · {activeAccounts.length}</h2>
+            <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
+              {activeAccounts.map((account) => (
+                <AccountCard
+                  key={account.id}
+                  account={account}
+                  flow={flows[account.id]}
+                  onSelect={() => setOpenAccountId(account.id)}
+                />
+              ))}
+            </div>
+          </section>
+        </>
       ) : null}
 
       {archivedAccounts.length > 0 ? (
-        <SettingsGroup
-          title="Ngừng sử dụng"
-          footer="Không tính vào tổng số dư"
-          collapsible={{ showLabel: `Hiện ${archivedAccounts.length} tài khoản`, defaultOpen: activeAccounts.length === 0 }}
-        >
-          {archivedAccounts.map((account) => (
-            <AccountRow key={account.id} account={account} onSelect={() => setOpenAccountId(account.id)} />
-          ))}
-        </SettingsGroup>
+        // A list on every screen, folded by default; capped on desktop so a
+        // balance stays near its account's name.
+        <div className="lg:max-w-2xl">
+          <SettingsGroup
+            title="Ngừng sử dụng"
+            footer="Không tính vào tổng số dư"
+            collapsible={{ showLabel: `Hiện ${archivedAccounts.length} tài khoản`, defaultOpen: activeAccounts.length === 0 }}
+          >
+            {archivedAccounts.map((account) => (
+              <AccountRow key={account.id} account={account} onSelect={() => setOpenAccountId(account.id)} />
+            ))}
+          </SettingsGroup>
+        </div>
       ) : null}
 
       <AccountSheet

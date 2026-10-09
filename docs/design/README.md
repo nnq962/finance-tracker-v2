@@ -220,7 +220,7 @@ Mọi trang tab theo cùng một thứ tự, như các thiết kế app trên Fi
 |---|---|---|---|
 | Tổng quan | avatar, lời chào, tên | chuông | Tài sản ròng: đen, hai vòng tròn, chip tháng này, ba ô trắng mờ |
 | Giao dịch | Giao dịch | tháng (viên thuốc), AI | Tiền vào / Tiền ra: hai ô, vào trên xanh chanh, ra trên đen (`FlowTiles variant="lead"`) |
-| Tài khoản | Tài khoản | | Tổng số dư: đen không vòng tròn (`discs={false}`), các loại đang có chồng như thẻ trong ví ở góc, mỗi loại một dòng với số đầy đủ, âm thì đỏ (`BalanceHero`) |
+| Tài khoản | Tài khoản | | Tổng số dư: đen không vòng tròn (`discs={false}`), các loại đang có chồng như thẻ trong ví ở góc, mỗi loại một dòng với số đầy đủ, âm thì đỏ (`BalanceHero`). Từ lg (2026-10-09): thẻ trải hết chiều ngang, dưới là lưới thẻ tài khoản 2 cột (3 từ xl; `AccountCard`: logo, tên, số dư, vào / ra tháng này dưới vạch kẻ, bấm mở sheet chi tiết); "Ngừng sử dụng" vẫn là list gập, rộng tối đa 2xl |
 | Vay nợ | Vay nợ | người liên hệ | Cần thu / Cần trả: thẻ trắng, nửa vòng tròn xanh (cần thu) và mực (cần trả), số ròng ở giữa, một dòng nói nghiêng về bên nào (`DebtBalance`) |
 | Cài đặt | Cài đặt | | Hồ sơ: đen, quầng xanh chanh mờ sau avatar xanh chanh (`AvatarFallback accent`), nhãn gói `Badge inverse` / `ai` (`ProfileCard`) |
 

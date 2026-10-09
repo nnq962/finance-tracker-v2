@@ -10,7 +10,7 @@ import { getAccountFlows, getRecentTransactionsByAccount } from "@/lib/transacti
 import { AccountList } from "./_components/account-list"
 import { AddAccountButton } from "./_components/add-account-button"
 import { BalanceHero } from "./_components/balance-hero"
-import { BudgetLayout, budgetPageClassName } from "./_components/budget-layout"
+import { BudgetLayout } from "./_components/budget-layout"
 
 /** This month in Vietnam time, from its first day to the next month's. */
 function currentMonth() {
@@ -39,7 +39,7 @@ export default async function AccountsPage() {
   const balanceSummary = getBalanceSummary(accounts)
 
   return (
-    <Page className={budgetPageClassName}>
+    <Page>
       <PageHeader
         title="Tài khoản"
         actions={<AddAccountButton />}
