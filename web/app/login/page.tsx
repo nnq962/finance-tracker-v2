@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next"
-import GradientWaves from "@/components/gradient-waves"
+import Image from "next/image"
 import { LoginForm } from "@/components/login-form"
 import { getSafeRedirectPath } from "@/lib/auth/redirect"
 import { getSessionUser } from "@/lib/auth/session"
 import { redirect } from "next/navigation"
+
+import { LoginCollage } from "./_components/login-collage"
 
 export const metadata: Metadata = {
   title: "Đăng nhập",
@@ -15,9 +17,13 @@ export const metadata: Metadata = {
   },
 }
 
+// The page's own canvas, as the app's (see the root layout).
 export const viewport: Viewport = {
-  colorScheme: "dark",
-  themeColor: "#000000",
+  colorScheme: "light dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f5f4f0" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
   viewportFit: "cover",
 }
 
@@ -33,41 +39,36 @@ export default async function LoginPage({
     redirect(redirectTo)
   }
 
+  // On phones: the name at the top, the app's cards as the picture in the
+  // middle, the title and Google's button at the bottom, in the thumb's reach.
+  // From lg up: the picture in a panel on the left, the sign in on the right.
   return (
-    <div
-      data-login-shell
-      className="relative isolate min-h-svh overflow-hidden bg-black"
-    >
-      <div className="absolute inset-0">
-        <GradientWaves
-          horizonColor="#000000"
-          waveColor="#6366F1"
-          crestColor="#ffffff"
-          speed={0.4}
-          amplitude={4}
-          waveScale={0.6}
-          waveRatio={0.9}
-          swell={35}
-          turbulence={20}
-          tilt={1.11}
-          zoom={1}
-          height={5.5}
-          fogDepth={15}
-          detail="medium"
-          brightness={1}
-          opacity={1}
-          mouseInteraction
-          parallaxStrength={0.5}
-          grain
-          grainIntensity={0.05}
-        />
-      </div>
-      <div className="pointer-events-none absolute inset-0 bg-black/30" aria-hidden="true" />
-      <main className="pointer-events-none relative z-10 flex min-h-svh items-center justify-center p-6 md:p-10">
-        <div className="pointer-events-auto w-full max-w-sm">
-          <LoginForm redirectTo={redirectTo} />
+    <main className="surface-grouped min-h-svh bg-background text-foreground">
+      <div className="mx-auto grid min-h-svh max-w-6xl lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-10">
+        <div className="flex min-h-svh flex-col px-6 pt-[max(env(safe-area-inset-top),1.25rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)] lg:order-2 lg:min-h-0 lg:py-0">
+          <p className="flex items-center gap-2 text-sm font-semibold">
+            <Image src="/icon.svg" alt="" width={28} height={28} className="size-7" />
+            Finance Tracker
+          </p>
+          <div className="flex flex-1 items-center py-8 lg:hidden">
+            <LoginCollage />
+          </div>
+          <div className="flex flex-col gap-6 lg:mt-16">
+            <div className="flex flex-col gap-2">
+              <h1 className="text-[28px] leading-tight font-semibold tracking-tight lg:text-4xl">
+                Tiền của bạn, gọn trong một chỗ
+              </h1>
+              <p className="text-base text-muted-foreground">
+                Ghi thu chi, theo dõi tài khoản và vay nợ. Nói một câu, AI ghi giúp.
+              </p>
+            </div>
+            <LoginForm redirectTo={redirectTo} />
+          </div>
         </div>
-      </main>
-    </div>
+        <div className="hidden h-[min(42rem,85svh)] items-center justify-center rounded-[32px] bg-track lg:order-1 lg:flex dark:bg-foreground/5">
+          <LoginCollage className="scale-125" />
+        </div>
+      </div>
+    </main>
   )
 }

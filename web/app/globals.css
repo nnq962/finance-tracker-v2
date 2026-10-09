@@ -354,11 +354,6 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
       -webkit-touch-callout: default;
     }
   }
-
-  html:has([data-login-shell]),
-  body:has([data-login-shell]) {
-    background-color: #000;
-  }
 }
 
 /*
