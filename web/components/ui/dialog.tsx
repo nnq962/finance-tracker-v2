@@ -7,7 +7,6 @@ import { Dialog as DialogPrimitive } from "radix-ui"
 
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
-import { StatusBarTint } from "@/components/ui/status-bar-tint"
 
 function Dialog({
   ...props
@@ -35,7 +34,6 @@ function DialogClose({
 
 function DialogOverlay({
   className,
-  children,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
   return (
@@ -48,10 +46,7 @@ function DialogOverlay({
         className
       )}
       {...props}
-    >
-      {children}
-      <StatusBarTint />
-    </DialogPrimitive.Overlay>
+    />
   )
 }
 

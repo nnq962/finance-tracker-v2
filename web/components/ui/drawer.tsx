@@ -3,7 +3,6 @@
 import * as React from "react"
 import { cn } from "cn"
 import { Drawer as DrawerPrimitive } from "vaul"
-import { StatusBarTint } from "@/components/ui/status-bar-tint"
 
 
 function Drawer({
@@ -52,7 +51,6 @@ function DrawerClose({
 
 function DrawerOverlay({
   className,
-  children,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Overlay>) {
   return (
@@ -62,29 +60,29 @@ function DrawerOverlay({
       // tints the status bar from the background and backdrop-filter of a
       // fixed element at the screen's top edge (theme-color is ignored), and
       // took the veil's, so the bar turned white under every overlay. It
-      // skips pseudo-elements; StatusBarTint gives it the app's colour.
+      // skips pseudo-elements.
       className={cn(
         "fixed inset-0 z-50 before:absolute before:inset-0 before:bg-black/30 supports-backdrop-filter:before:backdrop-blur-[2px] data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}
-    >
-      {children}
-      <StatusBarTint />
-    </DrawerPrimitive.Overlay>
+    />
   )
 }
 
-// page: iOS's page sheet. It rises from the bottom to just below the status
-// bar, white with rounded top corners and a grabber, over the dimmed page,
-// and is dragged down to close. It never covers the status bar, so the
-// status bar keeps the page's colour. The grabber floats over the content,
-// which may scroll up to the sheet's top edge (PageSheet), clipped to its
-// corners. Clipped rather than hidden where it can be: a hidden box can still
-// be scrolled from code (a focus or scrollIntoView reaching for something
-// under the footer), which slid the whole sheet, bar and all, up out of view.
+// page: a full-screen sheet on phones. It rises from the bottom over the
+// dimmed page and covers the whole screen, the status bar too, and is dragged
+// down to close. Safari 26 tints the status bar from a fixed element at the
+// screen's top edge, so once the sheet is up the bar takes the sheet's colour
+// (the page's grey for a grouped sheet, so the bar does not change). Wider
+// screens: a panel with rounded top corners, below the top. The grabber
+// floats over the content, which may scroll up to the sheet's top edge
+// (PageSheet). Clipped rather than hidden where it can be: a hidden box can
+// still be scrolled from code (a focus or scrollIntoView reaching for
+// something under the footer), which slid the whole sheet, bar and all, up
+// out of view.
 const pageSheetClassName =
-  "fixed inset-x-0 bottom-0 top-[calc(env(safe-area-inset-top,0px)+0.625rem)] z-50 flex flex-col overflow-hidden supports-[overflow:clip]:overflow-clip rounded-t-[28px] bg-popover pb-[env(safe-area-inset-bottom,0px)] text-sm text-popover-foreground shadow-xl outline-none sm:inset-x-auto sm:left-1/2 sm:top-[6dvh] sm:w-full sm:max-w-lg sm:-translate-x-1/2"
+  "fixed inset-x-0 bottom-0 top-0 z-50 flex flex-col overflow-hidden supports-[overflow:clip]:overflow-clip bg-popover pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] text-sm text-popover-foreground shadow-xl outline-none sm:inset-x-auto sm:left-1/2 sm:top-[6dvh] sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:rounded-t-[28px] sm:pt-0"
 
 function DrawerContent({
   className,
@@ -114,7 +112,7 @@ function DrawerContent({
         >
           <span
             aria-hidden="true"
-            className="absolute top-2 left-1/2 z-20 h-1 w-9 -translate-x-1/2 rounded-full bg-muted-foreground/30"
+            className="absolute top-[calc(env(safe-area-inset-top,0px)+0.5rem)] left-1/2 z-20 h-1 w-9 sm:top-2 -translate-x-1/2 rounded-full bg-muted-foreground/30"
           />
           {children}
         </DrawerPrimitive.Content>

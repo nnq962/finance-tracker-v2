@@ -7,7 +7,6 @@ import { Dialog as SheetPrimitive } from "radix-ui"
 
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
-import { StatusBarTint } from "@/components/ui/status-bar-tint"
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
@@ -33,7 +32,6 @@ function SheetPortal({
 
 function SheetOverlay({
   className,
-  children,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Overlay>) {
   return (
@@ -46,10 +44,7 @@ function SheetOverlay({
         className
       )}
       {...props}
-    >
-      {children}
-      <StatusBarTint />
-    </SheetPrimitive.Overlay>
+    />
   )
 }
 

@@ -6,7 +6,6 @@ import { AlertDialog as AlertDialogPrimitive } from "radix-ui"
 
 
 import { Button } from "@/components/ui/button"
-import { StatusBarTint } from "@/components/ui/status-bar-tint"
 
 function AlertDialog({
   ...props
@@ -32,7 +31,6 @@ function AlertDialogPortal({
 
 function AlertDialogOverlay({
   className,
-  children,
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Overlay>) {
   return (
@@ -45,10 +43,7 @@ function AlertDialogOverlay({
         className
       )}
       {...props}
-    >
-      {children}
-      <StatusBarTint />
-    </AlertDialogPrimitive.Overlay>
+    />
   )
 }
 
