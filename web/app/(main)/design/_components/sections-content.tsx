@@ -71,6 +71,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Avatar, AvatarBadge, AvatarFallback, AvatarGroup, AvatarGroupCount } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -161,7 +162,17 @@ function CardSection() {
   return (
     <CatalogSection id="card">
       <Wide>
-        <BlockLabel className="px-1">Hai chiều tiền, chỉ hiển thị số (FlowTiles không có onValueChange), như ở Giao dịch và Vay nợ</BlockLabel>
+        <BlockLabel className="px-1">Thẻ dẫn đầu hai chiều tiền (FlowTiles variant=&quot;lead&quot;): vào trên xanh chanh, ra trên đen, như đầu trang Giao dịch</BlockLabel>
+        <FlowTiles
+          variant="lead"
+          tiles={[
+            { value: "in", label: "Tiền vào", amount: 18_000_000, caption: "1 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
+            { value: "out", label: "Tiền ra", amount: 5_152_000, caption: "16 giao dịch", icon: ArrowUpRightIcon, tone: "expense" },
+          ]}
+        />
+      </Wide>
+      <Wide>
+        <BlockLabel className="px-1">Hai chiều tiền, chỉ hiển thị số (FlowTiles không có onValueChange), như sheet một ngày và sheet tài khoản</BlockLabel>
         <FlowTiles
           tiles={[
             { value: "in", label: "Tiền vào", amount: 18_000_000, caption: "1 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
@@ -249,9 +260,12 @@ function CardSection() {
           onShowAll={() => toast("Mở danh sách đủ")}
         />
       </Block>
-      <Card size="lg" variant="inverse">
+      <Card size="lg" variant="inverse" discs={false}>
         <CardContent>
-          <CardLabel as="p">Số dư khả dụng · Card inverse</CardLabel>
+          <div className="flex items-center justify-between gap-3">
+            <CardLabel as="p">Số dư khả dụng · Card inverse discs=&#123;false&#125;</CardLabel>
+            <Badge variant="inverse">Badge inverse</Badge>
+          </div>
           <Money amount={12_480_000} size="xl" className="mt-1.5" />
           <div className="mt-8 flex items-end justify-between">
             <p className="text-sm tracking-[0.2em] opacity-70">•••• 4821</p>
@@ -560,13 +574,16 @@ function AvatarSection() {
           </Avatar>
         </div>
       </Block>
-      <Block label="Màu theo người (AvatarFallback colorKey), như hồ sơ ở Cài đặt và Tổng quan">
+      <Block label="Màu theo người (AvatarFallback colorKey), như Tổng quan; accent (xanh chanh) cho thẻ hồ sơ ở Cài đặt">
         <div className="flex items-end gap-3">
           {["user-1", "user-2", "user-3", "user-4"].map((id, index) => (
             <Avatar key={id} size="xl">
               <AvatarFallback colorKey={id}>{["MA", "HL", "TT", "QN"][index]}</AvatarFallback>
             </Avatar>
           ))}
+          <Avatar size="xl">
+            <AvatarFallback accent>DD</AvatarFallback>
+          </Avatar>
         </div>
       </Block>
       <Block label="Nhóm">

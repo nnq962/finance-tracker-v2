@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import {
-  BadgeCheckIcon,
   BellRingIcon,
   CalculatorIcon,
   CircleHelpIcon,
@@ -20,8 +19,6 @@ import { CategoryManagementSheet } from "@/components/categories/category-manage
 import { PlanOverlay } from "@/components/plans/plan-overlay"
 import { useWelcome } from "@/components/onboarding/welcome"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import type { SessionUser } from "@/lib/auth/session"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { NotificationState } from "@/lib/notifications/types"
@@ -34,6 +31,7 @@ import { AiQuotaGroup } from "./ai-quota-group"
 import { InstallAppRow } from "./install-app-row"
 import { NotificationDevices } from "./notification-devices"
 import { NotificationPreferences } from "./notification-preferences"
+import { ProfileCard } from "./profile-card"
 import { SalaryCalculator } from "./salary-calculator"
 import { SignOutRow } from "./sign-out-row"
 import { ThemeOptions, themeOptions, useThemeChoice } from "./theme-options"
@@ -149,29 +147,15 @@ export function SettingsView({
           keep their order down to signing out. From md up it is capped and
           stays left, in line with the page title. */}
       <div className="grid gap-6 md:max-w-2xl md:gap-8">
-        {/* The person first, as in native settings: a larger avatar, the plan
-            beside as a label. Not a button: the plan opens from Lượt AI below,
-            next to what it adds. */}
-        <SettingsGroup>
-          <SettingsRow
-            media={
-              <Avatar size="xl">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback colorKey={user.uid}>{initials}</AvatarFallback>
-              </Avatar>
-            }
-            title={
-              <span className="flex min-w-0 items-center gap-1">
-                <span className="truncate">{user.name}</span>
-                {isPro ? (
-                  <BadgeCheckIcon className="size-4 shrink-0 text-ai-strong" role="img" aria-label="Pro" />
-                ) : null}
-              </span>
-            }
-            description={user.email || undefined}
-            action={<Badge variant={isPro ? "ai" : "secondary"}>{plans[planState.plan].label}</Badge>}
-          />
-        </SettingsGroup>
+        {/* The person first, as the page's lead card; the plan opens from Lượt AI below. */}
+        <ProfileCard
+          name={user.name}
+          email={user.email || undefined}
+          avatar={user.avatar}
+          initials={initials}
+          isPro={isPro}
+          planLabel={plans[planState.plan].label}
+        />
 
         <AiQuotaGroup planState={planState} onOpenPlan={() => setPlanOpen(true)} />
 

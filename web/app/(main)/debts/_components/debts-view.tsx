@@ -2,15 +2,12 @@
 
 import * as React from "react"
 import {
-  ArrowDownLeftIcon,
-  ArrowUpRightIcon,
   HandshakeIcon,
   TriangleAlertIcon,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 import type { Account } from "@/lib/accounts/types"
-import { FlowTiles } from "@/components/app/flow-tiles"
 import { NoticeBanner } from "@/components/app/notice-banner"
 import { PageSheet, PageSheetFooter } from "@/components/app/page-sheet"
 import { SettingsGroup } from "@/components/settings-list"
@@ -36,6 +33,7 @@ import {
   DebtRecordPaymentButton,
 } from "./debt-detail-panel"
 import { getDebtSummary } from "../_lib/get-debt-summary"
+import { DebtBalance } from "./debt-balance"
 import { DebtListItem } from "./debt-list-item"
 
 // Matches Tailwind's `xl`, where the detail panel sits beside the list.
@@ -102,26 +100,11 @@ export function DebtsView({
   const summary = getDebtSummary(debts)
   const openCount = (side: DebtDirection) => openDebts.filter((debt) => debt.direction === side).length
   const tiles = (
-    // Figures only: the list below is already split into the two sides.
-    <FlowTiles
-      tiles={[
-        {
-          value: "lent",
-          label: "Cần thu",
-          amount: summary.totalLent,
-          caption: `${openCount("lent")} khoản`,
-          icon: ArrowDownLeftIcon,
-          tone: "income",
-        },
-        {
-          value: "borrowed",
-          label: "Cần trả",
-          amount: summary.totalBorrowed,
-          caption: `${openCount("borrowed")} khoản`,
-          icon: ArrowUpRightIcon,
-          tone: "expense",
-        },
-      ]}
+    <DebtBalance
+      lent={summary.totalLent}
+      borrowed={summary.totalBorrowed}
+      lentCount={openCount("lent")}
+      borrowedCount={openCount("borrowed")}
     />
   )
   const selectedDebt = debts.find((debt) => debt.id === selectedDebtId)

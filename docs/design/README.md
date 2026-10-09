@@ -182,7 +182,7 @@ component ở đó là cả app đổi theo.
 | `PickGrid` | Chọn một thứ bằng lưới ô (`components/app/pick-grid.tsx`), như app tiền chọn hạng mục hay ngân hàng: 4 cột trên thẻ trắng dưới tiêu đề nhóm, 7 lựa chọn hay gặp nhất (`gridChoices`: thứ đang chọn luôn có mặt, thay ô cuối nếu cần), ô đang chọn nền xám viền đậm, ô cuối "Tất cả" mở danh sách đủ ở màn sâu (`usePageSheetScreen`). Mỗi ô: ô 36 (`IconTile` hay `AccountLogo`) và tên tối đa hai dòng (hạng mục), hoặc một dòng cắt bằng "…" khi dài (`labelLines={1}`: ngân hàng, ví). Lỗi: khung đỏ và dòng lỗi dưới. `tileShape="circle"` cho người (ô "Tất cả" cũng tròn), `allIcon` / `allLabel` đổi ô cuối, `gridChoices(…, count)` cho số ô (3: một hàng). Dùng cho hạng mục (form giao dịch), ngân hàng, ví (form tài khoản) và người (form khoản nợ) |
 | `TimeRows` | Thời điểm trong một nhóm dòng (`components/forms/time-rows.tsx`; không truyền `time` thì chỉ chọn ngày, như ngày vay; `min` cho ngày sớm nhất): dòng "Thời gian … Hôm nay, 20:02 ▾" (`title` đổi được, như "Bắt đầu từ"), chip Hôm nay · Hôm qua · Hôm kia dưới dòng (xuống dòng thay vì tràn trên màn rất hẹp; `quickDays={false}` để bỏ, cho thứ ít khi ghi ngay lúc xảy ra), chạm dòng mở ô ngày và giờ của máy; cách chip và ô 8px (không chip: ô cách dòng trên và đường kẻ dưới 8px), không kẻ giữa. Từ năm 2000 tới hôm nay, gửi `date` và `time` |
 | `ChoiceTiles` | Vài ô cạnh nhau, chọn một, như bảng giá: vòng radio ở đầu, chip đối diện (ngắn, như "Giảm 28%"), rồi con số và một dòng mô tả. Radio group bên dưới (phím mũi tên, trình đọc màn hình). `tone="ai"` tô ô đang chọn màu `ai` (kỳ thanh toán Pro); mặc định viền đen |
-| `FlowTiles` | Tiền theo hai chiều (Tiền vào / Tiền ra ở Giao dịch, Cần thu / Cần trả ở Vay nợ) là hai nửa của một thẻ, chia bằng vạch mảnh thụt 16 trên dưới (như Figma). Mỗi nửa là `@container`, số tiền dùng `Money fit` nên không bao giờ ngắt giữa số: ô icon, nhãn, số tiền `lg` có dấu (chỉ tiền vào có màu) và ghi chú; không có `onValueChange` thì thẻ chỉ hiển thị số, như ở Giao dịch (lọc bằng hàng chip) và Vay nợ (danh sách đã chia sẵn Cần thu / Cần trả); có thì chạm một nửa để danh sách chỉ còn chiều đó (nửa đó nền xám, nửa kia mờ đi), chạm lại để bỏ, hiện chưa trang nào dùng. `FlowTilesSkeleton` cho màn tải |
+| `FlowTiles` | `variant="lead"`: thẻ dẫn đầu Giao dịch, hai ô bo 24 cách 8, Tiền vào nền `ai` chữ mực, Tiền ra nền `inverse`, mũi tên trong vòng 32 ở góc, chỉ số. Mặc định: tiền theo hai chiều (sheet một ngày, sheet tài khoản, danh bạ) là hai nửa của một thẻ, chia bằng vạch mảnh thụt 16 trên dưới (như Figma). Mỗi nửa là `@container`, số tiền dùng `Money fit` nên không bao giờ ngắt giữa số: ô icon, nhãn, số tiền `lg` có dấu (chỉ tiền vào có màu) và ghi chú; không có `onValueChange` thì thẻ chỉ hiển thị số, như ở Giao dịch (lọc bằng hàng chip) và Vay nợ (danh sách đã chia sẵn Cần thu / Cần trả); có thì chạm một nửa để danh sách chỉ còn chiều đó (nửa đó nền xám, nửa kia mờ đi), chạm lại để bỏ, hiện chưa trang nào dùng. `FlowTilesSkeleton` cho màn tải |
 
 Danh sách nằm ở `components/settings-list.tsx`. `SettingsGroup` là nhóm dòng trong một thẻ
 (`size="lg"` cho trang dạng bảng tin), tiêu đề nhóm là nhãn 12 in hoa giãn chữ như list nhóm của
@@ -216,16 +216,18 @@ Mọi trang tab theo cùng một thứ tự, như các thiết kế app trên Fi
 
 | Trang | Bên trái | Bên phải (điện thoại) | Thẻ dẫn đầu |
 |---|---|---|---|
-| Tổng quan | avatar, lời chào, tên | chuông | Tài sản ròng (đen) |
-| Giao dịch | Giao dịch | tháng (viên thuốc), AI | Tiền vào / Tiền ra |
-| Tài khoản | Tài khoản | | Tổng số dư (đen), chia theo loại tài khoản |
-| Vay nợ | Vay nợ | người liên hệ | Cần thu / Cần trả |
-| Cài đặt | Cài đặt | | Hồ sơ |
+| Tổng quan | avatar, lời chào, tên | chuông | Tài sản ròng: đen, hai vòng tròn, chip tháng này, ba ô trắng mờ |
+| Giao dịch | Giao dịch | tháng (viên thuốc), AI | Tiền vào / Tiền ra: hai ô, vào trên xanh chanh, ra trên đen (`FlowTiles variant="lead"`) |
+| Tài khoản | Tài khoản | | Tổng số dư: đen không vòng tròn (`discs={false}`), các loại đang có chồng như thẻ trong ví ở góc, mỗi loại một dòng với số đầy đủ, âm thì đỏ (`BalanceHero`) |
+| Vay nợ | Vay nợ | người liên hệ | Cần thu / Cần trả: thẻ trắng, nửa vòng tròn xanh (cần thu) và mực (cần trả), số ròng ở giữa, một dòng nói nghiêng về bên nào (`DebtBalance`) |
+| Cài đặt | Cài đặt | | Hồ sơ: đen, quầng xanh chanh mờ sau avatar xanh chanh (`AvatarFallback accent`), nhãn gói `Badge inverse` / `ai` (`ProfileCard`) |
+
+Mỗi trang một kiểu thẻ dẫn đầu (2026-10-09), cùng bộ màu mực, xanh chanh, màu tiền vào, để Tài sản ròng và Tổng số dư không còn giống nhau.
 
 Trước khi báo xong một màn mới, kiểm tra:
 
 - Có đầu trang (`PageHeader`) trên điện thoại chưa?
-- Chỉ một khối đen lớn (thẻ dẫn đầu) và tối đa một nút nổi?
+- Chỉ một thẻ dẫn đầu (đen hoặc kiểu riêng của trang) và tối đa một nút nổi?
 - Tiêu đề nhóm thuộc một trong hai kiểu?
 - Đỏ chỉ dùng cho cảnh báo?
 - Nút nổi có đè thứ không cuộn được không? Số tiền dài nhất có ngắt dòng không? (ô hẹp: dùng `Money fit`)

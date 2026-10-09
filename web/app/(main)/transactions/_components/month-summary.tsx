@@ -6,7 +6,7 @@ import { getTransactionSummary } from "../_lib/get-transaction-summary"
 import type { Transaction } from "../_types/transaction"
 
 /**
- * The month's money in and money out, as figures only: the kind chips above
+ * The month's money in and money out, the page's lead tiles, figures only: the kind chips above
  * the list narrow it. `transactions` are the month's after every filter but
  * the kind, so both figures stay while a kind is chosen.
  */
@@ -24,6 +24,7 @@ export function MonthSummary({
 
   return (
     <FlowTiles
+      variant="lead"
       className={className}
       tiles={[
         {

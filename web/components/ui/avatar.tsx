@@ -45,17 +45,24 @@ function AvatarImage({
 function AvatarFallback({
   className,
   colorKey,
+  accent = false,
   ...props
 }: React.ComponentProps<typeof AvatarPrimitive.Fallback> & {
   /** A person's id: their initials then sit on their own toned-down colour, as a contact's do, instead of grey. */
   colorKey?: string
+  /** On the accent lime, ink letters: the person on a dark lead card (Settings). */
+  accent?: boolean
 }) {
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
       className={cn(
         "flex size-full items-center justify-center rounded-full text-sm group-data-[size=sm]/avatar:text-xs group-data-[size=xl]/avatar:text-lg",
-        colorKey ? cn("tile-tinted font-medium", personTileClassName(colorKey)) : "bg-muted text-muted-foreground",
+        accent
+          ? "bg-ai font-semibold text-ai-foreground"
+          : colorKey
+            ? cn("tile-tinted font-medium", personTileClassName(colorKey))
+            : "bg-muted text-muted-foreground",
         className
       )}
       {...props}

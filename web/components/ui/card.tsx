@@ -6,6 +6,7 @@ function Card({
   className,
   size = "default",
   variant = "default",
+  discs = true,
   asChild = false,
   ...props
 }: React.ComponentProps<"div"> & {
@@ -15,6 +16,8 @@ function Card({
    * leads with, like a balance; two soft discs off its top right corner give it depth.
    */
   variant?: "default" | "inverse"
+  /** An inverse card's two discs; off for a lead card with its own decoration. */
+  discs?: boolean
   /** The card is its child, e.g. a button for a card that is tapped as a whole. */
   asChild?: boolean
 }) {
@@ -25,9 +28,10 @@ function Card({
       data-slot="card"
       data-size={size}
       data-variant={variant}
+      data-discs={variant === "inverse" && discs}
       className={cn(
         "group/card surface-plain flex flex-col gap-(--card-spacing) overflow-hidden rounded-[20px] bg-card py-(--card-spacing) text-sm text-card-foreground [--card-spacing:--spacing(5)] has-[>img:first-child]:pt-0 data-[size=sm]:rounded-[16px] data-[size=sm]:[--card-spacing:--spacing(4)] data-[size=lg]:rounded-[24px] data-[size=lg]:[--card-spacing:--spacing(6)] *:[img:first-child]:rounded-t-[20px] *:[img:last-child]:rounded-b-[20px] data-[variant=inverse]:bg-inverse data-[variant=inverse]:text-inverse-foreground",
-        "data-[variant=inverse]:relative data-[variant=inverse]:isolate data-[variant=inverse]:before:pointer-events-none data-[variant=inverse]:before:absolute data-[variant=inverse]:before:-top-16 data-[variant=inverse]:before:-right-14 data-[variant=inverse]:before:-z-10 data-[variant=inverse]:before:size-48 data-[variant=inverse]:before:rounded-full data-[variant=inverse]:before:bg-inverse-foreground/10 data-[variant=inverse]:after:pointer-events-none data-[variant=inverse]:after:absolute data-[variant=inverse]:after:-right-4 data-[variant=inverse]:after:-bottom-20 data-[variant=inverse]:after:-z-10 data-[variant=inverse]:after:size-40 data-[variant=inverse]:after:rounded-full data-[variant=inverse]:after:bg-inverse-foreground/5",
+        "data-[variant=inverse]:relative data-[variant=inverse]:isolate data-[discs=true]:before:pointer-events-none data-[discs=true]:before:absolute data-[discs=true]:before:-top-16 data-[discs=true]:before:-right-14 data-[discs=true]:before:-z-10 data-[discs=true]:before:size-48 data-[discs=true]:before:rounded-full data-[discs=true]:before:bg-inverse-foreground/10 data-[discs=true]:after:pointer-events-none data-[discs=true]:after:absolute data-[discs=true]:after:-right-4 data-[discs=true]:after:-bottom-20 data-[discs=true]:after:-z-10 data-[discs=true]:after:size-40 data-[discs=true]:after:rounded-full data-[discs=true]:after:bg-inverse-foreground/5",
         className
       )}
       {...props}

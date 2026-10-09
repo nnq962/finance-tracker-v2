@@ -65,7 +65,7 @@ export default function TransactionsLoading() {
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
         <PageHeaderSkeleton title="Giao dịch" tools={["pill"]} accessory={1} actions={["w-24 lg:w-52", "w-12 lg:w-44"]} />
         <TransactionsLayout
-          summary={<FlowTilesSkeleton />}
+          summary={<FlowTilesSkeleton variant="lead" />}
           filters={<FilterPanelSkeleton />}
         >
           {/* The round search field, and on phones the chip row: the filter

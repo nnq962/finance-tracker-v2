@@ -23,6 +23,8 @@ const badgeVariants = cva(
         expense: "bg-expense/10 text-expense dark:bg-expense/15",
         transfer: "bg-transfer/10 text-transfer dark:bg-transfer/15",
         ai: "bg-ai text-ai-foreground",
+        // On a dark lead card, e.g. the plan's label on the profile.
+        inverse: "bg-inverse-foreground/15 text-inverse-foreground",
         warning: "bg-warning/15 text-warning",
         // A count on an icon's shoulder (unread, pending), as on an app icon:
         // in the app's ink, not red (red is for warnings), ringed in the

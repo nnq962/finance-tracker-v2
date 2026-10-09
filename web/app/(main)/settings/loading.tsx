@@ -1,5 +1,6 @@
 import { Page, PageHeaderSkeleton } from "@/components/page"
 import { SettingsGroupSkeleton, SettingsRowSkeleton, settingsSeparatorClassName } from "@/components/settings-list"
+import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
@@ -33,8 +34,17 @@ export default function SettingsLoading() {
 
       {/* The groups of SettingsView, in its one capped column. */}
       <div aria-hidden="true" className="grid gap-6 md:max-w-2xl md:gap-8">
-        {/* The profile: the 48 avatar, name and email, the plan's label. */}
-        <SettingsGroupSkeleton caption={false} rows={1} media="avatar-lg" description trailing="value" />
+        {/* The profile card: the 48 avatar, name and email, the plan's label. */}
+        <Card size="lg" variant="inverse" discs={false}>
+          <CardContent className="flex items-center gap-4">
+            <Skeleton className="size-12 rounded-full" />
+            <div className="flex flex-1 flex-col gap-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3.5 w-40 max-w-full" />
+            </div>
+            <Skeleton className="h-6 w-12 rounded-full" />
+          </CardContent>
+        </Card>
         {/* "Lượt AI": this month's requests, the credits from missions, then the row to the plan. */}
         <SettingsGroupSkeleton>
           <UsageMeterSkeleton />
