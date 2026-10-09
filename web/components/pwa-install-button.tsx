@@ -126,15 +126,13 @@ function isIOSSafari() {
   return !/CriOS|FxiOS|EdgiOS|OPiOS|GSA\/|FBAN|FBAV|Instagram|Zalo|Line\//.test(navigator.userAgent)
 }
 
-/** Where a step's illustration asks for the tap: a blue ring, and a dot pulsing on it. */
+/** Where a step's illustration asks for the tap: a blue ring, rippling out (still when motion is reduced). */
 function TapTarget({ className, children }: { className?: string; children: React.ReactNode }) {
   return (
     <span className={cn("relative rounded-full ring-2 ring-transfer ring-offset-2 ring-offset-card", className)}>
       {children}
-      <span aria-hidden="true" className="absolute -right-1 -bottom-1 size-3">
-        <span className="absolute inset-0 rounded-full bg-transfer/60 motion-safe:animate-ping" />
-        <span className="absolute inset-0.5 rounded-full bg-transfer" />
-      </span>
+      {/* From the ring's outer edge (2 of offset, 2 of ring) outwards. */}
+      <span aria-hidden="true" className="pointer-events-none absolute -inset-1 rounded-[inherit] motion-safe:animate-tap-ring" />
     </span>
   )
 }

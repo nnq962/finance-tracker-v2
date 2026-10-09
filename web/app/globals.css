@@ -67,6 +67,17 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  /* A ring rippling out of a place to tap, as a hint (the install steps): a
+     blue halo that widens and fades, every 1.6 seconds. */
+  --animate-tap-ring: tap-ring 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+  @keyframes tap-ring {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in oklab, var(--transfer) 55%, transparent);
+    }
+    100% {
+      box-shadow: 0 0 0 10px color-mix(in oklab, var(--transfer) 0%, transparent);
+    }
+  }
 }
 
 /*
