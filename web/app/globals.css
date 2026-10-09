@@ -357,6 +357,19 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
 }
 
 /*
+ * On narrow screens (Sonner's own breakpoint, 600px) Sonner gives the toaster
+ * width: 100% on top of its side offsets, so it overhangs the screen's right
+ * edge by an offset, and so did every toast (w-full). Let the offsets set the
+ * width instead, on every page: the sign-in page has no app shell.
+ */
+@media (max-width: 600px) {
+  /* Under body: Sonner inserts its own styles at run time, after these. */
+  body [data-sonner-toaster] {
+    width: auto;
+  }
+}
+
+/*
  * Mobile Safari can sample the background of a top-fixed element for its
  * status bar. The main mobile shell has its own scroll viewport, so Sonner can
  * be anchored to the shell without using the affected fixed layer.
