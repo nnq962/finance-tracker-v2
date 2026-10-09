@@ -46,7 +46,7 @@ export function OverviewHeader({
             <span className="flex min-w-0 items-center gap-1 text-base leading-snug font-semibold">
               <span className="truncate">{name}</span>
               {planState.plan === "pro" ? (
-                <BadgeCheckIcon className="size-4 shrink-0 fill-ai text-background" role="img" aria-label="Pro" />
+                <BadgeCheckIcon className="size-4 shrink-0 fill-ai text-ai-foreground" role="img" aria-label="Pro" />
               ) : null}
               <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
             </span>

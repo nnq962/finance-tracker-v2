@@ -264,7 +264,7 @@ export function TransactionsScreen({
             <AiAssistButton
               variant="secondary"
               size="icon"
-              className="text-ai"
+              className="text-ai-strong"
               aria-label={`Nhập bằng AI, còn ${aiRemaining} lượt`}
               onClick={openAi}
             >

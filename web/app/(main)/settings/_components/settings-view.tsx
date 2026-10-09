@@ -164,7 +164,7 @@ export function SettingsView({
               <span className="flex min-w-0 items-center gap-1">
                 <span className="truncate">{user.name}</span>
                 {isPro ? (
-                  <BadgeCheckIcon className="size-4 shrink-0 text-ai" role="img" aria-label="Pro" />
+                  <BadgeCheckIcon className="size-4 shrink-0 text-ai-strong" role="img" aria-label="Pro" />
                 ) : null}
               </span>
             }
@@ -178,14 +178,12 @@ export function SettingsView({
         <SettingsGroup title="Chung">
           <SettingsRow
             icon={PaletteIcon}
-            tone="blue"
             title="Giao diện"
             value={themeOptions.find((option) => option.value === choice)?.label}
             onClick={() => open("appearance")}
           />
           <SettingsRow
             icon={TagsIcon}
-            tone="lime"
             title="Hạng mục"
             value={`${categoryCount} mục`}
             onClick={() => setCategoriesOpen(true)}
@@ -195,14 +193,12 @@ export function SettingsView({
         <SettingsGroup title="Thông báo">
           <SettingsRow
             icon={BellRingIcon}
-            tone="orange"
             title="Nhắc ghi chi tiêu"
             value={reminder.notificationsEnabled ? `Bật · ${reminder.dailyReminderTime}` : "Tắt"}
             onClick={() => open("notifications")}
           />
           <SettingsRow
             icon={SmartphoneIcon}
-            tone="cyan"
             // The group's caption already says THÔNG BÁO; the screen keeps the full name.
             title="Thiết bị"
             value={devices.devices.length > 0 ? String(devices.devices.length) : "Chưa có"}
@@ -215,13 +211,11 @@ export function SettingsView({
         >
           <SettingsRow
             icon={CalculatorIcon}
-            tone="emerald"
             title="Tính lương"
             onClick={() => open("salary")}
           />
           <SettingsRow
             icon={CircleHelpIcon}
-            tone="amber"
             title="Hướng dẫn sử dụng"
             onClick={openWelcome}
           />
@@ -237,7 +231,6 @@ export function SettingsView({
               <>
                 <SettingsRow
                   icon={ShieldCheckIcon}
-                  tone="violet"
                   title="Người dùng & gói"
                   value={String(adminData.users.length)}
                   onClick={() => open("admin")}
@@ -245,14 +238,13 @@ export function SettingsView({
                 {/* A tool for checking speech recognition on a device, not for users. */}
                 <SettingsRow
                   icon={MicIcon}
-                  tone="pink"
                   title="Thử giọng nói"
                   onClick={() => open("voice")}
                 />
               </>
             ) : null}
             {showDesign ? (
-              <SettingsRow icon={SwatchBookIcon} tone="blue" title="Thiết kế" onClick={() => router.push("/design")} />
+              <SettingsRow icon={SwatchBookIcon} title="Thiết kế" onClick={() => router.push("/design")} />
             ) : null}
           </SettingsGroup>
         ) : null}

@@ -4,7 +4,7 @@ import * as React from "react"
 import { cn } from "cn"
 import { Progress as ProgressPrimitive } from "radix-ui"
 
-/** `tone="ai"`: the AI's teal, for AI allowances, instead of the accent black. */
+/** `tone="ai"`: the AI's deep lime, for AI allowances, instead of the accent black. */
 function Progress({
   className,
   value,
@@ -24,7 +24,7 @@ function Progress({
         data-slot="progress-indicator"
         className={cn(
           "size-full flex-1 rounded-full bg-primary transition-transform duration-500 ease-out",
-          tone === "ai" && "bg-ai"
+          tone === "ai" && "bg-ai-strong"
         )}
         style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
       />

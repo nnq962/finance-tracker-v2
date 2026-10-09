@@ -279,11 +279,11 @@ export function MobileBottomNav() {
           } as CSSProperties
         }
         className="pointer-events-auto relative mx-auto grid w-full max-w-md rounded-full bg-card/85 p-1.5 shadow-[0_8px_30px_rgb(0_0_0/0.10)] backdrop-blur-xl backdrop-saturate-150 dark:ring-1 dark:ring-foreground/10">
-        {/* A light pill behind the current tab slides from tab to tab. */}
+        {/* A black pill behind the current tab slides from tab to tab; its icon turns the accent lime. */}
         <li
           aria-hidden="true"
           className={cn(
-            "absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/var(--tab-count))] rounded-full bg-foreground/[0.06] transition-[translate,opacity] duration-300 ease-out motion-reduce:duration-150 dark:bg-foreground/10",
+            "absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/var(--tab-count))] rounded-full bg-inverse transition-[translate,opacity] duration-300 ease-out motion-reduce:duration-150",
             activeIndex < 0 && "opacity-0",
           )}
           style={{ translate: `${Math.max(activeIndex, 0) * 100}% 0` }}
@@ -330,7 +330,7 @@ export function MobileBottomNav() {
                 aria-current={pathname === item.url ? "page" : undefined}
                 className={cn(
                   "flex h-12 min-w-0 touch-manipulation items-center justify-center rounded-full text-muted-foreground transition-colors duration-300 outline-none select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:duration-150",
-                  isActive && "text-foreground",
+                  isActive && "text-ai",
                 )}
               >
                 <Icon className="size-6 shrink-0" strokeWidth={isActive ? 2.25 : 1.75} aria-hidden="true" />

@@ -10,7 +10,10 @@ function Card({
   ...props
 }: React.ComponentProps<"div"> & {
   size?: "default" | "sm" | "lg"
-  /** inverse: black (a raised grey in the dark theme), for the one card a page leads with, like a balance. */
+  /**
+   * inverse: black (a raised grey in the dark theme), for the one card a page
+   * leads with, like a balance; two soft discs off its top right corner give it depth.
+   */
   variant?: "default" | "inverse"
   /** The card is its child, e.g. a button for a card that is tapped as a whole. */
   asChild?: boolean
@@ -24,6 +27,7 @@ function Card({
       data-variant={variant}
       className={cn(
         "group/card surface-plain flex flex-col gap-(--card-spacing) overflow-hidden rounded-[20px] bg-card py-(--card-spacing) text-sm text-card-foreground [--card-spacing:--spacing(5)] has-[>img:first-child]:pt-0 data-[size=sm]:rounded-[16px] data-[size=sm]:[--card-spacing:--spacing(4)] data-[size=lg]:rounded-[24px] data-[size=lg]:[--card-spacing:--spacing(6)] *:[img:first-child]:rounded-t-[20px] *:[img:last-child]:rounded-b-[20px] data-[variant=inverse]:bg-inverse data-[variant=inverse]:text-inverse-foreground",
+        "data-[variant=inverse]:relative data-[variant=inverse]:isolate data-[variant=inverse]:before:pointer-events-none data-[variant=inverse]:before:absolute data-[variant=inverse]:before:-top-16 data-[variant=inverse]:before:-right-14 data-[variant=inverse]:before:-z-10 data-[variant=inverse]:before:size-48 data-[variant=inverse]:before:rounded-full data-[variant=inverse]:before:bg-inverse-foreground/10 data-[variant=inverse]:after:pointer-events-none data-[variant=inverse]:after:absolute data-[variant=inverse]:after:-right-4 data-[variant=inverse]:after:-bottom-20 data-[variant=inverse]:after:-z-10 data-[variant=inverse]:after:size-40 data-[variant=inverse]:after:rounded-full data-[variant=inverse]:after:bg-inverse-foreground/5",
         className
       )}
       {...props}

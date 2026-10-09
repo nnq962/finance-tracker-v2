@@ -33,11 +33,12 @@ export function NetWorth({
         <CardLabel id="net-worth-title">Tài sản ròng</CardLabel>
         <Money amount={data.total} size="xl" tone={data.total < 0 ? "expense" : "default"} className="mt-1.5" />
         {hasMonth ? (
-          <p className="mt-0.5 text-sm">
+          <p className="mt-1.5 flex items-center text-sm">
+            {/* The accent chip for a gain; a loss stays red, a flat month plain. */}
             <span
               className={cn(
-                "font-semibold tabular-nums",
-                monthNet > 0 ? "text-income" : monthNet < 0 ? "text-expense" : undefined,
+                "rounded-full px-2 py-0.5 text-xs font-bold tabular-nums",
+                monthNet > 0 ? "bg-ai text-ai-foreground" : monthNet < 0 ? "bg-expense text-inverse-foreground" : "bg-inverse-foreground/10",
               )}
             >
               {monthNet > 0 ? "+" : monthNet < 0 ? "−" : ""}

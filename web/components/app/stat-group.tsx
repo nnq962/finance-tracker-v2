@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils"
  * Two to four figures side by side, split by thin lines: the figure above,
  * a small grey label below, e.g. the parts of a total. Each can open a page.
  * `separated`: a line above too, set off from the lead figure over it. On an
- * inverse card the lines and labels turn light.
+ * inverse card each figure sits in its own translucent tile instead, with no
+ * lines, and the labels turn light.
  */
 export function StatGroup({
   separated = false,
@@ -22,8 +23,8 @@ export function StatGroup({
     <div
       data-slot="stat-group"
       className={cn(
-        "grid auto-cols-fr grid-flow-col divide-x group-data-[variant=inverse]/card:divide-inverse-foreground/15",
-        separated && "border-t pt-5 group-data-[variant=inverse]/card:border-inverse-foreground/15",
+        "grid auto-cols-fr grid-flow-col divide-x group-data-[variant=inverse]/card:gap-2 group-data-[variant=inverse]/card:divide-x-0",
+        separated && "border-t pt-5 group-data-[variant=inverse]/card:border-t-0 group-data-[variant=inverse]/card:pt-0",
         className,
       )}
     >
@@ -57,7 +58,8 @@ export function Stat({ value, label, href, onClick, title }: StatProps) {
       </span>
     </>
   )
-  const className = "flex min-h-11 min-w-0 flex-col justify-center text-left not-first:pl-4"
+  const className =
+    "flex min-h-11 min-w-0 flex-col justify-center text-left not-first:pl-4 group-data-[variant=inverse]/card:rounded-2xl group-data-[variant=inverse]/card:bg-inverse-foreground/10 group-data-[variant=inverse]/card:p-3 group-data-[variant=inverse]/card:not-first:pl-3"
 
   const pressable = {
     title,

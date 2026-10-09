@@ -122,7 +122,7 @@ export function AiPicture() {
     <div className="flex w-full flex-col gap-3">
       {said("ăn trưa 45k ví MoMo")}
       {said("lương về 18 triệu Vietcombank")}
-      <SparklesIcon className="size-5 self-center text-ai" aria-hidden="true" />
+      <SparklesIcon className="size-5 self-center text-ai-strong" aria-hidden="true" />
       <SettingsGroup>
         <SettingsRow
           icon={SoupIcon}

@@ -638,7 +638,7 @@ function NavSection() {
           title={<span>Giao dịch</span>}
           tools={<MonthSelect size="bar" value={month} max="2026-10" onValueChange={setMonth} />}
           accessory={
-            <Button type="button" variant="secondary" size="icon" className="text-ai" aria-label="Nhập bằng AI" onClick={() => toast("Nhập bằng AI")}>
+            <Button type="button" variant="secondary" size="icon" className="text-ai-strong" aria-label="Nhập bằng AI" onClick={() => toast("Nhập bằng AI")}>
               <SparklesIcon />
             </Button>
           }

@@ -13,7 +13,7 @@ const tones = {
   income: { surface: "bg-income/10 dark:bg-income/15", icon: "text-income", text: "text-income", tile: "income" },
   warning: { surface: "bg-warning/15", icon: "text-warning", text: "text-warning", tile: "warning" },
   expense: { surface: "bg-expense/10 dark:bg-expense/15", icon: "text-expense", text: "text-expense", tile: "expense" },
-  ai: { surface: "bg-ai/10 dark:bg-ai/15", icon: "text-ai", text: "text-ai", tile: "ai" },
+  ai: { surface: "bg-ai/20 dark:bg-ai/15", icon: "text-ai-strong", text: "text-ai-strong", tile: "ai" },
 } as const satisfies Record<string, { surface: string; icon: string; text: string; tile: IconTileTone }>
 
 /**

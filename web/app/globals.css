@@ -62,6 +62,8 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --color-expense: var(--expense);
   --color-transfer: var(--transfer);
   --color-ai: var(--ai);
+  --color-ai-foreground: var(--ai-foreground);
+  --color-ai-strong: var(--ai-strong);
   --color-warning: var(--warning);
   --color-field: var(--field);
   --color-track: var(--track);
@@ -104,7 +106,8 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
  */
 :root,
 .light {
-  --background: oklch(0.961 0.0013 106.4);
+  /* A warm off-white (#f5f4f0), as paper rather than a grey screen. */
+  --background: oklch(0.967 0.0054 95.1);
   --foreground: oklch(0.205 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.205 0 0);
@@ -121,7 +124,7 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
+  --muted: oklch(0.955 0.006 95);
   /* Secondary text (descriptions, times, captions): iOS's secondary label, not the paler neutral-400. */
   --muted-foreground: oklch(0.617 0 0);
   --accent: oklch(0.97 0 0);
@@ -129,7 +132,7 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --destructive: oklch(0.586 0.253 17.585);
   --border: oklch(0.97 0 0);
   /* Hairline between rows of a list, as iOS's separator: clearer than --border on a white card. */
-  --separator: oklch(0.9 0 0);
+  --separator: oklch(0.905 0.007 88.6);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.588 0.212 288);
@@ -155,8 +158,15 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --income: oklch(0.596 0.145 163.225);
   --expense: oklch(0.586 0.253 17.585);
   --transfer: oklch(0.588 0.158 241.966);
-  /* Teal: apart from the other meaning colours (green in, red out, blue transfer, amber warning). */
-  --ai: oklch(0.6 0.115 195);
+  /*
+   * Lime (#d4f25a): AI and Pro, and the app's one accent (the lead card's
+   * figure chip, the current tab). Too light to read on white, so it is a
+   * fill with ai-foreground (ink) on it, or sits on the black; text, icons
+   * and lines in the AI's colour on the page use ai-strong, a deep lime.
+   */
+  --ai: oklch(0.911 0.1775 119.6);
+  --ai-foreground: oklch(0.209 0.0042 264.5);
+  --ai-strong: oklch(0.6 0.16 127);
   --warning: oklch(0.769 0.188 70.08);
   /*
    * Fills that depend on the surface below (see the surface-* utilities):
@@ -169,7 +179,7 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --field-plain: oklch(0.97 0 0);
   --field-grouped: var(--card);
   --track-plain: oklch(0.97 0 0);
-  --track-grouped: oklch(0.922 0.0015 106.4);
+  --track-grouped: oklch(0.925 0.0071 88.6);
   --field: var(--field-plain);
   --track: var(--track-plain);
 }
@@ -213,7 +223,10 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --income: oklch(0.765 0.177 163.223);
   --expense: oklch(0.712 0.194 13.428);
   --transfer: oklch(0.746 0.16 232.661);
-  --ai: oklch(0.76 0.12 192);
+  --ai: oklch(0.911 0.1775 119.6);
+  --ai-foreground: oklch(0.209 0.0042 264.5);
+  /* On the dark page the lime itself reads well. */
+  --ai-strong: oklch(0.911 0.1775 119.6);
   --warning: oklch(0.828 0.189 84.429);
   /* On a dark card, white at 6%, as in the mockup. */
   --field-plain: oklch(1 0 0 / 0.06);

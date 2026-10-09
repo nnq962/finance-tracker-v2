@@ -24,8 +24,8 @@ const tones = {
   },
   // Pro and AI: the chosen tile tinted in the AI colour, as on pricing screens.
   ai: {
-    tile: "aria-checked:border-ai aria-checked:bg-ai/10 dark:aria-checked:bg-ai/15",
-    radio: "group-aria-checked/choice:bg-ai",
+    tile: "aria-checked:border-ai-strong aria-checked:bg-ai/15 dark:aria-checked:bg-ai/15",
+    radio: "group-aria-checked/choice:bg-ai-strong",
     badge: "ai",
   },
 } as const

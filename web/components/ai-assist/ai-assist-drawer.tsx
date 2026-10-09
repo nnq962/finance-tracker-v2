@@ -129,7 +129,7 @@ export function AiAssistDrawer<Result>({
           {/* Centred on every screen; the Drawer header aligns left from md. */}
           <AiDrawerHeader className="relative px-12 md:text-center">
             <AiDrawerTitle className="flex items-center justify-center gap-2">
-              <SparklesIcon className="size-4 text-ai" aria-hidden="true" />
+              <SparklesIcon className="size-4 text-ai-strong" aria-hidden="true" />
               Trợ lý AI
             </AiDrawerTitle>
             <AiDrawerDescription className="sr-only">{prompt}</AiDrawerDescription>
@@ -168,7 +168,7 @@ export function AiAssistDrawer<Result>({
                       <Card>
                         <CardContent className="space-y-3">
                           <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <SparklesIcon className="size-4 animate-pulse text-ai" aria-hidden="true" />
+                            <SparklesIcon className="size-4 animate-pulse text-ai-strong" aria-hidden="true" />
                             Đang hiểu ý bạn…
                           </p>
                           <Skeleton className="h-5 w-full" />
