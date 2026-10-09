@@ -24,7 +24,6 @@ export function NetWorth({
   /** This month's income and expenses, for what the month has added so far. */
   month: OverviewSummary["cashFlow"]["current"]
 }) {
-  const router = useRouter()
   const monthNet = month.income - month.expense
   const hasMonth = month.income > 0 || month.expense > 0
 
@@ -64,7 +63,7 @@ export function NetWorth({
               label={label}
               value={formatCompactCurrency(value, 1)}
               title={formatCurrency(value)}
-              onClick={() => router.push(href)}
+              href={href}
             />
           ))}
         </StatGroup>

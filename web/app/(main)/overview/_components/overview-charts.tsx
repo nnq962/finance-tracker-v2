@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { RadioGroup as RadioGroupPrimitive } from "radix-ui"
-import { Bar, BarChart, CartesianGrid, Text, XAxis, YAxis } from "recharts"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
 import { Money } from "@/components/app/money"
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart"
@@ -79,21 +79,43 @@ export function CashFlowChart({ data }: { data: OverviewSummary["cashFlow"] }) {
             barCategoryGap="28%"
             margin={{ top: 8, right: 0, left: 0, bottom: 0 }}
           >
-            <CartesianGrid vertical={false} strokeDasharray="3 4" />
+            {/* No vertical lines, so none are worked out (which measures labels). */}
+            <CartesianGrid vertical={false} verticalCoordinatesGenerator={() => []} strokeDasharray="3 4" />
+            {/* interval={0}: every tick, so Recharts does not measure each label
+                in the DOM to drop overlapping ones. Six short months and five
+                amounts always fit, and the measuring forced a layout of the
+                whole page per label, holding up taps while the overview opened. */}
             <XAxis
               dataKey="label"
+              interval={0}
               tickLine={false}
               axisLine={false}
               tickMargin={8}
               // The selected month's name stands out, so an empty month still shows as chosen.
-              tick={({ payload, ...props }) => (
-                <Text {...props} data-active={payload.value === selected.label || undefined}>
+              // A plain <text> rather than Recharts' Text, which measures each
+              // label in the DOM to wrap it; a month's name never wraps. 0.71em
+              // hangs it below y, as Text's verticalAnchor="start" does.
+              tick={({ payload, x, y, textAnchor, className }) => (
+                <text
+                  x={x}
+                  y={y}
+                  dy="0.71em"
+                  textAnchor={textAnchor}
+                  className={className}
+                  data-active={payload.value === selected.label || undefined}
+                >
                   {payload.value}
-                </Text>
+                </text>
               )}
             />
             <YAxis
-              tickFormatter={compactMoney}
+              interval={0}
+              // Plain <text>, as on the X axis; 0.355em centres it on y.
+              tick={({ payload, x, y, textAnchor, className }) => (
+                <text x={x} y={y} dy="0.355em" textAnchor={textAnchor} className={className}>
+                  {compactMoney(payload.value)}
+                </text>
+              )}
               tickLine={false}
               axisLine={false}
               width={yAxisWidth}

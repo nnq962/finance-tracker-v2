@@ -1,3 +1,4 @@
+import Link from "next/link"
 import type * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -35,13 +36,19 @@ type StatProps = {
   /** The figure: plain text or a Money. */
   value: React.ReactNode
   label: React.ReactNode
-  /** Opens what the figure is about; the stat becomes a button. */
+  /**
+   * The page the figure is about; the stat becomes a link. Prefer it to
+   * onClick for opening a page: a link works before the page's script has
+   * loaded and is prefetched, so the first tap is never lost.
+   */
+  href?: string
+  /** Does something in place; the stat becomes a button. */
   onClick?: () => void
   /** The full figure for the tooltip and screen readers when `value` is shortened. */
   title?: string
 }
 
-export function Stat({ value, label, onClick, title }: StatProps) {
+export function Stat({ value, label, href, onClick, title }: StatProps) {
   const content = (
     <>
       <span className="truncate font-semibold tabular-nums">{value}</span>
@@ -52,14 +59,22 @@ export function Stat({ value, label, onClick, title }: StatProps) {
   )
   const className = "flex min-h-11 min-w-0 flex-col justify-center text-left not-first:pl-4"
 
+  const pressable = {
+    title,
+    "aria-label": title ? `${label}: ${title}` : undefined,
+    className: cn(className, "pressable outline-none focus-visible:ring-3 focus-visible:ring-ring/30"),
+  }
+
+  if (href) {
+    return (
+      <Link href={href} {...pressable}>
+        {content}
+      </Link>
+    )
+  }
+
   return onClick ? (
-    <button
-      type="button"
-      title={title}
-      aria-label={title ? `${label}: ${title}` : undefined}
-      onClick={onClick}
-      className={cn(className, "pressable outline-none focus-visible:ring-3 focus-visible:ring-ring/30")}
-    >
+    <button type="button" onClick={onClick} {...pressable}>
       {content}
     </button>
   ) : (
