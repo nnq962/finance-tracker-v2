@@ -93,8 +93,11 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
  * Tailwind's neutral greys on a warm off-white page (#f2f2f1), white,
  * borderless cards, neutral-900 as the one strong colour, and meaning
  * colours used sparingly. Dark: a #0a0a0a page and #171717 cards.
+ * `.light` brings the light colours back inside a dark page, as `.dark` does
+ * the other way, e.g. the theme picker's light preview.
  */
-:root {
+:root,
+.light {
   --background: oklch(0.961 0.0013 106.4);
   --foreground: oklch(0.205 0 0);
   --card: oklch(1 0 0);

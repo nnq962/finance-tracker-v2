@@ -5,11 +5,13 @@ import { CheckIcon, MonitorIcon, MoonIcon, SunIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { Switch } from "@/components/ui/switch"
+import { cn } from "@/lib/utils"
 
 export const themeOptions = [
   { value: "light", label: "Sáng", icon: SunIcon },
   { value: "dark", label: "Tối", icon: MoonIcon },
-  { value: "system", label: "Theo hệ thống", icon: MonitorIcon },
+  { value: "system", label: "Tự động", icon: MonitorIcon },
 ] as const
 
 export type ThemeValue = (typeof themeOptions)[number]["value"]
@@ -18,12 +20,14 @@ const subscribe = () => () => {}
 
 /** The saved theme choice; "system" until mounted, as on the server. */
 export function useThemeChoice() {
-  const { theme, setTheme } = useTheme()
+  const { theme, resolvedTheme, setTheme } = useTheme()
   const mounted = React.useSyncExternalStore(subscribe, () => true, () => false)
   const choice: ThemeValue =
     mounted && (theme === "light" || theme === "dark" || theme === "system")
       ? theme
       : "system"
+  // What shows now: the choice, or the device's with Tự động.
+  const shown: "light" | "dark" = mounted && resolvedTheme === "dark" ? "dark" : "light"
 
   const choose = (next: ThemeValue) => {
     // Read by CSS to show the matching theme icon (see globals.css).
@@ -31,28 +35,93 @@ export function useThemeChoice() {
     setTheme(next)
   }
 
-  return { choice, choose }
+  return { choice, shown, choose }
 }
 
+/**
+ * A screen of the app drawn small in one theme, whatever the page's: its
+ * colours come from the theme's own tokens (`.light` / `.dark` on it).
+ */
+function ThemePreview({ theme }: { theme: "light" | "dark" }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        theme,
+        "flex h-36 w-20 flex-col gap-1.5 overflow-hidden rounded-[16px] bg-background p-2 ring-1 ring-foreground/10",
+      )}
+    >
+      <span className="h-1.5 w-8 rounded-full bg-foreground/80" />
+      <span className="flex h-8 flex-col justify-end gap-1 rounded-[8px] bg-inverse p-1.5">
+        <span className="h-1 w-6 rounded-full bg-inverse-foreground/50" />
+        <span className="h-1.5 w-10 rounded-full bg-inverse-foreground" />
+      </span>
+      <span className="flex flex-col gap-1.5 rounded-[8px] bg-card p-1.5">
+        {[0, 1, 2].map((row) => (
+          <span key={row} className="flex items-center gap-1">
+            <span className="size-2.5 rounded-[4px] bg-foreground/15" />
+            <span className="h-1 flex-1 rounded-full bg-foreground/25" />
+          </span>
+        ))}
+      </span>
+    </span>
+  )
+}
+
+/**
+ * The look, as iOS's Display & Brightness: the light and the dark screen
+ * side by side, the one showing ticked; a tap picks it. Under them Tự động
+ * follows the device's setting, the screens then ticking whichever it is.
+ */
 export function ThemeOptions() {
-  const { choice, choose } = useThemeChoice()
+  const { choice, shown, choose } = useThemeChoice()
 
   return (
-    <SettingsGroup>
-      {themeOptions.map(({ value, label, icon }) => (
-        <SettingsRow
-          key={value}
-          icon={icon}
-          title={label}
-          action={
-            value === choice ? (
-              <CheckIcon className="size-4" aria-label="Đang chọn" />
-            ) : null
-          }
-          chevron={false}
-          onClick={() => choose(value)}
-        />
-      ))}
+    <SettingsGroup
+      header={
+        <div role="radiogroup" aria-label="Giao diện" className="grid grid-cols-2 gap-4 px-6 pt-6 pb-5">
+          {(["light", "dark"] as const).map((theme) => {
+            const checked = shown === theme
+            return (
+              <button
+                key={theme}
+                type="button"
+                role="radio"
+                aria-checked={checked}
+                onClick={() => choose(theme)}
+                className="pressable flex flex-col items-center gap-3 rounded-2xl outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+              >
+                <ThemePreview theme={theme} />
+                <span className="text-sm font-medium">{theme === "light" ? "Sáng" : "Tối"}</span>
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "grid size-6 place-items-center rounded-full",
+                    checked ? "bg-primary text-primary-foreground" : "ring-[1.5px] ring-foreground/25 ring-inset",
+                  )}
+                >
+                  {checked ? <CheckIcon className="size-3.5" strokeWidth={3} /> : null}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      }
+      // The screens' inset divider above the row too.
+      listClassName="relative before:absolute before:inset-x-4 before:top-0 before:h-px before:bg-border"
+    >
+      <SettingsRow
+        title="Tự động"
+        description="Theo cài đặt sáng tối của máy"
+        action={
+          <Switch
+            aria-label="Tự động theo máy"
+            checked={choice === "system"}
+            // Off keeps what shows now, as iOS does.
+            onCheckedChange={(on) => choose(on ? "system" : shown)}
+          />
+        }
+      />
     </SettingsGroup>
   )
 }

@@ -331,7 +331,9 @@ Trước khi báo xong một màn mới, kiểm tra:
   tiết giao dịch; có cả các lần thu, trả nợ như trang Giao dịch), mô tả là đầu kia của chuyển khoản ("Đến Ví MoMo") hay nhóm hạng mục, số tiền theo
   tài khoản này, ngày dưới số tiền; "Ngừng sử dụng" / "Dùng lại tài khoản" có icon và chú thích nói
   rõ nó làm gì; cuối cùng "Xoá tài khoản" (xoá giao dịch, khoản vay ghi vào tài khoản này và các
-  lần trả nợ từ nó; khoản vay ghi vào tài khoản khác thì giữ).
+  lần trả nợ từ nó; khoản vay ghi vào tài khoản khác thì giữ), hỏi lại bằng `ActionSheet`
+  (`DeleteAccountSheet`: "Xoá “Ví MoMo”? Mọi giao dịch, khoản vay nợ và lần trả nợ… cũng sẽ bị xoá.", dòng đỏ
+  "Xoá tài khoản", "Huỷ" tách riêng) rồi xoá có hoàn tác.
 - **Chi tiết giao dịch** (`TransactionDetailsSheet`), như biên lai: icon lớn, tên, số tiền lớn, ngày
   giờ; Sửa là nút bút chì tròn bên phải thanh. Thông tin dạng nhãn trái, giá trị phải: Tài khoản
   (logo `xs` + tên), Hạng mục (`IconTile xs` + tên), Nhóm; ghi chú xuống dòng đầy đủ. Chuyển khoản
@@ -340,6 +342,14 @@ Trước khi báo xong một màn mới, kiểm tra:
   giao dịch này" (mở Giao dịch mới điền sẵn số tiền, tài khoản, hạng mục, phí, ghi chú; ngày là bây
   giờ, qua `TransactionDraft.copyOf`), cuối cùng "Xoá giao dịch" (hoàn tác 6 giây). Giao dịch vay nợ
   không có bút chì, chỉ "Mở trong Vay nợ".
+- **Ngày trong lịch thu chi** (Tổng quan, chạm một ngày): page sheet tên ngày ("Thứ Năm, 01/10"), `FlowTiles`
+  Tiền vào / Tiền ra của ngày như trang Giao dịch (số giao dịch mỗi chiều dưới số tiền, "Đang tải…" khi chưa
+  tới; khoản vay không tính), rồi "N GIAO DỊCH" là các `TransactionItem`.
+- **Giao diện** (Cài đặt, `ThemeOptions`), như "Màn hình & Độ sáng" của iOS: một thẻ, trên là hai màn thu nhỏ
+  Sáng / Tối cạnh nhau (vẽ bằng token của chính theme đó: `.light` / `.dark` trên hình, nên luôn đúng dù trang
+  đang sáng hay tối), tên và vòng chọn dưới mỗi màn, màn đang hiện có ✓; chạm là chọn. Dưới là dòng "Tự động ·
+  Theo cài đặt sáng tối của máy" có công tắc; bật thì theo máy (vòng chọn theo màn máy đang dùng), tắt thì giữ
+  màn đang hiện. Dòng ở Cài đặt ghi "Sáng" / "Tối" / "Tự động".
 - **Biểu đồ "Thu và chi theo tháng"** (Tổng quan): không có tooltip nổi; chạm một cột tháng (hoặc
   phím mũi tên, đây là radio group) để chọn, mặc định tháng này; hai dòng trong thẻ ghi "Tháng N"
   và "Thu … Chi …"; cột tháng đang chọn được tô nền nhạt, các cột giữ nguyên màu. Cột chi màu `chart-neutral`, không đỏ. Tháng ghi

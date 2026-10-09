@@ -1,10 +1,11 @@
 "use client"
 
 import * as React from "react"
+import { ArrowDownLeftIcon, ArrowUpRightIcon } from "lucide-react"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { toast } from "sonner"
 
-import { Money } from "@/components/app/money"
+import { FlowTiles } from "@/components/app/flow-tiles"
 import { PageSheet } from "@/components/app/page-sheet"
 import { SettingsGroup } from "@/components/settings-list"
 import { Card, CardContent } from "@/components/ui/card"
@@ -89,6 +90,12 @@ export function CashFlowCalendar({
     }
   }, [openDay, days])
   const dayItems = openDay && !days[openDay] ? [] : loaded && loaded.key === openDay ? loaded.items : null
+  // How many of the day's transactions each half adds up, once they are here;
+  // loans move money without being income or spending, as in the totals.
+  const dayCaption = (kind: "income" | "expense") =>
+    dayItems
+      ? `${dayItems.filter((transaction) => transaction.kind === kind && !("source" in transaction && transaction.source === "debt")).length} giao dịch`
+      : "Đang tải…"
 
   const [year, monthNumber] = month.split("-").map(Number)
   const daysInMonth = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate()
@@ -206,18 +213,29 @@ export function CashFlowCalendar({
         >
           {openTotals ? (
             <>
-              <div className="grid grid-cols-2 gap-4 px-3 text-sm">
-                <div>
-                  <p className="text-xs text-muted-foreground">Đã thu</p>
-                  <Money amount={openTotals.income} size="lg" tone="income" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Đã chi</p>
-                  <Money amount={openTotals.expense} size="lg" />
-                </div>
-              </div>
+              {/* The day's money in and out as the transactions page shows a month's. */}
+              <FlowTiles
+                tiles={[
+                  {
+                    value: "income",
+                    label: "Tiền vào",
+                    amount: openTotals.income,
+                    caption: dayCaption("income"),
+                    icon: ArrowDownLeftIcon,
+                    tone: "income",
+                  },
+                  {
+                    value: "expense",
+                    label: "Tiền ra",
+                    amount: openTotals.expense,
+                    caption: dayCaption("expense"),
+                    icon: ArrowUpRightIcon,
+                    tone: "expense",
+                  },
+                ]}
+              />
               {dayItems && dayItems.length === 0 ? (
-                <p className="px-3 text-sm text-muted-foreground">Chưa có giao dịch</p>
+                <p className="px-4 text-sm text-muted-foreground">Chưa có giao dịch</p>
               ) : dayItems ? (
                 <SettingsGroup title={`${dayItems.length} giao dịch`}>
                   {dayItems.map((transaction) => (

@@ -20,7 +20,7 @@ import type { AccountFlow, Transaction } from "@/lib/transactions/types"
 import { TransactionHistoryProvider } from "../../transactions/_components/add-transaction/transaction-history-context"
 import { TransactionItem } from "../../transactions/_components/transaction-item"
 import { setAccountArchivedAction } from "../actions"
-import { DeleteAccountAlert } from "./account-actions/delete-account-alert"
+import { DeleteAccountSheet } from "./account-actions/delete-account-sheet"
 import { EditAccountSheet } from "./account-actions/edit-account-sheet"
 
 /** How a transaction moved this account's balance: a transfer out also pays its fee. */
@@ -229,7 +229,7 @@ export function AccountSheet({
         </SettingsGroup>
       </PageSheet>
       <EditAccountSheet account={shown} open={editOpen} onOpenChange={setEditOpen} />
-      <DeleteAccountAlert
+      <DeleteAccountSheet
         account={shown}
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
