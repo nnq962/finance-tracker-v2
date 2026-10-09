@@ -21,6 +21,7 @@ import { PlanOverlay } from "@/components/plans/plan-overlay"
 import { useWelcome } from "@/components/onboarding/welcome"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import type { SessionUser } from "@/lib/auth/session"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { NotificationState } from "@/lib/notifications/types"
@@ -148,7 +149,9 @@ export function SettingsView({
           keep their order down to signing out. From md up it is capped and
           stays left, in line with the page title. */}
       <div className="grid gap-6 md:max-w-2xl md:gap-8">
-        {/* The person first, as in native settings: a larger avatar, the plan beside. */}
+        {/* The person first, as in native settings: a larger avatar, the plan
+            beside as a label. Not a button: the plan opens from Lượt AI below,
+            next to what it adds. */}
         <SettingsGroup>
           <SettingsRow
             media={
@@ -166,8 +169,7 @@ export function SettingsView({
               </span>
             }
             description={user.email || undefined}
-            value={`Gói ${plans[planState.plan].label}`}
-            onClick={() => setPlanOpen(true)}
+            action={<Badge variant={isPro ? "ai" : "secondary"}>{plans[planState.plan].label}</Badge>}
           />
         </SettingsGroup>
 

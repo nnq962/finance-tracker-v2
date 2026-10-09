@@ -33,8 +33,8 @@ export default function SettingsLoading() {
 
       {/* The groups of SettingsView, in its one capped column. */}
       <div aria-hidden="true" className="grid gap-6 md:max-w-2xl md:gap-8">
-        {/* The profile: the 48 avatar, name and email, the plan and the chevron. */}
-        <SettingsGroupSkeleton caption={false} rows={1} media="avatar-lg" description trailing="value" chevron />
+        {/* The profile: the 48 avatar, name and email, the plan's label. */}
+        <SettingsGroupSkeleton caption={false} rows={1} media="avatar-lg" description trailing="value" />
         {/* "Lượt AI": this month's requests, the credits from missions, then the row to the plan. */}
         <SettingsGroupSkeleton>
           <UsageMeterSkeleton />

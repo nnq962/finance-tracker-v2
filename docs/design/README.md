@@ -373,7 +373,9 @@ Trước khi báo xong một màn mới, kiểm tra:
   bằng `StepFlow` (vuốt, chấm, ‹ co giãn, "Tiếp" thành "Đã hiểu" ở bước cuối); mỗi lần mở lại từ bước đầu. Mở trong trình duyệt
   khác (Chrome, Zalo, Facebook…) thì có thêm bước đầu "Mở trang này bằng Safari" với nút "Chép liên kết".
 - **Cài đặt:** một cột căn trái, tối đa `md:max-w-2xl`, thẳng với tên trang. Thứ tự: hồ sơ, Lượt AI,
-  Chung, Thông báo, Ứng dụng, Quản trị (hoặc Nhà phát triển trên dev server), Đăng xuất cuối.
+  Chung, Thông báo, Ứng dụng, Quản trị (hoặc Nhà phát triển trên dev server), Đăng xuất cuối. Hồ sơ chỉ hiển
+  thị (avatar, tên, email, nhãn gói `Badge` "Free" xám / "Pro" màu `ai`), không bấm được; màn gói mở từ một chỗ
+  duy nhất là dòng "Nâng cấp Pro" / "Gói Pro" cuối nhóm Lượt AI, cạnh số lượt còn lại.
 - **Desktop:** phần tử trong cột bám (rail) không co lại (`*:shrink-0`); rail cao hơn cửa sổ thì tự
   cuộn. Tài khoản: rail lùi xuống 32 để thẻ dẫn đầu thẳng với thẻ list; cả trang tối đa 64rem
   (68rem từ xl, `budgetPageClassName`), nên nút ở đầu trang thẳng mép phải với list. Thanh bên: "Finance Tracker" kèm "Beta" chữ mờ trên cùng dòng.
