@@ -9,22 +9,24 @@ import {
   CircleCheckIcon,
   ClockIcon,
   ShieldCheckIcon,
+  SparklesIcon,
   TicketPercentIcon,
   type LucideIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 
+import { Chip } from "@/components/app/chip"
 import { ChoiceTiles } from "@/components/app/choice-tiles"
+import { IconTile } from "@/components/app/icon-tile"
 import { NoticeBanner } from "@/components/app/notice-banner"
-import { SettingsGroup } from "@/components/settings-list"
+import { InlineInput } from "@/components/forms/inline-input"
+import { SettingsFieldRow, SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Field, FieldError, FieldLabel } from "@/components/ui/field"
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
-import { Separator } from "@/components/ui/separator"
+import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/components/ui/drawer"
+import { FieldError } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDate, toDateKey } from "@/lib/format-date"
@@ -255,7 +257,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanS
         </SettingsGroup>
       </Accordion>
 
-      <CheckoutDialog
+      <CheckoutSheet
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         period={period}
@@ -291,11 +293,14 @@ function FeatureList({ features }: { features: string[] }) {
 }
 
 /**
- * The order before payOS, as a checkout page has it: the plan and its
- * price, a field for a coupon code (checked by the server, which prices the
- * checkout again), the discount and what is paid.
+ * The order before payOS, as a bottom sheet over the plans: Pro's tile and
+ * what it brings, then the receipt as rows (the plan and its price; a coupon
+ * code typed in place, checked by the server, which prices the checkout
+ * again, and once taken a chip of the code to remove it and the discount on
+ * its own row), the total apart, and paying at the foot. A code that leaves
+ * nothing to pay grants Pro at once, without payOS.
  */
-function CheckoutDialog({
+function CheckoutSheet({
   open,
   onOpenChange,
   period,
@@ -369,101 +374,109 @@ function CheckoutDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={changeOpen}>
-      <DialogContent
-        aria-describedby={undefined}
-        className="sm:max-w-sm"
+    <Drawer open={open} onOpenChange={changeOpen}>
+      <DrawerContent
+        surface="grouped"
         // No keyboard popping up for a code most people do not have.
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
-        <DialogHeader>
-          <DialogTitle>Xác nhận thanh toán</DialogTitle>
-        </DialogHeader>
-
-        {coupon ? (
-          <div className="flex items-center justify-between gap-3">
-            <Badge variant="secondary">
-              <TicketPercentIcon data-icon="inline-start" aria-hidden="true" />
-              {coupon.code} · −{coupon.percentOff}%
-            </Badge>
-            <Button type="button" variant="ghost" size="xs" disabled={paying} onClick={() => setCoupon(null)}>
-              Bỏ mã
-            </Button>
+        <div className="flex flex-col gap-4 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom,0px))]">
+          <div className="flex flex-col items-center gap-1 text-center">
+            <IconTile icon={SparklesIcon} tone="ai" size="lg" />
+            <DrawerTitle className="mt-2 text-lg">{renewing ? `Gia hạn ${plans.pro.label}` : `Nâng cấp ${plans.pro.label}`}</DrawerTitle>
+            <DrawerDescription className="text-sm text-muted-foreground">
+              {plans.pro.aiMonthlyLimit} lượt AI mỗi tháng
+            </DrawerDescription>
           </div>
-        ) : (
-          <Field data-invalid={Boolean(codeError) || undefined}>
-            <FieldLabel htmlFor="checkout-coupon">Mã giảm giá</FieldLabel>
-            <InputGroup>
-              <InputGroupInput
-                id="checkout-coupon"
-                value={code}
-                autoCapitalize="characters"
-                autoComplete="off"
-                maxLength={20}
-                aria-invalid={Boolean(codeError) || undefined}
-                onChange={(event) => {
-                  setCode(event.target.value.replace(/\s+/g, "").toUpperCase())
-                  setCodeError(null)
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault()
-                    void apply()
-                  }
-                }}
+
+          <div className="flex flex-col gap-2">
+            <SettingsGroup>
+              <SettingsRow
+                title={`Gói ${plans.pro.label} · ${price.label}`}
+                action={<span className="text-sm tabular-nums">{formatCurrency(price.amount)}</span>}
               />
-              <InputGroupAddon align="inline-end">
-                <InputGroupButton disabled={checking || paying} onClick={() => void apply()}>
-                  {checking ? <Spinner /> : null}
-                  Áp dụng
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
-            {codeError ? <FieldError>{codeError}</FieldError> : null}
-          </Field>
-        )}
+              {coupon ? (
+                <>
+                  <SettingsRow
+                    title="Mã giảm giá"
+                    action={
+                      <Chip
+                        tone="income"
+                        media={<TicketPercentIcon className="ml-2.5 size-4 shrink-0" aria-hidden="true" />}
+                        onRemove={paying ? undefined : () => setCoupon(null)}
+                        removeLabel="Bỏ mã"
+                      >
+                        {coupon.code}
+                      </Chip>
+                    }
+                  />
+                  <SettingsRow
+                    title={`Giảm ${coupon.percentOff}%`}
+                    action={
+                      <span className="text-sm text-income tabular-nums">−{formatCurrency(priced?.discount ?? 0)}</span>
+                    }
+                  />
+                </>
+              ) : (
+                <SettingsFieldRow htmlFor="checkout-coupon" title="Mã giảm giá" invalid={Boolean(codeError)}>
+                  <InlineInput
+                    id="checkout-coupon"
+                    value={code}
+                    placeholder="Nhập mã"
+                    autoCapitalize="characters"
+                    maxLength={20}
+                    enterKeyHint="done"
+                    aria-invalid={Boolean(codeError) || undefined}
+                    onChange={(event) => {
+                      setCode(event.target.value.replace(/\s+/g, "").toUpperCase())
+                      setCodeError(null)
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault()
+                        void apply()
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="-mr-2 ml-1"
+                    disabled={!code.trim() || checking || paying}
+                    onClick={() => void apply()}
+                  >
+                    {checking ? <Spinner /> : null}
+                    Áp dụng
+                  </Button>
+                </SettingsFieldRow>
+              )}
+            </SettingsGroup>
+            {codeError ? <FieldError className="px-4">{codeError}</FieldError> : null}
+          </div>
 
-        {/* The order, as a receipt. */}
-        <Card size="sm">
-          <CardContent className="space-y-3">
-            <dl className="space-y-2 text-sm">
-              <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">
-                  {renewing ? "Gia hạn" : "Gói"} {plans.pro.label} · {price.label}
-                </dt>
-                <dd className="tabular-nums">{formatCurrency(price.amount)}</dd>
-              </div>
-              {priced ? (
-                <div className="flex justify-between gap-3">
-                  <dt className="text-muted-foreground">Giảm giá ({coupon?.percentOff}%)</dt>
-                  <dd className="tabular-nums text-income">
-                    −{formatCurrency(priced.discount)}
-                  </dd>
-                </div>
-              ) : null}
-            </dl>
-            <Separator />
-            <div className="flex items-baseline justify-between gap-3">
-              <span className="font-medium">Tổng thanh toán</span>
-              <span className="text-base font-medium tabular-nums">{formatCurrency(total)}</span>
-            </div>
-          </CardContent>
-        </Card>
+          <SettingsGroup>
+            <SettingsRow
+              title={<span className="font-semibold">Tổng thanh toán</span>}
+              action={<span className="text-base font-semibold tabular-nums">{formatCurrency(total)}</span>}
+            />
+          </SettingsGroup>
 
-        <DialogFooter className="flex-col sm:flex-col">
-          {error ? <FieldError role="alert">{error}</FieldError> : null}
-          <Button type="button" size="lg" className="w-full" disabled={paying || checking} onClick={() => void pay()}>
-            {paying ? <Spinner /> : null}
-            {free ? "Nhận Pro miễn phí" : `Thanh toán ${formatCurrency(total)}`}
-          </Button>
-          {free ? null : (
-            <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
-              <ShieldCheckIcon className="size-4 shrink-0" aria-hidden="true" />
-              Thanh toán bảo mật qua payOS
-            </p>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <div className="flex flex-col gap-2">
+            {error ? <FieldError role="alert" className="text-center">{error}</FieldError> : null}
+            <Button type="button" className="w-full" disabled={paying || checking} onClick={() => void pay()}>
+              {paying ? <Spinner /> : null}
+              {free ? "Nhận Pro miễn phí" : `Thanh toán ${formatCurrency(total)}`}
+            </Button>
+            {free ? null : (
+              <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
+                <ShieldCheckIcon className="size-4 shrink-0" aria-hidden="true" />
+                Bảo mật qua payOS · quét QR, mọi ngân hàng
+              </p>
+            )}
+          </div>
+        </div>
+      </DrawerContent>
+    </Drawer>
   )
 }

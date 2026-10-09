@@ -5,16 +5,7 @@ import { useRouter } from "next/navigation"
 import { CrownIcon } from "lucide-react"
 import { toast } from "sonner"
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { ActionSheet } from "@/components/app/action-sheet"
 import { PageSheet } from "@/components/app/page-sheet"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
@@ -244,28 +235,13 @@ function AdminUserDetail({ user }: { user: AdminUser }) {
         </SettingsGroup>
       ) : null}
 
-      <AlertDialog open={revokeOpen} onOpenChange={setRevokeOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Thu hồi Pro?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {user.email || user.name} sẽ về gói {plans.free.label} ngay, kể cả phần Pro đã cấp nối tiếp. Số tiền đã ghi
-              vẫn nằm trong lịch sử.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Huỷ</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                setRevokeOpen(false)
-                revoke()
-              }}
-            >
-              Thu hồi Pro
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ActionSheet
+        open={revokeOpen}
+        onOpenChange={setRevokeOpen}
+        title={`Thu hồi Pro của ${user.email || user.name}? Tài khoản về gói ${plans.free.label} ngay, kể cả phần Pro đã cấp nối tiếp. Số tiền đã ghi vẫn nằm trong lịch sử.`}
+        options={[{ value: "revoke", label: "Thu hồi Pro", destructive: true }]}
+        onSelect={() => revoke()}
+      />
     </div>
   )
 }

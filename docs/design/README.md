@@ -145,7 +145,7 @@ component ở đó là cả app đổi theo.
 | `InlineSelect` | Dropdown mở tại chỗ, đẩy nội dung bên dưới xuống: chọn trong vài tài khoản, ví. Hiệu ứng chiều cao đơn giản (300ms ease-out); trên iOS kém mượt hơn transform, đã chấp nhận. Danh sách dài vẫn dùng `Select`/`Combobox` |
 | `CardLabel` | Nhãn nhỏ trong thẻ ("Tài sản ròng", "Tiền vào"): chữ thường cỡ Body, màu phụ; trên thẻ `inverse` thì sáng 60%. Mọi thẻ có nhãn dùng nó |
 | `Avatar` | Ảnh người dùng, không có ảnh thì chữ cái đầu. `AvatarFallback colorKey={id}` cho chữ cái nằm trên màu riêng của người đó (bảng màu hạng mục, trừ hồng và xám; cùng hàm `personTileClassName` với `ContactAvatar`), như hồ sơ ở Cài đặt và Tổng quan; không có thì nền xám |
-| `Chip` | Chip tĩnh cho thứ đã chọn hoặc gắn kèm (người, thẻ #): có thể có avatar và nút × |
+| `Chip` | Chip tĩnh cho thứ đã chọn hoặc gắn kèm (người, thẻ #): có thể có avatar (hay icon, `media`) và nút ×; `tone="income"` (nền và chữ xanh) cho thứ giúp tiết kiệm, như mã giảm giá đã áp |
 | `Collapse` | Thu gọn và mở lại một khối: chiều cao (hoặc rộng, `axis="x"`) trượt về 0 kèm mờ dần trong 300ms, phần bên dưới trôi lên mượt thay vì nhảy; khi đóng vẫn giữ trong cây nhưng `inert`. Dùng cho màn tìm ở Giao dịch (đầu trang và thẻ tổng thu lại, "Huỷ" trượt ra). Tức thì khi giảm chuyển động |
 | `ChipRow` | Hàng chip cuộn ngang, chạy tới mép màn (bù `--main-content-px`), chip đầu vẫn thẳng hàng trang; có chừa 4px trên dưới cho viền focus. Đi kèm `ChipButton` (chip mở một thứ, như sheet lọc; `active` tô đậm khi điều kiện đang bật, ghi "Lọc · 2") và `ChipRowDivider` (vạch đứng giữa nút lọc và các chip loại). Chip chọn là `ToggleGroup` `size="sm"`. Chip đổi màu tức thì, không chuyển màu (chuyển trắng sang đen đi qua xám, và khựng lại thành nháy khi trang đang bận); chip lọc ở Giao dịch hiện chọn ngay rồi mới lọc trang trong transition |
 | `MonthPickerSheet` | Chọn tháng từ sheet đáy: năm với ‹ ›, lưới 12 tháng, tháng chưa tới mờ đi, nút "Tháng hiện tại" (cỡ thường, đen). Nền xám như mọi sheet (`DrawerContent surface="grouped"`, nay dùng được cả cho sheet đáy ngắn), ô tháng trắng; action sheet thì vẫn là khối trắng nổi trên lớp phủ như iOS |
@@ -394,7 +394,14 @@ Trước khi báo xong một màn mới, kiểm tra:
   ("Nâng cấp Finance Tracker" / "Bạn đang dùng Pro"); thẻ Pro trước với `ChoiceTiles tone="ai"`
   chọn kỳ (mặc định theo năm), nút `lg` rộng hết, ghi chú nhỏ, rồi đường kẻ và "Mọi thứ của gói
   Free, thêm:"; thẻ Free gọn hơn; cuối là dòng payOS và câu hỏi thường gặp (`Accordion` trong
-  `SettingsGroup`). Kết quả thanh toán là `NoticeBanner` ở đầu.
+  `SettingsGroup`). Kết quả thanh toán là `NoticeBanner` ở đầu. Nút nâng cấp mở **sheet thanh toán**
+  (`CheckoutSheet`, sheet đáy nền xám, 2026-10-09): ô `IconTile ai` lớn, "Nâng cấp Pro" / "Gia hạn Pro", "300 lượt AI
+  mỗi tháng"; biên lai là nhóm dòng: "Gói Pro · 1 năm  249.000đ", "Mã giảm giá" gõ tại chỗ (`SettingsFieldRow`,
+  chữ in hoa, "Áp dụng" ở cuối dòng sáng khi đã gõ; mã sai báo đỏ dưới nhóm). Áp được thì dòng mã thành
+  `Chip tone="income"` chỉ ghi mã ("SALE20 ×", không kèm phần trăm) và thêm dòng "Giảm 20%  −50.000đ" xanh;
+  "Tổng thanh toán" đậm ở thẻ riêng; nút "Thanh toán 199.000đ" rộng hết và dòng nhỏ "Bảo mật qua payOS · quét QR,
+  mọi ngân hàng". Mã làm tổng về 0 thì nút là "Nhận Pro miễn phí", không qua payOS. Xác nhận ở Quản trị (thu hồi
+  Pro, xoá mã) cũng là `ActionSheet` đỏ.
 - **Form:** `PageSheet` nền xám; các trường gom trong một `FormSection` (thẻ trắng, ô nhập
   xám bên trong), dòng chọn và công tắc trong `SettingsGroup`; form `flex flex-1 flex-col`, nút
   lưu cỡ thường rộng hết trong `PageSheetFooter` cuối form, nổi ở đáy sheet. Không bọc một ô lẻ

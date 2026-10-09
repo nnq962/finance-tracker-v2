@@ -5,16 +5,7 @@ import { PlusIcon, SaveIcon, TicketPercentIcon, Trash2Icon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { ActionSheet } from "@/components/app/action-sheet"
 import { FormSection } from "@/components/app/form-section"
 import { PageSheet, PageSheetFooter } from "@/components/app/page-sheet"
 import { RequiredMark } from "@/components/forms/required-mark"
@@ -273,35 +264,26 @@ function CouponForm({ coupon, onDone }: { coupon?: AdminCoupon; onDone: () => vo
       </PageSheetFooter>
 
       {coupon ? (
-        <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Xoá mã {coupon.code}?</AlertDialogTitle>
-              <AlertDialogDescription>
-                {coupon.used > 0
-                  ? `Lịch sử ${coupon.used} lượt dùng sẽ mất. Muốn giữ lịch sử, hãy tắt mã thay vì xoá.`
-                  : "Mã sẽ bị xoá vĩnh viễn."}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Huỷ</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={async () => {
-                  const result = await deleteCouponAction(coupon.id)
-                  if (!result.success) {
-                    toast.error(result.error)
-                    return
-                  }
-                  toast.success(`Đã xoá mã ${coupon.code}`)
-                  onDone()
-                }}
-              >
-                <Trash2Icon />
-                Xoá mã
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        // Asked again, as every delete that cannot be undone.
+        <ActionSheet
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          title={
+            coupon.used > 0
+              ? `Xoá mã ${coupon.code}? Lịch sử ${coupon.used} lượt dùng sẽ mất; muốn giữ lịch sử thì tắt mã thay vì xoá.`
+              : `Xoá mã ${coupon.code}? Mã sẽ bị xoá vĩnh viễn.`
+          }
+          options={[{ value: "delete", label: "Xoá mã", destructive: true }]}
+          onSelect={async () => {
+            const result = await deleteCouponAction(coupon.id)
+            if (!result.success) {
+              toast.error(result.error)
+              return
+            }
+            toast.success(`Đã xoá mã ${coupon.code}`)
+            onDone()
+          }}
+        />
       ) : null}
     </form>
   )
