@@ -71,7 +71,7 @@ const colors = [
 const typeScale = [
   ["Số tiền lớn", "text-[34px] font-semibold tracking-tight", "34"],
   ["Tên trang", "text-2xl font-semibold tracking-tight", "24"],
-  ["Title · nhóm", "text-lg font-semibold", "18"],
+  ["Title · nhóm", "text-base font-semibold", "16"],
   ["Headline · thẻ", "text-base font-semibold", "16"],
   ["Body · nội dung", "text-sm", "14"],
   ["Caption · mô tả, lỗi", "text-xs text-muted-foreground", "12"],
