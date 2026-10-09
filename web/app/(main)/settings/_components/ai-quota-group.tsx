@@ -47,7 +47,7 @@ export function AiQuotaGroup({ planState, onOpenPlan }: { planState: PlanState; 
     <SettingsGroup
       title="Lượt AI"
       // The meters' inset divider above the row too.
-      listClassName="relative before:absolute before:inset-x-4 before:top-0 before:h-px before:bg-border"
+      listClassName="relative before:absolute before:inset-x-4 before:top-0 before:h-px before:bg-separator"
       header={
         <div>
           <UsageMeter

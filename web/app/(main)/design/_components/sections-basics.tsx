@@ -62,7 +62,8 @@ const colors = [
   ["warning", "Nhắc nhở", "bg-warning"],
   ["destructive", "Xoá, lỗi", "bg-destructive"],
   ["muted", "Nền phụ", "bg-muted"],
-  ["border", "Đường kẻ", "bg-border"],
+  ["border", "Viền", "bg-border"],
+  ["separator", "Kẻ giữa dòng list", "bg-separator"],
 ] as const
 
 // Page name 24 · Title 20 · Headline 16 · Body 14 · Caption 12, plus the large amount (34), the

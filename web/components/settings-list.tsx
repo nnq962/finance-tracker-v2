@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils"
  */
 export function settingsSeparatorClassName(hasMedia?: boolean) {
   return cn(
-    "relative before:absolute before:top-0 before:right-4 before:left-4 before:h-px before:bg-border has-[[data-slot=item-media]]:before:left-16",
+    "relative before:absolute before:top-0 before:right-4 before:left-4 before:h-px before:bg-separator has-[[data-slot=item-media]]:before:left-16",
     // No divider above the first row showing: the first row, or one with only
     // folded-away rows (SettingsRow `collapsed`) before it.
     "[&:not(:not([data-collapsed])~*)]:before:hidden",

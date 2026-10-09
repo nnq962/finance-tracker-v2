@@ -128,7 +128,7 @@ export function ThemeOptions() {
         </div>
       }
       // The screens' inset divider above the row too.
-      listClassName="relative before:absolute before:inset-x-4 before:top-0 before:h-px before:bg-border"
+      listClassName="relative before:absolute before:inset-x-4 before:top-0 before:h-px before:bg-separator"
     >
       <SettingsRow
         title="Tự động"
