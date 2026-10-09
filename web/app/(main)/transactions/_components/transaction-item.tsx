@@ -60,6 +60,9 @@ export function TransactionItem({
   const [copyOpen, setCopyOpen] = React.useState(false)
   const [copyDraft, setCopyDraft] = React.useState<TransactionDraft>()
   const { category, icon, color } = getTransactionVisual(transaction, categoryGroups)
+  const baseDescription =
+    description ??
+    (transaction.kind === "transfer" ? transaction.description : (transaction.accountName ?? transaction.description))
 
   return (
     <>
@@ -67,25 +70,21 @@ export function TransactionItem({
         icon={icon}
         tone={color}
         title={<MarkedTitle title={transaction.title} query={highlight} />}
-        // The account; the icon already shows the category's group.
+        // The account; the icon already shows the category's group. Where the
+        // list is a wide container (the transactions page on desktop, not a
+        // phone or the overview's day sheet), the note follows it on the line.
         description={
-          description ??
-          (transaction.kind === "transfer"
-            ? transaction.description
-            : (transaction.accountName ?? transaction.description))
+          baseDescription ? (
+            <>
+              {baseDescription}
+              {transaction.note ? <span className="hidden @2xl:inline"> · {transaction.note}</span> : null}
+            </>
+          ) : undefined
         }
         chevron={false}
         onClick={() => setDetailsOpen(true)}
         action={
-          <span className="flex items-center gap-6">
-            {transaction.note ? (
-              // Only where the list is a wide container: the transactions
-              // page on desktop, not a phone or the overview's day sheet.
-              <span className="hidden max-w-64 truncate text-sm text-muted-foreground @2xl:block">
-                {transaction.note}
-              </span>
-            ) : null}
-            <span className="flex flex-col items-end">
+          <span className="flex flex-col items-end">
               <Money
                 amount={
                   amount ?? (transaction.kind === "expense" ? -Math.abs(transaction.amount) : Math.abs(transaction.amount))
@@ -101,7 +100,6 @@ export function TransactionItem({
               >
                 {dateLabel ?? formatTime(transaction.occurredAt)}
               </time>
-            </span>
           </span>
         }
       />
