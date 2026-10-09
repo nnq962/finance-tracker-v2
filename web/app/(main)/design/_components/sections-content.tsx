@@ -755,6 +755,15 @@ function FeedbackSection() {
           >
             Toast lỗi dài
           </Button>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              const id = toast.loading("Đang kết nối thiết bị…")
+              window.setTimeout(() => toast.success("Đã bật thông báo.", { id }), 1500)
+            }}
+          >
+            Toast đang tải
+          </Button>
           <Button variant="secondary" onClick={() => setMonthOpen(true)}>
             Chọn tháng
           </Button>
