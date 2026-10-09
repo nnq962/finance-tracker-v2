@@ -123,7 +123,9 @@ component ở đó là cả app đổi theo.
   đều không tới thanh). Nên lớp phủ tối (Drawer, Sheet, Dialog, AlertDialog) đặt nền mờ và blur ở
   `::before`, không ở chính lớp `fixed` (không thì thanh chuyển trắng), và `PageSheet` phủ kín
   màn hình trên điện thoại: khi sheet lên hết, thanh lấy màu của sheet, mà nền `grouped` trùng màu
-  trang nên thanh không đổi. Sheet ngắn và hộp thoại không tới mép trên nên thanh có thể đổi sang
+  trang nên thanh không đổi. Safari lấy màu vào một lúc bất kỳ khi sheet đang chạy, nên lớp phủ của
+  sheet này cách mép trên 8px (không thì Safari hay lấy trúng lớp phủ trong suốt và thấy trang đã
+  tối qua nó), và sheet bỏ `will-change` của vaul. Sheet ngắn và hộp thoại không tới mép trên nên thanh có thể đổi sang
   màu trang đã phủ tối sau khi lớp phủ hiện xong. Phần tử `fixed` mới chạm mép trên cũng đặt nền ở
   `::before`, trừ khi nó cố ý mang màu cho thanh.
 - **Toast (Sonner, `components/ui/sonner.tsx`):** như mockup, kiểu banner iOS chứ không phải

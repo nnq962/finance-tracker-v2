@@ -81,8 +81,10 @@ function DrawerOverlay({
 // still be scrolled from code (a focus or scrollIntoView reaching for
 // something under the footer), which slid the whole sheet, bar and all, up
 // out of view.
+// will-change-auto: vaul keeps will-change: transform on every drawer, which
+// may keep Safari from taking the sheet's colour for the status bar.
 const pageSheetClassName =
-  "fixed inset-x-0 bottom-0 top-0 z-50 flex flex-col overflow-hidden supports-[overflow:clip]:overflow-clip bg-popover pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] text-sm text-popover-foreground shadow-xl outline-none sm:inset-x-auto sm:left-1/2 sm:top-[6dvh] sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:rounded-t-[28px] sm:pt-0"
+  "fixed will-change-auto! inset-x-0 bottom-0 top-0 z-50 flex flex-col overflow-hidden supports-[overflow:clip]:overflow-clip bg-popover pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] text-sm text-popover-foreground shadow-xl outline-none sm:inset-x-auto sm:left-1/2 sm:top-[6dvh] sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:rounded-t-[28px] sm:pt-0"
 
 function DrawerContent({
   className,
@@ -102,7 +104,14 @@ function DrawerContent({
   if (variant === "page") {
     return (
       <DrawerPortal data-slot="drawer-portal">
-        <DrawerOverlay />
+        {/* Kept off the screen's top edge on phones. Safari 26 takes the
+            status bar's colour once, at some moment while the sheet slides
+            in, from a fixed element at the top: when that was this
+            see-through layer it showed the dimmed page through it, and the
+            bar stayed darker than the sheet most times. Off the edge, it
+            meets only the sheet or the page, both the same grey. The thin
+            band left undimmed is covered once the sheet is up. */}
+        <DrawerOverlay className="max-sm:top-[max(env(safe-area-inset-top,0px),0.5rem)]" />
         <DrawerPrimitive.Content
           data-slot="drawer-content"
           data-variant="page"
