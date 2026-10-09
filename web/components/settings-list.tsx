@@ -18,14 +18,13 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
 /**
- * Divider above every row but the first, as in native lists: from where the
- * row's text starts (past a 36 icon or logo and its 12 gap, when the row has
- * one) to 16 short of the card's right edge. `hasMedia` is for loading
- * skeletons, which have no ItemMedia to detect.
+ * Divider above every row but the first: 16 in from both edges of the card,
+ * running under the row's icon too, as in the Mobile Expense Tracker mockup
+ * (2026-10-09; before, it started past the icon, as in iOS).
  */
-export function settingsSeparatorClassName(hasMedia?: boolean) {
+export function settingsSeparatorClassName() {
   return cn(
-    "relative before:absolute before:top-0 before:right-4 before:left-4 before:h-px before:bg-separator has-[[data-slot=item-media]]:before:left-16",
+    "relative before:absolute before:top-0 before:right-4 before:left-4 before:h-px before:bg-separator",
     // No divider above the first row showing: the first row, or one with only
     // folded-away rows (SettingsRow `collapsed`) before it.
     "[&:not(:not([data-collapsed])~*)]:before:hidden",
@@ -35,7 +34,6 @@ export function settingsSeparatorClassName(hasMedia?: boolean) {
     // the row after a highlighted one hides its own too.
     "has-[button[data-slot=item]:active]:before:hidden [:has(button[data-slot=item]:active)+&]:before:hidden",
     "md:has-[button[data-slot=item][data-active=true]]:before:hidden md:[:has(button[data-slot=item][data-active=true])+&]:before:hidden",
-    hasMedia && "before:left-16",
   )
 }
 
@@ -425,7 +423,7 @@ function SettingsRowSkeleton({
 }: SettingsRowSkeletonProps) {
   if (align === "center") {
     return (
-      <div className={cn("flex min-h-16 items-center justify-center border border-transparent px-4 py-3", settingsSeparatorClassName(false))}>
+      <div className={cn("flex min-h-16 items-center justify-center border border-transparent px-4 py-3", settingsSeparatorClassName())}>
         <Skeleton className="h-3.5 w-20" />
       </div>
     )
@@ -433,7 +431,7 @@ function SettingsRowSkeleton({
 
   return (
     // Item's transparent 1px border included, so everything lands where the row's does.
-    <div className={cn("flex min-h-16 items-center gap-3 border border-transparent px-4 py-3", settingsSeparatorClassName(media !== "none"))}>
+    <div className={cn("flex min-h-16 items-center gap-3 border border-transparent px-4 py-3", settingsSeparatorClassName())}>
       {media === "none" ? null : (
         <Skeleton
           className={cn(
