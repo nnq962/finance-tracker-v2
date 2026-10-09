@@ -39,8 +39,14 @@ export function settingsSeparatorClassName(hasMedia?: boolean) {
   )
 }
 
-/** A group's caption above its card, in small capitals as in iOS grouped lists: lists, forms, the filters. */
-export const groupCaptionClassName = "text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+/**
+ * A group's caption above its card, in small capitals as in iOS grouped lists: lists, forms, the filters.
+ * A name cut with "…" inside it (truncate) clips to its line, and Safari puts
+ * the stacked marks of capitals (Ể, Ấ) above a 12px line: the clipping box
+ * reaches 4px further up and down, the layout unchanged.
+ */
+export const groupCaptionClassName =
+  "text-xs font-semibold tracking-wider text-muted-foreground uppercase [&_.truncate]:-my-1 [&_.truncate]:py-1"
 
 /** The caption row above a group's card, so groups and their skeletons line up. */
 const captionRowClassName = "flex min-h-6 items-center justify-between gap-3 px-4"

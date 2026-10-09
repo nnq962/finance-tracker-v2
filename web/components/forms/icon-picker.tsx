@@ -86,9 +86,10 @@ function IconCell({
 
 /**
  * A category's icon picked from a grid of two rows on a white card, as
- * PickGrid picks a category: the chosen icon first, then those matching the
+ * PickGrid picks a category: the icon it had first, then those matching the
  * name being typed (`name`), then `fallback` (the group's, its other items'),
  * and last a cell opening every icon (IconPickerScreen, a deeper screen).
+ * Choosing one rings it in place.
  */
 export function IconPicker({
   value,
@@ -105,10 +106,15 @@ export function IconPicker({
   onValueChange: (value: CategoryIconName) => void
   onShowAll: () => void
 }) {
-  const shown = [...new Set([value, ...suggestIcons(name), ...fallback, ...categoryIconOptions.map((option) => option.name)])].slice(
+  // The icon it had when the form opened leads, and the cells keep their
+  // places as icons are chosen: a choice lights up where it is. One chosen
+  // from every icon, not among them, takes the last cell.
+  const [initial] = React.useState(value)
+  const shown = [...new Set([initial, ...suggestIcons(name), ...fallback, ...categoryIconOptions.map((option) => option.name)])].slice(
     0,
     QUICK_COUNT,
   )
+  if (!shown.includes(value)) shown[shown.length - 1] = value
 
   return (
     <div role="group" aria-label="Biểu tượng" className="grid grid-cols-6 gap-1 rounded-[20px] bg-card p-2">

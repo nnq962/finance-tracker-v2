@@ -177,7 +177,7 @@ component ở đó là cả app đổi theo.
 
 Danh sách nằm ở `components/settings-list.tsx`. `SettingsGroup` là nhóm dòng trong một thẻ
 (`size="lg"` cho trang dạng bảng tin), tiêu đề nhóm là nhãn 12 in hoa giãn chữ như list nhóm của
-iOS ("HÔM NAY", "CHUNG"; `groupCaptionClassName`, dùng chung cho `FormSection` và bộ lọc); đường kẻ giữa các dòng thụt 16 vào từ hai bên. `SettingsRow` là **mọi** dòng list (cài đặt, giao dịch, nhiệm vụ…), nên các list đồng nhất: cao 64
+iOS ("HÔM NAY", "CHUNG"; `groupCaptionClassName`, dùng chung cho `FormSection` và bộ lọc; tên cắt "…" trong tiêu đề có thêm 4px trên dưới để Safari không cắt dấu chồng của chữ hoa như "Ể"); đường kẻ giữa các dòng thụt 16 vào từ hai bên. `SettingsRow` là **mọi** dòng list (cài đặt, giao dịch, nhiệm vụ…), nên các list đồng nhất: cao 64
 (tiêu đề và mô tả mỗi thứ một dòng, cắt bằng "…"; `fullDescription` cho chữ mà dòng tồn tại để hiện: ghi chú trong chi tiết tài khoản, khoản vay, giao dịch, câu trả lời của máy tính lương, thông báo; dòng đó cao hơn 64), lề ngang 16, `icon` tự đặt trong `IconTile` cỡ `sm` (36,
 bo 12) màu theo `tone` (xám nếu không truyền), tiêu đề 14 (Body, đậm 500), mô tả 12 (Caption), rồi giá trị, công tắc, số
 tiền hoặc mũi tên ở bên phải. `media` cho avatar và logo tài khoản (`AccountLogo`: ô vuông bo 10 cỡ 36 như `IconTile sm`, logo trên nền trắng, tiền mặt là tờ tiền xanh; `size="xs"` 20 trong select; `size="lg"` 48 bo 14 ở đầu sheet chi tiết tài khoản). `swipeAction` cho dòng vuốt để xoá. Dòng ở
@@ -276,10 +276,10 @@ Trước khi báo xong một màn mới, kiểm tra:
   Cài đặt → Hạng mục), cùng kiểu form người, tài khoản: ô biểu tượng `lg` đúng màu ở đầu, tên và "3 hạng mục" /
   "Trong nhóm Ăn uống" dưới, đổi theo mỗi lựa chọn; dòng "Tên" gõ tại chỗ; "MÀU" (chỉ nhóm; hạng mục lấy màu nhóm)
   là `ColorPicker`: 10 chấm tròn trên thẻ trắng, chấm đang chọn có vòng và ✓; "BIỂU TƯỢNG" là `IconPicker`: lưới
-  6 cột hai hàng trên thẻ trắng (không khung cuộn lồng), ô đầu là biểu tượng đang chọn (màu nhóm, viền đậm như
-  `PickGrid`), rồi gợi ý theo tên đang gõ (so từ với nhãn tiếng Việt của biểu tượng, bỏ từ đệm "và", "của"…; có dấu
+  6 cột hai hàng trên thẻ trắng (không khung cuộn lồng), ô đầu là biểu tượng lúc mở form; các ô giữ chỗ khi chọn, ô đang chọn sáng tại
+  chỗ (màu nhóm, vòng quanh ô như chấm màu; chọn từ màn "Tất cả" mà không có trong lưới thì vào ô cuối), rồi gợi ý theo tên đang gõ (so từ với nhãn tiếng Việt của biểu tượng, bỏ từ đệm "và", "của"…; có dấu
   thì dấu tính, nên "sữa" không ra "sửa"), rồi biểu tượng của nhóm và các hạng mục trong nhóm; ô cuối mở màn sâu
-  "Biểu tượng" (`IconPickerScreen`: ô tìm, mỗi từ gõ là đầu một từ của nhãn; lưới đủ 200, chạm là chọn và quay
+  "Biểu tượng" (`IconPickerScreen`, form ẩn chứ không gỡ nên lưới giữ thứ tự: ô tìm, mỗi từ gõ là đầu một từ của nhãn; lưới đủ 200, chạm là chọn và quay
   lại). Chân: nút tròn xoá cạnh "Lưu thay đổi" ("Thêm nhóm" / "Thêm hạng mục" khi thêm); xoá hỏi lại bằng
   `ActionSheet` ("Xoá nhóm “Ăn uống” và 3 hạng mục bên trong? Giao dịch cũ vẫn được giữ."), vì xoá nhóm kéo theo
   các hạng mục và chưa có hoàn tác.

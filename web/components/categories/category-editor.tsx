@@ -88,104 +88,104 @@ export function CategoryEditor({
     setError((await onSave({ name: nextName, colorName, iconName })) ?? "")
   }
 
-  if (allIcons) {
-    return (
-      <IconPickerScreen
-        value={iconName}
-        color={colorName}
-        onPick={(icon) => {
-          setIconName(icon)
-          setAllIcons(false)
-        }}
-      />
-    )
-  }
-
   return (
-    <form className="flex flex-1 flex-col" onSubmit={submit}>
-      <fieldset disabled={pending} className="flex min-w-0 flex-col gap-6 pb-4">
-        {/* What it will look like, following each choice. */}
-        <div className="flex flex-col items-center gap-1 pt-2 text-center">
-          <IconTile icon={categoryIconRegistry[iconName]} tone={colorName} size="lg" />
-          <p className={cn("mt-2 max-w-full truncate text-base font-semibold", !name.trim() && "text-muted-foreground")}>
-            {name.trim() || (kind === "group" ? "Tên nhóm" : "Tên hạng mục")}
-          </p>
-          <p className="text-xs text-muted-foreground">{caption}</p>
-        </div>
+    <>
+      {allIcons ? (
+        <IconPickerScreen
+          value={iconName}
+          color={colorName}
+          onPick={(icon) => {
+            setIconName(icon)
+            setAllIcons(false)
+          }}
+        />
+      ) : null}
+      {/* Hidden, not removed, under every icon: the grid keeps its order. */}
+      <form hidden={allIcons} className="flex flex-1 flex-col" onSubmit={submit}>
+        <fieldset disabled={pending} className="flex min-w-0 flex-col gap-6 pb-4">
+          {/* What it will look like, following each choice. */}
+          <div className="flex flex-col items-center gap-1 pt-2 text-center">
+            <IconTile icon={categoryIconRegistry[iconName]} tone={colorName} size="lg" />
+            <p className={cn("mt-2 max-w-full truncate text-base font-semibold", !name.trim() && "text-muted-foreground")}>
+              {name.trim() || (kind === "group" ? "Tên nhóm" : "Tên hạng mục")}
+            </p>
+            <p className="text-xs text-muted-foreground">{caption}</p>
+          </div>
 
-        <div className="flex flex-col gap-2">
-          <SettingsGroup>
-            <SettingsFieldRow htmlFor="category-name" title="Tên" invalid={Boolean(error)}>
-              <InlineInput
-                id="category-name"
-                value={name}
-                onChange={(event) => {
-                  setName(event.target.value)
-                  setError("")
-                }}
-                placeholder={kind === "group" ? "Ăn uống" : "Cà phê"}
-                maxLength={80}
-                aria-invalid={Boolean(error) || undefined}
-              />
-            </SettingsFieldRow>
-          </SettingsGroup>
-          {error ? <FieldError className="px-4">{error}</FieldError> : null}
-        </div>
+          <div className="flex flex-col gap-2">
+            <SettingsGroup>
+              <SettingsFieldRow htmlFor="category-name" title="Tên" invalid={Boolean(error)}>
+                <InlineInput
+                  id="category-name"
+                  value={name}
+                  onChange={(event) => {
+                    setName(event.target.value)
+                    setError("")
+                  }}
+                  placeholder={kind === "group" ? "Ăn uống" : "Cà phê"}
+                  maxLength={80}
+                  aria-invalid={Boolean(error) || undefined}
+                />
+              </SettingsFieldRow>
+            </SettingsGroup>
+            {error ? <FieldError className="px-4">{error}</FieldError> : null}
+          </div>
 
-        {kind === "group" ? (
-          <section className="flex flex-col gap-2">
-            <Caption>Màu</Caption>
-            <ColorPicker value={colorName} onValueChange={setColorName} />
-          </section>
-        ) : null}
-
-        <section className="flex flex-col gap-2">
-          <Caption>Biểu tượng</Caption>
-          <IconPicker
-            value={iconName}
-            color={colorName}
-            name={name}
-            fallback={fallback}
-            onValueChange={setIconName}
-            onShowAll={() => setAllIcons(true)}
-          />
-          <p className="px-4 text-xs text-muted-foreground">Gợi ý theo tên. Ô cuối mở tất cả biểu tượng.</p>
-        </section>
-      </fieldset>
-
-      <PageSheetFooter>
-        {/* Deleting beside saving, as tall as it; asked again before it goes. */}
-        <div className="flex items-center gap-2">
-          {editing ? (
-            <Button
-              type="button"
-              variant="destructive"
-              size="icon"
-              aria-label={`Xoá ${noun}`}
-              disabled={pending}
-              onClick={() => setConfirmDelete(true)}
-            >
-              <Trash2Icon />
-            </Button>
+          {kind === "group" ? (
+            <section className="flex flex-col gap-2">
+              <Caption>Màu</Caption>
+              <ColorPicker value={colorName} onValueChange={setColorName} />
+            </section>
           ) : null}
-          <Button type="submit" className="flex-1" disabled={pending}>
-            {pending ? <Spinner /> : <SaveIcon />}
-            {pending ? "Đang lưu…" : editing ? "Lưu thay đổi" : kind === "group" ? "Thêm nhóm" : "Thêm hạng mục"}
-          </Button>
-        </div>
-      </PageSheetFooter>
 
-      <ActionSheet
-        open={confirmDelete}
-        onOpenChange={setConfirmDelete}
-        title={
-          kind === "group"
-            ? `Xoá nhóm “${group?.name ?? ""}”${itemCount ? ` và ${itemCount} hạng mục bên trong` : ""}? Giao dịch cũ vẫn được giữ.`
-            : `Xoá hạng mục “${item?.name ?? ""}”? Giao dịch cũ vẫn được giữ.`
-        }
-        options={[{ value: "delete", label: `Xoá ${noun}`, destructive: true }]}
-        onSelect={onDelete}
-      />
-    </form>
+          <section className="flex flex-col gap-2">
+            <Caption>Biểu tượng</Caption>
+            <IconPicker
+              value={iconName}
+              color={colorName}
+              name={name}
+              fallback={fallback}
+              onValueChange={setIconName}
+              onShowAll={() => setAllIcons(true)}
+            />
+            <p className="px-4 text-xs text-muted-foreground">Gợi ý theo tên. Ô cuối mở tất cả biểu tượng.</p>
+          </section>
+        </fieldset>
+
+        <PageSheetFooter>
+          {/* Deleting beside saving, as tall as it; asked again before it goes. */}
+          <div className="flex items-center gap-2">
+            {editing ? (
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                aria-label={`Xoá ${noun}`}
+                disabled={pending}
+                onClick={() => setConfirmDelete(true)}
+              >
+                <Trash2Icon />
+              </Button>
+            ) : null}
+            <Button type="submit" className="flex-1" disabled={pending}>
+              {pending ? <Spinner /> : <SaveIcon />}
+              {pending ? "Đang lưu…" : editing ? "Lưu thay đổi" : kind === "group" ? "Thêm nhóm" : "Thêm hạng mục"}
+            </Button>
+          </div>
+        </PageSheetFooter>
+
+        <ActionSheet
+          open={confirmDelete}
+          onOpenChange={setConfirmDelete}
+          title={
+            kind === "group"
+              ? `Xoá nhóm “${group?.name ?? ""}”${itemCount ? ` và ${itemCount} hạng mục bên trong` : ""}? Giao dịch cũ vẫn được giữ.`
+              : `Xoá hạng mục “${item?.name ?? ""}”? Giao dịch cũ vẫn được giữ.`
+          }
+          options={[{ value: "delete", label: `Xoá ${noun}`, destructive: true }]}
+          onSelect={onDelete}
+        />
+      </form>
+    </>
   )
 }
