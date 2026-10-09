@@ -67,15 +67,23 @@ html[data-theme-selection="system"] [data-theme-icon="system"] {
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  /* A ring rippling out of a place to tap, as a hint (the install steps): a
-     blue halo that widens and fades, every 1.6 seconds. */
+  /* A ring rippling out of a place to tap, as a hint (the install steps): the
+     ring itself (2 of the card's colour, then 2 of blue, as ring-2
+     ring-offset-2) and a blue halo widening from it and fading, every 1.6
+     seconds. One box-shadow, so the halo's corners follow the ring's. */
   --animate-tap-ring: tap-ring 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
   @keyframes tap-ring {
     0% {
-      box-shadow: 0 0 0 0 color-mix(in oklab, var(--transfer) 55%, transparent);
+      box-shadow:
+        0 0 0 2px var(--card),
+        0 0 0 4px var(--transfer),
+        0 0 0 4px color-mix(in oklab, var(--transfer) 55%, transparent);
     }
     100% {
-      box-shadow: 0 0 0 10px color-mix(in oklab, var(--transfer) 0%, transparent);
+      box-shadow:
+        0 0 0 2px var(--card),
+        0 0 0 4px var(--transfer),
+        0 0 0 14px color-mix(in oklab, var(--transfer) 0%, transparent);
     }
   }
 }
