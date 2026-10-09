@@ -248,6 +248,7 @@ Trước khi báo xong một màn mới, kiểm tra:
   06/10" (`formatDayLabel`); bên phải tiêu đề ngày là tổng vào (xanh) và tổng ra của ngày;
   tiêu đề ngày bám khi cuộn, thành một dải cao 44. Ô tìm ở Giao dịch nằm trong `<form
   role="search">`: phím Tìm trên bàn phím ẩn bàn phím (kết quả lọc ngay khi gõ).
+- **Giao dịch trên desktop** (từ lg, 2026-10-09): cột trái (thẻ tháng và bộ lọc) nằm trong trang, hiện đủ, không cuộn riêng; danh sách bên phải là khung dính dưới thanh đầu, tự cuộn và không kéo trang theo khi hết (`overscroll-contain`), nên cuộn danh sách thì trang đứng yên, cuộn trang để xem nốt bộ lọc thì danh sách vẫn trong tầm nhìn (`TransactionsLayout`).
 - **Lọc và tìm ở Giao dịch** (điện thoại): thẻ Tiền vào / Tiền ra chỉ hiển thị; dưới ô tìm là
   `ChipRow`: chip "Lọc" mở sheet điều kiện khác (không có loại), vạch chia, rồi Tất cả · Tiền vào · Tiền ra · Chuyển khoản · Vay nợ. Sheet lọc
   (`TransactionFilterSheet`) theo kiểu bộ lọc iOS: màn đầu là ba dòng Tài khoản · Hạng mục · Số
