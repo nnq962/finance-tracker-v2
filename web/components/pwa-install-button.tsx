@@ -145,7 +145,8 @@ function MenuRow({ icon: Icon, label, target = false }: { icon: LucideIcon; labe
       <Icon className="size-4 shrink-0" aria-hidden="true" />
     </span>
   )
-  return target ? <TapTarget className="block rounded-lg bg-card">{row}</TapTarget> : row
+  // Inset in its list, so the ring (2 of offset, 2 of ring) stays inside the list's grey, its corners too; no divider of its own.
+  return target ? <TapTarget className="m-1.5 block rounded-lg border-0 bg-card">{row}</TapTarget> : row
 }
 
 /** Safari's bar at the foot of the screen (iOS 26): back, the address, and ••• where Share now is. */
