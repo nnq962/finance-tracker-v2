@@ -31,8 +31,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         unstyled: true,
         classNames: {
+          // A min height, not a height: Sonner measures a toast at height auto to
+          // lay out the expanded stack, and the content alone is at most 36 high.
           toast:
-            "inset-x-0 mx-auto flex h-13 w-80! max-w-[calc(100vw-2rem)] items-center gap-3 rounded-full bg-island pr-2 pl-5 font-sans text-sm text-island-foreground shadow-[0_10px_40px_rgb(0_0_0/0.3)] has-[[data-icon]]:pl-4",
+            "inset-x-0 mx-auto flex min-h-13 w-80! max-w-[calc(100vw-2rem)] items-center gap-3 rounded-full bg-island pr-2 pl-5 font-sans text-sm text-island-foreground shadow-[0_10px_40px_rgb(0_0_0/0.3)] has-[[data-icon]]:pl-4",
           icon: "flex size-6 shrink-0 items-center justify-center [&_svg]:size-5",
           content: "flex min-w-0 flex-1 flex-col justify-center pr-2",
           // Two lines alone; one above a description, so the island never grows.
