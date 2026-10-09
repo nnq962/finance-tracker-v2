@@ -30,7 +30,7 @@ export function SectionHeader({
 }: SectionHeaderProps & { id?: string }) {
   return (
     <div className="flex min-h-11 items-center justify-between gap-3 px-1">
-      <h2 id={id} className="flex min-w-0 items-baseline gap-2 text-xl font-semibold">
+      <h2 id={id} className="flex min-w-0 items-baseline gap-2 text-lg font-semibold">
         <span className="truncate">{title}</span>
         {note ? <span className="shrink-0 text-sm font-normal text-muted-foreground">{note}</span> : null}
       </h2>
