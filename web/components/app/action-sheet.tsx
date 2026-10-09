@@ -40,7 +40,7 @@ export function ActionSheet({
           className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-md space-y-2 px-3 pb-[max(env(safe-area-inset-bottom,0px),0.75rem)] outline-none"
         >
           <div className="overflow-hidden rounded-3xl bg-popover text-popover-foreground">
-            <DrawerPrimitive.Title className="py-3 text-center text-xs font-normal text-muted-foreground">
+            <DrawerPrimitive.Title className="px-4 py-3 text-center text-xs font-normal text-balance text-muted-foreground">
               {title}
             </DrawerPrimitive.Title>
             {options.map((option) => (

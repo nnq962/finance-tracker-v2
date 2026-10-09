@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { ArrowUpDownIcon, BanknoteIcon, CheckIcon, CreditCardIcon, EyeIcon, EyeOffIcon, LockIcon, MailIcon, SearchIcon, UserIcon, WalletIcon, XIcon } from "lucide-react"
+import { toast } from "sonner"
 
 import { ActionSheet } from "@/components/app/action-sheet"
 import { Collapse } from "@/components/app/collapse"
@@ -15,7 +16,9 @@ import { RulerSlider } from "@/components/app/ruler-slider"
 import { SegmentedProgress } from "@/components/app/steps"
 import { Stepper } from "@/components/app/stepper"
 import { WheelPicker, WheelPickerGroup } from "@/components/app/wheel-picker"
+import { ColorPicker } from "@/components/forms/color-picker"
 import { CurrencyInput } from "@/components/forms/currency-input"
+import { IconPicker } from "@/components/forms/icon-picker"
 import { TimeRows } from "@/components/forms/time-rows"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
@@ -35,6 +38,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Slider } from "@/components/ui/slider"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
+import type { CategoryColorName } from "@/lib/categories/category-colors"
+import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
 
 import { Block, CatalogSection, Wide } from "./catalog-kit"
 
@@ -298,6 +303,8 @@ function SelectSection() {
   const [sortOpen, setSortOpen] = React.useState(false)
   const [day, setDay] = React.useState(week[1])
   const [hour, setHour] = React.useState(8)
+  const [categoryColor, setCategoryColor] = React.useState<CategoryColorName>("orange")
+  const [categoryIcon, setCategoryIcon] = React.useState<CategoryIconName>("coffee")
   const [minute, setMinute] = React.useState(6)
 
   return (
@@ -359,6 +366,18 @@ function SelectSection() {
           </span>
           <WheelPicker items={minutes} value={minute} onValueChange={setMinute} label="Phút" />
         </WheelPickerGroup>
+      </Block>
+      <Block label="Màu và biểu tượng hạng mục (ColorPicker, IconPicker gợi ý theo tên)">
+        <div className="flex flex-col gap-3 rounded-[24px] bg-background p-3">
+          <ColorPicker value={categoryColor} onValueChange={setCategoryColor} />
+          <IconPicker
+            value={categoryIcon}
+            color={categoryColor}
+            name="Cà phê sáng"
+            onValueChange={setCategoryIcon}
+            onShowAll={() => toast("Mở tất cả biểu tượng")}
+          />
+        </div>
       </Block>
     </CatalogSection>
   )

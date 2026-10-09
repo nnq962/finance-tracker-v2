@@ -272,6 +272,17 @@ Trước khi báo xong một màn mới, kiểm tra:
   `lib/search-text.ts`). Rồi một nhóm dòng: Tên (gõ tại chỗ, canh phải; tự lấy tên ngân hàng, ví,
   hoặc "Tiền mặt", tới khi người dùng tự gõ), Số dư âm (công tắc, "Đang nợ, thấu chi"; bật thì số
   đỏ có dấu −), Bắt đầu từ (`TimeRows` không chip), ghi chú gõ tại chỗ. Lỗi hiện tại chỗ.
+- **Thêm / sửa nhóm và hạng mục** (`CategoryEditor`, `components/categories/category-editor.tsx`, 2026-10-09; từ
+  Cài đặt → Hạng mục), cùng kiểu form người, tài khoản: ô biểu tượng `lg` đúng màu ở đầu, tên và "3 hạng mục" /
+  "Trong nhóm Ăn uống" dưới, đổi theo mỗi lựa chọn; dòng "Tên" gõ tại chỗ; "MÀU" (chỉ nhóm; hạng mục lấy màu nhóm)
+  là `ColorPicker`: 10 chấm tròn trên thẻ trắng, chấm đang chọn có vòng và ✓; "BIỂU TƯỢNG" là `IconPicker`: lưới
+  6 cột hai hàng trên thẻ trắng (không khung cuộn lồng), ô đầu là biểu tượng đang chọn (màu nhóm, viền đậm như
+  `PickGrid`), rồi gợi ý theo tên đang gõ (so từ với nhãn tiếng Việt của biểu tượng, bỏ từ đệm "và", "của"…; có dấu
+  thì dấu tính, nên "sữa" không ra "sửa"), rồi biểu tượng của nhóm và các hạng mục trong nhóm; ô cuối mở màn sâu
+  "Biểu tượng" (`IconPickerScreen`: ô tìm, mỗi từ gõ là đầu một từ của nhãn; lưới đủ 200, chạm là chọn và quay
+  lại). Chân: nút tròn xoá cạnh "Lưu thay đổi" ("Thêm nhóm" / "Thêm hạng mục" khi thêm); xoá hỏi lại bằng
+  `ActionSheet` ("Xoá nhóm “Ăn uống” và 3 hạng mục bên trong? Giao dịch cũ vẫn được giữ."), vì xoá nhóm kéo theo
+  các hạng mục và chưa có hoàn tác.
 - **Danh bạ** (`ContactsSheet`, Vay nợ): nút người + trên thanh để thêm; ô "Tìm người" (tên, mối quan
   hệ, số điện thoại; dấu theo `searchKey`); nhóm "Đang có khoản" và "Không có khoản", theo tên A–Z;
   mỗi dòng là avatar, tên, mối quan hệ, bên phải số còn lại sau khi bù hai chiều ("+3.500.000đ Cần

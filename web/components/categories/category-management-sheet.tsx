@@ -5,32 +5,16 @@ import {
   ArrowDownLeftIcon,
   ArrowUpRightIcon,
   PlusIcon,
-  Trash2Icon,
 } from "lucide-react"
 import { toast } from "sonner"
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { FormSection } from "@/components/app/form-section"
 import { PageSheet, PageSheetFooter } from "@/components/app/page-sheet"
+import { CategoryEditor, type CategoryValues } from "@/components/categories/category-editor"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ColorPicker } from "@/components/forms/color-picker"
-import { IconPicker } from "@/components/forms/icon-picker"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
 import { TabsContent } from "@/components/ui/tabs"
-import { Spinner } from "@/components/ui/spinner"
 import {
   createCategoryGroupAction,
   createCategoryItemAction,
@@ -39,15 +23,9 @@ import {
   updateCategoryGroupAction,
   updateCategoryItemAction,
 } from "@/lib/categories/actions"
-import {
-  getCategoryColor,
-  type CategoryColorName,
-} from "@/lib/categories/category-colors"
+import { getCategoryColor } from "@/lib/categories/category-colors"
 import type { CategoryGroup, CategoryItem, CategoryType } from "@/lib/categories/types"
-import {
-  categoryIconRegistry,
-  type CategoryIconName,
-} from "@/lib/icons/category-icon-registry"
+import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 
 type Editor =
   | { kind: "group"; groupId?: string }
@@ -66,8 +44,6 @@ const sections = [
   { type: "income", label: "Thu tiền", icon: ArrowDownLeftIcon },
 ] as const
 
-const DEFAULT_COLOR: CategoryColorName = "blue"
-const DEFAULT_ICON: CategoryIconName = "receipt"
 
 export function CategoryManagementSheet({
   groups,
@@ -81,12 +57,6 @@ export function CategoryManagementSheet({
   const [isPending, startTransition] = React.useTransition()
   const [activeType, setActiveType] = React.useState<CategoryType>(initialType)
   const [editor, setEditor] = React.useState<Editor | null>(null)
-  const [deleteOpen, setDeleteOpen] = React.useState(false)
-  const [deleteError, setDeleteError] = React.useState("")
-  const [name, setName] = React.useState("")
-  const [iconName, setIconName] = React.useState<CategoryIconName>(DEFAULT_ICON)
-  const [colorName, setColorName] = React.useState<CategoryColorName>(DEFAULT_COLOR)
-  const [error, setError] = React.useState("")
 
   const editingGroup = editor?.groupId
     ? groups.find((group) => group.id === editor.groupId)
@@ -94,6 +64,8 @@ export function CategoryManagementSheet({
   const editingItem = editor?.kind === "item" && editor.itemId
     ? editingGroup?.items.find((item) => item.id === editor.itemId)
     : undefined
+  // Each editor opened starts from what it edits.
+  const editorKey = editor ? `${editor.kind}-${editor.groupId ?? "new"}-${editor.kind === "item" ? editor.itemId ?? "new" : ""}` : ""
 
   // The list and the editor share the sheet's one scroller. The list
   // unmounts while an editor is open; its scroll position is kept here and
@@ -130,66 +102,50 @@ export function CategoryManagementSheet({
   function openGroupEditor(group?: CategoryGroup) {
     rememberScroll()
     setActiveType(group?.type ?? activeType)
-    setName(group?.name ?? "")
-    setColorName(group?.colorName ?? DEFAULT_COLOR)
-    setIconName(group?.iconName ?? DEFAULT_ICON)
-    setError("")
     setEditor({ kind: "group", groupId: group?.id })
   }
 
   function openItemEditor(group: CategoryGroup, item?: CategoryItem) {
     rememberScroll()
     setActiveType(group.type)
-    setName(item?.name ?? "")
-    // Items take their colour from the group.
-    setColorName(group.colorName)
-    setIconName(item?.iconName ?? DEFAULT_ICON)
-    setError("")
     setEditor({ kind: "item", groupId: group.id, itemId: item?.id })
   }
 
-  function handleSave(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    if (!editor || isPending) return
+  function handleSave({ name, colorName, iconName }: CategoryValues) {
+    return new Promise<string | null>((resolve) => {
+      if (!editor) return resolve(null)
+      const currentEditor = editor
+      startTransition(async () => {
+        try {
+          const groupValues = { name, colorName, iconName }
+          const result = currentEditor.kind === "group"
+            ? currentEditor.groupId
+              ? await updateCategoryGroupAction(currentEditor.groupId, groupValues)
+              : await createCategoryGroupAction(activeType, groupValues)
+            : currentEditor.itemId
+              ? await updateCategoryItemAction(currentEditor.itemId, { name, iconName })
+              : await createCategoryItemAction(currentEditor.groupId, { name, iconName })
 
-    const nextName = name.trim()
-    if (!nextName) {
-      setError(editor.kind === "group" ? "Vui lòng nhập tên nhóm." : "Vui lòng nhập tên hạng mục.")
-      return
-    }
+          if (!result.success) {
+            toast.error(result.error)
+            return resolve(result.error)
+          }
 
-    setError("")
-    startTransition(async () => {
-      try {
-        const groupValues = { name: nextName, colorName, iconName }
-        const result = editor.kind === "group"
-          ? editor.groupId
-            ? await updateCategoryGroupAction(editor.groupId, groupValues)
-            : await createCategoryGroupAction(activeType, groupValues)
-          : editor.itemId
-            ? await updateCategoryItemAction(editor.itemId, { name: nextName, iconName })
-            : await createCategoryItemAction(editor.groupId, { name: nextName, iconName })
-
-        if (!result.success) {
-          setError(result.error)
-          toast.error(result.error)
-          return
+          setEditor(null)
+          toast.success(currentEditor.kind === "group" ? "Đã lưu nhóm." : "Đã lưu hạng mục.")
+          resolve(null)
+        } catch {
+          const message = "Không thể lưu thay đổi. Vui lòng thử lại."
+          toast.error(message)
+          resolve(message)
         }
-
-        setEditor(null)
-        toast.success(editor.kind === "group" ? "Đã lưu nhóm." : "Đã lưu hạng mục.")
-      } catch {
-        const message = "Không thể lưu thay đổi. Vui lòng thử lại."
-        setError(message)
-        toast.error(message)
-      }
+      })
     })
   }
 
   function handleDelete() {
     if (!editor || isPending) return
     const currentEditor = editor
-    setDeleteError("")
     startTransition(async () => {
       try {
         const result = currentEditor.kind === "group"
@@ -197,18 +153,14 @@ export function CategoryManagementSheet({
           : await deleteCategoryItemAction(currentEditor.itemId)
 
         if (!result.success) {
-          setDeleteError(result.error)
           toast.error(result.error)
           return
         }
 
-        setDeleteOpen(false)
         setEditor(null)
         toast.success(currentEditor.kind === "group" ? "Đã xoá nhóm." : "Đã xoá hạng mục.")
       } catch {
-        const message = "Không thể xoá. Vui lòng thử lại."
-        setDeleteError(message)
-        toast.error(message)
+        toast.error("Không thể xoá. Vui lòng thử lại.")
       }
     })
   }
@@ -217,7 +169,6 @@ export function CategoryManagementSheet({
   const editorTitle = editor?.kind === "group"
     ? `${editor.groupId ? "Sửa" : "Thêm"} nhóm ${typeLabel}`
     : `${editor?.itemId ? "Sửa" : "Thêm"} hạng mục`
-  const canDelete = editor?.kind === "group" ? Boolean(editor.groupId) : Boolean(editor?.itemId)
 
   return (
     <PageSheet
@@ -235,98 +186,23 @@ export function CategoryManagementSheet({
       disabled={isPending}
     >
       {editor ? (
-        <form
+        <div
           ref={(element) => {
             contentRef.current = element
           }}
           className="flex flex-1 flex-col"
-          onSubmit={handleSave}
         >
-          <div className="space-y-6 pb-4">
-            <FormSection>
-              <FieldGroup>
-                <Field data-invalid={Boolean(error)}>
-                  <FieldLabel htmlFor="category-name">
-                    {editor.kind === "group" ? "Tên nhóm" : "Tên hạng mục"}
-                  </FieldLabel>
-                  <Input
-                    id="category-name"
-                    value={name}
-                    onChange={(event) => {
-                      setName(event.target.value)
-                      setError("")
-                    }}
-                    maxLength={80}
-                    disabled={isPending}
-                    aria-invalid={Boolean(error)}
-                  />
-                  {error ? <FieldError>{error}</FieldError> : null}
-                </Field>
-                {editor.kind === "group" ? (
-                  <Field>
-                    <FieldLabel>Màu</FieldLabel>
-                    <ColorPicker value={colorName} onValueChange={setColorName} />
-                  </Field>
-                ) : null}
-                <Field>
-                  <FieldLabel>Biểu tượng</FieldLabel>
-                  <IconPicker color={colorName} value={iconName} onValueChange={setIconName} />
-                </Field>
-              </FieldGroup>
-            </FormSection>
-
-            {canDelete ? (
-              <SettingsGroup>
-                <SettingsRow
-                  destructive
-                  title={editor.kind === "group" ? "Xoá nhóm" : "Xoá hạng mục"}
-                  disabled={isPending}
-                  onClick={() => {
-                    setDeleteError("")
-                    setDeleteOpen(true)
-                  }}
-                />
-              </SettingsGroup>
-            ) : null}
-          </div>
-          <AlertDialog open={deleteOpen} onOpenChange={(nextOpen) => {
-            if (!isPending) setDeleteOpen(nextOpen)
-          }}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>
-                  Xoá {editor.kind === "group" ? "nhóm" : "hạng mục"}?
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  {editor.kind === "group"
-                    ? `Nhóm “${editingGroup?.name ?? ""}” cùng ${editingGroup?.items.length ?? 0} hạng mục bên trong sẽ bị xoá. Các giao dịch cũ vẫn được giữ lại.`
-                    : `Hạng mục “${editingItem?.name ?? ""}” sẽ bị xoá. Các giao dịch cũ vẫn được giữ lại.`}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              {deleteError ? <FieldError>{deleteError}</FieldError> : null}
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={isPending}>Huỷ</AlertDialogCancel>
-                <AlertDialogAction
-                  type="button"
-                  disabled={isPending}
-                  onClick={(event) => {
-                    event.preventDefault()
-                    handleDelete()
-                  }}
-                >
-                  {isPending ? <Spinner /> : <Trash2Icon />}
-                  {isPending ? "Đang xoá..." : "Xoá"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          <PageSheetFooter>
-            <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? <Spinner /> : null}
-              {isPending ? "Đang lưu..." : "Lưu"}
-            </Button>
-          </PageSheetFooter>
-        </form>
+          <CategoryEditor
+            key={editorKey}
+            kind={editor.kind}
+            type={activeType}
+            group={editingGroup}
+            item={editingItem}
+            pending={isPending}
+            onSave={handleSave}
+            onDelete={handleDelete}
+          />
+        </div>
       ) : (
         <Tabs
           ref={(element) => {
