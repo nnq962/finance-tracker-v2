@@ -269,7 +269,7 @@ export function MobileBottomNav() {
     // tab order too, and slides back when that element goes.
     <nav
       aria-label="Điều hướng chính trên di động"
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] transition-[translate,visibility] duration-300 ease-out motion-reduce:transition-none md:hidden [body:has([data-hide-tab-bar])_&]:invisible [body:has([data-hide-tab-bar])_&]:translate-y-full"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(0.75rem,calc(env(safe-area-inset-bottom,0px)-0.75rem))] transition-[translate,visibility] duration-300 ease-out motion-reduce:transition-none md:hidden [body:has([data-hide-tab-bar])_&]:invisible [body:has([data-hide-tab-bar])_&]:translate-y-full"
     >
       <ul
         style={
@@ -329,7 +329,7 @@ export function MobileBottomNav() {
                 onClick={(event) => navigateTo(event, item.url)}
                 aria-current={pathname === item.url ? "page" : undefined}
                 className={cn(
-                  "flex h-[52px] min-w-0 touch-manipulation items-center justify-center rounded-full text-muted-foreground transition-colors duration-300 outline-none select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:duration-150",
+                  "flex h-12 min-w-0 touch-manipulation items-center justify-center rounded-full text-muted-foreground transition-colors duration-300 outline-none select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:duration-150",
                   isActive && "text-foreground",
                 )}
               >
