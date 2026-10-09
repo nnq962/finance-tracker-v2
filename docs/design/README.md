@@ -62,7 +62,7 @@ component ở đó là cả app đổi theo.
 
 ## Component (`components/ui`, đã may lại)
 
-- **Button:** viên thuốc. Kiểu `default` (đen), `secondary` (xám), `outline` (trắng, viền `foreground/15`, tối `/20`, để thấy rõ trên thẻ trắng),
+- **Button:** viên thuốc. Kiểu `default` (đen), `secondary` (xám), `outline` (nền màu thẻ, không viền: trắng trên nền sáng, xám nổi trên nền tối; bỏ viền 2026-10-09),
   `ghost`, `destructive` (đỏ nhạt), `link`. Cỡ: `lg` 56 · mặc định 44 · `sm` 36
   (thêm `xs` 32); `icon` 44, `icon-sm` 36, `icon-xs` 32, `icon-lg` 48, `fab` 60. Icon trong nút
   18px; nút tắt mờ còn 35%.
