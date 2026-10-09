@@ -9,6 +9,7 @@ import { NotificationsButton } from "@/components/notifications-sheet"
 import { WelcomeProvider } from "@/components/onboarding/welcome"
 import { PwaThemeColor } from "@/components/pwa-theme-color"
 import { PushMessageListener } from "@/components/push-message-listener"
+import { TapDebug } from "@/components/tap-debug"
 import { ThemeSelect } from "@/components/theme-select"
 import {
   SidebarInset,
@@ -74,6 +75,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
               </div>
             </SidebarInset>
             <MobileBottomNav />
+            <TapDebug />
           </SidebarProvider>
         </WelcomeProvider>
       </TooltipProvider>
