@@ -122,9 +122,10 @@ component ở đó là cả app đổi theo.
   thanh theo `background-color`/`backdrop-filter` của phần tử `fixed` sát mép trên, nên lớp phủ
   tối (Drawer, Sheet, Dialog, AlertDialog) đặt nền mờ và blur ở `::before`, không ở chính lớp
   `fixed`, và chứa `StatusBarTint` (`components/ui/status-bar-tint.tsx`): một dải `fixed` ở mép
-  trên (chỉ điện thoại) mà mỗi khung hình lấy màu nền app phủ tối theo đúng độ mờ hiện tại của lớp
-  phủ. Safari không thấy hiệu ứng mờ dần (opacity) nên trước đây thanh nhảy một phát; giờ thanh
-  trạng thái tối dần và sáng lại cùng nhịp với nội dung. Phần
+  trên (chỉ điện thoại) mang màu nền app đã phủ tối, đúng màu trang bên dưới. Safari chỉ lấy màu
+  mới cho thanh sau khi hiệu ứng xong, không theo màu đổi giữa chừng (đã thử trên iPhone ở
+  `/design/status-bar`, 2026-10-09: đổi từng khung hình, mỗi giây, kèm cuộn 1px đều không được), nên
+  thanh không tối dần cùng nội dung mà đổi một lần khi lớp phủ hiện xong hay tắt xong. Phần
   tử `fixed` mới chạm mép trên cũng đặt nền ở `::before`, trừ khi nó cố ý mang màu nền app.
 - **Toast (Sonner, `components/ui/sonner.tsx`):** như mockup, kiểu banner iOS chứ không phải
   thông báo web: viên thuốc đen (trắng ở theme tối) rộng vừa chữ, giữa phía trên, ô tròn màu

@@ -77,8 +77,6 @@ export function StatusBarLab() {
       easing: "cubic-bezier(0.32, 0.72, 0, 1)",
     })
     veil.style.opacity = String(to)
-    // StatusBarTint follows CSS animations from their start event.
-    veil.dispatchEvent(new Event("animationstart"))
     animation.finished.then(() => {
       if (to === 0) setShown(false)
       else setEntering(false)

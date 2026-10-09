@@ -11,19 +11,21 @@ function alphaOf(color: string) {
 }
 
 /**
- * Dims the status bar along with the content while an overlay fades in and
- * out. Put it inside an overlay (the layer under a drawer, sheet or dialog)
- * whose dim is on ::before.
+ * Gives the status bar the dimmed page's colour while an overlay is open. Put
+ * it inside an overlay (the layer under a drawer, sheet or dialog) whose dim
+ * is on ::before.
  *
  * Safari 26 ignores theme-color and tints the status bar with the
- * background-color of a fixed element at the screen's top edge. It does not
- * see the veil's fade (an opacity), so the bar jumped to the dimmed colour
- * when a sheet opened and back only once the veil was gone. This strip is
- * that element: every frame while the veil animates, its colour is the app's
- * background under the veil's dim at the veil's current opacity, so the bar
- * darkens and clears in step with the content. Same colour as the dimmed page
- * beneath it, so it is not seen. Outside the overlay (a portal), so the
- * veil's own opacity does not fade it twice. Phones only.
+ * background-color of a fixed element at the screen's top edge. It skips the
+ * veil (its dim is on ::before), so this strip is that element: the app's
+ * background under the veil's dim, the colour of the page beneath it. Safari
+ * takes a new colour for the bar only now and then, once an animation has
+ * finished, not while the veil fades: on an iPhone (2026-10-09, the lab at
+ * /design/status-bar) a strip recoloured every frame, every second, or with
+ * a 1px scroll each time left the bar unchanged. So the bar cannot dim along
+ * with the content; it switches once, after the veil has faded in or out,
+ * and the strip takes its final colour at once. Outside the overlay (a
+ * portal), so the veil's opacity does not fade it. Phones only.
  */
 export function StatusBarTint() {
   const markerRef = React.useRef<HTMLSpanElement>(null)
@@ -40,27 +42,8 @@ export function StatusBarTint() {
     const strip = stripRef.current
     if (!mounted || !overlay || !strip) return
 
-    const dim = alphaOf(getComputedStyle(overlay, "::before").backgroundColor)
-    let frame = 0
-    const paint = () => {
-      const opacity = Number.parseFloat(getComputedStyle(overlay).opacity) || 0
-      const percent = Math.round(dim * opacity * 1000) / 10
-      strip.style.backgroundColor = `color-mix(in srgb, var(--background), black ${percent}%)`
-      // Keep following while the veil animates (opening, closing); one more
-      // frame after, so the last value is painted too.
-      frame = overlay.getAnimations().length > 0 ? requestAnimationFrame(paint) : 0
-    }
-    const follow = () => {
-      if (!frame) frame = requestAnimationFrame(paint)
-    }
-
-    paint()
-    follow()
-    overlay.addEventListener("animationstart", follow)
-    return () => {
-      cancelAnimationFrame(frame)
-      overlay.removeEventListener("animationstart", follow)
-    }
+    const percent = Math.round(alphaOf(getComputedStyle(overlay, "::before").backgroundColor) * 1000) / 10
+    strip.style.backgroundColor = `color-mix(in srgb, var(--background), black ${percent}%)`
   }, [mounted])
 
   return (
