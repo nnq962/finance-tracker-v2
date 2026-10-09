@@ -233,8 +233,8 @@ Trước khi báo xong một màn mới, kiểm tra:
 ### Các màn khác
 
 - **Trang dạng bảng tin** (Tổng quan): đầu trang, thẻ tài sản ròng (nhãn `CardLabel`, con số
-  chính, ba phần chia cột), nhiệm vụ, rồi các `Section`: sắp đến hạn, tháng (chỉ lịch), theo hạng
-  mục (biểu đồ tròn, không list), thu và chi theo tháng. Lời mời Pro (gói Free) đi cùng thứ khác
+  chính, ba phần chia cột), nhiệm vụ, rồi các `Section`: tháng (chỉ lịch), theo hạng
+  mục (biểu đồ tròn, không list), thu và chi theo tháng, sắp đến hạn (cuối trang; từ lg cuối cột trái). Lời mời Pro (gói Free) đi cùng thứ khác
   cho thêm lượt AI: dòng cuối của thẻ nhiệm vụ khi còn nhiệm vụ; nhận hết thì thẻ nhiệm vụ biến
   mất và `PromoBanner` Pro đứng vào chỗ đó, ngay dưới tài sản ròng. Đổi tháng ở lịch (‹ ›)
   thì lưới ngày trượt ngang theo hướng bấm (tháng sau vào từ phải), hàng thứ đứng yên. Các khối

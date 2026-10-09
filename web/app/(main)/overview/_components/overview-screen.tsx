@@ -55,8 +55,8 @@ function TrendSection({ cashFlow }: { cashFlow: OverviewSummary["cashFlow"] }) {
 
 /**
  * The overview's body below the greeting: net worth, the new user's missions,
- * debts coming due, then the chosen month (figures, calendar, categories) and
- * six months of income and expenses. The month is shared by the calendar and
+ * the chosen month (figures, calendar, categories), six months of income and
+ * expenses, then debts coming due. The month is shared by the calendar and
  * the categories.
  */
 export function OverviewScreen({

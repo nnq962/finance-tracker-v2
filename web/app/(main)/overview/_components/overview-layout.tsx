@@ -14,8 +14,8 @@ type OverviewLayoutProps = {
 /**
  * The overview's sections, shared with its loading state. Below lg they stack
  * in one column: net worth (the page's dark lead card), missions (or, once
- * they are done, the Pro invitation), due debts (what needs acting on comes
- * before the browsing), calendar, allocation, trend. From lg up the lists form a rail on the left
+ * they are done, the Pro invitation), calendar, allocation, trend, and due
+ * debts last. From lg up the lists form a rail on the left
  * (24rem wide from xl) and the calendar and trend chart, which read better
  * wide, take the rest. A slot whose content renders nothing
  * (missions all claimed, Pro already) leaves no gap.
@@ -37,8 +37,8 @@ export function OverviewLayout({
       <div className={columnClassName}>
         <div className="order-1">{netWorth}</div>
         {missions ? <div className="order-2 empty:hidden">{missions}</div> : null}
-        {dueDebts ? <div className="order-3">{dueDebts}</div> : null}
         <div className="order-5">{allocation}</div>
+        {dueDebts ? <div className="order-7">{dueDebts}</div> : null}
       </div>
       <div className={columnClassName}>
         <div className="order-4">{calendar}</div>
