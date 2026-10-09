@@ -130,7 +130,7 @@ component ở đó là cả app đổi theo.
   `::before`, trừ khi nó cố ý mang màu cho thanh.
 - **Toast (Sonner, `components/ui/sonner.tsx`):** đảo đen kiểu Dynamic Island (chọn 2026-10-09,
   thay viên thuốc rộng vừa chữ), giữa phía trên, ngược màu trang (token `island`): đen ở theme sáng, trắng ở theme tối. Mọi loại
-  cùng một cỡ: cao 64, rộng hết màn trừ 16 mỗi bên trên điện thoại, 400 trên màn rộng (2026-10-09, từ 52 × 320). Glyph trần theo màu ý nghĩa
+  cùng một cỡ: cao 64, rộng hết màn trừ 16 mỗi bên trên điện thoại, 400 trên màn rộng, bo 20 như thẻ thông báo iOS (2026-10-09, từ viên thuốc 52 × 320). Glyph trần theo màu ý nghĩa
   (thành công `island-accent`: xanh chanh trên đen, xanh chanh đậm trên trắng; lỗi `expense`, cảnh báo `warning`, thông tin `transfer`, đang tải
   trắng mờ); tiêu đề tối đa hai dòng, hoặc một dòng trên một dòng mô tả, cắt bằng "…", nên
   toast không bao giờ cao lên; nút Hoàn tác là chữ `island-accent` ở cuối. Sonner vẫn lo xếp chồng,

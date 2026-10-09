@@ -6,7 +6,7 @@ import { Toaster as Sonner, type ToasterProps } from "sonner"
 import { CheckIcon, InfoIcon, Loader2Icon, TriangleAlertIcon, XIcon } from "lucide-react"
 
 /**
- * Toasts as an island at the top, like iOS's Dynamic Island (chosen
+ * Toasts as an island at the top, rounded 20 as an iOS notification (chosen
  * 2026-10-09), the opposite of the page: black on the light theme, white on
  * the dark one. Every kind the same size, whatever its text: 64 high, as
  * wide as the screen less 16 a side on phones, 400 on wider screens. The status glyph sits bare in its
@@ -37,7 +37,7 @@ const Toaster = ({ style, ...props }: ToasterProps) => {
           // A min height, not a height: Sonner measures a toast at height auto to
           // lay out the expanded stack, and the content alone is at most 36 high.
           toast:
-            "inset-x-0 mx-auto flex min-h-16 w-full! items-center gap-3 rounded-full bg-island pr-2 pl-5 font-sans text-sm text-island-foreground shadow-[0_10px_40px_rgb(0_0_0/0.3)] has-[[data-icon]]:pl-4",
+            "inset-x-0 mx-auto flex min-h-16 w-full! items-center gap-3 rounded-[20px] bg-island pr-2 pl-5 font-sans text-sm text-island-foreground shadow-[0_10px_40px_rgb(0_0_0/0.3)] has-[[data-icon]]:pl-4",
           icon: "flex size-6 shrink-0 items-center justify-center [&_svg]:size-5",
           content: "flex min-w-0 flex-1 flex-col justify-center pr-2",
           // Two lines alone; one above a description, so the island never grows.
