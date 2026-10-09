@@ -3,7 +3,7 @@
 import * as React from "react"
 import { DownloadIcon } from "lucide-react"
 
-import { IosInstallDialog, usePwaInstall } from "@/components/pwa-install-button"
+import { IosInstallSheet, usePwaInstall } from "@/components/pwa-install-button"
 import { SettingsRow } from "@/components/settings-list"
 
 /** Offers installing the app; hidden once installed or where not possible. */
@@ -22,7 +22,7 @@ export function InstallAppRow() {
         description="Mở nhanh từ Màn hình chính"
         onClick={() => (isIOS ? setGuideOpen(true) : void install())}
       />
-      {isIOS ? <IosInstallDialog open={guideOpen} onOpenChange={setGuideOpen} /> : null}
+      {isIOS ? <IosInstallSheet open={guideOpen} onOpenChange={setGuideOpen} /> : null}
     </>
   )
 }

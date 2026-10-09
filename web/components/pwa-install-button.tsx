@@ -1,30 +1,23 @@
 "use client"
 
 import type * as React from "react"
-import { useEffect, useState, useSyncExternalStore } from "react"
+import { useEffect, useRef, useState, useSyncExternalStore } from "react"
 import {
+  BookmarkIcon,
+  CheckIcon,
+  ChevronLeftIcon,
+  CopyIcon,
   DownloadIcon,
-  ExternalLinkIcon,
+  EllipsisIcon,
   Share2Icon,
   SquarePlusIcon,
+  type LucideIcon,
 } from "lucide-react"
 
+import { PageDots } from "@/components/app/page-dots"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  Item,
-  ItemContent,
-  ItemDescription,
-  ItemMedia,
-  ItemTitle,
-} from "@/components/ui/item"
+import { Drawer, DrawerContent, DrawerDescription, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
+import { cn } from "@/lib/utils"
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>
@@ -72,7 +65,7 @@ function getServerSnapshot() {
 
 /**
  * Whether this browser can install the app and how: iOS only through Safari's
- * Share menu (see IosInstallDialog), others through the browser's prompt.
+ * Share menu (see IosInstallSheet), others through the browser's prompt.
  * Not available once the app runs installed.
  */
 export function usePwaInstall() {
@@ -128,64 +121,230 @@ export function usePwaInstall() {
   }
 }
 
-/** Steps for adding the app to the Home Screen from Safari. */
-export function IosInstallDialog({
+/** Safari itself, not another browser or an app's own browser (Chrome, Zalo, Facebook…) on iOS. */
+function isIOSSafari() {
+  return !/CriOS|FxiOS|EdgiOS|OPiOS|GSA\/|FBAN|FBAV|Instagram|Zalo|Line\//.test(navigator.userAgent)
+}
+
+/** Where a step's illustration asks for the tap: a blue ring, and a dot pulsing on it. */
+function TapTarget({ className, children }: { className?: string; children: React.ReactNode }) {
+  return (
+    <span className={cn("relative rounded-full ring-2 ring-transfer ring-offset-2 ring-offset-card", className)}>
+      {children}
+      <span aria-hidden="true" className="absolute -right-1 -bottom-1 size-3">
+        <span className="absolute inset-0 rounded-full bg-transfer/60 motion-safe:animate-ping" />
+        <span className="absolute inset-0.5 rounded-full bg-transfer" />
+      </span>
+    </span>
+  )
+}
+
+/** A row of an iOS menu or share sheet, drawn small. */
+function MenuRow({ icon: Icon, label, target = false }: { icon: LucideIcon; label: string; target?: boolean }) {
+  const row = (
+    <span className="flex h-9 items-center justify-between gap-3 px-3 text-xs">
+      {label}
+      <Icon className="size-4 shrink-0" aria-hidden="true" />
+    </span>
+  )
+  return target ? <TapTarget className="block rounded-lg bg-card">{row}</TapTarget> : row
+}
+
+/** Safari's bar at the foot of the screen (iOS 26): back, the address, and ••• where Share now is. */
+function SafariBarPicture({ origin }: { origin: string }) {
+  return (
+    <div className="flex w-full flex-col items-end gap-2">
+      <div className="w-40 divide-y divide-border rounded-xl bg-background">
+        <MenuRow icon={BookmarkIcon} label="Thêm dấu trang" />
+        <MenuRow icon={Share2Icon} label="Chia sẻ" target />
+      </div>
+      <div className="flex w-full items-center gap-2">
+        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-background">
+          <ChevronLeftIcon className="size-4" aria-hidden="true" />
+        </span>
+        <span className="flex h-9 min-w-0 flex-1 items-center justify-center truncate rounded-full bg-background px-3 text-xs">
+          {origin}
+        </span>
+        <TapTarget className="shrink-0">
+          <span className="grid size-9 place-items-center rounded-full bg-background">
+            <EllipsisIcon className="size-4" aria-hidden="true" />
+          </span>
+        </TapTarget>
+      </div>
+    </div>
+  )
+}
+
+/** The share sheet's list, "Thêm vào Màn hình chính" among its actions. */
+function ShareSheetPicture() {
+  return (
+    <div className="w-full divide-y divide-border rounded-xl bg-background">
+      <MenuRow icon={CopyIcon} label="Sao chép" />
+      <MenuRow icon={SquarePlusIcon} label="Thêm vào Màn hình chính" target />
+      <MenuRow icon={BookmarkIcon} label="Thêm dấu trang" />
+    </div>
+  )
+}
+
+/** The last screen: the app's icon and name, web app on, Thêm at the top right. */
+function AddScreenPicture() {
+  return (
+    <div className="flex w-full flex-col gap-2 rounded-xl bg-background p-3 text-xs">
+      <div className="flex items-center justify-between">
+        <span className="text-muted-foreground">Huỷ</span>
+        <span className="font-medium">Thêm vào MH chính</span>
+        <TapTarget>
+          <span className="block px-2 py-0.5 font-semibold text-transfer">Thêm</span>
+        </TapTarget>
+      </div>
+      <div className="flex items-center gap-2 rounded-lg bg-card p-2">
+        {/* eslint-disable-next-line @next/next/no-img-element -- the app's own icon, as the Home Screen will show it */}
+        <img src="/icons/pwa-192.png" alt="" className="size-8 rounded-[8px]" />
+        <span className="font-medium">Finance Tracker</span>
+      </div>
+      <div className="flex items-center justify-between rounded-lg bg-card p-2">
+        Mở dưới dạng ứng dụng web
+        <span aria-hidden="true" className="flex h-4 w-7 items-center justify-end rounded-full bg-income p-0.5">
+          <span className="size-3 rounded-full bg-card" />
+        </span>
+      </div>
+    </div>
+  )
+}
+
+/** The app's address, to paste into Safari, copied whole (with https://) with a tap. */
+function OpenInSafariPicture({ origin }: { origin: string }) {
+  const [copied, setCopied] = useState(false)
+
+  return (
+    <div className="flex w-full flex-col items-center gap-3">
+      <span className="flex h-9 w-full items-center justify-center truncate rounded-full bg-background px-3 text-xs">
+        {origin}
+      </span>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => {
+          void navigator.clipboard?.writeText(window.location.origin).then(() => setCopied(true))
+        }}
+      >
+        {copied ? <CheckIcon /> : <CopyIcon />}
+        {copied ? "Đã chép" : "Chép liên kết"}
+      </Button>
+    </div>
+  )
+}
+
+type InstallStep = { title: string; hint: string; picture: React.ReactNode }
+
+/**
+ * Adding the app to the Home Screen from Safari, one step at a time, as an
+ * app's onboarding: a bottom sheet with the app's icon, then each step as a
+ * small drawing of the very screen it happens on, the place to tap ringed in
+ * blue, its title and one line. The steps swipe sideways, or go on with the
+ * button; dots say where one is. Opened in another browser (Chrome, Zalo…),
+ * the first step is opening it in Safari, the link a tap away.
+ */
+export function IosInstallSheet({
   trigger,
-  open,
+  open: openProp,
   onOpenChange,
 }: {
   trigger?: React.ReactNode
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }) {
+  const [openState, setOpenState] = useState(false)
+  const open = openProp ?? openState
+  const setOpen = (next: boolean) => {
+    setOpenState(next)
+    onOpenChange?.(next)
+  }
+  const inSafari = useSyncExternalStore(subscribeToClientEnvironment, isIOSSafari, () => true)
+  const origin = useSyncExternalStore(subscribeToClientEnvironment, () => window.location.host, () => "")
+  const [step, setStep] = useState(0)
+  const scroller = useRef<HTMLDivElement>(null)
+  // Each opening starts at the first step.
+  const [shownFor, setShownFor] = useState(open)
+  if (open !== shownFor) {
+    setShownFor(open)
+    if (open) setStep(0)
+  }
+
+  const steps: InstallStep[] = [
+    ...(inSafari
+      ? []
+      : [{ title: "Mở trang này bằng Safari", hint: "Chép liên kết, dán vào Safari rồi làm tiếp ở đó.", picture: <OpenInSafariPicture origin={origin} /> }]),
+    { title: "Chạm ••• rồi Chia sẻ", hint: "iOS cũ hơn: nút Chia sẻ nằm ngay trên thanh dưới.", picture: <SafariBarPicture origin={origin} /> },
+    { title: "Chọn Thêm vào Màn hình chính", hint: "Chưa thấy thì cuộn xuống danh sách.", picture: <ShareSheetPicture /> },
+    { title: "Bật ứng dụng web, chạm Thêm", hint: "Finance Tracker sẽ nằm trên Màn hình chính.", picture: <AddScreenPicture /> },
+  ]
+  const last = step === steps.length - 1
+
+  const goTo = (index: number) => {
+    const panel = scroller.current?.children[index] as HTMLElement | undefined
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    scroller.current?.scrollTo({ left: panel?.offsetLeft ?? 0, behavior: reduce ? "auto" : "smooth" })
+    setStep(index)
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Cài Finance Tracker trên iPhone hoặc iPad</DialogTitle>
-          <DialogDescription>
-            Thực hiện trong Safari để mở Finance Tracker như một ứng dụng độc
-            lập từ Màn hình chính.
-          </DialogDescription>
-        </DialogHeader>
-        <ol className="flex flex-col gap-2">
-          <Item asChild size="xs">
-            <li>
-              <ItemMedia variant="icon">
-                <ExternalLinkIcon aria-hidden="true" />
-              </ItemMedia>
-              <ItemContent>
-                <ItemTitle>Mở bằng Safari</ItemTitle>
-                <ItemDescription>Truy cập finance.nnqlab.dev trong Safari.</ItemDescription>
-              </ItemContent>
-            </li>
-          </Item>
-          <Item asChild size="xs">
-            <li>
-              <ItemMedia variant="icon">
-                <Share2Icon aria-hidden="true" />
-              </ItemMedia>
-              <ItemContent>
-                <ItemTitle>Chạm nút Chia sẻ</ItemTitle>
-                <ItemDescription>Nút Chia sẻ nằm trên thanh công cụ của Safari.</ItemDescription>
-              </ItemContent>
-            </li>
-          </Item>
-          <Item asChild size="xs">
-            <li>
-              <ItemMedia variant="icon">
-                <SquarePlusIcon aria-hidden="true" />
-              </ItemMedia>
-              <ItemContent>
-                <ItemTitle>Chọn Thêm vào Màn hình chính</ItemTitle>
-                <ItemDescription>Bật “Mở dưới dạng ứng dụng web”, sau đó chọn Thêm.</ItemDescription>
-              </ItemContent>
-            </li>
-          </Item>
-        </ol>
-      </DialogContent>
-    </Dialog>
+    <Drawer open={open} onOpenChange={setOpen}>
+      {trigger ? <DrawerTrigger asChild>{trigger}</DrawerTrigger> : null}
+      <DrawerContent surface="grouped">
+        <div className="flex flex-col items-center px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element -- the app's own icon, as the Home Screen will show it */}
+          <img src="/icons/pwa-192.png" alt="" className="size-14 rounded-[14px] shadow-sm" />
+          <DrawerTitle className="mt-3 text-lg">Cài Finance Tracker</DrawerTitle>
+          <DrawerDescription className="text-sm text-muted-foreground">
+            {steps.length} bước để mở như một ứng dụng
+          </DrawerDescription>
+
+          <div
+            ref={scroller}
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="Các bước cài"
+            onScroll={(event) => {
+              const element = event.currentTarget
+              setStep(Math.min(steps.length - 1, Math.round(element.scrollLeft / element.clientWidth)))
+            }}
+            className="mt-5 flex w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {steps.map(({ title, hint, picture }, index) => (
+              <section
+                key={title}
+                aria-roledescription="slide"
+                aria-label={`Bước ${index + 1} / ${steps.length}`}
+                inert={index !== step}
+                className="w-full shrink-0 snap-center"
+              >
+                <div className="flex h-44 items-center justify-center rounded-3xl bg-card px-6">{picture}</div>
+                <p className="mt-4 text-xs font-medium text-muted-foreground">
+                  Bước {index + 1}/{steps.length}
+                </p>
+                <h3 className="mt-1 text-base font-semibold">{title}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{hint}</p>
+              </section>
+            ))}
+          </div>
+
+          <PageDots count={steps.length} value={step} onValueChange={goTo} className="mt-5 justify-center" />
+
+          <div className="mt-5 flex w-full items-center gap-2">
+            {step > 0 ? (
+              <Button type="button" variant="secondary" size="icon" aria-label="Bước trước" onClick={() => goTo(step - 1)}>
+                <ChevronLeftIcon />
+              </Button>
+            ) : null}
+            <Button type="button" className="flex-1" onClick={() => (last ? setOpen(false) : goTo(step + 1))}>
+              {last ? "Đã hiểu" : "Tiếp"}
+            </Button>
+          </div>
+        </div>
+      </DrawerContent>
+    </Drawer>
   )
 }
 
@@ -196,7 +355,7 @@ export function PwaInstallButton() {
 
   if (isIOS) {
     return (
-      <IosInstallDialog
+      <IosInstallSheet
         trigger={
           <Button
             type="button"

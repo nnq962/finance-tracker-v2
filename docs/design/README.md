@@ -344,6 +344,14 @@ Trước khi báo xong một màn mới, kiểm tra:
   chạm mở màn sâu "Bảng lương": số thực nhận lớn ở giữa, thẻ thanh tỷ lệ Nhận · Bảo hiểm · Thuế (đen,
   `warning`, `expense`) có chú thích phần trăm, rồi ba nhóm Thu nhập, Bảo hiểm, Thuế TNCN và ghi chú
   quy định. Số đã nhập nhớ trên máy.
+- **Hướng dẫn cài trên iPhone** (`IosInstallSheet`, `components/pwa-install-button.tsx`, 2026-10-09; mở từ
+  "Cài ứng dụng" ở Cài đặt, nhiệm vụ ở Tổng quan, trang giới thiệu): sheet đáy nền xám, không ✕ (kéo
+  xuống hay "Đã hiểu" để đóng); icon app, "Cài Finance Tracker", "N bước để mở như một ứng dụng"; rồi
+  từng bước như onboarding: thẻ trắng vẽ nhỏ đúng màn hình của bước (thanh dưới Safari với ••• và
+  menu Chia sẻ, danh sách chia sẻ, màn Thêm vào MH chính), chỗ cần chạm viền xanh `transfer` có chấm
+  nhấp nháy (đứng yên khi giảm chuyển động), dưới thẻ "Bước 2/3", tiêu đề và một dòng gợi ý. Vuốt ngang
+  hay "Tiếp" để qua bước, ‹ để lùi, `PageDots` chỉ chỗ; mỗi lần mở lại từ bước đầu. Mở trong trình duyệt
+  khác (Chrome, Zalo, Facebook…) thì có thêm bước đầu "Mở trang này bằng Safari" với nút "Chép liên kết".
 - **Cài đặt:** một cột căn trái, tối đa `md:max-w-2xl`, thẳng với tên trang. Thứ tự: hồ sơ, Lượt AI,
   Chung, Thông báo, Ứng dụng, Quản trị (hoặc Nhà phát triển trên dev server), Đăng xuất cuối.
 - **Desktop:** phần tử trong cột bám (rail) không co lại (`*:shrink-0`); rail cao hơn cửa sổ thì tự

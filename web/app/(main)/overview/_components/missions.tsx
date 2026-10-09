@@ -24,7 +24,7 @@ import { createContactAction, createDebtAction } from "@/app/(main)/debts/action
 import { CardLabel } from "@/components/app/card-label"
 import { ProgressRing } from "@/components/app/progress-ring"
 import { CategoryManagementSheet } from "@/components/categories/category-management-sheet"
-import { IosInstallDialog, usePwaInstall } from "@/components/pwa-install-button"
+import { IosInstallSheet, usePwaInstall } from "@/components/pwa-install-button"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -314,7 +314,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
         onAddContact={async (values: NewContact) => unwrap(await createContactAction(values, randomId()))}
       />
       <CategoryManagementSheet groups={categoryGroups} {...sheetProps("category")} />
-      {isIOS ? <IosInstallDialog open={installGuideOpen} onOpenChange={setInstallGuideOpen} /> : null}
+      {isIOS ? <IosInstallSheet open={installGuideOpen} onOpenChange={setInstallGuideOpen} /> : null}
     </>
   )
 }
