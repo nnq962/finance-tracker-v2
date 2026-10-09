@@ -21,7 +21,7 @@ export function ThemeSelect() {
   const value = mounted && (theme === "light" || theme === "dark" || theme === "system")
     ? theme
     : "system"
-  const currentLabel = value === "light" ? "Sáng" : value === "dark" ? "Tối" : "Theo hệ thống"
+  const currentLabel = value === "light" ? "Sáng" : value === "dark" ? "Tối" : "Tự động"
 
   React.useEffect(() => {
     if (mounted) {
@@ -69,7 +69,7 @@ export function ThemeSelect() {
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="system">
             <MonitorIcon />
-            Theo hệ thống
+            Tự động
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
