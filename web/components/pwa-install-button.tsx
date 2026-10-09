@@ -334,14 +334,39 @@ export function IosInstallSheet({
 
           <PageDots count={steps.length} value={step} onValueChange={goTo} className="mt-5 justify-center" />
 
-          <div className="mt-5 flex w-full items-center gap-2">
-            {step > 0 ? (
+          {/* As the filters' footer: ‹ narrows in from nothing past the first
+              step as the main button gives it room, and back out on the first. */}
+          <div className="mt-5 flex w-full items-center">
+            <div
+              inert={step === 0}
+              className={cn(
+                "min-w-0 shrink-0 overflow-hidden transition-[flex-basis,margin,opacity] duration-300 ease-out motion-reduce:transition-none",
+                step > 0 ? "mr-2 basis-11" : "mr-0 basis-0 opacity-0",
+              )}
+            >
               <Button type="button" variant="secondary" size="icon" aria-label="Bước trước" onClick={() => goTo(step - 1)}>
                 <ChevronLeftIcon />
               </Button>
-            ) : null}
-            <Button type="button" className="flex-1" onClick={() => (last ? setOpen(false) : goTo(step + 1))}>
-              {last ? "Đã hiểu" : "Tiếp"}
+            </div>
+            <Button type="button" className="min-w-0 flex-1" onClick={() => (last ? setOpen(false) : goTo(step + 1))}>
+              {/* Both words in one cell, crossfading, so the label changes without a jump. */}
+              <span className="grid">
+                {[
+                  { label: "Tiếp", shown: !last },
+                  { label: "Đã hiểu", shown: last },
+                ].map(({ label, shown }) => (
+                  <span
+                    key={label}
+                    aria-hidden={!shown}
+                    className={cn(
+                      "col-start-1 row-start-1 transition-opacity duration-200 ease-out motion-reduce:transition-none",
+                      !shown && "opacity-0",
+                    )}
+                  >
+                    {label}
+                  </span>
+                ))}
+              </span>
             </Button>
           </div>
         </div>
