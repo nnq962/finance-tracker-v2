@@ -3,7 +3,6 @@ import type { ReactNode } from "react"
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { AuthSessionGuard } from "@/components/auth-session-guard"
-import { GestureDebug } from "@/components/gesture-debug"
 import { MainBreadcrumb } from "@/components/main-breadcrumb"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import { NotificationsButton } from "@/components/notifications-sheet"
@@ -75,7 +74,6 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
               </div>
             </SidebarInset>
             <MobileBottomNav />
-            <GestureDebug />
           </SidebarProvider>
         </WelcomeProvider>
       </TooltipProvider>
