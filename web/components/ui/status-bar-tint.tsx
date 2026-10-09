@@ -24,38 +24,34 @@ function alphaOf(color: string) {
  * /design/status-bar) a strip recoloured every frame, every second, or with
  * a 1px scroll each time left the bar unchanged. So the bar cannot dim along
  * with the content; it switches once, after the veil has faded in or out,
- * and the strip takes its final colour at once. Outside the overlay (a
+ * and the strip has its final colour from the start. Outside the overlay (a
  * portal), so the veil's opacity does not fade it. Phones only.
  */
 export function StatusBarTint() {
   const markerRef = React.useRef<HTMLSpanElement>(null)
-  const stripRef = React.useRef<HTMLDivElement>(null)
-  const [mounted, setMounted] = React.useState(false)
-
-  React.useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true)
-  }, [])
+  // The strip's colour, known once the overlay is in the page. The strip is
+  // added with it rather than recoloured after: Safari often missed the
+  // change and kept the undimmed colour.
+  const [color, setColor] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     const overlay = markerRef.current?.parentElement
-    const strip = stripRef.current
-    if (!mounted || !overlay || !strip) return
-
+    if (!overlay) return
     const percent = Math.round(alphaOf(getComputedStyle(overlay, "::before").backgroundColor) * 1000) / 10
-    strip.style.backgroundColor = `color-mix(in srgb, var(--background), black ${percent}%)`
-  }, [mounted])
+     
+    setColor(`color-mix(in srgb, var(--background), black ${percent}%)`)
+  }, [])
 
   return (
     <>
       <span ref={markerRef} hidden />
-      {mounted
+      {color
         ? createPortal(
             <div
-              ref={stripRef}
               aria-hidden="true"
               data-slot="status-bar-tint"
-              className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-[max(env(safe-area-inset-top,0px),1px)] bg-background md:hidden"
+              className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-[max(env(safe-area-inset-top,0px),1px)] md:hidden"
+              style={{ backgroundColor: color }}
             />,
             document.body,
           )
