@@ -1,12 +1,14 @@
-# The dev tunnel: https://finance-dev.nnqlab.dev → the dev server on this
-# machine (npm run dev, port 3000), always on: Docker restarts it, also after
-# a reboot. Started and stopped by deploy/scripts/dev-tunnel.sh.
+# The dev tunnel: https://<DEV_TUNNEL_HOST> → the dev server on this machine
+# (npm run dev, port 3000), always on: Docker restarts it, also after a
+# reboot. Started and stopped by deploy/scripts/dev-tunnel.sh, which reads
+# DEV_TUNNEL_ID from web/.env.local. One tunnel per machine: two machines on
+# one tunnel get its requests at random.
 name: finance-dev-tunnel
 
 services:
   cloudflared:
     image: cloudflare/cloudflared:latest
-    # The tunnel `finance-dev` by id, so only its credentials file is needed.
+    # The tunnel by id, so only its credentials file is needed.
     command:
       - tunnel
       - --no-autoupdate
@@ -15,11 +17,11 @@ services:
       - http://localhost:3000
       - --credentials-file
       - /etc/cloudflared/finance-dev.json
-      - efd91426-ed7b-4f53-a0e7-a413b5d21bee
+      - ${DEV_TUNNEL_ID:?set DEV_TUNNEL_ID in web/.env.local}
     # localhost is this machine, where the dev server listens.
     network_mode: host
     # The credentials file is readable by its owner only.
     user: "${DEV_UID:-1000}:${DEV_GID:-1000}"
     volumes:
-      - ${HOME}/.cloudflared/efd91426-ed7b-4f53-a0e7-a413b5d21bee.json:/etc/cloudflared/finance-dev.json:ro
+      - ${HOME}/.cloudflared/${DEV_TUNNEL_ID}.json:/etc/cloudflared/finance-dev.json:ro
     restart: unless-stopped

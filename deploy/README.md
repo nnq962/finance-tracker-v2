@@ -119,29 +119,34 @@ Có hai cách, chọn một:
 
 ## Tunnel cho dev server (thử trên điện thoại)
 
-`https://finance-dev.nnqlab.dev` trỏ vào dev server (`npm run dev`, cổng 3000) qua tunnel
-riêng `finance-dev`, tách khỏi tunnel production. Tunnel chạy luôn trong Docker
-(`deploy/compose.dev-tunnel.yaml`, tự bật lại cả sau khi khởi động máy); chỉ cần dev server
-đang chạy là thử được, không thì trang báo 502.
+Mỗi máy dev có tunnel và tên miền riêng, trỏ vào dev server của máy đó (`npm run dev`,
+cổng 3000), tách khỏi tunnel production: máy nhà là `finance-dev-home.nnqlab.dev` (tunnel
+`finance-dev-home`), server còn lại là `finance-dev.nnqlab.dev` (tunnel `finance-dev`). Không
+chạy một tunnel trên hai máy: Cloudflare chia request ngẫu nhiên cho các máy đang nối vào
+nó. Tunnel chạy luôn trong Docker (`deploy/compose.dev-tunnel.yaml`, tự bật lại cả sau khi
+khởi động máy); chỉ cần dev server đang chạy là thử được, không thì trang báo 502.
 
 Trong `web/`: `npm run tunnel` bật (hoặc kiểm tra) tunnel, `npm run tunnel -- stop` tắt,
 `npm run tunnel -- logs` xem log. Trên điện thoại mở một lần
-`https://finance-dev.nnqlab.dev/api/dev/login?key=<DEV_TUNNEL_KEY>&next=/overview`; trình duyệt
+`https://<DEV_TUNNEL_HOST>/api/dev/login?key=<DEV_TUNNEL_KEY>&next=/overview`; trình duyệt
 giữ khoá trong cookie 90 ngày.
 
-Ai cũng mở được địa chỉ này, nhưng chỉ người có khoá mới đăng nhập được người dùng dev:
-đăng nhập dev qua tunnel cần `DEV_LOGIN=1`, `DEV_TUNNEL_HOST=finance-dev.nnqlab.dev` và
-`DEV_TUNNEL_KEY` (từ 32 ký tự) trong `web/.env.local`. Đổi khoá là đăng xuất mọi máy.
+Ai cũng mở được địa chỉ này, nhưng chỉ người có khoá mới đăng nhập được người dùng dev.
+Trong `web/.env.local` của mỗi máy: `DEV_TUNNEL_ID` (id tunnel của máy), `DEV_TUNNEL_HOST`
+(tên miền của nó), `DEV_TUNNEL_KEY` (từ 32 ký tự) và `DEV_LOGIN=1`. Đổi khoá là đăng xuất
+mọi máy.
 
 Cùng mạng nội bộ với máy dev thì không cần tunnel: thêm địa chỉ LAN của máy vào
 `allowedDevOrigins` (`web/next.config.ts`) và `DEV_LAN_HOSTS` (trong `web/.env.local`, cách nhau dấu
 phẩy), rồi mở `http://<địa chỉ LAN>:3000/api/dev/login?key=<DEV_TUNNEL_KEY>&next=/overview`.
 
-Dựng lần đầu (đã làm 2026-10-05): cài `cloudflared` vào `~/.local/bin` (bản
-`cloudflared-linux-amd64` trên GitHub), `cloudflared tunnel login` (chọn zone `nnqlab.dev`;
-nếu trình duyệt tải về `cert.pem` thì chép nó vào `~/.cloudflared/`), `cloudflared tunnel
-create finance-dev`, `cloudflared tunnel route dns finance-dev finance-dev.nnqlab.dev`. (Bản ghi `dev.nnqlab.dev`
-cũng trỏ vào tunnel này nhưng đã có Cloudflare Access chặn sẵn từ trước, nên không dùng.)
+Dựng cho một máy mới: cài `cloudflared` (bản `cloudflared-linux-amd64` hoặc `-arm64` trên
+GitHub, vào `~/.local/bin`), `cloudflared tunnel login` (chọn zone `nnqlab.dev`; nếu trình
+duyệt tải về `cert.pem` thì chép nó vào `~/.cloudflared/`), rồi `cloudflared tunnel create
+<tên>` (in ra id, file khoá ở `~/.cloudflared/<id>.json`) và `cloudflared tunnel route dns
+<tên> <tên miền>`. Ghi id và tên miền vào `web/.env.local`, khởi động lại dev server, chạy
+`npm run tunnel`. (Bản ghi `dev.nnqlab.dev` trỏ vào tunnel `finance-dev` nhưng đã có
+Cloudflare Access chặn sẵn từ trước, nên không dùng.)
 
 ## Chuyển domain sang server (đã làm 2026-10-01)
 
