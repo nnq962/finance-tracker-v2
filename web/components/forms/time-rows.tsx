@@ -103,6 +103,8 @@ export function TimeRows({
           <ToggleGroup
             type="single"
             size="sm"
+            // On the narrowest phones the third chip goes to a second line rather than past the card.
+            className="flex-wrap"
             value={quickDays.some((day) => day.key === date) ? date : ""}
             onValueChange={(next) => {
               if (next) onDateChange(next)

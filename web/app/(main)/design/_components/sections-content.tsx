@@ -438,7 +438,7 @@ function ListSection() {
           fullDescription
         />
       </SettingsGroup>
-      <div className="grid gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <BlockLabel className="px-1">Khung chờ của nhóm (SettingsGroupSkeleton), cùng kích thước nhóm thật</BlockLabel>
         <SettingsGroupSkeleton rows={2} description trailing="amount" />
         <SettingsGroupSkeleton caption={false} rows={1} media="avatar-lg" description trailing="value" chevron />

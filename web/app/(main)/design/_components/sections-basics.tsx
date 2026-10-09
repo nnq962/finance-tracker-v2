@@ -232,7 +232,7 @@ function ButtonSection() {
           </Button>
           <Button disabled>Disabled</Button>
         </div>
-        <div className="mt-4 flex items-center gap-2">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
           <Button size="fab" aria-label="Thêm giao dịch">
             <PlusIcon />
           </Button>

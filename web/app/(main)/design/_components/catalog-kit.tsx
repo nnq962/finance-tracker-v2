@@ -39,7 +39,8 @@ export function CatalogSection({ id, children }: { id: CatalogSectionId; childre
           <p className="text-sm text-muted-foreground">{note}</p>
         </div>
       </div>
-      <div className="grid min-w-0 gap-3 md:grid-cols-2 md:items-start">{children}</div>
+      {/* One column of minmax(0, 1fr) on phones: a sample wider than the screen overflows inside its card, not the page. */}
+      <div className="grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2 md:items-start">{children}</div>
     </section>
   )
 }

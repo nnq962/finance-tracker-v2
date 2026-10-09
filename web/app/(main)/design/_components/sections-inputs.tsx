@@ -431,7 +431,7 @@ function ProgressSection() {
               </div>
               <Progress value={progress} aria-label="Quỹ du lịch" />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="secondary" onClick={() => setProgress(Math.max(0, progress - 12))}>
                 −12%
               </Button>
