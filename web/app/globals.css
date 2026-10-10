@@ -370,10 +370,9 @@
   body:has([data-app-shell="main"])
     [data-sonner-toaster][data-y-position="top"] {
     position: absolute;
-    /* Sonner's mobile width: 100% plus its side offset would overhang the
-       screen; as an absolute box that widens the page, which phones then
-       zoom out. Let the left and right offsets set the width instead. */
-    width: auto;
+    /* The width stays Sonner's: up to 600px the rule above lets the side
+       offsets set it; from 601px Sonner centres the toaster from left: 50%
+       with no right edge, where width: auto shrank it, and every toast, to 24px. */
   }
 
   /* The toaster spans the space between its offsets; each toast is a pill
