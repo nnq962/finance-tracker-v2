@@ -1,13 +1,15 @@
 import Link from "next/link"
 import { ArrowRightIcon, SparklesIcon } from "lucide-react"
 
+import { PwaInstallButton } from "@/components/pwa-install-button"
 import { Button } from "@/components/ui/button"
 
 import { LoginCollage } from "@/app/login/_components/login-collage"
 
 /**
  * The landing's first screen: what the app is in one line, the AI that
- * writes entries for you as the badge, the two ways in, and the app's own
+ * writes entries for you as the badge, the two ways in (and installing the
+ * app, where the browser can), and the app's own
  * cards as the picture (as on the sign-in page).
  */
 export function HeroSection() {
@@ -40,6 +42,8 @@ export function HeroSection() {
             <Button size="lg" variant="outline" asChild>
               <a href="#tinh-nang">Xem tính năng</a>
             </Button>
+            {/* Shown only where the app can be installed: the browser's prompt, or on iPhone the steps to add it. */}
+            <PwaInstallButton />
           </div>
         </div>
         <div className="flex items-center justify-center rounded-[32px] bg-track py-10 sm:py-16 dark:bg-foreground/5">
