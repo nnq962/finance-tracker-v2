@@ -1,11 +1,11 @@
 import type { Metadata } from "next"
 
+import { AiSection } from "./_components/landing/ai-section"
 import { CtaSection } from "./_components/landing/cta-section"
 import { FeaturesSection } from "./_components/landing/features-section"
 import { HeroSection } from "./_components/landing/hero-section"
 import { LandingFooter } from "./_components/landing/landing-footer"
 import { LandingHeader } from "./_components/landing/landing-header"
-import { LandingMotionConfig } from "./_components/landing/motion-primitives"
 import { PrivacySection } from "./_components/landing/privacy-section"
 import { StepsSection } from "./_components/landing/steps-section"
 import {
@@ -71,17 +71,16 @@ export default function HomePage() {
         }}
       />
 
-      <LandingMotionConfig>
-        <LandingHeader />
-        <main>
-          <HeroSection />
-          <FeaturesSection />
-          <StepsSection />
-          <PrivacySection />
-          <CtaSection />
-        </main>
-        <LandingFooter />
-      </LandingMotionConfig>
+      <LandingHeader />
+      <main>
+        <HeroSection />
+        <AiSection />
+        <FeaturesSection />
+        <StepsSection />
+        <PrivacySection />
+        <CtaSection />
+      </main>
+      <LandingFooter />
     </div>
   )
 }

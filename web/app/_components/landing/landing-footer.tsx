@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 
 const FOOTER_LINKS = [
   { href: "#tinh-nang", label: "Tính năng" },
+  { href: "#ai", label: "AI" },
   { href: "#cach-hoat-dong", label: "Cách hoạt động" },
   { href: "#bao-mat", label: "Bảo mật" },
 ] as const

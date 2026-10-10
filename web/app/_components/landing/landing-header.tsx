@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils"
 
 const NAV_LINKS = [
   { href: "#tinh-nang", label: "Tính năng" },
+  { href: "#ai", label: "AI" },
   { href: "#cach-hoat-dong", label: "Cách hoạt động" },
   { href: "#bao-mat", label: "Bảo mật" },
 ] as const
