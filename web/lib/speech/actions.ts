@@ -11,6 +11,7 @@ import {
   pingGroq,
   transcribe,
   transcribeDetailed,
+  namesPrompt,
   transcriptionPrompt,
   WHISPER_MODELS,
   type SpokenAccount,
@@ -106,13 +107,15 @@ export async function transcribeLabAction(formData: FormData): Promise<
   if (!(audio instanceof File) || audio.size === 0) return { success: false, error: "Không nhận được âm thanh." }
   const requested = formData.get("model")
   const model = WHISPER_MODELS.find((name) => name === requested) ?? WHISPER_MODELS[0]
-  const withPrompt = formData.get("prompt") !== "off"
+  // The prompt to try: dictation's ("full", the default), the amounts and names bare, or none.
+  const promptKind = formData.get("prompt")
 
   const startedAt = performance.now()
   try {
     const accounts = await getAccounts(admin.uid)
     const accountsMs = Math.round(performance.now() - startedAt)
-    const prompt = withPrompt ? transcriptionPrompt(accountNames(accounts)) : ""
+    const spoken = accountNames(accounts)
+    const prompt = promptKind === "off" ? "" : promptKind === "names" ? namesPrompt(spoken) : transcriptionPrompt(spoken)
     const detail = await transcribeDetailed(audio, prompt, model as WhisperModel)
     const serverMs = Math.round(performance.now() - startedAt)
     const pingMs = await pingGroq().catch(() => undefined)

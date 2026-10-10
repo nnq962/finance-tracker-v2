@@ -51,6 +51,14 @@ const modes: { value: string; label: string; using: Recogniser[] }[] = [
   ...recognisers.map((item) => ({ value: item.key, label: item.label, using: [item.key] })),
 ]
 
+/** The prompt Whisper hears the reading with; each keeps its own results, to compare them. */
+const prompts = [
+  { value: "full", label: "Câu", name: "câu số tiền + câu có tên (đang dùng)" },
+  { value: "names", label: "Tên trần", name: "câu số tiền + tên trần" },
+  { value: "off", label: "Không", name: "không prompt" },
+] as const
+type PromptKind = (typeof prompts)[number]["value"]
+
 // The banks people here use come first in the list, before the foreign ones (HSBC on).
 const firstForeign = banks.findIndex((bank) => bank.id === "hsbc")
 const names = (withForeign: boolean) =>
@@ -81,10 +89,14 @@ function isResults(value: unknown): value is Results {
   return Boolean(results && typeof results.heard === "object" && Array.isArray(results.skipped) && Array.isArray(results.history))
 }
 
-function readSaved(): Results {
+// Dictation's prompt keeps the key its results started under.
+const storageKey = (kind: PromptKind) => (kind === "full" ? STORAGE_KEY : `${STORAGE_KEY}:${kind}`)
+
+function readSaved(kind: PromptKind): Results {
   try {
-    const saved: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null")
+    const saved: unknown = JSON.parse(localStorage.getItem(storageKey(kind)) ?? "null")
     if (isResults(saved)) return saved
+    if (kind !== "full") return empty
     // The first version kept the browser's words as plain strings.
     const old: unknown = JSON.parse(localStorage.getItem(OLD_STORAGE_KEY) ?? "null")
     if (isResults(old)) {
@@ -100,9 +112,9 @@ function readSaved(): Results {
   return empty
 }
 
-function writeSaved(results: Results) {
+function writeSaved(kind: PromptKind, results: Results) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(results))
+    localStorage.setItem(storageKey(kind), JSON.stringify(results))
   } catch {}
 }
 
@@ -140,18 +152,23 @@ export function BankNameTest({ language }: { language: string }) {
   const [mode, setMode] = React.useState("all")
   // Kept on this phone, so a reload halfway through a long list loses nothing.
   // The lab only opens in a sheet after a tap, so this never renders on the server.
-  const [results, setResults] = React.useState<Results>(() => (typeof window === "undefined" ? empty : readSaved()))
+  const [promptKind, setPromptKind] = React.useState<PromptKind>("full")
+  const [all, setAll] = React.useState<Partial<Record<PromptKind, Results>>>(() =>
+    typeof window === "undefined" ? {} : Object.fromEntries(prompts.map(({ value }) => [value, readSaved(value)])),
+  )
+  const results = all[promptKind] ?? empty
   const [phase, setPhase] = React.useState<"idle" | "listening" | "sending">("idle")
   const [live, setLive] = React.useState("")
   const stopRef = React.useRef<(() => void) | null>(null)
   const cancelRef = React.useRef<(() => void) | null>(null)
   const micRef = React.useRef<Microphone | null>(null)
 
+  // The prompt's results the change is for: the one shown, which cannot change while listening.
   const update = (change: (previous: Results) => Results) =>
-    setResults((previous) => {
-      const next = change(previous)
-      writeSaved(next)
-      return next
+    setAll((previous) => {
+      const next = change(previous[promptKind] ?? empty)
+      writeSaved(promptKind, next)
+      return { ...previous, [promptKind]: next }
     })
 
   React.useEffect(
@@ -308,6 +325,7 @@ export function BankNameTest({ language }: { language: string }) {
     const formData = new FormData()
     formData.append("audio", file)
     formData.append("model", model)
+    formData.append("prompt", promptKind)
     try {
       const result = await transcribeLabAction(formData)
       if (result.success) return { text: result.detail.text, raw: result.detail.rawText }
@@ -421,7 +439,7 @@ export function BankNameTest({ language }: { language: string }) {
       if (rows.length === 0) return []
       const right = rows.reduce((sum, row) => sum + row.right, 0)
       const total = rows.reduce((sum, row) => sum + row.total, 0)
-      const detail = item.model ? "có prompt" : language
+      const detail = item.model ? `prompt: ${prompts.find((kind) => kind.value === promptKind)?.name}` : language
       return [`## ${item.name} · ${detail} · đúng ${right}/${total}`, ...rows.map((row) => row.line), ""]
     })
     const report = [`# ${navigator.userAgent}`, "", ...sections].join("\n").trim()
@@ -454,6 +472,25 @@ export function BankNameTest({ language }: { language: string }) {
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
+      {/* For Whisper; the browser's recogniser takes none. */}
+      <Field orientation="horizontal">
+        <FieldLabel>Prompt</FieldLabel>
+        <ToggleGroup
+          type="single"
+          value={promptKind}
+          onValueChange={(value) => {
+            if (value) setPromptKind(value as PromptKind)
+          }}
+          aria-label="Prompt cho Whisper"
+          disabled={busy}
+        >
+          {prompts.map((item) => (
+            <ToggleGroupItem key={item.value} value={item.value}>
+              {item.label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      </Field>
       <Field orientation="horizontal">
         <FieldLabel htmlFor="bank-test-foreign">Thêm ngân hàng nước ngoài</FieldLabel>
         <Switch id="bank-test-foreign" checked={withForeign} onCheckedChange={setWithForeign} disabled={busy} />
@@ -550,7 +587,7 @@ export function BankNameTest({ language }: { language: string }) {
               variant="outline"
               disabled={busy}
               onClick={() => {
-                if (window.confirm("Xoá toàn bộ kết quả đọc tên?")) update(() => empty)
+                if (window.confirm("Xoá kết quả đọc tên của prompt này?")) update(() => empty)
               }}
             >
               Làm lại từ đầu

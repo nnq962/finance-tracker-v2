@@ -69,17 +69,7 @@ const PROMPT_MAX_LENGTH = 340
  * make out, and a listed bank the user had not said ("BIDV, Viettel Money").
  */
 export function transcriptionPrompt(accounts: SpokenAccount[]) {
-  // "Tiền mặt" is in the amounts already; "Ví ZaloPay" and the wallet ZaloPay are said alike.
-  const seen = new Set<string>(["tiền mặt"])
-  const names: string[] = []
-  for (const account of [...accounts, ...POPULAR]) {
-    const name = account.name.trim()
-    const spoken = account.wallet ? `ví ${name}` : name
-    const key = spoken.toLocaleLowerCase("vi-VN")
-    if (!name || seen.has(key)) continue
-    seen.add(key)
-    names.push(spoken)
-  }
+  const names = spokenNames(accounts)
   // Chosen with the user's own first, laid out with them last: Whisper keeps
   // only the last 224 tokens, and the words nearest the audio weigh most.
   const sentences: string[] = []
@@ -91,6 +81,39 @@ export function transcriptionPrompt(accounts: SpokenAccount[]) {
     sentences.push(sentence)
   }
   return [AMOUNTS, ...sentences.reverse()].join(" ")
+}
+
+/**
+ * The amounts, then the names bare, with no label and no sentence around
+ * them: tried in the voice lab against the sentences, which Whisper gave back
+ * whole for a short reading ("Rút 500k ở ACB rồi gửi ví ZaloPay"), sums and
+ * all. Given back from here, it would hold names only.
+ */
+export function namesPrompt(accounts: SpokenAccount[]) {
+  const chosen: string[] = []
+  let length = AMOUNTS.length + 1
+  for (const name of spokenNames(accounts)) {
+    if (length + name.length + 2 > PROMPT_MAX_LENGTH) break
+    length += name.length + 2
+    chosen.push(name)
+  }
+  return chosen.length ? `${AMOUNTS} ${chosen.reverse().join(", ")}.` : AMOUNTS
+}
+
+/** The user's accounts, then the common banks and wallets, each once, as said: a wallet as "ví MoMo". */
+function spokenNames(accounts: SpokenAccount[]) {
+  // "Tiền mặt" is in the amounts already; "Ví ZaloPay" and the wallet ZaloPay are said alike.
+  const seen = new Set<string>(["tiền mặt"])
+  const names: string[] = []
+  for (const account of [...accounts, ...POPULAR]) {
+    const name = account.name.trim()
+    const spoken = account.wallet ? `ví ${name}` : name
+    const key = spoken.toLocaleLowerCase("vi-VN")
+    if (!name || seen.has(key)) continue
+    seen.add(key)
+    names.push(spoken)
+  }
+  return names
 }
 
 export type VerboseSegment = { text: string; no_speech_prob: number; avg_logprob: number }
