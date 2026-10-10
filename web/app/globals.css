@@ -147,8 +147,9 @@
   --sidebar-border: oklch(0.97 0 0);
   --sidebar-ring: oklch(0.708 0 0);
   /* Meaning, not decoration: money in, money out, transfers, AI and Pro, warnings. */
-  --income: oklch(0.596 0.145 163.225);
-  --expense: oklch(0.586 0.253 17.585);
+  /* Sea green (#2e8b57) and a soft red (#d9534f), 2026-10-10. */
+  --income: oklch(0.569 0.1187 154.9);
+  --expense: oklch(0.619 0.1694 25);
   --transfer: oklch(0.588 0.158 241.966);
   /*
    * Lime (#d4f25a): AI and Pro, and the app's one accent (the lead card's
@@ -220,8 +221,9 @@
   --sidebar-accent-foreground: oklch(1 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.556 0 0);
-  --income: oklch(0.765 0.177 163.223);
-  --expense: oklch(0.712 0.194 13.428);
+  /* The same hues, lighter, to read on the dark. */
+  --income: oklch(0.72 0.13 154.9);
+  --expense: oklch(0.7 0.15 25);
   --transfer: oklch(0.746 0.16 232.661);
   --ai: oklch(0.911 0.1775 119.6);
   --ai-foreground: oklch(0.209 0.0042 264.5);
