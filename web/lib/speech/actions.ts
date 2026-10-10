@@ -95,12 +95,13 @@ export async function transcribeLabAction(formData: FormData): Promise<
   if (!(audio instanceof File) || audio.size === 0) return { success: false, error: "Không nhận được âm thanh." }
   const requested = formData.get("model")
   const model = WHISPER_MODELS.find((name) => name === requested) ?? WHISPER_MODELS[0]
+  const withPrompt = formData.get("prompt") !== "off"
 
   const startedAt = performance.now()
   try {
     const accounts = await getAccounts(admin.uid)
     const accountsMs = Math.round(performance.now() - startedAt)
-    const prompt = transcriptionPrompt(accountNames(accounts))
+    const prompt = withPrompt ? transcriptionPrompt(accountNames(accounts)) : ""
     const detail = await transcribeDetailed(audio, prompt, model as WhisperModel)
     const serverMs = Math.round(performance.now() - startedAt)
     const pingMs = await pingGroq().catch(() => undefined)

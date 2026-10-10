@@ -101,7 +101,8 @@ export async function transcribeDetailed(
   body.append("language", "vi")
   body.append("temperature", "0")
   body.append("response_format", "verbose_json")
-  body.append("prompt", prompt)
+  // None in the voice lab, to hear Whisper on its own.
+  if (prompt) body.append("prompt", prompt)
 
   const startedAt = performance.now()
   const response = await fetch(ENDPOINT, {

@@ -15,6 +15,8 @@ import { transcribeLabAction } from "@/lib/speech/actions"
 /** One run through Whisper, timed at each step. */
 export type WhisperRun = {
   model: string
+  /** Sent with the prompt that spells the amounts and the banks. */
+  withPrompt: boolean
   format: string
   bytes: number
   recordMs: number
@@ -56,6 +58,7 @@ const ms = (value?: number) => (value === undefined ? "—" : `${value.toLocaleS
 export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
   const [state, setState] = React.useState<"idle" | "recording" | "sending">("idle")
   const [model, setModel] = React.useState<string>("whisper-large-v3-turbo")
+  const [withPrompt, setWithPrompt] = React.useState(true)
   const [run, setRun] = React.useState<WhisperRun | null>(null)
   const recorder = React.useRef<MediaRecorder | null>(null)
   const [last, setLast] = React.useState<{ file: File; recordMs: number; flushMs: number } | null>(null)
@@ -73,8 +76,9 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
     const formData = new FormData()
     formData.append("audio", file)
     formData.append("model", model)
+    if (!withPrompt) formData.append("prompt", "off")
     const sentAt = performance.now()
-    const base = { model, format: file.type, bytes: file.size, recordMs, flushMs }
+    const base = { model, withPrompt, format: file.type, bytes: file.size, recordMs, flushMs }
     let next: WhisperRun
     try {
       const result = await transcribeLabAction(formData)
@@ -174,6 +178,20 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
         <ToggleGroupItem value="whisper-large-v3-turbo">large-v3-turbo</ToggleGroupItem>
         <ToggleGroupItem value="whisper-large-v3">large-v3</ToggleGroupItem>
       </ToggleGroup>
+      {/* With the same recording sent again (the button beside Ghi âm), shows what the prompt changes. */}
+      <ToggleGroup
+        type="single"
+        value={withPrompt ? "on" : "off"}
+        onValueChange={(value) => {
+          if (value) setWithPrompt(value === "on")
+        }}
+        className="flex-wrap"
+        aria-label="Prompt"
+        disabled={state !== "idle"}
+      >
+        <ToggleGroupItem value="on">Có prompt</ToggleGroupItem>
+        <ToggleGroupItem value="off">Không prompt</ToggleGroupItem>
+      </ToggleGroup>
       <div className="grid grid-cols-[1fr_auto] gap-2">
         <Button
           type="button"
@@ -226,6 +244,7 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
             <SettingsRow title="Kích thước" value={`${(run.bytes / 1024).toFixed(1)} KB`} />
             <SettingsRow title="Định dạng" value={run.format || "—"} />
             <SettingsRow title="Model" value={run.model} />
+            <SettingsRow title="Prompt" value={run.withPrompt ? "Có" : "Không"} />
           </SettingsGroup>
 
           {run.segments && run.segments.length > 0 ? (
