@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { banks, eWallets } from "@/lib/institutions"
 import { normalizeSearchValue } from "@/lib/search-text"
+import { normalizeTranscript } from "@/lib/speech/normalize"
 import { transcribeLabAction } from "@/lib/speech/actions"
 import type { WhisperModel } from "@/lib/speech/groq"
 
@@ -55,8 +56,12 @@ const firstForeign = banks.findIndex((bank) => bank.id === "hsbc")
 const names = (withForeign: boolean) =>
   [...(withForeign ? banks : banks.slice(0, firstForeign)), ...eWallets].map((item) => item.shortName)
 
-/** What each recogniser heard in one reading; one left out did not run, or failed. */
-type Attempt = Partial<Record<Recogniser, string>>
+/**
+ * What each recogniser heard in one reading, its names put right as dictation
+ * does; one left out did not run, or failed. `raw`: what it said before that,
+ * where it differs.
+ */
+type Attempt = Partial<Record<Recogniser, string>> & { raw?: Partial<Record<Recogniser, string>> }
 
 type Results = {
   heard: Record<string, Attempt[]>
@@ -113,8 +118,15 @@ function closeMicrophone(ref: React.RefObject<Microphone | null>) {
 
 /** What a recogniser heard of a name over its readings, and how much of it was right. */
 function score(attempts: Attempt[], name: string, key: Recogniser) {
-  const heard = attempts.flatMap((attempt) => (attempt[key] === undefined ? [] : [attempt[key]!]))
-  return { right: heard.filter((text) => isRight(name, text)).length, total: heard.length, heard }
+  const heard = attempts.flatMap((attempt) => {
+    const text = attempt[key]
+    if (text === undefined) return []
+    const raw = attempt.raw?.[key]
+    // Put right after hearing: what it was shows after an arrow.
+    return [`${text || "∅"}${raw !== undefined && raw !== text ? ` ← ${raw || "∅"}` : ""}`]
+  })
+  const right = attempts.filter((attempt) => attempt[key] !== undefined && isRight(name, attempt[key]!)).length
+  return { right, total: heard.length, heard }
 }
 
 /**
@@ -298,7 +310,7 @@ export function BankNameTest({ language }: { language: string }) {
     formData.append("model", model)
     try {
       const result = await transcribeLabAction(formData)
-      if (result.success) return result.detail.text
+      if (result.success) return { text: result.detail.text, raw: result.detail.rawText }
       toast.error(result.error)
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error))
@@ -343,7 +355,7 @@ export function BankNameTest({ language }: { language: string }) {
       browser?.abort()
     }
 
-    const heardByWhisper: Promise<Partial<Record<Recogniser, string | undefined>>> = recording
+    const heardByWhisper: Promise<Partial<Record<Recogniser, { text: string; raw: string } | undefined>>> = recording
       ? recording.done.then(async (file) => {
           if (cancelled) return {}
           setPhase("sending")
@@ -360,13 +372,21 @@ export function BankNameTest({ language }: { language: string }) {
     setLive("")
 
     const attempt: Attempt = {}
-    if (browserText !== undefined) attempt.browser = browserText
+    const raw: Partial<Record<Recogniser, string>> = {}
+    if (browserText !== undefined) {
+      // As dictation does with the browser's words.
+      attempt.browser = normalizeTranscript(browserText)
+      raw.browser = browserText
+    }
     for (const item of models) {
-      const text = whisperTexts[item.key]
-      if (text !== undefined) attempt[item.key] = text
+      const heard = whisperTexts[item.key]
+      if (heard === undefined) continue
+      attempt[item.key] = heard.text
+      raw[item.key] = heard.raw
     }
     // Every recogniser failed: nothing to keep, the same reading is asked again.
     if (Object.keys(attempt).length === 0) return
+    attempt.raw = raw
     update((previous) => ({
       ...previous,
       heard: { ...previous.heard, [name]: [...(previous.heard[name] ?? []), attempt] },
@@ -395,7 +415,7 @@ export function BankNameTest({ language }: { language: string }) {
       const rows = done.flatMap((name) => {
         const { right, total, heard } = score(results.heard[name] ?? [], name, item.key)
         return total
-          ? [{ line: `${name} (${right}/${total}) → ${heard.map((text) => text || "∅").join(" | ")}`, right, total }]
+          ? [{ line: `${name} (${right}/${total}) → ${heard.join(" | ")}`, right, total }]
           : []
       })
       if (rows.length === 0) return []
@@ -511,7 +531,7 @@ export function BankNameTest({ language }: { language: string }) {
                     const { right, total, heard } = score(attempts, name, item.key)
                     return total ? (
                       <span key={item.key} className="block">
-                        {item.label} {right}/{total}: {heard.map((text) => text || "∅").join(" · ")}
+                        {item.label} {right}/{total}: {heard.join(" · ")}
                       </span>
                     ) : null
                   })}

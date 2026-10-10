@@ -3,6 +3,7 @@
 import * as React from "react"
 
 import { speechEngineAction, transcribeAction } from "@/lib/speech/actions"
+import { normalizeTranscript } from "@/lib/speech/normalize"
 
 // The Web Speech API's recogniser; TypeScript's DOM types lack its constructor.
 type Recognition = EventTarget & {
@@ -56,9 +57,13 @@ let enginePromise: Promise<"whisper" | "browser"> | undefined
  * Dictation in Vietnamese: recorded and sent to Whisper when the server has
  * it, which knows bank names far better, else through the browser's own
  * recogniser. Either way the whole transcript goes to `onEnd` once done.
+ * When Whisper is over its limit or out of reach, the browser's recogniser
+ * takes over for the rest of the visit, if there is one.
  */
 export function useSpeechRecognition({ onEnd }: { onEnd: (transcript: string) => void }): Dictation {
   const [engine, setEngine] = React.useState<"whisper" | "browser">("browser")
+  // Why the recogniser changed, until the next try.
+  const [notice, setNotice] = React.useState<string | null>(null)
   React.useEffect(() => {
     let current = true
     enginePromise ??= speechEngineAction().catch(() => "browser" as const)
@@ -70,8 +75,23 @@ export function useSpeechRecognition({ onEnd }: { onEnd: (transcript: string) =>
     }
   }, [])
   const browser = useBrowserRecognition({ onEnd })
-  const whisper = useWhisperRecognition({ onEnd })
-  return engine === "whisper" && whisper.supported ? whisper : browser
+  const fallBack = React.useCallback((): boolean => {
+    if (getRecognitionConstructor() === null) return false
+    enginePromise = Promise.resolve("browser")
+    setEngine("browser")
+    setNotice("Vui lòng nói lại: đã chuyển sang nhận dạng giọng nói của trình duyệt.")
+    return true
+  }, [])
+  const whisper = useWhisperRecognition({ onEnd, onFallback: fallBack })
+  const active = engine === "whisper" && whisper.supported ? whisper : browser
+  return {
+    ...active,
+    error: active.error ?? notice,
+    start: () => {
+      setNotice(null)
+      active.start()
+    },
+  }
 }
 
 /**
@@ -127,7 +147,10 @@ function useBrowserRecognition({ onEnd }: { onEnd: (transcript: string) => void 
       recognition.current = null
       setListening(false)
       setInterim("")
-      if (!cancelled.current) onEndRef.current(finals)
+      // The bank and wallet names it steadily mishears, put right as Whisper's are on the server.
+      const heard = normalizeTranscript(finals)
+      setTranscript(heard)
+      if (!cancelled.current) onEndRef.current(heard)
     })
 
     recognition.current = recogniser
@@ -179,7 +202,14 @@ function recordingFormat() {
  * Dictation recorded from the microphone and sent to Whisper when stopped.
  * Nothing shows while speaking; the words arrive in one piece afterwards.
  */
-function useWhisperRecognition({ onEnd }: { onEnd: (transcript: string) => void }): Dictation {
+function useWhisperRecognition({
+  onEnd,
+  onFallback,
+}: {
+  onEnd: (transcript: string) => void
+  /** Whisper cannot be had for now; true when the browser's recogniser took over. */
+  onFallback: () => boolean
+}): Dictation {
   const supported = React.useSyncExternalStore(subscribe, recorderSupported, () => false)
   const [listening, setListening] = React.useState(false)
   const [transcribing, setTranscribing] = React.useState(false)
@@ -189,8 +219,10 @@ function useWhisperRecognition({ onEnd }: { onEnd: (transcript: string) => void 
   // Tells the recording still wanted from one cancelled; a new one replaces it.
   const session = React.useRef<object | null>(null)
   const onEndRef = React.useRef(onEnd)
+  const onFallbackRef = React.useRef(onFallback)
   React.useEffect(() => {
     onEndRef.current = onEnd
+    onFallbackRef.current = onFallback
   })
 
   const release = React.useCallback(() => {
@@ -268,7 +300,9 @@ function useWhisperRecognition({ onEnd }: { onEnd: (transcript: string) => void 
         const result = await transcribeAction(formData)
         if (session.current !== token) return
         if (!result.success) {
-          setError(result.error)
+          // Taken over by the browser's recogniser, which says so itself.
+          if (result.fallback && onFallbackRef.current()) setError(null)
+          else setError(result.error)
           return
         }
         setTranscript(result.text)

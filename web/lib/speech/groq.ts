@@ -1,10 +1,17 @@
 import "server-only"
 
-const ENDPOINT = "https://api.groq.com/openai/v1/audio/transcriptions"
-const MODEL = "whisper-large-v3-turbo"
+import { normalizeTranscript } from "@/lib/speech/normalize"
 
-/** Whisper models on Groq: turbo is the faster and cheaper, large-v3 the more accurate. */
-export const WHISPER_MODELS = ["whisper-large-v3-turbo", "whisper-large-v3"] as const
+const ENDPOINT = "https://api.groq.com/openai/v1/audio/transcriptions"
+/**
+ * large-v3, not turbo: in the voice lab's name test on an iPhone it heard 62%
+ * of bank and wallet names right against turbo's 42%, and 28 of the 36
+ * readings of the twelve most used against 22. Groq's free tier limits both alike.
+ */
+const MODEL = "whisper-large-v3"
+
+/** Whisper models on Groq, the one dictation uses first: large-v3 the more accurate, turbo the faster and cheaper. */
+export const WHISPER_MODELS = ["whisper-large-v3", "whisper-large-v3-turbo"] as const
 export type WhisperModel = (typeof WHISPER_MODELS)[number]
 
 /** Whisper on Groq is used once GROQ_API_KEY is set on the server; until then the browser's own recogniser is. */
@@ -12,52 +19,47 @@ export function groqEnabled() {
   return Boolean(process.env.GROQ_API_KEY)
 }
 
-/**
- * Banks and wallets from lib/institutions.ts that most people have, to fill
- * the prompt after the user's own: the whole list would not fit.
- */
-const POPULAR_NAMES = [
-  "Vietcombank",
-  "Techcombank",
-  "MB Bank",
-  "BIDV",
-  "VietinBank",
-  "Agribank",
-  "ACB",
-  "VPBank",
-  "TPBank",
-  "Sacombank",
-  "VIB",
-  "HDBank",
-  "SHB",
-  "MoMo",
-  "ZaloPay",
-  "ShopeePay",
-  "Viettel Money",
+/** A name the user's money is kept under, said as people say it: a wallet as "ví MoMo". */
+export type SpokenAccount = { name: string; wallet?: boolean }
+
+/** Said just before the audio: amounts in the forms people use, without a bank's name. */
+const AMOUNTS = "Ăn sáng 35k tiền mặt. Đổ xăng hết 80 nghìn. Nhận lương 15 củ. Mua điện thoại 7 triệu rưỡi."
+
+/** Each of the user's accounts in a sentence of its own, these in turn. */
+const ACCOUNT_SENTENCES = [
+  (name: string) => `Trả bằng ${name}.`,
+  (name: string) => `Chuyển 500k vào ${name}.`,
+  (name: string) => `Nạp 200 nghìn vào ${name}.`,
+  (name: string) => `Rút 2 triệu từ ${name}.`,
 ]
 
-/** Said just before the audio, in the way people talk money here. */
-const SAMPLE =
-  "Ăn sáng 35k tiền mặt. Đi siêu thị hết 500k, trả bằng Sacombank. Nhận lương 15 củ vào Vietcombank. Chuyển 2 triệu từ MB Bank sang TPBank. Nạp 200k vào MoMo."
+/** Well under the 224 tokens Groq takes; Vietnamese runs to about one token per two or three characters. */
+const PROMPT_MAX_LENGTH = 400
 
 /**
  * What Whisper is told before the audio. It reads as the text spoken just
- * before, so it is written the way people say money here, with amounts in
- * "k" and "củ" and banks spelled as their brands are. Then the names to
- * spell as written: the user's own accounts and their banks or wallets
- * first, then the most common others, as many as fit well under the 224
- * tokens Groq takes.
+ * before, so it is written the way people say money here: amounts in "k",
+ * "củ" and "triệu", then the user's own accounts each in a sentence, so their
+ * names come out spelled as written. No list of names and no label: Whisper
+ * gave back "Tài khoản." for audio it could not make out, and a listed bank
+ * the user had not said ("BIDV, Viettel Money"), when the prompt ended in
+ * "Tài khoản: …" over every common bank.
  */
-export function transcriptionPrompt(ownNames: string[]) {
-  const names = [...new Set([...ownNames.map((name) => name.trim()).filter(Boolean), ...POPULAR_NAMES])]
-    // Already spelled in the sample.
-    .filter((name) => !SAMPLE.includes(name))
-  let list = ""
-  for (const name of names) {
-    if (`${list}, ${name}`.length > 170) break
-    list = list ? `${list}, ${name}` : name
+export function transcriptionPrompt(accounts: SpokenAccount[]) {
+  // "Tiền mặt" is in the amounts already; "Ví ZaloPay" and the wallet ZaloPay are said alike.
+  const seen = new Set<string>(["tiền mặt"])
+  let prompt = AMOUNTS
+  for (const account of accounts) {
+    const name = account.name.trim()
+    const spoken = account.wallet ? `ví ${name}` : name
+    const key = spoken.toLocaleLowerCase("vi-VN")
+    if (!name || seen.has(key)) continue
+    seen.add(key)
+    const sentence = ACCOUNT_SENTENCES[(seen.size - 2) % ACCOUNT_SENTENCES.length](spoken)
+    if (prompt.length + sentence.length + 1 > PROMPT_MAX_LENGTH) break
+    prompt = `${prompt} ${sentence}`
   }
-  return list ? `${SAMPLE} Tài khoản: ${list}.` : SAMPLE
+  return prompt
 }
 
 export type VerboseSegment = { text: string; no_speech_prob: number; avg_logprob: number }
@@ -68,10 +70,17 @@ export type VerboseSegment = { text: string; no_speech_prob: number; avg_logprob
  */
 const HALLUCINATIONS = [/subscribe/i, /ghiền mì gõ/i, /cảm ơn các bạn đã (theo dõi|xem)/i, /hẹn gặp lại các bạn/i, /la la school/i]
 
+/**
+ * Whole answers Whisper gives for a short sound it cannot make out: heard in
+ * the voice lab in place of a wallet's name, never said.
+ */
+const FILLERS = new Set(["tạm biệt", "tài khoản", "bây giờ", "cảm ơn", "cảm ơn các bạn", "tài khoản tạm biệt"])
+const isFiller = (text: string) => FILLERS.has(text.toLocaleLowerCase("vi-VN").replace(/[.,!?…\s]+/g, " ").trim())
+
 /** A transcription with what it took: Groq's segments and the time the call ran. */
 export type TranscriptionDetail = {
   text: string
-  /** Everything Whisper returned, before silence and made-up lines were left out. */
+  /** Everything Whisper returned, before silence and made-up lines were left out and names put right. */
   rawText: string
   segments: VerboseSegment[]
   /** From sending the audio to Groq until its answer was read. */
@@ -84,7 +93,7 @@ export type TranscriptionDetail = {
 /**
  * The words in a recording, through Whisper on Groq, in Vietnamese. Segments
  * that are most likely silence, and the lines Whisper makes up from it, are
- * left out.
+ * left out, and the bank and wallet names it steadily mishears put right.
  */
 export async function transcribe(audio: File, prompt: string) {
   return (await transcribeDetailed(audio, prompt)).text
@@ -121,12 +130,13 @@ export async function transcribeDetailed(
   }
   const groqMs = Math.round(performance.now() - startedAt)
   const segments = result.segments ?? [{ text: result.text ?? "", no_speech_prob: 0, avg_logprob: 0 }]
-  const text = segments
+  const heard = segments
     .filter((segment) => !(segment.no_speech_prob > 0.6 && segment.avg_logprob < -0.7))
     .map((segment) => segment.text.trim())
     .filter((part) => part && !HALLUCINATIONS.some((pattern) => pattern.test(part)))
     .join(" ")
     .trim()
+  const text = isFiller(heard) ? "" : normalizeTranscript(heard)
   const totalTime = result.x_groq?.usage?.total_time
   return {
     text,

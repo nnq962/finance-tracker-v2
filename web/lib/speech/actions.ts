@@ -13,6 +13,7 @@ import {
   transcribeDetailed,
   transcriptionPrompt,
   WHISPER_MODELS,
+  type SpokenAccount,
   type TranscriptionDetail,
   type WhisperModel,
 } from "@/lib/speech/groq"
@@ -24,16 +25,21 @@ const MAX_AUDIO_BYTES = 1_000_000
 const transcriptions = new Map<string, number[]>()
 
 /** The names a user's accounts go by: each account's own, and its bank's or wallet's brand. */
-function accountNames(accounts: Account[]) {
+function accountNames(accounts: Account[]): SpokenAccount[] {
   return accounts
     .filter((account) => account.status === "active")
-    .flatMap((account) => [
-      account.name,
-      account.institutionId && account.type !== "cash"
-        ? getInstitution(account.type, account.institutionId)?.shortName
-        : undefined,
-    ])
-    .filter((name): name is string => Boolean(name))
+    .flatMap((account) => {
+      const wallet = account.type === "e-wallet"
+      const brand =
+        account.institutionId && account.type !== "cash"
+          ? getInstitution(account.type, account.institutionId)?.shortName
+          : undefined
+      return [
+        // The brand first: what people say ("trả bằng MoMo"), more than the account's own name.
+        ...(brand ? [{ name: brand, wallet }] : []),
+        { name: account.name, wallet: wallet && !account.name.toLowerCase().startsWith("ví") },
+      ]
+    })
 }
 
 /** Which recogniser dictation uses: Whisper on the server, or the browser's own. */
@@ -45,7 +51,11 @@ export async function speechEngineAction(): Promise<"whisper" | "browser"> {
 /** The words in a recording from the microphone, in Vietnamese. */
 export async function transcribeAction(
   formData: FormData,
-): Promise<{ success: true; text: string } | { success: false; error: string }> {
+): Promise<
+  | { success: true; text: string }
+  /** `fallback`: Groq is over its limit or out of reach, so the browser's recogniser should take over. */
+  | { success: false; error: string; fallback?: boolean }
+> {
   const user = await requireSession()
   if (!groqEnabled()) return { success: false, error: "Chưa bật nhận dạng giọng nói." }
 
@@ -66,8 +76,9 @@ export async function transcribeAction(
     return text ? { success: true, text } : { success: false, error: "Không nghe thấy tiếng nói." }
   } catch (error) {
     console.error("Transcription failed", error instanceof GroqError ? error.message : (error as Error).name)
-    if (error instanceof GroqError && error.status === 429) {
-      return { success: false, error: "Nhận dạng giọng nói đang quá tải. Vui lòng thử lại sau ít phút." }
+    // Over the limit, Groq down or too slow: the browser's recogniser hears the next try.
+    if (!(error instanceof GroqError) || error.status === 429 || error.status >= 500) {
+      return { success: false, error: "Nhận dạng giọng nói đang quá tải. Vui lòng thử lại sau ít phút.", fallback: true }
     }
     return { success: false, error: "Không nhận dạng được giọng nói. Vui lòng thử lại." }
   }

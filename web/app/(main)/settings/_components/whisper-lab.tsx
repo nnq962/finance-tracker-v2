@@ -57,7 +57,7 @@ const ms = (value?: number) => (value === undefined ? "—" : `${value.toLocaleS
  */
 export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
   const [state, setState] = React.useState<"idle" | "recording" | "sending">("idle")
-  const [model, setModel] = React.useState<string>("whisper-large-v3-turbo")
+  const [model, setModel] = React.useState<string>("whisper-large-v3")
   const [withPrompt, setWithPrompt] = React.useState(true)
   const [run, setRun] = React.useState<WhisperRun | null>(null)
   const recorder = React.useRef<MediaRecorder | null>(null)
@@ -175,8 +175,8 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
         aria-label="Model"
         disabled={state !== "idle"}
       >
-        <ToggleGroupItem value="whisper-large-v3-turbo">large-v3-turbo</ToggleGroupItem>
         <ToggleGroupItem value="whisper-large-v3">large-v3</ToggleGroupItem>
+        <ToggleGroupItem value="whisper-large-v3-turbo">large-v3-turbo</ToggleGroupItem>
       </ToggleGroup>
       {/* With the same recording sent again (the button beside Ghi âm), shows what the prompt changes. */}
       <ToggleGroup
