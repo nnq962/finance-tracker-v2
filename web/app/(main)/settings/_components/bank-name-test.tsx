@@ -101,6 +101,16 @@ function writeSaved(results: Results) {
   } catch {}
 }
 
+type Microphone = { stream: MediaStream; context: AudioContext; analyser: AnalyserNode }
+
+function closeMicrophone(ref: React.RefObject<Microphone | null>) {
+  const open = ref.current
+  ref.current = null
+  if (!open) return
+  open.stream.getTracks().forEach((track) => track.stop())
+  void open.context.close()
+}
+
 /** What a recogniser heard of a name over its readings, and how much of it was right. */
 function score(attempts: Attempt[], name: string, key: Recogniser) {
   const heard = attempts.flatMap((attempt) => (attempt[key] === undefined ? [] : [attempt[key]!]))
@@ -123,6 +133,7 @@ export function BankNameTest({ language }: { language: string }) {
   const [live, setLive] = React.useState("")
   const stopRef = React.useRef<(() => void) | null>(null)
   const cancelRef = React.useRef<(() => void) | null>(null)
+  const micRef = React.useRef<Microphone | null>(null)
 
   const update = (change: (previous: Results) => Results) =>
     setResults((previous) => {
@@ -131,7 +142,13 @@ export function BankNameTest({ language }: { language: string }) {
       return next
     })
 
-  React.useEffect(() => () => cancelRef.current?.(), [])
+  React.useEffect(
+    () => () => {
+      cancelRef.current?.()
+      closeMicrophone(micRef)
+    },
+    [],
+  )
 
   const list = names(withForeign)
   const current = list.find((name) => !results.skipped.includes(name) && (results.heard[name]?.length ?? 0) < ROUNDS)
@@ -194,21 +211,44 @@ export function BankNameTest({ language }: { language: string }) {
     }
   }
 
+  /**
+   * The microphone, opened once and kept for the next readings. On an iPhone,
+   * asking for it again after closing it, with the browser's recogniser on
+   * it too, got nothing from the second reading on.
+   */
+  async function openMicrophone() {
+    const open = micRef.current
+    if (open && open.stream.getAudioTracks().every((track) => track.readyState === "live")) {
+      // Safari suspends an audio context it did not start from a tap.
+      if (open.context.state !== "running") await open.context.resume().catch(() => undefined)
+      return open
+    }
+    closeMicrophone(micRef)
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
+    })
+    const context = new AudioContext()
+    const analyser = context.createAnalyser()
+    analyser.fftSize = 1024
+    context.createMediaStreamSource(stream).connect(analyser)
+    micRef.current = { stream, context, analyser }
+    return micRef.current
+  }
+
   /** A recording that ends by itself after the speech; `done` gives the audio. */
   async function startRecording(onSilence: () => void) {
     if (typeof MediaRecorder === "undefined" || !navigator.mediaDevices?.getUserMedia) {
       toast.error("Trình duyệt này không ghi âm được.")
       return null
     }
-    let stream: MediaStream
+    let microphone: Microphone
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
-      })
+      microphone = await openMicrophone()
     } catch (error) {
       toast.error(`Không mở được micro: ${error instanceof Error ? error.name : String(error)}`)
       return null
     }
+    const { stream, analyser } = microphone
     const format = recordingFormat()
     const recorder = new MediaRecorder(stream, {
       ...(format.type ? { mimeType: format.type } : {}),
@@ -217,10 +257,6 @@ export function BankNameTest({ language }: { language: string }) {
     const chunks: Blob[] = []
 
     // Ends once the speech is over, as the browser's recogniser does.
-    const context = new AudioContext()
-    const analyser = context.createAnalyser()
-    analyser.fftSize = 1024
-    context.createMediaStreamSource(stream).connect(analyser)
     const samples = new Float32Array(analyser.fftSize)
     let startedAt = 0
     let lastLoud = 0
@@ -234,18 +270,13 @@ export function BankNameTest({ language }: { language: string }) {
       if ((lastLoud && now - lastLoud > RECORDING_SILENCE_MS) || now - startedAt > MAX_LISTENING_MS) return onSilence()
       frame = requestAnimationFrame(watch)
     }
-    const release = () => {
-      cancelAnimationFrame(frame)
-      stream.getTracks().forEach((track) => track.stop())
-      void context.close()
-    }
-
     const finished = new Promise<File>((resolve) => {
       recorder.addEventListener("dataavailable", (event) => {
         if (event.data.size > 0) chunks.push(event.data)
       })
+      // The microphone stays open for the next reading.
       recorder.addEventListener("stop", () => {
-        release()
+        cancelAnimationFrame(frame)
         const audio = new Blob(chunks, { type: recorder.mimeType || format.type || "audio/webm" })
         resolve(new File([audio], `speech.${format.extension}`, { type: audio.type }))
       })
@@ -290,6 +321,7 @@ export function BankNameTest({ language }: { language: string }) {
       browser?.stop()
     }
 
+    if (models.length === 0) closeMicrophone(micRef)
     setLive("")
     setPhase("listening")
     // The recording first: on an iPhone the recogniser, opened second, may not get the microphone.
