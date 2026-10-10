@@ -38,9 +38,9 @@ export type WhisperRun = {
 }
 
 /** Bits per second a recording is made at; Whisper hears speech as well at this as at ten times more. */
-const SPEECH_BITRATE = 24_000
+export const SPEECH_BITRATE = 24_000
 
-function recordingFormat() {
+export function recordingFormat() {
   const type = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((candidate) =>
     MediaRecorder.isTypeSupported(candidate),
   )
