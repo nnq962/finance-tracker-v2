@@ -408,7 +408,7 @@ Trước khi báo xong một màn mới, kiểm tra:
   ("Nâng cấp Finance Tracker" / "Bạn đang dùng Pro"); thẻ Pro trước với `ChoiceTiles tone="ai"`
   chọn kỳ (mặc định theo năm), nút `lg` rộng hết, ghi chú nhỏ, rồi đường kẻ và "Mọi thứ của gói
   Free, thêm:"; thẻ Free gọn hơn; cuối là dòng payOS và câu hỏi thường gặp (`Accordion` trong
-  `SettingsGroup`). Kết quả thanh toán: đã trả, huỷ, hết hạn là toast một lần (đã trả kèm nút "Ghi khoản chi"), rồi `order` rời khỏi URL; đang chờ xác nhận và trả thiếu là `NoticeBanner` ở đầu, vì vẫn còn đúng tới khi được xử lý. Nút nâng cấp mở **sheet thanh toán**
+  `SettingsGroup`). Kết quả thanh toán: đã trả, huỷ, hết hạn là toast một lần (đã trả kèm nút "Ghi khoản chi"), rồi `order` rời khỏi URL; đang chờ xác nhận và trả thiếu là `NoticeBanner` ở đầu, vì vẫn còn đúng tới khi được xử lý. Lúc đang chờ, sheet hỏi lại payOS mỗi 5 giây trong 2 phút (khi app đang hiện); tiền về thì banner thành toast "Đã nâng cấp Pro". Nút nâng cấp mở **sheet thanh toán**
   (`CheckoutSheet`, sheet đáy nền xám, 2026-10-09): ô `IconTile ai` lớn, "Nâng cấp Pro" / "Gia hạn Pro", "300 lượt AI
   mỗi tháng"; biên lai là nhóm dòng: "Gói Pro · 1 năm  249.000đ", "Mã giảm giá" gõ tại chỗ (`SettingsFieldRow`,
   chữ in hoa, "Áp dụng" ở cuối dòng sáng khi đã gõ; mã sai báo đỏ dưới nhóm). Áp được thì dòng mã thành

@@ -15,7 +15,7 @@ import {
 } from "@/lib/plans/coupons"
 import { getDb } from "@/lib/db/client"
 import { attachCheckout, createPayment } from "@/lib/plans/payments"
-import { getPayOS } from "@/lib/plans/payos"
+import { checkReturningPayment, getPayOS, type PaymentOutcome } from "@/lib/plans/payos"
 import { MIN_CHECKOUT_AMOUNT, priceWithCoupon, proPrices, type PlanPeriod } from "@/lib/plans/plans"
 import { grantPro, listGrants, PlanError, revokePro, type SubscriptionGrant } from "@/lib/plans/repository"
 import { MAX_MONEY } from "@/lib/money"
@@ -243,4 +243,19 @@ export async function setCouponActiveAction(couponId: unknown, active: unknown):
   } catch (error) {
     return failure(error)
   }
+}
+
+/**
+ * Where the user's own payment stands now, asked again while the plans say it
+ * is waiting, so Pro shows as soon as the money arrives.
+ */
+export async function checkPaymentAction(order: unknown): Promise<PaymentOutcome | undefined> {
+  const user = await requireSession()
+  if (typeof order !== "string") return undefined
+  const outcome = await checkReturningPayment(user.uid, order)
+  if (outcome === "granted" || outcome === "settled") {
+    revalidatePath("/settings")
+    revalidatePath("/overview")
+  }
+  return outcome
 }

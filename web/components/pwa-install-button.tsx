@@ -327,6 +327,8 @@ export function PwaInstallButton() {
 
   if (!available) return null
 
+  // Safari cannot tell a page the app is already on the home screen, so the
+  // button shows there either way; it says what it leads to, not "install".
   if (isIOS) {
     return (
       <IosInstallSheet
@@ -337,8 +339,8 @@ export function PwaInstallButton() {
             size="lg"
             className="w-full sm:w-auto"
           >
-            <DownloadIcon />
-            Cài ứng dụng
+            <SquarePlusIcon />
+            Thêm vào màn hình chính
           </Button>
         }
       />
