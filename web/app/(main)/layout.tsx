@@ -9,7 +9,7 @@ import { NotificationsButton } from "@/components/notifications-sheet"
 import { WelcomeProvider } from "@/components/onboarding/welcome"
 import { PwaThemeColor } from "@/components/pwa-theme-color"
 import { PushMessageListener } from "@/components/push-message-listener"
-import { ThemeSelect } from "@/components/theme-select"
+import { ThemeToggle } from "@/components/theme-toggle"
 import {
   SidebarInset,
   SidebarProvider,
@@ -62,7 +62,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
                   </div>
                   <div className="flex items-center gap-1">
                     <NotificationsButton variant="ghost" />
-                    <ThemeSelect />
+                    <ThemeToggle size="icon" />
                   </div>
                 </div>
               </header>

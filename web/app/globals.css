@@ -4,17 +4,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-[data-theme-icon] {
-  display: none;
-}
-
-html:not([data-theme-selection]) [data-theme-icon="system"],
-html[data-theme-selection="light"] [data-theme-icon="light"],
-html[data-theme-selection="dark"] [data-theme-icon="dark"],
-html[data-theme-selection="system"] [data-theme-icon="system"] {
-  display: contents;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

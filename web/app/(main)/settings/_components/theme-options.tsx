@@ -29,11 +29,7 @@ export function useThemeChoice() {
   // What shows now: the choice, or the device's with Tự động.
   const shown: "light" | "dark" = mounted && resolvedTheme === "dark" ? "dark" : "light"
 
-  const choose = (next: ThemeValue) => {
-    // Read by CSS to show the matching theme icon (see globals.css).
-    document.documentElement.dataset.themeSelection = next
-    setTheme(next)
-  }
+  const choose = (next: ThemeValue) => setTheme(next)
 
   return { choice, shown, choose }
 }
