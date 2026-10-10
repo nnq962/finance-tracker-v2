@@ -29,7 +29,7 @@ component ở đó là cả app đổi theo.
    mời Pro đều sáng.
 4. **Chữ rõ thứ bậc.** Số tiền của thẻ dẫn đầu là chữ lớn nhất màn; tên trang 24, số tiền và
    tiêu đề đậm 600, chữ thường 400.
-5. **Màu dịu, có ý nghĩa.** `income` tiền vào (xanh lá biển `#2e8b57`), `expense` tiền ra (đỏ dịu `#d9534f`; đổi 2026-10-10), `transfer`
+5. **Màu dịu, có ý nghĩa.** `income` tiền vào (xanh lá biển `#2e8b57`), `expense` tiền ra (đỏ dịu `#d9534f`; đổi 2026-10-10, `destructive` của nút xoá và lỗi dùng cùng màu), `transfer`
    chuyển khoản (sky), `ai` AI và Pro, cũng là điểm nhấn duy nhất của app (xanh chanh `#d4f25a`, 2026-10-09: chỉ làm nền với chữ mực `ai-foreground`, hoặc nằm trên màu đen: chip con số ở thẻ dẫn đầu, tab đang mở, nhãn Pro; chữ và icon màu AI trên nền sáng dùng `ai-strong`, xanh chanh đậm; theme tối `ai-strong` chính là xanh chanh), `warning` nhắc nhở (amber). Ô icon dùng màu
    đó (hay màu hạng mục) đã làm dịu về xám, icon màu mực (`tile-tinted`), để list không thành cầu
    vồng. Số tiền: chỉ tiền vào có màu; tiền chi, chuyển khoản để màu chữ thường. Đỏ chỉ để cảnh
