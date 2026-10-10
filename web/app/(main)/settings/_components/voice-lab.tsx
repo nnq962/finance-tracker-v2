@@ -20,29 +20,14 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 
+import { BankNameTest } from "./bank-name-test"
+import {
+  getRecognitionConstructor,
+  type Recognition,
+  type RecognitionErrorEvent,
+  type RecognitionEvent,
+} from "./speech-recognition"
 import { WhisperLab, type WhisperRun } from "./whisper-lab"
-
-// The Web Speech API's recogniser; TypeScript's DOM types lack its constructor.
-type Recognition = EventTarget & {
-  lang: string
-  continuous: boolean
-  interimResults: boolean
-  maxAlternatives: number
-  start: () => void
-  stop: () => void
-  abort: () => void
-}
-type RecognitionEvent = Event & {
-  resultIndex: number
-  results: ArrayLike<ArrayLike<{ transcript: string; confidence: number }> & { isFinal: boolean }>
-}
-type RecognitionErrorEvent = Event & { error: string; message?: string }
-
-function getRecognitionConstructor() {
-  if (typeof window === "undefined") return null
-  const scope = window as unknown as Record<string, (new () => Recognition) | undefined>
-  return scope.SpeechRecognition ?? scope.webkitSpeechRecognition ?? null
-}
 
 // What each recognition error usually means, in plain words.
 const errorHints: Record<string, string> = {
@@ -352,6 +337,8 @@ export function VoiceLab() {
           </SettingsGroup>
         ) : null}
       </section>
+
+      <BankNameTest language={language} />
 
       <section className="space-y-3">
         <h3 className="px-3 text-sm font-medium text-muted-foreground">
