@@ -22,44 +22,75 @@ export function groqEnabled() {
 /** A name the user's money is kept under, said as people say it: a wallet as "ví MoMo". */
 export type SpokenAccount = { name: string; wallet?: boolean }
 
-/** Said just before the audio: amounts in the forms people use, without a bank's name. */
-const AMOUNTS = "Ăn sáng 35k tiền mặt. Đổ xăng hết 80 nghìn. Nhận lương 15 củ. Mua điện thoại 7 triệu rưỡi."
+/** Said just before the audio: amounts in the forms people use. */
+const AMOUNTS = "Ăn sáng 35k tiền mặt. Nhận lương 15 củ. Mua xe 7 triệu rưỡi."
 
-/** Each of the user's accounts in a sentence of its own, these in turn. */
-const ACCOUNT_SENTENCES = [
-  (name: string) => `Trả bằng ${name}.`,
-  (name: string) => `Chuyển 500k vào ${name}.`,
-  (name: string) => `Nạp 200 nghìn vào ${name}.`,
-  (name: string) => `Rút 2 triệu từ ${name}.`,
+/**
+ * The banks and wallets most people have, after the user's own, so they come
+ * out spelled as their brands even for someone without them as accounts:
+ * without them in the prompt, Whisper wrote "Việc công bánh" for Vietcombank
+ * and "Tết công bành" for Techcombank.
+ */
+const POPULAR: SpokenAccount[] = [
+  { name: "Vietcombank" },
+  { name: "Techcombank" },
+  { name: "MB Bank" },
+  { name: "MoMo", wallet: true },
+  { name: "BIDV" },
+  { name: "VietinBank" },
+  { name: "Agribank" },
+  { name: "ZaloPay", wallet: true },
+  { name: "VPBank" },
+  { name: "TPBank" },
+  { name: "ACB" },
+  { name: "ShopeePay", wallet: true },
+  { name: "Sacombank" },
+  { name: "VIB" },
+  { name: "HDBank" },
 ]
 
-/** Well under the 224 tokens Groq takes; Vietnamese runs to about one token per two or three characters. */
-const PROMPT_MAX_LENGTH = 400
+/** Two names a sentence, these in turn, as money is talked about: never a bare list. */
+const SENTENCES = [
+  (a: string, b: string) => `Chuyển 2 triệu từ ${a} sang ${b}.`,
+  (a: string, b: string) => `Trả bằng ${a}, còn lại nạp vào ${b}.`,
+  (a: string, b: string) => `Rút 500k ở ${a} rồi gửi ${b}.`,
+]
+
+/** Well under the 224 tokens Whisper keeps; Vietnamese runs to about one token per two characters. */
+const PROMPT_MAX_LENGTH = 340
 
 /**
  * What Whisper is told before the audio. It reads as the text spoken just
  * before, so it is written the way people say money here: amounts in "k",
- * "củ" and "triệu", then the user's own accounts each in a sentence, so their
- * names come out spelled as written. No list of names and no label: Whisper
- * gave back "Tài khoản." for audio it could not make out, and a listed bank
- * the user had not said ("BIDV, Viettel Money"), when the prompt ended in
- * "Tài khoản: …" over every common bank.
+ * "củ" and "triệu", then the user's own accounts and the common banks and
+ * wallets, two to a sentence, so their names come out spelled as written.
+ * Never a list after a label: when the prompt ended in "Tài khoản: …" over
+ * every common bank, Whisper gave back "Tài khoản." for audio it could not
+ * make out, and a listed bank the user had not said ("BIDV, Viettel Money").
  */
 export function transcriptionPrompt(accounts: SpokenAccount[]) {
   // "Tiền mặt" is in the amounts already; "Ví ZaloPay" and the wallet ZaloPay are said alike.
   const seen = new Set<string>(["tiền mặt"])
-  let prompt = AMOUNTS
-  for (const account of accounts) {
+  const names: string[] = []
+  for (const account of [...accounts, ...POPULAR]) {
     const name = account.name.trim()
     const spoken = account.wallet ? `ví ${name}` : name
     const key = spoken.toLocaleLowerCase("vi-VN")
     if (!name || seen.has(key)) continue
     seen.add(key)
-    const sentence = ACCOUNT_SENTENCES[(seen.size - 2) % ACCOUNT_SENTENCES.length](spoken)
-    if (prompt.length + sentence.length + 1 > PROMPT_MAX_LENGTH) break
-    prompt = `${prompt} ${sentence}`
+    names.push(spoken)
   }
-  return prompt
+  // Chosen with the user's own first, laid out with them last: Whisper keeps
+  // only the last 224 tokens, and the words nearest the audio weigh most.
+  const sentences: string[] = []
+  let length = AMOUNTS.length
+  for (let index = 0; index + 1 < names.length; index += 2) {
+    const sentence = SENTENCES[(index / 2) % SENTENCES.length](names[index], names[index + 1])
+    if (length + sentence.length + 1 > PROMPT_MAX_LENGTH) break
+    length += sentence.length + 1
+    sentences.push(sentence)
+  }
+  return [AMOUNTS, ...sentences.reverse()].join(" ")
 }
 
 export type VerboseSegment = { text: string; no_speech_prob: number; avg_logprob: number }
