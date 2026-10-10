@@ -1,12 +1,10 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   CheckIcon,
   CircleAlertIcon,
-  CircleCheckIcon,
   ClockIcon,
   ShieldCheckIcon,
   SparklesIcon,
@@ -49,11 +47,11 @@ type PlanScreenProps = {
   paymentOutcome?: PaymentOutcome
 }
 
-type OutcomeTone = "success" | "waiting" | "problem"
+type OutcomeTone = "waiting" | "problem"
 
+// Only what stays true after it is read: money that may have left the bank
+// without Pro yet. Paid, cancelled and expired are a toast (PlanOverlay).
 const outcomeMessages: Partial<Record<PaymentOutcome, { tone: OutcomeTone; title: string; description?: string }>> = {
-  granted: { tone: "success", title: "Đã nâng cấp Pro", description: "Cảm ơn bạn đã tin dùng Finance Tracker." },
-  settled: { tone: "success", title: "Đã nâng cấp Pro", description: "Cảm ơn bạn đã tin dùng Finance Tracker." },
   pending: {
     tone: "waiting",
     title: "Đang chờ xác nhận thanh toán",
@@ -64,12 +62,9 @@ const outcomeMessages: Partial<Record<PaymentOutcome, { tone: OutcomeTone; title
     title: "Số tiền nhận được chưa đủ",
     description: "Quản trị viên sẽ kiểm tra và liên hệ với bạn.",
   },
-  cancelled: { tone: "problem", title: "Thanh toán đã bị huỷ" },
-  expired: { tone: "problem", title: "Phiên thanh toán đã hết hạn", description: "Vui lòng thử lại." },
 }
 
-const outcomeTones: Record<OutcomeTone, { icon: LucideIcon; tone: "income" | "warning" | "expense" }> = {
-  success: { icon: CircleCheckIcon, tone: "income" },
+const outcomeTones: Record<OutcomeTone, { icon: LucideIcon; tone: "warning" | "expense" }> = {
   waiting: { icon: ClockIcon, tone: "warning" },
   problem: { icon: CircleAlertIcon, tone: "expense" },
 }
@@ -140,12 +135,6 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanS
   const [period, setPeriod] = React.useState<PlanPeriod>("year")
   const isPro = planState.plan === "pro"
   const outcome = paymentOutcome ? outcomeMessages[paymentOutcome] : undefined
-  // Paid through payOS: the order the user came back with writes the payment down as an expense.
-  const order = useSearchParams().get("order")
-  const recordHref =
-    order && (paymentOutcome === "granted" || paymentOutcome === "settled")
-      ? `/transactions?order=${encodeURIComponent(order)}`
-      : undefined
   const price = proPrices[period]
   // The order is confirmed, with a coupon if any, in a dialog before payOS.
   const [confirmOpen, setConfirmOpen] = React.useState(false)
@@ -165,13 +154,6 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanS
           tone={outcomeTones[outcome.tone].tone}
           icon={outcomeTones[outcome.tone].icon}
           title={outcome.title}
-          action={
-            recordHref ? (
-              <Button asChild size="sm" variant="secondary">
-                <Link href={recordHref}>Ghi khoản chi</Link>
-              </Button>
-            ) : null
-          }
         >
           {outcome.description}
         </NoticeBanner>
