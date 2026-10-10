@@ -14,6 +14,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { banks, eWallets } from "@/lib/institutions"
 import { normalizeSearchValue } from "@/lib/search-text"
 import { transcribeLabAction } from "@/lib/speech/actions"
+import type { WhisperModel } from "@/lib/speech/groq"
 
 import { getRecognitionConstructor, type Recognition, type RecognitionEvent } from "./speech-recognition"
 import { recordingFormat, SPEECH_BITRATE } from "./whisper-lab"
@@ -21,32 +22,44 @@ import { recordingFormat, SPEECH_BITRATE } from "./whisper-lab"
 /** Times each name is read, to tell a steady mistake from a one-off. */
 const ROUNDS = 3
 /**
- * Quiet after the last words before listening stops on its own. Long enough
- * for Safari's last word to arrive: at 1.5 s, "ZaloPay" came back as "Zalo".
+ * Quiet after the browser's last words before it stops on its own. Long
+ * enough for Safari's last word to arrive: at 1.5 s, "ZaloPay" came back as "Zalo".
  */
 const SILENCE_MS = 2500
-/** The same for a recording, measured on the microphone's level. */
+/** The same while recording, measured on the microphone's level. */
 const RECORDING_SILENCE_MS = 1200
 /** Above this level (RMS) the microphone hears speech. */
 const SPEECH_LEVEL = 0.03
-/** A recording stops here whatever it hears. */
-const MAX_RECORDING_MS = 8000
-const STORAGE_KEY = "voice-lab-bank-test"
+/** Listening stops here whatever it hears. */
+const MAX_LISTENING_MS = 8000
+const STORAGE_KEY = "voice-lab-bank-test-v2"
+/** The first version's results, the browser's alone. */
+const OLD_STORAGE_KEY = "voice-lab-bank-test"
 
-const engines = [
-  { value: "browser", label: "Trình duyệt", name: "Trình duyệt (Web Speech)" },
-  { value: "whisper-large-v3-turbo", label: "Turbo", name: "Whisper large-v3-turbo" },
-  { value: "whisper-large-v3", label: "Large-v3", name: "Whisper large-v3" },
-] as const
-type Engine = (typeof engines)[number]["value"]
+type Recogniser = "browser" | "turbo" | "large"
+
+const recognisers: { key: Recogniser; label: string; name: string; model?: WhisperModel }[] = [
+  { key: "browser", label: "Web", name: "Trình duyệt (Web Speech)" },
+  { key: "turbo", label: "Turbo", name: "Whisper large-v3-turbo", model: "whisper-large-v3-turbo" },
+  { key: "large", label: "Large", name: "Whisper large-v3", model: "whisper-large-v3" },
+]
+
+/** Which recognisers hear the next reading: all three at once, or one. */
+const modes: { value: string; label: string; using: Recogniser[] }[] = [
+  { value: "all", label: "Cả ba", using: ["browser", "turbo", "large"] },
+  ...recognisers.map((item) => ({ value: item.key, label: item.label, using: [item.key] })),
+]
 
 // The banks people here use come first in the list, before the foreign ones (HSBC on).
 const firstForeign = banks.findIndex((bank) => bank.id === "hsbc")
 const names = (withForeign: boolean) =>
   [...(withForeign ? banks : banks.slice(0, firstForeign)), ...eWallets].map((item) => item.shortName)
 
+/** What each recogniser heard in one reading; one left out did not run, or failed. */
+type Attempt = Partial<Record<Recogniser, string>>
+
 type Results = {
-  heard: Record<string, string[]>
+  heard: Record<string, Attempt[]>
   skipped: string[]
   /** Each step in order, for taking the last one back. */
   history: { name: string; kind: "heard" | "skipped" }[]
@@ -58,50 +71,64 @@ const squash = (value: string) => normalizeSearchValue(value).replace(/[^a-z0-9]
 /** Heard as written: the name's letters appear in what came back, case, accents and spaces aside. */
 const isRight = (name: string, heard: string) => squash(heard).includes(squash(name))
 
-// Each engine's results apart, to compare them; the browser's keep the key they started with.
-const storageKey = (engine: Engine) => (engine === "browser" ? STORAGE_KEY : `${STORAGE_KEY}:${engine}`)
+function isResults(value: unknown): value is Results {
+  const results = value as Results | null
+  return Boolean(results && typeof results.heard === "object" && Array.isArray(results.skipped) && Array.isArray(results.history))
+}
 
-function readSaved(engine: Engine): Results {
+function readSaved(): Results {
   try {
-    const saved = JSON.parse(localStorage.getItem(storageKey(engine)) ?? "null") as Results | null
-    if (saved && typeof saved.heard === "object" && Array.isArray(saved.skipped) && Array.isArray(saved.history)) {
-      return saved
+    const saved: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null")
+    if (isResults(saved)) return saved
+    // The first version kept the browser's words as plain strings.
+    const old: unknown = JSON.parse(localStorage.getItem(OLD_STORAGE_KEY) ?? "null")
+    if (isResults(old)) {
+      const heard = Object.fromEntries(
+        Object.entries(old.heard as unknown as Record<string, string[]>).map(([name, texts]) => [
+          name,
+          texts.map((text) => ({ browser: text })),
+        ]),
+      )
+      return { ...old, heard }
     }
   } catch {}
   return empty
 }
 
-function writeSaved(engine: Engine, results: Results) {
+function writeSaved(results: Results) {
   try {
-    localStorage.setItem(storageKey(engine), JSON.stringify(results))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(results))
   } catch {}
 }
 
+/** What a recogniser heard of a name over its readings, and how much of it was right. */
+function score(attempts: Attempt[], name: string, key: Recogniser) {
+  const heard = attempts.flatMap((attempt) => (attempt[key] === undefined ? [] : [attempt[key]!]))
+  return { right: heard.filter((text) => isRight(name, text)).length, total: heard.length, heard }
+}
+
 /**
- * Each bank and wallet name read a few times, through the browser's own
- * recogniser or Whisper (with the app's prompt), with what came back kept
- * and copied as text: shows which names each gets wrong, and whether always
- * the same way, to be put right after it.
+ * Each bank and wallet name read a few times, heard by the browser's own
+ * recogniser and Whisper (with the app's prompt) from the same reading, with
+ * what each made of it kept and copied as text: shows which names each gets
+ * wrong, and whether always the same way, to be put right after it.
  */
 export function BankNameTest({ language }: { language: string }) {
   const [withForeign, setWithForeign] = React.useState(false)
-  const [engine, setEngine] = React.useState<Engine>("browser")
+  const [mode, setMode] = React.useState("all")
   // Kept on this phone, so a reload halfway through a long list loses nothing.
   // The lab only opens in a sheet after a tap, so this never renders on the server.
-  const [all, setAll] = React.useState<Partial<Record<Engine, Results>>>(() =>
-    typeof window === "undefined" ? {} : Object.fromEntries(engines.map(({ value }) => [value, readSaved(value)])),
-  )
+  const [results, setResults] = React.useState<Results>(() => (typeof window === "undefined" ? empty : readSaved()))
   const [phase, setPhase] = React.useState<"idle" | "listening" | "sending">("idle")
   const [live, setLive] = React.useState("")
   const stopRef = React.useRef<(() => void) | null>(null)
   const cancelRef = React.useRef<(() => void) | null>(null)
 
-  const results = all[engine] ?? empty
-  const update = (target: Engine, change: (previous: Results) => Results) =>
-    setAll((previous) => {
-      const next = change(previous[target] ?? empty)
-      writeSaved(target, next)
-      return { ...previous, [target]: next }
+  const update = (change: (previous: Results) => Results) =>
+    setResults((previous) => {
+      const next = change(previous)
+      writeSaved(next)
+      return next
     })
 
   React.useEffect(() => () => cancelRef.current?.(), [])
@@ -110,19 +137,14 @@ export function BankNameTest({ language }: { language: string }) {
   const current = list.find((name) => !results.skipped.includes(name) && (results.heard[name]?.length ?? 0) < ROUNDS)
   const round = current ? (results.heard[current]?.length ?? 0) + 1 : 0
   const done = list.filter((name) => (results.heard[name]?.length ?? 0) > 0)
+  const using = modes.find((item) => item.value === mode)?.using ?? []
 
-  const keep = (target: Engine, name: string, text: string) =>
-    update(target, (previous) => ({
-      ...previous,
-      heard: { ...previous.heard, [name]: [...(previous.heard[name] ?? []), text] },
-      history: [...previous.history, { name, kind: "heard" }],
-    }))
-
-  function listenInBrowser(name: string) {
+  /** The browser's recogniser, until stop(); `done` gives its words, or undefined when it failed. */
+  function startBrowser(onSilence: (() => void) | null) {
     const Constructor = getRecognitionConstructor()
     if (!Constructor) {
       toast.error("Trình duyệt này không hỗ trợ nhận dạng giọng nói.")
-      return
+      return null
     }
     const recogniser: Recognition = new Constructor()
     recogniser.lang = language
@@ -133,47 +155,50 @@ export function BankNameTest({ language }: { language: string }) {
     let text = ""
     let failed = false
     let silence: number | undefined
-    recogniser.addEventListener("result", (event) => {
-      const { results: heard } = event as RecognitionEvent
-      text = Array.from(heard, (result) => result[0].transcript).join(" ").replace(/\s+/g, " ").trim()
-      setLive(text)
-      window.clearTimeout(silence)
-      silence = window.setTimeout(() => recogniser.stop(), SILENCE_MS)
+    const finished = new Promise<string | undefined>((resolve) => {
+      recogniser.addEventListener("result", (event) => {
+        const { results: heard } = event as RecognitionEvent
+        text = Array.from(heard, (result) => result[0].transcript).join(" ").replace(/\s+/g, " ").trim()
+        setLive(text)
+        if (onSilence) {
+          window.clearTimeout(silence)
+          silence = window.setTimeout(onSilence, SILENCE_MS)
+        }
+      })
+      recogniser.addEventListener("error", (event) => {
+        const { error } = event as Event & { error: string }
+        if (error === "no-speech" || error === "aborted") return
+        // Not a hearing: the microphone or the service failed, so nothing is kept.
+        failed = true
+        toast.error(`Trình duyệt: ${error}`)
+      })
+      // Whatever Safari sends after stop() comes before "end", so the last word is in.
+      recogniser.addEventListener("end", () => {
+        window.clearTimeout(silence)
+        resolve(failed ? undefined : text)
+      })
     })
-    recogniser.addEventListener("error", (event) => {
-      const { error } = event as Event & { error: string }
-      if (error === "no-speech" || error === "aborted") return
-      // Not a hearing: the microphone or the service failed, so nothing is kept.
-      failed = true
-      toast.error(`Lỗi nhận dạng: ${error}`)
-    })
-    // Whatever Safari sends after stop() comes before "end", so the last word is in.
-    recogniser.addEventListener("end", () => {
-      window.clearTimeout(silence)
-      stopRef.current = null
-      cancelRef.current = null
-      setPhase("idle")
-      setLive("")
-      if (!failed) keep("browser", name, text)
-    })
-    stopRef.current = () => recogniser.stop()
-    cancelRef.current = () => {
-      window.clearTimeout(silence)
-      recogniser.abort()
-    }
-    setLive("")
     try {
       recogniser.start()
-      setPhase("listening")
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error))
+      return null
+    }
+    return {
+      done: finished,
+      stop: () => recogniser.stop(),
+      abort: () => {
+        window.clearTimeout(silence)
+        recogniser.abort()
+      },
     }
   }
 
-  async function listenWithWhisper(name: string, model: Exclude<Engine, "browser">) {
+  /** A recording that ends by itself after the speech; `done` gives the audio. */
+  async function startRecording(onSilence: () => void) {
     if (typeof MediaRecorder === "undefined" || !navigator.mediaDevices?.getUserMedia) {
       toast.error("Trình duyệt này không ghi âm được.")
-      return
+      return null
     }
     let stream: MediaStream
     try {
@@ -182,7 +207,7 @@ export function BankNameTest({ language }: { language: string }) {
       })
     } catch (error) {
       toast.error(`Không mở được micro: ${error instanceof Error ? error.name : String(error)}`)
-      return
+      return null
     }
     const format = recordingFormat()
     const recorder = new MediaRecorder(stream, {
@@ -190,9 +215,8 @@ export function BankNameTest({ language }: { language: string }) {
       audioBitsPerSecond: SPEECH_BITRATE,
     })
     const chunks: Blob[] = []
-    let cancelled = false
 
-    // Stops by itself once the speech is over, as the browser's recogniser does.
+    // Ends once the speech is over, as the browser's recogniser does.
     const context = new AudioContext()
     const analyser = context.createAnalyser()
     analyser.fftSize = 1024
@@ -207,10 +231,7 @@ export function BankNameTest({ language }: { language: string }) {
       const now = performance.now()
       startedAt ||= now
       if (rms > SPEECH_LEVEL) lastLoud = now
-      if ((lastLoud && now - lastLoud > RECORDING_SILENCE_MS) || now - startedAt > MAX_RECORDING_MS) {
-        if (recorder.state === "recording") recorder.stop()
-        return
-      }
+      if ((lastLoud && now - lastLoud > RECORDING_SILENCE_MS) || now - startedAt > MAX_LISTENING_MS) return onSilence()
       frame = requestAnimationFrame(watch)
     }
     const release = () => {
@@ -219,51 +240,110 @@ export function BankNameTest({ language }: { language: string }) {
       void context.close()
     }
 
-    recorder.addEventListener("dataavailable", (event) => {
-      if (event.data.size > 0) chunks.push(event.data)
+    const finished = new Promise<File>((resolve) => {
+      recorder.addEventListener("dataavailable", (event) => {
+        if (event.data.size > 0) chunks.push(event.data)
+      })
+      recorder.addEventListener("stop", () => {
+        release()
+        const audio = new Blob(chunks, { type: recorder.mimeType || format.type || "audio/webm" })
+        resolve(new File([audio], `speech.${format.extension}`, { type: audio.type }))
+      })
     })
-    recorder.addEventListener("stop", async () => {
-      release()
-      stopRef.current = null
-      if (cancelled) return
-      setPhase("sending")
-      const audio = new Blob(chunks, { type: recorder.mimeType || format.type || "audio/webm" })
-      const formData = new FormData()
-      formData.append("audio", new File([audio], `speech.${format.extension}`, { type: audio.type }))
-      formData.append("model", model)
-      try {
-        const result = await transcribeLabAction(formData)
-        if (cancelled) return
-        if (result.success) keep(model, name, result.detail.text)
-        else toast.error(result.error)
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : String(error))
-      }
-      cancelRef.current = null
-      setPhase("idle")
-    })
-    stopRef.current = () => {
-      if (recorder.state === "recording") recorder.stop()
-    }
-    cancelRef.current = () => {
-      cancelled = true
-      if (recorder.state === "recording") recorder.stop()
-      else release()
-    }
     recorder.start()
     watch()
-    setLive("")
-    setPhase("listening")
+    return {
+      done: finished,
+      stop: () => {
+        cancelAnimationFrame(frame)
+        if (recorder.state === "recording") recorder.stop()
+      },
+    }
   }
 
-  function listen() {
+  async function whisper(file: File, model: WhisperModel) {
+    const formData = new FormData()
+    formData.append("audio", file)
+    formData.append("model", model)
+    try {
+      const result = await transcribeLabAction(formData)
+      if (result.success) return result.detail.text
+      toast.error(result.error)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : String(error))
+    }
+    return undefined
+  }
+
+  async function listen() {
     if (!current) return
-    if (engine === "browser") listenInBrowser(current)
-    else void listenWithWhisper(current, engine)
+    const name = current
+    const models = recognisers.filter((item) => item.model && using.includes(item.key))
+    let cancelled = false
+    let stopped = false
+    let recording: Awaited<ReturnType<typeof startRecording>> = null
+    let browser: ReturnType<typeof startBrowser> = null
+    const stopAll = () => {
+      if (stopped) return
+      stopped = true
+      recording?.stop()
+      browser?.stop()
+    }
+
+    setLive("")
+    setPhase("listening")
+    // The recording first: on an iPhone the recogniser, opened second, may not get the microphone.
+    if (models.length > 0) {
+      recording = await startRecording(stopAll)
+      if (!recording) return setPhase("idle")
+    }
+    // With a recording, the microphone's level says when the speech is over; alone, the recogniser's words do.
+    if (using.includes("browser")) browser = startBrowser(recording ? null : stopAll)
+    if (!recording && !browser) return setPhase("idle")
+    // Nothing heard at all: stopped anyway.
+    const limit = window.setTimeout(stopAll, MAX_LISTENING_MS + 1000)
+
+    stopRef.current = stopAll
+    cancelRef.current = () => {
+      cancelled = true
+      window.clearTimeout(limit)
+      recording?.stop()
+      browser?.abort()
+    }
+
+    const heardByWhisper: Promise<Partial<Record<Recogniser, string | undefined>>> = recording
+      ? recording.done.then(async (file) => {
+          if (cancelled) return {}
+          setPhase("sending")
+          const texts = await Promise.all(models.map((item) => whisper(file, item.model!)))
+          return Object.fromEntries(models.map((item, index) => [item.key, texts[index]]))
+        })
+      : Promise.resolve({})
+    const [browserText, whisperTexts] = await Promise.all([browser?.done, heardByWhisper])
+    window.clearTimeout(limit)
+    stopRef.current = null
+    cancelRef.current = null
+    if (cancelled) return
+    setPhase("idle")
+    setLive("")
+
+    const attempt: Attempt = {}
+    if (browserText !== undefined) attempt.browser = browserText
+    for (const item of models) {
+      const text = whisperTexts[item.key]
+      if (text !== undefined) attempt[item.key] = text
+    }
+    // Every recogniser failed: nothing to keep, the same reading is asked again.
+    if (Object.keys(attempt).length === 0) return
+    update((previous) => ({
+      ...previous,
+      heard: { ...previous.heard, [name]: [...(previous.heard[name] ?? []), attempt] },
+      history: [...previous.history, { name, kind: "heard" }],
+    }))
   }
 
   function undo() {
-    update(engine, (previous) => {
+    update((previous) => {
       const last = previous.history.at(-1)
       if (!last) return previous
       return {
@@ -278,21 +358,21 @@ export function BankNameTest({ language }: { language: string }) {
   }
 
   async function copy() {
-    const lines = done.map((name) => {
-      const heard = results.heard[name] ?? []
-      const right = heard.filter((text) => isRight(name, text)).length
-      return `${name} (${right}/${heard.length}) → ${heard.map((text) => text || "∅").join(" | ")}`
+    // One section per recogniser that heard anything, with its score over all names.
+    const sections = recognisers.flatMap((item) => {
+      const rows = done.flatMap((name) => {
+        const { right, total, heard } = score(results.heard[name] ?? [], name, item.key)
+        return total
+          ? [{ line: `${name} (${right}/${total}) → ${heard.map((text) => text || "∅").join(" | ")}`, right, total }]
+          : []
+      })
+      if (rows.length === 0) return []
+      const right = rows.reduce((sum, row) => sum + row.right, 0)
+      const total = rows.reduce((sum, row) => sum + row.total, 0)
+      const detail = item.model ? "có prompt" : language
+      return [`## ${item.name} · ${detail} · đúng ${right}/${total}`, ...rows.map((row) => row.line), ""]
     })
-    const total = done.reduce((sum, name) => sum + (results.heard[name]?.length ?? 0), 0)
-    const right = done.reduce(
-      (sum, name) => sum + (results.heard[name] ?? []).filter((text) => isRight(name, text)).length,
-      0,
-    )
-    const label = engines.find((item) => item.value === engine)?.name
-    const report = [
-      `# ${label} · ${engine === "browser" ? language : "có prompt"} · đúng ${right}/${total} · ${navigator.userAgent}`,
-      ...lines,
-    ].join("\n")
+    const report = [`# ${navigator.userAgent}`, "", ...sections].join("\n").trim()
     try {
       await navigator.clipboard.writeText(report)
       toast.success(`Đã sao chép ${done.length} tên.`)
@@ -308,15 +388,15 @@ export function BankNameTest({ language }: { language: string }) {
       <h3 className="px-3 text-sm font-medium text-muted-foreground">Đọc tên ngân hàng</h3>
       <ToggleGroup
         type="single"
-        value={engine}
+        value={mode}
         onValueChange={(value) => {
-          if (value) setEngine(value as Engine)
+          if (value) setMode(value)
         }}
         className="flex-wrap"
         aria-label="Bộ nhận dạng"
         disabled={busy}
       >
-        {engines.map((item) => (
+        {modes.map((item) => (
           <ToggleGroupItem key={item.value} value={item.value}>
             {item.label}
           </ToggleGroupItem>
@@ -352,7 +432,7 @@ export function BankNameTest({ language }: { language: string }) {
           type="button"
           variant={phase === "listening" ? "destructive" : "default"}
           disabled={!current || phase === "sending"}
-          onClick={() => (phase === "listening" ? stopRef.current?.() : listen())}
+          onClick={() => (phase === "listening" ? stopRef.current?.() : void listen())}
         >
           {phase === "sending" ? <Spinner /> : phase === "listening" ? <SquareIcon /> : <MicIcon />}
           {phase === "listening" ? "Dừng" : "Nghe"}
@@ -365,7 +445,7 @@ export function BankNameTest({ language }: { language: string }) {
           disabled={busy || !current}
           onClick={() =>
             current &&
-            update(engine, (previous) => ({
+            update((previous) => ({
               ...previous,
               skipped: [...previous.skipped, current],
               history: [...previous.history, { name: current, kind: "skipped" }],
@@ -390,14 +470,20 @@ export function BankNameTest({ language }: { language: string }) {
         <>
           <SettingsGroup title={`Đã nghe (${done.length} tên)`}>
             {[...done].reverse().map((name) => {
-              const heard = results.heard[name] ?? []
+              const attempts = results.heard[name] ?? []
               return (
                 <SettingsRow
                   key={name}
                   title={name}
-                  description={heard.map((text) => text || "∅").join(" · ")}
+                  description={recognisers.map((item) => {
+                    const { right, total, heard } = score(attempts, name, item.key)
+                    return total ? (
+                      <span key={item.key} className="block">
+                        {item.label} {right}/{total}: {heard.map((text) => text || "∅").join(" · ")}
+                      </span>
+                    ) : null
+                  })}
                   fullDescription
-                  value={`${heard.filter((text) => isRight(name, text)).length}/${heard.length}`}
                 />
               )
             })}
@@ -412,7 +498,7 @@ export function BankNameTest({ language }: { language: string }) {
               variant="outline"
               disabled={busy}
               onClick={() => {
-                if (window.confirm("Xoá toàn bộ kết quả đọc tên của bộ nhận dạng này?")) update(engine, () => empty)
+                if (window.confirm("Xoá toàn bộ kết quả đọc tên?")) update(() => empty)
               }}
             >
               Làm lại từ đầu
