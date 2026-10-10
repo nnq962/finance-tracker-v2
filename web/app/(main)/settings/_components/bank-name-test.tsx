@@ -14,8 +14,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { banks, eWallets } from "@/lib/institutions"
 import { normalizeSearchValue } from "@/lib/search-text"
 import { normalizeTranscript } from "@/lib/speech/normalize"
-import { transcribeLabAction } from "@/lib/speech/actions"
-import type { WhisperModel } from "@/lib/speech/groq"
+import { transcribeGeminiLabAction, transcribeLabAction } from "@/lib/speech/actions"
 
 import { getRecognitionConstructor, type Recognition, type RecognitionEvent } from "./speech-recognition"
 import { recordingFormat, SPEECH_BITRATE } from "./whisper-lab"
@@ -37,18 +36,23 @@ const STORAGE_KEY = "voice-lab-bank-test-v2"
 /** The first version's results, the browser's alone. */
 const OLD_STORAGE_KEY = "voice-lab-bank-test"
 
-type Recogniser = "browser" | "turbo" | "large"
+type Recogniser = "browser" | "turbo" | "large" | "gemini35" | "gemini31"
 
-const recognisers: { key: Recogniser; label: string; name: string; model?: WhisperModel }[] = [
+/** The browser's own, or one the recording is sent to on the server, with the model. */
+const recognisers: { key: Recogniser; label: string; name: string; engine?: "whisper" | "gemini"; model?: string }[] = [
   { key: "browser", label: "Web", name: "Trình duyệt (Web Speech)" },
-  { key: "turbo", label: "Turbo", name: "Whisper large-v3-turbo", model: "whisper-large-v3-turbo" },
-  { key: "large", label: "Large", name: "Whisper large-v3", model: "whisper-large-v3" },
+  { key: "turbo", label: "Turbo", name: "Whisper large-v3-turbo", engine: "whisper", model: "whisper-large-v3-turbo" },
+  { key: "large", label: "Large", name: "Whisper large-v3", engine: "whisper", model: "whisper-large-v3" },
+  { key: "gemini35", label: "G3.5", name: "Gemini 3.5 Flash Lite", engine: "gemini", model: "gemini-3.5-flash-lite" },
+  { key: "gemini31", label: "G3.1", name: "Gemini 3.1 Flash Lite", engine: "gemini", model: "gemini-3.1-flash-lite" },
 ]
 
-/** Which recognisers hear the next reading: all three at once, or one. */
+/** Which recognisers hear the next reading, from the same recording. */
 const modes: { value: string; label: string; using: Recogniser[] }[] = [
-  { value: "all", label: "Cả ba", using: ["browser", "turbo", "large"] },
-  ...recognisers.map((item) => ({ value: item.key, label: item.label, using: [item.key] })),
+  { value: "all", label: "Tất cả", using: ["browser", "turbo", "large", "gemini35", "gemini31"] },
+  { value: "browser", label: "Web", using: ["browser"] },
+  { value: "whisper", label: "Whisper", using: ["turbo", "large"] },
+  { value: "gemini", label: "Gemini", using: ["gemini35", "gemini31"] },
 ]
 
 /** The prompt Whisper hears the reading with; each keeps its own results, to compare them. */
@@ -69,7 +73,11 @@ const names = (withForeign: boolean) =>
  * does; one left out did not run, or failed. `raw`: what it said before that,
  * where it differs.
  */
-type Attempt = Partial<Record<Recogniser, string>> & { raw?: Partial<Record<Recogniser, string>> }
+type Attempt = Partial<Record<Recogniser, string>> & {
+  raw?: Partial<Record<Recogniser, string>>
+  /** How long each server recogniser's call took. */
+  ms?: Partial<Record<Recogniser, number>>
+}
 
 type Results = {
   heard: Record<string, Attempt[]>
@@ -321,15 +329,29 @@ export function BankNameTest({ language }: { language: string }) {
     }
   }
 
-  async function whisper(file: File, model: WhisperModel) {
+  async function whisper(file: File, model: string) {
     const formData = new FormData()
     formData.append("audio", file)
     formData.append("model", model)
     formData.append("prompt", promptKind)
     try {
       const result = await transcribeLabAction(formData)
-      if (result.success) return { text: result.detail.text, raw: result.detail.rawText }
+      if (result.success) return { text: result.detail.text, raw: result.detail.rawText, ms: result.detail.groqMs }
       toast.error(result.error)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : String(error))
+    }
+    return undefined
+  }
+
+  async function gemini(file: File, model: string) {
+    const formData = new FormData()
+    formData.append("audio", file)
+    formData.append("model", model)
+    try {
+      const result = await transcribeGeminiLabAction(formData)
+      if (result.success) return { text: result.text, raw: result.rawText, ms: result.ms }
+      toast.error(`${model}: ${result.error}`)
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error))
     }
@@ -373,11 +395,13 @@ export function BankNameTest({ language }: { language: string }) {
       browser?.abort()
     }
 
-    const heardByWhisper: Promise<Partial<Record<Recogniser, { text: string; raw: string } | undefined>>> = recording
+    const heardByWhisper: Promise<Partial<Record<Recogniser, { text: string; raw: string; ms: number } | undefined>>> = recording
       ? recording.done.then(async (file) => {
           if (cancelled) return {}
           setPhase("sending")
-          const texts = await Promise.all(models.map((item) => whisper(file, item.model!)))
+          const texts = await Promise.all(
+            models.map((item) => (item.engine === "gemini" ? gemini(file, item.model!) : whisper(file, item.model!))),
+          )
           return Object.fromEntries(models.map((item, index) => [item.key, texts[index]]))
         })
       : Promise.resolve({})
@@ -391,6 +415,7 @@ export function BankNameTest({ language }: { language: string }) {
 
     const attempt: Attempt = {}
     const raw: Partial<Record<Recogniser, string>> = {}
+    const ms: Partial<Record<Recogniser, number>> = {}
     if (browserText !== undefined) {
       // As dictation does with the browser's words.
       attempt.browser = normalizeTranscript(browserText)
@@ -401,10 +426,12 @@ export function BankNameTest({ language }: { language: string }) {
       if (heard === undefined) continue
       attempt[item.key] = heard.text
       raw[item.key] = heard.raw
+      ms[item.key] = heard.ms
     }
     // Every recogniser failed: nothing to keep, the same reading is asked again.
     if (Object.keys(attempt).length === 0) return
     attempt.raw = raw
+    attempt.ms = ms
     update((previous) => ({
       ...previous,
       heard: { ...previous.heard, [name]: [...(previous.heard[name] ?? []), attempt] },
@@ -439,8 +466,16 @@ export function BankNameTest({ language }: { language: string }) {
       if (rows.length === 0) return []
       const right = rows.reduce((sum, row) => sum + row.right, 0)
       const total = rows.reduce((sum, row) => sum + row.total, 0)
-      const detail = item.model ? `prompt: ${prompts.find((kind) => kind.value === promptKind)?.name}` : language
-      return [`## ${item.name} · ${detail} · đúng ${right}/${total}`, ...rows.map((row) => row.line), ""]
+      const detail =
+        item.engine === "whisper"
+          ? `prompt: ${prompts.find((kind) => kind.value === promptKind)?.name}`
+          : item.engine === "gemini"
+            ? "lời dặn có tên"
+            : language
+      // The wait each call took on the server, on average, for the recognisers that send the audio away.
+      const times = done.flatMap((name) => (results.heard[name] ?? []).flatMap((attempt) => attempt.ms?.[item.key] ?? []))
+      const wait = times.length ? ` · trung bình ${Math.round(times.reduce((sum, time) => sum + time, 0) / times.length)} ms` : ""
+      return [`## ${item.name} · ${detail} · đúng ${right}/${total}${wait}`, ...rows.map((row) => row.line), ""]
     })
     const report = [`# ${navigator.userAgent}`, "", ...sections].join("\n").trim()
     try {

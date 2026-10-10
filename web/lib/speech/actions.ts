@@ -5,6 +5,8 @@ import type { Account } from "@/lib/accounts/types"
 import { requireSession } from "@/lib/auth/session"
 import { getInstitution } from "@/lib/institutions"
 import { requireAdmin } from "@/lib/plans/admin"
+import { GEMINI_MODELS, geminiEnabled, transcribeWithGemini, type GeminiModel } from "@/lib/speech/gemini"
+import { normalizeTranscript } from "@/lib/speech/normalize"
 import {
   GroqError,
   groqEnabled,
@@ -12,6 +14,7 @@ import {
   transcribe,
   transcribeDetailed,
   namesPrompt,
+  spokenNames,
   transcriptionPrompt,
   WHISPER_MODELS,
   type SpokenAccount,
@@ -122,5 +125,26 @@ export async function transcribeLabAction(formData: FormData): Promise<
     return { success: true, detail, prompt, accountsMs, serverMs, ...(pingMs !== undefined ? { pingMs } : {}) }
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : "Không nhận dạng được." }
+  }
+}
+
+/**
+ * A recording through Gemini Flash-Lite, told the user's accounts and the
+ * common banks to spell. Admins only, for the voice lab's comparison.
+ */
+export async function transcribeGeminiLabAction(
+  formData: FormData,
+): Promise<{ success: true; text: string; rawText: string; ms: number } | { success: false; error: string }> {
+  const admin = await requireAdmin()
+  if (!geminiEnabled()) return { success: false, error: "Chưa có GEMINI_API_KEY trên máy chủ." }
+  const audio = formData.get("audio")
+  if (!(audio instanceof File) || audio.size === 0) return { success: false, error: "Không nhận được âm thanh." }
+  const model = GEMINI_MODELS.find((name) => name === formData.get("model")) ?? GEMINI_MODELS[0]
+  try {
+    const accounts = await getAccounts(admin.uid)
+    const { text, ms } = await transcribeWithGemini(audio, spokenNames(accountNames(accounts)), model as GeminiModel)
+    return { success: true, text: normalizeTranscript(text), rawText: text, ms }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : "Gemini không nhận dạng được." }
   }
 }

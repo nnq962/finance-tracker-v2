@@ -101,7 +101,7 @@ export function namesPrompt(accounts: SpokenAccount[]) {
 }
 
 /** The user's accounts, then the common banks and wallets, each once, as said: a wallet as "ví MoMo". */
-function spokenNames(accounts: SpokenAccount[]) {
+export function spokenNames(accounts: SpokenAccount[]) {
   // "Tiền mặt" is in the amounts already; "Ví ZaloPay" and the wallet ZaloPay are said alike.
   const seen = new Set<string>(["tiền mặt"])
   const names: string[] = []
