@@ -17,17 +17,18 @@ import { normalizeTranscript } from "@/lib/speech/normalize"
 import { transcribeLabAction, transcribeSherpaLabAction } from "@/lib/speech/actions"
 
 import { getRecognitionConstructor, type Recognition, type RecognitionEvent } from "./speech-recognition"
+import { spokenAmounts } from "./spoken-amounts"
 import { recordingFormat, SPEECH_BITRATE } from "./whisper-lab"
 
-/** Times each name is read, to tell a steady mistake from a one-off. */
-const ROUNDS = 3
+/** Times each name is read, to tell a steady mistake from a one-off; a sentence, longer, twice. */
+const ROUNDS = { names: 3, sentences: 2 } as const
 /**
  * Quiet after the browser's last words before it stops on its own. Long
  * enough for Safari's last word to arrive: at 1.5 s, "ZaloPay" came back as "Zalo".
  */
 const SILENCE_MS = 2500
-/** The same while recording, measured on the microphone's level. */
-const RECORDING_SILENCE_MS = 1200
+/** The same while recording, measured on the microphone's level; a sentence has pauses inside it. */
+const RECORDING_SILENCE_MS = { names: 1200, sentences: 1600 } as const
 /** Above this level (RMS) the microphone hears speech. */
 const SPEECH_LEVEL = 0.03
 /** Listening stops here whatever it hears. */
@@ -56,11 +57,34 @@ const modes: { value: string; label: string; using: Recogniser[] }[] = [
 
 /** The prompt Whisper hears the reading with; each keeps its own results, to compare them. */
 const prompts = [
-  { value: "full", label: "Câu", name: "câu số tiền + câu có tên (đang dùng)" },
+  { value: "full", label: "Câu khung", name: "câu số tiền + câu có tên (đang dùng)" },
   { value: "names", label: "Tên trần", name: "câu số tiền + tên trần" },
   { value: "off", label: "Không", name: "không prompt" },
 ] as const
 type PromptKind = (typeof prompts)[number]["value"]
+
+/** What is read: bank and wallet names alone, or sentences as people enter money, with a sum each. */
+const tests = [
+  { value: "names", label: "Tên" },
+  { value: "sentences", label: "Câu" },
+] as const
+type TestKind = (typeof tests)[number]["value"]
+
+/** Sentences as people say them, each with its sum and the names it holds, to mark both. */
+const SENTENCES: { text: string; amount: number; names: string[] }[] = [
+  { text: "Ăn trưa 45 nghìn trả bằng MoMo", amount: 45_000, names: ["MoMo"] },
+  { text: "Chuyển 2 triệu từ Vietcombank sang TPBank", amount: 2_000_000, names: ["Vietcombank", "TPBank"] },
+  { text: "Đổ xăng 80k bằng thẻ Techcombank", amount: 80_000, names: ["Techcombank"] },
+  { text: "Nhận lương 15 triệu vào MB Bank", amount: 15_000_000, names: ["MB Bank"] },
+  { text: "Rút 3 triệu rưỡi ở BIDV", amount: 3_500_000, names: ["BIDV"] },
+  { text: "Trả tiền điện 520 nghìn qua VPBank", amount: 520_000, names: ["VPBank"] },
+  { text: "Nạp 200 nghìn vào ví ZaloPay", amount: 200_000, names: ["ZaloPay"] },
+  { text: "Mua đồ 249 nghìn trả bằng ShopeePay", amount: 249_000, names: ["ShopeePay"] },
+  { text: "Cà phê 35k trả bằng ACB", amount: 35_000, names: ["ACB"] },
+  { text: "Cho Minh vay 1 triệu 2 qua Agribank", amount: 1_200_000, names: ["Agribank"] },
+  { text: "Tiền nhà 4 triệu 500 qua VietinBank", amount: 4_500_000, names: ["VietinBank"] },
+  { text: "Tiêu 1 củ 5 bằng tiền mặt", amount: 1_500_000, names: ["tiền mặt"] },
+]
 
 // The banks people here use come first in the list, before the foreign ones (HSBC on).
 const firstForeign = banks.findIndex((bank) => bank.id === "hsbc")
@@ -91,19 +115,33 @@ const squash = (value: string) => normalizeSearchValue(value).replace(/[^a-z0-9]
 /** Heard as written: the name's letters appear in what came back, case, accents and spaces aside. */
 const isRight = (name: string, heard: string) => squash(heard).includes(squash(name))
 
+/** For a sentence: whether every name in it came back, and its sum. A name alone has only the name. */
+function judge(item: string, heard: string) {
+  const sentence = SENTENCES.find((entry) => entry.text === item)
+  if (!sentence) return { name: isRight(item, heard) }
+  return {
+    name: sentence.names.every((name) => isRight(name, heard)),
+    amount: spokenAmounts(heard).includes(sentence.amount),
+  }
+}
+
 function isResults(value: unknown): value is Results {
   const results = value as Results | null
   return Boolean(results && typeof results.heard === "object" && Array.isArray(results.skipped) && Array.isArray(results.history))
 }
 
-// Dictation's prompt keeps the key its results started under.
-const storageKey = (kind: PromptKind) => (kind === "full" ? STORAGE_KEY : `${STORAGE_KEY}:${kind}`)
+// Names with dictation's prompt keep the key their results started under.
+const storageKey = (test: TestKind, kind: PromptKind) =>
+  test === "sentences" ? `${STORAGE_KEY}:sentences:${kind}` : kind === "full" ? STORAGE_KEY : `${STORAGE_KEY}:${kind}`
 
-function readSaved(kind: PromptKind): Results {
+/** The results of one test with one prompt, as kept in the state. */
+const slot = (test: TestKind, kind: PromptKind) => `${test}:${kind}`
+
+function readSaved(test: TestKind, kind: PromptKind): Results {
   try {
-    const saved: unknown = JSON.parse(localStorage.getItem(storageKey(kind)) ?? "null")
+    const saved: unknown = JSON.parse(localStorage.getItem(storageKey(test, kind)) ?? "null")
     if (isResults(saved)) return saved
-    if (kind !== "full") return empty
+    if (test !== "names" || kind !== "full") return empty
     // The first version kept the browser's words as plain strings.
     const old: unknown = JSON.parse(localStorage.getItem(OLD_STORAGE_KEY) ?? "null")
     if (isResults(old)) {
@@ -119,9 +157,9 @@ function readSaved(kind: PromptKind): Results {
   return empty
 }
 
-function writeSaved(kind: PromptKind, results: Results) {
+function writeSaved(test: TestKind, kind: PromptKind, results: Results) {
   try {
-    localStorage.setItem(storageKey(kind), JSON.stringify(results))
+    localStorage.setItem(storageKey(test, kind), JSON.stringify(results))
   } catch {}
 }
 
@@ -135,8 +173,11 @@ function closeMicrophone(ref: React.RefObject<Microphone | null>) {
   void open.context.close()
 }
 
-/** What a recogniser heard of a name over its readings, and how much of it was right. */
-function score(attempts: Attempt[], name: string, key: Recogniser) {
+/**
+ * What a recogniser heard of a name or sentence over its readings, and how
+ * much of it was right: the names, and for a sentence the sum and both.
+ */
+function score(attempts: Attempt[], item: string, key: Recogniser) {
   const heard = attempts.flatMap((attempt) => {
     const text = attempt[key]
     if (text === undefined) return []
@@ -144,8 +185,19 @@ function score(attempts: Attempt[], name: string, key: Recogniser) {
     // Put right after hearing: what it was shows after an arrow.
     return [`${text || "∅"}${raw !== undefined && raw !== text ? ` ← ${raw || "∅"}` : ""}`]
   })
-  const right = attempts.filter((attempt) => attempt[key] !== undefined && isRight(name, attempt[key]!)).length
-  return { right, total: heard.length, heard }
+  const marks = attempts.flatMap((attempt) => (attempt[key] === undefined ? [] : [judge(item, attempt[key]!)]))
+  return {
+    right: marks.filter((mark) => mark.name).length,
+    amounts: marks.filter((mark) => mark.amount).length,
+    both: marks.filter((mark) => mark.name && mark.amount).length,
+    total: heard.length,
+    heard,
+  }
+}
+
+/** A score as words, for a row or the copy: "tên 2/2 · tiền 1/2" for sentences. */
+function scoreText(test: TestKind, { right, amounts, both, total }: ReturnType<typeof score>) {
+  return test === "sentences" ? `tên ${right}/${total} · tiền ${amounts}/${total} · cả hai ${both}/${total}` : `${right}/${total}`
 }
 
 /**
@@ -155,27 +207,32 @@ function score(attempts: Attempt[], name: string, key: Recogniser) {
  * wrong, and whether always the same way, to be put right after it.
  */
 export function BankNameTest({ language }: { language: string }) {
+  const [test, setTest] = React.useState<TestKind>("names")
   const [withForeign, setWithForeign] = React.useState(false)
   const [mode, setMode] = React.useState("all")
   // Kept on this phone, so a reload halfway through a long list loses nothing.
   // The lab only opens in a sheet after a tap, so this never renders on the server.
   const [promptKind, setPromptKind] = React.useState<PromptKind>("full")
-  const [all, setAll] = React.useState<Partial<Record<PromptKind, Results>>>(() =>
-    typeof window === "undefined" ? {} : Object.fromEntries(prompts.map(({ value }) => [value, readSaved(value)])),
+  const [all, setAll] = React.useState<Record<string, Results>>(() =>
+    typeof window === "undefined"
+      ? {}
+      : Object.fromEntries(
+          tests.flatMap(({ value: kind }) => prompts.map(({ value }) => [slot(kind, value), readSaved(kind, value)])),
+        ),
   )
-  const results = all[promptKind] ?? empty
+  const results = all[slot(test, promptKind)] ?? empty
   const [phase, setPhase] = React.useState<"idle" | "listening" | "sending">("idle")
   const [live, setLive] = React.useState("")
   const stopRef = React.useRef<(() => void) | null>(null)
   const cancelRef = React.useRef<(() => void) | null>(null)
   const micRef = React.useRef<Microphone | null>(null)
 
-  // The prompt's results the change is for: the one shown, which cannot change while listening.
+  // The results the change is for: the ones shown, which cannot change while listening.
   const update = (change: (previous: Results) => Results) =>
     setAll((previous) => {
-      const next = change(previous[promptKind] ?? empty)
-      writeSaved(promptKind, next)
-      return { ...previous, [promptKind]: next }
+      const next = change(previous[slot(test, promptKind)] ?? empty)
+      writeSaved(test, promptKind, next)
+      return { ...previous, [slot(test, promptKind)]: next }
     })
 
   React.useEffect(
@@ -186,8 +243,9 @@ export function BankNameTest({ language }: { language: string }) {
     [],
   )
 
-  const list = names(withForeign)
-  const current = list.find((name) => !results.skipped.includes(name) && (results.heard[name]?.length ?? 0) < ROUNDS)
+  const list = test === "sentences" ? SENTENCES.map((entry) => entry.text) : names(withForeign)
+  const rounds = ROUNDS[test]
+  const current = list.find((name) => !results.skipped.includes(name) && (results.heard[name]?.length ?? 0) < rounds)
   const round = current ? (results.heard[current]?.length ?? 0) + 1 : 0
   const done = list.filter((name) => (results.heard[name]?.length ?? 0) > 0)
   const using = modes.find((item) => item.value === mode)?.using ?? []
@@ -303,7 +361,7 @@ export function BankNameTest({ language }: { language: string }) {
       const now = performance.now()
       startedAt ||= now
       if (rms > SPEECH_LEVEL) lastLoud = now
-      if ((lastLoud && now - lastLoud > RECORDING_SILENCE_MS) || now - startedAt > MAX_LISTENING_MS) return onSilence()
+      if ((lastLoud && now - lastLoud > RECORDING_SILENCE_MS[test]) || now - startedAt > MAX_LISTENING_MS) return onSilence()
       frame = requestAnimationFrame(watch)
     }
     const finished = new Promise<File>((resolve) => {
@@ -456,14 +514,18 @@ export function BankNameTest({ language }: { language: string }) {
     // One section per recogniser that heard anything, with its score over all names.
     const sections = recognisers.flatMap((item) => {
       const rows = done.flatMap((name) => {
-        const { right, total, heard } = score(results.heard[name] ?? [], name, item.key)
-        return total
-          ? [{ line: `${name} (${right}/${total}) → ${heard.join(" | ")}`, right, total }]
-          : []
+        const marks = score(results.heard[name] ?? [], name, item.key)
+        return marks.total ? [{ line: `${name} (${scoreText(test, marks)}) → ${marks.heard.join(" | ")}`, marks }] : []
       })
       if (rows.length === 0) return []
-      const right = rows.reduce((sum, row) => sum + row.right, 0)
-      const total = rows.reduce((sum, row) => sum + row.total, 0)
+      const sum = (pick: (marks: ReturnType<typeof score>) => number) => rows.reduce((total, row) => total + pick(row.marks), 0)
+      const overall = {
+        right: sum((marks) => marks.right),
+        amounts: sum((marks) => marks.amounts),
+        both: sum((marks) => marks.both),
+        total: sum((marks) => marks.total),
+        heard: [],
+      }
       const detail =
         item.engine === "whisper"
           ? `prompt: ${prompts.find((kind) => kind.value === promptKind)?.name}`
@@ -473,12 +535,12 @@ export function BankNameTest({ language }: { language: string }) {
       // The wait each call took on the server, on average, for the recognisers that send the audio away.
       const times = done.flatMap((name) => (results.heard[name] ?? []).flatMap((attempt) => attempt.ms?.[item.key] ?? []))
       const wait = times.length ? ` · trung bình ${Math.round(times.reduce((sum, time) => sum + time, 0) / times.length)} ms` : ""
-      return [`## ${item.name} · ${detail} · đúng ${right}/${total}${wait}`, ...rows.map((row) => row.line), ""]
+      return [`## ${item.name} · ${detail} · đúng ${scoreText(test, overall)}${wait}`, ...rows.map((row) => row.line), ""]
     })
-    const report = [`# ${navigator.userAgent}`, "", ...sections].join("\n").trim()
+    const report = [`# ${test === "sentences" ? "Đọc câu" : "Đọc tên"} · ${navigator.userAgent}`, "", ...sections].join("\n").trim()
     try {
       await navigator.clipboard.writeText(report)
-      toast.success(`Đã sao chép ${done.length} tên.`)
+      toast.success(`Đã sao chép ${done.length} ${test === "sentences" ? "câu" : "tên"}.`)
     } catch {
       toast.error("Không sao chép được trên trình duyệt này.")
     }
@@ -488,7 +550,25 @@ export function BankNameTest({ language }: { language: string }) {
 
   return (
     <section className="space-y-3">
-      <h3 className="px-3 text-sm font-medium text-muted-foreground">Đọc tên ngân hàng</h3>
+      <h3 className="px-3 text-sm font-medium text-muted-foreground">Đọc thử tên và câu</h3>
+      <Field orientation="horizontal">
+        <FieldLabel>Bài thử</FieldLabel>
+        <ToggleGroup
+          type="single"
+          value={test}
+          onValueChange={(value) => {
+            if (value) setTest(value as TestKind)
+          }}
+          aria-label="Bài thử"
+          disabled={busy}
+        >
+          {tests.map((item) => (
+            <ToggleGroupItem key={item.value} value={item.value}>
+              {item.label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      </Field>
       <ToggleGroup
         type="single"
         value={mode}
@@ -524,27 +604,33 @@ export function BankNameTest({ language }: { language: string }) {
           ))}
         </ToggleGroup>
       </Field>
-      <Field orientation="horizontal">
-        <FieldLabel htmlFor="bank-test-foreign">Thêm ngân hàng nước ngoài</FieldLabel>
-        <Switch id="bank-test-foreign" checked={withForeign} onCheckedChange={setWithForeign} disabled={busy} />
-      </Field>
+      {test === "names" ? (
+        <Field orientation="horizontal">
+          <FieldLabel htmlFor="bank-test-foreign">Thêm ngân hàng nước ngoài</FieldLabel>
+          <Switch id="bank-test-foreign" checked={withForeign} onCheckedChange={setWithForeign} disabled={busy} />
+        </Field>
+      ) : null}
 
       <Card size="sm">
         <CardContent className="space-y-1 text-center">
           {current ? (
             <>
               <p className="text-xs text-muted-foreground tabular-nums">
-                Tên {list.indexOf(current) + 1}/{list.length} · Lần {round}/{ROUNDS}
+                {test === "sentences" ? "Câu" : "Tên"} {list.indexOf(current) + 1}/{list.length} · Lần {round}/{rounds}
               </p>
-              <p className="text-2xl font-semibold tracking-tight">{current}</p>
+              <p
+                className={test === "sentences" ? "text-xl font-semibold text-balance" : "text-2xl font-semibold tracking-tight"}
+              >
+                {current}
+              </p>
               <p className="min-h-5 text-sm text-muted-foreground" aria-live="polite">
                 {phase === "sending"
                   ? "Đang nhận dạng…"
-                  : live || (phase === "listening" ? "Đang nghe…" : "Bấm Nghe rồi đọc tên này")}
+                  : live || (phase === "listening" ? "Đang nghe…" : `Bấm Nghe rồi đọc ${test === "sentences" ? "câu" : "tên"} này`)}
               </p>
             </>
           ) : (
-            <p className="py-3 text-sm text-muted-foreground">Đã đọc hết danh sách. Sao chép kết quả ở dưới.</p>
+            <p className="py-3 text-sm text-muted-foreground">Đã đọc hết. Sao chép kết quả ở dưới.</p>
           )}
         </CardContent>
       </Card>
@@ -563,7 +649,7 @@ export function BankNameTest({ language }: { language: string }) {
           type="button"
           variant="outline"
           size="icon"
-          aria-label="Bỏ qua tên này"
+          aria-label="Bỏ qua mục này"
           disabled={busy || !current}
           onClick={() =>
             current &&
@@ -590,7 +676,7 @@ export function BankNameTest({ language }: { language: string }) {
 
       {done.length > 0 ? (
         <>
-          <SettingsGroup title={`Đã nghe (${done.length} tên)`}>
+          <SettingsGroup title={`Đã nghe (${done.length} ${test === "sentences" ? "câu" : "tên"})`}>
             {[...done].reverse().map((name) => {
               const attempts = results.heard[name] ?? []
               return (
@@ -598,10 +684,10 @@ export function BankNameTest({ language }: { language: string }) {
                   key={name}
                   title={name}
                   description={recognisers.map((item) => {
-                    const { right, total, heard } = score(attempts, name, item.key)
-                    return total ? (
+                    const marks = score(attempts, name, item.key)
+                    return marks.total ? (
                       <span key={item.key} className="block">
-                        {item.label} {right}/{total}: {heard.join(" · ")}
+                        {item.label} {scoreText(test, marks)}: {marks.heard.join(" · ")}
                       </span>
                     ) : null
                   })}
@@ -620,7 +706,7 @@ export function BankNameTest({ language }: { language: string }) {
               variant="outline"
               disabled={busy}
               onClick={() => {
-                if (window.confirm("Xoá kết quả đọc tên của prompt này?")) update(() => empty)
+                if (window.confirm("Xoá kết quả của bài thử này với prompt này?")) update(() => empty)
               }}
             >
               Làm lại từ đầu
