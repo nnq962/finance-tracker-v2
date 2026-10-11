@@ -21,16 +21,16 @@ export const appNavigationItems: AppNavigationItem[] = [
     icon: LayoutDashboardIcon,
   },
   {
-    title: "Giao dịch",
-    mobileTitle: "Giao dịch",
-    url: "/transactions",
-    icon: ArrowLeftRightIcon,
-  },
-  {
     title: "Tài khoản",
     mobileTitle: "Tài khoản",
     url: "/budget",
     icon: WalletCardsIcon,
+  },
+  {
+    title: "Giao dịch",
+    mobileTitle: "Giao dịch",
+    url: "/transactions",
+    icon: ArrowLeftRightIcon,
   },
   {
     title: "Vay nợ",
