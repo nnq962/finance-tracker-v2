@@ -242,6 +242,34 @@
 }
 
 /* What a grey or a white surface sets for the fields on it. */
+/* LiuLiu's eyes (BotIcon) shutting to a dot and opening: once, or a double
+   blink now and then while thinking. */
+@keyframes bot-blink {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes bot-blink-idle {
+  0%,
+  62%,
+  74%,
+  100% {
+    transform: scaleY(1);
+  }
+  68%,
+  80% {
+    transform: scaleY(0);
+  }
+  86% {
+    transform: scaleY(1);
+  }
+}
+
 /* Words with a light sweeping across them, left to right, again and again:
    the AI at work, as Claude and ChatGPT show their thinking. Still and grey
    when motion is reduced. */

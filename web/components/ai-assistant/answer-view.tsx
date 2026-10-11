@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { ArrowLeftRightIcon, ChevronRightIcon, MicIcon, PencilLineIcon, SparklesIcon, WalletIcon } from "lucide-react"
 
+import { BotIcon } from "@/components/app/bot-icon"
 import { DeltaBadge } from "@/components/app/delta-badge"
 import { IconTile } from "@/components/app/icon-tile"
 import { Money } from "@/components/app/money"
@@ -265,7 +266,7 @@ export function ReplyView({
       return (
         <>
           <p className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
-            <SparklesIcon className="size-4 text-ai-strong" aria-hidden="true" /> LiuLiu
+            <BotIcon blink="once" className="size-4 text-ai-strong" /> LiuLiu
           </p>
           <Spoken text={reply.text} />
           <div className="-mx-5 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none]">{chips}</div>

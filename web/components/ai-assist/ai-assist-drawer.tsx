@@ -2,8 +2,9 @@
 
 import * as React from "react"
 import { AnimatePresence, motion, MotionConfig } from "motion/react"
-import { EraserIcon, KeyboardIcon, MicIcon, SendHorizontalIcon, SparklesIcon, SquareIcon, XIcon } from "lucide-react"
+import { EraserIcon, KeyboardIcon, MicIcon, SendHorizontalIcon, SquareIcon, XIcon } from "lucide-react"
 
+import { BotIcon } from "@/components/app/bot-icon"
 import { VoiceWave } from "@/components/app/voice-wave"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -151,7 +152,7 @@ export function AiAssistDrawer<Result>({
           {/* Centred on every screen; the Drawer header aligns left from md. */}
           <AiDrawerHeader className="relative px-12 md:text-center">
             <AiDrawerTitle className="flex items-center justify-center gap-2">
-              <SparklesIcon className="size-4 text-ai-strong" aria-hidden="true" />
+              <BotIcon blink="once" className="size-4 text-ai-strong" />
               Trợ lý AI
             </AiDrawerTitle>
             <AiDrawerDescription className="sr-only">{prompt}</AiDrawerDescription>
@@ -190,7 +191,7 @@ export function AiAssistDrawer<Result>({
                       <Card>
                         <CardContent className="space-y-3">
                           <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <SparklesIcon className="size-4 animate-pulse text-ai-strong" aria-hidden="true" />
+                            <BotIcon blink="loop" className="size-4 text-ai-strong" />
                             Đang hiểu ý bạn…
                           </p>
                           <Skeleton className="h-5 w-full" />

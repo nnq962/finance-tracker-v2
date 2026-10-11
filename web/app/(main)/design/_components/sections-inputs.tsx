@@ -16,6 +16,7 @@ import { RulerSlider } from "@/components/app/ruler-slider"
 import { SegmentedProgress } from "@/components/app/steps"
 import { Stepper } from "@/components/app/stepper"
 import { ReplyView } from "@/components/ai-assistant/answer-view"
+import { BotIcon } from "@/components/app/bot-icon"
 import { VoiceWave } from "@/components/app/voice-wave"
 import { WheelPicker, WheelPickerGroup } from "@/components/app/wheel-picker"
 import { ColorPicker } from "@/components/forms/color-picker"
@@ -477,6 +478,9 @@ function ProgressSection() {
       <Block label="Sóng giọng nói · khi ghi âm">
         <VoiceWaveSample />
       </Block>
+      <Block label="LiuLiu · BotIcon (chớp mắt khi rê/chạm, khi hiện ra, khi đang nghĩ)">
+        <BotIconSample />
+      </Block>
       <Block label="Trợ lý AI · thẻ trả lời (khối ghép theo câu hỏi)">
         <AssistantAnswerSample />
       </Block>
@@ -574,6 +578,23 @@ function AssistantAnswerSample() {
   return (
     <div className="flex flex-col gap-4 rounded-[20px] bg-card p-5">
       <ReplyView said="" reply={sampleAnswer} ask={() => {}} listen={() => {}} onRecord={() => {}} onNavigate={() => {}} />
+    </div>
+  )
+}
+
+function BotIconSample() {
+  const [shown, setShown] = React.useState(0)
+  return (
+    <div className="flex flex-wrap items-center gap-4">
+      <Button>
+        <BotIcon className="text-ai" /> Rê hoặc chạm
+      </Button>
+      <Button variant="secondary" onClick={() => setShown((count) => count + 1)}>
+        <BotIcon key={shown} blink="once" className="text-ai-strong" /> Hiện ra lại
+      </Button>
+      <span className="flex items-center gap-2 text-sm text-muted-foreground">
+        <BotIcon blink="loop" className="size-5 text-ai-strong" /> Đang nghĩ
+      </span>
     </div>
   )
 }

@@ -2,8 +2,9 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { ArrowUpIcon, MicIcon, SparklesIcon, SquareIcon, XIcon } from "lucide-react"
+import { ArrowUpIcon, MicIcon, SquareIcon, XIcon } from "lucide-react"
 
+import { BotIcon } from "@/components/app/bot-icon"
 import { VoiceWave } from "@/components/app/voice-wave"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -40,7 +41,7 @@ export function AssistantProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** The way in beside the tab bar, as iOS 26 sets a lone action (Search) beside it. */
+/** The way in beside the tab bar, as iOS 26 sets a lone action (Search) beside it: LiuLiu's face, blinking when pressed. */
 export function AssistantTabButton({ className }: { className?: string }) {
   const open = useOpenAssistant()
   return (
@@ -49,11 +50,11 @@ export function AssistantTabButton({ className }: { className?: string }) {
       onClick={open}
       aria-label="Hỏi LiuLiu, trợ lý AI"
       className={cn(
-        "pointer-events-auto flex size-15 shrink-0 touch-manipulation items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_14px_44px_rgb(0_0_0/0.2),0_2px_8px_rgb(0_0_0/0.08)] outline-none transition-transform duration-150 select-none [-webkit-tap-highlight-color:transparent] focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-95 motion-reduce:transition-none dark:shadow-[0_14px_44px_rgb(0_0_0/0.5)]",
+        "group/button pointer-events-auto flex size-15 shrink-0 touch-manipulation items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_14px_44px_rgb(0_0_0/0.2),0_2px_8px_rgb(0_0_0/0.08)] outline-none transition-transform duration-150 select-none [-webkit-tap-highlight-color:transparent] focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-95 motion-reduce:transition-none dark:shadow-[0_14px_44px_rgb(0_0_0/0.5)]",
         className,
       )}
     >
-      <SparklesIcon className="size-6 text-ai" aria-hidden="true" />
+      <BotIcon className="size-6 text-ai" />
     </button>
   )
 }
@@ -63,7 +64,7 @@ export function AssistantHeaderButton() {
   const open = useOpenAssistant()
   return (
     <Button size="sm" onClick={open}>
-      <SparklesIcon className="text-ai" aria-hidden="true" /> Hỏi AI
+      <BotIcon className="text-ai" /> Hỏi AI
     </Button>
   )
 }
@@ -439,7 +440,7 @@ function Talk({ assistant, onRecord, onNavigate }: BodyProps) {
           <>
             <div className="space-y-0.5">
               <p className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
-                <SparklesIcon className="size-4 text-ai-strong" aria-hidden="true" /> LiuLiu
+                <BotIcon blink="once" className="size-4 text-ai-strong" /> LiuLiu
               </p>
               <p className="text-lg font-semibold">Bạn muốn biết gì?</p>
             </div>
@@ -519,7 +520,7 @@ function Thinking() {
   return (
     <div className="space-y-3" role="status">
       <p className="flex items-center gap-2 text-sm font-medium">
-        <SparklesIcon className="size-4 shrink-0 text-ai-strong" aria-hidden="true" />
+        <BotIcon blink="loop" className="size-4 shrink-0 text-ai-strong" />
         {/* The step rises in on the outer span, the light sweeps on the inner:
             both are animations, and on one element the first undid the other. */}
         <span key={step} className="animate-in fade-in-0 slide-in-from-bottom-1 duration-300 ease-out motion-reduce:animate-none">
