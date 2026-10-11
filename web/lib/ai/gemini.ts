@@ -2,7 +2,15 @@ import "server-only"
 
 import type { ChatMessage } from "@/lib/ai/llm"
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL ?? "gemini-3.5-flash-lite"
+/**
+ * The models to ask, in order (GEMINI_MODEL, comma-separated): the free tier
+ * counts each model's quota apart, so a second one carries on when the first
+ * runs out.
+ */
+export const geminiModels = (process.env.GEMINI_MODEL ?? "gemini-3.5-flash-lite,gemini-3.1-flash-lite")
+  .split(",")
+  .map((model) => model.trim())
+  .filter(Boolean)
 
 /** Gemini is used once GEMINI_API_KEY is set on the server. */
 export function geminiEnabled() {
@@ -22,11 +30,12 @@ export class GeminiError extends Error {
 }
 
 /**
- * One reply from Gemini, held to the JSON schema `schema` and parsed.
+ * One reply from Gemini's `model`, held to the JSON schema `schema` and parsed.
  * Deterministic (temperature 0), thinking as little as the model allows.
  * The system message becomes its instruction; the rest are the turns.
  */
 export async function geminiJson(
+  model: string,
   messages: ChatMessage[],
   schema: object,
   { timeoutMs = 15_000 }: { timeoutMs?: number } = {},
@@ -45,7 +54,7 @@ export async function geminiJson(
   let response: Response
   try {
     response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
       {
         method: "POST",
         headers: { "content-type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY ?? "" },
@@ -57,7 +66,7 @@ export async function geminiJson(
             responseMimeType: "application/json",
             responseJsonSchema: schema,
             // Flash-Lite goes down to "minimal"; Flash to "low".
-            thinkingConfig: { thinkingLevel: GEMINI_MODEL.includes("lite") ? "minimal" : "low" },
+            thinkingConfig: { thinkingLevel: model.includes("lite") ? "minimal" : "low" },
           },
         }),
         signal: AbortSignal.timeout(timeoutMs),
@@ -65,11 +74,11 @@ export async function geminiJson(
       },
     )
   } catch (error) {
-    throw new GeminiError("Gemini did not answer", undefined, { cause: error })
+    throw new GeminiError(`${model} did not answer`, undefined, { cause: error })
   }
 
   if (!response.ok) {
-    throw new GeminiError(`Gemini answered ${response.status}: ${(await response.text()).slice(0, 300)}`, response.status)
+    throw new GeminiError(`${model} answered ${response.status}: ${(await response.text()).slice(0, 300)}`, response.status)
   }
 
   const body = (await response.json()) as {
@@ -82,6 +91,6 @@ export async function geminiJson(
   try {
     return JSON.parse(text)
   } catch (error) {
-    throw new GeminiError("Gemini's reply is not JSON", undefined, { cause: error })
+    throw new GeminiError(`${model}'s reply is not JSON`, undefined, { cause: error })
   }
 }

@@ -98,8 +98,11 @@ GEMINI_API_KEY=...                     # aistudio.google.com → Get API key; tr
 ```
 
 Giọng nói của trợ lý AI đi qua service `stt` trước, lỗi thì qua Whisper trên Groq (cần `GROQ_API_KEY`), cả hai lỗi thì dùng nhận dạng của trình duyệt.
-Thiếu `GEMINI_API_KEY` thì trợ lý AI dùng gemma trên Ollama; có key mà Gemini lỗi
-thì cũng tự chuyển sang gemma. `GEMINI_MODEL` đổi model (mặc định `gemini-3.5-flash-lite`).
+Thiếu `GEMINI_API_KEY` thì trợ lý AI dùng gemma trên Ollama. Có key thì hỏi lần lượt
+các model trong `GEMINI_MODEL` (cách nhau bằng dấu phẩy, mặc định
+`gemini-3.5-flash-lite,gemini-3.1-flash-lite`; gói free tính quota riêng từng model):
+model lỗi thì chuyển sang model sau, model hết quota thì bỏ qua một phút; tất cả lỗi
+thì dùng gemma.
 
 Thiếu một trong ba khoá payOS thì nút thanh toán tắt, màn hình Gói ghi "Liên hệ
 quản trị viên". Webhook của kênh thanh toán trên payOS trỏ về

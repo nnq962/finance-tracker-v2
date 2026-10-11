@@ -31,9 +31,10 @@ services:
       PAYOS_CHECKSUM_KEY: ${PAYOS_CHECKSUM_KEY:-}
       # Whisper on Groq: dictation's fallback when the stt service fails.
       GROQ_API_KEY: ${GROQ_API_KEY:-}
-      # The AI assistant through Gemini; gemma on Ollama until set, and whenever Gemini fails.
+      # The AI assistant through Gemini, one model after another (each has its own free
+      # quota); gemma on Ollama until set, and whenever every model fails.
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite,gemini-3.1-flash-lite}
       # Dictation on this server (sherpa-onnx), on every browser.
       STT_URL: http://stt:8000
     volumes:
