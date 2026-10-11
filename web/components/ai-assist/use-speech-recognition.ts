@@ -45,6 +45,8 @@ type Dictation = {
   transcript: string
   interim: string
   error: string | null
+  /** The microphone's level now, 0 to 1, while recording for the server; none for the browser's recogniser. */
+  level: (() => number) | null
   start: () => void
   stop: () => void
   cancel: () => void
@@ -178,7 +180,7 @@ function useBrowserRecognition({ onEnd }: { onEnd: (transcript: string) => void 
     setError(null)
   }, [])
 
-  return { supported, listening, transcribing: false, transcript, interim, error, start, stop, cancel }
+  return { supported, listening, transcribing: false, transcript, interim, error, level: null, start, stop, cancel }
 }
 
 /** A recording runs at most this long, then is sent as it is. */
@@ -225,6 +227,13 @@ function watchForSilence(stream: MediaStream, onQuiet: () => void) {
   return {
     heard: () => heard,
     measured: () => measured,
+    /** The level now, as a wave shows it: speech's RMS of about 0.02–0.2 spread over 0 to 1. */
+    level: () => {
+      if (context.state !== "running") return 0
+      analyser.getFloatTimeDomainData(samples)
+      const rms = Math.sqrt(samples.reduce((sum, value) => sum + value * value, 0) / samples.length)
+      return Math.min(1, Math.sqrt(rms) * 2.4)
+    },
     stop: () => {
       window.clearInterval(timer)
       void context.close().catch(() => undefined)
@@ -265,6 +274,8 @@ function useServerRecognition({
   const [transcript, setTranscript] = React.useState("")
   const [error, setError] = React.useState<string | null>(null)
   const recorder = React.useRef<MediaRecorder | null>(null)
+  const watcher = React.useRef<ReturnType<typeof watchForSilence> | null>(null)
+  const level = React.useCallback(() => watcher.current?.level() ?? 0, [])
   // Tells the recording still wanted from one cancelled; a new one replaces it.
   const session = React.useRef<object | null>(null)
   const onEndRef = React.useRef(onEnd)
@@ -329,6 +340,7 @@ function useServerRecognition({
     const silence = watchForSilence(stream, () => {
       if (recorder.current === current) release()
     })
+    watcher.current = silence
 
     current.addEventListener("dataavailable", (event) => {
       if (event.data.size > 0) chunks.push(event.data)
@@ -336,6 +348,7 @@ function useServerRecognition({
     current.addEventListener("stop", async () => {
       window.clearTimeout(limit)
       silence.stop()
+      if (watcher.current === silence) watcher.current = null
       stream.getTracks().forEach((track) => track.stop())
       if (recorder.current === current) recorder.current = null
       setListening(false)
@@ -392,6 +405,7 @@ function useServerRecognition({
     transcript,
     interim: "",
     error,
+    level,
     start: () => void start(),
     stop,
     cancel,

@@ -4,6 +4,7 @@ import * as React from "react"
 import { AnimatePresence, motion, MotionConfig } from "motion/react"
 import { EraserIcon, KeyboardIcon, MicIcon, SendHorizontalIcon, SparklesIcon, SquareIcon, XIcon } from "lucide-react"
 
+import { VoiceWave } from "@/components/app/voice-wave"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -217,6 +218,12 @@ export function AiAssistDrawer<Result>({
                                   </React.Fragment>
                                 ))}
                               </p>
+                            ) : speech.listening && speech.level ? (
+                              // The voice as it is recorded; the browser's recogniser, which gives no level, keeps the line.
+                              <div className="w-full space-y-1.5 py-1">
+                                <VoiceWave level={speech.level} />
+                                <p className="text-xs text-muted-foreground">Ngừng nói là tự gửi, hoặc bấm dừng.</p>
+                              </div>
                             ) : (
                               <TurningLines
                                 lines={[...hints, "Đang nghe… ngừng nói là tự gửi, hoặc bấm dừng.", "Đang nhận dạng giọng nói…"]}

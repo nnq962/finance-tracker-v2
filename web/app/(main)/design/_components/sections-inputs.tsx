@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ArrowUpDownIcon, BanknoteIcon, CheckIcon, CreditCardIcon, EyeIcon, EyeOffIcon, LockIcon, MailIcon, SearchIcon, UserIcon, WalletIcon, XIcon } from "lucide-react"
+import { ArrowUpDownIcon, BanknoteIcon, CheckIcon, MicIcon, SquareIcon, CreditCardIcon, EyeIcon, EyeOffIcon, LockIcon, MailIcon, SearchIcon, UserIcon, WalletIcon, XIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { ActionSheet } from "@/components/app/action-sheet"
@@ -15,6 +15,7 @@ import { Rating } from "@/components/app/rating"
 import { RulerSlider } from "@/components/app/ruler-slider"
 import { SegmentedProgress } from "@/components/app/steps"
 import { Stepper } from "@/components/app/stepper"
+import { VoiceWave } from "@/components/app/voice-wave"
 import { WheelPicker, WheelPickerGroup } from "@/components/app/wheel-picker"
 import { ColorPicker } from "@/components/forms/color-picker"
 import { CurrencyInput } from "@/components/forms/currency-input"
@@ -472,6 +473,9 @@ function ProgressSection() {
           </Button>
         </div>
       </Block>
+      <Block label="Sóng giọng nói · khi ghi âm">
+        <VoiceWaveSample />
+      </Block>
       <Block label="Khung chờ · đang tải">
         <div className="flex items-center gap-3">
           <Skeleton className="size-12 rounded-full" />
@@ -484,5 +488,34 @@ function ProgressSection() {
         <Skeleton className="mt-4 h-20 rounded-2xl" />
       </Block>
     </CatalogSection>
+  )
+}
+
+/** A made-up voice for the wave: syllables, phrases that rise and fall, a pause now and then. */
+function sampleVoice(startedAt: number) {
+  const t = (performance.now() - startedAt) / 1000
+  const syllable = Math.abs(Math.sin(t * 9.5)) ** 1.5
+  const phrase = 0.55 + 0.45 * Math.sin(t * 1.7)
+  const pause = t % 4.2 > 3.4 ? 0.05 : 1
+  return Math.min(1, 0.04 + syllable * phrase * pause * 0.9)
+}
+
+function VoiceWaveSample() {
+  const [listening, setListening] = React.useState(true)
+  const startedAt = React.useRef(0)
+  const level = React.useCallback(() => (startedAt.current ? sampleVoice(startedAt.current) : 0), [])
+  React.useEffect(() => {
+    startedAt.current = listening ? performance.now() : 0
+  }, [listening])
+  return (
+    <div className="space-y-3">
+      <VoiceWave level={level} />
+      <div className="flex justify-center">
+        <Button size="sm" variant="secondary" onClick={() => setListening((value) => !value)}>
+          {listening ? <SquareIcon /> : <MicIcon />}
+          {listening ? "Dừng" : "Nói"}
+        </Button>
+      </div>
+    </div>
   )
 }
