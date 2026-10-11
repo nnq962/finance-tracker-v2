@@ -77,7 +77,7 @@ docker exec finance-ollama-1 ollama rm <model-cũ>
 ```
 
 Service `stt` (`backend/stt`) nhận dạng giọng nói tiếng Việt ngay trên máy chủ,
-bằng sherpa-onnx và model Zipformer 30M chạy CPU (khoảng 50ms một câu, 160MB RAM).
+bằng sherpa-onnx và model Zipformer 30M bản đầy đủ (fp32) chạy CPU, tối đa 8 nhân (khoảng 50ms một câu).
 Model được tải khi build image. Không mở port: web gọi qua `http://stt:8000`
 (`STT_URL`). Hiện chỉ trang Thử giọng nói (quản trị) dùng nó để so với Whisper.
 

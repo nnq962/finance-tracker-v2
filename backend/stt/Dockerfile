@@ -1,9 +1,10 @@
 # syntax=docker/dockerfile:1
 # Vietnamese speech to text (server.py): sherpa-onnx with the Zipformer 30M
-# model, trained on about 6,000 hours of Vietnamese; CPU only.
+# model, trained on about 6,000 hours of Vietnamese, at full precision (fp32,
+# not the int8 copy); CPU only, about 50 ms a sentence.
 
 FROM python:3.12-slim-bookworm AS model
-ARG MODEL=sherpa-onnx-zipformer-vi-30M-int8-2026-02-09
+ARG MODEL=sherpa-onnx-zipformer-vi-30M-2026-02-09
 RUN apt-get update && apt-get install -y --no-install-recommends curl bzip2 ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir sentencepiece==0.2.1

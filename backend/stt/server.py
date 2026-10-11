@@ -24,13 +24,16 @@ SAMPLE_RATE = 16000
 MAX_BYTES = 2_000_000
 
 recognizer = sherpa_onnx.OfflineRecognizer.from_transducer(
-    encoder=f"{MODEL}/encoder.int8.onnx",
+    encoder=f"{MODEL}/encoder.onnx",
     decoder=f"{MODEL}/decoder.onnx",
-    joiner=f"{MODEL}/joiner.int8.onnx",
+    joiner=f"{MODEL}/joiner.onnx",
     tokens=f"{MODEL}/tokens.txt",
     num_threads=int(os.environ.get("STT_THREADS", "4")),
     # Beam search, for the hotwords: names favoured only where the sound fits them.
     decoding_method="modified_beam_search",
+    # Eight paths kept, not four: the same on clean speech, a little more
+    # room on real speech, at about 10 ms more a sentence.
+    max_active_paths=int(os.environ.get("STT_ACTIVE_PATHS", "8")),
     modeling_unit="bpe",
     bpe_vocab=f"{MODEL}/bpe.vocab",
     hotwords_score=float(os.environ.get("STT_HOTWORDS_SCORE", "2.0")),

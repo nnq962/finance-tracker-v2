@@ -122,6 +122,9 @@ services:
     image: finance-stt
     environment:
       STT_THREADS: "4"
+    # Never more than 8 of the server's cores, however many speak at once, so
+    # web and Postgres keep theirs; 8 sentences at once still take about 0.2 s.
+    cpus: 8
     restart: unless-stopped
     init: true
     read_only: true

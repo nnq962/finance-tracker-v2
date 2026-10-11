@@ -44,7 +44,7 @@ const recognisers: { key: Recogniser; label: string; name: string; engine?: "whi
   { key: "browser", label: "Web", name: "Trình duyệt (Web Speech)" },
   { key: "turbo", label: "Turbo", name: "Whisper large-v3-turbo", engine: "whisper", model: "whisper-large-v3-turbo" },
   { key: "large", label: "Large", name: "Whisper large-v3", engine: "whisper", model: "whisper-large-v3" },
-  { key: "sherpa", label: "Sherpa", name: "Sherpa (Zipformer, máy chủ)", engine: "sherpa", model: "zipformer-vi-30M" },
+  { key: "sherpa", label: "Sherpa", name: "Sherpa (Zipformer 30M fp32, máy chủ)", engine: "sherpa", model: "zipformer-vi-30M" },
 ]
 
 /** Which recognisers hear the next reading, from the same recording. */
