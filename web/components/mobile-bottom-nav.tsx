@@ -289,6 +289,10 @@ export function MobileBottomNav() {
     }
   }, [activeIndex, bar.width])
   const barOutline = bar.width ? smoothCapsule(bar.width, bar.height) : ""
+  // The edge's line, half a pixel in all round, so the whole 1px stroke lies
+  // inside the bar: on the outline itself, its outer half was cut off along
+  // the straight edges and not on the bends, which looked thicker.
+  const barEdge = bar.width ? smoothCapsule(bar.width - 1, bar.height - 1) : ""
 
   return (
     // Icons on a capsule across the screen, floating over the page;
@@ -319,7 +323,14 @@ export function MobileBottomNav() {
         />
         {barOutline ? (
           <svg aria-hidden="true" className="pointer-events-none absolute inset-0 size-full" viewBox={`0 0 ${bar.width} ${bar.height}`}>
-            <path d={barOutline} fill="none" stroke="currentColor" strokeWidth="1" className="text-foreground/5 dark:text-foreground/10" />
+            <path
+              d={barEdge}
+              transform="translate(0.5 0.5)"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1"
+              className="text-foreground/5 dark:text-foreground/10"
+            />
           </svg>
         ) : null}
         {pill.width ? (
