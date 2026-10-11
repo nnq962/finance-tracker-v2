@@ -342,7 +342,14 @@ function Body(props: BodyProps) {
   if (view !== shownView && !leaving) setLeaving(true)
   // The line keeps what it last said while it goes, not what the next phase would make it.
   const [voiceLine, setVoiceLine] = React.useState("Đang nghe…")
-  const line = phase === "listening" ? "Đang nghe…" : phase === "transcribing" ? "Đang chuyển thành chữ…" : voiceLine
+  const line =
+    phase === "listening"
+      ? props.assistant.starting
+        ? "Đang bật micro…"
+        : "Đang nghe…"
+      : phase === "transcribing"
+        ? "Đang chuyển thành chữ…"
+        : voiceLine
   if (line !== voiceLine) setVoiceLine(line)
   React.useEffect(() => {
     if (!leaving) return

@@ -39,6 +39,8 @@ const errorMessages: Record<string, string> = {
 
 type Dictation = {
   supported: boolean
+  /** Asked to listen, the microphone not on yet (an iPhone takes about half a second the first time). */
+  starting: boolean
   listening: boolean
   /** The recording is being turned into words (on the server only). */
   transcribing: boolean
@@ -180,7 +182,7 @@ function useBrowserRecognition({ onEnd }: { onEnd: (transcript: string) => void 
     setError(null)
   }, [])
 
-  return { supported, listening, transcribing: false, transcript, interim, error, level: null, start, stop, cancel }
+  return { supported, starting: false, listening, transcribing: false, transcript, interim, error, level: null, start, stop, cancel }
 }
 
 /** A recording runs at most this long, then is sent as it is. */
@@ -198,13 +200,20 @@ const SPEECH_LEVEL = 0.03
  * the level could be read at all: Safari may keep an audio context suspended,
  * and then nothing can be told, and the recording is sent as it is.
  */
-/** How long after a recording ends the microphone is let go: after the screen's change (about 0.3s). */
+/** How long after the assistant closes the microphone is let go: after the screen's change (about 0.4s). */
 const RELEASE_DELAY_MS = 600
+
+/**
+ * How long the microphone stays on after a recording, for the next to start
+ * at once: an iPhone takes about half a second to turn it on, every time.
+ */
+const WARM_MS = 20_000
 
 function watchForSilence(stream: MediaStream, onQuiet: () => void, context: AudioContext) {
   const analyser = context.createAnalyser()
   analyser.fftSize = 1024
-  context.createMediaStreamSource(stream).connect(analyser)
+  const source = context.createMediaStreamSource(stream)
+  source.connect(analyser)
   void context.resume().catch(() => undefined)
   const samples = new Float32Array(analyser.fftSize)
   const startedAt = performance.now()
@@ -236,9 +245,10 @@ function watchForSilence(stream: MediaStream, onQuiet: () => void, context: Audi
       const rms = Math.sqrt(samples.reduce((sum, value) => sum + value * value, 0) / samples.length)
       return Math.min(1, Math.sqrt(rms) * 2.4)
     },
+    // The context is the microphone's, kept with it; only this watch ends.
     stop: () => {
       window.clearInterval(timer)
-      void context.close().catch(() => undefined)
+      source.disconnect()
     },
   }
 }
@@ -271,6 +281,7 @@ function useServerRecognition({
   onFallback: () => boolean
 }): Dictation {
   const supported = React.useSyncExternalStore(subscribe, recorderSupported, () => false)
+  const [starting, setStarting] = React.useState(false)
   const [listening, setListening] = React.useState(false)
   const [transcribing, setTranscribing] = React.useState(false)
   const [transcript, setTranscript] = React.useState("")
@@ -287,20 +298,61 @@ function useServerRecognition({
     onFallbackRef.current = onFallback
   })
 
+  // The microphone and its audio context, kept on a while between recordings.
+  const mic = React.useRef<{ stream: MediaStream; context: AudioContext; idle?: number } | null>(null)
+  /** Turns the microphone off, now or after `delay` (a screen change on an iPhone jerks as it goes). */
+  const dropMic = React.useCallback((delay = 0) => {
+    const held = mic.current
+    if (!held) return
+    window.clearTimeout(held.idle)
+    mic.current = null
+    const off = () => {
+      held.stream.getTracks().forEach((track) => track.stop())
+      void held.context.close().catch(() => undefined)
+    }
+    if (delay) window.setTimeout(off, delay)
+    else off()
+  }, [])
+  /** The microphone on, kept from the last recording when it still is. */
+  const takeMic = React.useCallback(async () => {
+    const held = mic.current
+    if (held && held.context.state !== "closed" && held.stream.getAudioTracks().every((track) => track.readyState === "live")) {
+      window.clearTimeout(held.idle)
+      void held.context.resume().catch(() => undefined)
+      return held
+    }
+    dropMic()
+    // Made now, in the tap: made after the wait for the microphone (a
+    // permission prompt), Chrome kept it suspended, so the level read 0, the
+    // wave stayed flat and silence never ended the recording.
+    const context = new AudioContext()
+    void context.resume().catch(() => undefined)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
+      })
+      mic.current = { stream, context }
+      return mic.current
+    } catch (reason) {
+      void context.close().catch(() => undefined)
+      throw reason
+    }
+  }, [dropMic])
+
   const release = React.useCallback(() => {
     const current = recorder.current
     recorder.current = null
     // Stopping hands over the last of the audio; the microphone is let go once it has.
     if (current && current.state !== "inactive") current.stop()
-    else current?.stream.getTracks().forEach((track) => track.stop())
   }, [])
 
   React.useEffect(
     () => () => {
       session.current = null
       release()
+      dropMic()
     },
-    [release],
+    [release, dropMic],
   )
 
   const start = React.useCallback(async () => {
@@ -309,28 +361,25 @@ function useServerRecognition({
     session.current = token
     setTranscript("")
     setError(null)
-    // Made now, in the tap: made after the wait for the microphone (a
-    // permission prompt), Chrome kept it suspended, so the level read 0, the
-    // wave stayed flat and silence never ended the recording.
-    const context = new AudioContext()
-    void context.resume().catch(() => undefined)
+    // Shown at once, so the tap answers before the microphone does.
+    setStarting(true)
 
     let stream: MediaStream
+    let context: AudioContext
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
-      })
+      ;({ stream, context } = await takeMic())
     } catch (reason) {
       const name = (reason as DOMException).name
+      setStarting(false)
       setError(
         name === "NotAllowedError" ? errorMessages["not-allowed"] : name === "NotFoundError" ? "Không tìm thấy micro." : errorMessages["audio-capture"],
       )
-      void context.close().catch(() => undefined)
       return
     }
     if (session.current !== token) {
-      stream.getTracks().forEach((track) => track.stop())
-      void context.close().catch(() => undefined)
+      // Stopped while it was coming on: it stays on a while, as after a recording.
+      const held = mic.current
+      if (held) held.idle = window.setTimeout(() => mic.current === held && !recorder.current && dropMic(), WARM_MS)
       return
     }
 
@@ -361,14 +410,17 @@ function useServerRecognition({
     current.addEventListener("stop", async () => {
       window.clearTimeout(limit)
       if (watcher.current === silence) watcher.current = null
-      // Letting go of the microphone and closing the audio context ends
-      // Safari's audio session on an iPhone, which held the page a moment,
-      // just as the screen moved from listening to transcribing: it jerked.
-      // Done once that has moved on; the level reads 0 meanwhile.
-      window.setTimeout(() => {
-        silence.stop()
-        stream.getTracks().forEach((track) => track.stop())
-      }, RELEASE_DELAY_MS)
+      silence.stop()
+      // The microphone stays on a while, for the next recording to start at
+      // once. Turning it off also ends Safari's audio session on an iPhone,
+      // which holds the page a moment: done well after this screen change.
+      const held = mic.current
+      if (held) {
+        window.clearTimeout(held.idle)
+        held.idle = window.setTimeout(() => {
+          if (mic.current === held && !recorder.current) dropMic()
+        }, WARM_MS)
+      }
       if (recorder.current === current) recorder.current = null
       setListening(false)
       if (session.current !== token) return
@@ -403,22 +455,35 @@ function useServerRecognition({
 
     recorder.current = current
     current.start()
+    setStarting(false)
     setListening(true)
-  }, [release])
+  }, [release, takeMic, dropMic])
 
-  const stop = React.useCallback(() => release(), [release])
+  const stop = React.useCallback(() => {
+    // Stopped before the microphone was on: nothing was said yet.
+    if (!recorder.current && session.current) {
+      session.current = null
+      setStarting(false)
+      return
+    }
+    release()
+  }, [release])
   const cancel = React.useCallback(() => {
-    // Ends without sending what was recorded, and forgets it.
+    // Ends without sending what was recorded, and forgets it; the microphone
+    // goes off once the screen has moved on (the assistant closing).
     session.current = null
     release()
+    dropMic(RELEASE_DELAY_MS)
+    setStarting(false)
     setListening(false)
     setTranscribing(false)
     setTranscript("")
     setError(null)
-  }, [release])
+  }, [release, dropMic])
 
   return {
     supported,
+    starting,
     listening,
     transcribing,
     transcript,

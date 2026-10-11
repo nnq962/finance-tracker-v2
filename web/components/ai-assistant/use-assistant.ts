@@ -64,7 +64,7 @@ export function useAssistant() {
     },
   })
 
-  const speaking = speech.listening || speech.transcribing
+  const speaking = speech.starting || speech.listening || speech.transcribing
   // The microphone stopped with a reason and no words: that is the turn.
   const voiceError = voice && !speaking && speech.error ? speech.error : null
 
@@ -92,9 +92,12 @@ export function useAssistant() {
   }
 
   return {
-    phase: (speech.listening ? "listening" : speech.transcribing ? "transcribing" : voiceError ? "result" : phase) as AssistantPhase,
+    // Listening from the tap on: the line says the microphone is coming on until it is.
+    phase: (speech.starting || speech.listening ? "listening" : speech.transcribing ? "transcribing" : voiceError ? "result" : phase) as AssistantPhase,
     turn: voiceError && voice ? { id: voice.id, said: "", reply: { kind: "unheard", message: voiceError } as TurnReply } : turn,
     asked,
+    /** The microphone is coming on (an iPhone takes about half a second the first time). */
+    starting: speech.starting,
     /** The voice's level, 0 to 1, read each frame; null with the browser's recogniser, which shows the words instead. */
     level: speech.level,
     heard: `${speech.transcript} ${speech.interim}`.trim(),
