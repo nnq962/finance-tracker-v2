@@ -25,13 +25,15 @@ export function ExcludedRow({
   /** Sent with a form under this name, "on" while switched on. */
   name?: string
 }) {
-  const balance = `${kind === "income" ? "cộng vào" : "trừ vào"} số dư ${accountName ?? "tài khoản"}`
+  // One line that stays put, saying what the switch does: a line that changed
+  // with it read as two different things (2026-10-11).
+  const account = accountName ?? "Tài khoản"
   return (
     <SettingsRow
       icon={EyeOffIcon}
       tone="neutral"
       title="Không tính vào thống kê"
-      description={checked ? `Vẫn ${balance}` : "Tính vào tổng thu chi và biểu đồ"}
+      description={`${account} vẫn ${kind === "income" ? "được cộng" : "bị trừ"} tiền như thường`}
       action={
         <>
           <Switch aria-label="Không tính vào thống kê" checked={checked} onCheckedChange={onCheckedChange} />
