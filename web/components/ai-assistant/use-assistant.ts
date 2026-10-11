@@ -43,6 +43,7 @@ export function useAssistant() {
         setTurn({ id, said, reply })
         setPhase("result")
         if (reply.kind === "answer") setContext({ question: said, plan: reply.plan })
+        if (reply.kind === "chat" && !reply.limited) setContext({ question: said, reply: reply.text })
       },
       () => {
         if (awaited.current !== id) return

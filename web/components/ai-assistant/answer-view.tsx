@@ -200,6 +200,33 @@ function AnswerBody({ answer, ask, onNavigate }: { answer: Answer; ask: (text: s
 
 const tryAsking = ["Tháng này tiêu bao nhiêu?", "Ai đang nợ tôi?"]
 
+/**
+ * LiuLiu's words, coming in a word at a time as if said: each word fades up
+ * after the one before (CSS only, by a delay per word). Still when motion is
+ * reduced.
+ */
+function Spoken({ text }: { text: string }) {
+  const words = text.split(/(\s+)/)
+  let index = 0
+  return (
+    <p className="text-base leading-relaxed">
+      {words.map((word, position) =>
+        /^\s+$/.test(word) ? (
+          word
+        ) : (
+          <span
+            key={position}
+            className="inline-block animate-in fade-in-0 slide-in-from-bottom-1 duration-300 ease-out fill-mode-both motion-reduce:animate-none"
+            style={{ animationDelay: `${150 + index++ * 35}ms` }}
+          >
+            {word}
+          </span>
+        ),
+      )}
+    </p>
+  )
+}
+
 /** What a turn shows, in the one card: the answer, or why there is none and what to do. */
 export function ReplyView({
   said,
@@ -233,6 +260,16 @@ export function ReplyView({
             <PencilLineIcon /> Ghi khoản này
           </Button>
         </AnswerShell>
+      )
+    case "chat":
+      return (
+        <>
+          <p className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+            <SparklesIcon className="size-4 text-ai-strong" aria-hidden="true" /> LiuLiu
+          </p>
+          <Spoken text={reply.text} />
+          <div className="-mx-5 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none]">{chips}</div>
+        </>
       )
     case "action":
       return (

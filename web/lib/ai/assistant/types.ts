@@ -103,8 +103,8 @@ export type Answer = {
 
 export type AssistantQuota = { used: number; limit: number; credits: number }
 
-/** The turn before, sent back with a follow-up so it can be read in its light. */
-export type AssistantContext = { question: string; plan: QuestionPlan }
+/** The turn before, sent back with a follow-up so it can be read in its light: a question's plan, or a chat's reply. */
+export type AssistantContext = { question: string; plan?: QuestionPlan; reply?: string }
 
 export type AssistantReply =
   | { kind: "answer"; answer: Answer; plan: QuestionPlan; quota: AssistantQuota }
@@ -112,7 +112,9 @@ export type AssistantReply =
   | { kind: "record"; text: string }
   /** Something the assistant cannot do yet (a loan, an edit). */
   | { kind: "action" }
-  /** Chat, or a question about what the app does not hold. */
+  /** A question about what the app does not hold. */
   | { kind: "other" }
+  /** LiuLiu's reply to chat; `limited` once the day's chats are used up. */
+  | { kind: "chat"; text: string; limited?: boolean }
   | { kind: "quota"; quota: AssistantQuota; proLimit: number; isPro: boolean }
   | { kind: "failed" }

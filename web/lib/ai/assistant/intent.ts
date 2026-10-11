@@ -7,11 +7,12 @@ import { localAiJson, type ChatMessage } from "@/lib/ai/llm"
  * - question: asks about the user's own money as kept in the app
  * - record: tells of an expense, an income or a transfer to write down
  * - action: wants something else done in the app (a loan, an edit, a delete…)
- * - other: chat, something outside the app's data, or nothing clear
+ * - chat: anything else (greetings, who it is, jokes, small talk, things
+ *   outside the app's data), which LiuLiu answers in a line or two
  */
-export type Intent = "question" | "record" | "action" | "other"
+export type Intent = "question" | "record" | "action" | "chat"
 
-const intents: Intent[] = ["question", "record", "action", "other"]
+const intents: Intent[] = ["question", "record", "action", "chat"]
 
 const schema = {
   type: "object",
@@ -24,7 +25,7 @@ const system = `Bạn phân loại yêu cầu người dùng gửi cho trợ lý
 - question: hỏi hoặc muốn xem tiền của chính người dùng đã ghi trong app: chi tiêu, thu nhập, số dư tài khoản, các giao dịch, khoản vay và cho vay, so sánh, nhiều nhất, liệt kê, chia theo hạng mục hay tài khoản. Câu hỏi nối tiếp câu trước ("còn tháng trước?", "thế còn ăn uống?") cũng là question.
 - record: kể một khoản đã chi, đã nhận hoặc đã chuyển để ghi lại, thường có số tiền ("ăn phở 35k", "nhận lương 15 triệu", "chuyển 2 triệu sang momo").
 - action: muốn app làm việc khác: ghi khoản cho vay hay đi vay, trả nợ, sửa hoặc xoá giao dịch, tạo tài khoản, hạng mục, ngân sách, nhắc nhở.
-- other: chào hỏi, cảm ơn, hỏi thứ ngoài dữ liệu của người dùng (giá vàng, tỷ giá, thời tiết, kiến thức chung), hoặc câu không rõ nghĩa.`
+- chat: mọi câu còn lại: chào hỏi, cảm ơn, hỏi trợ lý là ai, trêu đùa, nói chuyện phiếm, tâm sự, xin mẹo tiết kiệm chung, hỏi thứ ngoài dữ liệu của người dùng (giá vàng, tỷ giá, thời tiết, kiến thức chung), hoặc câu không rõ nghĩa.`
 
 const examples: [string, Intent][] = [
   ["tháng này tiêu hết bao nhiêu", "question"],
@@ -37,8 +38,10 @@ const examples: [string, Intent][] = [
   ["nhận lương mười lăm triệu vào vietcombank", "record"],
   ["cho nam mượn hai triệu", "action"],
   ["xoá giao dịch cà phê vừa rồi", "action"],
-  ["giá vàng hôm nay bao nhiêu", "other"],
-  ["xin chào", "other"],
+  ["giá vàng hôm nay bao nhiêu", "chat"],
+  ["xin chào", "chat"],
+  ["bạn là ai thế", "chat"],
+  ["kể chuyện cười đi", "chat"],
 ]
 
 /** Sorts a request into its kind; `previous` is the question just answered, for follow-ups. */
@@ -53,5 +56,5 @@ export async function classifyRequest(text: string, previous?: string): Promise<
     { role: "user", content: said(text) },
   ]
   const reply = (await localAiJson(messages, schema)) as { intent?: unknown }
-  return intents.includes(reply?.intent as Intent) ? (reply.intent as Intent) : "other"
+  return intents.includes(reply?.intent as Intent) ? (reply.intent as Intent) : "chat"
 }

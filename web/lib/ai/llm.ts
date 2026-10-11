@@ -43,9 +43,13 @@ export async function aiJson(messages: ChatMessage[], schema: object): Promise<u
  * prompt that is the same for every user and costs no Gemini quota; from
  * Gemini when Ollama fails.
  */
-export async function localAiJson(messages: ChatMessage[], schema: object): Promise<unknown> {
+export async function localAiJson(
+  messages: ChatMessage[],
+  schema: object,
+  { temperature = 0 }: { temperature?: number } = {},
+): Promise<unknown> {
   try {
-    return await ollamaJson(messages, schema, { timeoutMs: 10_000 })
+    return await ollamaJson(messages, schema, { timeoutMs: 10_000, temperature })
   } catch (error) {
     console.warn("Ollama failed, falling back to Gemini", error instanceof Error ? error.message : error)
   }

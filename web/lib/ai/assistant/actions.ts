@@ -11,6 +11,7 @@ import { releaseAiRequest, reserveAiRequest } from "@/lib/plans/repository"
 import { getAccountFlows, getTransactionsInRange } from "@/lib/transactions/repository"
 
 import { answerQuestion, keepComparedPeriod } from "./answer"
+import { ASSISTANT_NAME, chatReply, takeChat } from "./chat"
 import { classifyRequest } from "./intent"
 import { buildQuestionPrompt, questionPlanSchema, readQuestionReply } from "./question-plan"
 import type { AssistantContext, AssistantReply, QuestionPlan } from "./types"
@@ -23,8 +24,10 @@ const dayStart = (dateKey: string) => new Date(`${dateKey}T00:00:00+07:00`)
 /** The turn before as the client sent it back, kept only if it has the shape of one. */
 function readContext(value: unknown): AssistantContext | undefined {
   if (!value || typeof value !== "object") return undefined
-  const { question, plan } = value as { question?: unknown; plan?: unknown }
-  if (typeof question !== "string" || !plan || typeof plan !== "object") return undefined
+  const { question, plan, reply } = value as { question?: unknown; plan?: unknown; reply?: unknown }
+  if (typeof question !== "string") return undefined
+  if (typeof reply === "string") return { question: question.slice(0, MAX_LENGTH), reply: reply.slice(0, 600) }
+  if (!plan || typeof plan !== "object") return undefined
   const candidate = plan as Partial<QuestionPlan>
   const strings = (items: unknown) => Array.isArray(items) && items.every((item) => typeof item === "string")
   if (
@@ -63,7 +66,17 @@ export async function askAssistantAction(request: string, previous?: unknown): P
   }
   if (intent === "record") return { kind: "record", text }
   if (intent === "action") return { kind: "action" }
-  if (intent === "other") return { kind: "other" }
+  if (intent === "chat") {
+    if (!takeChat(user.uid)) {
+      return { kind: "chat", limited: true, text: `Hôm nay mình với bạn nói chuyện nhiều rồi đó 😄 Mai ${ASSISTANT_NAME} lại tán gẫu tiếp nhé, giờ mình quay lại chuyện tiền nong thôi.` }
+    }
+    try {
+      return { kind: "chat", text: await chatReply(text, context) }
+    } catch (error) {
+      console.error("Assistant: chat failed", error)
+      return { kind: "failed" }
+    }
+  }
 
   const reservation = await reserveAiRequest(user.uid)
   const quota = { used: reservation.used, limit: reservation.limit, credits: reservation.credits }
@@ -79,9 +92,10 @@ export async function askAssistantAction(request: string, previous?: unknown): P
       getCategoryGroups(user.uid),
       getContacts(user.uid),
     ])
-    const { messages, keys } = buildQuestionPrompt(text, { accounts, categoryGroups, contacts, today }, context)
+    const previousQuestion = context?.plan ? { question: context.question, plan: context.plan } : undefined
+    const { messages, keys } = buildQuestionPrompt(text, { accounts, categoryGroups, contacts, today }, previousQuestion)
     const read = readQuestionReply(await aiJson(messages, questionPlanSchema), keys)
-    const plan = read && keepComparedPeriod(read, context?.plan, today)
+    const plan = read && keepComparedPeriod(read, previousQuestion?.plan, today)
     if (!plan) {
       await giveBack()
       return { kind: "failed" }

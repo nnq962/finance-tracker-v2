@@ -16,12 +16,13 @@ export class OllamaError extends Error {
 
 /**
  * One reply from the local model, held to the JSON schema `format` and
- * parsed. Deterministic (temperature 0), with no thinking step.
+ * parsed. Deterministic (temperature 0) unless asked otherwise (a chat
+ * reply varies a little), with no thinking step.
  */
 export async function ollamaJson(
   messages: ChatMessage[],
   format: object,
-  { timeoutMs = 15_000 }: { timeoutMs?: number } = {},
+  { timeoutMs = 15_000, temperature = 0 }: { timeoutMs?: number; temperature?: number } = {},
 ): Promise<unknown> {
   let response: Response
   try {
@@ -34,7 +35,7 @@ export async function ollamaJson(
         format,
         stream: false,
         think: false,
-        options: { temperature: 0 },
+        options: { temperature },
       }),
       signal: AbortSignal.timeout(timeoutMs),
       cache: "no-store",

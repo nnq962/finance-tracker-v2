@@ -47,7 +47,7 @@ export function AssistantTabButton({ className }: { className?: string }) {
     <button
       type="button"
       onClick={open}
-      aria-label="Trợ lý AI"
+      aria-label="Hỏi LiuLiu, trợ lý AI"
       className={cn(
         "pointer-events-auto flex size-15 shrink-0 touch-manipulation items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_14px_44px_rgb(0_0_0/0.2),0_2px_8px_rgb(0_0_0/0.08)] outline-none transition-transform duration-150 select-none [-webkit-tap-highlight-color:transparent] focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-95 motion-reduce:transition-none dark:shadow-[0_14px_44px_rgb(0_0_0/0.5)]",
         className,
@@ -437,7 +437,12 @@ function Talk({ assistant, onRecord, onNavigate }: BodyProps) {
       <MorphCard contentKey={phase === "idle" ? "idle" : phase === "thinking" ? `thinking-${asked?.id}` : `reply-${turn?.id}`}>
         {phase === "idle" ? (
           <>
-            <p className="text-lg font-semibold">Bạn muốn biết gì?</p>
+            <div className="space-y-0.5">
+              <p className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+                <SparklesIcon className="size-4 text-ai-strong" aria-hidden="true" /> LiuLiu
+              </p>
+              <p className="text-lg font-semibold">Bạn muốn biết gì?</p>
+            </div>
             <div className="flex flex-wrap gap-2">
               {suggestions.map((text) => (
                 <FollowChip key={text} onClick={() => assistant.ask(text)}>
