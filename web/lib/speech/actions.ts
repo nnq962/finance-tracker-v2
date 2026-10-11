@@ -22,7 +22,7 @@ import {
   type WhisperModel,
 } from "@/lib/speech/groq"
 
-/** Recordings per user per hour; Groq's free tier allows 20 a minute and 2,000 a day for everyone. */
+/** Recordings per user per hour; Groq's free tier, the fallback, allows 20 a minute and 2,000 a day for everyone. */
 const TRANSCRIPTIONS_PER_HOUR = 60
 /** Past the 30 seconds a recording may run, in any format a browser records; server actions take 1 MB. */
 const MAX_AUDIO_BYTES = 1_000_000
@@ -46,22 +46,34 @@ function accountNames(accounts: Account[]): SpokenAccount[] {
     })
 }
 
-/** Which recogniser dictation uses: Whisper on the server, or the browser's own. */
-export async function speechEngineAction(): Promise<"whisper" | "browser"> {
+/**
+ * Which recogniser dictation uses: one on the server (this server's, else
+ * Whisper on Groq), or, when there is neither, the browser's own.
+ */
+export async function speechEngineAction(): Promise<"server" | "browser"> {
   await requireSession()
-  return groqEnabled() ? "whisper" : "browser"
+  return sherpaEnabled() || groqEnabled() ? "server" : "browser"
 }
 
-/** The words in a recording from the microphone, in Vietnamese. */
+/** How long dictation waits for this server's recogniser, which answers in well under a second, before Whisper. */
+const SHERPA_TIMEOUT_MS = 5_000
+
+/**
+ * The words in a recording from the microphone, in Vietnamese: through this
+ * server's recogniser (sherpa-onnx), favouring the user's accounts and every
+ * bank and wallet; when it cannot be had, through Whisper on Groq. Chosen in
+ * the voice lab, on an iPhone: 24 of 24 sentences right, names and sums,
+ * against Whisper's 19 to 20 and the browser's 13, in about 50 ms.
+ */
 export async function transcribeAction(
   formData: FormData,
 ): Promise<
   | { success: true; text: string }
-  /** `fallback`: Groq is over its limit or out of reach, so the browser's recogniser should take over. */
+  /** `fallback`: no recogniser on the server can be had, so the browser's should take over. */
   | { success: false; error: string; fallback?: boolean }
 > {
   const user = await requireSession()
-  if (!groqEnabled()) return { success: false, error: "Chưa bật nhận dạng giọng nói." }
+  if (!sherpaEnabled() && !groqEnabled()) return { success: false, error: "Chưa bật nhận dạng giọng nói." }
 
   const audio = formData.get("audio")
   if (!(audio instanceof File) || audio.size === 0) return { success: false, error: "Không nhận được âm thanh." }
@@ -74,10 +86,24 @@ export async function transcribeAction(
   }
   transcriptions.set(user.uid, [...recent, now])
 
+  const spoken = accountNames(await getAccounts(user.uid).catch(() => []))
+  const heard = (text: string) => (text ? { success: true as const, text } : { success: false as const, error: "Không nghe thấy tiếng nói." })
+
+  if (sherpaEnabled()) {
+    try {
+      const { text } = await transcribeOnServer(audio, spokenNames(spoken), SHERPA_TIMEOUT_MS)
+      // Silence is an answer, not a failure: Whisper would make words up from it.
+      return heard(normalizeTranscript(text))
+    } catch (error) {
+      console.error("Transcription on this server failed", (error as Error).message)
+    }
+  }
+  if (!groqEnabled()) return { success: false, error: "Nhận dạng giọng nói đang gặp sự cố.", fallback: true }
+
   try {
-    const accounts = await getAccounts(user.uid)
-    const text = await transcribe(audio, transcriptionPrompt(accountNames(accounts)))
-    return text ? { success: true, text } : { success: false, error: "Không nghe thấy tiếng nói." }
+    // The bare names after the amounts: in the voice lab Whisper gave the
+    // sentences of the other prompt back whole, sums and all.
+    return heard(await transcribe(audio, namesPrompt(spoken)))
   } catch (error) {
     console.error("Transcription failed", error instanceof GroqError ? error.message : (error as Error).name)
     // Over the limit, Groq down or too slow: the browser's recogniser hears the next try.

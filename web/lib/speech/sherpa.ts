@@ -77,7 +77,7 @@ function asSentence(text: string, names: string[]) {
  * user's own account names come first among the hotwords, then every bank
  * and wallet, each in the ways it is said.
  */
-export async function transcribeOnServer(audio: File, spokenNames: string[]) {
+export async function transcribeOnServer(audio: File, spokenNames: string[], timeoutMs = 15_000) {
   // "ví MoMo" is said with "ví" before the name; the hotword is the name.
   const own = spokenNames.map((name) => name.replace(/^ví\s+/i, "").trim()).filter(Boolean)
   const names = [...new Set([...own, ...INSTITUTIONS])]
@@ -86,7 +86,7 @@ export async function transcribeOnServer(audio: File, spokenNames: string[]) {
     method: "POST",
     headers: { "Content-Type": "application/octet-stream", "X-Hotwords": hotwords.map(encodeURIComponent).join("/") },
     body: Buffer.from(await audio.arrayBuffer()),
-    signal: AbortSignal.timeout(15_000),
+    signal: AbortSignal.timeout(timeoutMs),
   })
   if (!response.ok) throw new Error(`stt ${response.status}: ${(await response.text().catch(() => "")).slice(0, 200)}`)
   const result = (await response.json()) as { text?: string; ms?: number }

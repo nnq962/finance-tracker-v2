@@ -79,7 +79,7 @@ docker exec finance-ollama-1 ollama rm <model-cũ>
 Service `stt` (`backend/stt`) nhận dạng giọng nói tiếng Việt ngay trên máy chủ,
 bằng sherpa-onnx và model Zipformer 30M bản đầy đủ (fp32) chạy CPU, tối đa 8 nhân (khoảng 50ms một câu).
 Model được tải khi build image. Không mở port: web gọi qua `http://stt:8000`
-(`STT_URL`). Hiện chỉ trang Thử giọng nói (quản trị) dùng nó để so với Whisper.
+(`STT_URL`). Giọng nói của trợ lý AI dùng nó trên mọi trình duyệt; trang Thử giọng nói (quản trị) dùng nó để so với Whisper và trình duyệt.
 
 ## Gói Pro, payOS và quản trị
 
@@ -93,11 +93,11 @@ ADMIN_EMAILS=email-admin@example.com   # email Google đã xác minh, cách nhau
 PAYOS_CLIENT_ID=...                    # my.payos.vn → Kênh thanh toán
 PAYOS_API_KEY=...
 PAYOS_CHECKSUM_KEY=...
-GROQ_API_KEY=...                       # console.groq.com → API Keys; nhận dạng giọng nói bằng Whisper
+GROQ_API_KEY=...                       # console.groq.com → API Keys; Whisper, dự phòng khi service stt lỗi
 GEMINI_API_KEY=...                     # aistudio.google.com → Get API key; trợ lý AI dùng Gemini
 ```
 
-Thiếu `GROQ_API_KEY` thì trợ lý AI dùng nhận dạng giọng nói của trình duyệt như cũ.
+Giọng nói của trợ lý AI đi qua service `stt` trước, lỗi thì qua Whisper trên Groq (cần `GROQ_API_KEY`), cả hai lỗi thì dùng nhận dạng của trình duyệt.
 Thiếu `GEMINI_API_KEY` thì trợ lý AI dùng gemma trên Ollama; có key mà Gemini lỗi
 thì cũng tự chuyển sang gemma. `GEMINI_MODEL` đổi model (mặc định `gemini-3.5-flash-lite`).
 

@@ -29,12 +29,12 @@ services:
       PAYOS_CLIENT_ID: ${PAYOS_CLIENT_ID:-}
       PAYOS_API_KEY: ${PAYOS_API_KEY:-}
       PAYOS_CHECKSUM_KEY: ${PAYOS_CHECKSUM_KEY:-}
-      # Dictation through Whisper on Groq; the browser's recogniser until set.
+      # Whisper on Groq: dictation's fallback when the stt service fails.
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       # The AI assistant through Gemini; gemma on Ollama until set, and whenever Gemini fails.
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
-      # Speech to text on this server (sherpa-onnx), tried in the voice lab.
+      # Dictation on this server (sherpa-onnx), on every browser.
       STT_URL: http://stt:8000
     volumes:
       - type: bind
@@ -114,8 +114,9 @@ services:
     security_opt: ["no-new-privileges:true"]
 
   # Vietnamese speech to text on the CPU: sherpa-onnx with a Zipformer model,
-  # favouring the bank and account names each request gives. No published
-  # port: the web service reaches it at http://stt:8000.
+  # favouring the bank and account names each request gives; the AI
+  # assistant's dictation. No published port: the web service reaches it at
+  # http://stt:8000.
   stt:
     build:
       context: ../backend/stt

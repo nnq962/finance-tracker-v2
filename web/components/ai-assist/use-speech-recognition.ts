@@ -40,7 +40,7 @@ const errorMessages: Record<string, string> = {
 type Dictation = {
   supported: boolean
   listening: boolean
-  /** The recording is being turned into words (Whisper only). */
+  /** The recording is being turned into words (on the server only). */
   transcribing: boolean
   transcript: string
   interim: string
@@ -50,18 +50,19 @@ type Dictation = {
   cancel: () => void
 }
 
-// Asked once per page load: whether the server has Whisper.
-let enginePromise: Promise<"whisper" | "browser"> | undefined
+// Asked once per page load: whether the server has a recogniser.
+let enginePromise: Promise<"server" | "browser"> | undefined
 
 /**
- * Dictation in Vietnamese: recorded and sent to Whisper when the server has
- * it, which knows bank names far better, else through the browser's own
- * recogniser. Either way the whole transcript goes to `onEnd` once done.
- * When Whisper is over its limit or out of reach, the browser's recogniser
+ * Dictation in Vietnamese, the same on every browser: recorded and sent to
+ * the server, whose recogniser (sherpa-onnx, else Whisper) knows bank names
+ * and sums far better than the browsers' own; through the browser's
+ * recogniser only when the server has none. Either way the whole transcript
+ * goes to `onEnd` once done. When the server's cannot be had, the browser's
  * takes over for the rest of the visit, if there is one.
  */
 export function useSpeechRecognition({ onEnd }: { onEnd: (transcript: string) => void }): Dictation {
-  const [engine, setEngine] = React.useState<"whisper" | "browser">("browser")
+  const [engine, setEngine] = React.useState<"server" | "browser">("browser")
   // Why the recogniser changed, until the next try.
   const [notice, setNotice] = React.useState<string | null>(null)
   React.useEffect(() => {
@@ -82,8 +83,8 @@ export function useSpeechRecognition({ onEnd }: { onEnd: (transcript: string) =>
     setNotice("Vui lòng nói lại: đã chuyển sang nhận dạng giọng nói của trình duyệt.")
     return true
   }, [])
-  const whisper = useWhisperRecognition({ onEnd, onFallback: fallBack })
-  const active = engine === "whisper" && whisper.supported ? whisper : browser
+  const server = useServerRecognition({ onEnd, onFallback: fallBack })
+  const active = engine === "server" && server.supported ? server : browser
   return {
     ...active,
     error: active.error ?? notice,
@@ -147,7 +148,7 @@ function useBrowserRecognition({ onEnd }: { onEnd: (transcript: string) => void 
       recognition.current = null
       setListening(false)
       setInterim("")
-      // The bank and wallet names it steadily mishears, put right as Whisper's are on the server.
+      // The bank and wallet names it steadily mishears, put right as the server's are.
       const heard = normalizeTranscript(finals)
       setTranscript(heard)
       if (!cancelled.current) onEndRef.current(heard)
@@ -188,7 +189,7 @@ function recorderSupported() {
 }
 
 /** The first format this browser records in: Opus in WebM, or AAC in MP4 on Apple's. */
-/** Bits per second a recording is made at; Whisper hears speech as well at this as at ten times more. */
+/** Bits per second a recording is made at; the recognisers hear speech as well at this as at ten times more. */
 const SPEECH_BITRATE = 24_000
 
 function recordingFormat() {
@@ -199,15 +200,15 @@ function recordingFormat() {
 }
 
 /**
- * Dictation recorded from the microphone and sent to Whisper when stopped.
+ * Dictation recorded from the microphone and sent to the server when stopped.
  * Nothing shows while speaking; the words arrive in one piece afterwards.
  */
-function useWhisperRecognition({
+function useServerRecognition({
   onEnd,
   onFallback,
 }: {
   onEnd: (transcript: string) => void
-  /** Whisper cannot be had for now; true when the browser's recogniser took over. */
+  /** The server's recogniser cannot be had for now; true when the browser's took over. */
   onFallback: () => boolean
 }): Dictation {
   const supported = React.useSyncExternalStore(subscribe, recorderSupported, () => false)

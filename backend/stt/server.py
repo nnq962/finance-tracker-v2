@@ -10,6 +10,7 @@ model is loaded. Only the compose network reaches it.
 import io
 import json
 import os
+import threading
 import time
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -22,13 +23,18 @@ MODEL = os.environ.get("STT_MODEL_DIR", "/models/zipformer-vi-30M")
 SAMPLE_RATE = 16000
 # Recordings the app sends are a few seconds; anything far larger is refused.
 MAX_BYTES = 2_000_000
+THREADS = int(os.environ.get("STT_THREADS", "4"))
+# Sentences decoded at once, each on THREADS threads; the rest wait their turn
+# (about 50 ms each). Two of four fill the 8 cores compose allows; 24 at once
+# on four threads each, 96 threads on 8 cores, crawled.
+decoding = threading.BoundedSemaphore(int(os.environ.get("STT_PARALLEL", "2")))
 
 recognizer = sherpa_onnx.OfflineRecognizer.from_transducer(
     encoder=f"{MODEL}/encoder.onnx",
     decoder=f"{MODEL}/decoder.onnx",
     joiner=f"{MODEL}/joiner.onnx",
     tokens=f"{MODEL}/tokens.txt",
-    num_threads=int(os.environ.get("STT_THREADS", "4")),
+    num_threads=THREADS,
     # Beam search, for the hotwords: names favoured only where the sound fits them.
     decoding_method="modified_beam_search",
     # Eight paths kept, not four: the same on clean speech, a little more
@@ -82,8 +88,10 @@ class Handler(BaseHTTPRequestHandler):
         words = hotwords(self.headers.get("X-Hotwords", ""))
         stream = recognizer.create_stream(hotwords=words) if words else recognizer.create_stream()
         stream.accept_waveform(SAMPLE_RATE, samples)
-        started = time.perf_counter()
-        recognizer.decode_stream(stream)
+        with decoding:
+            # The model's own time, not the wait for a turn.
+            started = time.perf_counter()
+            recognizer.decode_stream(stream)
         self._send(200, {"text": stream.result.text.strip(), "ms": round((time.perf_counter() - started) * 1000)})
 
     def log_message(self, format: str, *args) -> None:
@@ -91,5 +99,11 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
 
+class Server(ThreadingHTTPServer):
+    # Python's default of 5 waiting connections reset some of 24 sent at once.
+    request_queue_size = 128
+    daemon_threads = True
+
+
 if __name__ == "__main__":
-    ThreadingHTTPServer(("0.0.0.0", int(os.environ.get("PORT", "8000"))), Handler).serve_forever()
+    Server(("0.0.0.0", int(os.environ.get("PORT", "8000"))), Handler).serve_forever()
