@@ -219,7 +219,7 @@ export function AiAssistDrawer<Result>({
                               </p>
                             ) : (
                               <TurningLines
-                                lines={[...hints, "Đang nghe… nói xong thì bấm dừng.", "Đang nhận dạng giọng nói…"]}
+                                lines={[...hints, "Đang nghe… ngừng nói là tự gửi, hoặc bấm dừng.", "Đang nhận dạng giọng nói…"]}
                                 active={speech.transcribing ? hints.length + 1 : speech.listening ? hints.length : hintIndex}
                               />
                             )}

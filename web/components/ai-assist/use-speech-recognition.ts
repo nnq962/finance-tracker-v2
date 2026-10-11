@@ -182,7 +182,55 @@ function useBrowserRecognition({ onEnd }: { onEnd: (transcript: string) => void 
 }
 
 /** A recording runs at most this long, then is sent as it is. */
-const MAX_RECORDING_MS = 30_000
+const MAX_RECORDING_MS = 15_000
+/** Quiet after speech before the recording ends by itself, as in the voice lab's sentence test. */
+const SILENCE_MS = 1_500
+/** No speech heard this long from the start: ended, and nothing sent. */
+const NO_SPEECH_MS = 6_000
+/** Above this level (RMS) the microphone hears speech. */
+const SPEECH_LEVEL = 0.03
+
+/**
+ * Watches the microphone's level and calls `onQuiet` once the speech is over
+ * (or never came). `heard` tells whether there was speech; `measured`, whether
+ * the level could be read at all: Safari may keep an audio context suspended,
+ * and then nothing can be told, and the recording is sent as it is.
+ */
+function watchForSilence(stream: MediaStream, onQuiet: () => void) {
+  const context = new AudioContext()
+  const analyser = context.createAnalyser()
+  analyser.fftSize = 1024
+  context.createMediaStreamSource(stream).connect(analyser)
+  void context.resume().catch(() => undefined)
+  const samples = new Float32Array(analyser.fftSize)
+  const startedAt = performance.now()
+  let lastLoud = 0
+  let loudFrames = 0
+  let heard = false
+  let measured = false
+  const timer = window.setInterval(() => {
+    if (context.state !== "running") return
+    measured = true
+    analyser.getFloatTimeDomainData(samples)
+    const rms = Math.sqrt(samples.reduce((sum, value) => sum + value * value, 0) / samples.length)
+    const now = performance.now()
+    // Two loud readings in a row, so a tap on the phone is not taken for speech.
+    loudFrames = rms > SPEECH_LEVEL ? loudFrames + 1 : 0
+    if (loudFrames >= 2) {
+      heard = true
+      lastLoud = now
+    }
+    if ((heard && now - lastLoud > SILENCE_MS) || (!heard && now - startedAt > NO_SPEECH_MS)) onQuiet()
+  }, 100)
+  return {
+    heard: () => heard,
+    measured: () => measured,
+    stop: () => {
+      window.clearInterval(timer)
+      void context.close().catch(() => undefined)
+    },
+  }
+}
 
 function recorderSupported() {
   return typeof window !== "undefined" && typeof MediaRecorder !== "undefined" && Boolean(navigator.mediaDevices?.getUserMedia)
@@ -277,18 +325,24 @@ function useServerRecognition({
     const limit = window.setTimeout(() => {
       if (recorder.current === current) release()
     }, MAX_RECORDING_MS)
+    // Ends by itself once the speaker stops, as a tap on stop would.
+    const silence = watchForSilence(stream, () => {
+      if (recorder.current === current) release()
+    })
 
     current.addEventListener("dataavailable", (event) => {
       if (event.data.size > 0) chunks.push(event.data)
     })
     current.addEventListener("stop", async () => {
       window.clearTimeout(limit)
+      silence.stop()
       stream.getTracks().forEach((track) => track.stop())
       if (recorder.current === current) recorder.current = null
       setListening(false)
       if (session.current !== token) return
-      // A tap on and off again holds no words, and is not worth a request.
-      if (Date.now() - startedAt < 600 || chunks.length === 0) {
+      // A tap on and off again, or a recording the level says held no speech,
+      // holds no words, and is not worth a request.
+      if (Date.now() - startedAt < 600 || chunks.length === 0 || (silence.measured() && !silence.heard())) {
         setError(errorMessages["no-speech"])
         return
       }
