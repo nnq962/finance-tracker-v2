@@ -663,7 +663,7 @@ function NavSection() {
       </Block>
       <Block label="Thanh tab" wide>
         <p className="text-sm text-muted-foreground">
-          Thanh tab nổi ở đáy màn hình (MobileBottomNav: icon và tên, tab đang mở trên viên xám nhạt) là
+          Thanh tab nổi ở đáy màn hình (MobileBottomNav: viên thuốc trắng kiểu iOS 26, tab đang mở trên viên xám nhạt) là
           khung của app; xem trực tiếp ở các trang chính. Đầu trang cuộn cùng trang; Tổng quan đặt avatar,
           lời chào và tên vào chỗ tên trang. Tabs dạng gạch chân ở mục Toggle group.
         </p>

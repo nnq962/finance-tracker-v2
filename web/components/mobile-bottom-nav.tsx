@@ -16,6 +16,7 @@ import { cn } from "cn"
 import { SettingsIcon } from "lucide-react"
 
 import { appNavigationItems, menuUrlFor } from "@/lib/app-navigation"
+import { smoothCapsule } from "@/lib/smooth-capsule"
 
 const mobileNavigationItems = [
   ...appNavigationItems,
@@ -260,6 +261,35 @@ export function MobileBottomNav() {
 
   const activeIndex = mobileNavigationItems.findIndex((item) => item.url === menuUrlFor(activePathname))
 
+  // The bar's size, for its outline, and where the current tab is, in whole
+  // pixels: a pill sliding to a fraction of a pixel was snapped to the grid by
+  // Safari as it stopped, a jerk in its last few pixels.
+  const barRef = useRef<HTMLDivElement>(null)
+  const tabRefs = useRef<(HTMLAnchorElement | null)[]>([])
+  const [bar, setBar] = useState({ width: 0, height: 0 })
+  const [pill, setPill] = useState({ x: 0, width: 0, height: 0 })
+  useLayoutEffect(() => {
+    const element = barRef.current
+    if (!element) return
+    const observer = new ResizeObserver(() => setBar({ width: element.offsetWidth, height: element.offsetHeight }))
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
+  useLayoutEffect(() => {
+    const tab = tabRefs.current[Math.max(activeIndex, 0)]
+    const element = barRef.current
+    if (tab && element) {
+      // Measured from the bar: each tab sits in an item of its own.
+      const box = tab.getBoundingClientRect()
+      setPill({
+        x: Math.round(box.left - element.getBoundingClientRect().left),
+        width: Math.round(box.width),
+        height: Math.round(box.height),
+      })
+    }
+  }, [activeIndex, bar.width])
+  const barOutline = bar.width ? smoothCapsule(bar.width, bar.height) : ""
+
   return (
     // Icons on a capsule across the screen, floating over the page;
     // the shell reserves its height in --tab-bar-space so the end of a page
@@ -269,32 +299,58 @@ export function MobileBottomNav() {
     // tab order too, and slides back when that element goes.
     <nav
       aria-label="Điều hướng chính trên di động"
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(0.75rem,calc(env(safe-area-inset-bottom,0px)-0.75rem))] transition-[translate,visibility] duration-300 ease-out motion-reduce:transition-none md:hidden [body:has([data-hide-tab-bar])_&]:invisible [body:has([data-hide-tab-bar])_&]:translate-y-full"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)-0.75rem))] transition-[translate,visibility] duration-300 ease-out motion-reduce:transition-none md:hidden [body:has([data-hide-tab-bar])_&]:invisible [body:has([data-hide-tab-bar])_&]:translate-y-full"
     >
-      <ul
-        style={
-          {
-            "--tab-count": mobileNavigationItems.length,
-            gridTemplateColumns: `repeat(${mobileNavigationItems.length}, minmax(0, 1fr))`,
-          } as CSSProperties
-        }
-        className="pointer-events-auto relative mx-auto grid w-full max-w-md rounded-full bg-card/85 p-1.5 shadow-[0_8px_30px_rgb(0_0_0/0.10)] backdrop-blur-xl backdrop-saturate-150 dark:ring-1 dark:ring-foreground/10">
-        {/* A black pill behind the current tab slides from tab to tab; its icon turns the accent lime. */}
-        <li
+      {/* iOS 26's tab bar (2026-10-11): a white capsule with continuous ends,
+          raised by a wide soft shadow, the current tab on a grey pill nearly
+          as tall, icons in ink. The capsule, its edge and the pill are layers
+          of their own behind the icons: with the blur on the list itself,
+          Safari redrew the icons as the pill slid and they shook. */}
+      <div ref={barRef} className="pointer-events-auto relative isolate mx-auto h-15 w-full max-w-md">
+        {/* The shadow on a plain capsule: blurred this wide, the ends' shape does not show in it. */}
+        <div
           aria-hidden="true"
-          className={cn(
-            "absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/var(--tab-count))] rounded-full bg-inverse transition-[translate,opacity] duration-300 ease-out motion-reduce:duration-150",
-            activeIndex < 0 && "opacity-0",
-          )}
-          style={{ translate: `${Math.max(activeIndex, 0) * 100}% 0` }}
+          className="absolute inset-0 -z-20 rounded-full shadow-[0_14px_44px_rgb(0_0_0/0.16),0_2px_8px_rgb(0_0_0/0.06)] dark:shadow-[0_14px_44px_rgb(0_0_0/0.5)]"
         />
-        {mobileNavigationItems.map((item) => {
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 rounded-full bg-card/95 backdrop-blur-xl backdrop-saturate-150"
+          style={barOutline ? { clipPath: `path("${barOutline}")`, borderRadius: 0 } : undefined}
+        />
+        {barOutline ? (
+          <svg aria-hidden="true" className="pointer-events-none absolute inset-0 size-full" viewBox={`0 0 ${bar.width} ${bar.height}`}>
+            <path d={barOutline} fill="none" stroke="currentColor" strokeWidth="1" className="text-foreground/5 dark:text-foreground/10" />
+          </svg>
+        ) : null}
+        {pill.width ? (
+          <div
+            aria-hidden="true"
+            className={cn(
+              "absolute top-1 left-0 bg-foreground/8 transition-[transform,opacity] duration-350 ease-[cubic-bezier(0.22,0.61,0.36,1)] will-change-transform motion-reduce:duration-150 dark:bg-foreground/13",
+              activeIndex < 0 && "opacity-0",
+            )}
+            style={{
+              width: pill.width,
+              height: pill.height,
+              transform: `translate3d(${pill.x}px, 0, 0)`,
+              clipPath: `path("${smoothCapsule(pill.width, pill.height)}")`,
+            }}
+          />
+        ) : null}
+      <ul
+        style={{ gridTemplateColumns: `repeat(${mobileNavigationItems.length}, minmax(0, 1fr))` } as CSSProperties}
+        className="relative grid h-full p-1"
+      >
+        {mobileNavigationItems.map((item, index) => {
           const isActive = menuUrlFor(activePathname) === item.url
           const Icon = item.icon
 
           return (
             <li key={item.url} className="relative min-w-0">
               <Link
+                ref={(node) => {
+                  tabRefs.current[index] = node
+                }}
                 href={item.url}
                 onTouchStart={() => {
                   touchPreviewPathnameRef.current = item.url
@@ -329,11 +385,15 @@ export function MobileBottomNav() {
                 onClick={(event) => navigateTo(event, item.url)}
                 aria-current={pathname === item.url ? "page" : undefined}
                 className={cn(
-                  "flex h-12 min-w-0 touch-manipulation items-center justify-center rounded-full text-muted-foreground transition-colors duration-300 outline-none select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:duration-150",
-                  isActive && "text-ai",
+                  "flex h-13 min-w-0 touch-manipulation items-center justify-center rounded-full text-foreground outline-none select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] focus-visible:ring-3 focus-visible:ring-ring/50",
                 )}
               >
-                <Icon className="size-6 shrink-0" strokeWidth={isActive ? 2.25 : 1.75} aria-hidden="true" />
+                {/* On a layer of its own, so the pill sliding past does not shake it. */}
+                <Icon
+                  className="size-6 shrink-0 [backface-visibility:hidden] [transform:translateZ(0)]"
+                  strokeWidth={isActive ? 2.4 : 1.75}
+                  aria-hidden="true"
+                />
                 {/* Icons alone on screen; the name is still each tab's accessible name. */}
                 <span className="sr-only">{item.mobileTitle}</span>
               </Link>
@@ -341,6 +401,7 @@ export function MobileBottomNav() {
           )
         })}
       </ul>
+      </div>
     </nav>
   )
 }
