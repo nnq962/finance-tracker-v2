@@ -198,8 +198,7 @@ const SPEECH_LEVEL = 0.03
  * the level could be read at all: Safari may keep an audio context suspended,
  * and then nothing can be told, and the recording is sent as it is.
  */
-function watchForSilence(stream: MediaStream, onQuiet: () => void) {
-  const context = new AudioContext()
+function watchForSilence(stream: MediaStream, onQuiet: () => void, context: AudioContext) {
   const analyser = context.createAnalyser()
   analyser.fftSize = 1024
   context.createMediaStreamSource(stream).connect(analyser)
@@ -307,6 +306,11 @@ function useServerRecognition({
     session.current = token
     setTranscript("")
     setError(null)
+    // Made now, in the tap: made after the wait for the microphone (a
+    // permission prompt), Chrome kept it suspended, so the level read 0, the
+    // wave stayed flat and silence never ended the recording.
+    const context = new AudioContext()
+    void context.resume().catch(() => undefined)
 
     let stream: MediaStream
     try {
@@ -318,10 +322,12 @@ function useServerRecognition({
       setError(
         name === "NotAllowedError" ? errorMessages["not-allowed"] : name === "NotFoundError" ? "Không tìm thấy micro." : errorMessages["audio-capture"],
       )
+      void context.close().catch(() => undefined)
       return
     }
     if (session.current !== token) {
       stream.getTracks().forEach((track) => track.stop())
+      void context.close().catch(() => undefined)
       return
     }
 
@@ -337,9 +343,13 @@ function useServerRecognition({
       if (recorder.current === current) release()
     }, MAX_RECORDING_MS)
     // Ends by itself once the speaker stops, as a tap on stop would.
-    const silence = watchForSilence(stream, () => {
-      if (recorder.current === current) release()
-    })
+    const silence = watchForSilence(
+      stream,
+      () => {
+        if (recorder.current === current) release()
+      },
+      context,
+    )
     watcher.current = silence
 
     current.addEventListener("dataavailable", (event) => {

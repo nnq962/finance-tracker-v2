@@ -339,6 +339,10 @@ function Body(props: BodyProps) {
   const [shownView, setShownView] = React.useState(view)
   const [leaving, setLeaving] = React.useState(false)
   if (view !== shownView && !leaving) setLeaving(true)
+  // The line keeps what it last said while it goes, not what the next phase would make it.
+  const [voiceLine, setVoiceLine] = React.useState("Đang nghe…")
+  const line = phase === "listening" ? "Đang nghe…" : phase === "transcribing" ? "Đang chuyển thành chữ…" : voiceLine
+  if (line !== voiceLine) setVoiceLine(line)
   React.useEffect(() => {
     if (!leaving) return
     const timer = window.setTimeout(() => {
@@ -351,12 +355,43 @@ function Body(props: BodyProps) {
   return (
     <div key={shownView} className={cn(leaving && sink)}>
       {shownView === "voice" ? (
-        <p key={phase === "listening" ? "listening" : "transcribing"} className={cn("pb-4 text-center text-lg font-semibold text-white", rise)}>
-          {phase === "listening" ? "Đang nghe…" : "Đang chuyển thành chữ…"}
-        </p>
+        <VoiceLine text={line} />
       ) : (
         <Talk {...props} />
       )}
+    </div>
+  )
+}
+
+/**
+ * The line over the bar while speaking. A new line rises in while the one
+ * before sinks away in the same place, at once, so there is no gap between
+ * them; both sit in one grid cell, so the height holds.
+ */
+function VoiceLine({ text }: { text: string }) {
+  const [lines, setLines] = React.useState([{ text, id: 0, leaving: false }])
+  const current = lines.at(-1)!
+  if (current.text !== text) setLines([...lines.filter((line) => !line.leaving).map((line) => ({ ...line, leaving: true })), { text, id: current.id + 1, leaving: false }])
+  React.useEffect(() => {
+    if (!lines.some((line) => line.leaving)) return
+    const timer = window.setTimeout(() => setLines((all) => all.filter((line) => !line.leaving)), LEAVE_MS)
+    return () => window.clearTimeout(timer)
+  }, [lines])
+  return (
+    <div className="grid pb-4 text-center text-lg font-semibold text-white [&>*]:col-start-1 [&>*]:row-start-1" aria-live="polite">
+      {lines.map((line) => (
+        <p
+          key={line.id}
+          aria-hidden={line.leaving || undefined}
+          className={cn(
+            line.leaving
+              ? "animate-out fade-out-0 slide-out-to-top-2 duration-[220ms] ease-[cubic-bezier(0.4,0,1,1)] fill-mode-forwards motion-reduce:animate-none"
+              : rise,
+          )}
+        >
+          {line.text}
+        </p>
+      ))}
     </div>
   )
 }
@@ -480,8 +515,10 @@ function Thinking() {
     <div className="space-y-3" role="status">
       <p className="flex items-center gap-2 text-sm font-medium">
         <SparklesIcon className="size-4 shrink-0 text-ai-strong" aria-hidden="true" />
-        <span key={step} className="text-shimmer animate-in fade-in-0 slide-in-from-bottom-1 duration-300 ease-out motion-reduce:animate-none">
-          {thinkingSteps[step].text}
+        {/* The step rises in on the outer span, the light sweeps on the inner:
+            both are animations, and on one element the first undid the other. */}
+        <span key={step} className="animate-in fade-in-0 slide-in-from-bottom-1 duration-300 ease-out motion-reduce:animate-none">
+          <span className="text-shimmer">{thinkingSteps[step].text}</span>
         </span>
       </p>
       <div className="h-8 w-1/2 animate-pulse rounded-full bg-muted motion-reduce:animate-none" />
