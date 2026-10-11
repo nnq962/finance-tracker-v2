@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
 
+import { AssistantHeaderButton, AssistantProvider } from "@/components/ai-assistant/assistant"
 import { AppSidebar } from "@/components/app-sidebar"
 import { AuthSessionGuard } from "@/components/auth-session-guard"
 import { MainBreadcrumb } from "@/components/main-breadcrumb"
@@ -39,6 +40,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
       <PushMessageListener />
       <TooltipProvider>
         <WelcomeProvider firstRun={firstRun}>
+          <AssistantProvider>
           <SidebarProvider
             data-app-shell="main"
             // The floating tab bar's height plus its gap from the screen's bottom edge.
@@ -61,6 +63,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
                     <MainBreadcrumb />
                   </div>
                   <div className="flex items-center gap-1">
+                    <AssistantHeaderButton />
                     <NotificationsButton variant="ghost" />
                     <ThemeToggle size="icon" />
                   </div>
@@ -75,6 +78,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
             </SidebarInset>
             <MobileBottomNav />
           </SidebarProvider>
+          </AssistantProvider>
         </WelcomeProvider>
       </TooltipProvider>
     </AuthSessionGuard>

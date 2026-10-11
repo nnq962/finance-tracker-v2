@@ -15,6 +15,7 @@ import {
 import { cn } from "cn"
 import { SettingsIcon } from "lucide-react"
 
+import { AssistantTabButton } from "@/components/ai-assistant/assistant"
 import { appNavigationItems, menuUrlFor } from "@/lib/app-navigation"
 import { smoothCapsule } from "@/lib/smooth-capsule"
 
@@ -303,14 +304,14 @@ export function MobileBottomNav() {
     // tab order too, and slides back when that element goes.
     <nav
       aria-label="Điều hướng chính trên di động"
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)-0.75rem))] transition-[translate,visibility] duration-300 ease-out motion-reduce:transition-none md:hidden [body:has([data-hide-tab-bar])_&]:invisible [body:has([data-hide-tab-bar])_&]:translate-y-full"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex items-center justify-center gap-3 px-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)-0.75rem))] transition-[translate,visibility] duration-300 ease-out motion-reduce:transition-none md:hidden [body:has([data-hide-tab-bar])_&]:invisible [body:has([data-hide-tab-bar])_&]:translate-y-full"
     >
       {/* iOS 26's tab bar (2026-10-11): a white capsule with continuous ends,
           raised by a wide soft shadow, the current tab on a grey pill nearly
           as tall, icons in ink. The capsule, its edge and the pill are layers
           of their own behind the icons: with the blur on the list itself,
           Safari redrew the icons as the pill slid and they shook. */}
-      <div ref={barRef} className="pointer-events-auto relative isolate mx-auto h-15 w-full max-w-md">
+      <div ref={barRef} className="pointer-events-auto relative isolate h-15 min-w-0 max-w-md flex-1">
         {/* The shadow on a plain capsule: blurred this wide, the ends' shape does not show in it. */}
         <div
           aria-hidden="true"
@@ -413,6 +414,7 @@ export function MobileBottomNav() {
         })}
       </ul>
       </div>
+      <AssistantTabButton />
     </nav>
   )
 }

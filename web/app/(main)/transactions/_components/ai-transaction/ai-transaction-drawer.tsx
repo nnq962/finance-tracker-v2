@@ -23,6 +23,9 @@ type AiTransactionDrawerProps = {
   quota: { remaining: number; limit: number; credits: number }
   /** The count after each request, as the server keeps it. */
   onQuotaChange: (quota: AiQuota) => void
+  /** A sentence to read as soon as it is open. */
+  initialRequest?: string
+  onInitialRequestTaken?: () => void
 }
 
 /** Records a transaction from a sentence, read by the local model on the server. */
@@ -34,6 +37,8 @@ export function AiTransactionDrawer({
   todayDateKey,
   quota,
   onQuotaChange,
+  initialRequest,
+  onInitialRequestTaken,
 }: AiTransactionDrawerProps) {
   return (
     <AiAssistDrawer
@@ -42,6 +47,8 @@ export function AiTransactionDrawer({
       prompt="Nói một câu về khoản thu chi, AI sẽ điền giúp bạn."
       examples={examples}
       quota={quota}
+      initialRequest={initialRequest}
+      onInitialRequestTaken={onInitialRequestTaken}
       onSubmit={async (text) => {
         const result = await parseTransactionWithAiAction(text)
         if (result.quota) onQuotaChange(result.quota)

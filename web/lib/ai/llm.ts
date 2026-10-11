@@ -36,3 +36,28 @@ export async function aiJson(messages: ChatMessage[], schema: object): Promise<u
   }
   return ollamaJson(messages, schema)
 }
+
+/**
+ * One JSON reply held to `schema`, for light work (sorting a request into a
+ * kind): from gemma on the local Ollama first, which is quick on a short
+ * prompt that is the same for every user and costs no Gemini quota; from
+ * Gemini when Ollama fails.
+ */
+export async function localAiJson(messages: ChatMessage[], schema: object): Promise<unknown> {
+  try {
+    return await ollamaJson(messages, schema, { timeoutMs: 10_000 })
+  } catch (error) {
+    console.warn("Ollama failed, falling back to Gemini", error instanceof Error ? error.message : error)
+  }
+  if (!geminiEnabled()) throw new Error("No model answered")
+  for (const model of geminiModels) {
+    if ((restingUntil.get(model) ?? 0) > Date.now()) continue
+    try {
+      return await geminiJson(model, messages, schema)
+    } catch (error) {
+      if (error instanceof GeminiError && error.status === 429) restingUntil.set(model, Date.now() + QUOTA_REST_MS)
+      console.warn("Gemini failed, trying the next model", error instanceof Error ? error.message : error)
+    }
+  }
+  throw new Error("No model answered")
+}

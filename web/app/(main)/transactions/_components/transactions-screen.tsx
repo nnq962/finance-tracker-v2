@@ -54,6 +54,8 @@ type TransactionsScreenProps = {
   aiQuota: AiQuota
   /** Opens the AI assistant straight away. */
   initialAiOpen?: boolean
+  /** A sentence for it to read as it opens, handed over by the app's assistant. */
+  initialAiRequest?: { text: string; key: string }
   /** Opened from a reminder to write something down. */
   initialAddOpen?: boolean
   /** A Pro purchase to write down, opened from the plan screen or an admin's sale notice. */
@@ -89,6 +91,7 @@ export function TransactionsScreen({
   transactions,
   aiQuota: initialAiQuota,
   initialAiOpen = false,
+  initialAiRequest,
   initialAddOpen = false,
   purchaseDraft,
 }: TransactionsScreenProps) {
@@ -143,6 +146,19 @@ export function TransactionsScreen({
     window.history.replaceState(null, "", pathname)
   }, [draft, pathname])
   const openAi = () => (hasAccount ? setAiOpen(true) : setNeedAccountOpen(true))
+  // A sentence handed over by the app's assistant, also while this page is
+  // already open (the address changes, the page stays): read as it opens.
+  const [aiRequest, setAiRequest] = React.useState(hasAccount ? initialAiRequest?.text : undefined)
+  const [aiRequestKey, setAiRequestKey] = React.useState(initialAiRequest?.key)
+  if (initialAiRequest && initialAiRequest.key !== aiRequestKey) {
+    setAiRequestKey(initialAiRequest.key)
+    if (hasAccount) {
+      setAiRequest(initialAiRequest.text)
+      setAiOpen(true)
+    } else {
+      setNeedAccountOpen(true)
+    }
+  }
   // Follows each request's answer, which carries the count after it.
   const [aiQuota, setAiQuota] = React.useState(initialAiQuota)
   const aiMonthRemaining = Math.max(0, aiQuota.limit - aiQuota.used)
@@ -368,6 +384,8 @@ export function TransactionsScreen({
         todayDateKey={todayDateKey}
         quota={{ remaining: aiMonthRemaining, limit: aiQuota.limit, credits: aiQuota.credits }}
         onQuotaChange={setAiQuota}
+        initialRequest={aiRequest}
+        onInitialRequestTaken={() => setAiRequest(undefined)}
       />
     </TransactionHistoryProvider>
   )

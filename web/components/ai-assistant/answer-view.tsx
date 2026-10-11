@@ -1,0 +1,293 @@
+"use client"
+
+import Link from "next/link"
+import { ArrowLeftRightIcon, ChevronRightIcon, MicIcon, PencilLineIcon, SparklesIcon, WalletIcon } from "lucide-react"
+
+import { DeltaBadge } from "@/components/app/delta-badge"
+import { IconTile } from "@/components/app/icon-tile"
+import { Money } from "@/components/app/money"
+import { Button } from "@/components/ui/button"
+import type { Answer, AnswerBlock, AnswerIcon, AnswerRow } from "@/lib/ai/assistant/types"
+import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
+import { cn } from "@/lib/utils"
+
+import type { TurnReply } from "./use-assistant"
+
+/** A question to ask next, one tap away. */
+export function FollowChip({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="h-9 shrink-0 rounded-full bg-field px-3.5 text-sm font-medium transition-transform duration-150 active:scale-[0.97] motion-reduce:transition-none"
+    >
+      {children}
+    </button>
+  )
+}
+
+/** Every answer: what it is about, the figure, the answer in a line, the detail, and where to go next. */
+function AnswerShell({
+  kicker,
+  figure,
+  line,
+  children,
+  follow,
+  action,
+}: {
+  kicker: string
+  figure?: React.ReactNode
+  line?: React.ReactNode
+  children?: React.ReactNode
+  follow?: React.ReactNode
+  action?: React.ReactNode
+}) {
+  return (
+    <>
+      <div className="space-y-1">
+        <p className="text-sm font-medium text-muted-foreground">{kicker}</p>
+        {figure}
+        {line ? <p className="text-sm text-muted-foreground">{line}</p> : null}
+      </div>
+      {children}
+      {action}
+      {follow ? <div className="-mx-5 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none]">{follow}</div> : null}
+    </>
+  )
+}
+
+function RowIcon({ icon, size = "sm" }: { icon: AnswerIcon; size?: "sm" }) {
+  if (icon.kind === "initials") {
+    return (
+      <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold">
+        {icon.text}
+      </span>
+    )
+  }
+  if (icon.kind === "transfer") return <IconTile icon={ArrowLeftRightIcon} tone="transfer" size={size} />
+  if (icon.kind === "account") return <IconTile icon={WalletIcon} tone="neutral" size={size} />
+  return <IconTile icon={categoryIconRegistry[icon.icon] ?? WalletIcon} tone={icon.color} size={size} />
+}
+
+function Row({ row }: { row: AnswerRow }) {
+  return (
+    <div className="flex min-h-14 items-center gap-3 py-2">
+      <RowIcon icon={row.icon} />
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-medium">{row.name}</span>
+        {row.sub ? (
+          <span className={cn("block truncate text-xs", row.subTone === "late" ? "text-destructive" : "text-muted-foreground")}>
+            {row.sub}
+          </span>
+        ) : null}
+      </span>
+      <Money
+        amount={row.amount}
+        size="sm"
+        tone={row.amountTone === "income" ? "income" : "default"}
+        sign={row.amountTone === "income" || row.amountTone === "expense" ? "always" : "auto"}
+      />
+    </div>
+  )
+}
+
+function Block({ block }: { block: AnswerBlock }) {
+  if (block.type === "bars") {
+    return (
+      <div className="space-y-3">
+        {block.rows.map((row) => (
+          <div key={row.name} className="flex items-center gap-3">
+            <RowIcon icon={row.icon} />
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <div className="flex justify-between gap-2 text-sm">
+                <span className="truncate">{row.name}</span>
+                <Money amount={row.amount} size="sm" />
+              </div>
+              <div className="h-1.5 rounded-full bg-track">
+                <div className="h-full rounded-full bg-foreground" style={{ width: `${row.share}%` }} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+  if (block.type === "compare") {
+    return (
+      <div className="space-y-3">
+        {block.rows.map((row, index) => (
+          <div key={row.label} className="space-y-1.5">
+            <div className="flex justify-between gap-2 text-sm">
+              <span className={cn("inline-block first-letter:uppercase", index > 0 && "text-muted-foreground")}>{row.label}</span>
+              <Money amount={row.amount} size="sm" tone={index > 0 ? "muted" : "default"} />
+            </div>
+            <div className="h-2.5 rounded-full bg-track">
+              <div
+                className={cn("h-full rounded-full", index === 0 ? "bg-foreground" : "bg-foreground/30")}
+                style={{ width: `${Math.max(row.share, row.amount ? 2 : 0)}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+  return (
+    <div className="space-y-2">
+      {block.groups.map((group, index) => (
+        <div key={group.heading ?? index} className="space-y-2">
+          {group.heading ? <p className="pt-1 text-xs font-semibold text-muted-foreground">{group.heading}</p> : null}
+          <div className="divide-y divide-separator rounded-2xl bg-field px-4">
+            {group.rows.map((row, rowIndex) => (
+              <Row key={rowIndex} row={row} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function AnswerBody({ answer, ask, onNavigate }: { answer: Answer; ask: (text: string) => void; onNavigate: () => void }) {
+  return (
+    <AnswerShell
+      kicker={answer.kicker}
+      figure={
+        answer.figure ? (
+          <div className="flex flex-wrap items-center gap-x-2">
+            <Money
+              amount={answer.figure.amount}
+              size="xl"
+              tone={answer.figure.tone === "income" ? "income" : "default"}
+            />
+            {answer.delta ? (
+              <DeltaBadge
+                current={answer.delta.current}
+                previous={answer.delta.previous}
+                goodWhen={answer.delta.goodWhen}
+                comparedTo={answer.delta.comparedTo}
+              />
+            ) : null}
+          </div>
+        ) : undefined
+      }
+      line={answer.line}
+      action={
+        answer.link ? (
+          <Button variant="secondary" asChild>
+            <Link href={answer.link.href} onClick={onNavigate}>
+              {answer.link.label} <ChevronRightIcon />
+            </Link>
+          </Button>
+        ) : undefined
+      }
+      follow={
+        answer.followUps.length
+          ? answer.followUps.map((text) => (
+              <FollowChip key={text} onClick={() => ask(text)}>
+                {text}
+              </FollowChip>
+            ))
+          : undefined
+      }
+    >
+      {answer.blocks.map((block, index) => (
+        <Block key={index} block={block} />
+      ))}
+    </AnswerShell>
+  )
+}
+
+const tryAsking = ["Tháng này tiêu bao nhiêu?", "Ai đang nợ tôi?"]
+
+/** What a turn shows, in the one card: the answer, or why there is none and what to do. */
+export function ReplyView({
+  said,
+  reply,
+  ask,
+  listen,
+  onRecord,
+  onNavigate,
+}: {
+  said: string
+  reply: TurnReply
+  ask: (text: string) => void
+  listen: () => void
+  /** Hands a transaction to record to the transactions page's assistant. */
+  onRecord: (text: string) => void
+  /** Closes the assistant as a link in it is followed. */
+  onNavigate: () => void
+}) {
+  const chips = tryAsking.map((text) => (
+    <FollowChip key={text} onClick={() => ask(text)}>
+      {text}
+    </FollowChip>
+  ))
+  switch (reply.kind) {
+    case "answer":
+      return <AnswerBody answer={reply.answer} ask={ask} onNavigate={onNavigate} />
+    case "record":
+      return (
+        <AnswerShell kicker="Đây là một khoản thu chi" line="Trợ lý này sắp ghi được giao dịch. Tạm thời, ghi bằng trợ lý ở trang Giao dịch.">
+          <Button onClick={() => onRecord(reply.text)}>
+            <PencilLineIcon /> Ghi khoản này
+          </Button>
+        </AnswerShell>
+      )
+    case "action":
+      return (
+        <AnswerShell
+          kicker="Chưa làm được việc này"
+          line="Trợ lý hiện chỉ trả lời câu hỏi về tiền của bạn. Ghi vay nợ, sửa hay xoá giao dịch sẽ có sau."
+          follow={chips}
+        />
+      )
+    case "other":
+      return (
+        <AnswerShell
+          kicker="Chưa trả lời được"
+          line="Mình chỉ trả lời về tiền bạn đã ghi trong app: chi tiêu, thu nhập, số dư và các khoản nợ."
+          follow={chips}
+        />
+      )
+    case "quota":
+      return (
+        <AnswerShell
+          kicker="Hết lượt AI tháng này"
+          figure={
+            <p className="text-xl font-semibold">
+              {reply.quota.limit}/{reply.quota.limit} lượt đã dùng
+            </p>
+          }
+          line={reply.isPro ? "Lượt mới có từ đầu tháng sau." : `Lượt mới có từ đầu tháng sau. Gói Pro có ${reply.proLimit} lượt mỗi tháng.`}
+          action={
+            reply.isPro ? undefined : (
+              <Button className="bg-ai text-ai-foreground hover:bg-ai/85" asChild>
+                <Link href="/settings?screen=plan" onClick={onNavigate}>
+                  <SparklesIcon /> Nâng cấp Pro
+                </Link>
+              </Button>
+            )
+          }
+        />
+      )
+    case "unheard":
+      return (
+        <AnswerShell kicker="Chưa nghe rõ" line={`${reply.message} Thử nói gần micro hơn, hoặc gõ câu hỏi bên dưới.`}>
+          <Button onClick={listen}>
+            <MicIcon /> Nói lại
+          </Button>
+        </AnswerShell>
+      )
+    default:
+      return (
+        <AnswerShell kicker="Chưa kết nối được" line="Mạng chậm hoặc AI đang bận. Câu này chưa bị tính lượt.">
+          {said ? (
+            <Button variant="secondary" onClick={() => ask(said)}>
+              Thử lại
+            </Button>
+          ) : null}
+        </AnswerShell>
+      )
+  }
+}

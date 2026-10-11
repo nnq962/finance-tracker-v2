@@ -15,6 +15,7 @@ import { Rating } from "@/components/app/rating"
 import { RulerSlider } from "@/components/app/ruler-slider"
 import { SegmentedProgress } from "@/components/app/steps"
 import { Stepper } from "@/components/app/stepper"
+import { ReplyView } from "@/components/ai-assistant/answer-view"
 import { VoiceWave } from "@/components/app/voice-wave"
 import { WheelPicker, WheelPickerGroup } from "@/components/app/wheel-picker"
 import { ColorPicker } from "@/components/forms/color-picker"
@@ -476,6 +477,9 @@ function ProgressSection() {
       <Block label="Sóng giọng nói · khi ghi âm">
         <VoiceWaveSample />
       </Block>
+      <Block label="Trợ lý AI · thẻ trả lời (khối ghép theo câu hỏi)">
+        <AssistantAnswerSample />
+      </Block>
       <Block label="Khung chờ · đang tải">
         <div className="flex items-center gap-3">
           <Skeleton className="size-12 rounded-full" />
@@ -516,6 +520,60 @@ function VoiceWaveSample() {
           {listening ? "Dừng" : "Nói"}
         </Button>
       </div>
+    </div>
+  )
+}
+
+/** An answer as the assistant shows it: a figure, its change, and blocks picked for the question. */
+const sampleAnswer: React.ComponentProps<typeof ReplyView>["reply"] = {
+  kind: "answer",
+  plan: {
+    answerable: true,
+    measure: "spending",
+    view: "total",
+    period: { preset: "this_month", days: null, month: null, year: null, from: null, to: null },
+    compare: "previous",
+    groupIds: [],
+    categoryIds: [],
+    accountIds: [],
+    contactIds: [],
+    search: "",
+    limit: null,
+  },
+  quota: { used: 3, limit: 15, credits: 0 },
+  answer: {
+    kicker: "Ăn uống · tháng 10 (1–11/10) so với 1–11/9",
+    figure: { amount: 2_340_000, tone: "plain" },
+    delta: { current: 2_340_000, previous: 2_090_000, goodWhen: "down", comparedTo: "1–11/9" },
+    line: "Chi nhiều hơn 250.000đ",
+    blocks: [
+      {
+        type: "compare",
+        rows: [
+          { label: "tháng 10 (1–11/10)", amount: 2_340_000, share: 100 },
+          { label: "1–11/9", amount: 2_090_000, share: 89 },
+        ],
+      },
+      {
+        type: "rows",
+        groups: [
+          {
+            rows: [
+              { icon: { kind: "category", icon: "utensils", color: "orange" }, name: "Ăn trưa", sub: "+180.000đ so với 1–11/9", amount: -1_120_000, amountTone: "expense" },
+              { icon: { kind: "category", icon: "coffee", color: "amber" }, name: "Cà phê", sub: "+90.000đ so với 1–11/9", amount: -540_000, amountTone: "expense" },
+            ],
+          },
+        ],
+      },
+    ],
+    followUps: ["Khoản nào lớn nhất?", "Xem các khoản"],
+  },
+}
+
+function AssistantAnswerSample() {
+  return (
+    <div className="flex flex-col gap-4 rounded-[20px] bg-card p-5">
+      <ReplyView said="" reply={sampleAnswer} ask={() => {}} listen={() => {}} onRecord={() => {}} onNavigate={() => {}} />
     </div>
   )
 }

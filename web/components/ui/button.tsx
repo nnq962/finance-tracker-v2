@@ -11,7 +11,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/85",
+        // Hover: a veil fading in over the button, not its background
+        // fading: a background colour fading beside something redrawn every
+        // frame (the voice wave) flickered in Chrome; the veil's opacity is
+        // the compositor's.
+        default:
+          "relative isolate bg-primary text-primary-foreground after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:bg-primary-foreground/15 after:opacity-0 after:transition-opacity after:duration-150 hover:after:opacity-100 motion-reduce:after:transition-none",
         outline:
           "bg-card hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
         secondary:

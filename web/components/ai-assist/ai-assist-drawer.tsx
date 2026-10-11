@@ -48,6 +48,9 @@ type AiAssistDrawerProps<Result> = {
   examples: string[]
   /** Requests left this month out of the plan's limit, and AI credits, shown under the title. */
   quota?: { remaining: number; limit: number; credits: number }
+  /** A request to send as soon as the drawer is open, as if just said. */
+  initialRequest?: string
+  onInitialRequestTaken?: () => void
   /** Turns what was said into a result; rejects with a message to show. */
   onSubmit: (text: string) => Promise<Result>
   renderResult: (result: Result, actions: { retry: () => void; close: () => void }) => React.ReactNode
@@ -64,6 +67,8 @@ export function AiAssistDrawer<Result>({
   prompt,
   examples,
   quota,
+  initialRequest,
+  onInitialRequestTaken,
   onSubmit,
   renderResult,
 }: AiAssistDrawerProps<Result>) {
@@ -97,6 +102,22 @@ export function AiAssistDrawer<Result>({
   }
 
   const speech = useSpeechRecognition({ onEnd: submit })
+
+  // A request handed over sends once the drawer is open, after this render.
+  const submitRef = React.useRef(submit)
+  const takenRef = React.useRef(onInitialRequestTaken)
+  React.useEffect(() => {
+    submitRef.current = submit
+    takenRef.current = onInitialRequestTaken
+  })
+  React.useEffect(() => {
+    if (!open || !initialRequest) return
+    const timer = window.setTimeout(() => {
+      takenRef.current?.()
+      submitRef.current(initialRequest)
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [open, initialRequest])
   const heard = `${speech.transcript} ${speech.interim}`.trim()
 
   const reset = () => {
