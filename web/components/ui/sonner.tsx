@@ -12,7 +12,10 @@ import { CheckIcon, InfoIcon, Loader2Icon, TriangleAlertIcon, XIcon } from "luci
  * wide as the screen less 16 a side on phones, 400 on wider screens. The status glyph sits bare in its
  * meaning colour (success in the island's lime); the title takes up to two
  * lines, or one above a one-line description, cut with "…"; an action such
- * as Hoàn tác is lime text at the end. Sonner keeps the behaviour
+ * as Hoàn tác is lime text at the end. Its shadow falls below it only: a
+ * wide one reached the top of the screen, and Safari 26 tinted the status bar
+ * from it, a lighter band over the light theme (found in a lab on an iPhone).
+ * Sonner keeps the behaviour
  * (stacking, swipe to dismiss, timers).
  */
 const Toaster = ({ style, ...props }: ToasterProps) => {
@@ -37,7 +40,7 @@ const Toaster = ({ style, ...props }: ToasterProps) => {
           // A min height, not a height: Sonner measures a toast at height auto to
           // lay out the expanded stack, and the content alone is at most 36 high.
           toast:
-            "inset-x-0 mx-auto flex min-h-16 w-full! items-center gap-3 rounded-[20px] bg-island pr-2 pl-5 font-sans text-sm text-island-foreground shadow-[0_10px_40px_rgb(0_0_0/0.3)] has-[[data-icon]]:pl-4",
+            "inset-x-0 mx-auto flex min-h-16 w-full! items-center gap-3 rounded-[20px] bg-island pr-2 pl-5 font-sans text-sm text-island-foreground shadow-[0_14px_30px_-10px_rgb(0_0_0/0.4),0_2px_6px_rgb(0_0_0/0.12)] has-[[data-icon]]:pl-4",
           // Relative: Sonner wraps the loading spinner in a layer centred on its
           // nearest positioned box, which was the whole toast.
           icon: "relative flex size-6 shrink-0 items-center justify-center [&_svg]:size-5",
