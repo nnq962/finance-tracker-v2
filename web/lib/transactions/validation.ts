@@ -160,5 +160,6 @@ export function parseTransactionFormData(
     kind,
     accountId: getDocumentId(formData, "accountId", "Tài khoản"),
     categoryId: getDocumentId(formData, "categoryId", "Hạng mục"),
+    excluded: formData.get("excluded") === "on" || formData.get("excluded") === "true",
   }
 }

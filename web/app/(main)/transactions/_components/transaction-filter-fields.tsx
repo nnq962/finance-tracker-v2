@@ -10,12 +10,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   Field,
+  FieldContent,
   FieldError,
   FieldGroup,
   FieldLabel,
   FieldLegend,
   FieldSet,
 } from "@/components/ui/field"
+import { Switch } from "@/components/ui/switch"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { Account } from "@/lib/accounts/types"
 import { getCategoryColor } from "@/lib/categories/category-colors"
@@ -47,7 +49,8 @@ export function countActiveFilters(
     Number(searchFilters.minAmount !== null) +
     Number(searchFilters.maxAmount !== null) +
     searchFilters.accountIds.length +
-    searchFilters.categoryGroupIds.length
+    searchFilters.categoryGroupIds.length +
+    Number(Boolean(searchFilters.excludedOnly))
   )
 }
 
@@ -68,9 +71,11 @@ export function filtersForKind(
       : categoryGroups.filter((group) => group.type === kind).map((group) => group.id),
   )
   const categoryGroupIds = searchFilters.categoryGroupIds.filter((id) => keep.has(id))
-  return categoryGroupIds.length === searchFilters.categoryGroupIds.length
+  // Transfers and loans are never left out of the figures, so that filter goes too.
+  const dropExcluded = Boolean(searchFilters.excludedOnly) && (kind === "transfer" || kind === "debt")
+  return categoryGroupIds.length === searchFilters.categoryGroupIds.length && !dropExcluded
     ? searchFilters
-    : { ...searchFilters, categoryGroupIds }
+    : { ...searchFilters, categoryGroupIds, ...(dropExcluded ? { excludedOnly: false } : {}) }
 }
 
 export type TransactionFilterFieldsProps = {
@@ -305,6 +310,20 @@ export function TransactionFilterFields({
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
+        </Field>
+      ) : null}
+
+      {/* Income and spending only: transfers and loans are never in the figures. */}
+      {filter === "all" || filter === "expense" || filter === "income" ? (
+        <Field orientation="horizontal">
+          <FieldContent>
+            <FieldLabel htmlFor={`${idPrefix}-excluded`}>Chỉ khoản không tính</FieldLabel>
+          </FieldContent>
+          <Switch
+            id={`${idPrefix}-excluded`}
+            checked={Boolean(searchFilters.excludedOnly)}
+            onCheckedChange={(excludedOnly) => onSearchFiltersChange({ ...searchFilters, excludedOnly })}
+          />
         </Field>
       ) : null}
     </FieldGroup>

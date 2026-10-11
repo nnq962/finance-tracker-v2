@@ -45,7 +45,7 @@ export function getOverviewSummary(
   const currentMonth = today.slice(0, 7)
 
   for (const transaction of transactions) {
-    if (transaction.source || transaction.kind === "transfer") continue
+    if (transaction.source || transaction.kind === "transfer" || transaction.excluded) continue
     const month = dateKey(transaction.occurredAt).slice(0, 7)
     const bucket = monthByKey.get(month)
     if (!bucket) continue

@@ -14,6 +14,7 @@ import {
   deleteTransaction,
   getDebtPaymentsInRange,
   getTransactionsInRange,
+  setTransactionExcluded,
   updateTransaction,
 } from "@/lib/transactions/repository"
 import type { Transaction, TransactionActionResult } from "@/lib/transactions/types"
@@ -79,6 +80,23 @@ export async function updateTransactionAction(
       transactionId,
       parseTransactionFormData(formData),
     )
+    revalidateTransactionPaths()
+    return { success: true }
+  } catch (error) {
+    return failure(error)
+  }
+}
+
+/** Leaves a transaction out of the figures, or counts it again, from its details. */
+export async function setTransactionExcludedAction(
+  transactionId: string,
+  excluded: boolean,
+): Promise<TransactionActionResult> {
+  const user = await requireSession()
+
+  try {
+    assertTransactionId(transactionId)
+    await setTransactionExcluded(user.uid, transactionId, excluded === true)
     revalidateTransactionPaths()
     return { success: true }
   } catch (error) {

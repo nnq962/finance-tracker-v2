@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { CoinsIcon, TagIcon, WalletCardsIcon } from "lucide-react"
+import { CoinsIcon, EyeOffIcon, TagIcon, WalletCardsIcon } from "lucide-react"
 
 import { Collapse } from "@/components/app/collapse"
 import { FormSection } from "@/components/app/form-section"
@@ -10,6 +10,7 @@ import { AccountLogo } from "@/components/account-logo"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
@@ -188,6 +189,25 @@ export function TransactionFilterSheet({
               title="Số tiền"
               value={amountSummary(searchFilters)}
               onClick={() => go("amount")}
+            />
+          </SettingsGroup>
+        ) : null}
+
+        {/* Income and spending only: transfers and loans are never in the figures. */}
+        {screen === "filters" && (filter === "all" || filter === "expense" || filter === "income") ? (
+          <SettingsGroup>
+            <SettingsRow
+              icon={EyeOffIcon}
+              tone="neutral"
+              title="Chỉ khoản không tính"
+              description="Không tính vào thống kê"
+              action={
+                <Switch
+                  aria-label="Chỉ khoản không tính vào thống kê"
+                  checked={Boolean(searchFilters.excludedOnly)}
+                  onCheckedChange={(excludedOnly) => change({ excludedOnly })}
+                />
+              }
             />
           </SettingsGroup>
         ) : null}

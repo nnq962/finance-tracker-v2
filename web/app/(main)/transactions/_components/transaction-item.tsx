@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { EyeOffIcon } from "lucide-react"
 
 import { Money } from "@/components/app/money"
 import { SettingsRow } from "@/components/settings-list"
@@ -69,12 +70,19 @@ export function TransactionItem({
       <SettingsRow
         icon={icon}
         tone={color}
+        // Left out of the figures (chosen 2026-10-11): the whole row grey, and said on its second line.
+        muted={transaction.excluded}
         title={<MarkedTitle title={transaction.title} query={highlight} />}
         // The account; the icon already shows the category's group. Where the
         // list is a wide container (the transactions page on desktop, not a
         // phone or the overview's day sheet), the note follows it on the line.
         description={
-          baseDescription ? (
+          transaction.excluded ? (
+            <span className="inline-flex items-center gap-1">
+              <EyeOffIcon className="size-3.5 shrink-0" aria-hidden="true" />
+              Không tính{baseDescription ? ` · ${baseDescription}` : ""}
+            </span>
+          ) : baseDescription ? (
             <>
               {baseDescription}
               {transaction.note ? <span className="hidden @2xl:inline"> · {transaction.note}</span> : null}
@@ -91,8 +99,8 @@ export function TransactionItem({
                 }
                 sign={transaction.kind === "transfer" && amount === undefined ? "never" : "always"}
                 size="sm"
-                // Only money coming in is coloured, as in the mockup.
-                tone={transaction.kind === "income" ? "income" : "default"}
+                // Only money coming in is coloured, as in the mockup; none when left out.
+                tone={transaction.excluded ? "muted" : transaction.kind === "income" ? "income" : "default"}
               />
               <time
                 className="text-xs text-muted-foreground"

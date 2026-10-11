@@ -20,7 +20,7 @@ export function MonthSummary({
   const totals = getTransactionSummary(transactions)
   // Loans move money without being income or spending, as in the totals.
   const count = (kind: "income" | "expense") =>
-    transactions.filter((transaction) => transaction.kind === kind && transaction.source !== "debt").length
+    transactions.filter((transaction) => transaction.kind === kind && transaction.source !== "debt" && !transaction.excluded).length
 
   return (
     <FlowTiles

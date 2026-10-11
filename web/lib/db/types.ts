@@ -219,6 +219,7 @@ export interface Transactions {
   categoryItemId: string | null;
   createdAt: Generated<Timestamp>;
   debtId: string | null;
+  excluded: Generated<boolean>;
   fee: Generated<number>;
   fromAccountId: string | null;
   id: Generated<string>;

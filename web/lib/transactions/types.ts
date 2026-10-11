@@ -9,6 +9,8 @@ export type TransactionPeriod = "week" | "month"
 
 export type TransactionSearchFilters = {
   query: string
+  /** Only the transactions left out of the figures. */
+  excludedOnly?: boolean
   minAmount: number | null
   maxAmount: number | null
   accountIds: string[]
@@ -22,6 +24,8 @@ export type CashFlowTransactionValues = {
   categoryId: string
   note?: string
   occurredAt: Date
+  /** Left out of the figures (totals, charts, the assistant), still moving the balance. */
+  excluded?: boolean
 }
 
 export type TransferTransactionValues = {
@@ -48,6 +52,8 @@ export type Transaction = {
   occurredAt: string
   kind: SupportedTransactionKind
   note?: string
+  /** Left out of the figures (totals, charts, the assistant); the balance still moved. */
+  excluded?: boolean
   accountId?: string
   accountName?: string
   categoryId?: string

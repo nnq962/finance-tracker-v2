@@ -1,7 +1,9 @@
 "use client"
 
+import * as React from "react"
 import { ArrowRightIcon, CopyIcon, PencilIcon, type LucideIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 import { AccountLogo } from "@/components/account-logo"
 import { IconTile } from "@/components/app/icon-tile"
@@ -16,9 +18,10 @@ import type { CategoryItem } from "@/lib/categories/types"
 import { formatLongDate, formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
 import { scheduleUndoableDelete } from "@/lib/undoable-delete"
 
-import { deleteTransactionAction } from "../actions"
+import { deleteTransactionAction, setTransactionExcludedAction } from "../actions"
 import type { Transaction } from "../_types/transaction"
 import { useTransactionHistory } from "./add-transaction/transaction-history-context"
+import { ExcludedRow } from "./excluded-row"
 
 type TransactionDetailsSheetProps = {
   accounts: Account[]
@@ -99,6 +102,23 @@ export function TransactionDetailsSheet({
   }
 
   const fee = transaction.fee ?? 0
+
+  // Switched here at once; the page catches up as the server saves it, and
+  // a failure switches it back.
+  const [excluded, setExcluded] = React.useState(Boolean(transaction.excluded))
+  const [savedExcluded, setSavedExcluded] = React.useState(Boolean(transaction.excluded))
+  if (Boolean(transaction.excluded) !== savedExcluded) {
+    setSavedExcluded(Boolean(transaction.excluded))
+    setExcluded(Boolean(transaction.excluded))
+  }
+  const changeExcluded = async (next: boolean) => {
+    setExcluded(next)
+    const result = await setTransactionExcludedAction(transaction.id, next)
+    if (!result.success) {
+      setExcluded(!next)
+      toast.error(result.error)
+    }
+  }
 
   return (
     <PageSheet
@@ -203,6 +223,18 @@ export function TransactionDetailsSheet({
               fullDescription
             />
           ) : null}
+        </SettingsGroup>
+      )}
+
+      {/* Income and spending only: transfers and loans are never in the figures. */}
+      {isDebt || isTransfer ? null : (
+        <SettingsGroup>
+          <ExcludedRow
+            kind={transaction.kind === "income" ? "income" : "expense"}
+            accountName={transaction.accountName}
+            checked={excluded}
+            onCheckedChange={changeExcluded}
+          />
         </SettingsGroup>
       )}
 

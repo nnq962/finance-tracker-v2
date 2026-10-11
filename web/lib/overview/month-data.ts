@@ -25,7 +25,7 @@ export type MonthAllocation = {
 /**
  * Per Vietnam day ("YYYY-MM-DD"). Loans are left out, as in the allocation
  * chart and the six-month chart: borrowing and lending are not income or
- * spending.
+ * spending; so are transactions the user left out of the figures.
  */
 export function summarizeDays(transactions: Transaction[]) {
   const days: Record<string, DayTotals> = {}
@@ -33,8 +33,11 @@ export function summarizeDays(transactions: Transaction[]) {
     if (transaction.source) continue
     const key = toDateKey(transaction.occurredAt)
     const day = (days[key] ??= { income: 0, expense: 0, count: 0 })
-    if (transaction.kind === "income") day.income += Math.abs(transaction.amount)
-    if (transaction.kind === "expense") day.expense += Math.abs(transaction.amount)
+    // Still a transaction that day, but left out of its sums.
+    if (!transaction.excluded) {
+      if (transaction.kind === "income") day.income += Math.abs(transaction.amount)
+      if (transaction.kind === "expense") day.expense += Math.abs(transaction.amount)
+    }
     day.count += 1
   }
   return days
@@ -44,7 +47,7 @@ export function summarizeDays(transactions: Transaction[]) {
 export function summarizeAllocation(transactions: Transaction[]) {
   const months: Record<string, MonthAllocation> = {}
   for (const transaction of transactions) {
-    if (transaction.source || transaction.kind === "transfer") continue
+    if (transaction.source || transaction.kind === "transfer" || transaction.excluded) continue
     const month = toDateKey(transaction.occurredAt).slice(0, 7)
     const totals = (months[month] ??= { expense: {}, income: {} })[transaction.kind]
     const key = transaction.categoryGroupId ?? "other"

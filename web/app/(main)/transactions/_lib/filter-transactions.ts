@@ -43,6 +43,7 @@ export function filterTransactions(
     )
 
     return (
+      (!searchFilters.excludedOnly || transaction.excluded === true) &&
       matchesFilter &&
       matchesAmount &&
       matchesAccount &&

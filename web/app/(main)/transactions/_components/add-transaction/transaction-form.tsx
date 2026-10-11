@@ -25,6 +25,7 @@ import type {
 } from "@/lib/transactions/types"
 import { cn } from "@/lib/utils"
 
+import { ExcludedRow } from "../excluded-row"
 import { AccountPicker, canTransfer, TransferAccounts } from "./fields/account-fields"
 import { CategoryGrid, CategoryPicker, gridCategories, type RetiredCategory } from "./fields/category-fields"
 import type { TransactionDraft, TransactionFieldErrors, TransactionFieldName } from "./form-types"
@@ -126,6 +127,8 @@ export function TransactionForm({
   const keptIds = editedIds
   const usable = (account: Account, keep: string[]) => account.status === "active" || keep.includes(account.id)
 
+  // Left out of the figures: as the transaction edited, or the one written again, had it.
+  const [excluded, setExcluded] = React.useState(Boolean(defaultValues?.excluded ?? draft?.copyOf?.excluded))
   const [amount, setAmount] = React.useState<number | null>(
     defaultValues ? Math.abs(defaultValues.amount) : (draft?.amount ?? null),
   )
@@ -437,6 +440,19 @@ export function TransactionForm({
             <FieldError className="px-4">{errors.accountId ?? errors.date}</FieldError>
           ) : null}
         </div>
+
+        {/* Last, as it is seldom wanted: income and spending only. */}
+        {cashFlowKind ? (
+          <SettingsGroup>
+            <ExcludedRow
+              name="excluded"
+              kind={cashFlowKind}
+              accountName={chosenAccount?.name}
+              checked={excluded}
+              onCheckedChange={setExcluded}
+            />
+          </SettingsGroup>
+        ) : null}
       </div>
 
       {screen ? null : (

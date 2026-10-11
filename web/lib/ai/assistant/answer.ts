@@ -267,7 +267,11 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
   const accountIds = new Set(plan.accountIds)
   const search = fold(plan.search)
   const kinds = measure === "spending" ? ["expense"] : measure === "income" ? ["income"] : measure === "net" ? ["expense", "income"] : ["expense", "income", "transfer"]
+  // What the user left out of the figures is left out of every sum; a list of
+  // the movements themselves still shows it.
+  const listing = plan.view === "list" || measure === "transactions"
   const keep = (transaction: Transaction) =>
+    (listing || !transaction.excluded) &&
     kinds.includes(transaction.kind) &&
     (groupIds.size + categoryIds.size === 0 ||
       groupIds.has(transaction.categoryGroupId ?? "") ||
@@ -284,7 +288,7 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
   ])
 
   const sum = (rows: Transaction[], kind?: string) =>
-    rows.filter((row) => !kind || row.kind === kind).reduce((total, row) => total + Math.abs(row.amount), 0)
+    rows.filter((row) => !row.excluded && (!kind || row.kind === kind)).reduce((total, row) => total + Math.abs(row.amount), 0)
   const value = (rows: Transaction[]) => (measure === "net" ? sum(rows, "income") - sum(rows, "expense") : sum(rows))
 
   // What the answer is about: the categories asked for, a word searched, or the measure.

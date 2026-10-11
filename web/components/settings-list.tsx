@@ -188,6 +188,12 @@ type SettingsRowProps = {
   /** Highlights the row whose screen is shown next to the list (md and up). */
   active?: boolean
   disabled?: boolean
+  /**
+   * Greys the row out, its tile without colour and its words grey, for an
+   * entry that does not count (a transaction left out of the figures). It
+   * still opens; what is at its end greys itself.
+   */
+  muted?: boolean
   /** Centered, red text for a destructive action such as signing out. */
   destructive?: boolean
   /** An action revealed by swiping the row left, e.g. delete. */
@@ -241,6 +247,7 @@ function SettingsRow({
   active = false,
   disabled = false,
   destructive = false,
+  muted = false,
   swipeAction,
   collapsed,
   unread = false,
@@ -255,12 +262,16 @@ function SettingsRow({
       {hasMedia ? (
         // Centred on the row, also beside a two-line title and description.
         <ItemMedia className="relative group-has-data-[slot=item-description]/item:translate-y-0 group-has-data-[slot=item-description]/item:self-center">
-          {icon ? <IconTile icon={icon} tone={tone} size="sm" /> : media}
+          {icon ? (
+            <IconTile icon={icon} tone={muted ? "neutral" : tone} size="sm" className={cn(muted && "text-muted-foreground")} />
+          ) : (
+            media
+          )}
           {unread ? unreadDot("absolute -top-1 -right-1 size-3 ring-2 ring-card") : null}
         </ItemMedia>
       ) : null}
       <ItemContent className={cn("gap-0.5", destructive && "items-center")}>
-        <ItemTitle className={cn(destructive && "text-destructive", unread && "font-semibold")}>
+        <ItemTitle className={cn(destructive && "text-destructive", unread && "font-semibold", muted && "text-muted-foreground")}>
           {unread && !hasMedia ? unreadDot("mr-1.5 inline-block size-2 shrink-0") : null}
           {title}
           {unread ? <span className="sr-only">, chưa đọc</span> : null}

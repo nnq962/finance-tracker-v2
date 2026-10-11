@@ -112,7 +112,27 @@ async function run() {
     assert.throws(() => validation.parseTransactionFormData(form(tomorrow)), /sau hôm nay/)
     assert.throws(() => validation.parseTransactionFormData(form('1999-12-31')), /năm 2000/)
 
-    console.log('Transaction checks passed: request ids, balances, negative balances, recent per account, date range.')
+    // Left out of the figures: the form's switch is read, the balance still
+    // moves, and it can be switched later without touching the balance.
+    const excludedForm = form(today)
+    excludedForm.set('excluded', 'on')
+    assert.equal(validation.parseTransactionFormData(excludedForm).excluded, true)
+    assert.equal(validation.parseTransactionFormData(form(today)).excluded, false)
+    const before = await balance(wallet)
+    const left = randomUUID()
+    await transactions.createTransaction(userId, { ...expense, amount: 7_000, excluded: true }, left)
+    assert.equal(await balance(wallet), before - 7_000)
+    const stored = async () => (await sql('SELECT excluded FROM transactions WHERE id = $1', [left])).rows[0].excluded
+    assert.equal(await stored(), true)
+    await transactions.setTransactionExcluded(userId, left, false)
+    assert.equal(await stored(), false)
+    assert.equal(await balance(wallet), before - 7_000)
+    await assert.rejects(() => transactions.setTransactionExcluded(otherId, left, true))
+    // A transfer is never left out.
+    await assert.rejects(() => sql(`INSERT INTO transactions (user_id, kind, amount, from_account_id, to_account_id, occurred_at, excluded)
+      VALUES ($1, 'transfer', 1000, $2, $3, now(), true)`, [userId, wallet, bank]))
+
+    console.log('Transaction checks passed: request ids, balances, negative balances, recent per account, date range, left out of the figures.')
   } finally {
     await cleanup()
   }

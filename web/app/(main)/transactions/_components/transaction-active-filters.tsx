@@ -47,6 +47,13 @@ export function getSheetFilterChips(
       remove: () => ({ ...searchFilters, minAmount: null, maxAmount: null }),
     })
   }
+  if (searchFilters.excludedOnly) {
+    chips.push({
+      key: "excluded",
+      label: "Không tính vào thống kê",
+      remove: () => ({ ...searchFilters, excludedOnly: false }),
+    })
+  }
   return chips
 }
 

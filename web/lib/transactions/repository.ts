@@ -89,7 +89,7 @@ function selectTransactions(userId: string) {
     .leftJoin("debts as d", "d.id", "t.debtId")
     .leftJoin("contacts as c", "c.id", "d.contactId")
     .select([
-      "t.id", "t.kind", "t.amount", "t.fee", "t.note", "t.occurredAt", "t.debtId",
+      "t.id", "t.kind", "t.amount", "t.fee", "t.note", "t.occurredAt", "t.debtId", "t.excluded",
       "t.accountId", "a.name as accountName",
       "t.fromAccountId", "fa.name as fromAccountName",
       "t.toAccountId", "ta.name as toAccountName",
@@ -150,6 +150,7 @@ function toTransaction(row: TransactionRow): Transaction {
     categoryGroupId: row.categoryGroupId ?? undefined,
     categoryGroupName,
     note,
+    ...(row.excluded ? { excluded: true } : {}),
     occurredAt,
   }
 }
@@ -391,6 +392,7 @@ function toRow(values: TransactionFormValues) {
     categoryItemId: values.kind === "transfer" ? null : values.categoryId,
     note: values.note ?? null,
     occurredAt: values.occurredAt,
+    excluded: values.kind !== "transfer" && Boolean(values.excluded),
   }
 }
 
@@ -476,6 +478,19 @@ export async function updateTransaction(
       .where("id", "=", transactionId)
       .execute()
   })
+}
+
+/** Leaves a transaction out of the figures, or counts it again; balances do not change. */
+export async function setTransactionExcluded(userId: string, transactionId: string, excluded: boolean) {
+  const result = await getDb()
+    .updateTable("transactions")
+    .set({ excluded, updatedAt: new Date() })
+    .where("id", "=", transactionId)
+    .where("userId", "=", userId)
+    .where("kind", "in", ["expense", "income"])
+    .where("debtId", "is", null)
+    .executeTakeFirst()
+  if (!result.numUpdatedRows) throw new TransactionValidationError("Giao dịch không tồn tại.")
 }
 
 export async function deleteTransaction(userId: string, transactionId: string) {
