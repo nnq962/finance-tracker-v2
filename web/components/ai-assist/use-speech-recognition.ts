@@ -198,6 +198,9 @@ const SPEECH_LEVEL = 0.03
  * the level could be read at all: Safari may keep an audio context suspended,
  * and then nothing can be told, and the recording is sent as it is.
  */
+/** How long after a recording ends the microphone is let go: after the screen's change (about 0.3s). */
+const RELEASE_DELAY_MS = 600
+
 function watchForSilence(stream: MediaStream, onQuiet: () => void, context: AudioContext) {
   const analyser = context.createAnalyser()
   analyser.fftSize = 1024
@@ -357,9 +360,15 @@ function useServerRecognition({
     })
     current.addEventListener("stop", async () => {
       window.clearTimeout(limit)
-      silence.stop()
       if (watcher.current === silence) watcher.current = null
-      stream.getTracks().forEach((track) => track.stop())
+      // Letting go of the microphone and closing the audio context ends
+      // Safari's audio session on an iPhone, which held the page a moment,
+      // just as the screen moved from listening to transcribing: it jerked.
+      // Done once that has moved on; the level reads 0 meanwhile.
+      window.setTimeout(() => {
+        silence.stop()
+        stream.getTracks().forEach((track) => track.stop())
+      }, RELEASE_DELAY_MS)
       if (recorder.current === current) recorder.current = null
       setListening(false)
       if (session.current !== token) return
