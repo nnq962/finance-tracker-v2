@@ -14,7 +14,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { banks, eWallets } from "@/lib/institutions"
 import { normalizeSearchValue } from "@/lib/search-text"
 import { normalizeTranscript } from "@/lib/speech/normalize"
-import { transcribeGeminiLabAction, transcribeLabAction } from "@/lib/speech/actions"
+import { transcribeLabAction, transcribeSherpaLabAction } from "@/lib/speech/actions"
 
 import { getRecognitionConstructor, type Recognition, type RecognitionEvent } from "./speech-recognition"
 import { recordingFormat, SPEECH_BITRATE } from "./whisper-lab"
@@ -36,23 +36,22 @@ const STORAGE_KEY = "voice-lab-bank-test-v2"
 /** The first version's results, the browser's alone. */
 const OLD_STORAGE_KEY = "voice-lab-bank-test"
 
-type Recogniser = "browser" | "turbo" | "large" | "gemini35" | "gemini31"
+type Recogniser = "browser" | "turbo" | "large" | "sherpa"
 
 /** The browser's own, or one the recording is sent to on the server, with the model. */
-const recognisers: { key: Recogniser; label: string; name: string; engine?: "whisper" | "gemini"; model?: string }[] = [
+const recognisers: { key: Recogniser; label: string; name: string; engine?: "whisper" | "sherpa"; model?: string }[] = [
   { key: "browser", label: "Web", name: "Trình duyệt (Web Speech)" },
   { key: "turbo", label: "Turbo", name: "Whisper large-v3-turbo", engine: "whisper", model: "whisper-large-v3-turbo" },
   { key: "large", label: "Large", name: "Whisper large-v3", engine: "whisper", model: "whisper-large-v3" },
-  { key: "gemini35", label: "G3.5", name: "Gemini 3.5 Flash Lite", engine: "gemini", model: "gemini-3.5-flash-lite" },
-  { key: "gemini31", label: "G3.1", name: "Gemini 3.1 Flash Lite", engine: "gemini", model: "gemini-3.1-flash-lite" },
+  { key: "sherpa", label: "Sherpa", name: "Sherpa (Zipformer, máy chủ)", engine: "sherpa", model: "zipformer-vi-30M" },
 ]
 
 /** Which recognisers hear the next reading, from the same recording. */
 const modes: { value: string; label: string; using: Recogniser[] }[] = [
-  { value: "all", label: "Tất cả", using: ["browser", "turbo", "large", "gemini35", "gemini31"] },
+  { value: "all", label: "Tất cả", using: ["browser", "turbo", "large", "sherpa"] },
   { value: "browser", label: "Web", using: ["browser"] },
   { value: "whisper", label: "Whisper", using: ["turbo", "large"] },
-  { value: "gemini", label: "Gemini", using: ["gemini35", "gemini31"] },
+  { value: "sherpa", label: "Sherpa", using: ["sherpa"] },
 ]
 
 /** The prompt Whisper hears the reading with; each keeps its own results, to compare them. */
@@ -344,14 +343,13 @@ export function BankNameTest({ language }: { language: string }) {
     return undefined
   }
 
-  async function gemini(file: File, model: string) {
+  async function sherpa(file: File) {
     const formData = new FormData()
     formData.append("audio", file)
-    formData.append("model", model)
     try {
-      const result = await transcribeGeminiLabAction(formData)
+      const result = await transcribeSherpaLabAction(formData)
       if (result.success) return { text: result.text, raw: result.rawText, ms: result.ms }
-      toast.error(`${model}: ${result.error}`)
+      toast.error(`Sherpa: ${result.error}`)
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error))
     }
@@ -400,7 +398,7 @@ export function BankNameTest({ language }: { language: string }) {
           if (cancelled) return {}
           setPhase("sending")
           const texts = await Promise.all(
-            models.map((item) => (item.engine === "gemini" ? gemini(file, item.model!) : whisper(file, item.model!))),
+            models.map((item) => (item.engine === "sherpa" ? sherpa(file) : whisper(file, item.model!))),
           )
           return Object.fromEntries(models.map((item, index) => [item.key, texts[index]]))
         })
@@ -469,8 +467,8 @@ export function BankNameTest({ language }: { language: string }) {
       const detail =
         item.engine === "whisper"
           ? `prompt: ${prompts.find((kind) => kind.value === promptKind)?.name}`
-          : item.engine === "gemini"
-            ? "lời dặn có tên"
+          : item.engine === "sherpa"
+            ? "gợi ý tên (hotwords)"
             : language
       // The wait each call took on the server, on average, for the recognisers that send the audio away.
       const times = done.flatMap((name) => (results.heard[name] ?? []).flatMap((attempt) => attempt.ms?.[item.key] ?? []))

@@ -23,7 +23,7 @@ compose=(docker compose
   --env-file "$env_file"
   -f "$root/deploy/compose.yaml"
   -f "$root/deploy/compose.prod.yaml")
-services=(web worker ollama)
+services=(web worker stt ollama)
 if [[ -n "${CLOUDFLARE_TUNNEL_TOKEN:-}" ]]; then
   compose+=(--profile tunnel)
   services+=(cloudflared)
@@ -46,7 +46,7 @@ fi
 # Baked into the web build, so open tabs notice the new version (web/Dockerfile).
 export NEXT_DEPLOYMENT_ID="$(git -C "$root" rev-parse --short HEAD)"
 echo "==> Building $NEXT_DEPLOYMENT_ID"
-"${compose[@]}" build web worker
+"${compose[@]}" build web worker stt
 
 echo "==> Migrating"
 "${compose[@]}" up -d --wait postgres
@@ -68,6 +68,7 @@ echo "==> Starting ${services[*]}"
 docker volume create finance-ollama >/dev/null
 start web finance-web
 start worker finance-backend
+start stt finance-stt
 "${compose[@]}" up -d --wait --remove-orphans "${services[@]}"
 docker image prune -f >/dev/null
 

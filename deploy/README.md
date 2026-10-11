@@ -10,7 +10,7 @@ finance.nnqlab.dev → Cloudflare → Tunnel → web (Next.js) → postgres
 | File | Vai trò |
 |---|---|
 | `compose.yaml` | Postgres + migration (dùng chung dev/prod) |
-| `compose.prod.yaml` | `web` (Next.js), `worker`, `ollama` (LLM nội bộ) + `cloudflared` |
+| `compose.prod.yaml` | `web` (Next.js), `worker`, `stt` (nhận dạng giọng nói), `ollama` (LLM nội bộ) + `cloudflared` |
 | `compose.dev.yaml` | Dev: mở Postgres ở `127.0.0.1:5432`, thêm DB `finance_test` |
 | `scripts/deploy.sh` | Pull → build → migrate → khởi động lại |
 | `scripts/db.sh` | Lệnh `npm run db:*` cho dev |
@@ -75,6 +75,11 @@ model), rồi xoá model cũ:
 docker exec finance-ollama-1 ollama list
 docker exec finance-ollama-1 ollama rm <model-cũ>
 ```
+
+Service `stt` (`backend/stt`) nhận dạng giọng nói tiếng Việt ngay trên máy chủ,
+bằng sherpa-onnx và model Zipformer 30M chạy CPU (khoảng 50ms một câu, 160MB RAM).
+Model được tải khi build image. Không mở port: web gọi qua `http://stt:8000`
+(`STT_URL`). Hiện chỉ trang Thử giọng nói (quản trị) dùng nó để so với Whisper.
 
 ## Gói Pro, payOS và quản trị
 

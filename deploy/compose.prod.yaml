@@ -34,6 +34,8 @@ services:
       # The AI assistant through Gemini; gemma on Ollama until set, and whenever Gemini fails.
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
+      # Speech to text on this server (sherpa-onnx), tried in the voice lab.
+      STT_URL: http://stt:8000
     volumes:
       - type: bind
         source: ${FIREBASE_CREDENTIALS_FILE:?Set the absolute path to the Firebase Admin credentials JSON}
@@ -108,6 +110,23 @@ services:
       timeout: 5s
       retries: 10
     restart: unless-stopped
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+
+  # Vietnamese speech to text on the CPU: sherpa-onnx with a Zipformer model,
+  # favouring the bank and account names each request gives. No published
+  # port: the web service reaches it at http://stt:8000.
+  stt:
+    build:
+      context: ../backend/stt
+    image: finance-stt
+    environment:
+      STT_THREADS: "4"
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
 
