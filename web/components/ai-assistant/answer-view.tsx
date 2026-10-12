@@ -311,7 +311,7 @@ export function ReplyView({
     case "unread":
       return (
         <AnswerShell
-          kicker="Ủa khoản nào dzậy ní?"
+          kicker="Ủa khoản nào dzậy?"
           line="Tui chưa thấy số tiền đâu hết. Nói kiểu “ăn phở 35k, cà phê 25k” là tui ghi liền. Câu này khum tính lượt nha."
         />
       )
@@ -336,15 +336,15 @@ export function ReplyView({
     case "other":
       return (
         <AnswerShell
-          kicker="Câu này khó quá ní ơi"
-          line="Tui chỉ rành tiền ní đã ghi trong app thôi: chi tiêu, thu nhập, số dư, ai nợ ai."
+          kicker="Câu này khó quá bạn ơi"
+          line="Tui chỉ rành tiền bạn đã ghi trong app thôi: chi tiêu, thu nhập, số dư, ai nợ ai."
           follow={chips}
         />
       )
     case "quota":
       return (
         <AnswerShell
-          kicker="Hết lượt AI tháng này rồi ní ơi"
+          kicker="Hết lượt AI tháng này rồi bạn ơi"
           figure={
             <p className="text-xl font-semibold">
               {reply.quota.limit}/{reply.quota.limit} lượt đã dùng
@@ -372,7 +372,7 @@ export function ReplyView({
       )
     default:
       return (
-        <AnswerShell kicker="Lag rồi ní ơi" line="Mạng chậm hay tui đang ngáo xíu. Thử lại phát nữa nha, câu này chưa bị tính lượt.">
+        <AnswerShell kicker="Lag rồi bạn ơi" line="Mạng chậm hay tui đang ngáo xíu. Thử lại phát nữa nha, câu này chưa bị tính lượt.">
           {said ? (
             <Button variant="secondary" onClick={() => ask(said)}>
               Thử lại

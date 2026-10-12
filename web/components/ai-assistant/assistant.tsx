@@ -442,7 +442,7 @@ function Talk({ assistant, onNavigate }: BodyProps) {
               <p className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
                 <BotIcon blink="once" className="size-4 text-ai-strong" /> LiuLiu
               </p>
-              <p className="text-lg font-semibold">Nay ní cháy ví vụ gì dzậy?</p>
+              <p className="text-lg font-semibold">Nay bạn cháy ví vụ gì dzậy?</p>
             </div>
             <div className="flex flex-wrap gap-2">
               {suggestions.map((text) => (
@@ -506,7 +506,7 @@ function MorphCard({ contentKey, children }: { contentKey: string; children: Rea
 /** Steps of the wait, said as they would happen: sorting the question, reading it, looking it up. */
 const thinkingSteps = [
   { at: 0, text: "Đợi tui xíu…" },
-  { at: 1500, text: "Đang lục sổ của ní…" },
+  { at: 1500, text: "Đang lục sổ của bạn…" },
   { at: 4000, text: "Sắp xong rồi, đừng hối…" },
 ]
 

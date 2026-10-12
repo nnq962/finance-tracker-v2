@@ -124,7 +124,7 @@ export async function askAssistantAction(request: string, previous?: unknown): P
   if (intent === "usage") return { kind: "usage", answer: await usageAnswer(user.uid) }
   if (intent === "chat") {
     if (!takeChat(user.uid)) {
-      return { kind: "chat", limited: true, text: `Hôm nay ní tám với tui quá trời rồi đó, ${ASSISTANT_NAME} hết pin xã giao rồi 🪫 Mai tám tiếp, giờ hỏi chuyện tiền nong thôi nha.` }
+      return { kind: "chat", limited: true, text: `Hôm nay bạn tám với tui quá trời rồi đó, ${ASSISTANT_NAME} hết pin xã giao rồi 🪫 Mai tám tiếp, giờ hỏi chuyện tiền nong thôi nha.` }
     }
     try {
       return { kind: "chat", text: await chatReply(text, context) }
