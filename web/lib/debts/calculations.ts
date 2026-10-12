@@ -73,6 +73,27 @@ export function getPaymentMetrics(debt: Debt, date = todayDate()) {
   }
 }
 
+/**
+ * How much of each payment is interest, as a bank counts it: a payment pays
+ * the interest accrued by its date first, the rest goes to the principal.
+ * Once the debt is paid off, the parts add up to all of its interest. The
+ * interest is income on a loan made and spending on a loan taken (as MISA's
+ * "Thu lãi" and "Trả lãi"); the principal is neither.
+ */
+export function getPaymentInterests(debt: Debt) {
+  const interests = new Map<string, number>()
+  if (!debt.hasInterest) return interests
+  const payments = [...(debt.payments ?? [])].sort((a, b) => `${a.paidAt}T${a.paidTime ?? "00:00"}`.localeCompare(`${b.paidAt}T${b.paidTime ?? "00:00"}`))
+  let interestPaid = 0
+  for (const payment of payments) {
+    const accrued = getInterest(debt, payment.paidAt).interestAmount
+    const part = Math.min(payment.amount, Math.max(0, accrued - interestPaid))
+    interestPaid += part
+    interests.set(payment.id, part)
+  }
+  return interests
+}
+
 export function updateDebtPayment(debt: Debt, paymentId: string | undefined, values: NewDebtPayment | null): Debt {
   if (paymentId && !debt.payments?.some((payment) => payment.id === paymentId)) throw new Error("Không tìm thấy thanh toán cần cập nhật.")
   const payments: DebtPayment[] = (debt.payments ?? []).filter((payment) => payment.id !== paymentId)

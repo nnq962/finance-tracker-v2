@@ -164,7 +164,12 @@ export async function askAssistantAction(request: string, previous?: unknown): P
       categoryGroups,
       contacts,
       debts: () => getDebts(user.uid),
-      transactions: (start, end) => getTransactionsInRange(user.uid, dayStart(start), dayStart(end), { excludeDebts: true }),
+      // With the repayments, whose interest counts as income or spending.
+      transactions: (start, end) =>
+        Promise.all([
+          getTransactionsInRange(user.uid, dayStart(start), dayStart(end), { excludeDebts: true }),
+          getDebtPaymentsInRange(user.uid, dayStart(start), dayStart(end)),
+        ]).then(([own, repayments]) => [...own, ...repayments]),
       flows: (start, end) => getAccountFlows(user.uid, dayStart(start), dayStart(end)),
       debtPayments: (start, end) => getDebtPaymentsInRange(user.uid, dayStart(start), dayStart(end)),
     })

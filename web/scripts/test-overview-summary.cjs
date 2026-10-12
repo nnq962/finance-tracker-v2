@@ -73,4 +73,26 @@ assert.deepEqual(summarizeAllocation(withFee)['2026-09'].expense, { food: 500_00
 const { getTransactionSummary } = require('../app/(main)/transactions/_lib/get-transaction-summary.ts')
 assert.equal(getTransactionSummary(withFee).expense, 520_000)
 
+// A repayment pays the interest accrued by its date first; once paid off,
+// the interest parts add up to all of it. Interest is income on a loan made,
+// spending on a loan taken; the principal is neither.
+const { getPaymentInterests } = require('../lib/debts/calculations.ts')
+const loan = { id: 'loan', direction: 'lent', amount: 10_000_000, hasInterest: true, interestRate: 1, interestPeriod: 'month', recordedAt: '2026-07-01',
+  payments: [
+    { id: 'p1', amount: 1_000_000, paidAt: '2026-07-31', paidTime: '09:00' },
+    { id: 'p2', amount: 9_200_000, paidAt: '2026-08-30', paidTime: '09:00' },
+  ] }
+const parts = getPaymentInterests(loan)
+assert.equal(parts.get('p1'), 100_000)
+assert.equal(parts.get('p2'), 100_000)
+assert.equal(getPaymentInterests({ ...loan, hasInterest: false }).size, 0)
+const repayment = { id: 'p2', source: 'debt', debtId: 'loan', kind: 'income', amount: 9_200_000, interest: 100_000, occurredAt }
+assert.equal(getTransactionSummary([repayment]).income, 100_000)
+assert.deepEqual(summarizeAllocation([repayment])['2026-09'].income, { 'debt-interest': 100_000 })
+assert.deepEqual(summarizeDays([repayment])['2026-09-22'], { income: 100_000, expense: 0, count: 0 })
+assert.equal(getTransactionSummary([{ ...repayment, accountExcluded: true }]).income, 0)
+// A loan made from an account left out of the figures is left out of the net worth.
+const leftOutLoan = getOverviewSummary([{ id: 'quỹ', balance: 0, status: 'active', excluded: true }], [{ ...debts[1], accountId: 'quỹ' }], contacts, [], '2026-09-23')
+assert.equal(leftOutLoan.netWorth.receivable, 0)
+
 console.log('Overview summary checks passed.')

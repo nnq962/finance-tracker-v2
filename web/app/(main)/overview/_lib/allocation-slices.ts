@@ -1,4 +1,4 @@
-import { ArrowLeftRightIcon, CircleHelpIcon, EllipsisIcon, SlidersHorizontalIcon, type LucideIcon } from "lucide-react"
+import { ArrowLeftRightIcon, CircleHelpIcon, EllipsisIcon, PercentIcon, SlidersHorizontalIcon, type LucideIcon } from "lucide-react"
 
 import { getCategoryColor, type CategoryColorName } from "@/lib/categories/category-colors"
 import type { CategoryGroup, CategoryType } from "@/lib/categories/types"
@@ -7,14 +7,17 @@ import type { MonthAllocation } from "@/lib/overview/month-data"
 import {
   BALANCE_ADJUSTMENT_GROUP,
   BALANCE_ADJUSTMENT_NAME,
+  DEBT_INTEREST_GROUP,
+  DEBT_INTEREST_NAME,
   TRANSFER_FEE_GROUP,
   TRANSFER_FEE_NAME,
 } from "@/lib/transactions/types"
 
-/** Slices that are no group of the user's: transfer fees, balances corrected by hand. */
+/** Slices that are no group of the user's: transfer fees, balances corrected by hand, loan interest. */
 const systemGroups: Record<string, { name: string; icon: LucideIcon }> = {
   [TRANSFER_FEE_GROUP]: { name: TRANSFER_FEE_NAME, icon: ArrowLeftRightIcon },
   [BALANCE_ADJUSTMENT_GROUP]: { name: BALANCE_ADJUSTMENT_NAME, icon: SlidersHorizontalIcon },
+  [DEBT_INTEREST_GROUP]: { name: DEBT_INTEREST_NAME, icon: PercentIcon },
 }
 
 // Five groups and the rest folded into one neutral "Khác" slice.

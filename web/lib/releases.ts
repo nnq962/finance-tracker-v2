@@ -32,6 +32,16 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "5.3.0",
+    date: "2026-10-12",
+    title: "Tiền lãi vay vào thu chi",
+    changes: [
+      { kind: "new", text: "Phần lãi của mỗi lần trả nợ tính là khoản thu (cho vay) hoặc khoản chi (đi vay) ở Tổng quan, trang Giao dịch, biểu đồ và LiuLiu; tiền gốc vẫn không tính" },
+      { kind: "new", text: "Biểu đồ phân bổ có mục \"Tiền lãi vay\"" },
+      { kind: "fixed", text: "Khoản vay từ tài khoản không tính không còn cộng vào tài sản ròng" },
+    ],
+  },
+  {
     version: "5.2.0",
     date: "2026-10-12",
     title: "Điều chỉnh số dư và xoá tài khoản an toàn",

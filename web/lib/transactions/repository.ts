@@ -4,6 +4,8 @@ import { sql, type Transaction as DbTransaction } from "kysely"
 
 import { lockAccounts, setBalance, shiftBalance, type LockedAccount } from "@/lib/db/accounts"
 import { getDb } from "@/lib/db/client"
+import { getPaymentInterests } from "@/lib/debts/calculations"
+import { getDebts } from "@/lib/debts/repository"
 import type { DB } from "@/lib/db/types"
 import {
   BALANCE_ADJUSTMENT_GROUP,
@@ -299,14 +301,14 @@ function selectDebtPayments(userId: string) {
     .innerJoin("debts as d", "d.id", "p.debtId")
     .leftJoin("contacts as c", "c.id", "d.contactId")
     .leftJoin("accounts as a", "a.id", "p.accountId")
-    .select(["p.id", "p.debtId", "p.amount", "p.accountId", "p.note", "d.direction", "c.name as contactName", "a.name as accountName"])
+    .select(["p.id", "p.debtId", "p.amount", "p.accountId", "p.note", "d.direction", "c.name as contactName", "a.name as accountName", "a.excluded as accountExcluded"])
     .select(debtPaymentPaidAt.as("occurredAt"))
     .where("p.userId", "=", userId)
 }
 
 type DebtPaymentRow = Awaited<ReturnType<ReturnType<typeof selectDebtPayments>["execute"]>>[number]
 
-function toDebtPaymentTransaction(row: DebtPaymentRow): Transaction {
+function toDebtPaymentTransaction(row: DebtPaymentRow, interest = 0): Transaction {
   const comesIn = row.direction === "lent"
   const accountName = row.accountName ?? undefined
   const title = `${comesIn ? "Thu nợ" : "Trả nợ"} · ${row.contactName ?? "Người liên hệ"}`
@@ -322,6 +324,8 @@ function toDebtPaymentTransaction(row: DebtPaymentRow): Transaction {
     accountName,
     categoryName: title,
     categoryGroupName: "Vay & nợ",
+    ...(interest ? { interest } : {}),
+    ...(row.accountExcluded ? { accountExcluded: true } : {}),
     ...(row.note ? { note: row.note } : {}),
     occurredAt: new Date(row.occurredAt).toISOString(),
   }
@@ -332,8 +336,14 @@ export async function getDebtPaymentsInRange(userId: string, start: Date, end: D
     .where(debtPaymentPaidAt, ">=", start)
     .where(debtPaymentPaidAt, "<", end)
     .execute()
+  if (rows.length === 0) return []
 
-  return rows.map(toDebtPaymentTransaction)
+  // The interest part of each payment needs its debt's earlier payments too.
+  const interests = new Map<string, number>()
+  for (const debt of await getDebts(userId)) {
+    if (rows.some((row) => row.debtId === debt.id)) getPaymentInterests(debt).forEach((value, id) => interests.set(id, value))
+  }
+  return rows.map((row) => toDebtPaymentTransaction(row, interests.get(row.id)))
 }
 
 /**

@@ -8,7 +8,7 @@ import type { Contact, Debt } from "@/lib/debts/types"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDayLabel, formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
 import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
-import { isLeftOut, withFees, type AccountFlow, type Transaction } from "@/lib/transactions/types"
+import { isLeftOut, forFigures, type AccountFlow, type Transaction } from "@/lib/transactions/types"
 
 import type { AccountMark, Answer, AnswerBlock, AnswerIcon, AnswerRow, QuestionPlan } from "./types"
 
@@ -354,11 +354,13 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
       accountIds.has(transaction.toAccountId ?? "")) &&
     (!search || fold(`${transaction.note ?? ""} ${transaction.title} ${transaction.categoryName ?? ""}`).includes(search))
 
-  // Spending counts transfer fees, as an expense of their own, as every page does.
+  // Money in and out count transfer fees and loan interest, as rows of their
+  // own, as every page does; loans and repayments themselves are neither.
+  const counts = measure === "spending" || measure === "income" || measure === "net"
   const load = (start: string, end: string) =>
     sources
       .transactions(start, end)
-      .then((rows) => (measure === "spending" || measure === "net" ? withFees(rows) : rows).filter(keep))
+      .then((rows) => (counts ? forFigures(rows) : rows).filter((row) => !row.source).filter(keep))
   const [current, previous] = await Promise.all([
     load(range.start, range.end),
     before ? load(before.start, before.end) : Promise.resolve(null),
@@ -671,16 +673,19 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
 
 /**
  * Net worth as the overview counts it: every account (archived ones too) but
- * those left out of the figures, plus what others owe, less what the user owes.
+ * those left out of the figures, plus what others owe, less what the user
+ * owes, but for loans made from or into an account left out.
  */
 async function answerNetWorth(sources: AnswerSources): Promise<Answer> {
   const { today } = sources
   const counted = sources.accounts.filter((account) => !account.excluded)
   const leftOut = sources.accounts.filter((account) => account.excluded)
+  const leftOutIds = new Set(leftOut.map((account) => account.id))
   const cash = counted.reduce((sum, account) => sum + account.balance, 0)
   let receivable = 0
   let payable = 0
   for (const debt of await sources.debts()) {
+    if (debt.accountId && leftOutIds.has(debt.accountId)) continue
     const remaining = getPaymentMetrics(debt, today).remainingAmount
     if (debt.direction === "lent") receivable += remaining
     else payable += remaining

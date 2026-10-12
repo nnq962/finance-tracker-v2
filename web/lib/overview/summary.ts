@@ -1,7 +1,7 @@
 import type { Account } from "@/lib/accounts/types"
 import { getPaymentMetrics } from "@/lib/debts/calculations"
 import type { Contact, Debt } from "@/lib/debts/types"
-import { isLeftOut, withFees, type Transaction } from "@/lib/transactions/types"
+import { isLeftOut, forFigures, type Transaction } from "@/lib/transactions/types"
 
 import { toDateKey as dateKey } from "@/lib/format-date"
 
@@ -32,8 +32,11 @@ export function getOverviewSummary(
   const archivedCash = accounts
     .filter((account) => account.status === "archived" && !account.excluded)
     .reduce((total, account) => total + account.balance, 0)
+  // A loan made from or into an account left out of the figures is left out with it.
+  const leftOutIds = new Set(accounts.filter((account) => account.excluded).map((account) => account.id))
   const debtBalances = debts.reduce(
     (totals, debt) => {
+      if (debt.accountId && leftOutIds.has(debt.accountId)) return totals
       const remaining = getPaymentMetrics(debt, today).remainingAmount
       if (debt.direction === "lent") totals.receivable += remaining
       else totals.payable += remaining
@@ -46,7 +49,7 @@ export function getOverviewSummary(
   const monthByKey = new Map(months.map((month) => [month.key, month]))
   const currentMonth = today.slice(0, 7)
 
-  for (const transaction of withFees(transactions)) {
+  for (const transaction of forFigures(transactions)) {
     if (transaction.source || transaction.kind === "transfer" || isLeftOut(transaction)) continue
     const month = dateKey(transaction.occurredAt).slice(0, 7)
     const bucket = monthByKey.get(month)

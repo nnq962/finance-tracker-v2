@@ -10,7 +10,7 @@ import { getOverviewSummary } from "@/lib/overview/summary"
 import { getMissionState } from "@/lib/onboarding/repository"
 import { checkReturningPayment, getPayOS } from "@/lib/plans/payos"
 import { getPlanState } from "@/lib/plans/repository"
-import { getTransactionsInRange } from "@/lib/transactions/repository"
+import { getDebtPaymentsInRange, getTransactionsInRange } from "@/lib/transactions/repository"
 
 function monthKey(year: number, monthIndex: number) {
   const date = new Date(Date.UTC(year, monthIndex, 1))
@@ -44,7 +44,11 @@ export async function loadOverview(order?: string) {
       getAccounts(user.uid),
       getDebts(user.uid),
       getContacts(user.uid),
-      getTransactionsInRange(user.uid, transactionRange.start, transactionRange.end),
+      // With the repayments, whose interest counts as income or spending.
+      Promise.all([
+        getTransactionsInRange(user.uid, transactionRange.start, transactionRange.end),
+        getDebtPaymentsInRange(user.uid, transactionRange.start, transactionRange.end),
+      ]).then(([own, repayments]) => [...own, ...repayments]),
       getCategoryGroups(user.uid),
       getMissionState(user.uid),
       getPlanState(user.uid),
