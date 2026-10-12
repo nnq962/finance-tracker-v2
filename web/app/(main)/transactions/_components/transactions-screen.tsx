@@ -5,12 +5,9 @@ import { usePathname, useRouter } from "next/navigation"
 import { PlusIcon } from "lucide-react"
 import { toast } from "sonner"
 
-import { AiAssistButton } from "@/components/ai-assist/ai-assist-button"
-import { useOpenAssistant } from "@/components/ai-assistant/assistant"
 import { Collapse } from "@/components/app/collapse"
 import { FloatingActions } from "@/components/app/floating-actions"
 import { MonthSelect } from "@/components/app/month-select"
-import { PageSheet } from "@/components/app/page-sheet"
 import { PageHeader } from "@/components/page"
 import { Button } from "@/components/ui/button"
 import { appEvents, listenToAppEvent } from "@/lib/app-events"
@@ -19,7 +16,7 @@ import type { CategoryGroup } from "@/lib/categories/types"
 import { cn } from "@/lib/utils"
 import type { PurchaseDraft } from "@/lib/plans/purchase-draft"
 
-import { loadAllTransactionsAction, type AiQuota } from "../actions"
+import { loadAllTransactionsAction } from "../actions"
 
 import { filterTransactions } from "../_lib/filter-transactions"
 import { getTransactionPeriod } from "../_lib/get-transaction-period"
@@ -29,7 +26,6 @@ import { forFigures } from "@/lib/transactions/types"
 import type { Transaction, TransactionFilter, TransactionSearchFilters } from "../_types/transaction"
 import { AddTransactionButton } from "./add-transaction-button"
 import { AddTransactionSheet } from "./add-transaction/add-transaction-sheet"
-import { NeedAccountState } from "./add-transaction/need-account-state"
 import { TransactionHistoryProvider } from "./add-transaction/transaction-history-context"
 import { MonthSummary } from "./month-summary"
 import { getSheetFilterChips, TransactionActiveFilters } from "./transaction-active-filters"
@@ -53,8 +49,6 @@ type TransactionsScreenProps = {
   selectedMonth: string
   todayDateKey: string
   transactions: Transaction[]
-  /** This month's AI requests, the plan's limit and AI credits, as the page loaded. */
-  aiQuota: AiQuota
   /** Opened from a reminder to write something down. */
   initialAddOpen?: boolean
   /** A Pro purchase to write down, opened from the plan screen or an admin's sale notice. */
@@ -88,7 +82,6 @@ export function TransactionsScreen({
   selectedMonth,
   todayDateKey,
   transactions,
-  aiQuota,
   initialAddOpen = false,
   purchaseDraft,
 }: TransactionsScreenProps) {
@@ -127,10 +120,6 @@ export function TransactionsScreen({
     })
   }, [allMonths, everyTransaction, transactions])
 
-  const hasAccount = accounts.some((account) => account.status === "active")
-  // Without an account the AI could not save what it reads, so it asks for one first.
-  const [needAccountOpen, setNeedAccountOpen] = React.useState(false)
-  const openAssistant = useOpenAssistant()
   // Kept after the link's address is cleared, so the sheet stays filled in.
   const [draft] = React.useState(purchaseDraft)
   const [draftOpen, setDraftOpen] = React.useState(Boolean(purchaseDraft && !purchaseDraft.recorded))
@@ -142,11 +131,6 @@ export function TransactionsScreen({
     // Reloading the page should not open the draft again.
     window.history.replaceState(null, "", pathname)
   }, [draft, pathname])
-  // Writing down by AI is LiuLiu's, the app's assistant (2026-10-12).
-  const openAi = () => (hasAccount ? openAssistant() : setNeedAccountOpen(true))
-  const aiMonthRemaining = Math.max(0, aiQuota.limit - aiQuota.used)
-  // Credits from missions count once the month's requests are used up.
-  const aiRemaining = aiMonthRemaining + aiQuota.credits
 
   const monthTransactions = React.useMemo(
     () => getTransactionPeriod(transactions, "month", `${selectedMonth}-01`, todayDateKey, todayDateKey).transactions,
@@ -247,15 +231,9 @@ export function TransactionsScreen({
     startNavigation(() => router.push(month === thisMonth ? pathname : `${pathname}?month=${month}`, { scroll: false }))
   }
   const shownMonth = isNavigating ? requestedMonth : selectedMonth
-  const headerActions = (
-    <>
-      {/* On tablets the sparkle and count only, as the row is short of room. */}
-      <AiAssistButton variant="outline" remaining={aiRemaining} onClick={openAi}>
-        <span className="md:max-lg:sr-only">Nhập bằng AI</span>
-      </AiAssistButton>
-      <AddTransactionButton accounts={accounts} categoryGroups={categoryGroups} />
-    </>
-  )
+  // Writing down by AI is LiuLiu's, opened from the tab bar or the header (2026-10-12).
+  const headerActions = <AddTransactionButton accounts={accounts} categoryGroups={categoryGroups} />
+
   // While a month loads, what is shown stays and dims.
   const loadingClassName = cn("transition-opacity duration-200", isNavigating && "opacity-50")
 
@@ -270,17 +248,6 @@ export function TransactionsScreen({
           title="Giao dịch"
           tools={<MonthSelect size="bar" value={shownMonth} max={thisMonth} onValueChange={changeMonth} />}
           actions={headerActions}
-          accessory={
-            <AiAssistButton
-              variant="secondary"
-              size="icon"
-              className="text-ai-strong"
-              aria-label={`Nhập bằng AI, còn ${aiRemaining} lượt`}
-              onClick={openAi}
-            >
-              {null}
-            </AiAssistButton>
-          }
         />
       </Collapse>
 
@@ -357,11 +324,6 @@ export function TransactionsScreen({
         onSearchFiltersChange={setSearchFilters}
         onReset={resetSheetFilters}
       />
-      <PageSheet title="Nhập bằng AI" open={needAccountOpen && !hasAccount} onOpenChange={setNeedAccountOpen}>
-        <div className="flex flex-1 flex-col justify-center pb-8">
-          <NeedAccountState />
-        </div>
-      </PageSheet>
       {draft && !draft.recorded ? (
         <AddTransactionSheet
           accounts={accounts}

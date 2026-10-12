@@ -2,7 +2,6 @@ import { getAccounts } from "@/lib/accounts/repository"
 import { loadWithSession } from "@/lib/auth/session"
 import { getCategoryGroups } from "@/lib/categories/repository"
 import { getPurchaseDraft } from "@/lib/plans/purchase-draft"
-import { getPlanState } from "@/lib/plans/repository"
 import { getDebtPaymentsInRange, getTransactionsInRange } from "@/lib/transactions/repository"
 
 import { getTransactionDateKey, getTransactionMonthKey, getTransactionMonthRange } from "./get-transaction-period"
@@ -22,7 +21,7 @@ export async function loadTransactions({ month, account, add, order, grant }: Tr
   const selectedMonth = getTransactionMonthKey(month, todayDateKey)
   const range = getTransactionMonthRange(selectedMonth, 1)
   const {
-    data: [transactions, accounts, categoryGroups, planState, purchaseDraft],
+    data: [transactions, accounts, categoryGroups, purchaseDraft],
   } = await loadWithSession((user) =>
     Promise.all([
       // Loans and their repayments are listed too, so every change to a
@@ -35,7 +34,6 @@ export async function loadTransactions({ month, account, add, order, grant }: Tr
       ),
       getAccounts(user.uid),
       getCategoryGroups(user.uid),
-      getPlanState(user.uid),
       // A Pro purchase to write down: the buyer's expense, or an admin's income.
       order || grant ? getPurchaseDraft(user, { order, grant }) : undefined,
     ]),
@@ -49,7 +47,6 @@ export async function loadTransactions({ month, account, add, order, grant }: Tr
     selectedMonth,
     todayDateKey,
     transactions,
-    aiQuota: { used: planState.aiUsed, limit: planState.aiLimit, credits: planState.aiCredits },
     initialAddOpen: add === "1",
     purchaseDraft,
   }

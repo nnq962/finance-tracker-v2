@@ -115,9 +115,6 @@ export async function deleteTransactionAction(
   }
 }
 
-/** This month's AI requests, the plan's limit, and AI credits left. */
-export type AiQuota = { used: number; limit: number; credits: number }
-
 /**
  * Every transaction the user has, loans' repayments included, newest first:
  * what a search through every month reads. Asked for only from a search that

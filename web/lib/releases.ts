@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "5.6.5",
+    date: "2026-10-12",
+    title: "Gọn đầu trang Giao dịch",
+    changes: [
+      { kind: "improved", text: "Bỏ nút Nhập bằng AI ở đầu trang Giao dịch: LiuLiu đã có ở thanh tab (điện thoại) và nút Hỏi AI (máy tính)" },
+    ],
+  },
+  {
     version: "5.6.4",
     date: "2026-10-12",
     title: "Không tính vào báo cáo",
