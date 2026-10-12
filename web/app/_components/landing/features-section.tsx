@@ -48,16 +48,16 @@ export function FeaturesSection() {
       <div className="mt-12 grid gap-4 lg:grid-cols-3">
         <Cell title="Tổng quan" line="Tài sản ròng, thu chi tháng này và phần đang cho vay, đang nợ." className="lg:col-span-2">
           <NetWorth
-            data={{ total: 51_403_000, cash: 56_903_000, receivable: 5_500_000, payable: 11_000_000, archivedCash: 0 } as OverviewSummary["netWorth"]}
+            data={{ total: 51_403_000, cash: 56_903_000, receivable: 5_500_000, payable: 11_000_000, leftOut: { count: 0, cash: 0 } } as OverviewSummary["netWorth"]}
             month={{ income: 18_000_000, expense: 395_000 }}
           />
         </Cell>
-        <Cell title="Giao dịch" line="Tiền vào, tiền ra của tháng, lọc theo tài khoản và hạng mục.">
+        <Cell title="Giao dịch" line="Thu chi của tháng, lọc theo tài khoản và hạng mục.">
           <FlowTiles
             variant="lead"
             tiles={[
-              { value: "in", label: "Tiền vào", amount: 18_000_000, caption: "1 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
-              { value: "out", label: "Tiền ra", amount: 5_152_000, caption: "16 giao dịch", icon: ArrowUpRightIcon, tone: "expense" },
+              { value: "in", label: "Thu", amount: 18_000_000, caption: "1 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
+              { value: "out", label: "Chi", amount: 5_152_000, caption: "16 giao dịch", icon: ArrowUpRightIcon, tone: "expense" },
             ]}
           />
         </Cell>

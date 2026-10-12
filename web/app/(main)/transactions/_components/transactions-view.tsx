@@ -3,7 +3,7 @@ import * as React from "react"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 
-import type { Transaction } from "../_types/transaction"
+import type { Transaction, TransactionSummaryData } from "../_types/transaction"
 import { TransactionList, type TransactionSearchResults } from "./transaction-list"
 
 type TransactionsViewProps = {
@@ -11,6 +11,8 @@ type TransactionsViewProps = {
   categoryGroups: CategoryGroup[]
   todayDateKey: string
   transactions: Transaction[]
+  /** Each day's figures under every filter but the kind, for the day headers. */
+  dayTotals?: Record<string, TransactionSummaryData>
   isFiltering: boolean
   onClearFilters: () => void
   search?: TransactionSearchResults
@@ -25,6 +27,7 @@ export const TransactionsView = React.memo(function TransactionsView({
   categoryGroups,
   todayDateKey,
   transactions,
+  dayTotals,
   isFiltering,
   onClearFilters,
   search,
@@ -36,6 +39,7 @@ export const TransactionsView = React.memo(function TransactionsView({
         categoryGroups={categoryGroups}
         todayDateKey={todayDateKey}
         transactions={transactions}
+        dayTotals={dayTotals}
         isFiltering={isFiltering}
         onClearFilters={onClearFilters}
         search={search}

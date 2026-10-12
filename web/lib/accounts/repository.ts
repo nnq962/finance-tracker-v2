@@ -7,7 +7,7 @@ import type {
   AccountType,
 } from "@/lib/accounts/types"
 import { AccountValidationError } from "@/lib/accounts/validation"
-import { lockAccounts } from "@/lib/db/accounts"
+import { lockAccounts, MAX_MONEY } from "@/lib/db/accounts"
 import { getDb } from "@/lib/db/client"
 import { retryOnDeadlock } from "@/lib/db/retry"
 import { getInstitution } from "@/lib/institutions"
@@ -161,6 +161,7 @@ export async function updateAccount(
     // balance and the transactions still add up to the balance.
     if (balanceChanged) {
       const difference = values.balance - account.balance
+      if (Math.abs(difference) > MAX_MONEY) throw new AccountValidationError("Số tiền điều chỉnh vượt giới hạn cho phép.")
       await trx
         .insertInto("transactions")
         .values({

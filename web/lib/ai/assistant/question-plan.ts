@@ -4,6 +4,14 @@ import type { ChatMessage } from "@/lib/ai/llm"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { Contact } from "@/lib/debts/types"
+import {
+  BALANCE_ADJUSTMENT_GROUP,
+  BALANCE_ADJUSTMENT_NAME,
+  DEBT_INTEREST_GROUP,
+  DEBT_INTEREST_NAME,
+  TRANSFER_FEE_GROUP,
+  TRANSFER_FEE_NAME,
+} from "@/lib/transactions/types"
 
 import type { Compare, Measure, PeriodPreset, QuestionPlan, View } from "./types"
 
@@ -130,6 +138,12 @@ type Context = { accounts: Account[]; categoryGroups: CategoryGroup[]; contacts:
 /** The user's things under short keys, both ways. */
 export type Keys = { toId: Map<string, string>; toKey: Map<string, string> }
 
+const systemGroups = [
+  { id: TRANSFER_FEE_GROUP, name: TRANSFER_FEE_NAME, note: "chi, phí của các lần chuyển khoản" },
+  { id: DEBT_INTEREST_GROUP, name: DEBT_INTEREST_NAME, note: "thu khi người khác trả lãi, chi khi người dùng trả lãi" },
+  { id: BALANCE_ADJUSTMENT_GROUP, name: BALANCE_ADJUSTMENT_NAME, note: "thu hoặc chi, khi sửa số dư tài khoản" },
+]
+
 function buildKeys({ accounts, categoryGroups, contacts }: Context) {
   const lines: string[] = []
   const toId = new Map<string, string>()
@@ -143,6 +157,12 @@ function buildKeys({ accounts, categoryGroups, contacts }: Context) {
   categoryGroups.forEach((group, index) => {
     add(`g${index + 1}`, group.id)
     lines.push(`- g${index + 1}: ${group.name} (${group.type === "income" ? "thu" : "chi"})`)
+  })
+  // What the app counts on its own, with no group of the user's.
+  systemGroups.forEach((group, index) => {
+    const key = `g${categoryGroups.length + index + 1}`
+    add(key, group.id)
+    lines.push(`- ${key}: ${group.name} (${group.note})`)
   })
   lines.push("Hạng mục (categoryIds):")
   let item = 0
@@ -177,7 +197,7 @@ Hôm nay là ${weekday}, ${today}. Tuần bắt đầu từ thứ hai.
 Các trường:
 - answerable: false nếu câu hỏi cần thứ app không có (giá vàng, tỷ giá, lời khuyên đầu tư, số dư tại một ngày trong quá khứ, dự đoán). Khi đó các trường khác để mặc định.
 - measure, trong một khoảng thời gian:
-  spending = tiền đã chi; income = tiền đã nhận; net = thu trừ chi (dư bao nhiêu, lời lỗ, thu chi); transactions = mọi giao dịch, không phân biệt thu chi; transfers = chuyển tiền giữa các tài khoản của người dùng (kèm phí); account_flow = tiền vào và tiền ra của tài khoản ("tiền vào ra Vietcombank"); collected = tiền người khác trả nợ cho người dùng (thu nợ); repaid = tiền người dùng trả nợ cho người khác (trả nợ); new_lent = khoản cho vay mới ghi; new_borrowed = khoản đi vay mới ghi.
+  spending = tiền đã chi (kể cả phí chuyển khoản và tiền lãi trả cho khoản đi vay); income = tiền đã nhận (kể cả tiền lãi người khác trả cho khoản cho vay; tiền gốc vay và trả nợ không phải thu chi); net = thu trừ chi (dư bao nhiêu, lời lỗ, thu chi); transactions = mọi giao dịch, không phân biệt thu chi; transfers = chuyển tiền giữa các tài khoản của người dùng (kèm phí); account_flow = tiền vào và tiền ra của tài khoản ("tiền vào ra Vietcombank"); collected = tiền người khác trả nợ cho người dùng (thu nợ); repaid = tiền người dùng trả nợ cho người khác (trả nợ); new_lent = khoản cho vay mới ghi; new_borrowed = khoản đi vay mới ghi.
 - measure, hiện tại (không cần thời gian):
   balance = số dư tài khoản; account_info = thông tin tài khoản: số dư ban đầu, ngày mở, ghi chú, tài khoản đã lưu trữ; lent = người khác đang nợ người dùng (cho vay); borrowed = người dùng đang nợ người khác (đi vay); debts = cả cần thu lẫn cần trả; debts_due = khoản nợ sắp đến hạn hoặc quá hạn, cả hai chiều; net_worth = tài sản ròng (tổng tài sản, "mình có bao nhiêu tiền tất cả"). Hỏi về một khoản nợ của một người (đã trả bao nhiêu, lãi, hạn trả, lịch sử trả) là lent hoặc borrowed với contactIds của người đó.
 - view: total = một con số; by_group = chia theo nhóm hạng mục; by_category = chia theo hạng mục; by_account = chia theo tài khoản; by_day = theo từng ngày ("ngày nào chi nhiều nhất"); by_month = theo từng tháng ("6 tháng gần đây", "từng tháng năm nay"); top = những khoản lớn nhất; list = liệt kê các giao dịch. Hỏi "tiêu vào đâu", "hạng mục nào nhiều nhất" là by_group (hoặc by_category khi đã chọn một nhóm). Hỏi "khoản nào lớn nhất" là top. Hỏi "những khoản", "các giao dịch", "đã chi gì" là list.

@@ -17,7 +17,7 @@ import { formatDate, formatShortDate, toDateKey } from "@/lib/format-date"
 
 import { getTransactionSummary } from "../_lib/get-transaction-summary"
 import { groupTransactionsByDate } from "../_lib/group-transactions-by-date"
-import type { Transaction } from "../_types/transaction"
+import type { Transaction, TransactionSummaryData } from "../_types/transaction"
 import { TransactionDateGroup } from "./transaction-date-group"
 import { TransactionItem } from "./transaction-item"
 
@@ -40,6 +40,8 @@ type TransactionListProps = {
   categoryGroups: CategoryGroup[]
   todayDateKey: string
   transactions: Transaction[]
+  /** Each day's figures under every filter but the kind, for the day headers. */
+  dayTotals?: Record<string, TransactionSummaryData>
   /** A search or filter narrows the list, so an empty one means nothing matched. */
   isFiltering: boolean
   onClearFilters: () => void
@@ -148,6 +150,7 @@ export function TransactionList({
   categoryGroups,
   todayDateKey,
   transactions,
+  dayTotals,
   isFiltering,
   onClearFilters,
   search,
@@ -203,6 +206,7 @@ export function TransactionList({
           categoryGroups={categoryGroups}
           key={group.dateKey}
           group={group}
+          totals={dayTotals?.[group.dateKey]}
           todayDateKey={todayDateKey}
         />
       ))}

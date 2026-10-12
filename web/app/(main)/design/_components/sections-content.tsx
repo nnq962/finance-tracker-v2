@@ -166,8 +166,8 @@ function CardSection() {
         <FlowTiles
           variant="lead"
           tiles={[
-            { value: "in", label: "Tiền vào", amount: 18_000_000, caption: "1 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
-            { value: "out", label: "Tiền ra", amount: 5_152_000, caption: "16 giao dịch", icon: ArrowUpRightIcon, tone: "expense" },
+            { value: "in", label: "Thu", amount: 18_000_000, caption: "1 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
+            { value: "out", label: "Chi", amount: 5_152_000, caption: "16 giao dịch", icon: ArrowUpRightIcon, tone: "expense" },
           ]}
         />
       </Wide>
@@ -175,8 +175,8 @@ function CardSection() {
         <BlockLabel className="px-1">Hai chiều tiền, chỉ hiển thị số (FlowTiles không có onValueChange), như sheet một ngày và sheet tài khoản</BlockLabel>
         <FlowTiles
           tiles={[
-            { value: "in", label: "Tiền vào", amount: 18_000_000, caption: "1 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
-            { value: "out", label: "Tiền ra", amount: 5_152_000, caption: "16 giao dịch", icon: ArrowUpRightIcon, tone: "expense" },
+            { value: "in", label: "Thu", amount: 18_000_000, caption: "1 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
+            { value: "out", label: "Chi", amount: 5_152_000, caption: "16 giao dịch", icon: ArrowUpRightIcon, tone: "expense" },
           ]}
         />
       </Wide>
@@ -186,8 +186,8 @@ function CardSection() {
           value={flow}
           onValueChange={setFlow}
           tiles={[
-            { value: "in", label: "Tiền vào", amount: 18_000_000, caption: "1 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
-            { value: "out", label: "Tiền ra", amount: 5_152_000, caption: "16 giao dịch", icon: ArrowUpRightIcon, tone: "expense" },
+            { value: "in", label: "Thu", amount: 18_000_000, caption: "1 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
+            { value: "out", label: "Chi", amount: 5_152_000, caption: "16 giao dịch", icon: ArrowUpRightIcon, tone: "expense" },
           ]}
         />
       </Wide>
@@ -212,8 +212,8 @@ function CardSection() {
             value={hugeFlow}
             onValueChange={setHugeFlow}
             tiles={[
-              { value: "in", label: "Tiền vào", amount: 48_500_000, caption: "12 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
-              { value: "out", label: "Tiền ra", amount: 125_000_000_000, caption: "1 giao dịch", icon: ArrowUpRightIcon, tone: "expense" },
+              { value: "in", label: "Thu", amount: 48_500_000, caption: "12 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
+              { value: "out", label: "Chi", amount: 125_000_000_000, caption: "1 giao dịch", icon: ArrowUpRightIcon, tone: "expense" },
             ]}
           />
         </div>

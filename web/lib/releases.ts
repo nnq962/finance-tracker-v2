@@ -32,6 +32,20 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "5.5.1",
+    date: "2026-10-12",
+    title: "Số liệu khớp nhau ở mọi màn",
+    changes: [
+      { kind: "fixed", text: "Lọc theo tài khoản hay số tiền ở trang Giao dịch tính phí chuyển khoản theo đúng tài khoản trả phí và số tiền của phí" },
+      { kind: "fixed", text: "Tổng từng ngày giữ nguyên khi chọn Thu, Chi, Chuyển khoản hay Vay nợ; số giao dịch trên ô Thu / Chi khớp với số tiền" },
+      { kind: "fixed", text: "Sheet một ngày ở lịch Tổng quan liệt kê cả lần trả nợ, gọi là Thu / Chi như trang Giao dịch" },
+      { kind: "fixed", text: "Màn Vay nợ không còn đổi số dư của tài khoản ngừng sử dụng khi xoá hay chuyển lần trả nợ, khoản vay" },
+      { kind: "fixed", text: "Lãi của khoản vay từ tài khoản không tính cũng không tính vào thu chi" },
+      { kind: "improved", text: "Thẻ tài sản ròng ghi tài khoản chưa tính; LiuLiu hiểu phí chuyển khoản, tiền lãi vay và điều chỉnh số dư" },
+      { kind: "improved", text: "Tải lãi vay nhanh hơn, chỉ đọc các khoản nợ cần đến" },
+    ],
+  },
+  {
     version: "5.5.0",
     date: "2026-10-12",
     title: "Số dư sau từng giao dịch",

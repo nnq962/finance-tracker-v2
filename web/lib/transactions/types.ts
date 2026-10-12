@@ -72,6 +72,8 @@ export type Transaction = {
   derived?: "fee" | "interest"
   /** The interest part of a loan repayment (source "debt"). */
   interest?: number
+  /** The loan was made from or into an account left out of the figures: so is its interest. */
+  interestLeftOut?: boolean
   /** A balance corrected by hand ("Điều chỉnh số dư"): no category, deleted rather than edited. */
   adjustment?: boolean
   fromAccountId?: string
@@ -126,8 +128,11 @@ export const DEBT_INTEREST_NAME = "Tiền lãi vay"
  * lists show the transfer or the repayment alone.
  */
 export function forFigures(transactions: Transaction[]): Transaction[] {
+  // Rows already expanded (and filtered as rows of their own) stay as they are.
+  const ids = new Set(transactions.map((transaction) => transaction.id))
   return transactions.flatMap((transaction): Transaction[] => {
-    if (transaction.kind === "transfer" && transaction.fee) {
+    if (transaction.derived) return [transaction]
+    if (transaction.kind === "transfer" && transaction.fee && !ids.has(`${transaction.id}:fee`)) {
       return [
         transaction,
         {
@@ -138,7 +143,6 @@ export function forFigures(transactions: Transaction[]): Transaction[] {
           description: `${TRANSFER_FEE_NAME} · ${transaction.fromAccountName ?? "Tài khoản"}`,
           amount: -transaction.fee,
           occurredAt: transaction.occurredAt,
-          note: transaction.note,
           accountId: transaction.fromAccountId,
           accountName: transaction.fromAccountName,
           ...(transaction.fromAccountExcluded ? { accountExcluded: true } : {}),
@@ -148,7 +152,7 @@ export function forFigures(transactions: Transaction[]): Transaction[] {
         },
       ]
     }
-    if (transaction.source === "debt" && transaction.interest) {
+    if (transaction.source === "debt" && transaction.interest && !ids.has(`${transaction.id}:interest`)) {
       const comesIn = transaction.kind === "income"
       const name = comesIn ? "Lãi cho vay" : "Lãi đi vay"
       return [
@@ -163,7 +167,7 @@ export function forFigures(transactions: Transaction[]): Transaction[] {
           occurredAt: transaction.occurredAt,
           accountId: transaction.accountId,
           accountName: transaction.accountName,
-          ...(transaction.accountExcluded ? { accountExcluded: true } : {}),
+          ...(transaction.accountExcluded || transaction.interestLeftOut ? { accountExcluded: true } : {}),
           categoryGroupId: DEBT_INTEREST_GROUP,
           categoryGroupName: DEBT_INTEREST_NAME,
           categoryName: name,
@@ -172,4 +176,23 @@ export function forFigures(transactions: Transaction[]): Transaction[] {
     }
     return [transaction]
   })
+}
+
+/**
+ * Income and spending as every figure counts them (forFigures, leaving out
+ * loans, repayments and what is left out), with how many rows make each.
+ */
+export function summarizeFigures(transactions: Transaction[]) {
+  const totals = { income: 0, expense: 0, incomeCount: 0, expenseCount: 0 }
+  for (const transaction of forFigures(transactions)) {
+    if (transaction.source || isLeftOut(transaction)) continue
+    if (transaction.kind === "income") {
+      totals.income += Math.abs(transaction.amount)
+      totals.incomeCount += 1
+    } else if (transaction.kind === "expense") {
+      totals.expense += Math.abs(transaction.amount)
+      totals.expenseCount += 1
+    }
+  }
+  return totals
 }

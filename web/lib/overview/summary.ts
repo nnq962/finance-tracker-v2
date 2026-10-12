@@ -29,9 +29,12 @@ export function getOverviewSummary(
   const cash = accounts
     .filter((account) => !account.excluded)
     .reduce((total, account) => total + account.balance, 0)
-  const archivedCash = accounts
-    .filter((account) => account.status === "archived" && !account.excluded)
-    .reduce((total, account) => total + account.balance, 0)
+  // What the total leaves out, so the card can say so, as the accounts page does.
+  const leftOutAccounts = accounts.filter((account) => account.excluded)
+  const leftOut = {
+    count: leftOutAccounts.length,
+    cash: leftOutAccounts.reduce((total, account) => total + account.balance, 0),
+  }
   // A loan made from or into an account left out of the figures is left out with it.
   const leftOutIds = new Set(accounts.filter((account) => account.excluded).map((account) => account.id))
   const debtBalances = debts.reduce(
@@ -80,7 +83,7 @@ export function getOverviewSummary(
     .slice(0, 4)
 
   return {
-    netWorth: { cash, archivedCash, ...debtBalances, total: cash + debtBalances.receivable - debtBalances.payable },
+    netWorth: { cash, leftOut, ...debtBalances, total: cash + debtBalances.receivable - debtBalances.payable },
     cashFlow: {
       months,
       current: months.find((month) => month.key === currentMonth) ?? { income: 0, expense: 0 },

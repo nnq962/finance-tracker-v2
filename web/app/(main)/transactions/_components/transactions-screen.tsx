@@ -22,6 +22,9 @@ import { loadAllTransactionsAction, type AiQuota } from "../actions"
 
 import { filterTransactions } from "../_lib/filter-transactions"
 import { getTransactionPeriod } from "../_lib/get-transaction-period"
+import { getTransactionSummary } from "../_lib/get-transaction-summary"
+import { toDateKey } from "@/lib/format-date"
+import { forFigures } from "@/lib/transactions/types"
 import type { Transaction, TransactionFilter, TransactionSearchFilters } from "../_types/transaction"
 import { AddTransactionButton } from "./add-transaction-button"
 import { AddTransactionSheet } from "./add-transaction/add-transaction-sheet"
@@ -180,10 +183,21 @@ export function TransactionsScreen({
     [allMonths, everyTransaction, listFilter, monthTransactions, listSearchFilters],
   )
   // Every filter but the kind, for the tiles: the kind is what they switch.
+  // Fees and interest are filtered as rows of their own (forFigures first),
+  // so a fee goes with the account that paid it and its own amount.
   const summaryTransactions = React.useMemo(
-    () => filterTransactions(monthTransactions, "all", searchFilters),
+    () => filterTransactions(forFigures(monthTransactions), "all", searchFilters),
     [monthTransactions, searchFilters],
   )
+  // Each day's figures the same way, so a day's header keeps them while a kind is chosen.
+  const dayTotals = React.useMemo(() => {
+    const byDay = new Map<string, Transaction[]>()
+    for (const transaction of summaryTransactions) {
+      const key = toDateKey(transaction.occurredAt)
+      byDay.set(key, [...(byDay.get(key) ?? []), transaction])
+    }
+    return Object.fromEntries([...byDay].map(([key, rows]) => [key, getTransactionSummary(rows)]))
+  }, [summaryTransactions])
 
   const changeKind = (kind: TransactionFilter) => {
     setFilter(kind)
@@ -337,6 +351,7 @@ export function TransactionsScreen({
             categoryGroups={categoryGroups}
             todayDateKey={todayDateKey}
             transactions={visibleTransactions}
+            dayTotals={allMonths ? undefined : dayTotals}
             isFiltering={isFiltering}
             onClearFilters={clearFilters}
             search={search}

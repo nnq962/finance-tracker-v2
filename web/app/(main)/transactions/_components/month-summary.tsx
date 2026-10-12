@@ -1,9 +1,8 @@
-import { isLeftOut } from "@/lib/transactions/types"
+import { summarizeFigures } from "@/lib/transactions/types"
 import { ArrowDownLeftIcon, ArrowUpRightIcon } from "lucide-react"
 
 import { FlowTiles } from "@/components/app/flow-tiles"
 
-import { getTransactionSummary } from "../_lib/get-transaction-summary"
 import type { Transaction } from "../_types/transaction"
 
 /**
@@ -18,10 +17,9 @@ export function MonthSummary({
   transactions: Transaction[]
   className?: string
 }) {
-  const totals = getTransactionSummary(transactions)
-  // Loans move money without being income or spending, as in the totals.
-  const count = (kind: "income" | "expense") =>
-    transactions.filter((transaction) => transaction.kind === kind && transaction.source !== "debt" && !isLeftOut(transaction)).length
+  // Counted as the figures are: a transfer's fee and a loan's interest are rows too.
+  const totals = summarizeFigures(transactions)
+  const count = (kind: "income" | "expense") => (kind === "income" ? totals.incomeCount : totals.expenseCount)
 
   return (
     <FlowTiles

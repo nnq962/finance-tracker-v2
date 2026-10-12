@@ -2,7 +2,7 @@
 
 import { requireSession } from "@/lib/auth/session"
 import { toDateKey } from "@/lib/format-date"
-import { getTransactionsInRange } from "@/lib/transactions/repository"
+import { getDebtPaymentsInRange, getTransactionsInRange } from "@/lib/transactions/repository"
 import type { Transaction } from "@/lib/transactions/types"
 
 type DayTransactionsResult =
@@ -10,7 +10,8 @@ type DayTransactionsResult =
   | { success: false; error: string }
 
 /** One Vietnam day's transactions, newest first, for the calendar's day
- * sheet; loans are left out, as in the calendar's totals. */
+ * sheet: everything the transactions page lists that day, loans and
+ * repayments too (a repayment's interest is in the day's figures). */
 export async function getDayTransactionsAction(dateKey: unknown): Promise<DayTransactionsResult> {
   const user = await requireSession()
   const start = typeof dateKey === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateKey)
@@ -23,8 +24,12 @@ export async function getDayTransactionsAction(dateKey: unknown): Promise<DayTra
 
   try {
     const end = new Date(start.getTime() + 86_400_000)
-    const transactions = await getTransactionsInRange(user.uid, start, end)
-    return { success: true, data: transactions.filter((transaction) => !transaction.source) }
+    const [own, repayments] = await Promise.all([
+      getTransactionsInRange(user.uid, start, end),
+      getDebtPaymentsInRange(user.uid, start, end),
+    ])
+    const transactions = [...own, ...repayments].sort((left, right) => right.occurredAt.localeCompare(left.occurredAt))
+    return { success: true, data: transactions }
   } catch (error) {
     console.error("Day transactions failed", error)
     return { success: false, error: "Không thể tải giao dịch. Vui lòng thử lại." }

@@ -49,6 +49,11 @@ export function NetWorth({
             </CardLabel>
           </p>
         ) : null}
+        {data.leftOut.count > 0 ? (
+          <CardLabel as="p" className="mt-1.5">
+            Chưa tính {data.leftOut.count} tài khoản · {formatCompactCurrency(data.leftOut.cash, 1)}
+          </CardLabel>
+        ) : null}
         {/* Three share the card's width, so the amounts are shortened; the
             full ones are in the tooltip and the accessible name. */}
         <StatGroup separated className="mt-5">

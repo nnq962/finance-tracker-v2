@@ -302,7 +302,8 @@ function selectDebtPayments(userId: string) {
     .innerJoin("debts as d", "d.id", "p.debtId")
     .leftJoin("contacts as c", "c.id", "d.contactId")
     .leftJoin("accounts as a", "a.id", "p.accountId")
-    .select(["p.id", "p.debtId", "p.amount", "p.accountId", "p.note", "d.direction", "c.name as contactName", "a.name as accountName", "a.excluded as accountExcluded"])
+    .leftJoin("accounts as da", "da.id", "d.accountId")
+    .select(["p.id", "p.debtId", "p.amount", "p.accountId", "p.note", "d.direction", "c.name as contactName", "a.name as accountName", "a.excluded as accountExcluded", "da.excluded as debtAccountExcluded"])
     .select(debtPaymentPaidAt.as("occurredAt"))
     .where("p.userId", "=", userId)
 }
@@ -326,6 +327,9 @@ function toDebtPaymentTransaction(row: DebtPaymentRow, interest = 0): Transactio
     categoryName: title,
     categoryGroupName: "Vay & nợ",
     ...(interest ? { interest } : {}),
+    // A loan made from or into an account left out is left out of the net
+    // worth, and its interest with it, wherever the repayment went.
+    ...(interest && row.debtAccountExcluded ? { interestLeftOut: true } : {}),
     ...(row.accountExcluded ? { accountExcluded: true } : {}),
     ...(row.note ? { note: row.note } : {}),
     occurredAt: new Date(row.occurredAt).toISOString(),
@@ -341,8 +345,8 @@ export async function getDebtPaymentsInRange(userId: string, start: Date, end: D
 
   // The interest part of each payment needs its debt's earlier payments too.
   const interests = new Map<string, number>()
-  for (const debt of await getDebts(userId)) {
-    if (rows.some((row) => row.debtId === debt.id)) getPaymentInterests(debt).forEach((value, id) => interests.set(id, value))
+  for (const debt of await getDebts(userId, [...new Set(rows.map((row) => row.debtId))])) {
+    getPaymentInterests(debt).forEach((value, id) => interests.set(id, value))
   }
   return rows.map((row) => toDebtPaymentTransaction(row, interests.get(row.id)))
 }
@@ -490,6 +494,8 @@ async function lockExisting(
     .executeTakeFirst()
 
   if (!existing) {
+    // Already deleted (a retried or doubled request): nothing to do.
+    if (action === "xoá") return undefined
     throw new TransactionValidationError("Giao dịch không tồn tại.")
   }
 
@@ -513,7 +519,8 @@ export async function updateTransaction(
   values: TransactionFormValues,
 ) {
   await retryOnDeadlock(() => getDb().transaction().execute(async (trx) => {
-    const existing = await lockExisting(trx, userId, transactionId, "sửa")
+    // Editing, a missing row throws rather than returning nothing.
+    const existing = (await lockExisting(trx, userId, transactionId, "sửa"))!
     const accounts = await prepare(trx, userId, values, existing)
     const impacts = new Map<string, number>()
     const merge = (accountId: string, delta: number) =>
@@ -548,9 +555,8 @@ export async function setTransactionExcluded(userId: string, transactionId: stri
 /** Deleting what is already gone (a retried request) succeeds quietly. */
 export async function deleteTransaction(userId: string, transactionId: string) {
   await retryOnDeadlock(() => getDb().transaction().execute(async (trx) => {
-    const gone = !(await trx.selectFrom("transactions").select("id").where("id", "=", transactionId).where("userId", "=", userId).executeTakeFirst())
-    if (gone) return
     const existing = await lockExisting(trx, userId, transactionId, "xoá")
+    if (!existing) return
     const accounts = await lockAccounts(trx, userId, getAccountIds(existing))
     const impacts = new Map<string, number>()
 

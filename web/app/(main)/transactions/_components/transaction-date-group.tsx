@@ -14,6 +14,8 @@ type TransactionDateGroupProps = {
   accounts: Account[]
   categoryGroups: CategoryGroup[]
   group: TransactionDateGroupModel
+  /** The day's figures under every filter but the kind; the rows' own otherwise. */
+  totals?: { income: number; expense: number }
   /** Today's date key, so today and yesterday read "Hôm nay" and "Hôm qua". */
   todayDateKey: string
 }
@@ -27,9 +29,10 @@ export function TransactionDateGroup({
   accounts,
   categoryGroups,
   group,
+  totals,
   todayDateKey,
 }: TransactionDateGroupProps) {
-  const { income, expense } = getTransactionSummary(group.transactions)
+  const { income, expense } = totals ?? getTransactionSummary(group.transactions)
 
   return (
     <SettingsGroup

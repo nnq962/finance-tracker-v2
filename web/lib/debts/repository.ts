@@ -132,15 +132,23 @@ function toDebt(row: DebtRow, payments: DebtPayment[]): Debt {
   return debt
 }
 
-export async function getDebts(userId: string): Promise<Debt[]> {
+/** The user's debts with their payments; only those given, when `debtIds` is. */
+export async function getDebts(userId: string, debtIds?: string[]): Promise<Debt[]> {
+  if (debtIds?.length === 0) return []
   const db = getDb()
   const [rows, payments] = await Promise.all([
-    selectDebts(db, userId).orderBy("recordedAt", "desc").orderBy("id", "desc").execute(),
-    selectPayments(db, userId).execute(),
+    selectDebts(db, userId)
+      .$if(Boolean(debtIds), (query) => query.where("id", "in", debtIds!))
+      .orderBy("recordedAt", "desc").orderBy("id", "desc").execute(),
+    selectPayments(db, userId)
+      .$if(Boolean(debtIds), (query) => query.where("p.debtId", "in", debtIds!))
+      .execute(),
   ])
   const paymentsByDebt = new Map<string, DebtPayment[]>()
   for (const payment of payments) {
-    paymentsByDebt.set(payment.debtId, [...(paymentsByDebt.get(payment.debtId) ?? []), toPayment(payment)])
+    const list = paymentsByDebt.get(payment.debtId)
+    if (list) list.push(toPayment(payment))
+    else paymentsByDebt.set(payment.debtId, [toPayment(payment)])
   }
   return rows.map((row) => toDebt(row, paymentsByDebt.get(row.id) ?? []))
 }
@@ -311,8 +319,9 @@ export async function saveDebtPayment(userId: string, debtId: string, paymentId:
     const sign = debt.direction === "lent" ? 1 : -1
     for (const account of accounts.values()) {
       const delta = (values?.accountId === account.id ? sign * values.amount : 0) - (previous?.accountId === account.id ? sign * previous.amount : 0)
-      if (account.status !== "active" && values?.accountId === account.id && delta !== 0) {
-        throw new DebtValidationError("Tài khoản đã ngừng sử dụng. Hãy chọn tài khoản đang sử dụng để thanh toán.")
+      // An archived account's balance stays as it was left, whichever side it is on.
+      if (account.status !== "active" && delta !== 0) {
+        throw new DebtValidationError(`“${account.name}” đã ngừng sử dụng. Dùng lại tài khoản này trước khi đổi lần thanh toán.`)
       }
       await applyBalance(trx, account, delta)
     }
@@ -367,8 +376,9 @@ export async function changeDebt(userId: string, debtId: string, input: unknown 
     for (const [id, delta] of deltas) {
       const isSelectedAccount = values?.accountId === id
       const account = assertAccount(accounts.get(id), !isSelectedAccount || id === debt.accountId)
-      if (account.status !== "active" && isSelectedAccount && delta !== 0) {
-        throw new DebtValidationError("Tài khoản đã ngừng sử dụng. Hãy chọn tài khoản đang sử dụng cho khoản nợ.")
+      // An archived account's balance stays as it was left, whichever side it is on.
+      if (account.status !== "active" && delta !== 0) {
+        throw new DebtValidationError(`“${account.name}” đã ngừng sử dụng. Dùng lại tài khoản này trước khi đổi khoản nợ.`)
       }
       await applyBalance(trx, account, delta)
     }

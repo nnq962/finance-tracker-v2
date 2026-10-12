@@ -297,7 +297,7 @@ function ChipSection() {
             aria-label="Loại giao dịch"
             className="shrink-0"
           >
-            {["Tất cả", "Tiền vào", "Tiền ra", "Chuyển khoản", "Vay nợ"].map((label, index) => (
+            {["Tất cả", "Thu", "Chi", "Chuyển khoản", "Vay nợ"].map((label, index) => (
               <ToggleGroupItem key={label} value={index === 0 ? "all" : label}>
                 {label}
               </ToggleGroupItem>

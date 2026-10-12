@@ -39,7 +39,7 @@ const transactions = [
 const summary = getOverviewSummary(accounts, debts, contacts, transactions, '2026-09-23')
 assert.deepEqual(summary.netWorth, {
   cash: 10_000_000,
-  archivedCash: 1_000_000,
+  leftOut: { count: 0, cash: 0 },
   receivable: 3_000_000,
   payable: 5_000_000,
   total: 8_000_000,

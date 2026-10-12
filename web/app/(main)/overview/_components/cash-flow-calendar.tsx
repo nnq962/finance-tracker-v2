@@ -15,7 +15,7 @@ import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
 import { formatDayLabel } from "@/lib/format-date"
 import type { DayTotals } from "@/lib/overview/month-data"
-import type { Transaction } from "@/lib/transactions/types"
+import { summarizeFigures, type Transaction } from "@/lib/transactions/types"
 import { cn } from "@/lib/utils"
 
 import { TransactionItem } from "../../transactions/_components/transaction-item"
@@ -90,12 +90,11 @@ export function CashFlowCalendar({
     }
   }, [openDay, days])
   const dayItems = openDay && !days[openDay] ? [] : loaded && loaded.key === openDay ? loaded.items : null
-  // How many of the day's transactions each half adds up, once they are here;
-  // loans move money without being income or spending, as in the totals.
+  // How many rows each half adds up, once they are here, counted as the
+  // figures are (a fee or a loan's interest is a row; loans are not).
+  const dayFigures = dayItems ? summarizeFigures(dayItems) : null
   const dayCaption = (kind: "income" | "expense") =>
-    dayItems
-      ? `${dayItems.filter((transaction) => transaction.kind === kind && !("source" in transaction && transaction.source === "debt")).length} giao dịch`
-      : "Đang tải…"
+    dayFigures ? `${kind === "income" ? dayFigures.incomeCount : dayFigures.expenseCount} giao dịch` : "Đang tải…"
 
   const [year, monthNumber] = month.split("-").map(Number)
   const daysInMonth = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate()
@@ -218,7 +217,7 @@ export function CashFlowCalendar({
                 tiles={[
                   {
                     value: "income",
-                    label: "Tiền vào",
+                    label: "Thu",
                     amount: openTotals.income,
                     caption: dayCaption("income"),
                     icon: ArrowDownLeftIcon,
@@ -226,7 +225,7 @@ export function CashFlowCalendar({
                   },
                   {
                     value: "expense",
-                    label: "Tiền ra",
+                    label: "Chi",
                     amount: openTotals.expense,
                     caption: dayCaption("expense"),
                     icon: ArrowUpRightIcon,

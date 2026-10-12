@@ -8,7 +8,18 @@ import type { Contact, Debt } from "@/lib/debts/types"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDayLabel, formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
 import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
-import { isLeftOut, forFigures, type AccountFlow, type Transaction } from "@/lib/transactions/types"
+import {
+  BALANCE_ADJUSTMENT_GROUP,
+  BALANCE_ADJUSTMENT_NAME,
+  DEBT_INTEREST_GROUP,
+  DEBT_INTEREST_NAME,
+  forFigures,
+  isLeftOut,
+  TRANSFER_FEE_GROUP,
+  TRANSFER_FEE_NAME,
+  type AccountFlow,
+  type Transaction,
+} from "@/lib/transactions/types"
 
 import type { AccountMark, Answer, AnswerBlock, AnswerIcon, AnswerRow, QuestionPlan } from "./types"
 
@@ -20,7 +31,7 @@ export type AnswerSources = {
   contacts: Contact[]
   /** Loaded only for debt questions. */
   debts: () => Promise<Debt[]>
-  /** Cash flow and transfers in [start, end) (date keys, Vietnam days), loans left out. */
+  /** Cash flow, transfers and loan repayments (for their interest) in [start, end) (date keys, Vietnam days); loans themselves left out. */
   transactions: (start: string, end: string) => Promise<Transaction[]>
   /** Money in and out of each account in [start, end). */
   flows: (start: string, end: string) => Promise<Record<string, AccountFlow>>
@@ -216,6 +227,13 @@ type Lookup = {
   account: (id?: string) => Account | undefined
 }
 
+/** What the app counts on its own, with no group of the user's (forFigures, adjustments). */
+const systemGroupNames: Record<string, string> = {
+  [TRANSFER_FEE_GROUP]: TRANSFER_FEE_NAME,
+  [DEBT_INTEREST_GROUP]: DEBT_INTEREST_NAME,
+  [BALANCE_ADJUSTMENT_GROUP]: BALANCE_ADJUSTMENT_NAME,
+}
+
 function lookups(sources: AnswerSources): Lookup {
   const groups = new Map(sources.categoryGroups.map((group) => [group.id, group]))
   const categories = new Map(
@@ -374,7 +392,7 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
 
   // What the answer is about: the categories asked for, a word searched, or the measure.
   const names = [
-    ...plan.groupIds.map((id) => look.group(id)?.name),
+    ...plan.groupIds.map((id) => look.group(id)?.name ?? systemGroupNames[id]),
     ...plan.categoryIds.map((id) => look.category(id)?.name),
   ].filter(Boolean)
   const accountNames = plan.accountIds.map((id) => look.account(id)?.name).filter(Boolean)

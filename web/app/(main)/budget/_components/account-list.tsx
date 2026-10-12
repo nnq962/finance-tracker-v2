@@ -34,8 +34,8 @@ type AccountListProps = {
 }
 
 function AccountRow({ account, onSelect }: { account: Account; onSelect: () => void }) {
-  // No longer used, or left out of the figures.
-  const isLocked = account.status === "archived" || account.excluded
+  // Left out of the figures: its balance is not in the total, so it greys.
+  const isLocked = account.excluded
 
   return (
     <SettingsRow
@@ -46,7 +46,7 @@ function AccountRow({ account, onSelect }: { account: Account; onSelect: () => v
         <Money
           amount={account.balance}
           size="sm"
-          // Below zero is a warning; an archived account, or one outside the figures, greys.
+          // Below zero is a warning; a balance outside the total greys.
           tone={isLocked ? "muted" : account.balance < 0 ? "expense" : "default"}
         />
       }
