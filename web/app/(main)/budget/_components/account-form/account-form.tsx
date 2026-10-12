@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { SaveIcon } from "lucide-react"
+import { EyeOffIcon, SaveIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
@@ -85,6 +85,7 @@ export function AccountForm({
     defaultValues?.balance === undefined ? null : Math.abs(defaultValues.balance),
   )
   const [balanceNegative, setBalanceNegative] = React.useState((defaultValues?.balance ?? 0) < 0)
+  const [excluded, setExcluded] = React.useState(defaultValues?.excluded ?? false)
   // A new account starts now; an edited one keeps its date.
   const [when, setWhen] = React.useState(() =>
     defaultValues?.openedAt ? getLocalDateTime(defaultValues.openedAt) : getCurrentLocalDateTime(),
@@ -320,6 +321,22 @@ export function AccountForm({
             <FieldError className="px-4">{errors.name ?? errors.openedAt}</FieldError>
           ) : null}
         </div>
+
+        {/* Last, as it is seldom wanted, as on a transaction's form. */}
+        <SettingsGroup>
+          <SettingsRow
+            icon={EyeOffIcon}
+            tone="neutral"
+            title="Không tính vào thống kê"
+            description="Số dư và thu chi không cộng vào tổng"
+            action={
+              <>
+                <Switch aria-label="Không tính vào thống kê" checked={excluded} onCheckedChange={setExcluded} />
+                {excluded ? <input type="hidden" name="excluded" value="on" /> : null}
+              </>
+            }
+          />
+        </SettingsGroup>
       </div>
 
       {picking ? null : (

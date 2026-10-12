@@ -234,6 +234,7 @@ export function TransactionDetailsSheet({
             accountName={transaction.accountName}
             checked={excluded}
             onCheckedChange={changeExcluded}
+            byAccount={transaction.accountExcluded}
           />
         </SettingsGroup>
       )}

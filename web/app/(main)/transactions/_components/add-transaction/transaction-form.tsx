@@ -450,6 +450,7 @@ export function TransactionForm({
               accountName={chosenAccount?.name}
               checked={excluded}
               onCheckedChange={setExcluded}
+              byAccount={chosenAccount?.excluded}
             />
           </SettingsGroup>
         ) : null}

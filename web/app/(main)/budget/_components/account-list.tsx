@@ -34,7 +34,8 @@ type AccountListProps = {
 }
 
 function AccountRow({ account, onSelect }: { account: Account; onSelect: () => void }) {
-  const isLocked = account.status === "archived"
+  // No longer used, or left out of the figures.
+  const isLocked = account.status === "archived" || account.excluded
 
   return (
     <SettingsRow
@@ -45,7 +46,7 @@ function AccountRow({ account, onSelect }: { account: Account; onSelect: () => v
         <Money
           amount={account.balance}
           size="sm"
-          // Below zero is a warning; an archived account's balance no longer counts.
+          // Below zero is a warning; an archived account, or one outside the figures, greys.
           tone={isLocked ? "muted" : account.balance < 0 ? "expense" : "default"}
         />
       }
@@ -58,7 +59,11 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
   const [openAccountId, setOpenAccountId] = React.useState<string | null>(null)
   // One list, largest balance first.
   const activeAccounts = accounts
-    .filter((account) => account.status === "active")
+    .filter((account) => account.status === "active" && !account.excluded)
+    .sort((left, right) => right.balance - left.balance)
+  // Still in use, but outside the total and the figures: a group of their own below.
+  const excludedAccounts = accounts
+    .filter((account) => account.status === "active" && account.excluded)
     .sort((left, right) => right.balance - left.balance)
   const archivedAccounts = accounts.filter((account) => account.status === "archived")
   // A deleted account closes its sheet.
@@ -110,13 +115,25 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
         </>
       ) : null}
 
+      {excludedAccounts.length > 0 ? (
+        <div className="lg:max-w-2xl">
+          <SettingsGroup
+            title={`Không tính vào thống kê · ${excludedAccounts.length}`}
+            footer="Số dư không cộng vào tổng, thu chi không vào thống kê"
+          >
+            {excludedAccounts.map((account) => (
+              <AccountRow key={account.id} account={account} onSelect={() => setOpenAccountId(account.id)} />
+            ))}
+          </SettingsGroup>
+        </div>
+      ) : null}
+
       {archivedAccounts.length > 0 ? (
         // A list on every screen, folded by default; capped on desktop so a
         // balance stays near its account's name.
         <div className="lg:max-w-2xl">
           <SettingsGroup
             title="Ngừng sử dụng"
-            footer="Không tính vào tổng số dư"
             collapsible={{ showLabel: `Hiện ${archivedAccounts.length} tài khoản`, defaultOpen: activeAccounts.length === 0 }}
           >
             {archivedAccounts.map((account) => (

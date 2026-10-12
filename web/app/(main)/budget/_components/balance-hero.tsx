@@ -4,6 +4,7 @@ import { CardLabel } from "@/components/app/card-label"
 import { Money } from "@/components/app/money"
 import { Card, CardContent } from "@/components/ui/card"
 import { accountTypeLabels } from "@/lib/accounts/labels"
+import { formatCompactCurrency } from "@/lib/format-currency"
 import type { Account, AccountType, BalanceSummary } from "@/lib/accounts/types"
 import { cn } from "@/lib/utils"
 
@@ -14,14 +15,16 @@ const accountTypeIcons: Record<AccountType, LucideIcon> = {
 }
 
 /**
- * The active accounts' total, the one figure this page leads with, on the
+ * The total of the accounts counted in the figures (archived ones too), the one figure this page leads with, on the
  * dark inverse card (without the discs, so it is not the overview's net
  * worth again). Beside it, the kinds held, overlapped like cards in a wallet;
  * below it, when the money sits in more than one kind, each kind's full
  * balance on its own line, a negative one in red (a share bar could not show it).
  */
 export function BalanceHero({ summary, accounts }: { summary: BalanceSummary; accounts: Account[] }) {
-  const active = accounts.filter((account) => account.status === "active")
+  const active = accounts.filter((account) => !account.excluded)
+  const left = accounts.filter((account) => account.excluded)
+  const leftTotal = left.reduce((total, account) => total + account.balance, 0)
   const parts = (Object.keys(accountTypeLabels) as AccountType[])
     .filter((type) => active.some((account) => account.type === type))
     .map((type) => ({
@@ -36,6 +39,11 @@ export function BalanceHero({ summary, accounts }: { summary: BalanceSummary; ac
           <div className="flex min-w-0 flex-col gap-1">
             <CardLabel>Tổng số dư</CardLabel>
             <Money amount={summary.totalBalance} size="xl" tone={summary.totalBalance < 0 ? "expense" : "default"} />
+            {left.length > 0 ? (
+              <p className="text-xs text-inverse-foreground/60">
+                Chưa tính {left.length} tài khoản · {formatCompactCurrency(leftTotal, 1)}
+              </p>
+            ) : null}
           </div>
           {parts.length > 0 ? (
             <div aria-hidden="true" className="flex shrink-0 -space-x-2 pt-1">

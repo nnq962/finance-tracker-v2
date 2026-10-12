@@ -23,6 +23,7 @@ export function EditAccountSheet({ account, onOpenChange, open }: EditAccountShe
           balance: account.balance,
           note: account.note,
           openedAt: new Date(account.openedAt),
+          excluded: account.excluded,
         }}
         expectedBalance={account.balance}
         submitLabel="Lưu thay đổi"

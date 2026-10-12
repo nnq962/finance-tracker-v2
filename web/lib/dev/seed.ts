@@ -50,7 +50,7 @@ async function seedMoney(userId: string) {
     { name: "Ví MoMo", type: "e-wallet", institutionId: "momo", balance: 1_500_000 },
     { name: "Tiền mặt", type: "cash", balance: 2_000_000 },
   ] as const) {
-    await createAccount(userId, { ...account, openedAt: new Date(start.getTime() - DAY_MS) })
+    await createAccount(userId, { ...account, openedAt: new Date(start.getTime() - DAY_MS), excluded: false })
   }
 
   const accounts = await getAccounts(userId)

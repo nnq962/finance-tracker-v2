@@ -1,3 +1,4 @@
+import { isLeftOut } from "@/lib/transactions/types"
 import type {
   Transaction,
   TransactionFilter,
@@ -43,7 +44,7 @@ export function filterTransactions(
     )
 
     return (
-      (!searchFilters.excludedOnly || transaction.excluded === true) &&
+      (!searchFilters.excludedOnly || isLeftOut(transaction)) &&
       matchesFilter &&
       matchesAmount &&
       matchesAccount &&

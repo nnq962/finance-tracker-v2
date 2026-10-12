@@ -10,6 +10,8 @@ export type AccountFormValues = {
   note?: string
   /** When the account was opened, as the user says. */
   openedAt: Date
+  /** Left out of the totals and the figures (MISA's "Không tính vào báo cáo"). */
+  excluded: boolean
 }
 
 export type Account = {
@@ -24,6 +26,11 @@ export type Account = {
   logoUrl?: string
   logoFallback: string
   status: AccountStatus
+  /**
+   * Left out of the figures: its balance is not in the totals or the net
+   * worth, its income and spending not in the monthly figures. It still works.
+   */
+  excluded: boolean
   /** When the account was opened, as the user says. */
   openedAt: string
   updatedAt: string

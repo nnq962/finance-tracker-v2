@@ -32,6 +32,18 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "5.1.0",
+    date: "2026-10-12",
+    title: "Tài khoản không tính vào thống kê",
+    changes: [
+      { kind: "new", text: "Không tính một tài khoản vào thống kê: số dư không cộng vào tổng và tài sản ròng, thu chi của nó không vào thống kê" },
+      { kind: "new", text: "Tài khoản không tính nằm trong nhóm riêng ở trang Tài khoản, thẻ tổng ghi số tiền chưa tính" },
+      { kind: "improved", text: "Giao dịch của tài khoản không tính tự xám đi, công tắc trong chi tiết được giữ bật" },
+      { kind: "improved", text: "LiuLiu bỏ tài khoản không tính khỏi tổng số dư và tài sản ròng, và nói rõ đã bỏ tài khoản nào" },
+      { kind: "improved", text: "Tài khoản đã lưu trữ vẫn được cộng vào tổng số dư" },
+    ],
+  },
+  {
     version: "5.0.0",
     date: "2026-10-12",
     title: "Trợ lý LiuLiu và giao diện mới",

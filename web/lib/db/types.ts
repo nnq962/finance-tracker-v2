@@ -14,6 +14,7 @@ export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 export interface Accounts {
   balance: number;
   createdAt: Generated<Timestamp>;
+  excluded: Generated<boolean>;
   id: Generated<string>;
   institutionId: string | null;
   name: string;

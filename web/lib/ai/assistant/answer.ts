@@ -8,7 +8,7 @@ import type { Contact, Debt } from "@/lib/debts/types"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDayLabel, formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
 import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
-import type { AccountFlow, Transaction } from "@/lib/transactions/types"
+import { isLeftOut, type AccountFlow, type Transaction } from "@/lib/transactions/types"
 
 import type { AccountMark, Answer, AnswerBlock, AnswerIcon, AnswerRow, QuestionPlan } from "./types"
 
@@ -341,7 +341,7 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
   // ("không tính vào thống kê") is about nothing else.
   const listing = plan.view === "list" || measure === "transactions"
   const keep = (transaction: Transaction) =>
-    (plan.onlyExcluded ? transaction.excluded === true : listing || !transaction.excluded) &&
+    (plan.onlyExcluded ? isLeftOut(transaction) : listing || !isLeftOut(transaction)) &&
     (plan.minAmount === null || Math.abs(transaction.amount) >= plan.minAmount) &&
     (plan.maxAmount === null || Math.abs(transaction.amount) <= plan.maxAmount) &&
     kinds.includes(transaction.kind) &&
@@ -361,7 +361,7 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
 
   const sum = (rows: Transaction[], kind?: string) =>
     rows
-      .filter((row) => (plan.onlyExcluded || !row.excluded) && (!kind || row.kind === kind))
+      .filter((row) => (plan.onlyExcluded || !isLeftOut(row)) && (!kind || row.kind === kind))
       .reduce((total, row) => total + Math.abs(row.amount), 0)
   const value = (rows: Transaction[]) => (measure === "net" ? sum(rows, "income") - sum(rows, "expense") : sum(rows))
 
@@ -556,7 +556,7 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
     const limit = Math.max(plan.limit ?? 5, 3)
     const least = plan.order === "least"
     const sorted = current
-      .filter((row) => !row.excluded)
+      .filter((row) => !isLeftOut(row))
       .sort((left, right) => (least ? -1 : 1) * (Math.abs(right.amount) - Math.abs(left.amount)))
       .slice(0, limit)
     const first = sorted[0]
@@ -664,10 +664,15 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
   }
 }
 
-/** Net worth as the overview counts it: every account, plus what others owe, less what the user owes. */
+/**
+ * Net worth as the overview counts it: every account (archived ones too) but
+ * those left out of the figures, plus what others owe, less what the user owes.
+ */
 async function answerNetWorth(sources: AnswerSources): Promise<Answer> {
   const { today } = sources
-  const cash = sources.accounts.reduce((sum, account) => sum + account.balance, 0)
+  const counted = sources.accounts.filter((account) => !account.excluded)
+  const leftOut = sources.accounts.filter((account) => account.excluded)
+  const cash = counted.reduce((sum, account) => sum + account.balance, 0)
   let receivable = 0
   let payable = 0
   for (const debt of await sources.debts()) {
@@ -677,14 +682,14 @@ async function answerNetWorth(sources: AnswerSources): Promise<Answer> {
   }
   const total = cash + receivable - payable
   const rows: AnswerRow[] = [
-    { icon: { kind: "account" }, name: "Tiền trong tài khoản", sub: `${sources.accounts.filter((account) => account.status === "active").length} tài khoản`, amount: cash, amountTone: cash < 0 ? "expense" : "plain" },
+    { icon: { kind: "account" }, name: "Tiền trong tài khoản", sub: `${counted.length} tài khoản`, amount: cash, amountTone: cash < 0 ? "expense" : "plain" },
     ...(receivable ? [{ icon: { kind: "initials", text: "+" } as AnswerIcon, name: "Người khác nợ bạn", amount: receivable, amountTone: "income" as const }] : []),
     ...(payable ? [{ icon: { kind: "initials", text: "−" } as AnswerIcon, name: "Bạn đang nợ", amount: -payable, amountTone: "expense" as const }] : []),
   ]
   return {
     kicker: "Tài sản ròng",
     figure: { amount: total, tone: total < 0 ? "expense" : "plain" },
-    line: "Số dư các tài khoản, cộng tiền người khác nợ, trừ tiền bạn đang nợ",
+    line: `Số dư các tài khoản, cộng tiền người khác nợ, trừ tiền bạn đang nợ${leftOut.length ? `; chưa tính ${leftOut.map((account) => account.name).join(", ")}` : ""}`,
     blocks: [{ type: "rows", groups: [{ rows }] }],
     followUps: ["Số dư các tài khoản", "Ai đang nợ tôi?"],
     link: { label: "Mở Tổng quan", href: "/overview" },
@@ -695,7 +700,9 @@ async function answerBalance(plan: QuestionPlan, sources: AnswerSources): Promis
   const { today } = sources
   const active = sources.accounts.filter((account) => account.status === "active")
   const chosen = plan.accountIds.length ? active.filter((account) => plan.accountIds.includes(account.id)) : active
-  const total = chosen.reduce((sum, account) => sum + account.balance, 0)
+  // As the accounts page totals them: those left out of the figures are listed, not added.
+  const leftOut = chosen.filter((account) => account.excluded)
+  const total = chosen.filter((account) => !account.excluded).reduce((sum, account) => sum + account.balance, 0)
 
   if (chosen.length === 1) {
     const [account] = chosen
@@ -714,6 +721,7 @@ async function answerBalance(plan: QuestionPlan, sources: AnswerSources): Promis
   return {
     kicker: `Số dư · ${chosen.length} tài khoản`,
     figure: { amount: total, tone: total < 0 ? "expense" : "plain" },
+    line: leftOut.length ? `Chưa tính ${leftOut.map((account) => account.name).join(", ")}` : undefined,
     blocks: [
       {
         type: "rows",
@@ -725,6 +733,7 @@ async function answerBalance(plan: QuestionPlan, sources: AnswerSources): Promis
               .map((account) => ({
                 icon: accountIcon(account),
                 name: account.name,
+                ...(account.excluded ? { sub: "Không tính vào thống kê" } : {}),
                 amount: account.balance,
                 amountTone: account.balance < 0 ? "expense" : "plain",
               })),
@@ -885,6 +894,7 @@ async function answerAccountInfo(plan: QuestionPlan, sources: AnswerSources): Pr
         `Mở từ ${opened(account)}`,
         `số dư ban đầu ${money(account.openingBalance)}`,
         account.status === "archived" ? "đã lưu trữ" : null,
+        account.excluded ? "không tính vào thống kê" : null,
         account.note ? `ghi chú: ${account.note}` : null,
       ]
         .filter(Boolean)
@@ -908,7 +918,7 @@ async function answerAccountInfo(plan: QuestionPlan, sources: AnswerSources): Pr
             rows: chosen.slice(0, 10).map((account) => ({
               icon: accountIcon(account),
               name: account.name,
-              sub: `${account.status === "archived" ? "Đã lưu trữ · " : ""}Mở từ ${opened(account)}`,
+              sub: `${account.status === "archived" ? "Đã lưu trữ · " : ""}${account.excluded ? "Không tính · " : ""}Mở từ ${opened(account)}`,
               subTone: undefined,
               amount: account.balance,
               amountTone: account.balance < 0 ? ("expense" as const) : ("plain" as const),

@@ -1,3 +1,4 @@
+import { isLeftOut } from "@/lib/transactions/types"
 import type {
   Transaction,
   TransactionSummaryData,
@@ -10,7 +11,7 @@ export function getTransactionSummary(
     (totals, transaction) => {
       // Loans and repayments move money without being income or spending;
       // a transaction the user left out of the figures is left out here.
-      if (transaction.source === "debt" || transaction.excluded) return totals
+      if (transaction.source === "debt" || isLeftOut(transaction)) return totals
 
       if (transaction.kind === "income") {
         totals.income += Math.abs(transaction.amount)

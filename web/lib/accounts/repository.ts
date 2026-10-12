@@ -51,6 +51,7 @@ export async function getAccounts(userId: string): Promise<Account[]> {
       logoUrl: institution?.logoPath,
       logoFallback: getLogoFallback(row.name, institutionName),
       status: row.status as AccountStatus,
+      excluded: row.excluded,
       openedAt: row.openedAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
     }
@@ -75,6 +76,7 @@ export async function createAccount(
       balance: values.balance,
       note: values.note ?? null,
       openedAt: values.openedAt,
+      excluded: values.excluded,
     })
     .onConflict((conflict) => conflict.column("id").doNothing())
     .returning("id")
@@ -136,6 +138,7 @@ export async function updateAccount(
         institutionId: values.institutionId ?? null,
         note: values.note ?? null,
         openedAt: values.openedAt,
+        excluded: values.excluded,
       })
       .where("id", "=", accountId)
       .execute()

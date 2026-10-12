@@ -1,5 +1,6 @@
 "use client"
 
+import { isLeftOut } from "@/lib/transactions/types"
 import * as React from "react"
 
 import { Money } from "@/components/app/money"
@@ -60,6 +61,8 @@ export function TransactionItem({
   const [copyOpen, setCopyOpen] = React.useState(false)
   const [copyDraft, setCopyDraft] = React.useState<TransactionDraft>()
   const { category, icon, color } = getTransactionVisual(transaction, categoryGroups)
+  // Left out itself, or with its account.
+  const leftOut = isLeftOut(transaction)
   const baseDescription =
     description ??
     (transaction.kind === "transfer" ? transaction.description : (transaction.accountName ?? transaction.description))
@@ -70,11 +73,11 @@ export function TransactionItem({
         icon={icon}
         tone={color}
         // Left out of the figures (chosen 2026-10-11): the whole row grey, which says it.
-        muted={transaction.excluded}
+        muted={leftOut}
         title={
           <>
             <MarkedTitle title={transaction.title} query={highlight} />
-            {transaction.excluded ? <span className="sr-only">, không tính vào thống kê</span> : null}
+            {leftOut ? <span className="sr-only">, không tính vào thống kê</span> : null}
           </>
         }
         // The account; the icon already shows the category's group. Where the
@@ -99,7 +102,7 @@ export function TransactionItem({
                 sign={transaction.kind === "transfer" && amount === undefined ? "never" : "always"}
                 size="sm"
                 // Only money coming in is coloured, as in the mockup; none when left out.
-                tone={transaction.excluded ? "muted" : transaction.kind === "income" ? "income" : "default"}
+                tone={leftOut ? "muted" : transaction.kind === "income" ? "income" : "default"}
               />
               <time
                 className="text-xs text-muted-foreground"

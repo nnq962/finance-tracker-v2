@@ -54,6 +54,8 @@ export type Transaction = {
   note?: string
   /** Left out of the figures (totals, charts, the assistant); the balance still moved. */
   excluded?: boolean
+  /** Its account is left out of the figures, and so is it, whatever `excluded` says. */
+  accountExcluded?: boolean
   accountId?: string
   accountName?: string
   categoryId?: string
@@ -84,3 +86,11 @@ export type TransactionActionResult =
 
 /** Money into and out of an account over a range, and how many movements each way. */
 export type AccountFlow = { moneyIn: number; moneyOut: number; inCount: number; outCount: number }
+
+/**
+ * Whether a transaction stays out of the figures: left out itself, or its
+ * account is. Transfers are never in them anyway.
+ */
+export function isLeftOut(transaction: Pick<Transaction, "excluded" | "accountExcluded">) {
+  return Boolean(transaction.excluded || transaction.accountExcluded)
+}

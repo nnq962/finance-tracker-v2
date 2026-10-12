@@ -6,9 +6,8 @@ function formatUpdatedAt(value: Date) {
 }
 
 export function getBalanceSummary(accounts: Account[]): BalanceSummary {
-  const reportableAccounts = accounts.filter(
-    (account) => account.status === "active",
-  )
+  // Archived accounts still hold their money; only those left out of the figures are not counted.
+  const reportableAccounts = accounts.filter((account) => !account.excluded)
   const totalBalance = reportableAccounts.reduce(
     (total, account) => total + account.balance,
     0,

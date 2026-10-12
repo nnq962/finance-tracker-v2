@@ -105,6 +105,7 @@ export function parseAccountFormData(formData: FormData) {
     // An account may be below zero.
     balance: getMoney(formData, "balance", "Số dư", true),
     openedAt: getOpenedAt(formData),
+    excluded: formData.get("excluded") === "on",
   }
   const note = getBoundedText(formData, "note", "Ghi chú", 500)
 

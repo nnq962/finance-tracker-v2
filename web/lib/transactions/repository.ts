@@ -90,7 +90,7 @@ function selectTransactions(userId: string) {
     .leftJoin("contacts as c", "c.id", "d.contactId")
     .select([
       "t.id", "t.kind", "t.amount", "t.fee", "t.note", "t.occurredAt", "t.debtId", "t.excluded",
-      "t.accountId", "a.name as accountName",
+      "t.accountId", "a.name as accountName", "a.excluded as accountExcluded",
       "t.fromAccountId", "fa.name as fromAccountName",
       "t.toAccountId", "ta.name as toAccountName",
       "t.categoryItemId", "ci.name as categoryName",
@@ -151,6 +151,7 @@ function toTransaction(row: TransactionRow): Transaction {
     categoryGroupName,
     note,
     ...(row.excluded ? { excluded: true } : {}),
+    ...(row.accountExcluded ? { accountExcluded: true } : {}),
     occurredAt,
   }
 }

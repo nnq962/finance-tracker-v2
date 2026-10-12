@@ -1,3 +1,4 @@
+import { isLeftOut } from "@/lib/transactions/types"
 import { ArrowDownLeftIcon, ArrowUpRightIcon } from "lucide-react"
 
 import { FlowTiles } from "@/components/app/flow-tiles"
@@ -20,7 +21,7 @@ export function MonthSummary({
   const totals = getTransactionSummary(transactions)
   // Loans move money without being income or spending, as in the totals.
   const count = (kind: "income" | "expense") =>
-    transactions.filter((transaction) => transaction.kind === kind && transaction.source !== "debt" && !transaction.excluded).length
+    transactions.filter((transaction) => transaction.kind === kind && transaction.source !== "debt" && !isLeftOut(transaction)).length
 
   return (
     <FlowTiles

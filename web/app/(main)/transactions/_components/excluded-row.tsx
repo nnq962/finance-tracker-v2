@@ -17,6 +17,7 @@ export function ExcludedRow({
   checked,
   onCheckedChange,
   name,
+  byAccount = false,
 }: {
   kind: "expense" | "income"
   accountName?: string
@@ -24,6 +25,12 @@ export function ExcludedRow({
   onCheckedChange: (checked: boolean) => void
   /** Sent with a form under this name, "on" while switched on. */
   name?: string
+  /**
+   * The account is left out of the figures, and the transaction with it: the
+   * switch shows on and is held there; the transaction's own choice is kept
+   * (and sent) for when the account counts again.
+   */
+  byAccount?: boolean
 }) {
   // One line that stays put, saying what the switch does: a line that changed
   // with it read as two different things (2026-10-11).
@@ -33,10 +40,19 @@ export function ExcludedRow({
       icon={EyeOffIcon}
       tone="neutral"
       title="Không tính vào thống kê"
-      description={`${account} vẫn ${kind === "income" ? "được cộng" : "bị trừ"} tiền như thường`}
+      description={
+        byAccount
+          ? `${account} không tính vào thống kê`
+          : `${account} vẫn ${kind === "income" ? "được cộng" : "bị trừ"} tiền như thường`
+      }
       action={
         <>
-          <Switch aria-label="Không tính vào thống kê" checked={checked} onCheckedChange={onCheckedChange} />
+          <Switch
+            aria-label="Không tính vào thống kê"
+            checked={byAccount || checked}
+            disabled={byAccount}
+            onCheckedChange={onCheckedChange}
+          />
           {name && checked ? <input type="hidden" name={name} value="on" /> : null}
         </>
       }

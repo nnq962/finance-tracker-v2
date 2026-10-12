@@ -8,6 +8,7 @@ const transactions = require('../lib/transactions/repository.ts')
 const validation = require('../lib/transactions/validation.ts')
 const accountValidation = require('../lib/accounts/validation.ts')
 const { toDateKey } = require('../lib/format-date.ts')
+const { isLeftOut } = require('../lib/transactions/types.ts')
 
 const count = async (text, params) => Number((await sql(text, params)).rows[0].count)
 const balance = async (id) => Number((await sql('SELECT balance FROM accounts WHERE id = $1', [id])).rows[0].balance)
@@ -132,7 +133,19 @@ async function run() {
     await assert.rejects(() => sql(`INSERT INTO transactions (user_id, kind, amount, from_account_id, to_account_id, occurred_at, excluded)
       VALUES ($1, 'transfer', 1000, $2, $3, now(), true)`, [userId, wallet, bank]))
 
-    console.log('Transaction checks passed: request ids, balances, negative balances, recent per account, date range, left out of the figures.')
+    // An account left out of the figures: the form's switch is read, and its
+    // transactions come back left out with it while their own choice is kept.
+    assert.equal(accountValidation.parseAccountFormData(accountForm({})).excluded, false)
+    assert.equal(accountValidation.parseAccountFormData(accountForm({ excluded: 'on' })).excluded, true)
+    await sql('UPDATE accounts SET excluded = true WHERE id = $1', [wallet])
+    assert.equal((await accounts.getAccounts(userId)).find((account) => account.id === wallet).excluded, true)
+    const inWallet = (await transactions.getTransactions(userId)).filter((row) => row.accountId === wallet)
+    assert.ok(inWallet.length > 0 && inWallet.every((row) => isLeftOut(row) && row.accountExcluded === true))
+    assert.ok(inWallet.some((row) => !row.excluded))
+    await sql('UPDATE accounts SET excluded = false WHERE id = $1', [wallet])
+    assert.ok((await transactions.getTransactions(userId)).some((row) => row.accountId === wallet && !isLeftOut(row)))
+
+    console.log('Transaction checks passed: request ids, balances, negative balances, recent per account, date range, left out of the figures, accounts left out.')
   } finally {
     await cleanup()
   }
