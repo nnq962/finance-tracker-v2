@@ -31,6 +31,9 @@ export function validateTransactionForm(
   const date = text(formData, "date")
   if (!date || !text(formData, "time")) errors.date = "Chọn ngày và giờ."
   else if (date > toDateKey(new Date())) errors.date = "Không thể chọn ngày sau hôm nay."
+  else if (new Date(`${date}T${text(formData, "time")}:00+07:00`).getTime() > Date.now() + 60_000) {
+    errors.date = "Không thể chọn giờ sau bây giờ."
+  }
   else if (date < "2000-01-01") errors.date = "Chọn ngày từ năm 2000 trở đi."
 
   return errors

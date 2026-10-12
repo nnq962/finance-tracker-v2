@@ -4,6 +4,7 @@ import { sql, type Transaction as DbTransaction } from "kysely"
 
 import { lockAccounts, setBalance, shiftBalance, type LockedAccount } from "@/lib/db/accounts"
 import { getDb } from "@/lib/db/client"
+import { retryOnDeadlock } from "@/lib/db/retry"
 import { getPaymentInterests } from "@/lib/debts/calculations"
 import { getDebts } from "@/lib/debts/repository"
 import type { DB } from "@/lib/db/types"
@@ -428,7 +429,13 @@ export async function createTransaction(
   values: TransactionFormValues,
   requestId?: string,
 ) {
-  await getDb().transaction().execute(async (trx) => {
+  // Already saved by an earlier try (the response was lost): nothing to do,
+  // even if an account has been archived since.
+  if (requestId) {
+    const saved = await getDb().selectFrom("transactions").select("userId").where("id", "=", requestId).executeTakeFirst()
+    if (saved?.userId === userId) return
+  }
+  await retryOnDeadlock(() => getDb().transaction().execute(async (trx) => {
     // Locks the accounts first, so a concurrent retry waits here and then
     // sees the row this request inserted.
     const accounts = await prepare(trx, userId, values)
@@ -448,7 +455,7 @@ export async function createTransaction(
       .insertInto("transactions")
       .values({ ...(requestId ? { id: requestId } : {}), userId, ...toRow(values) })
       .execute()
-  })
+  }))
 }
 
 /**
@@ -505,7 +512,7 @@ export async function updateTransaction(
   transactionId: string,
   values: TransactionFormValues,
 ) {
-  await getDb().transaction().execute(async (trx) => {
+  await retryOnDeadlock(() => getDb().transaction().execute(async (trx) => {
     const existing = await lockExisting(trx, userId, transactionId, "sửa")
     const accounts = await prepare(trx, userId, values, existing)
     const impacts = new Map<string, number>()
@@ -522,7 +529,7 @@ export async function updateTransaction(
       .set(toRow(values))
       .where("id", "=", transactionId)
       .execute()
-  })
+  }))
 }
 
 /** Leaves a transaction out of the figures, or counts it again; balances do not change. */
@@ -538,8 +545,11 @@ export async function setTransactionExcluded(userId: string, transactionId: stri
   if (!result.numUpdatedRows) throw new TransactionValidationError("Giao dịch không tồn tại.")
 }
 
+/** Deleting what is already gone (a retried request) succeeds quietly. */
 export async function deleteTransaction(userId: string, transactionId: string) {
-  await getDb().transaction().execute(async (trx) => {
+  await retryOnDeadlock(() => getDb().transaction().execute(async (trx) => {
+    const gone = !(await trx.selectFrom("transactions").select("id").where("id", "=", transactionId).where("userId", "=", userId).executeTakeFirst())
+    if (gone) return
     const existing = await lockExisting(trx, userId, transactionId, "xoá")
     const accounts = await lockAccounts(trx, userId, getAccountIds(existing))
     const impacts = new Map<string, number>()
@@ -548,5 +558,5 @@ export async function deleteTransaction(userId: string, transactionId: string) {
     assertNoArchivedChange(accounts, impacts)
     await applyImpacts(trx, accounts, impacts)
     await trx.deleteFrom("transactions").where("id", "=", transactionId).execute()
-  })
+  }))
 }

@@ -104,7 +104,7 @@ async function run() {
     // Dates run from 2000 through today in Vietnam time.
     const form = (date) => {
       const data = new FormData()
-      for (const [key, value] of Object.entries({ kind: 'expense', amount: '1000', accountId: wallet, categoryId: meal, date, time: '23:59' })) data.set(key, value)
+      for (const [key, value] of Object.entries({ kind: 'expense', amount: '1000', accountId: wallet, categoryId: meal, date, time: '00:00' })) data.set(key, value)
       return data
     }
     const today = toDateKey(new Date())
@@ -156,6 +156,19 @@ async function run() {
     await transactions.updateTransaction(userId, kept, { ...expense, amount: 3_000, note: 'Ghi chú' })
     assert.equal(await balance(wallet), archivedBalance)
     await sql("UPDATE accounts SET status = 'active' WHERE id = $1", [wallet])
+
+    // Deleting twice (a retried request) succeeds; a retried add after the
+    // account was archived finds the row it saved; a time later today is refused.
+    await transactions.deleteTransaction(userId, kept)
+    await transactions.deleteTransaction(userId, kept)
+    const retried = randomUUID()
+    await transactions.createTransaction(userId, { ...expense, amount: 1_000 }, retried)
+    await sql("UPDATE accounts SET status = 'archived' WHERE id = $1", [wallet])
+    await transactions.createTransaction(userId, { ...expense, amount: 1_000 }, retried)
+    await sql("UPDATE accounts SET status = 'active' WHERE id = $1", [wallet])
+    const later = form(today)
+    later.set('time', '23:59')
+    if (new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Ho_Chi_Minh' }) < '23:58') assert.throws(() => validation.parseTransactionFormData(later))
 
     console.log('Transaction checks passed: request ids, balances, negative balances, recent per account, date range, left out of the figures, accounts left out, archived accounts kept.')
   } finally {

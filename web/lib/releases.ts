@@ -32,6 +32,19 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "5.5.0",
+    date: "2026-10-12",
+    title: "Số dư sau từng giao dịch",
+    changes: [
+      { kind: "new", text: "Chi tiết tài khoản ghi số dư còn lại sau từng giao dịch gần đây, như sao kê ngân hàng" },
+      { kind: "new", text: "Quản trị có nút Kiểm tra số dư: tìm tài khoản có số dư không khớp với số dư ban đầu cộng các giao dịch" },
+      { kind: "improved", text: "Form giao dịch nhắc khi ngày giao dịch trước ngày mở tài khoản" },
+      { kind: "fixed", text: "Không chọn được giờ sau bây giờ cho giao dịch hôm nay" },
+      { kind: "fixed", text: "Xoá giao dịch khi mạng chập chờn không còn báo lỗi \"không tồn tại\"; lưu lại sau khi mất phản hồi không báo lỗi nhầm" },
+      { kind: "fixed", text: "Lưu, sửa, xoá giao dịch tự thử lại khi hai thiết bị thao tác cùng lúc" },
+    ],
+  },
+  {
     version: "5.4.0",
     date: "2026-10-12",
     title: "Tài khoản ngừng sử dụng giữ nguyên số dư",

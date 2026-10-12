@@ -15,7 +15,7 @@ import { Spinner } from "@/components/ui/spinner"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { getCurrentLocalDateTime, getLocalDateTime } from "@/lib/date-time"
-import { toDateKey } from "@/lib/format-date"
+import { formatDate, toDateKey } from "@/lib/format-date"
 import { randomId } from "@/lib/random-id"
 import { scrollIntoViewWithin } from "@/lib/scroll-into-view"
 import type {
@@ -234,6 +234,12 @@ export function TransactionForm({
     back()
   }
   const chosenAccount = accounts.find((account) => account.id === cashFlowPick?.accountId)
+  // Dated before an account was opened: allowed, as older accounts may hold
+  // such transactions, but said, as "Số dư ban đầu từ ngày …" no longer holds.
+  const occurredAt = new Date(`${when.date}T${when.time}:00+07:00`).getTime()
+  const openedLater = (kind === "transfer" ? [picks.fromAccountId, picks.toAccountId] : [cashFlowPick?.accountId])
+    .map((id) => accounts.find((account) => account.id === id))
+    .find((account) => account && Date.parse(account.openedAt) > occurredAt)
 
   return (
     <form
@@ -438,6 +444,10 @@ export function TransactionForm({
           </SettingsGroup>
           {errors.accountId || errors.date ? (
             <FieldError className="px-4">{errors.accountId ?? errors.date}</FieldError>
+          ) : openedLater ? (
+            <p className="px-4 text-xs text-muted-foreground">
+              Trước ngày mở “{openedLater.name}” ({formatDate(toDateKey(openedLater.openedAt))}), số dư ban đầu sẽ không còn khớp.
+            </p>
           ) : null}
         </div>
 

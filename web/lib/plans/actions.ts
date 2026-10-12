@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 
+import { findBalanceMismatches, type BalanceMismatch } from "@/lib/accounts/reconcile"
 import { requireSession } from "@/lib/auth/session"
 import { requireAdmin } from "@/lib/plans/admin"
 import {
@@ -76,6 +77,19 @@ export async function revokeProAction(userId: unknown): Promise<PlanActionResult
     return { success: true }
   } catch (error) {
     return failure(error)
+  }
+}
+
+/** Accounts whose balance no longer adds up, across every user. Admins only. */
+export async function checkBalancesAction(): Promise<
+  { success: true; checked: number; mismatches: BalanceMismatch[] } | { success: false; error: string }
+> {
+  await requireAdmin()
+  try {
+    return { success: true, ...(await findBalanceMismatches()) }
+  } catch (error) {
+    console.error("Balance check failed", error)
+    return { success: false, error: "Không thể kiểm tra số dư. Vui lòng thử lại." }
   }
 }
 

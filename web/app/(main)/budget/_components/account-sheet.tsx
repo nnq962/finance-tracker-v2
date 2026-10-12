@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { accountDescription } from "@/lib/accounts/labels"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
+import { formatCompactCurrency } from "@/lib/format-currency"
 import { formatDate, formatShortDate, toDateKey } from "@/lib/format-date"
 import type { AccountFlow, Transaction } from "@/lib/transactions/types"
 
@@ -183,7 +184,7 @@ export function AccountSheet({
           {transactions.length > 0 ? (
             // What the transactions' sheets compare with and learn quick picks from.
             <TransactionHistoryProvider transactions={transactions}>
-              {transactions.map((transaction) => (
+              {transactions.map((transaction, index) => (
                 <TransactionItem
                   key={transaction.id}
                   accounts={accounts}
@@ -191,7 +192,13 @@ export function AccountSheet({
                   transaction={transaction}
                   description={getAccountDescription(transaction, shown.id)}
                   amount={getAccountAmount(transaction, shown.id)}
-                  dateLabel={formatShortDate(toDateKey(transaction.occurredAt))}
+                  // The balance right after it, as a bank statement shows it:
+                  // today's, less what the newer ones moved.
+                  dateLabel={`${formatShortDate(toDateKey(transaction.occurredAt))} · còn ${formatCompactCurrency(
+                    shown.balance -
+                      transactions.slice(0, index).reduce((sum, newer) => sum + getAccountAmount(newer, shown.id), 0),
+                    1,
+                  )}`}
                 />
               ))}
               <SettingsRow

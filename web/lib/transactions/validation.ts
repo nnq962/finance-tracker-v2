@@ -104,6 +104,10 @@ function getOccurredAt(formData: FormData) {
   if (date > toDateKey(new Date())) {
     throw new TransactionValidationError("Ngày giao dịch không được sau hôm nay.")
   }
+  // Today, no later than now (a minute's grace for the clocks).
+  if (occurredAt.getTime() > Date.now() + 60_000) {
+    throw new TransactionValidationError("Giờ giao dịch không được sau bây giờ.")
+  }
   if (date < EARLIEST_DATE) {
     throw new TransactionValidationError("Ngày giao dịch phải từ năm 2000 trở đi.")
   }

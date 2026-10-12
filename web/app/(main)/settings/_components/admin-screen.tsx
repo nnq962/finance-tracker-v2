@@ -22,6 +22,7 @@ import type { AdminData, AdminUser } from "@/lib/plans/admin-data"
 import { paymentReference, plans, proPrices, type PlanPeriod } from "@/lib/plans/plans"
 import type { SubscriptionGrant } from "@/lib/plans/repository"
 
+import { AdminBalanceCheck } from "./admin-balance-check"
 import { AdminCoupons } from "./admin-coupons"
 
 const dateOf = (iso: string) => formatDate(toDateKey(iso))
@@ -58,6 +59,8 @@ export function AdminScreen({ data }: { data: AdminData }) {
       </SettingsGroup>
 
       <AdminCoupons coupons={data.coupons} />
+
+      <AdminBalanceCheck users={data.users} />
 
       <Input
         type="search"
