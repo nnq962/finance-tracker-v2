@@ -85,12 +85,16 @@ function Row({ row }: { row: AnswerRow }) {
           </span>
         ) : null}
       </span>
-      <Money
-        amount={row.amount}
-        size="sm"
-        tone={row.amountTone === "income" ? "income" : "default"}
-        sign={row.amountTone === "income" || row.amountTone === "expense" ? "always" : "auto"}
-      />
+      {row.amountText ? (
+        <span className="text-sm font-semibold whitespace-nowrap">{row.amountText}</span>
+      ) : (
+        <Money
+          amount={row.amount}
+          size="sm"
+          tone={row.amountTone === "income" ? "income" : "default"}
+          sign={row.amountTone === "income" || row.amountTone === "expense" ? "always" : "auto"}
+        />
+      )}
     </div>
   )
 }
@@ -113,6 +117,50 @@ function Block({ block }: { block: AnswerBlock }) {
             </div>
           </div>
         ))}
+      </div>
+    )
+  }
+  if (block.type === "columns") {
+    const highest = Math.max(1, ...block.columns.flatMap((column) => column.values.map(Math.abs)))
+    // A label under every column while they are few; otherwise the first, every few, and the last.
+    const every = block.columns.length <= 12 ? 1 : Math.ceil(block.columns.length / 6)
+    const shade = (tone: "income" | "expense" | "plain", strong: boolean) =>
+      tone === "income" ? (strong ? "bg-income" : "bg-income/40") : strong ? "bg-foreground" : "bg-foreground/25"
+    return (
+      <div className="space-y-2">
+        {block.series.length > 1 ? (
+          <div className="flex gap-3 text-xs text-muted-foreground">
+            {block.series.map((series) => (
+              <span key={series.name} className="flex items-center gap-1.5">
+                <span className={cn("size-2 rounded-full", shade(series.tone, true))} aria-hidden="true" />
+                {series.name}
+              </span>
+            ))}
+          </div>
+        ) : null}
+        <div className="flex h-28 items-end gap-1" role="img" aria-label={block.columns.map((column) => `${column.label}: ${column.values.join(", ")}`).join("; ")}>
+          {block.columns.map((column, index) => {
+            const strong = block.highlight === undefined || block.highlight === index
+            return (
+              <div key={column.label + index} className="flex h-full min-w-0 flex-1 items-end justify-center gap-px">
+                {column.values.map((value, series) => (
+                  <div
+                    key={series}
+                    className={cn("w-full max-w-5 rounded-t-[3px]", shade(block.series[series]?.tone ?? "plain", strong))}
+                    style={{ height: `${value ? Math.max(3, (Math.abs(value) / highest) * 100) : 0}%` }}
+                  />
+                ))}
+              </div>
+            )
+          })}
+        </div>
+        <div className="flex gap-1 text-[10px] text-muted-foreground tabular-nums">
+          {block.columns.map((column, index) => (
+            <span key={column.label + index} className={cn("min-w-0 flex-1 text-center whitespace-nowrap", block.highlight === index && "font-semibold text-foreground")}>
+              {index % every === 0 || index === block.columns.length - 1 || block.highlight === index ? column.label : ""}
+            </span>
+          ))}
+        </div>
       </div>
     )
   }

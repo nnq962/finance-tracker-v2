@@ -26,7 +26,7 @@ const system = `Bạn phân loại yêu cầu người dùng gửi cho trợ lý
 - question: hỏi hoặc muốn xem tiền của chính người dùng đã ghi trong app: chi tiêu, thu nhập, số dư tài khoản, các giao dịch, khoản vay và cho vay, so sánh, nhiều nhất, liệt kê, chia theo hạng mục hay tài khoản. Câu hỏi nối tiếp câu trước ("còn tháng trước?", "thế còn ăn uống?") cũng là question.
 - record: kể một khoản đã chi, đã nhận hoặc đã chuyển để ghi lại, thường có số tiền ("ăn phở 35k", "nhận lương 15 triệu", "chuyển 2 triệu sang momo").
 - action: muốn app làm việc khác: ghi khoản cho vay hay đi vay, trả nợ, sửa hoặc xoá giao dịch, tạo tài khoản, hạng mục, ngân sách, nhắc nhở.
-- usage: hỏi về lượt AI, lượt hỏi trợ lý, hạn mức sử dụng AI, gói Free hay Pro của chính người dùng ("còn bao nhiêu lượt AI", "gói của tôi là gì").
+- usage: hỏi về lượt AI, lượt hỏi trợ lý, hạn mức sử dụng AI, nhiệm vụ nhận thêm lượt, gói Free hay Pro và ngày hết hạn của chính người dùng ("còn bao nhiêu lượt AI", "gói Pro hết hạn khi nào").
 - chat: mọi câu còn lại: chào hỏi, cảm ơn, hỏi trợ lý là ai, trêu đùa, nói chuyện phiếm, tâm sự, xin mẹo tiết kiệm chung, hỏi thứ ngoài dữ liệu của người dùng (giá vàng, tỷ giá, thời tiết, kiến thức chung), hoặc câu không rõ nghĩa.`
 
 const examples: [string, Intent][] = [
@@ -42,6 +42,9 @@ const examples: [string, Intent][] = [
   ["xoá giao dịch cà phê vừa rồi", "action"],
   ["tôi còn bao nhiêu lượt ai", "usage"],
   ["tài sản ròng của tôi", "question"],
+  ["những khoản không tính vào thống kê", "question"],
+  ["tài khoản vietcombank mở từ khi nào", "question"],
+  ["còn nhiệm vụ nào để nhận lượt", "usage"],
   ["giá vàng hôm nay bao nhiêu", "chat"],
   ["xin chào", "chat"],
   ["bạn là ai thế", "chat"],

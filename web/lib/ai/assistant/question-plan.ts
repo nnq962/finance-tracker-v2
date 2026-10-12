@@ -7,8 +7,28 @@ import type { Contact } from "@/lib/debts/types"
 
 import type { Compare, Measure, PeriodPreset, QuestionPlan, View } from "./types"
 
-const measures: Measure[] = ["spending", "income", "net", "transactions", "balance", "lent", "borrowed", "net_worth"]
-const views: View[] = ["total", "by_group", "by_category", "by_account", "top", "list"]
+const measures: Measure[] = [
+  "spending",
+  "income",
+  "net",
+  "transactions",
+  "transfers",
+  "account_flow",
+  "balance",
+  "account_info",
+  "lent",
+  "borrowed",
+  "debts",
+  "debts_due",
+  "collected",
+  "repaid",
+  "new_lent",
+  "new_borrowed",
+  "net_worth",
+]
+/** Measured now, not over a period: no period unless one is asked for. */
+const timeless: Measure[] = ["balance", "account_info", "lent", "borrowed", "debts", "debts_due", "net_worth"]
+const views: View[] = ["total", "by_group", "by_category", "by_account", "by_day", "by_month", "top", "list"]
 const presets: PeriodPreset[] = [
   "today",
   "yesterday",
@@ -19,6 +39,7 @@ const presets: PeriodPreset[] = [
   "this_year",
   "last_year",
   "last_days",
+  "last_months",
   "month",
   "year",
   "range",
@@ -35,6 +56,7 @@ export const questionPlanSchema = {
     view: { type: "string", enum: views },
     periodPreset: { type: "string", enum: presets },
     periodDays: { type: ["integer", "null"] },
+    periodMonths: { type: ["integer", "null"] },
     periodMonth: { type: ["integer", "null"] },
     periodYear: { type: ["integer", "null"] },
     periodFrom: { type: ["string", "null"] },
@@ -46,6 +68,10 @@ export const questionPlanSchema = {
     accountIds: { type: "array", items: { type: "string" } },
     contactIds: { type: "array", items: { type: "string" } },
     search: { type: "string" },
+    minAmount: { type: ["integer", "null"] },
+    maxAmount: { type: ["integer", "null"] },
+    onlyExcluded: { type: "boolean" },
+    debtStatus: { type: "string", enum: ["open", "settled"] },
     limit: { type: ["integer", "null"] },
   },
   required: [
@@ -54,6 +80,7 @@ export const questionPlanSchema = {
     "view",
     "periodPreset",
     "periodDays",
+    "periodMonths",
     "periodMonth",
     "periodYear",
     "periodFrom",
@@ -65,6 +92,10 @@ export const questionPlanSchema = {
     "accountIds",
     "contactIds",
     "search",
+    "minAmount",
+    "maxAmount",
+    "onlyExcluded",
+    "debtStatus",
     "limit",
   ],
 }
@@ -75,6 +106,7 @@ type Reply = {
   view: View
   periodPreset: PeriodPreset
   periodDays: number | null
+  periodMonths: number | null
   periodMonth: number | null
   periodYear: number | null
   periodFrom: string | null
@@ -86,6 +118,10 @@ type Reply = {
   accountIds: string[]
   contactIds: string[]
   search: string
+  minAmount: number | null
+  maxAmount: number | null
+  onlyExcluded: boolean
+  debtStatus: "open" | "settled"
   limit: number | null
 }
 
@@ -118,12 +154,10 @@ function buildKeys({ accounts, categoryGroups, contacts }: Context) {
     }
   }
   lines.push("Tài khoản (accountIds):")
-  accounts
-    .filter((account) => account.status === "active")
-    .forEach((account, index) => {
-      add(`a${index + 1}`, account.id)
-      lines.push(`- a${index + 1}: ${account.name}`)
-    })
+  accounts.forEach((account, index) => {
+    add(`a${index + 1}`, account.id)
+    lines.push(`- a${index + 1}: ${account.name}${account.status === "archived" ? " (đã lưu trữ)" : ""}`)
+  })
   lines.push("Người vay và cho vay (contactIds):")
   contacts.forEach((contact, index) => {
     add(`p${index + 1}`, contact.id)
@@ -142,13 +176,19 @@ Hôm nay là ${weekday}, ${today}. Tuần bắt đầu từ thứ hai.
 
 Các trường:
 - answerable: false nếu câu hỏi cần thứ app không có (giá vàng, tỷ giá, lời khuyên đầu tư, số dư tại một ngày trong quá khứ, dự đoán). Khi đó các trường khác để mặc định.
-- measure: spending = tiền đã chi; income = tiền đã nhận; net = thu trừ chi (còn dư bao nhiêu, lời lỗ); transactions = mọi giao dịch, không phân biệt thu chi; balance = số dư hiện tại của tài khoản; lent = người khác đang nợ người dùng (cho vay); borrowed = người dùng đang nợ người khác (đi vay); net_worth = tài sản ròng (tổng tài sản, tài sản thực có, "mình có bao nhiêu tiền tất cả"): số dư các tài khoản cộng tiền người khác nợ, trừ tiền mình nợ.
-- view: total = một con số; by_group = chia theo nhóm hạng mục; by_category = chia theo hạng mục; by_account = chia theo tài khoản; top = những khoản lớn nhất; list = liệt kê các giao dịch. Hỏi "tiêu vào đâu", "hạng mục nào nhiều nhất" là by_group (hoặc by_category khi đã chọn một nhóm). Hỏi "khoản nào lớn nhất" là top. Hỏi "những khoản", "các giao dịch", "đã chi gì" là list.
+- measure, trong một khoảng thời gian:
+  spending = tiền đã chi; income = tiền đã nhận; net = thu trừ chi (dư bao nhiêu, lời lỗ, thu chi); transactions = mọi giao dịch, không phân biệt thu chi; transfers = chuyển tiền giữa các tài khoản của người dùng (kèm phí); account_flow = tiền vào và tiền ra của tài khoản ("tiền vào ra Vietcombank"); collected = tiền người khác trả nợ cho người dùng (thu nợ); repaid = tiền người dùng trả nợ cho người khác (trả nợ); new_lent = khoản cho vay mới ghi; new_borrowed = khoản đi vay mới ghi.
+- measure, hiện tại (không cần thời gian):
+  balance = số dư tài khoản; account_info = thông tin tài khoản: số dư ban đầu, ngày mở, ghi chú, tài khoản đã lưu trữ; lent = người khác đang nợ người dùng (cho vay); borrowed = người dùng đang nợ người khác (đi vay); debts = cả cần thu lẫn cần trả; debts_due = khoản nợ sắp đến hạn hoặc quá hạn, cả hai chiều; net_worth = tài sản ròng (tổng tài sản, "mình có bao nhiêu tiền tất cả"). Hỏi về một khoản nợ của một người (đã trả bao nhiêu, lãi, hạn trả, lịch sử trả) là lent hoặc borrowed với contactIds của người đó.
+- view: total = một con số; by_group = chia theo nhóm hạng mục; by_category = chia theo hạng mục; by_account = chia theo tài khoản; by_day = theo từng ngày ("ngày nào chi nhiều nhất"); by_month = theo từng tháng ("6 tháng gần đây", "từng tháng năm nay"); top = những khoản lớn nhất; list = liệt kê các giao dịch. Hỏi "tiêu vào đâu", "hạng mục nào nhiều nhất" là by_group (hoặc by_category khi đã chọn một nhóm). Hỏi "khoản nào lớn nhất" là top. Hỏi "những khoản", "các giao dịch", "đã chi gì" là list.
 - order: most = nhiều nhất, lớn nhất (mặc định); least = ít nhất, nhỏ nhất, "chi gì ít nhất", "khoản nhỏ nhất". Dùng cùng view top (từng khoản) hoặc by_group / by_category / by_account (theo nhóm).
-- periodPreset: today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year; last_days = n ngày gần đây (periodDays = n); month = một tháng (periodMonth, periodYear nếu nói năm, không thì null); year = một năm (periodYear); range = từ ngày đến ngày (periodFrom, periodTo dạng YYYY-MM-DD); all = từ trước tới nay. Không nói thời gian: balance, lent, borrowed, net_worth dùng all; còn lại dùng this_month.
+- periodPreset: today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year; last_days = n ngày gần đây (periodDays = n); last_months = n tháng gần đây kể cả tháng này (periodMonths = n); month = một tháng (periodMonth, periodYear nếu nói năm, không thì null); year = một năm (periodYear); range = từ ngày đến ngày (periodFrom, periodTo dạng YYYY-MM-DD); all = từ trước tới nay. Không nói thời gian: các measure hiện tại dùng all; by_month không nói thời gian dùng last_months với periodMonths = 6; còn lại dùng this_month.
 - compare: previous = so với kỳ trước liền kề (tháng trước, tuần trước); last_year = so với cùng kỳ năm ngoái; none khi không hỏi so sánh. Khi có so sánh, view là total hoặc by_group.
 - groupIds, categoryIds, accountIds, contactIds: chỉ dùng các mã trong danh sách bên dưới, khi người dùng nhắc tới. Một nhóm cả nhóm thì dùng groupIds. Không nhắc thì để [].
 - search: từ cần tìm trong ghi chú khi người dùng nhắc một món không có hạng mục riêng ("phở", "trà sữa"); không thì "".
+- minAmount, maxAmount: số tiền mỗi khoản, bằng đồng, khi người dùng nói ("trên 500 nghìn" thì minAmount = 500000; "dưới 100k" thì maxAmount = 100000); không thì null.
+- onlyExcluded: true khi hỏi những khoản "không tính vào thống kê"; không thì false.
+- debtStatus: settled chỉ khi hỏi danh sách các khoản nợ đã trả xong, đã tất toán (khi đó measure là debts, hoặc lent / borrowed nếu nói rõ chiều); hỏi một người "đã trả được bao nhiêu", "còn nợ bao nhiêu" là open. Không thì open.
 - limit: số dòng khi người dùng nói rõ ("5 khoản lớn nhất"); không thì null.
 
 Câu hỏi nối tiếp câu trước giữ nguyên mọi trường của yêu cầu trước, chỉ đổi phần được nhắc tới:
@@ -167,6 +207,7 @@ const base: Reply = {
   view: "total",
   periodPreset: "this_month",
   periodDays: null,
+  periodMonths: null,
   periodMonth: null,
   periodYear: null,
   periodFrom: null,
@@ -178,6 +219,10 @@ const base: Reply = {
   accountIds: [],
   contactIds: [],
   search: "",
+  minAmount: null,
+  maxAmount: null,
+  onlyExcluded: false,
+  debtStatus: "open",
   limit: null,
 }
 
@@ -193,6 +238,13 @@ const examples: Example[] = [
   ["tài sản ròng của tôi là bao nhiêu", { measure: "net_worth", periodPreset: "all" }],
   ["tháng này chi gì ít nhất", { view: "by_group", order: "least" }],
   ["khoản chi nhỏ nhất tuần này", { view: "top", order: "least", periodPreset: "this_week" }],
+  ["thu chi 6 tháng gần đây", { measure: "net", view: "by_month", periodPreset: "last_months", periodMonths: 6 }],
+  ["ngày nào tháng này chi nhiều nhất", { view: "by_day" }],
+  ["các khoản chi trên 1 triệu năm nay", { view: "list", periodPreset: "this_year", minAmount: 1000000 }],
+  ["tháng này đã thu nợ được bao nhiêu", { measure: "collected" }],
+  ["khoản nào sắp đến hạn", { measure: "debts_due", periodPreset: "all" }],
+  ["tổng cần thu và cần trả", { measure: "debts", periodPreset: "all" }],
+  ["những khoản nợ đã trả xong", { measure: "debts", periodPreset: "all", debtStatus: "settled" }],
   ["giá vàng hôm nay", { answerable: false }],
 ]
 
@@ -208,6 +260,7 @@ function planToReply(plan: QuestionPlan, keys: Keys): Reply {
     view: plan.view,
     periodPreset: plan.period.preset,
     periodDays: plan.period.days,
+    periodMonths: plan.period.months ?? null,
     periodMonth: plan.period.month,
     periodYear: plan.period.year,
     periodFrom: plan.period.from,
@@ -219,6 +272,10 @@ function planToReply(plan: QuestionPlan, keys: Keys): Reply {
     accountIds: known(plan.accountIds),
     contactIds: known(plan.contactIds),
     search: plan.search,
+    minAmount: plan.minAmount ?? null,
+    maxAmount: plan.maxAmount ?? null,
+    onlyExcluded: plan.onlyExcluded ?? false,
+    debtStatus: plan.debtStatus ?? "open",
     limit: plan.limit,
   }
 }
@@ -270,8 +327,9 @@ export function readQuestionReply(value: unknown, keys: Keys): QuestionPlan | nu
     measure,
     view: pick(reply.view, views, "total"),
     period: {
-      preset: pick(reply.periodPreset, presets, ["balance", "lent", "borrowed", "net_worth"].includes(measure) ? "all" : "this_month"),
+      preset: pick(reply.periodPreset, presets, timeless.includes(measure) ? "all" : "this_month"),
       days: whole(reply.periodDays, 1, 3660),
+      months: whole(reply.periodMonths, 1, 120),
       month: whole(reply.periodMonth, 1, 12),
       year: whole(reply.periodYear, 2000, 2100),
       from: isDateKey(reply.periodFrom) ? reply.periodFrom : null,
@@ -284,6 +342,10 @@ export function readQuestionReply(value: unknown, keys: Keys): QuestionPlan | nu
     accountIds: ids(reply.accountIds, "a"),
     contactIds: ids(reply.contactIds, "p"),
     search: typeof reply.search === "string" ? reply.search.trim().slice(0, 60) : "",
+    minAmount: whole(reply.minAmount, 0, 999_999_999_999_999),
+    maxAmount: whole(reply.maxAmount, 0, 999_999_999_999_999),
+    onlyExcluded: reply.onlyExcluded === true,
+    debtStatus: reply.debtStatus === "settled" ? "settled" : "open",
     limit: whole(reply.limit, 1, 20),
   }
 }

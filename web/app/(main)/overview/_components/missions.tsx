@@ -34,7 +34,7 @@ import type { IconTileTone } from "@/components/app/icon-tile"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { Contact, NewContact, NewDebt } from "@/lib/debts/types"
 import { claimMissionRewardAction } from "@/lib/onboarding/actions"
-import { MISSION_REWARD, type MissionKey, type MissionState } from "@/lib/onboarding/missions"
+import { MISSION_REWARD, missionTitles, type MissionKey, type MissionState } from "@/lib/onboarding/missions"
 
 import { cn } from "@/lib/utils"
 import { randomId } from "@/lib/random-id"
@@ -103,7 +103,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       key: "account",
       icon: WalletCardsIcon,
       color: "blue",
-      title: "Thêm tài khoản",
+      title: missionTitles.account,
       description: "Tiền mặt, ngân hàng hoặc ví",
       done: state.done.account,
       start: () => setSheet("account"),
@@ -112,7 +112,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       key: "transaction",
       icon: ReceiptTextIcon,
       color: "orange",
-      title: "Ghi giao dịch đầu tiên",
+      title: missionTitles.transaction,
       description: hasAccount ? undefined : needAccount,
       done: state.done.transaction,
       start: () => setSheet(hasAccount ? "transaction" : "account"),
@@ -121,7 +121,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       key: "ai",
       icon: SparklesIcon,
       color: "ai",
-      title: "Ghi giao dịch bằng AI",
+      title: missionTitles.ai,
       description: hasAccount ? "Gõ hoặc nói một câu" : needAccount,
       done: state.done.ai,
       start: () => (hasAccount ? router.push("/transactions?ai=1") : setSheet("account")),
@@ -130,7 +130,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       key: "transfer",
       icon: ArrowLeftRightIcon,
       color: "cyan",
-      title: "Chuyển tiền giữa hai tài khoản",
+      title: missionTitles.transfer,
       description: accounts.length >= 2 ? undefined : "Cần 2 tài khoản trở lên",
       done: state.done.transfer,
       start: () => setSheet(accounts.length >= 2 ? "transfer" : "account"),
@@ -139,7 +139,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       key: "contact",
       icon: UserPlusIcon,
       color: "pink",
-      title: "Thêm người liên hệ",
+      title: missionTitles.contact,
       done: state.done.contact,
       start: () => setSheet("contact"),
     },
@@ -147,7 +147,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       key: "debt",
       icon: HandCoinsIcon,
       color: "rose",
-      title: "Ghi khoản vay hoặc cho vay",
+      title: missionTitles.debt,
       done: state.done.debt,
       start: () => setSheet("debt"),
     },
@@ -155,7 +155,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       key: "category",
       icon: TagsIcon,
       color: "lime",
-      title: "Tạo hạng mục riêng",
+      title: missionTitles.category,
       done: state.done.category,
       start: () => setSheet("category"),
     },
@@ -163,7 +163,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       key: "reminder",
       icon: BellRingIcon,
       color: "amber",
-      title: "Bật nhắc ghi chi tiêu",
+      title: missionTitles.reminder,
       done: state.done.reminder,
       start: () => router.push("/settings?screen=notifications"),
     },
@@ -173,7 +173,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
           key: "install" as const,
           icon: DownloadIcon,
           color: "emerald" as const,
-          title: "Cài ứng dụng lên màn hình chính",
+          title: missionTitles.install,
           done: isStandalone,
           start: () => (isIOS ? setInstallGuideOpen(true) : void install()),
         }]

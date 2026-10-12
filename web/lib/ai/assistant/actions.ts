@@ -5,10 +5,12 @@ import { aiJson } from "@/lib/ai/llm"
 import { requireSession } from "@/lib/auth/session"
 import { getCategoryGroups } from "@/lib/categories/repository"
 import { getContacts, getDebts } from "@/lib/debts/repository"
-import { toDateKey } from "@/lib/format-date"
+import { formatDate, toDateKey } from "@/lib/format-date"
 import { plans } from "@/lib/plans/plans"
+import { MISSION_REWARD, missionKeys, missionTitles } from "@/lib/onboarding/missions"
+import { getMissionState } from "@/lib/onboarding/repository"
 import { getPlanState, releaseAiRequest, reserveAiRequest } from "@/lib/plans/repository"
-import { getAccountFlows, getTransactionsInRange } from "@/lib/transactions/repository"
+import { getAccountFlows, getDebtPaymentsInRange, getTransactionsInRange } from "@/lib/transactions/repository"
 
 import { answerQuestion, keepComparedPeriod } from "./answer"
 import { ASSISTANT_NAME, chatReply, takeChat } from "./chat"
@@ -45,9 +47,9 @@ function readContext(value: unknown): AssistantContext | undefined {
   return { question: question.slice(0, MAX_LENGTH), plan: candidate as QuestionPlan }
 }
 
-/** The user's AI requests this month, from the plan; asking costs none. */
+/** The user's AI requests this month, the plan and when Pro ends, and the missions left; asking costs none. */
 async function usageAnswer(userId: string): Promise<Answer> {
-  const state = await getPlanState(userId)
+  const [state, missions] = await Promise.all([getPlanState(userId), getMissionState(userId)])
   const monthLeft = Math.max(0, state.aiLimit - state.aiUsed)
   const left = monthLeft + state.aiCredits
   const month = Number(toDateKey(new Date()).slice(5, 7))
@@ -61,10 +63,34 @@ async function usageAnswer(userId: string): Promise<Answer> {
       state.aiCredits ? `còn ${state.aiCredits} lượt thưởng từ nhiệm vụ` : null,
       `lượt tháng mới có từ 1/${nextMonth}`,
       isPro ? null : `gói Pro có ${plans.pro.aiMonthlyLimit} lượt mỗi tháng`,
+      isPro && state.proEndsAt ? `gói Pro dùng đến hết ${formatDate(toDateKey(state.proEndsAt))}` : null,
     ]
       .filter(Boolean)
       .join(", ") + ".",
-    blocks: [],
+    // The missions not yet rewarded: done ones wait to be claimed on the overview.
+    blocks: (() => {
+      const left = missionKeys.filter((key) => !missions.claimed.includes(key))
+      return left.length
+        ? [
+            {
+              type: "rows" as const,
+              groups: [
+                {
+                  heading: `Nhiệm vụ còn lại · +${MISSION_REWARD} lượt mỗi nhiệm vụ`,
+                  rows: left.map((key) => ({
+                    icon: { kind: "initials" as const, text: missions.done[key] ? "✓" : "·" },
+                    name: missionTitles[key],
+                    sub: missions.done[key] ? "Đã xong, nhận thưởng ở Tổng quan" : "Chưa làm",
+                    amount: MISSION_REWARD,
+                    amountTone: "plain" as const,
+                    amountText: `+${MISSION_REWARD} lượt`,
+                  })),
+                },
+              ],
+            },
+          ]
+        : []
+    })(),
     followUps: [],
     link: isPro ? { label: "Xem lượt AI", href: "/settings" } : { label: "Nâng cấp Pro", href: "/settings?screen=plan" },
   }
@@ -140,6 +166,7 @@ export async function askAssistantAction(request: string, previous?: unknown): P
       debts: () => getDebts(user.uid),
       transactions: (start, end) => getTransactionsInRange(user.uid, dayStart(start), dayStart(end), { excludeDebts: true }),
       flows: (start, end) => getAccountFlows(user.uid, dayStart(start), dayStart(end)),
+      debtPayments: (start, end) => getDebtPaymentsInRange(user.uid, dayStart(start), dayStart(end)),
     })
     return { kind: "answer", answer, plan, quota }
   } catch (error) {

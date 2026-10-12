@@ -5,14 +5,37 @@ import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
 /* ------------------------------------------------ what a question asks for */
 
 /**
- * What is measured: money out, money in, both, any movement, what accounts
- * hold, what is owed either way, and net worth (accounts, plus what others
- * owe, less what the user owes).
+ * What is measured:
+ * - money over a period: spending, income, net (both), transactions (any
+ *   movement), transfers (between accounts, with their fees), account_flow
+ *   (money into and out of accounts)
+ * - accounts now: balance, account_info (opening balance, opened, archived)
+ * - debts: lent (others owe the user), borrowed (the user owes), debts (both),
+ *   debts_due (due soon or overdue, both ways); over a period: collected
+ *   (repayments received), repaid (repayments made), new_lent, new_borrowed
+ * - net_worth: accounts, plus what others owe, less what the user owes
  */
-export type Measure = "spending" | "income" | "net" | "transactions" | "balance" | "lent" | "borrowed" | "net_worth"
+export type Measure =
+  | "spending"
+  | "income"
+  | "net"
+  | "transactions"
+  | "transfers"
+  | "account_flow"
+  | "balance"
+  | "account_info"
+  | "lent"
+  | "borrowed"
+  | "debts"
+  | "debts_due"
+  | "collected"
+  | "repaid"
+  | "new_lent"
+  | "new_borrowed"
+  | "net_worth"
 
-/** How it is shown: one figure, split up, the largest first, or the movements themselves. */
-export type View = "total" | "by_group" | "by_category" | "by_account" | "top" | "list"
+/** How it is shown: one figure, split up (by category, account, day or month), the largest first, or the movements themselves. */
+export type View = "total" | "by_group" | "by_category" | "by_account" | "by_day" | "by_month" | "top" | "list"
 
 export type PeriodPreset =
   | "today"
@@ -24,6 +47,7 @@ export type PeriodPreset =
   | "this_year"
   | "last_year"
   | "last_days"
+  | "last_months"
   | "month"
   | "year"
   | "range"
@@ -44,6 +68,8 @@ export type QuestionPlan = {
     preset: PeriodPreset
     /** last_days: how many days back from today. */
     days: number | null
+    /** last_months: how many months, this one included. */
+    months: number | null
     /** month, year: which (the year defaults to the latest that has passed that month). */
     month: number | null
     year: number | null
@@ -60,6 +86,13 @@ export type QuestionPlan = {
   contactIds: string[]
   /** Words to find in a transaction's note or category ("phở"). */
   search: string
+  /** Each transaction's amount from, to (both included), when said ("trên 500 nghìn"). */
+  minAmount: number | null
+  maxAmount: number | null
+  /** Only the transactions the user left out of the figures. */
+  onlyExcluded: boolean
+  /** Debts still open (the default), or those paid off. */
+  debtStatus: "open" | "settled"
   /** How many rows a top or a list shows. */
   limit: number | null
 }
@@ -85,9 +118,18 @@ export type AnswerRow = {
   amount: number
   /** How the amount reads: money in (green), out (with its minus), or plain. */
   amountTone: "income" | "expense" | "plain"
+  /** In place of the amount, a value that is not money ("+5 lượt"). */
+  amountText?: string
 }
 
 export type AnswerBlock =
+  /** Columns over time (days, months), one or two series side by side; `highlight` marks one. */
+  | {
+      type: "columns"
+      series: { name: string; tone: "income" | "expense" | "plain" }[]
+      columns: { label: string; values: number[] }[]
+      highlight?: number
+    }
   /** Shares of the whole, a bar each, largest first. */
   | { type: "bars"; rows: { icon: AnswerIcon; name: string; amount: number; share: number }[] }
   /** Two periods side by side, the current one first. */

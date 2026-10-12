@@ -24,6 +24,8 @@ export type AnswerSources = {
   transactions: (start: string, end: string) => Promise<Transaction[]>
   /** Money in and out of each account in [start, end). */
   flows: (start: string, end: string) => Promise<Record<string, AccountFlow>>
+  /** Loans' repayments in [start, end), shaped as transactions: in for money back, out for money paid back. */
+  debtPayments: (start: string, end: string) => Promise<Transaction[]>
 }
 
 /* ------------------------------------------------------------------ dates */
@@ -49,6 +51,13 @@ const lastDay = (end: string) => addDays(end, -1)
 
 /** A stretch of days, [start, end), with how it is said. */
 type Range = { start: string; end: string; label: string; kind: "day" | "week" | "month" | "year" | "days" | "all" }
+
+/** The months a range touches, as their first days, oldest first. */
+function monthsIn(range: Range) {
+  const months: string[] = []
+  for (let month = range.start.slice(0, 8) + "01"; month < range.end; month = addMonths(month, 1)) months.push(month)
+  return months
+}
 
 function spanLabel(start: string, end: string) {
   const last = lastDay(end)
@@ -91,6 +100,10 @@ function resolvePeriod(period: QuestionPlan["period"], today: string): Range {
     case "last_days": {
       const days = period.days ?? 7
       return { start: addDays(today, -(days - 1)), end: tomorrow, label: `${days} ngày qua`, kind: "days" }
+    }
+    case "last_months": {
+      const months = period.months ?? 6
+      return { start: addMonths(today, -(months - 1)), end: tomorrow, label: `${months} tháng gần đây`, kind: "days" }
     }
     case "month": {
       const month = period.month ?? monthOf(today)
@@ -175,6 +188,7 @@ export function keepComparedPeriod(plan: QuestionPlan, previous: QuestionPlan | 
 /* ------------------------------------------------------------- the pieces */
 
 const money = (amount: number) => formatCurrency(amount)
+const capitalize = (text: string) => text.charAt(0).toLocaleUpperCase("vi-VN") + text.slice(1)
 
 /** An account's logo, as the app shows it beside the account. */
 const markOf = (account: Account): AccountMark => ({
@@ -267,33 +281,69 @@ function barsBlock(
 
 /* ------------------------------------------------------------ the answers */
 
-const measureNames = { spending: "Chi tiêu", income: "Thu nhập", net: "Thu chi", transactions: "Giao dịch" } as const
+const measureNames = { spending: "Chi tiêu", income: "Thu nhập", net: "Thu chi", transactions: "Giao dịch", transfers: "Chuyển khoản" } as const
 
 /** Works out the answer to a plan; every figure comes from the user's records here. */
 export async function answerQuestion(plan: QuestionPlan, sources: AnswerSources): Promise<Answer> {
-  if (plan.measure === "net_worth") return answerNetWorth(sources)
-  if (plan.measure === "balance") return answerBalance(plan, sources)
-  if (plan.measure === "lent" || plan.measure === "borrowed") return answerDebts(plan, sources)
-  return answerFlow(plan, sources)
+  switch (plan.measure) {
+    case "net_worth":
+      return answerNetWorth(sources)
+    case "balance":
+      return answerBalance(plan, sources)
+    case "account_info":
+      return answerAccountInfo(plan, sources)
+    case "account_flow":
+      return answerAccountFlow(plan, sources)
+    case "lent":
+    case "borrowed":
+      return plan.debtStatus === "settled" ? answerSettledDebts(plan, sources) : answerDebts(plan, sources)
+    case "debts":
+      return plan.debtStatus === "settled" ? answerSettledDebts(plan, sources) : answerDebtsBoth(sources)
+    case "debts_due":
+      return answerDebtsDue(sources)
+    case "collected":
+    case "repaid":
+      // "Đã trả xong" read as repayments: it asks for the debts paid off.
+      return plan.debtStatus === "settled"
+        ? answerSettledDebts({ ...plan, measure: "debts" }, sources)
+        : answerRepayments(plan, sources)
+    case "new_lent":
+    case "new_borrowed":
+      return answerNewDebts(plan, sources)
+    default:
+      return answerFlow(plan, sources)
+  }
 }
 
 async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<Answer> {
   const { today } = sources
   const look = lookups(sources)
-  const measure = plan.measure as "spending" | "income" | "net" | "transactions"
+  const measure = plan.measure as "spending" | "income" | "net" | "transactions" | "transfers"
   const range = resolvePeriod(plan.period, today)
-  const before = measure === "transactions" ? null : comparedRange(range, plan.compare, today)
+  const before = measure === "transactions" || measure === "transfers" ? null : comparedRange(range, plan.compare, today)
 
   const groupIds = new Set(plan.groupIds)
   const categoryIds = new Set(plan.categoryIds)
   const accountIds = new Set(plan.accountIds)
   const search = fold(plan.search)
-  const kinds = measure === "spending" ? ["expense"] : measure === "income" ? ["income"] : measure === "net" ? ["expense", "income"] : ["expense", "income", "transfer"]
+  const kinds =
+    measure === "spending"
+      ? ["expense"]
+      : measure === "income"
+        ? ["income"]
+        : measure === "net"
+          ? ["expense", "income"]
+          : measure === "transfers"
+            ? ["transfer"]
+            : ["expense", "income", "transfer"]
   // What the user left out of the figures is left out of every sum; a list of
-  // the movements themselves still shows it.
+  // the movements themselves still shows it, and a question about just those
+  // ("không tính vào thống kê") is about nothing else.
   const listing = plan.view === "list" || measure === "transactions"
   const keep = (transaction: Transaction) =>
-    (listing || !transaction.excluded) &&
+    (plan.onlyExcluded ? transaction.excluded === true : listing || !transaction.excluded) &&
+    (plan.minAmount === null || Math.abs(transaction.amount) >= plan.minAmount) &&
+    (plan.maxAmount === null || Math.abs(transaction.amount) <= plan.maxAmount) &&
     kinds.includes(transaction.kind) &&
     (groupIds.size + categoryIds.size === 0 ||
       groupIds.has(transaction.categoryGroupId ?? "") ||
@@ -310,7 +360,9 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
   ])
 
   const sum = (rows: Transaction[], kind?: string) =>
-    rows.filter((row) => !row.excluded && (!kind || row.kind === kind)).reduce((total, row) => total + Math.abs(row.amount), 0)
+    rows
+      .filter((row) => (plan.onlyExcluded || !row.excluded) && (!kind || row.kind === kind))
+      .reduce((total, row) => total + Math.abs(row.amount), 0)
   const value = (rows: Transaction[]) => (measure === "net" ? sum(rows, "income") - sum(rows, "expense") : sum(rows))
 
   // What the answer is about: the categories asked for, a word searched, or the measure.
@@ -319,7 +371,18 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
     ...plan.categoryIds.map((id) => look.category(id)?.name),
   ].filter(Boolean)
   const accountNames = plan.accountIds.map((id) => look.account(id)?.name).filter(Boolean)
-  const subject = names.length ? names.join(", ") : search ? `“${plan.search}”` : measureNames[measure]
+  const amountRange =
+    plan.minAmount !== null && plan.maxAmount !== null
+      ? ` ${money(plan.minAmount)}–${money(plan.maxAmount)}`
+      : plan.minAmount !== null
+        ? ` từ ${money(plan.minAmount)}`
+        : plan.maxAmount !== null
+          ? ` đến ${money(plan.maxAmount)}`
+          : ""
+  const subject =
+    (names.length ? names.join(", ") : search ? `“${plan.search}”` : measureNames[measure]) +
+    amountRange +
+    (plan.onlyExcluded ? " không tính vào thống kê" : "")
   const via = accountNames.length
     ? measure === "spending"
       ? ` bằng ${accountNames.join(", ")}`
@@ -380,6 +443,57 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
   }
   const oneGroup = plan.groupIds.length === 1 && plan.categoryIds.length === 0
   const naturalSplit = oneGroup ? "category" : "group"
+
+  /* over time: day by day, or month by month */
+  if (plan.view === "by_day" || plan.view === "by_month") {
+    const byMonth = plan.view === "by_month"
+    const slots = byMonth
+      ? monthsIn(range).map((start) => ({ start, end: addMonths(start, 1), label: `T${monthOf(start)}` }))
+      : Array.from({ length: Math.min(62, days) }, (_, index) => {
+          const start = addDays(range.start, index)
+          return { start, end: addDays(start, 1), label: String(Number(start.slice(8))) }
+        })
+    const inSlot = (row: Transaction, slot: { start: string; end: string }) => {
+      const dateKey = toDateKey(row.occurredAt)
+      return dateKey >= slot.start && dateKey < slot.end
+    }
+    const two = measure === "net"
+    const columns = slots.map((slot) => {
+      const rows = current.filter((row) => inSlot(row, slot))
+      return { label: slot.label, values: two ? [sum(rows, "income"), sum(rows, "expense")] : [value(rows)] }
+    })
+    // The busiest (or quietest) day or month, among those with anything.
+    const scored = columns.map((column, index) => ({ index, amount: two ? column.values[0] - column.values[1] : column.values[0] }))
+    const candidates = scored.filter((item) => columns[item.index].values.some(Boolean))
+    const pick = candidates.sort((left, right) => (plan.order === "least" ? left.amount - right.amount : right.amount - left.amount))[0]
+    const slotName = (index: number) =>
+      byMonth ? monthLabel(slots[index].start, today) : formatDayLabel(slots[index].start, today)
+    const spread = byMonth ? Math.max(1, slots.length) : Math.max(1, slots.length)
+    return {
+      kicker: `${subject}${via} theo ${byMonth ? "tháng" : "ngày"} · ${periodTitle(range, today)}`,
+      figure: { amount: total, tone },
+      line: pick
+        ? two
+          ? `Thu ${money(sum(current, "income"))}, chi ${money(sum(current, "expense"))}. ${capitalize(slotName(pick.index))} ${plan.order === "least" ? "dư ít nhất" : "dư nhiều nhất"}: ${money(pick.amount)}.`
+          : `${plan.order === "least" ? "Ít nhất" : "Nhiều nhất"}: ${slotName(pick.index)}, ${money(pick.amount)}. Trung bình ${money(Math.round(total / spread))} mỗi ${byMonth ? "tháng" : "ngày"}.`
+        : "Chưa có khoản nào.",
+      blocks: [
+        {
+          type: "columns",
+          series: two
+            ? [
+                { name: "Thu", tone: "income" },
+                { name: "Chi", tone: "plain" },
+              ]
+            : [{ name: subject, tone: measure === "income" ? "income" : "plain" }],
+          columns,
+          highlight: two ? undefined : pick?.index,
+        },
+      ],
+      followUps: byMonth ? ["Tháng này tiêu vào đâu?"] : ["Khoản nào lớn nhất?"],
+      link,
+    }
+  }
 
   /* comparison */
   if (previous && before) {
@@ -508,6 +622,8 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
         { label: "Chi", amount: spending, share: Math.round((spending / highest) * 100) },
       ],
     })
+  } else if (measure === "transfers") {
+    // Moves between the user's own accounts: no categories to split by.
   } else if (plan.order === "least" && plan.view !== "total") {
     // "Chi gì ít nhất": the smallest part is the answer, the few after it below.
     const parts = splitBy(current, split).filter((part) => part.amount > 0).sort((left, right) => left.amount - right.amount)
@@ -535,6 +651,8 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
     line:
       measure === "net"
         ? `Thu ${money(sum(current, "income"))}, chi ${money(sum(current, "expense"))}`
+        : measure === "transfers"
+          ? `${count} lần chuyển${current.some((row) => row.fee) ? `, phí ${money(current.reduce((fees, row) => fees + (row.fee ?? 0), 0))}` : ""}`
         : `${count} khoản${days >= 7 && count >= 5 && average ? `, trung bình ${money(average)} mỗi ngày` : ""}`,
     blocks,
     followUps: [
@@ -621,6 +739,10 @@ async function answerBalance(plan: QuestionPlan, sources: AnswerSources): Promis
 
 async function answerDebts(plan: QuestionPlan, sources: AnswerSources): Promise<Answer> {
   const { today } = sources
+  if (plan.contactIds.length === 1) {
+    const detail = await answerDebtDetail(plan, sources)
+    if (detail) return detail
+  }
   const lent = plan.measure === "lent"
   const contacts = new Map(sources.contacts.map((contact) => [contact.id, contact]))
   const debts = (await sources.debts()).filter(
@@ -683,6 +805,391 @@ async function answerDebts(plan: QuestionPlan, sources: AnswerSources): Promise<
       },
     ],
     followUps: [lent ? "Mình đang nợ ai?" : "Ai đang nợ tôi?"],
+    link: { label: "Mở trong Vay nợ", href: "/debts" },
+  }
+}
+
+/* ---------------------------------------------------------------- accounts */
+
+/** Money into and out of accounts over a period, as each account's card shows it. */
+async function answerAccountFlow(plan: QuestionPlan, sources: AnswerSources): Promise<Answer> {
+  const { today } = sources
+  const range = resolvePeriod(plan.period.preset === "all" ? { ...plan.period, preset: "this_month" } : plan.period, today)
+  const flows = await sources.flows(range.start, range.end)
+  const chosen = plan.accountIds.length
+    ? sources.accounts.filter((account) => plan.accountIds.includes(account.id))
+    : sources.accounts.filter((account) => account.status === "active")
+  const moneyIn = chosen.reduce((sum, account) => sum + (flows[account.id]?.moneyIn ?? 0), 0)
+  const moneyOut = chosen.reduce((sum, account) => sum + (flows[account.id]?.moneyOut ?? 0), 0)
+  const highest = Math.max(moneyIn, moneyOut, 1)
+  const one = chosen.length === 1 ? chosen[0] : undefined
+  return {
+    kicker: `Tiền vào ra · ${one ? one.name : `${chosen.length} tài khoản`} · ${periodTitle(range, today)}`,
+    figure: { amount: moneyIn - moneyOut, tone: moneyIn - moneyOut >= 0 ? "income" : "expense" },
+    line: `Vào ${money(moneyIn)}, ra ${money(moneyOut)}, kể cả chuyển khoản và vay nợ`,
+    blocks: [
+      {
+        type: "compare",
+        rows: [
+          { label: "Tiền vào", amount: moneyIn, share: Math.round((moneyIn / highest) * 100) },
+          { label: "Tiền ra", amount: moneyOut, share: Math.round((moneyOut / highest) * 100) },
+        ],
+      },
+      ...(one
+        ? []
+        : [
+            {
+              type: "rows" as const,
+              groups: [
+                {
+                  rows: chosen
+                    .filter((account) => flows[account.id])
+                    .map((account) => {
+                      const flow = flows[account.id]
+                      return {
+                        icon: accountIcon(account),
+                        name: account.name,
+                        sub: `Vào ${money(flow.moneyIn)} · ra ${money(flow.moneyOut)}`,
+                        amount: flow.moneyIn - flow.moneyOut,
+                        amountTone: flow.moneyIn - flow.moneyOut >= 0 ? ("income" as const) : ("expense" as const),
+                      }
+                    }),
+                },
+              ],
+            },
+          ]),
+    ],
+    followUps: one ? [`Số dư ${one.name}`] : ["Số dư các tài khoản"],
+    link: { label: "Mở trong Tài khoản", href: "/budget" },
+  }
+}
+
+/** What the account sheet says: the opening balance, when it was opened, its note; archived ones too. */
+async function answerAccountInfo(plan: QuestionPlan, sources: AnswerSources): Promise<Answer> {
+  const chosen = plan.accountIds.length
+    ? sources.accounts.filter((account) => plan.accountIds.includes(account.id))
+    : [...sources.accounts].sort((left, right) => Number(left.status === "archived") - Number(right.status === "archived"))
+  const opened = (account: Account) => formatShortDate(toDateKey(account.openedAt)) + "/" + toDateKey(account.openedAt).slice(0, 4)
+  const link = { label: "Mở trong Tài khoản", href: "/budget" }
+
+  if (chosen.length === 1) {
+    const [account] = chosen
+    const rows: AnswerRow[] = [
+      { icon: accountIcon(account), name: "Số dư ban đầu", sub: `Từ ngày ${opened(account)}`, amount: account.openingBalance, amountTone: "plain" },
+      { icon: accountIcon(account), name: "Số dư hiện tại", sub: account.status === "archived" ? "Đã lưu trữ" : "Đang dùng", amount: account.balance, amountTone: account.balance < 0 ? "expense" : "plain" },
+    ]
+    return {
+      kicker: `Tài khoản · ${account.name}`,
+      figure: { amount: account.balance, tone: account.balance < 0 ? "expense" : "plain" },
+      line: [
+        `Mở từ ${opened(account)}`,
+        `số dư ban đầu ${money(account.openingBalance)}`,
+        account.status === "archived" ? "đã lưu trữ" : null,
+        account.note ? `ghi chú: ${account.note}` : null,
+      ]
+        .filter(Boolean)
+        .join(", "),
+      blocks: [{ type: "rows", groups: [{ rows }] }],
+      followUps: [`Tháng này tiền vào ra ${account.name}`],
+      link,
+    }
+  }
+
+  const archived = chosen.filter((account) => account.status === "archived").length
+  return {
+    kicker: `Tài khoản · ${chosen.length - archived} đang dùng${archived ? `, ${archived} đã lưu trữ` : ""}`,
+    figureText: `${chosen.length} tài khoản`,
+    line: archived ? "Tài khoản đã lưu trữ vẫn giữ giao dịch cũ, không dùng cho giao dịch mới." : "Chưa có tài khoản nào được lưu trữ.",
+    blocks: [
+      {
+        type: "rows",
+        groups: [
+          {
+            rows: chosen.slice(0, 10).map((account) => ({
+              icon: accountIcon(account),
+              name: account.name,
+              sub: `${account.status === "archived" ? "Đã lưu trữ · " : ""}Mở từ ${opened(account)}`,
+              subTone: undefined,
+              amount: account.balance,
+              amountTone: account.balance < 0 ? ("expense" as const) : ("plain" as const),
+            })),
+          },
+        ],
+      },
+    ],
+    followUps: ["Tổng số dư các tài khoản"],
+    link,
+  }
+}
+
+/* ------------------------------------------------------------------- debts */
+
+const directionName = (lent: boolean) => (lent ? "Cho vay" : "Đi vay")
+
+/** Both ways at once: what is to come in and what is to go out, as the debts page heads it. */
+async function answerDebtsBoth(sources: AnswerSources): Promise<Answer> {
+  const { today } = sources
+  const open = (await sources.debts()).filter((debt) => debt.status !== "settled")
+  const side = (direction: "lent" | "borrowed") => {
+    const debts = open.filter((debt) => debt.direction === direction)
+    const remaining = debts.reduce((sum, debt) => sum + getPaymentMetrics(debt, today).remainingAmount, 0)
+    return { remaining, people: new Set(debts.filter((debt) => getPaymentMetrics(debt, today).remainingAmount > 0).map((debt) => debt.contactId)).size }
+  }
+  const lent = side("lent")
+  const borrowed = side("borrowed")
+  const net = lent.remaining - borrowed.remaining
+  return {
+    kicker: "Cần thu và cần trả",
+    figure: { amount: net, tone: net >= 0 ? "income" : "expense" },
+    line: net >= 0 ? `Cần thu nhiều hơn cần trả ${money(net)}` : `Cần trả nhiều hơn cần thu ${money(-net)}`,
+    blocks: [
+      {
+        type: "rows",
+        groups: [
+          {
+            rows: [
+              { icon: { kind: "initials", text: "+" }, name: "Cần thu", sub: `${lent.people} người đang nợ bạn`, amount: lent.remaining, amountTone: "income" },
+              { icon: { kind: "initials", text: "−" }, name: "Cần trả", sub: `Bạn nợ ${borrowed.people} người`, amount: -borrowed.remaining, amountTone: "expense" },
+            ],
+          },
+        ],
+      },
+    ],
+    followUps: ["Ai đang nợ tôi?", "Mình đang nợ ai?", "Khoản nào sắp đến hạn?"],
+    link: { label: "Mở trong Vay nợ", href: "/debts" },
+  }
+}
+
+/** What falls due within two weeks or is past due, both ways, the nearest first. */
+async function answerDebtsDue(sources: AnswerSources): Promise<Answer> {
+  const { today } = sources
+  const contacts = new Map(sources.contacts.map((contact) => [contact.id, contact]))
+  const horizon = addDays(today, 14)
+  const due = (await sources.debts())
+    .filter((debt) => debt.status !== "settled" && debt.dueAt && debt.dueAt <= horizon)
+    .map((debt) => ({ debt, remaining: getPaymentMetrics(debt, today).remainingAmount }))
+    .filter((item) => item.remaining > 0)
+    .sort((left, right) => left.debt.dueAt!.localeCompare(right.debt.dueAt!))
+  const late = due.filter((item) => item.debt.dueAt! < today).length
+  return {
+    kicker: "Sắp đến hạn · 14 ngày tới",
+    figureText: due.length ? `${due.length} khoản` : "Không có khoản nào",
+    line: due.length ? (late ? `${late} khoản đã quá hạn` : "Chưa khoản nào quá hạn") : "Không có khoản nợ nào đến hạn trong 14 ngày tới.",
+    blocks: due.length
+      ? [
+          {
+            type: "rows",
+            groups: [
+              {
+                rows: due.slice(0, 8).map(({ debt, remaining }) => {
+                  const lent = debt.direction === "lent"
+                  const days = daysBetween(today, debt.dueAt!)
+                  const contact = contacts.get(debt.contactId)
+                  return {
+                    icon: { kind: "initials", text: contact?.initials ?? "?" } as AnswerIcon,
+                    name: contact?.name ?? "Người liên hệ",
+                    sub: `${directionName(lent)} · hạn ${formatShortDate(debt.dueAt!)} · ${days < 0 ? `quá hạn ${-days} ngày` : days === 0 ? "hôm nay" : `còn ${days} ngày`}`,
+                    subTone: days < 0 ? ("late" as const) : undefined,
+                    amount: lent ? remaining : -remaining,
+                    amountTone: lent ? ("income" as const) : ("expense" as const),
+                  }
+                }),
+              },
+            ],
+          },
+        ]
+      : [],
+    followUps: ["Tổng cần thu và cần trả"],
+    link: { label: "Mở trong Vay nợ", href: "/debts" },
+  }
+}
+
+/** Debts paid off, one way or both, the latest first. */
+async function answerSettledDebts(plan: QuestionPlan, sources: AnswerSources): Promise<Answer> {
+  const both = plan.measure === "debts"
+  const lent = plan.measure === "lent"
+  const contacts = new Map(sources.contacts.map((contact) => [contact.id, contact]))
+  const settled = (await sources.debts()).filter(
+    (debt) =>
+      (both || debt.direction === (lent ? "lent" : "borrowed")) &&
+      debt.status === "settled" &&
+      (plan.contactIds.length === 0 || plan.contactIds.includes(debt.contactId)),
+  )
+  // "Lan Anh đã trả được bao nhiêu" read as paid off: her open debt answers it.
+  if (settled.length === 0 && plan.contactIds.length === 1 && !both) {
+    return answerDebts({ ...plan, debtStatus: "open" }, sources)
+  }
+  return {
+    kicker: `${both ? "Vay nợ" : directionName(lent)} · đã trả xong`,
+    figureText: `${settled.length} khoản`,
+    line: settled.length ? `Tổng ${money(settled.reduce((sum, debt) => sum + debt.amount, 0))} tiền gốc` : "Chưa có khoản nào trả xong.",
+    blocks: settled.length
+      ? [
+          {
+            type: "rows",
+            groups: [
+              {
+                rows: settled.slice(0, 8).map((debt) => {
+                  const contact = contacts.get(debt.contactId)
+                  const last = [...(debt.payments ?? [])].sort((left, right) => right.paidAt.localeCompare(left.paidAt))[0]
+                  return {
+                    icon: { kind: "initials", text: contact?.initials ?? "?" } as AnswerIcon,
+                    name: contact?.name ?? "Người liên hệ",
+                    sub: `${both ? `${directionName(debt.direction === "lent")} · ` : ""}Ghi ${formatShortDate(debt.recordedAt)}${last ? ` · trả xong ${formatShortDate(last.paidAt)}` : ""}`,
+                    amount: debt.amount,
+                    amountTone: "plain" as const,
+                  }
+                }),
+              },
+            ],
+          },
+        ]
+      : [],
+    followUps: [both || lent ? "Ai đang nợ tôi?" : "Mình đang nợ ai?"],
+    link: { label: "Mở trong Vay nợ", href: "/debts" },
+  }
+}
+
+/** Repayments over a period: money back from loans made (collected), or paid back on loans taken (repaid). */
+async function answerRepayments(plan: QuestionPlan, sources: AnswerSources): Promise<Answer> {
+  const { today } = sources
+  const collected = plan.measure === "collected"
+  const range = resolvePeriod(plan.period.preset === "all" && plan.contactIds.length === 0 ? { ...plan.period, preset: "this_month" } : plan.period, today)
+  const debts = new Map((await sources.debts()).map((debt) => [debt.id, debt]))
+  const payments = (await sources.debtPayments(range.start, range.end))
+    .filter((payment) => payment.kind === (collected ? "income" : "expense"))
+    .filter((payment) => plan.contactIds.length === 0 || plan.contactIds.includes(debts.get(payment.debtId ?? "")?.contactId ?? ""))
+    .sort((left, right) => right.occurredAt.localeCompare(left.occurredAt))
+  const total = payments.reduce((sum, payment) => sum + Math.abs(payment.amount), 0)
+  const look = lookups(sources)
+  return {
+    kicker: `${collected ? "Thu nợ" : "Trả nợ"} · ${periodTitle(range, today)}`,
+    figure: { amount: collected ? total : -total, tone: collected ? "income" : "plain" },
+    line: payments.length ? `${payments.length} lần ${collected ? "nhận" : "trả"}` : `Chưa có lần ${collected ? "thu nợ" : "trả nợ"} nào.`,
+    blocks: payments.length
+      ? [
+          {
+            type: "rows",
+            groups: [
+              {
+                rows: payments.slice(0, 6).map((payment) => ({
+                  icon: accountIcon(look.account(payment.accountId)),
+                  name: payment.title,
+                  sub: `${formatShortDate(toDateKey(payment.occurredAt))} · ${payment.accountName ?? ""}`,
+                  amount: payment.amount,
+                  amountTone: collected ? ("income" as const) : ("expense" as const),
+                })),
+              },
+            ],
+          },
+        ]
+      : [],
+    followUps: [collected ? "Ai còn nợ tôi?" : "Mình còn nợ ai?"],
+    link: { label: "Mở trong Vay nợ", href: "/debts" },
+  }
+}
+
+/** Loans made or taken over a period, by when they were written down. */
+async function answerNewDebts(plan: QuestionPlan, sources: AnswerSources): Promise<Answer> {
+  const { today } = sources
+  const lent = plan.measure === "new_lent"
+  const range = resolvePeriod(plan.period.preset === "all" ? { ...plan.period, preset: "this_month" } : plan.period, today)
+  const contacts = new Map(sources.contacts.map((contact) => [contact.id, contact]))
+  const debts = (await sources.debts())
+    .filter((debt) => debt.direction === (lent ? "lent" : "borrowed") && debt.recordedAt >= range.start && debt.recordedAt < range.end)
+    .filter((debt) => plan.contactIds.length === 0 || plan.contactIds.includes(debt.contactId))
+    .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt))
+  const total = debts.reduce((sum, debt) => sum + debt.amount, 0)
+  return {
+    kicker: `${directionName(lent)} mới · ${periodTitle(range, today)}`,
+    figure: { amount: total, tone: "plain" },
+    line: debts.length ? `${debts.length} khoản` : "Chưa có khoản nào.",
+    blocks: debts.length
+      ? [
+          {
+            type: "rows",
+            groups: [
+              {
+                rows: debts.slice(0, 6).map((debt) => {
+                  const contact = contacts.get(debt.contactId)
+                  return {
+                    icon: { kind: "initials", text: contact?.initials ?? "?" } as AnswerIcon,
+                    name: contact?.name ?? "Người liên hệ",
+                    sub: `Ghi ${formatShortDate(debt.recordedAt)}${debt.dueAt ? ` · hạn ${formatShortDate(debt.dueAt)}` : ""}`,
+                    amount: debt.amount,
+                    amountTone: "plain" as const,
+                  }
+                }),
+              },
+            ],
+          },
+        ]
+      : [],
+    followUps: [lent ? "Ai đang nợ tôi?" : "Mình đang nợ ai?"],
+    link: { label: "Mở trong Vay nợ", href: "/debts" },
+  }
+}
+
+/**
+ * One person's open debts in full, as the debt's panel shows them: the
+ * principal, the interest so far, what has been paid, what is left, the due
+ * date, and the payments made. Null when they have none open that way.
+ */
+async function answerDebtDetail(plan: QuestionPlan, sources: AnswerSources): Promise<Answer | null> {
+  const { today } = sources
+  const lent = plan.measure === "lent"
+  const contact = sources.contacts.find((item) => item.id === plan.contactIds[0])
+  const debts = (await sources.debts()).filter(
+    (debt) => debt.contactId === plan.contactIds[0] && debt.direction === (lent ? "lent" : "borrowed") && debt.status !== "settled",
+  )
+  if (!contact || debts.length === 0) return null
+  const metrics = debts.map((debt) => ({ debt, ...getPaymentMetrics(debt, today) }))
+  const sum = (pick: (item: (typeof metrics)[number]) => number) => metrics.reduce((total, item) => total + pick(item), 0)
+  const principal = sum((item) => item.debt.amount)
+  const interest = sum((item) => item.interestAmount)
+  const paid = sum((item) => item.paidAmount)
+  const remaining = sum((item) => item.remainingAmount)
+  const nearestDue = debts.map((debt) => debt.dueAt).filter((due): due is string => Boolean(due)).sort()[0]
+  const payments = debts
+    .flatMap((debt) => debt.payments ?? [])
+    .sort((left, right) => right.paidAt.localeCompare(left.paidAt))
+  const overdue = nearestDue && nearestDue < today ? daysBetween(nearestDue, today) : 0
+  const figureRows: AnswerRow[] = [
+    { icon: { kind: "initials", text: contact.initials }, name: "Tiền gốc", sub: `${debts.length} khoản · ghi từ ${formatShortDate(debts.map((debt) => debt.recordedAt).sort()[0])}`, amount: principal, amountTone: "plain" },
+    ...(interest ? [{ icon: { kind: "initials", text: "%" } as AnswerIcon, name: "Lãi đến hôm nay", amount: interest, amountTone: "plain" as const }] : []),
+    { icon: { kind: "initials", text: "✓" }, name: lent ? "Đã nhận lại" : "Đã trả", sub: `${payments.length} lần`, amount: paid, amountTone: "plain" },
+  ]
+  return {
+    kicker: lent ? `${contact.name} đang nợ bạn` : `Bạn đang nợ ${contact.name}`,
+    figure: { amount: remaining, tone: lent ? "income" : "plain" },
+    line: [
+      `${lent ? "Đã nhận lại" : "Đã trả"} ${money(paid)} trên ${money(principal + interest)}`,
+      nearestDue ? `hạn ${formatShortDate(nearestDue)}${overdue ? `, quá hạn ${overdue} ngày` : ""}` : "không đặt hạn",
+      interest ? `lãi đến hôm nay ${money(interest)}` : debts.some((debt) => debt.hasInterest) ? "chưa phát sinh lãi" : "không tính lãi",
+    ].join(", "),
+    blocks: [
+      { type: "rows", groups: [{ rows: figureRows }] },
+      ...(payments.length
+        ? [
+            {
+              type: "rows" as const,
+              groups: [
+                {
+                  heading: lent ? "Các lần nhận lại" : "Các lần trả",
+                  rows: payments.slice(0, 5).map((payment) => ({
+                    icon: accountIcon(sources.accounts.find((account) => account.id === payment.accountId)),
+                    name: formatShortDate(payment.paidAt) + "/" + payment.paidAt.slice(0, 4),
+                    sub: payment.accountName ?? payment.note ?? undefined,
+                    amount: payment.amount,
+                    amountTone: lent ? ("income" as const) : ("expense" as const),
+                  })),
+                },
+              ],
+            },
+          ]
+        : []),
+    ],
+    followUps: [lent ? "Ai đang nợ tôi?" : "Mình đang nợ ai?"],
     link: { label: "Mở trong Vay nợ", href: "/debts" },
   }
 }
