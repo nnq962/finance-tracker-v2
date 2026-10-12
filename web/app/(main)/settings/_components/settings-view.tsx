@@ -5,6 +5,7 @@ import {
   BellRingIcon,
   CalculatorIcon,
   CircleHelpIcon,
+  HistoryIcon,
   MicIcon,
   PaletteIcon,
   ShieldCheckIcon,
@@ -32,6 +33,7 @@ import { InstallAppRow } from "./install-app-row"
 import { NotificationDevices } from "./notification-devices"
 import { NotificationPreferences } from "./notification-preferences"
 import { ProfileCard } from "./profile-card"
+import { ReleaseHistory } from "./release-history"
 import { SalaryCalculator } from "./salary-calculator"
 import { SignOutRow } from "./sign-out-row"
 import { ThemeOptions, themeOptions, useThemeChoice } from "./theme-options"
@@ -56,6 +58,9 @@ const screens = {
   },
   salary: {
     title: "Tính lương",
+  },
+  releases: {
+    title: "Lịch sử phiên bản",
   },
 } as const
 
@@ -130,6 +135,8 @@ export function SettingsView({
         return <VoiceLab />
       case "salary":
         return <SalaryCalculator />
+      case "releases":
+        return <ReleaseHistory />
     }
   }
 
@@ -225,6 +232,12 @@ export function SettingsView({
                   icon={MicIcon}
                   title="Thử giọng nói"
                   onClick={() => open("voice")}
+                />
+                <SettingsRow
+                  icon={HistoryIcon}
+                  title="Lịch sử phiên bản"
+                  value={process.env.NEXT_PUBLIC_APP_VERSION}
+                  onClick={() => open("releases")}
                 />
               </>
             ) : null}

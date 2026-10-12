@@ -54,7 +54,7 @@ export default async function SettingsPage({
         paymentOutcome={paymentOutcome}
         adminData={adminData}
         // Deep links: the missions on the overview, and the way back from payOS.
-        initialScreen={screen === "notifications" || screen === "plan" ? screen : undefined}
+        initialScreen={screen === "notifications" || screen === "plan" || screen === "releases" ? screen : undefined}
       />
     </Page>
   )

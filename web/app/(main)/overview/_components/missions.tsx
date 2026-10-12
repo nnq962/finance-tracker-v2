@@ -30,7 +30,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import type { Account } from "@/lib/accounts/types"
-import type { IconTileTone } from "@/components/app/icon-tile"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { Contact, NewContact, NewDebt } from "@/lib/debts/types"
 import { claimMissionRewardAction } from "@/lib/onboarding/actions"
@@ -45,7 +44,6 @@ import { PlanInviteBanner, PlanInviteRow, useHasPlanInvite } from "./plan-invite
 type Mission = {
   key: MissionKey
   icon: LucideIcon
-  color: IconTileTone
   title: string
   /** Only what the title does not say, or what is needed first. */
   description?: string
@@ -102,7 +100,6 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
     {
       key: "account",
       icon: WalletCardsIcon,
-      color: "blue",
       title: missionTitles.account,
       description: "Tiền mặt, ngân hàng hoặc ví",
       done: state.done.account,
@@ -111,7 +108,6 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
     {
       key: "transaction",
       icon: ReceiptTextIcon,
-      color: "orange",
       title: missionTitles.transaction,
       description: hasAccount ? undefined : needAccount,
       done: state.done.transaction,
@@ -120,7 +116,6 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
     {
       key: "ai",
       icon: SparklesIcon,
-      color: "ai",
       title: missionTitles.ai,
       description: hasAccount ? "Gõ hoặc nói một câu" : needAccount,
       done: state.done.ai,
@@ -129,7 +124,6 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
     {
       key: "transfer",
       icon: ArrowLeftRightIcon,
-      color: "cyan",
       title: missionTitles.transfer,
       description: accounts.length >= 2 ? undefined : "Cần 2 tài khoản trở lên",
       done: state.done.transfer,
@@ -138,7 +132,6 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
     {
       key: "contact",
       icon: UserPlusIcon,
-      color: "pink",
       title: missionTitles.contact,
       done: state.done.contact,
       start: () => setSheet("contact"),
@@ -146,7 +139,6 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
     {
       key: "debt",
       icon: HandCoinsIcon,
-      color: "rose",
       title: missionTitles.debt,
       done: state.done.debt,
       start: () => setSheet("debt"),
@@ -154,7 +146,6 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
     {
       key: "category",
       icon: TagsIcon,
-      color: "lime",
       title: missionTitles.category,
       done: state.done.category,
       start: () => setSheet("category"),
@@ -162,7 +153,6 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
     {
       key: "reminder",
       icon: BellRingIcon,
-      color: "amber",
       title: missionTitles.reminder,
       done: state.done.reminder,
       start: () => router.push("/settings?screen=notifications"),
@@ -172,7 +162,6 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       ? [{
           key: "install" as const,
           icon: DownloadIcon,
-          color: "emerald" as const,
           title: missionTitles.install,
           done: isStandalone,
           start: () => (isIOS ? setInstallGuideOpen(true) : void install()),
@@ -252,7 +241,6 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
               key={mission.key}
               collapsed={!isShown(mission)}
               icon={mission.icon}
-              tone={mission.color}
               title={mission.title}
               description="Đã xong"
               action={
@@ -272,7 +260,6 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
               key={mission.key}
               collapsed={!isShown(mission)}
               icon={mission.icon}
-              tone={mission.color}
               title={mission.title}
               description={mission.description}
               value={<Badge variant="secondary">+{MISSION_REWARD}</Badge>}
