@@ -41,7 +41,8 @@ function AccountRow({ account, onSelect }: { account: Account; onSelect: () => v
     <SettingsRow
       media={<AccountLogo account={account} />}
       title={account.name}
-      description={accountDescription(account)}
+      // Still used, only not counted: said first, so a long kind cannot cut it off; its balance grey.
+      description={[account.excluded ? "Không tính" : null, accountDescription(account)].filter(Boolean).join(" · ") || undefined}
       action={
         <Money
           amount={account.balance}
@@ -57,13 +58,10 @@ function AccountRow({ account, onSelect }: { account: Account; onSelect: () => v
 
 export function AccountList({ accounts, recentTransactions, flows, monthLabel, categoryGroups }: AccountListProps) {
   const [openAccountId, setOpenAccountId] = React.useState<string | null>(null)
-  // One list, largest balance first.
+  // Every account in use in one list, largest balance first, those left out
+  // of the figures among them (still used, only not counted), marked so.
   const activeAccounts = accounts
-    .filter((account) => account.status === "active" && !account.excluded)
-    .sort((left, right) => right.balance - left.balance)
-  // Still in use, but outside the total and the figures: a group of their own below.
-  const excludedAccounts = accounts
-    .filter((account) => account.status === "active" && account.excluded)
+    .filter((account) => account.status === "active")
     .sort((left, right) => right.balance - left.balance)
   const archivedAccounts = accounts.filter((account) => account.status === "archived")
   // A deleted account closes its sheet.
@@ -115,32 +113,39 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
         </>
       ) : null}
 
-      {excludedAccounts.length > 0 ? (
-        <div className="lg:max-w-2xl">
-          <SettingsGroup
-            title={`Không tính vào thống kê · ${excludedAccounts.length}`}
-            footer="Số dư không cộng vào tổng, thu chi không vào thống kê"
-          >
-            {excludedAccounts.map((account) => (
-              <AccountRow key={account.id} account={account} onSelect={() => setOpenAccountId(account.id)} />
-            ))}
-          </SettingsGroup>
-        </div>
-      ) : null}
-
       {archivedAccounts.length > 0 ? (
-        // A list on every screen, folded by default; capped on desktop so a
-        // balance stays near its account's name.
-        <div className="lg:max-w-2xl">
-          <SettingsGroup
-            title="Ngừng sử dụng"
-            collapsible={{ showLabel: `Hiện ${archivedAccounts.length} tài khoản`, defaultOpen: activeAccounts.length === 0 }}
-          >
-            {archivedAccounts.map((account) => (
-              <AccountRow key={account.id} account={account} onSelect={() => setOpenAccountId(account.id)} />
-            ))}
-          </SettingsGroup>
-        </div>
+        <>
+          {/* Folded by default; a list on phones, from lg up cards the size
+              of those in use, as the group above them. */}
+          <div className="lg:hidden">
+            <SettingsGroup
+              title="Ngừng sử dụng"
+              collapsible={{ showLabel: `Hiện ${archivedAccounts.length} tài khoản`, defaultOpen: activeAccounts.length === 0 }}
+            >
+              {archivedAccounts.map((account) => (
+                <AccountRow key={account.id} account={account} onSelect={() => setOpenAccountId(account.id)} />
+              ))}
+            </SettingsGroup>
+          </div>
+          <div className="hidden lg:block">
+            <SettingsGroup
+              plain
+              title="Ngừng sử dụng"
+              collapsible={{ showLabel: `Hiện ${archivedAccounts.length} tài khoản`, defaultOpen: activeAccounts.length === 0 }}
+            >
+              <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
+                {archivedAccounts.map((account) => (
+                  <AccountCard
+                    key={account.id}
+                    account={account}
+                    flow={flows[account.id]}
+                    onSelect={() => setOpenAccountId(account.id)}
+                  />
+                ))}
+              </div>
+            </SettingsGroup>
+          </div>
+        </>
       ) : null}
 
       <AccountSheet

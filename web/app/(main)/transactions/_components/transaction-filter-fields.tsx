@@ -353,7 +353,9 @@ export function TransactionFilterPanel({
 
   return (
     <section aria-labelledby="transaction-filters-title" className="space-y-2">
-      <div className="flex min-h-6 items-center justify-between gap-3 px-3">
+      {/* The caption row keeps its height whether or not "Đặt lại" shows, so
+          the card under it never moves; the taller button overflows it evenly. */}
+      <div className="flex h-6 items-center justify-between gap-3 px-3">
         <h2 id="transaction-filters-title" className={groupCaptionClassName}>
           Bộ lọc
         </h2>

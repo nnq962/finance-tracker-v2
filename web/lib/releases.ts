@@ -32,6 +32,16 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "5.6.3",
+    date: "2026-10-12",
+    title: "Tài khoản không tính vẫn là đang dùng",
+    changes: [
+      { kind: "improved", text: "Tài khoản không tính vào thống kê nằm trong nhóm Đang dùng, ghi \"Không tính\" và số dư xám, thay vì một nhóm riêng" },
+      { kind: "improved", text: "Trên máy tính, tài khoản ngừng sử dụng hiện thành thẻ cùng cỡ, vẫn thu gọn được" },
+      { kind: "fixed", text: "Bộ lọc ở trang Giao dịch trên máy tính không còn nhảy xuống khi nút Đặt lại hiện ra" },
+    ],
+  },
+  {
     version: "5.6.2",
     date: "2026-10-12",
     title: "LiuLiu xưng hô bình thường, láo thì láo lại",

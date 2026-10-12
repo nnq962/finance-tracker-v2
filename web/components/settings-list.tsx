@@ -66,6 +66,7 @@ function SettingsGroup({
   size,
   collapsible,
   stickyCaption = false,
+  plain = false,
   children,
 }: {
   title?: React.ReactNode
@@ -88,6 +89,12 @@ function SettingsGroup({
    * slightly see-through, across the screen's width on phones.
    */
   stickyCaption?: boolean
+  /**
+   * The children as they are, without the card of rows: for a group of
+   * cards (accounts on desktop) that still takes the caption, the footnote
+   * and the folding.
+   */
+  plain?: boolean
   children: React.ReactNode
 }) {
   const caption = (end: React.ReactNode) =>
@@ -114,13 +121,17 @@ function SettingsGroup({
     ) : null
   const body = (
     <>
-      {/* Rows carry their own padding, so the card only frames them. */}
-      <Card size={size} className="gap-0 py-0">
-        {header}
-        <ul className={listClassName}>
-          {children}
-        </ul>
-      </Card>
+      {plain ? (
+        children
+      ) : (
+        // Rows carry their own padding, so the card only frames them.
+        <Card size={size} className="gap-0 py-0">
+          {header}
+          <ul className={listClassName}>
+            {children}
+          </ul>
+        </Card>
+      )}
       {footer ? (
         <p className={cn("px-4 text-xs text-muted-foreground", stickyCaption && "mt-2")}>
           {footer}
