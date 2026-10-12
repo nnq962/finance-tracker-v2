@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { ArrowLeftRightIcon, ChevronRightIcon, MicIcon, PencilLineIcon, SparklesIcon, WalletIcon } from "lucide-react"
 
+import { AccountLogo } from "@/components/account-logo"
 import { BotIcon } from "@/components/app/bot-icon"
 import { DeltaBadge } from "@/components/app/delta-badge"
 import { IconTile } from "@/components/app/icon-tile"
@@ -66,7 +67,9 @@ function RowIcon({ icon, size = "sm" }: { icon: AnswerIcon; size?: "sm" }) {
     )
   }
   if (icon.kind === "transfer") return <IconTile icon={ArrowLeftRightIcon} tone="transfer" size={size} />
-  if (icon.kind === "account") return <IconTile icon={WalletIcon} tone="neutral" size={size} />
+  if (icon.kind === "account") {
+    return icon.account ? <AccountLogo account={icon.account} size={size} /> : <IconTile icon={WalletIcon} tone="neutral" size={size} />
+  }
   return <IconTile icon={categoryIconRegistry[icon.icon] ?? WalletIcon} tone={icon.color} size={size} />
 }
 
@@ -154,7 +157,9 @@ function AnswerBody({ answer, ask, onNavigate }: { answer: Answer; ask: (text: s
     <AnswerShell
       kicker={answer.kicker}
       figure={
-        answer.figure ? (
+        answer.figureText ? (
+          <p className="text-[34px] leading-tight font-semibold tracking-tight">{answer.figureText}</p>
+        ) : answer.figure ? (
           <div className="flex flex-wrap items-center gap-x-2">
             <Money
               amount={answer.figure.amount}
@@ -253,6 +258,7 @@ export function ReplyView({
   ))
   switch (reply.kind) {
     case "answer":
+    case "usage":
       return <AnswerBody answer={reply.answer} ask={ask} onNavigate={onNavigate} />
     case "record":
       return (

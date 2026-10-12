@@ -7,7 +7,7 @@ import type { Contact } from "@/lib/debts/types"
 
 import type { Compare, Measure, PeriodPreset, QuestionPlan, View } from "./types"
 
-const measures: Measure[] = ["spending", "income", "net", "transactions", "balance", "lent", "borrowed"]
+const measures: Measure[] = ["spending", "income", "net", "transactions", "balance", "lent", "borrowed", "net_worth"]
 const views: View[] = ["total", "by_group", "by_category", "by_account", "top", "list"]
 const presets: PeriodPreset[] = [
   "today",
@@ -40,6 +40,7 @@ export const questionPlanSchema = {
     periodFrom: { type: ["string", "null"] },
     periodTo: { type: ["string", "null"] },
     compare: { type: "string", enum: compares },
+    order: { type: "string", enum: ["most", "least"] },
     groupIds: { type: "array", items: { type: "string" } },
     categoryIds: { type: "array", items: { type: "string" } },
     accountIds: { type: "array", items: { type: "string" } },
@@ -58,6 +59,7 @@ export const questionPlanSchema = {
     "periodFrom",
     "periodTo",
     "compare",
+    "order",
     "groupIds",
     "categoryIds",
     "accountIds",
@@ -78,6 +80,7 @@ type Reply = {
   periodFrom: string | null
   periodTo: string | null
   compare: Compare
+  order: "most" | "least"
   groupIds: string[]
   categoryIds: string[]
   accountIds: string[]
@@ -139,9 +142,10 @@ Hôm nay là ${weekday}, ${today}. Tuần bắt đầu từ thứ hai.
 
 Các trường:
 - answerable: false nếu câu hỏi cần thứ app không có (giá vàng, tỷ giá, lời khuyên đầu tư, số dư tại một ngày trong quá khứ, dự đoán). Khi đó các trường khác để mặc định.
-- measure: spending = tiền đã chi; income = tiền đã nhận; net = thu trừ chi (còn dư bao nhiêu, lời lỗ); transactions = mọi giao dịch, không phân biệt thu chi; balance = số dư hiện tại của tài khoản; lent = người khác đang nợ người dùng (cho vay); borrowed = người dùng đang nợ người khác (đi vay).
+- measure: spending = tiền đã chi; income = tiền đã nhận; net = thu trừ chi (còn dư bao nhiêu, lời lỗ); transactions = mọi giao dịch, không phân biệt thu chi; balance = số dư hiện tại của tài khoản; lent = người khác đang nợ người dùng (cho vay); borrowed = người dùng đang nợ người khác (đi vay); net_worth = tài sản ròng (tổng tài sản, tài sản thực có, "mình có bao nhiêu tiền tất cả"): số dư các tài khoản cộng tiền người khác nợ, trừ tiền mình nợ.
 - view: total = một con số; by_group = chia theo nhóm hạng mục; by_category = chia theo hạng mục; by_account = chia theo tài khoản; top = những khoản lớn nhất; list = liệt kê các giao dịch. Hỏi "tiêu vào đâu", "hạng mục nào nhiều nhất" là by_group (hoặc by_category khi đã chọn một nhóm). Hỏi "khoản nào lớn nhất" là top. Hỏi "những khoản", "các giao dịch", "đã chi gì" là list.
-- periodPreset: today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year; last_days = n ngày gần đây (periodDays = n); month = một tháng (periodMonth, periodYear nếu nói năm, không thì null); year = một năm (periodYear); range = từ ngày đến ngày (periodFrom, periodTo dạng YYYY-MM-DD); all = từ trước tới nay. Không nói thời gian: balance, lent, borrowed dùng all; còn lại dùng this_month.
+- order: most = nhiều nhất, lớn nhất (mặc định); least = ít nhất, nhỏ nhất, "chi gì ít nhất", "khoản nhỏ nhất". Dùng cùng view top (từng khoản) hoặc by_group / by_category / by_account (theo nhóm).
+- periodPreset: today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year; last_days = n ngày gần đây (periodDays = n); month = một tháng (periodMonth, periodYear nếu nói năm, không thì null); year = một năm (periodYear); range = từ ngày đến ngày (periodFrom, periodTo dạng YYYY-MM-DD); all = từ trước tới nay. Không nói thời gian: balance, lent, borrowed, net_worth dùng all; còn lại dùng this_month.
 - compare: previous = so với kỳ trước liền kề (tháng trước, tuần trước); last_year = so với cùng kỳ năm ngoái; none khi không hỏi so sánh. Khi có so sánh, view là total hoặc by_group.
 - groupIds, categoryIds, accountIds, contactIds: chỉ dùng các mã trong danh sách bên dưới, khi người dùng nhắc tới. Một nhóm cả nhóm thì dùng groupIds. Không nhắc thì để [].
 - search: từ cần tìm trong ghi chú khi người dùng nhắc một món không có hạng mục riêng ("phở", "trà sữa"); không thì "".
@@ -168,6 +172,7 @@ const base: Reply = {
   periodFrom: null,
   periodTo: null,
   compare: "none",
+  order: "most",
   groupIds: [],
   categoryIds: [],
   accountIds: [],
@@ -185,6 +190,9 @@ const examples: Example[] = [
   ["các giao dịch hôm qua", { measure: "transactions", view: "list", periodPreset: "yesterday" }],
   ["tài khoản nào còn nhiều tiền nhất", { measure: "balance", view: "by_account", periodPreset: "all" }],
   ["mình đang nợ ai", { measure: "borrowed", view: "list", periodPreset: "all" }],
+  ["tài sản ròng của tôi là bao nhiêu", { measure: "net_worth", periodPreset: "all" }],
+  ["tháng này chi gì ít nhất", { view: "by_group", order: "least" }],
+  ["khoản chi nhỏ nhất tuần này", { view: "top", order: "least", periodPreset: "this_week" }],
   ["giá vàng hôm nay", { answerable: false }],
 ]
 
@@ -205,6 +213,7 @@ function planToReply(plan: QuestionPlan, keys: Keys): Reply {
     periodFrom: plan.period.from,
     periodTo: plan.period.to,
     compare: plan.compare,
+    order: plan.order,
     groupIds: known(plan.groupIds),
     categoryIds: known(plan.categoryIds),
     accountIds: known(plan.accountIds),
@@ -261,7 +270,7 @@ export function readQuestionReply(value: unknown, keys: Keys): QuestionPlan | nu
     measure,
     view: pick(reply.view, views, "total"),
     period: {
-      preset: pick(reply.periodPreset, presets, measure === "balance" || measure === "lent" || measure === "borrowed" ? "all" : "this_month"),
+      preset: pick(reply.periodPreset, presets, ["balance", "lent", "borrowed", "net_worth"].includes(measure) ? "all" : "this_month"),
       days: whole(reply.periodDays, 1, 3660),
       month: whole(reply.periodMonth, 1, 12),
       year: whole(reply.periodYear, 2000, 2100),
@@ -269,6 +278,7 @@ export function readQuestionReply(value: unknown, keys: Keys): QuestionPlan | nu
       to: isDateKey(reply.periodTo) ? reply.periodTo : null,
     },
     compare: pick(reply.compare, compares, "none"),
+    order: reply.order === "least" ? "least" : "most",
     groupIds: ids(reply.groupIds, "g"),
     categoryIds: ids(reply.categoryIds, "c"),
     accountIds: ids(reply.accountIds, "a"),

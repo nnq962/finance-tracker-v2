@@ -7,14 +7,14 @@ import { getCategoryGroups } from "@/lib/categories/repository"
 import { getContacts, getDebts } from "@/lib/debts/repository"
 import { toDateKey } from "@/lib/format-date"
 import { plans } from "@/lib/plans/plans"
-import { releaseAiRequest, reserveAiRequest } from "@/lib/plans/repository"
+import { getPlanState, releaseAiRequest, reserveAiRequest } from "@/lib/plans/repository"
 import { getAccountFlows, getTransactionsInRange } from "@/lib/transactions/repository"
 
 import { answerQuestion, keepComparedPeriod } from "./answer"
 import { ASSISTANT_NAME, chatReply, takeChat } from "./chat"
 import { classifyRequest } from "./intent"
 import { buildQuestionPrompt, questionPlanSchema, readQuestionReply } from "./question-plan"
-import type { AssistantContext, AssistantReply, QuestionPlan } from "./types"
+import type { Answer, AssistantContext, AssistantReply, QuestionPlan } from "./types"
 
 const MAX_LENGTH = 300
 
@@ -45,6 +45,31 @@ function readContext(value: unknown): AssistantContext | undefined {
   return { question: question.slice(0, MAX_LENGTH), plan: candidate as QuestionPlan }
 }
 
+/** The user's AI requests this month, from the plan; asking costs none. */
+async function usageAnswer(userId: string): Promise<Answer> {
+  const state = await getPlanState(userId)
+  const monthLeft = Math.max(0, state.aiLimit - state.aiUsed)
+  const left = monthLeft + state.aiCredits
+  const month = Number(toDateKey(new Date()).slice(5, 7))
+  const nextMonth = (month % 12) + 1
+  const isPro = state.plan === "pro"
+  return {
+    kicker: `Lượt AI · gói ${plans[state.plan].label}`,
+    figureText: `Còn ${left} lượt`,
+    line: [
+      `Tháng ${month} đã dùng ${state.aiUsed}/${state.aiLimit} lượt`,
+      state.aiCredits ? `còn ${state.aiCredits} lượt thưởng từ nhiệm vụ` : null,
+      `lượt tháng mới có từ 1/${nextMonth}`,
+      isPro ? null : `gói Pro có ${plans.pro.aiMonthlyLimit} lượt mỗi tháng`,
+    ]
+      .filter(Boolean)
+      .join(", ") + ".",
+    blocks: [],
+    followUps: [],
+    link: isPro ? { label: "Xem lượt AI", href: "/settings" } : { label: "Nâng cấp Pro", href: "/settings?screen=plan" },
+  }
+}
+
 /**
  * The assistant's one way in: sorts the request with the local model (free),
  * then answers a question about the user's money. A question counts against
@@ -66,6 +91,7 @@ export async function askAssistantAction(request: string, previous?: unknown): P
   }
   if (intent === "record") return { kind: "record", text }
   if (intent === "action") return { kind: "action" }
+  if (intent === "usage") return { kind: "usage", answer: await usageAnswer(user.uid) }
   if (intent === "chat") {
     if (!takeChat(user.uid)) {
       return { kind: "chat", limited: true, text: `Hôm nay mình với bạn nói chuyện nhiều rồi đó 😄 Mai ${ASSISTANT_NAME} lại tán gẫu tiếp nhé, giờ mình quay lại chuyện tiền nong thôi.` }

@@ -537,6 +537,7 @@ const sampleAnswer: React.ComponentProps<typeof ReplyView>["reply"] = {
     view: "total",
     period: { preset: "this_month", days: null, month: null, year: null, from: null, to: null },
     compare: "previous",
+    order: "most",
     groupIds: [],
     categoryIds: [],
     accountIds: [],

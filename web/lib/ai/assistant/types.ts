@@ -1,10 +1,15 @@
+import type { Account } from "@/lib/accounts/types"
 import type { CategoryColorName } from "@/lib/categories/category-colors"
 import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
 
 /* ------------------------------------------------ what a question asks for */
 
-/** What is measured: money out, money in, both, any movement, what accounts hold, what is owed. */
-export type Measure = "spending" | "income" | "net" | "transactions" | "balance" | "lent" | "borrowed"
+/**
+ * What is measured: money out, money in, both, any movement, what accounts
+ * hold, what is owed either way, and net worth (accounts, plus what others
+ * owe, less what the user owes).
+ */
+export type Measure = "spending" | "income" | "net" | "transactions" | "balance" | "lent" | "borrowed" | "net_worth"
 
 /** How it is shown: one figure, split up, the largest first, or the movements themselves. */
 export type View = "total" | "by_group" | "by_category" | "by_account" | "top" | "list"
@@ -47,6 +52,8 @@ export type QuestionPlan = {
     to: string | null
   }
   compare: Compare
+  /** Largest first, or smallest first ("chi gì ít nhất", "khoản nhỏ nhất"). */
+  order: "most" | "least"
   groupIds: string[]
   categoryIds: string[]
   accountIds: string[]
@@ -62,8 +69,12 @@ export type QuestionPlan = {
 export type AnswerIcon =
   | { kind: "category"; icon: CategoryIconName; color: CategoryColorName }
   | { kind: "initials"; text: string }
-  | { kind: "account" }
+  /** An account's logo, as the app shows it; a wallet glyph without one. */
+  | { kind: "account"; account?: AccountMark }
   | { kind: "transfer" }
+
+/** What an account's logo needs. */
+export type AccountMark = Pick<Account, "name" | "type" | "institutionName" | "logoUrl" | "logoFallback">
 
 export type AnswerRow = {
   icon: AnswerIcon
@@ -88,6 +99,8 @@ export type Answer = {
   /** What was worked out, in a few words: "Chi tiêu · tháng 10 (1–11/10)". */
   kicker: string
   figure?: { amount: number; tone: "income" | "expense" | "plain" }
+  /** A figure that is not money ("Còn 12 lượt"), in its place. */
+  figureText?: string
   /** Change against the period compared with; up is good for income. */
   delta?: { current: number; previous: number; goodWhen: "up" | "down"; comparedTo: string }
   /** The answer in a sentence, under the figure. */
@@ -114,6 +127,8 @@ export type AssistantReply =
   | { kind: "action" }
   /** A question about what the app does not hold. */
   | { kind: "other" }
+  /** About the user's own AI requests, answered from the plan without spending one. */
+  | { kind: "usage"; answer: Answer }
   /** LiuLiu's reply to chat; `limited` once the day's chats are used up. */
   | { kind: "chat"; text: string; limited?: boolean }
   | { kind: "quota"; quota: AssistantQuota; proLimit: number; isPro: boolean }

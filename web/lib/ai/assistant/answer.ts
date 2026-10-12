@@ -10,7 +10,7 @@ import { formatDayLabel, formatShortDate, formatTime, toDateKey } from "@/lib/fo
 import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
 import type { AccountFlow, Transaction } from "@/lib/transactions/types"
 
-import type { Answer, AnswerBlock, AnswerIcon, AnswerRow, QuestionPlan } from "./types"
+import type { AccountMark, Answer, AnswerBlock, AnswerIcon, AnswerRow, QuestionPlan } from "./types"
 
 /** What answering reads, loaded by the caller for the ranges it is asked for. */
 export type AnswerSources = {
@@ -176,6 +176,17 @@ export function keepComparedPeriod(plan: QuestionPlan, previous: QuestionPlan | 
 
 const money = (amount: number) => formatCurrency(amount)
 
+/** An account's logo, as the app shows it beside the account. */
+const markOf = (account: Account): AccountMark => ({
+  name: account.name,
+  type: account.type,
+  logoFallback: account.logoFallback,
+  ...(account.institutionName ? { institutionName: account.institutionName } : {}),
+  ...(account.logoUrl ? { logoUrl: account.logoUrl } : {}),
+})
+
+const accountIcon = (account?: Account): AnswerIcon => (account ? { kind: "account", account: markOf(account) } : { kind: "account" })
+
 /** Lower case without marks, so "pho" finds "Phở". */
 const fold = (text: string) =>
   text
@@ -209,7 +220,7 @@ function lookups(sources: AnswerSources): Lookup {
 function transactionIcon(transaction: Transaction, look: Lookup): AnswerIcon {
   if (transaction.kind === "transfer") return { kind: "transfer" }
   const category = look.category(transaction.categoryId)
-  return category ? { kind: "category", icon: category.icon, color: category.color } : { kind: "account" }
+  return category ? { kind: "category", icon: category.icon, color: category.color } : accountIcon(look.account(transaction.accountId))
 }
 
 function transactionRow(transaction: Transaction, look: Lookup, sub: string): AnswerRow {
@@ -228,13 +239,23 @@ const accountOf = (transaction: Transaction) =>
     ? `${transaction.fromAccountName ?? "Tài khoản"} → ${transaction.toAccountName ?? "Tài khoản"}`
     : (transaction.accountName ?? "")
 
-/** Shares of a whole as bars, the largest few and the rest together. */
-function barsBlock(entries: { icon: AnswerIcon; name: string; amount: number }[], most: number): AnswerBlock | null {
-  const sorted = entries.filter((entry) => entry.amount > 0).sort((left, right) => right.amount - left.amount)
+/**
+ * Shares of a whole as bars: the largest few and the rest together, or, for
+ * "the least", the smallest few alone, smallest first. Bars are against the
+ * whole either way.
+ */
+function barsBlock(
+  entries: { icon: AnswerIcon; name: string; amount: number }[],
+  most: number,
+  order: "most" | "least" = "most",
+): AnswerBlock | null {
+  const sorted = entries
+    .filter((entry) => entry.amount > 0)
+    .sort((left, right) => (order === "least" ? left.amount - right.amount : right.amount - left.amount))
   if (sorted.length < 2) return null
   const total = sorted.reduce((sum, entry) => sum + entry.amount, 0)
-  const shown = sorted.length > most ? sorted.slice(0, most - 1) : sorted
-  const rest = sorted.slice(shown.length)
+  const shown = sorted.length > most ? sorted.slice(0, order === "least" ? most : most - 1) : sorted
+  const rest = order === "least" ? [] : sorted.slice(shown.length)
   const rows = [
     ...shown,
     ...(rest.length
@@ -250,6 +271,7 @@ const measureNames = { spending: "Chi tiêu", income: "Thu nhập", net: "Thu ch
 
 /** Works out the answer to a plan; every figure comes from the user's records here. */
 export async function answerQuestion(plan: QuestionPlan, sources: AnswerSources): Promise<Answer> {
+  if (plan.measure === "net_worth") return answerNetWorth(sources)
   if (plan.measure === "balance") return answerBalance(plan, sources)
   if (plan.measure === "lent" || plan.measure === "borrowed") return answerDebts(plan, sources)
   return answerFlow(plan, sources)
@@ -337,7 +359,7 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
           const category = look.category(row.categoryId)
           const created =
             by === "account"
-              ? { icon: { kind: "account" } as AnswerIcon, name: row.accountName ?? "Tài khoản", amount: 0 }
+              ? { icon: accountIcon(look.account(row.accountId)), name: row.accountName ?? "Tài khoản", amount: 0 }
               : by === "group"
                 ? {
                     icon: group ? ({ kind: "category", icon: group.iconName, color: group.colorName } as AnswerIcon) : ({ kind: "account" } as AnswerIcon),
@@ -418,10 +440,14 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
   if (plan.view === "top") {
     // "The largest" alone still shows the few after it.
     const limit = Math.max(plan.limit ?? 5, 3)
-    const sorted = [...current].sort((left, right) => Math.abs(right.amount) - Math.abs(left.amount)).slice(0, limit)
+    const least = plan.order === "least"
+    const sorted = current
+      .filter((row) => !row.excluded)
+      .sort((left, right) => (least ? -1 : 1) * (Math.abs(right.amount) - Math.abs(left.amount)))
+      .slice(0, limit)
     const first = sorted[0]
     return {
-      kicker: `${measure === "income" ? "Khoản thu" : measure === "spending" ? "Khoản chi" : "Giao dịch"} lớn nhất · ${subject === measureNames[measure] ? "" : `${subject} · `}${periodTitle(range, today)}`,
+      kicker: `${measure === "income" ? "Khoản thu" : measure === "spending" ? "Khoản chi" : "Giao dịch"} ${least ? "nhỏ" : "lớn"} nhất · ${subject === measureNames[measure] ? "" : `${subject} · `}${periodTitle(range, today)}`,
       figure: { amount: Math.abs(first.amount), tone },
       line: `${first.note?.trim() || first.title}, ${formatShortDate(toDateKey(first.occurredAt))}`,
       blocks: [
@@ -440,7 +466,7 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
           ],
         },
       ],
-      followUps: [measure === "income" ? "Thu từ đâu nhiều nhất?" : "Tiêu vào đâu nhiều nhất?"],
+      followUps: [measure === "income" ? "Thu từ đâu nhiều nhất?" : least ? "Tiêu vào đâu ít nhất?" : "Tiêu vào đâu nhiều nhất?"],
       link,
     }
   }
@@ -482,6 +508,21 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
         { label: "Chi", amount: spending, share: Math.round((spending / highest) * 100) },
       ],
     })
+  } else if (plan.order === "least" && plan.view !== "total") {
+    // "Chi gì ít nhất": the smallest part is the answer, the few after it below.
+    const parts = splitBy(current, split).filter((part) => part.amount > 0).sort((left, right) => left.amount - right.amount)
+    const bars = barsBlock(parts, 6, "least")
+    const lowest = parts[0]
+    if (lowest) {
+      return {
+        kicker: `${measure === "income" ? "Thu" : "Chi"} ít nhất · ${subject === measureNames[measure] ? "" : `${subject} · `}${periodTitle(range, today)}`,
+        figure: { amount: lowest.amount, tone },
+        line: `${lowest.name}, trên tổng ${money(total)}`,
+        blocks: bars ? [bars] : [],
+        followUps: [measure === "income" ? "Thu từ đâu nhiều nhất?" : "Tiêu vào đâu nhiều nhất?", "Khoản nào nhỏ nhất?"],
+        link,
+      }
+    }
   } else {
     const bars = barsBlock(splitBy(current, split), plan.view === "total" ? 4 : 6)
     if (bars) blocks.push(bars)
@@ -502,6 +543,33 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
       measure === "net" ? null : "Xem các khoản",
     ].filter((text): text is string => Boolean(text)),
     link,
+  }
+}
+
+/** Net worth as the overview counts it: every account, plus what others owe, less what the user owes. */
+async function answerNetWorth(sources: AnswerSources): Promise<Answer> {
+  const { today } = sources
+  const cash = sources.accounts.reduce((sum, account) => sum + account.balance, 0)
+  let receivable = 0
+  let payable = 0
+  for (const debt of await sources.debts()) {
+    const remaining = getPaymentMetrics(debt, today).remainingAmount
+    if (debt.direction === "lent") receivable += remaining
+    else payable += remaining
+  }
+  const total = cash + receivable - payable
+  const rows: AnswerRow[] = [
+    { icon: { kind: "account" }, name: "Tiền trong tài khoản", sub: `${sources.accounts.filter((account) => account.status === "active").length} tài khoản`, amount: cash, amountTone: cash < 0 ? "expense" : "plain" },
+    ...(receivable ? [{ icon: { kind: "initials", text: "+" } as AnswerIcon, name: "Người khác nợ bạn", amount: receivable, amountTone: "income" as const }] : []),
+    ...(payable ? [{ icon: { kind: "initials", text: "−" } as AnswerIcon, name: "Bạn đang nợ", amount: -payable, amountTone: "expense" as const }] : []),
+  ]
+  return {
+    kicker: "Tài sản ròng",
+    figure: { amount: total, tone: total < 0 ? "expense" : "plain" },
+    line: "Số dư các tài khoản, cộng tiền người khác nợ, trừ tiền bạn đang nợ",
+    blocks: [{ type: "rows", groups: [{ rows }] }],
+    followUps: ["Số dư các tài khoản", "Ai đang nợ tôi?"],
+    link: { label: "Mở Tổng quan", href: "/overview" },
   }
 }
 
@@ -537,7 +605,7 @@ async function answerBalance(plan: QuestionPlan, sources: AnswerSources): Promis
               .sort((left, right) => right.balance - left.balance)
               .slice(0, 8)
               .map((account) => ({
-                icon: { kind: "account" },
+                icon: accountIcon(account),
                 name: account.name,
                 amount: account.balance,
                 amountTone: account.balance < 0 ? "expense" : "plain",

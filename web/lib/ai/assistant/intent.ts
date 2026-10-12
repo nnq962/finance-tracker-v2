@@ -7,12 +7,13 @@ import { localAiJson, type ChatMessage } from "@/lib/ai/llm"
  * - question: asks about the user's own money as kept in the app
  * - record: tells of an expense, an income or a transfer to write down
  * - action: wants something else done in the app (a loan, an edit, a delete…)
+ * - usage: about the user's own AI requests and plan, answered from the plan
  * - chat: anything else (greetings, who it is, jokes, small talk, things
  *   outside the app's data), which LiuLiu answers in a line or two
  */
-export type Intent = "question" | "record" | "action" | "chat"
+export type Intent = "question" | "record" | "action" | "usage" | "chat"
 
-const intents: Intent[] = ["question", "record", "action", "chat"]
+const intents: Intent[] = ["question", "record", "action", "usage", "chat"]
 
 const schema = {
   type: "object",
@@ -25,6 +26,7 @@ const system = `Bạn phân loại yêu cầu người dùng gửi cho trợ lý
 - question: hỏi hoặc muốn xem tiền của chính người dùng đã ghi trong app: chi tiêu, thu nhập, số dư tài khoản, các giao dịch, khoản vay và cho vay, so sánh, nhiều nhất, liệt kê, chia theo hạng mục hay tài khoản. Câu hỏi nối tiếp câu trước ("còn tháng trước?", "thế còn ăn uống?") cũng là question.
 - record: kể một khoản đã chi, đã nhận hoặc đã chuyển để ghi lại, thường có số tiền ("ăn phở 35k", "nhận lương 15 triệu", "chuyển 2 triệu sang momo").
 - action: muốn app làm việc khác: ghi khoản cho vay hay đi vay, trả nợ, sửa hoặc xoá giao dịch, tạo tài khoản, hạng mục, ngân sách, nhắc nhở.
+- usage: hỏi về lượt AI, lượt hỏi trợ lý, hạn mức sử dụng AI, gói Free hay Pro của chính người dùng ("còn bao nhiêu lượt AI", "gói của tôi là gì").
 - chat: mọi câu còn lại: chào hỏi, cảm ơn, hỏi trợ lý là ai, trêu đùa, nói chuyện phiếm, tâm sự, xin mẹo tiết kiệm chung, hỏi thứ ngoài dữ liệu của người dùng (giá vàng, tỷ giá, thời tiết, kiến thức chung), hoặc câu không rõ nghĩa.`
 
 const examples: [string, Intent][] = [
@@ -38,6 +40,8 @@ const examples: [string, Intent][] = [
   ["nhận lương mười lăm triệu vào vietcombank", "record"],
   ["cho nam mượn hai triệu", "action"],
   ["xoá giao dịch cà phê vừa rồi", "action"],
+  ["tôi còn bao nhiêu lượt ai", "usage"],
+  ["tài sản ròng của tôi", "question"],
   ["giá vàng hôm nay bao nhiêu", "chat"],
   ["xin chào", "chat"],
   ["bạn là ai thế", "chat"],
