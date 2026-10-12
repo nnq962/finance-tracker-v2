@@ -199,11 +199,11 @@ export function TransactionFilterSheet({
             <SettingsRow
               icon={EyeOffIcon}
               tone="neutral"
-              title="Chỉ khoản không tính"
-              description="Không tính vào thống kê"
+              title="Chỉ khoản ngoài báo cáo"
+              description="Không tính vào báo cáo"
               action={
                 <Switch
-                  aria-label="Chỉ khoản không tính vào thống kê"
+                  aria-label="Chỉ khoản không tính vào báo cáo"
                   checked={Boolean(searchFilters.excludedOnly)}
                   onCheckedChange={(excludedOnly) => change({ excludedOnly })}
                 />

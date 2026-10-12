@@ -39,16 +39,16 @@ export function ExcludedRow({
     <SettingsRow
       icon={EyeOffIcon}
       tone="neutral"
-      title="Không tính vào thống kê"
+      title="Không tính vào báo cáo"
       description={
         byAccount
-          ? `${account} không tính vào thống kê`
+          ? `${account} không tính vào báo cáo`
           : `${account} vẫn ${kind === "income" ? "được cộng" : "bị trừ"} tiền như thường`
       }
       action={
         <>
           <Switch
-            aria-label="Không tính vào thống kê"
+            aria-label="Không tính vào báo cáo"
             checked={byAccount || checked}
             disabled={byAccount}
             onCheckedChange={onCheckedChange}

@@ -407,7 +407,7 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
   const subject =
     (names.length ? names.join(", ") : search ? `“${plan.search}”` : measureNames[measure]) +
     amountRange +
-    (plan.onlyExcluded ? " không tính vào thống kê" : "")
+    (plan.onlyExcluded ? " ngoài báo cáo" : "")
   const via = accountNames.length
     ? measure === "spending"
       ? ` bằng ${accountNames.join(", ")}`
@@ -717,7 +717,7 @@ async function answerNetWorth(sources: AnswerSources): Promise<Answer> {
   return {
     kicker: "Tài sản ròng",
     figure: { amount: total, tone: total < 0 ? "expense" : "plain" },
-    line: `Số dư các tài khoản, cộng tiền người khác nợ, trừ tiền bạn đang nợ${leftOut.length ? `; chưa tính ${leftOut.map((account) => account.name).join(", ")}` : ""}`,
+    line: `Số dư các tài khoản, cộng tiền người khác nợ, trừ tiền bạn đang nợ${leftOut.length ? `; ngoài báo cáo: ${leftOut.map((account) => account.name).join(", ")}` : ""}`,
     blocks: [{ type: "rows", groups: [{ rows }] }],
     followUps: ["Số dư các tài khoản", "Ai đang nợ tôi?"],
     link: { label: "Mở Tổng quan", href: "/overview" },
@@ -751,7 +751,7 @@ async function answerBalance(plan: QuestionPlan, sources: AnswerSources): Promis
   return {
     kicker: `Số dư · ${chosen.length} tài khoản`,
     figure: { amount: total, tone: total < 0 ? "expense" : "plain" },
-    line: leftOut.length ? `Chưa tính ${leftOut.map((account) => account.name).join(", ")}` : undefined,
+    line: leftOut.length ? `Ngoài báo cáo: ${leftOut.map((account) => account.name).join(", ")}` : undefined,
     blocks: [
       {
         type: "rows",
@@ -763,7 +763,7 @@ async function answerBalance(plan: QuestionPlan, sources: AnswerSources): Promis
               .map((account) => ({
                 icon: accountIcon(account),
                 name: account.name,
-                ...(account.excluded ? { sub: "Không tính vào thống kê" } : {}),
+                ...(account.excluded ? { sub: "Ngoài báo cáo" } : {}),
                 amount: account.balance,
                 amountTone: account.balance < 0 ? "expense" : "plain",
               })),
@@ -934,7 +934,7 @@ async function answerAccountInfo(plan: QuestionPlan, sources: AnswerSources): Pr
         `Mở từ ${opened(account)}`,
         `số dư ban đầu ${money(account.openingBalance)}`,
         account.status === "archived" ? "đã lưu trữ" : null,
-        account.excluded ? "không tính vào thống kê" : null,
+        account.excluded ? "không tính vào báo cáo" : null,
         account.note ? `ghi chú: ${account.note}` : null,
       ]
         .filter(Boolean)
@@ -958,7 +958,7 @@ async function answerAccountInfo(plan: QuestionPlan, sources: AnswerSources): Pr
             rows: chosen.slice(0, 10).map((account) => ({
               icon: accountIcon(account),
               name: account.name,
-              sub: `${account.status === "archived" ? "Đã lưu trữ · " : ""}${account.excluded ? "Không tính · " : ""}Mở từ ${opened(account)}`,
+              sub: `${account.status === "archived" ? "Đã lưu trữ · " : ""}${account.excluded ? "Ngoài báo cáo · " : ""}Mở từ ${opened(account)}`,
               subTone: undefined,
               amount: account.balance,
               amountTone: account.balance < 0 ? ("expense" as const) : ("plain" as const),

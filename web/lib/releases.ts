@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "5.6.4",
+    date: "2026-10-12",
+    title: "Không tính vào báo cáo",
+    changes: [
+      { kind: "improved", text: "Đổi cách gọi: công tắc \"Không tính vào báo cáo\" như MISA, nhãn ngắn \"Ngoài báo cáo\", bộ lọc \"Chỉ khoản ngoài báo cáo\", thẻ tổng \"1 tài khoản ngoài báo cáo\"" },
+    ],
+  },
+  {
     version: "5.6.3",
     date: "2026-10-12",
     title: "Tài khoản không tính vẫn là đang dùng",

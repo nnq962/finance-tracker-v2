@@ -339,11 +339,11 @@ export function AccountForm({
           <SettingsRow
             icon={EyeOffIcon}
             tone="neutral"
-            title="Không tính vào thống kê"
+            title="Không tính vào báo cáo"
             description="Số dư và thu chi không cộng vào tổng"
             action={
               <>
-                <Switch aria-label="Không tính vào thống kê" checked={excluded} onCheckedChange={setExcluded} />
+                <Switch aria-label="Không tính vào báo cáo" checked={excluded} onCheckedChange={setExcluded} />
                 {excluded ? <input type="hidden" name="excluded" value="on" /> : null}
               </>
             }

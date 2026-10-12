@@ -164,7 +164,7 @@ newCategoryIcon: khi gợi ý một danh mục mới (newCategoryName), chọn i
 Icon:
 ${categoryIconOptions.map((option) => `${option.name}: ${option.label}`).join("\n")}
 
-fee: phí của một lần chuyển tiền khi được nói ("phí 3k"), ngoài ra null. excluded: true khi người nói bảo khoản đó không tính vào thống kê ("không tính", "chi hộ", "trả giùm"), ngoài ra false.
+fee: phí của một lần chuyển tiền khi được nói ("phí 3k"), ngoài ra null. excluded: true khi người nói bảo khoản đó không tính vào báo cáo ("không tính", "ngoài báo cáo", "không thống kê", "chi hộ", "trả giùm"), ngoài ra false.
 
 Hôm nay là ${weekday}, ${today}.
 

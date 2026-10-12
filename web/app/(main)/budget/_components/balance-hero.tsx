@@ -41,7 +41,7 @@ export function BalanceHero({ summary, accounts }: { summary: BalanceSummary; ac
             <Money amount={summary.totalBalance} size="xl" tone={summary.totalBalance < 0 ? "expense" : "default"} />
             {left.length > 0 ? (
               <p className="text-xs text-inverse-foreground/60">
-                Chưa tính {left.length} tài khoản · {formatCompactCurrency(leftTotal, 1)}
+                {left.length} tài khoản ngoài báo cáo · {formatCompactCurrency(leftTotal, 1)}
               </p>
             ) : null}
           </div>

@@ -77,7 +77,7 @@ export function TransactionItem({
         title={
           <>
             <MarkedTitle title={transaction.title} query={highlight} />
-            {leftOut ? <span className="sr-only">, không tính vào thống kê</span> : null}
+            {leftOut ? <span className="sr-only">, không tính vào báo cáo</span> : null}
           </>
         }
         // The account; the icon already shows the category's group. Where the

@@ -31,7 +31,7 @@ export function AccountCard({ account, flow, onSelect }: { account: Account; flo
           </span>
           <span className="flex flex-col">
             {/* Left out of the figures: said by the label, the balance grey, as in the list. */}
-            <CardLabel as="span">{account.excluded ? "Số dư · Không tính" : "Số dư"}</CardLabel>
+            <CardLabel as="span">{account.excluded ? "Số dư · Ngoài báo cáo" : "Số dư"}</CardLabel>
             <Money
               amount={account.balance}
               size="lg"

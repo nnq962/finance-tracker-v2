@@ -50,7 +50,7 @@ export function getSheetFilterChips(
   if (searchFilters.excludedOnly) {
     chips.push({
       key: "excluded",
-      label: "Không tính vào thống kê",
+      label: "Ngoài báo cáo",
       remove: () => ({ ...searchFilters, excludedOnly: false }),
     })
   }

@@ -207,7 +207,7 @@ Các trường:
 - groupIds, categoryIds, accountIds, contactIds: chỉ dùng các mã trong danh sách bên dưới, khi người dùng nhắc tới. Một nhóm cả nhóm thì dùng groupIds. Không nhắc thì để [].
 - search: từ cần tìm trong ghi chú khi người dùng nhắc một món không có hạng mục riêng ("phở", "trà sữa"); không thì "".
 - minAmount, maxAmount: số tiền mỗi khoản, bằng đồng, khi người dùng nói ("trên 500 nghìn" thì minAmount = 500000; "dưới 100k" thì maxAmount = 100000); không thì null.
-- onlyExcluded: true khi hỏi những khoản "không tính vào thống kê"; không thì false.
+- onlyExcluded: true khi hỏi những khoản "không tính vào báo cáo", "ngoài báo cáo" (hay "không tính vào thống kê"); không thì false.
 - debtStatus: settled chỉ khi hỏi danh sách các khoản nợ đã trả xong, đã tất toán (khi đó measure là debts, hoặc lent / borrowed nếu nói rõ chiều); hỏi một người "đã trả được bao nhiêu", "còn nợ bao nhiêu" là open. Không thì open.
 - limit: số dòng khi người dùng nói rõ ("5 khoản lớn nhất"); không thì null.
 

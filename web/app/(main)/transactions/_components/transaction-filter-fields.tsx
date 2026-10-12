@@ -317,7 +317,7 @@ export function TransactionFilterFields({
       {filter === "all" || filter === "expense" || filter === "income" ? (
         <Field orientation="horizontal">
           <FieldContent>
-            <FieldLabel htmlFor={`${idPrefix}-excluded`}>Chỉ khoản không tính</FieldLabel>
+            <FieldLabel htmlFor={`${idPrefix}-excluded`}>Chỉ khoản ngoài báo cáo</FieldLabel>
           </FieldContent>
           <Switch
             id={`${idPrefix}-excluded`}

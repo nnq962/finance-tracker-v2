@@ -41,8 +41,8 @@ function AccountRow({ account, onSelect }: { account: Account; onSelect: () => v
     <SettingsRow
       media={<AccountLogo account={account} />}
       title={account.name}
-      // Still used, only not counted: said first, so a long kind cannot cut it off; its balance grey.
-      description={[account.excluded ? "Không tính" : null, accountDescription(account)].filter(Boolean).join(" · ") || undefined}
+      // Still used, only not counted ("Ngoài báo cáo"): said first, so a long kind cannot cut it off; its balance grey.
+      description={[account.excluded ? "Ngoài báo cáo" : null, accountDescription(account)].filter(Boolean).join(" · ") || undefined}
       action={
         <Money
           amount={account.balance}

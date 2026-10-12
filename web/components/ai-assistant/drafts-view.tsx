@@ -255,7 +255,7 @@ export function DraftsView({
             : accountName(draft.accountId)
           const when = `${draft.date === today ? "" : `${formatShortDate(draft.date)} · `}${draft.time}`
           const fee = isTransfer && draft.fee ? `phí ${formatCompactCurrency(draft.fee)}` : null
-          const sub = problem ?? [where, fee, when, draft.note, draft.excluded ? "Không tính" : null].filter(Boolean).join(" · ")
+          const sub = problem ?? [where, fee, when, draft.note, draft.excluded ? "Ngoài báo cáo" : null].filter(Boolean).join(" · ")
           // The categories it could go under instead, one tap each: the new
           // one, the suggested group's own, then the form for any other.
           const offer = !saved && !isTransfer && draft.suggestedCategory

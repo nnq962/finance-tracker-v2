@@ -43,6 +43,7 @@ const examples: [string, Intent][] = [
   ["tôi còn bao nhiêu lượt ai", "usage"],
   ["tài sản ròng của tôi", "question"],
   ["những khoản không tính vào thống kê", "question"],
+  ["các khoản ngoài báo cáo tháng này", "question"],
   ["tài khoản vietcombank mở từ khi nào", "question"],
   ["còn nhiệm vụ nào để nhận lượt", "usage"],
   ["giá vàng hôm nay bao nhiêu", "chat"],
