@@ -134,6 +134,12 @@ export interface MissionRewards {
   userId: string;
 }
 
+export interface NoticeReads {
+  key: string;
+  readAt: Generated<Timestamp>;
+  userId: string;
+}
+
 export interface NotificationBrowsers {
   deviceId: string | null;
   id: string;
@@ -253,6 +259,7 @@ export interface DB {
   debtPayments: DebtPayments;
   debts: Debts;
   missionRewards: MissionRewards;
+  noticeReads: NoticeReads;
   notificationBrowsers: NotificationBrowsers;
   notificationLogDevices: NotificationLogDevices;
   notificationLogs: NotificationLogs;

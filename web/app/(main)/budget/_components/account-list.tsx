@@ -31,6 +31,8 @@ type AccountListProps = {
   /** The month `flows` covers, e.g. "Tháng 10". */
   monthLabel: string
   categoryGroups: CategoryGroup[]
+  /** An account whose sheet opens straight away (a notice about it). */
+  initialOpenId?: string
 }
 
 function AccountRow({ account, onSelect }: { account: Account; onSelect: () => void }) {
@@ -56,8 +58,8 @@ function AccountRow({ account, onSelect }: { account: Account; onSelect: () => v
   )
 }
 
-export function AccountList({ accounts, recentTransactions, flows, monthLabel, categoryGroups }: AccountListProps) {
-  const [openAccountId, setOpenAccountId] = React.useState<string | null>(null)
+export function AccountList({ accounts, recentTransactions, flows, monthLabel, categoryGroups, initialOpenId }: AccountListProps) {
+  const [openAccountId, setOpenAccountId] = React.useState<string | null>(initialOpenId ?? null)
   // Every account in use in one list, largest balance first, those left out
   // of the figures among them (still used, only not counted), marked so.
   const activeAccounts = accounts

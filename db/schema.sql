@@ -268,6 +268,18 @@ CREATE TABLE public.mission_rewards (
 
 
 --
+-- Name: notice_reads; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.notice_reads (
+    user_id text NOT NULL,
+    key text NOT NULL,
+    read_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT notice_reads_key_check CHECK (((char_length(key) >= 1) AND (char_length(key) <= 200)))
+);
+
+
+--
 -- Name: notification_browsers; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -642,6 +654,14 @@ ALTER TABLE ONLY public.debts
 
 ALTER TABLE ONLY public.mission_rewards
     ADD CONSTRAINT mission_rewards_pkey PRIMARY KEY (user_id, mission);
+
+
+--
+-- Name: notice_reads notice_reads_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notice_reads
+    ADD CONSTRAINT notice_reads_pkey PRIMARY KEY (user_id, key);
 
 
 --
@@ -1063,6 +1083,14 @@ ALTER TABLE ONLY public.mission_rewards
 
 
 --
+-- Name: notice_reads notice_reads_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notice_reads
+    ADD CONSTRAINT notice_reads_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: notification_browsers notification_browsers_device_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1227,4 +1255,5 @@ INSERT INTO dbmate.schema_migrations (version) VALUES
     ('20261004000002'),
     ('20261011000001'),
     ('20261012000001'),
-    ('20261012000002');
+    ('20261012000002'),
+    ('20261012000003');

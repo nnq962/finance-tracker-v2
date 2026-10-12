@@ -32,6 +32,16 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "5.7.0",
+    date: "2026-10-12",
+    title: "Thông báo thật",
+    changes: [
+      { kind: "new", text: "Chuông thông báo dùng dữ liệu thật: khoản nợ sắp đến hạn hay quá hạn, hôm qua chưa ghi chi tiêu, phần thưởng nhiệm vụ chờ nhận, sắp hết lượt AI, gói Pro sắp hết hạn, tài khoản đang âm" },
+      { kind: "new", text: "Thông báo \"Có gì mới\" khi app có tính năng mới, chạm để xem các thay đổi" },
+      { kind: "improved", text: "Đã đọc trên máy này thì máy khác cũng biết; chạm thông báo mở đúng khoản nợ, tài khoản hay màn liên quan" },
+    ],
+  },
+  {
     version: "5.6.5",
     date: "2026-10-12",
     title: "Gọn đầu trang Giao dịch",

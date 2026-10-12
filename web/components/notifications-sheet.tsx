@@ -1,107 +1,105 @@
 "use client"
 
 import * as React from "react"
-import { BellIcon, CheckCheckIcon, GiftIcon, HandCoinsIcon, PencilLineIcon, SparklesIcon, type LucideIcon } from "lucide-react"
+import {
+  AlarmClockIcon,
+  BellIcon,
+  CheckCheckIcon,
+  CrownIcon,
+  GiftIcon,
+  HandCoinsIcon,
+  PencilLineIcon,
+  SparklesIcon,
+  TrendingDownIcon,
+  type LucideIcon,
+} from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 
 import type { IconTileTone } from "@/components/app/icon-tile"
-import { PageSheet } from "@/components/app/page-sheet"
-import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { PageSheet, usePageSheetScreen } from "@/components/app/page-sheet"
+import { SettingsGroup, SettingsRow, settingsSeparatorClassName } from "@/components/settings-list"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
-import { appEvents, sendAppEvent, type AppEvent } from "@/lib/app-events"
-import { formatMomentLabel, toDateKey } from "@/lib/format-date"
+import { sendAppEvent } from "@/lib/app-events"
+import { formatMomentLabel } from "@/lib/format-date"
+import { getNoticesAction, markNoticesReadAction } from "@/lib/notices/actions"
+import type { Notice, NoticeKind } from "@/lib/notices/types"
+import { changeKindLabels, releases, type ChangeKind } from "@/lib/releases"
 
-type Notice = {
-  id: string
-  icon: LucideIcon
-  tone: IconTileTone
-  title: string
-  body: string
-  /** When it came, an ISO moment. */
-  at: string
-  read: boolean
-  /** New ones are listed first, under "Mới". */
-  recent: boolean
-  /** What a tap opens: a page, or a sheet on its page. Without it, a tap only marks it read. */
-  opens?: { href: string } | { event: AppEvent }
+/** Each kind's icon and colour: warnings amber, money red or green, the plan's in the AI's lime. */
+const looks: Record<NoticeKind, { icon: LucideIcon; tone: IconTileTone }> = {
+  "debt-due": { icon: HandCoinsIcon, tone: "warning" },
+  "debt-overdue": { icon: AlarmClockIcon, tone: "expense" },
+  unrecorded: { icon: PencilLineIcon, tone: "orange" },
+  missions: { icon: GiftIcon, tone: "income" },
+  ai: { icon: SparklesIcon, tone: "ai" },
+  pro: { icon: CrownIcon, tone: "ai" },
+  negative: { icon: TrendingDownIcon, tone: "expense" },
+  release: { icon: BellIcon, tone: "neutral" },
 }
 
-/** A moment on a day counted back from today, at a Vietnam clock time. */
-function daysAgo(days: number, time: string) {
-  const day = new Date(Date.now() - days * 86_400_000)
-  return `${toDateKey(day)}T${time}:00+07:00`
-}
-
-// Mockup: sample notices until it is decided where they come from.
-function sampleNotices(): Notice[] {
-  return [
-    {
-      id: "debt",
-      icon: HandCoinsIcon,
-      tone: "warning",
-      title: "Sắp đến hạn",
-      body: "Lan · 500.000đ · còn 2 ngày",
-      at: daysAgo(0, "08:00"),
-      read: false,
-      recent: true,
-      opens: { href: "/debts" },
-    },
-    {
-      id: "reminder",
-      icon: PencilLineIcon,
-      tone: "orange",
-      title: "Chưa ghi chi tiêu",
-      body: "Hôm qua bạn chưa ghi khoản nào",
-      at: daysAgo(1, "20:00"),
-      read: false,
-      recent: true,
-      opens: { event: appEvents.addTransaction },
-    },
-    {
-      id: "ai",
-      icon: SparklesIcon,
-      tone: "ai",
-      title: "Còn 3 lượt AI",
-      body: "Nâng cấp Pro hoặc làm nhiệm vụ để có thêm",
-      at: daysAgo(1, "09:30"),
-      read: false,
-      recent: true,
-      opens: { event: appEvents.openPlans },
-    },
-    {
-      id: "mission",
-      icon: GiftIcon,
-      tone: "income",
-      title: "+5 lượt AI",
-      body: "Nhiệm vụ: Thêm tài khoản",
-      at: daysAgo(3, "10:15"),
-      read: true,
-      recent: false,
-    },
-  ]
+/** What a version brought, on a screen of the sheet: new, improved, fixed. */
+function ReleaseScreen({ version, onBack }: { version: string; onBack: () => void }) {
+  const release = releases.find((item) => item.version === version)
+  usePageSheetScreen({ title: `Bản ${version}`, onBack })
+  if (!release) return null
+  return (
+    <div className="space-y-6">
+      <p className="px-4 text-sm text-muted-foreground">{release.title}</p>
+      {(["new", "improved", "fixed"] as ChangeKind[]).map((kind) => {
+        const changes = release.changes.filter((change) => change.kind === kind)
+        return changes.length > 0 ? (
+          <SettingsGroup key={kind} title={changeKindLabels[kind]}>
+            {changes.map((change) => (
+              <li key={change.text} className={`${settingsSeparatorClassName()} px-4 py-3.5 text-sm`}>
+                {change.text}
+              </li>
+            ))}
+          </SettingsGroup>
+        ) : null
+      })}
+    </div>
+  )
 }
 
 /**
  * The bell, with the unread count while there is any, and the page sheet it
- * opens: new notices first, unread ones with a blue dot on their icon and the
- * title in semibold, each with when it came; ✓✓ in the bar reads them all. A tap marks it read and opens what it is
- * about, closing the sheet: the debts, the add-transaction sheet, the plans. On phones it
- * sits at the top of the overview, a grey round button; on wider screens in
- * the top bar beside the theme switch, bare like it (`variant="ghost"`).
+ * opens: notices worked out from the user's data (lib/notices), unread ones
+ * first under "Mới" with a blue dot on their icon and the title in semibold,
+ * each with when it came; ✓✓ in the bar reads them all, which is kept on the
+ * server so every device agrees. A tap marks it read and opens what it is
+ * about, closing the sheet (a debt, the add-transaction sheet, the plans, an
+ * account), or, for a new version, what it brought on a screen of the sheet.
+ * On phones it sits at the top of the overview, a grey round button; on
+ * wider screens in the top bar beside the theme switch, bare like it
+ * (`variant="ghost"`).
  */
 export function NotificationsButton({ variant = "secondary" }: { variant?: "secondary" | "ghost" }) {
   const router = useRouter()
   const pathname = usePathname()
   const [open, setOpen] = React.useState(false)
-  const [notices, setNotices] = React.useState(sampleNotices)
+  const [notices, setNotices] = React.useState<Notice[]>([])
+  const [release, setRelease] = React.useState<string | null>(null)
+  // Worked out from the user's data on the server: loaded as the page shows
+  // the bell, and again each time the sheet opens.
+  const load = React.useCallback(() => {
+    void getNoticesAction().then(setNotices)
+  }, [])
+  React.useEffect(load, [load, pathname])
   const unread = notices.filter((notice) => !notice.read).length
-  const markRead = (id?: string) =>
-    setNotices((current) => current.map((notice) => (!id || notice.id === id ? { ...notice, read: true } : notice)))
+  const markRead = (keys: string[]) => {
+    if (keys.length === 0) return
+    setNotices((current) => current.map((notice) => (keys.includes(notice.key) ? { ...notice, read: true } : notice)))
+    void markNoticesReadAction(keys)
+  }
   const openNotice = (notice: Notice) => {
-    markRead(notice.id)
+    markRead([notice.key])
     if (!notice.opens) return
+    if ("release" in notice.opens) {
+      setRelease(notice.opens.release)
+      return
+    }
     setOpen(false)
     if ("href" in notice.opens) router.push(notice.opens.href)
     else sendAppEvent(notice.opens.event, pathname, (href) => router.push(href))
@@ -112,9 +110,9 @@ export function NotificationsButton({ variant = "secondary" }: { variant?: "seco
       <SettingsGroup title={title}>
         {items.map((notice) => (
           <SettingsRow
-            key={notice.id}
-            icon={notice.icon}
-            tone={notice.tone}
+            key={notice.key}
+            icon={looks[notice.kind].icon}
+            tone={looks[notice.kind].tone}
             title={notice.title}
             description={notice.body}
             // A notice is read here, so its body shows whole.
@@ -134,7 +132,11 @@ export function NotificationsButton({ variant = "secondary" }: { variant?: "seco
       surface="grouped"
       className="space-y-6"
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={(next) => {
+        setOpen(next)
+        setRelease(null)
+        if (next) load()
+      }}
       trigger={
         <Button
           type="button"
@@ -155,16 +157,24 @@ export function NotificationsButton({ variant = "secondary" }: { variant?: "seco
       action={
         unread > 0 ? (
           // A round button like ✕, its double tick saying "all read".
-          <Button type="button" variant="secondary" size="icon" aria-label="Đánh dấu tất cả đã đọc" onClick={() => markRead()}>
+          <Button
+            type="button"
+            variant="secondary"
+            size="icon"
+            aria-label="Đánh dấu tất cả đã đọc"
+            onClick={() => markRead(notices.filter((notice) => !notice.read).map((notice) => notice.key))}
+          >
             <CheckCheckIcon />
           </Button>
         ) : null
       }
     >
-      {notices.length > 0 ? (
+      {release ? (
+        <ReleaseScreen version={release} onBack={() => setRelease(null)} />
+      ) : notices.length > 0 ? (
         <>
-          {group("Mới", notices.filter((notice) => notice.recent))}
-          {group("Trước đó", notices.filter((notice) => !notice.recent))}
+          {group("Mới", notices.filter((notice) => !notice.read))}
+          {group("Đã xem", notices.filter((notice) => notice.read))}
         </>
       ) : (
         <Empty>
@@ -173,7 +183,7 @@ export function NotificationsButton({ variant = "secondary" }: { variant?: "seco
               <BellIcon />
             </EmptyMedia>
             <EmptyTitle>Chưa có thông báo</EmptyTitle>
-            <EmptyDescription>Nhắc nhở và tin về khoản nợ sẽ hiện ở đây.</EmptyDescription>
+            <EmptyDescription>Khoản nợ sắp đến hạn, lượt AI, nhắc ghi chi tiêu… sẽ hiện ở đây.</EmptyDescription>
           </EmptyHeader>
         </Empty>
       )}

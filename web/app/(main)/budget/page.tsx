@@ -23,7 +23,9 @@ function currentMonth() {
   }
 }
 
-export default async function AccountsPage() {
+export default async function AccountsPage({ searchParams }: { searchParams: Promise<{ account?: string }> }) {
+  // An account to open straight away, e.g. from a notice.
+  const { account: openAccountId } = await searchParams
   const month = currentMonth()
   const { data: [accounts, recentTransactions, flows, categoryGroups] } = await loadWithSession((user) =>
     Promise.all([
@@ -55,6 +57,9 @@ export default async function AccountsPage() {
             flows={flows}
             monthLabel={month.label}
             categoryGroups={categoryGroups}
+            initialOpenId={openAccountId}
+            // Another account asked for (a second notice) opens afresh.
+            key={openAccountId}
           />
         </BudgetLayout>
       ) : (
