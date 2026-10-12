@@ -305,6 +305,15 @@ function ChipSection() {
           </ToggleGroup>
         </ChipRow>
       </Block>
+      <Block label="ChipButton outline · chip trên nền xám (thẻ ghi nhiều khoản của trợ lý)" wide>
+        <div className="flex gap-2 overflow-x-auto rounded-2xl bg-field p-3">
+          <ChipButton variant="outline" active>
+            <PlusIcon /> Kem
+          </ChipButton>
+          <ChipButton variant="outline">Ăn sáng</ChipButton>
+          <ChipButton variant="outline">Khác…</ChipButton>
+        </div>
+      </Block>
       <Block label="Filter chip · chọn nhiều (ToggleGroup)" wide>
         <ToggleGroup type="multiple" size="sm" value={chosen} onValueChange={setChosen} className="flex-wrap">
           {filters.map((filter) => (

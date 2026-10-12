@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils"
 
 import { ExcludedRow } from "../excluded-row"
 import { AccountPicker, canTransfer, TransferAccounts } from "./fields/account-fields"
-import { CategoryGrid, CategoryPicker, gridCategories, type RetiredCategory } from "./fields/category-fields"
+import { CategoryGrid, CategoryPicker, gridCategories, NEW_CATEGORY_ID, type RetiredCategory } from "./fields/category-fields"
 import type { TransactionDraft, TransactionFieldErrors, TransactionFieldName } from "./form-types"
 import { NeedAccountState } from "./need-account-state"
 import { useTransactionHistory } from "./transaction-history-context"
@@ -59,6 +59,12 @@ type TransactionFormProps = {
   draft?: TransactionDraft
   /** Above the amount, hidden with the first screen: the kind's segmented control. */
   header?: React.ReactNode
+  /**
+   * A category to be made as it is saved (the assistant's suggestion), for
+   * the draft's kind: first in the grid, marked "Mới", chosen to start with;
+   * submitted as NEW_CATEGORY_ID.
+   */
+  suggestedCategory?: { name: string; tile: React.ReactNode }
   isCreating?: boolean
   kind: SupportedTransactionKind
   onManageCategories?: () => void
@@ -85,6 +91,7 @@ export function TransactionForm({
   defaultValues,
   draft,
   header,
+  suggestedCategory,
   isCreating,
   kind,
   onManageCategories,
@@ -147,7 +154,9 @@ export function TransactionForm({
       const lastUsed = histories[formKind].find((transaction) => isActive(transaction.accountId))?.accountId
       return {
         accountId: startAccount(start?.accountId) ?? lastUsed ?? "",
-        categoryId: liveCategory(start?.categoryId) ?? "",
+        categoryId:
+          liveCategory(start?.categoryId) ??
+          (suggestedCategory && draft?.kind === formKind ? NEW_CATEGORY_ID : ""),
       }
     }
     const transfer = base("transfer")
@@ -218,6 +227,9 @@ export function TransactionForm({
           groupName: startCategory.categoryGroupName,
         }
       : undefined
+
+  // The suggestion is offered on its own kind only.
+  const offered = suggestedCategory && draft?.kind === cashFlowKind ? suggestedCategory : undefined
 
   // Without two accounts the transfer tab shows how to add one instead, and cannot be saved.
   const blocked = kind === "transfer" && !canTransfer(accounts, keptIds)
@@ -329,13 +341,14 @@ export function TransactionForm({
 
         {cashFlowKind ? (
           <>
-            {groups.length === 0 && !retired ? (
+            {groups.length === 0 && !retired && !offered ? (
               <p className="px-4 text-sm text-muted-foreground">Chưa có hạng mục</p>
             ) : (
               <CategoryGrid
                 id="transaction-category"
-                items={gridCategories(items, usage, cashFlowPick?.categoryId ?? "", retired ? 1 : 0)}
+                items={gridCategories(items, usage, cashFlowPick?.categoryId ?? "", (retired ? 1 : 0) + (offered ? 1 : 0))}
                 retired={retired}
+                suggested={offered}
                 value={cashFlowPick?.categoryId ?? ""}
                 onValueChange={(id) => {
                   setCashFlowPick({ categoryId: id })

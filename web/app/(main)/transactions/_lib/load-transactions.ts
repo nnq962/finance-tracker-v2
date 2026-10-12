@@ -10,11 +10,6 @@ import { getTransactionDateKey, getTransactionMonthKey, getTransactionMonthRange
 export type TransactionsSearchParams = {
   month?: string
   account?: string
-  ai?: string
-  /** With ai=1: a sentence for the AI to read straight away, handed over by the assistant. */
-  say?: string
-  /** Tells one hand-over of the same sentence from the next. */
-  t?: string
   /** "1": opens the add-transaction sheet, e.g. from the daily reminder. */
   add?: string
   order?: string
@@ -22,7 +17,7 @@ export type TransactionsSearchParams = {
 }
 
 /** Everything the transactions page shows, for the month in the address (this month by default). */
-export async function loadTransactions({ month, account, ai, add, order, grant, say, t }: TransactionsSearchParams) {
+export async function loadTransactions({ month, account, add, order, grant }: TransactionsSearchParams) {
   const todayDateKey = getTransactionDateKey(new Date())
   const selectedMonth = getTransactionMonthKey(month, todayDateKey)
   const range = getTransactionMonthRange(selectedMonth, 1)
@@ -55,9 +50,6 @@ export async function loadTransactions({ month, account, ai, add, order, grant, 
     todayDateKey,
     transactions,
     aiQuota: { used: planState.aiUsed, limit: planState.aiLimit, credits: planState.aiCredits },
-    // Opened from the AI mission on the overview.
-    initialAiOpen: ai === "1",
-    initialAiRequest: ai === "1" && say?.trim() ? { text: say.trim().slice(0, 300), key: t ?? say } : undefined,
     initialAddOpen: add === "1",
     purchaseDraft,
   }

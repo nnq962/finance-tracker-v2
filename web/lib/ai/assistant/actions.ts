@@ -2,6 +2,7 @@
 
 import { getAccounts } from "@/lib/accounts/repository"
 import { aiJson } from "@/lib/ai/llm"
+import { buildTransactionPrompt, readRecordReply, recordReplySchema } from "@/lib/ai/transaction-prompt"
 import { requireSession } from "@/lib/auth/session"
 import { getCategoryGroups } from "@/lib/categories/repository"
 import { getContacts, getDebts } from "@/lib/debts/repository"
@@ -10,7 +11,9 @@ import { plans } from "@/lib/plans/plans"
 import { MISSION_REWARD, missionKeys, missionTitles } from "@/lib/onboarding/missions"
 import { getMissionState } from "@/lib/onboarding/repository"
 import { getPlanState, releaseAiRequest, reserveAiRequest } from "@/lib/plans/repository"
-import { getAccountFlows, getDebtPaymentsInRange, getTransactionsInRange } from "@/lib/transactions/repository"
+import { getCurrentLocalDateTime } from "@/lib/date-time"
+import { randomId } from "@/lib/random-id"
+import { getAccountFlows, getDebtPaymentsInRange, getLastAccountIds, getTransactionsInRange } from "@/lib/transactions/repository"
 
 import { answerQuestion, keepComparedPeriod } from "./answer"
 import { ASSISTANT_NAME, chatReply, takeChat } from "./chat"
@@ -98,9 +101,10 @@ async function usageAnswer(userId: string): Promise<Answer> {
 
 /**
  * The assistant's one way in: sorts the request with the local model (free),
- * then answers a question about the user's money. A question counts against
- * the month's AI requests; one the model could not read is given back.
- * Records and other actions are only recognised here, and handed on.
+ * then answers a question about the user's money, or reads the transactions
+ * told to be written down into drafts to check (nothing is saved here). Each
+ * counts once against the month's AI requests, however many transactions;
+ * one the model could not read is given back.
  */
 export async function askAssistantAction(request: string, previous?: unknown): Promise<AssistantReply> {
   const user = await requireSession()
@@ -115,7 +119,6 @@ export async function askAssistantAction(request: string, previous?: unknown): P
     console.error("Assistant: sorting the request failed", error)
     return { kind: "failed" }
   }
-  if (intent === "record") return { kind: "record", text }
   if (intent === "action") return { kind: "action" }
   if (intent === "usage") return { kind: "usage", answer: await usageAnswer(user.uid) }
   if (intent === "chat") {
@@ -136,6 +139,34 @@ export async function askAssistantAction(request: string, previous?: unknown): P
     return { kind: "quota", quota, proLimit: plans.pro.aiMonthlyLimit, isPro: reservation.limit >= plans.pro.aiMonthlyLimit }
   }
   const giveBack = () => releaseAiRequest(user.uid, reservation.source)
+
+  if (intent === "record") {
+    try {
+      const [accounts, categoryGroups, lastAccountIds] = await Promise.all([
+        getAccounts(user.uid),
+        getCategoryGroups(user.uid),
+        getLastAccountIds(user.uid),
+      ])
+      const { date: today, time: now } = getCurrentLocalDateTime()
+      const { messages, lists } = buildTransactionPrompt(text, { accounts, categoryGroups, today })
+      const drafts = readRecordReply(await aiJson(messages, recordReplySchema), { request: text, lists, today, now, lastAccountIds })
+      if (drafts.length === 0) {
+        await giveBack()
+        return { kind: "unread" }
+      }
+      return {
+        kind: "drafts",
+        drafts: drafts.map((draft) => ({ ...draft, id: randomId() })),
+        accounts,
+        categoryGroups,
+        quota,
+      }
+    } catch (error) {
+      console.error("Assistant: reading transactions failed", error)
+      await giveBack()
+      return { kind: "failed" }
+    }
+  }
 
   try {
     const today = toDateKey(new Date())

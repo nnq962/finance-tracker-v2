@@ -1,17 +1,18 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidatePath, updateTag } from "next/cache"
 
-import { aiJson } from "@/lib/ai/llm"
-import { getAccounts } from "@/lib/accounts/repository"
+import { MAX_RECORD_ITEMS } from "@/lib/ai/transaction-prompt"
 import { requireSession } from "@/lib/auth/session"
-import { getCategoryGroups } from "@/lib/categories/repository"
-import { getCurrentLocalDateTime } from "@/lib/date-time"
-import { plans } from "@/lib/plans/plans"
-import { releaseAiRequest, reserveAiRequest } from "@/lib/plans/repository"
+import { categoryGroupsCacheTag } from "@/lib/cache-tags"
+import { archiveCategoryGroup, archiveCategoryItem } from "@/lib/categories/repository"
+import { createSuggestedCategory } from "@/lib/categories/suggested"
+import { CategoryValidationError } from "@/lib/categories/validation"
 import {
   createTransaction,
+  createTransactions,
   deleteTransaction,
+  deleteTransactions,
   getDebtPaymentsInRange,
   getTransactionsInRange,
   setTransactionExcluded,
@@ -24,12 +25,6 @@ import {
   TransactionValidationError,
 } from "@/lib/transactions/validation"
 
-import type { AiTransactionDraft } from "./_lib/ai-transaction-draft"
-import {
-  buildTransactionPrompt,
-  readTransactionReply,
-  transactionReplySchema,
-} from "./_lib/ai-transaction-prompt"
 
 function failure(error: unknown): TransactionActionResult {
   if (!(error instanceof TransactionValidationError)) {
@@ -119,72 +114,8 @@ export async function deleteTransactionAction(
   }
 }
 
-/** This month's AI requests after the one just made, the plan's limit, and AI credits left. */
+/** This month's AI requests, the plan's limit, and AI credits left. */
 export type AiQuota = { used: number; limit: number; credits: number }
-
-export type AiTransactionParseResult =
-  | { success: true; draft: AiTransactionDraft; quota: AiQuota }
-  | { success: false; error: string; quota?: AiQuota }
-
-const MAX_AI_REQUEST_LENGTH = 300
-
-/**
- * Reads a sentence about a transaction with the local model into a draft
- * for the user to check. Nothing is saved here: the checked draft is saved
- * with createTransactionAction. Each request counts against the
- * plan's monthly limit; one the model could not answer is given back.
- */
-export async function parseTransactionWithAiAction(
-  request: string,
-): Promise<AiTransactionParseResult> {
-  const user = await requireSession()
-  const text = typeof request === "string" ? request.trim() : ""
-  if (!text) return { success: false, error: "Hãy nói hoặc gõ một khoản thu chi." }
-  if (text.length > MAX_AI_REQUEST_LENGTH) {
-    return { success: false, error: "Câu dài quá, hãy nói gọn một khoản thôi nhé." }
-  }
-
-  const reservation = await reserveAiRequest(user.uid)
-  const quota = { used: reservation.used, limit: reservation.limit, credits: reservation.credits }
-  if (!reservation.allowed) {
-    return {
-      success: false,
-      quota,
-      error:
-        reservation.limit < plans.pro.aiMonthlyLimit
-          ? `Bạn đã dùng hết ${reservation.limit} lượt AI của tháng này. Nâng cấp Pro để có ${plans.pro.aiMonthlyLimit} lượt mỗi tháng.`
-          : `Bạn đã dùng hết ${reservation.limit} lượt AI của tháng này.`,
-    }
-  }
-
-  const [accounts, categoryGroups] = await Promise.all([
-    getAccounts(user.uid),
-    getCategoryGroups(user.uid),
-  ])
-  const { date: today, time: now } = getCurrentLocalDateTime()
-  const { messages, lists } = buildTransactionPrompt(text, { accounts, categoryGroups, today })
-
-  let reply: unknown
-  try {
-    reply = await aiJson(messages, transactionReplySchema)
-  } catch (error) {
-    console.error("AI transaction parse failed", error)
-    await releaseAiRequest(user.uid, reservation.source)
-    return {
-      success: false,
-      quota:
-        reservation.source === "credit"
-          ? { ...quota, credits: quota.credits + 1 }
-          : { ...quota, used: quota.used - 1 },
-      error: "AI đang không phản hồi. Thử lại sau ít phút nhé.",
-    }
-  }
-
-  const draft = readTransactionReply(reply, { request: text, lists, today, now })
-  return draft
-    ? { success: true, draft, quota }
-    : { success: false, quota, error: "AI chưa hiểu yêu cầu này, thử nói rõ hơn nhé." }
-}
 
 /**
  * Every transaction the user has, loans' repayments included, newest first:
@@ -201,4 +132,117 @@ export async function loadAllTransactionsAction(): Promise<Transaction[]> {
     getDebtPaymentsInRange(user.uid, start, end),
   ])
   return [...own, ...repayments].sort((left, right) => right.occurredAt.localeCompare(left.occurredAt))
+}
+
+/** A transaction the assistant read and the user checked, as the form would send it. */
+export type CheckedDraft = {
+  id: string
+  kind: "expense" | "income" | "transfer"
+  amount: number
+  accountId: string
+  toAccountId?: string
+  categoryId?: string
+  /** No category fits: the one the assistant suggested, made as it is saved. */
+  newCategory?: { name: string; groupId?: string; groupName: string; iconName?: string }
+  fee: number
+  excluded: boolean
+  note: string
+  date: string
+  time: string
+}
+
+/** What a save made besides the transactions, so Hoàn tác takes it back too. */
+export type SavedDrafts = { ids: string[]; categoryIds: string[]; groupIds: string[] }
+
+/**
+ * Saves the transactions checked in the assistant, all or none, each under
+ * its draft's id (saving twice keeps one of each). Every one is read as the
+ * form's would be, so the same rules hold.
+ */
+export async function saveCheckedDraftsAction(
+  drafts: CheckedDraft[],
+): Promise<({ success: true } & SavedDrafts) | { success: false; error: string }> {
+  const user = await requireSession()
+  const made: Omit<SavedDrafts, "ids"> = { categoryIds: [], groupIds: [] }
+
+  try {
+    if (!Array.isArray(drafts) || drafts.length === 0 || drafts.length > MAX_RECORD_ITEMS) {
+      throw new TransactionValidationError("Không có giao dịch hợp lệ để lưu.")
+    }
+    // The suggested categories first, one per name and kind however many
+    // drafts share it (a name the user already has is used as it is).
+    const madeFor = new Map<string, string>()
+    for (const draft of drafts) {
+      if (draft.kind === "transfer" || draft.categoryId || !draft.newCategory) continue
+      const key = `${draft.kind}:${draft.newCategory.name.trim().toLocaleLowerCase("vi-VN")}`
+      if (!madeFor.has(key)) {
+        const created = await createSuggestedCategory(user.uid, { type: draft.kind, ...draft.newCategory })
+        madeFor.set(key, created.itemId)
+        if (created.createdItem) made.categoryIds.push(created.itemId)
+        if (created.createdGroupId) made.groupIds.push(created.createdGroupId)
+      }
+      draft.categoryId = madeFor.get(key)
+    }
+    if (made.categoryIds.length) updateTag(categoryGroupsCacheTag(user.uid))
+    const items = drafts.map((draft, index) => {
+      const formData = new FormData()
+      const fields: Record<string, unknown> = {
+        kind: draft.kind,
+        amount: draft.amount,
+        note: draft.note,
+        date: draft.date,
+        time: draft.time,
+        ...(draft.kind === "transfer"
+          ? { fromAccountId: draft.accountId, toAccountId: draft.toAccountId, fee: draft.fee }
+          : { accountId: draft.accountId, categoryId: draft.categoryId, excluded: draft.excluded ? "on" : "" }),
+      }
+      for (const [key, value] of Object.entries(fields)) if (value !== undefined && value !== null) formData.set(key, String(value))
+      assertTransactionId(draft.id)
+      try {
+        return { values: parseTransactionFormData(formData), requestId: draft.id }
+      } catch (error) {
+        // Says which one, when there are several.
+        if (error instanceof TransactionValidationError && drafts.length > 1) {
+          throw new TransactionValidationError(`Khoản ${index + 1}: ${error.message}`)
+        }
+        throw error
+      }
+    })
+    try {
+      await createTransactions(user.uid, items)
+    } catch (error) {
+      // Nothing was written down: what was made for it goes too.
+      await takeBackCategories(user.uid, made)
+      throw error
+    }
+    revalidateTransactionPaths()
+    return { success: true, ids: items.map((item) => item.requestId), ...made }
+  } catch (error) {
+    if (error instanceof CategoryValidationError) return { success: false, error: error.message }
+    return failure(error) as { success: false; error: string }
+  }
+}
+
+/** Archives categories (and groups) a save made, once nothing uses them. */
+async function takeBackCategories(userId: string, made: Omit<SavedDrafts, "ids">) {
+  for (const id of made.categoryIds) await archiveCategoryItem(userId, id).catch(() => undefined)
+  for (const id of made.groupIds) await archiveCategoryGroup(userId, id).catch(() => undefined)
+  if (made.categoryIds.length || made.groupIds.length) updateTag(categoryGroupsCacheTag(userId))
+}
+
+/** Takes back transactions just saved from the assistant, all or none, and the categories made for them. */
+export async function undoSavedDraftsAction(saved: SavedDrafts): Promise<TransactionActionResult> {
+  const user = await requireSession()
+
+  try {
+    const { ids, categoryIds, groupIds } = saved ?? {}
+    if (!Array.isArray(ids) || ids.length > MAX_RECORD_ITEMS) throw new TransactionValidationError("Không có giao dịch để hoàn tác.")
+    ;[...ids, ...(categoryIds ?? []), ...(groupIds ?? [])].forEach((id) => assertTransactionId(id))
+    await deleteTransactions(user.uid, ids)
+    await takeBackCategories(user.uid, { categoryIds: categoryIds ?? [], groupIds: groupIds ?? [] })
+    revalidateTransactionPaths()
+    return { success: true }
+  } catch (error) {
+    return failure(error)
+  }
 }

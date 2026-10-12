@@ -11,6 +11,9 @@ import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 /** A category no longer in the catalogue, kept by the transaction being edited. */
 export type RetiredCategory = { id: string; name: string; groupName?: string }
 
+/** The id the grid gives a category still to be made (the assistant's suggestion). */
+export const NEW_CATEGORY_ID = "new"
+
 /**
  * The categories to show first: the most used for this kind, then the
  * catalogue's order; the chosen one always among them, so it shows as chosen.
@@ -29,6 +32,7 @@ export function CategoryGrid({
   id,
   items,
   retired,
+  suggested,
   value,
   onValueChange,
   onShowAll,
@@ -38,6 +42,8 @@ export function CategoryGrid({
   id: string
   items: CategoryItem[]
   retired?: RetiredCategory
+  /** A category to be made as it is saved: first, as it will look (its tile), "Mới" on it (picked as NEW_CATEGORY_ID). */
+  suggested?: { name: string; tile: React.ReactNode }
   value: string
   onValueChange: (id: string) => void
   onShowAll: () => void
@@ -48,6 +54,7 @@ export function CategoryGrid({
       id={id}
       caption="Hạng mục"
       items={[
+        ...(suggested ? [{ id: NEW_CATEGORY_ID, label: suggested.name, media: suggested.tile }] : []),
         ...(retired ? [{ id: retired.id, label: retired.name, media: <IconTile icon={ReceiptTextIcon} /> }] : []),
         ...items.map((item) => ({
           id: item.id,

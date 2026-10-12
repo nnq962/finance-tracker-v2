@@ -14,7 +14,8 @@ export type TransactionFieldErrors = Partial<Record<TransactionFieldName, string
 /** A new transaction filled in ahead, e.g. a Pro purchase to write down, or one written again. */
 export type TransactionDraft = {
   kind: Transaction["kind"]
-  amount: number
+  /** Null when not known yet (the assistant did not hear one). */
+  amount: number | null
   note: string
   /** ISO time the money moved. */
   occurredAt: string

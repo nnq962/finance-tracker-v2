@@ -1,4 +1,5 @@
-import type { TransactionKind } from "../_types/transaction"
+import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
+import type { TransactionKind } from "@/lib/transactions/types"
 
 /** A transaction as the assistant understood it; any part may still be missing. */
 export type AiTransactionDraft = {
@@ -11,7 +12,7 @@ export type AiTransactionDraft = {
    * With no category that fits, the one the assistant suggests creating: in
    * the group `groupId`, or in a new group `groupName` when there is none.
    */
-  suggestedCategory?: { name: string; groupName: string; groupId?: string }
+  suggestedCategory?: { name: string; groupName: string; groupId?: string; iconName?: CategoryIconName }
   accountId?: string
   /** The receiving account of a transfer. */
   toAccountId?: string

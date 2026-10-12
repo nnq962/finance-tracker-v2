@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { useRouter } from "next/navigation"
 import { ArrowUpIcon, MicIcon, SquareIcon, XIcon } from "lucide-react"
 
 import { BotIcon } from "@/components/app/bot-icon"
@@ -112,7 +111,6 @@ function useKeyboardInset() {
  */
 function AssistantFrame({ open, onClose }: { open: boolean; onClose: () => void }) {
   const assistant = useAssistant()
-  const router = useRouter()
 
   // Mounted a moment before it shows and after it hides, so it can move in and out.
   const [mounted, setMounted] = React.useState(open)
@@ -162,11 +160,6 @@ function AssistantFrame({ open, onClose }: { open: boolean; onClose: () => void 
 
   if (!mounted) return null
 
-  const record = (text: string) => {
-    onClose()
-    router.push(`/transactions?ai=1&say=${encodeURIComponent(text)}&t=${Date.now()}`)
-  }
-
   // In: fast then settling. Out: easing in and out, the content a beat ahead of the bar.
   const easeIn = "ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:duration-0"
   const easeOut = "ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:duration-0"
@@ -196,7 +189,7 @@ function AssistantFrame({ open, onClose }: { open: boolean; onClose: () => void 
             shown ? cn("translate-y-0 opacity-100 duration-300", easeIn) : cn("translate-y-3 opacity-0 duration-[280ms]", easeOut),
           )}
         >
-          <Body assistant={assistant} onRecord={record} onNavigate={onClose} />
+          <Body assistant={assistant} onNavigate={onClose} />
         </div>
         <div
           className={cn(
@@ -328,7 +321,7 @@ function ComposerButton({
 type View = "talk" | "voice"
 const viewOf = (phase: AssistantPhase): View => (phase === "listening" || phase === "transcribing" ? "voice" : "talk")
 
-type BodyProps = { assistant: Assistant; onRecord: (text: string) => void; onNavigate: () => void }
+type BodyProps = { assistant: Assistant; onNavigate: () => void }
 
 /**
  * What stands over the bar. Everything comes in one way, rising from below;
@@ -406,7 +399,7 @@ function VoiceLine({ text }: { text: string }) {
 
 const suggestions = ["Tháng này tiêu bao nhiêu?", "Chi nhiều nhất vào đâu?", "Ai đang nợ tôi?", "Số dư các tài khoản"]
 
-function Talk({ assistant, onRecord, onNavigate }: BodyProps) {
+function Talk({ assistant, onNavigate }: BodyProps) {
   const { turn, asked } = assistant
   // While speaking takes over, the talk stays as it was until it has gone.
   const phase = viewOf(assistant.phase) === "talk" ? assistant.phase : turn ? "result" : "idle"
@@ -467,7 +460,6 @@ function Talk({ assistant, onRecord, onNavigate }: BodyProps) {
             reply={turn.reply}
             ask={assistant.ask}
             listen={assistant.listen}
-            onRecord={onRecord}
             onNavigate={onNavigate}
           />
         ) : null}

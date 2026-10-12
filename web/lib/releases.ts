@@ -32,6 +32,18 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "5.6.0",
+    date: "2026-10-12",
+    title: "LiuLiu ghi nhiều giao dịch một lần",
+    changes: [
+      { kind: "new", text: "Nói hoặc gõ nhiều khoản trong một câu (tối đa 10), LiuLiu hiện thẻ xem trước để kiểm tra rồi lưu cả cùng lúc, chỉ tốn một lượt AI" },
+      { kind: "new", text: "Chạm một dòng để sửa bằng form giao dịch quen thuộc, × để bỏ, Hoàn tác ngay sau khi lưu" },
+      { kind: "new", text: "Khi chưa có hạng mục hợp, LiuLiu gợi ý hạng mục mới kèm icon, đánh dấu Mới, tự tạo khi lưu; đổi sang hạng mục có sẵn bằng một chạm" },
+      { kind: "new", text: "Hiểu phí chuyển khoản và \"không tính\", điền tài khoản dùng gần nhất khi không nói" },
+      { kind: "improved", text: "Nút Nhập bằng AI và nhiệm vụ AI mở LiuLiu; trợ lý cũ ở trang Giao dịch đã bỏ" },
+    ],
+  },
+  {
     version: "5.5.1",
     date: "2026-10-12",
     title: "Số liệu khớp nhau ở mọi màn",

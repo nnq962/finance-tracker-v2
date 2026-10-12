@@ -1,10 +1,11 @@
 import type { ChatMessage } from "@/lib/ai/llm"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup, CategoryItem } from "@/lib/categories/types"
+import { categoryIconOptions, categoryIconRegistry, type CategoryIconName } from "@/lib/icons/category-icon-registry"
 import { MAX_MONEY } from "@/lib/money"
 
-import type { TransactionKind } from "../_types/transaction"
-import { shiftDate, type AiTransactionDraft } from "./ai-transaction-draft"
+import type { TransactionKind } from "@/lib/transactions/types"
+import { shiftDate, type AiTransactionDraft } from "@/lib/ai/transaction-draft"
 
 type Context = { accounts: Account[]; categoryGroups: CategoryGroup[]; today: string }
 
@@ -50,7 +51,7 @@ type Reply = When & {
   isTransaction: boolean
 }
 
-export const transactionReplySchema = {
+const transactionReplySchema = {
   type: "object",
   properties: {
     kind: { type: "string", enum: ["expense", "income", "transfer"] },
@@ -75,6 +76,36 @@ export const transactionReplySchema = {
     isTransaction: { type: "boolean" },
   },
   required: ["kind", "amountSaid", "amount", "daysAgo", "weekday", "weeksAgo", "day", "month", "hour", "minute", "dayPeriod", "categoryId", "newCategoryName", "newCategoryGroupId", "newGroupName", "accountId", "toAccountId", "note", "isTransaction"],
+}
+
+/**
+ * Several transactions in one sentence, for the assistant (2026-10-12): each
+ * item as above, with a transfer's fee and whether it is left out of the
+ * figures, at most ten.
+ */
+export const MAX_RECORD_ITEMS = 10
+
+const recordItemSchema = {
+  type: "object",
+  properties: {
+    ...Object.fromEntries(Object.entries(transactionReplySchema.properties).filter(([key]) => key !== "isTransaction")),
+    // The new category's icon, a name from the app's set listed in the
+    // prompt ("" with no new category); checked when read, as Gemini refuses
+    // an enum this long.
+    newCategoryIcon: { type: "string" },
+    fee: { type: ["integer", "null"] },
+    excluded: { type: "boolean" },
+  },
+  required: [...transactionReplySchema.required.filter((key) => key !== "isTransaction"), "newCategoryIcon", "fee", "excluded"],
+}
+
+export const recordReplySchema = {
+  type: "object",
+  properties: {
+    isTransaction: { type: "boolean" },
+    items: { type: "array", items: recordItemSchema, maxItems: MAX_RECORD_ITEMS },
+  },
+  required: ["isTransaction", "items"],
 }
 
 const weekdays = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"]
@@ -127,7 +158,13 @@ function listByKind(title: string, entries: { key: string; type: "expense" | "in
 
 function systemPrompt(lists: Lists, today: string) {
   const weekday = weekdays[new Date(`${today}T00:00:00Z`).getUTCDay()]
-  return `Bạn đọc một câu tiếng Việt (thường là văn nói, có thể sai chính tả do nhận giọng nói) mô tả MỘT khoản thu, chi hoặc chuyển tiền, rồi trả về JSON.
+  return `Bạn đọc một câu tiếng Việt (thường là văn nói, có thể sai chính tả do nhận giọng nói) kể MỘT HOẶC NHIỀU khoản thu, chi hoặc chuyển tiền, rồi trả về JSON: items là danh sách các khoản theo thứ tự được kể, mỗi khoản một mục (tối đa ${MAX_RECORD_ITEMS}). Một món có một số tiền là một khoản; đừng gộp hai món, đừng tách một món. Thời gian nói cho cả câu ("hôm qua ăn sáng 30k, ăn trưa 50k") áp dụng cho mọi khoản sau nó.
+
+newCategoryIcon: khi gợi ý một danh mục mới (newCategoryName), chọn icon hợp nhất cho nó từ danh sách icon bên dưới (theo nghĩa của nhãn); không gợi ý danh mục mới thì "".
+Icon:
+${categoryIconOptions.map((option) => `${option.name}: ${option.label}`).join("\n")}
+
+fee: phí của một lần chuyển tiền khi được nói ("phí 3k"), ngoài ra null. excluded: true khi người nói bảo khoản đó không tính vào thống kê ("không tính", "chi hộ", "trả giùm"), ngoài ra false.
 
 Hôm nay là ${weekday}, ${today}.
 
@@ -280,16 +317,48 @@ function examples(lists: Lists): ChatMessage[] {
       },
     ])
   }
-  return shots.flatMap(([said, reply]) => [
-    { role: "user" as const, content: said },
-    // In the schema's order, which the model answers in.
-    {
-      role: "assistant" as const,
-      content: JSON.stringify(
-        { ...reply, isTransaction: true },
-        Object.keys(transactionReplySchema.properties),
+  // The same shots as lists of one, then two told in one breath.
+  const item = (reply: Omit<Reply, "isTransaction">, extra: { fee?: number | null; excluded?: boolean; icon?: string } = {}) =>
+    JSON.parse(
+      JSON.stringify(
+        {
+          ...reply,
+          // A new category gets an icon: medicine a pill; none otherwise.
+          newCategoryIcon: extra.icon ?? (reply.newCategoryName ? "pill" : ""),
+          fee: extra.fee ?? null,
+          excluded: extra.excluded ?? false,
+        },
+        Object.keys(recordItemSchema.properties),
       ),
-    },
+    )
+  const answer = (items: object[]) => JSON.stringify({ isTransaction: true, items })
+  const [coffee, , , , lunch] = shots
+  const multiShots: [string, string][] = [
+    ...shots.map(([said, reply]): [string, string] => [said, answer([item(reply)])]),
+    [
+      "sáng cà phê 25 cành, trưa ăn trưa 60 cành ở quán cô Ba",
+      answer([
+        item({ ...coffee[1], accountId: null }),
+        item(lunch[1]),
+      ]),
+    ],
+    [
+      "ăn tối 200k trả hộ bạn không tính",
+      answer([
+        item(
+          {
+            kind: "expense", amountSaid: "200k", amount: 200_000, note: "", ...when({ dayPeriod: "tối" }),
+            categoryId: findCategory(lists, "expense", ["an toi", "an uong"]),
+            accountId: null, toAccountId: null, ...noNewCategory,
+          },
+          { excluded: true },
+        ),
+      ]),
+    ],
+  ]
+  return multiShots.flatMap(([said, content]) => [
+    { role: "user" as const, content: said },
+    { role: "assistant" as const, content },
   ])
 }
 
@@ -395,10 +464,14 @@ function readNewCategory(
   const group =
     ofKind.find(({ key }) => key === value.newCategoryGroupId)?.group ??
     ofKind.find(({ group }) => normalize(group.name) === normalize(groupName))?.group
+  // The icon the model picked for it, when it is one of the app's.
+  const icon = (value as { newCategoryIcon?: unknown }).newCategoryIcon
+  const iconName = typeof icon === "string" && icon in categoryIconRegistry ? (icon as CategoryIconName) : undefined
   return {
-    suggestedCategory: group
-      ? { name, groupName: group.name, groupId: group.id }
-      : { name, groupName: groupName || name },
+    suggestedCategory: {
+      ...(group ? { name, groupName: group.name, groupId: group.id } : { name, groupName: groupName || name }),
+      ...(iconName ? { iconName } : {}),
+    },
   }
 }
 
@@ -409,7 +482,20 @@ function readNewCategory(
  */
 export function readTransactionReply(
   reply: unknown,
-  { request, lists, today, now }: { request: string; lists: Lists; today: string; now: string },
+  {
+    request,
+    lists,
+    today,
+    now,
+    fallbackAccountId = () => lists.accounts[0]?.account.id,
+  }: {
+    request: string
+    lists: Lists
+    today: string
+    now: string
+    /** The account when none was said; the first one unless given. */
+    fallbackAccountId?: (kind: TransactionKind) => string | undefined
+  },
 ): AiTransactionDraft | null {
   const value = (typeof reply === "object" && reply !== null ? reply : {}) as Partial<Record<keyof Reply, unknown>>
   const kind = value.kind
@@ -451,9 +537,56 @@ export function readTransactionReply(
         ? { categoryId: category.id }
         : readNewCategory({ ...value, ...crossed }, kind, lists)),
     // Unsaid, the money comes from the first account, as the add sheet starts.
-    accountId: fromId ?? lists.accounts[0]?.account.id,
+    accountId: fromId ?? fallbackAccountId(kind),
     toAccountId: toId !== fromId ? toId : undefined,
     date: resolveDay(value, today),
     time: resolveTime(value, now),
   }
+}
+
+/** A transaction of several told at once, as the assistant shows it before saving. */
+export type RecordDraft = AiTransactionDraft & {
+  /** A transfer's fee, 0 when none. */
+  fee: number
+  excluded: boolean
+}
+
+/**
+ * The model's list as drafts, each read as one transaction is (trusting
+ * none of it), at most MAX_RECORD_ITEMS. Unsaid, an account is the one last
+ * used for that kind, else left for the user to pick. Empty when the
+ * request was not about money.
+ */
+export function readRecordReply(
+  reply: unknown,
+  context: { request: string; lists: Lists; today: string; now: string; lastAccountIds: Partial<Record<TransactionKind, string>> },
+): RecordDraft[] {
+  const value = (typeof reply === "object" && reply !== null ? reply : {}) as { isTransaction?: unknown; items?: unknown }
+  if (value.isTransaction === false || !Array.isArray(value.items)) return []
+  const active = new Set(context.lists.accounts.map(({ account }) => account.id))
+  return value.items.slice(0, MAX_RECORD_ITEMS).flatMap((item): RecordDraft[] => {
+    const fields = (typeof item === "object" && item !== null ? item : {}) as Record<string, unknown>
+    const draft = readTransactionReply(
+      { ...fields, isTransaction: true },
+      {
+        ...context,
+        fallbackAccountId: (kind) => {
+          const last = context.lastAccountIds[kind]
+          return last && active.has(last) ? last : undefined
+        },
+      },
+    )
+    if (!draft) return []
+    const fee = fields.fee
+    return [
+      {
+        ...draft,
+        fee:
+          draft.kind === "transfer" && typeof fee === "number" && Number.isSafeInteger(fee) && fee > 0 && fee <= MAX_MONEY
+            ? fee
+            : 0,
+        excluded: draft.kind !== "transfer" && fields.excluded === true,
+      },
+    ]
+  })
 }

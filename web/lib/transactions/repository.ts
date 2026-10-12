@@ -439,27 +439,70 @@ export async function createTransaction(
     const saved = await getDb().selectFrom("transactions").select("userId").where("id", "=", requestId).executeTakeFirst()
     if (saved?.userId === userId) return
   }
-  await retryOnDeadlock(() => getDb().transaction().execute(async (trx) => {
-    // Locks the accounts first, so a concurrent retry waits here and then
-    // sees the row this request inserted.
-    const accounts = await prepare(trx, userId, values)
+  await retryOnDeadlock(() => getDb().transaction().execute((trx) => insertTransaction(trx, userId, values, requestId)))
+}
 
-    if (requestId) {
-      const existing = await trx
-        .selectFrom("transactions")
-        .select("userId")
-        .where("id", "=", requestId)
-        .executeTakeFirst()
-      if (existing?.userId === userId) return
-      if (existing) throw new TransactionValidationError("Giao dịch không hợp lệ.")
-    }
+async function insertTransaction(trx: DbTransaction<DB>, userId: string, values: TransactionFormValues, requestId?: string) {
+  // Locks the accounts first, so a concurrent retry waits here and then
+  // sees the row this request inserted.
+  const accounts = await prepare(trx, userId, values)
 
-    await applyImpacts(trx, accounts, getBalanceImpacts(toMovement(values)))
-    await trx
-      .insertInto("transactions")
-      .values({ ...(requestId ? { id: requestId } : {}), userId, ...toRow(values) })
-      .execute()
-  }))
+  if (requestId) {
+    const existing = await trx
+      .selectFrom("transactions")
+      .select("userId")
+      .where("id", "=", requestId)
+      .executeTakeFirst()
+    if (existing?.userId === userId) return
+    if (existing) throw new TransactionValidationError("Giao dịch không hợp lệ.")
+  }
+
+  await applyImpacts(trx, accounts, getBalanceImpacts(toMovement(values)))
+  await trx
+    .insertInto("transactions")
+    .values({ ...(requestId ? { id: requestId } : {}), userId, ...toRow(values) })
+    .execute()
+}
+
+/**
+ * Records several transactions at once (told to the assistant together):
+ * all of them or none. Each keeps its own request id, so saving the same
+ * batch again changes nothing.
+ */
+export async function createTransactions(userId: string, items: { values: TransactionFormValues; requestId: string }[]) {
+  if (items.length === 0) return
+  await retryOnDeadlock(() =>
+    getDb().transaction().execute(async (trx) => {
+      // Every account the batch touches, locked once in id order.
+      await lockAccounts(trx, userId, items.flatMap(({ values }) => getAccountIds(toMovement(values))))
+      for (const { values, requestId } of items) await insertTransaction(trx, userId, values, requestId)
+    }),
+  )
+}
+
+/** Deletes several transactions at once, all or none (undoing a batch); those already gone are skipped. */
+export async function deleteTransactions(userId: string, transactionIds: string[]) {
+  if (transactionIds.length === 0) return
+  await retryOnDeadlock(() =>
+    getDb().transaction().execute(async (trx) => {
+      for (const transactionId of transactionIds) await deleteOne(trx, userId, transactionId)
+    }),
+  )
+}
+
+/** The account last used for each kind (the source of a transfer), for what the assistant fills in unsaid. */
+export async function getLastAccountIds(userId: string): Promise<Partial<Record<SupportedTransactionKind, string>>> {
+  const rows = await getDb()
+    .selectFrom("transactions")
+    .select(["kind", (eb) => eb.fn.coalesce("accountId", "fromAccountId").as("accountId")])
+    .distinctOn("kind")
+    .where("userId", "=", userId)
+    .where("debtId", "is", null)
+    .where("adjustment", "=", false)
+    .orderBy("kind")
+    .orderBy("occurredAt", "desc")
+    .execute()
+  return Object.fromEntries(rows.filter((row) => row.accountId).map((row) => [row.kind, row.accountId]))
 }
 
 /**
@@ -554,15 +597,17 @@ export async function setTransactionExcluded(userId: string, transactionId: stri
 
 /** Deleting what is already gone (a retried request) succeeds quietly. */
 export async function deleteTransaction(userId: string, transactionId: string) {
-  await retryOnDeadlock(() => getDb().transaction().execute(async (trx) => {
-    const existing = await lockExisting(trx, userId, transactionId, "xoá")
-    if (!existing) return
-    const accounts = await lockAccounts(trx, userId, getAccountIds(existing))
-    const impacts = new Map<string, number>()
+  await retryOnDeadlock(() => getDb().transaction().execute((trx) => deleteOne(trx, userId, transactionId)))
+}
 
-    getBalanceImpacts(existing).forEach((delta, accountId) => impacts.set(accountId, -delta))
-    assertNoArchivedChange(accounts, impacts)
-    await applyImpacts(trx, accounts, impacts)
-    await trx.deleteFrom("transactions").where("id", "=", transactionId).execute()
-  }))
+async function deleteOne(trx: DbTransaction<DB>, userId: string, transactionId: string) {
+  const existing = await lockExisting(trx, userId, transactionId, "xoá")
+  if (!existing) return
+  const accounts = await lockAccounts(trx, userId, getAccountIds(existing))
+  const impacts = new Map<string, number>()
+
+  getBalanceImpacts(existing).forEach((delta, accountId) => impacts.set(accountId, -delta))
+  assertNoArchivedChange(accounts, impacts)
+  await applyImpacts(trx, accounts, impacts)
+  await trx.deleteFrom("transactions").where("id", "=", transactionId).execute()
 }

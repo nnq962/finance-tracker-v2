@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowLeftRightIcon, ChevronRightIcon, MicIcon, PencilLineIcon, SparklesIcon, WalletIcon } from "lucide-react"
+import { ArrowLeftRightIcon, ChevronRightIcon, MicIcon, SparklesIcon, WalletIcon } from "lucide-react"
 
 import { AccountLogo } from "@/components/account-logo"
 import { BotIcon } from "@/components/app/bot-icon"
@@ -13,6 +13,7 @@ import type { Answer, AnswerBlock, AnswerIcon, AnswerRow } from "@/lib/ai/assist
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { cn } from "@/lib/utils"
 
+import { DraftsView } from "./drafts-view"
 import type { TurnReply } from "./use-assistant"
 
 /** A question to ask next, one tap away. */
@@ -287,15 +288,12 @@ export function ReplyView({
   reply,
   ask,
   listen,
-  onRecord,
   onNavigate,
 }: {
   said: string
   reply: TurnReply
   ask: (text: string) => void
   listen: () => void
-  /** Hands a transaction to record to the transactions page's assistant. */
-  onRecord: (text: string) => void
   /** Closes the assistant as a link in it is followed. */
   onNavigate: () => void
 }) {
@@ -308,13 +306,14 @@ export function ReplyView({
     case "answer":
     case "usage":
       return <AnswerBody answer={reply.answer} ask={ask} onNavigate={onNavigate} />
-    case "record":
+    case "drafts":
+      return <DraftsView drafts={reply.drafts} accounts={reply.accounts} categoryGroups={reply.categoryGroups} />
+    case "unread":
       return (
-        <AnswerShell kicker="Đây là một khoản thu chi" line="Trợ lý này sắp ghi được giao dịch. Tạm thời, ghi bằng trợ lý ở trang Giao dịch.">
-          <Button onClick={() => onRecord(reply.text)}>
-            <PencilLineIcon /> Ghi khoản này
-          </Button>
-        </AnswerShell>
+        <AnswerShell
+          kicker="Chưa đọc được khoản nào"
+          line="Nói rõ số tiền và việc chi, ví dụ “ăn phở 35k” hoặc “cà phê 25k, ăn trưa 50k”. Câu này chưa bị tính lượt."
+        />
       )
     case "chat":
       return (
@@ -330,7 +329,7 @@ export function ReplyView({
       return (
         <AnswerShell
           kicker="Chưa làm được việc này"
-          line="Trợ lý hiện chỉ trả lời câu hỏi về tiền của bạn. Ghi vay nợ, sửa hay xoá giao dịch sẽ có sau."
+          line="Trợ lý hiện trả lời câu hỏi và ghi thu chi. Ghi vay nợ, sửa hay xoá giao dịch sẽ có sau."
           follow={chips}
         />
       )

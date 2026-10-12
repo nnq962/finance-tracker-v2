@@ -1,4 +1,6 @@
 import type { Account } from "@/lib/accounts/types"
+import type { RecordDraft } from "@/lib/ai/transaction-prompt"
+import type { CategoryGroup } from "@/lib/categories/types"
 import type { CategoryColorName } from "@/lib/categories/category-colors"
 import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
 
@@ -163,8 +165,19 @@ export type AssistantContext = { question: string; plan?: QuestionPlan; reply?: 
 
 export type AssistantReply =
   | { kind: "answer"; answer: Answer; plan: QuestionPlan; quota: AssistantQuota }
-  /** A transaction to record: the old assistant on the transactions page takes it. */
-  | { kind: "record"; text: string }
+  /**
+   * Transactions told to be written down, read for the user to check before
+   * anything is saved; with what the rows show and the form edits them with.
+   */
+  | {
+      kind: "drafts"
+      drafts: AssistantDraft[]
+      accounts: Account[]
+      categoryGroups: CategoryGroup[]
+      quota: AssistantQuota
+    }
+  /** Told to write something down, but no amount or transaction could be read from it. */
+  | { kind: "unread" }
   /** Something the assistant cannot do yet (a loan, an edit). */
   | { kind: "action" }
   /** A question about what the app does not hold. */
@@ -175,3 +188,6 @@ export type AssistantReply =
   | { kind: "chat"; text: string; limited?: boolean }
   | { kind: "quota"; quota: AssistantQuota; proLimit: number; isPro: boolean }
   | { kind: "failed" }
+
+/** A transaction as the assistant read it, before it is saved; `id` becomes its row's id. */
+export type AssistantDraft = RecordDraft & { id: string }

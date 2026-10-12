@@ -34,21 +34,24 @@ export function ChipRowDivider() {
 /**
  * A chip that opens something rather than switching on: a filter sheet. Same
  * look as the row's toggle chips; `active` fills it dark while what it opens
- * narrows the list, so a filter in force shows from the row.
+ * narrows the list, so a filter in force shows from the row. `outline` (white
+ * with a line) for chips on a grey surface, where the grey chip would vanish.
+ * It never shrinks in its row, which scrolls instead.
  */
 export function ChipButton({
   active = false,
+  variant = "default",
   className,
   ...props
-}: React.ComponentProps<"button"> & { active?: boolean }) {
+}: React.ComponentProps<"button"> & { active?: boolean; variant?: "default" | "outline" }) {
   return (
     <button
       type="button"
       data-slot="chip-button"
       data-active={active || undefined}
       className={cn(
-        toggleVariants({ size: "sm" }),
-        "data-active:bg-primary data-active:text-primary-foreground data-active:hover:bg-primary/90 data-active:hover:text-primary-foreground",
+        toggleVariants({ size: "sm", variant }),
+        "shrink-0 data-active:border-transparent data-active:bg-primary data-active:text-primary-foreground data-active:hover:bg-primary/90 data-active:hover:text-primary-foreground",
         className,
       )}
       {...props}

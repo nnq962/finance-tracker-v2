@@ -16,6 +16,10 @@ import { RulerSlider } from "@/components/app/ruler-slider"
 import { SegmentedProgress } from "@/components/app/steps"
 import { Stepper } from "@/components/app/stepper"
 import { ReplyView } from "@/components/ai-assistant/answer-view"
+import { DraftsView } from "@/components/ai-assistant/drafts-view"
+import type { Account } from "@/lib/accounts/types"
+import type { AssistantDraft } from "@/lib/ai/assistant/types"
+import type { CategoryGroup } from "@/lib/categories/types"
 import { BotIcon } from "@/components/app/bot-icon"
 import { VoiceWave } from "@/components/app/voice-wave"
 import { WheelPicker, WheelPickerGroup } from "@/components/app/wheel-picker"
@@ -484,6 +488,9 @@ function ProgressSection() {
       <Block label="Trợ lý AI · thẻ trả lời (khối ghép theo câu hỏi)">
         <AssistantAnswerSample />
       </Block>
+      <Block label="Trợ lý AI · ghi nhiều khoản (DraftsView): hạng mục mới có icon AI chọn và nhãn Mới, chip đổi hạng mục, một nút lưu cả">
+        <AssistantDraftsSample />
+      </Block>
       <Block label="Khung chờ · đang tải">
         <div className="flex items-center gap-3">
           <Skeleton className="size-12 rounded-full" />
@@ -582,7 +589,44 @@ const sampleAnswer: React.ComponentProps<typeof ReplyView>["reply"] = {
 function AssistantAnswerSample() {
   return (
     <div className="flex flex-col gap-4 rounded-[20px] bg-card p-5">
-      <ReplyView said="" reply={sampleAnswer} ask={() => {}} listen={() => {}} onRecord={() => {}} onNavigate={() => {}} />
+      <ReplyView said="" reply={sampleAnswer} ask={() => {}} listen={() => {}} onNavigate={() => {}} />
+    </div>
+  )
+}
+
+// A catalogue sample only: its save fails on these made-up ids, with a toast.
+const sampleDraftGroups: CategoryGroup[] = [
+  {
+    id: "food",
+    type: "expense",
+    name: "Ăn uống",
+    iconName: "utensils",
+    colorName: "orange",
+    items: [
+      { id: "breakfast", groupId: "food", type: "expense", name: "Ăn sáng", iconName: "coffee", colorName: "orange" },
+      { id: "lunch", groupId: "food", type: "expense", name: "Ăn trưa", iconName: "soup", colorName: "orange" },
+    ],
+  },
+]
+const sampleDraftAccounts = [
+  { id: "cash", name: "Tiền mặt", type: "cash", openingBalance: 0, balance: 0, logoFallback: "TM", status: "active", excluded: false, linked: false, openedAt: "", updatedAt: "" },
+] as Account[]
+const sampleDrafts: AssistantDraft[] = [
+  { id: "d1", kind: "expense", amount: 40_000, note: "", categoryId: "breakfast", accountId: "cash", date: "2026-10-12", time: "08:00", fee: 0, excluded: false },
+  {
+    id: "d2", kind: "expense", amount: 70_000, note: "", accountId: "cash", date: "2026-10-12", time: "15:00", fee: 0, excluded: false,
+    suggestedCategory: { name: "Kem", groupName: "Ăn uống", groupId: "food", iconName: "ice-cream-cone" },
+  },
+  {
+    id: "d3", kind: "expense", amount: 300_000, note: "", accountId: "cash", date: "2026-10-12", time: "19:00", fee: 0, excluded: false,
+    suggestedCategory: { name: "Xem phim", groupName: "Giải trí", iconName: "film" },
+  },
+]
+
+function AssistantDraftsSample() {
+  return (
+    <div className="flex flex-col gap-4 rounded-[20px] bg-card p-5">
+      <DraftsView drafts={sampleDrafts} accounts={sampleDraftAccounts} categoryGroups={sampleDraftGroups} />
     </div>
   )
 }

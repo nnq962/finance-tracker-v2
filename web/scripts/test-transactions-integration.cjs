@@ -9,6 +9,7 @@ const validation = require('../lib/transactions/validation.ts')
 const accountValidation = require('../lib/accounts/validation.ts')
 const { toDateKey } = require('../lib/format-date.ts')
 const { isLeftOut } = require('../lib/transactions/types.ts')
+const suggested = require('../lib/categories/suggested.ts')
 
 const count = async (text, params) => Number((await sql(text, params)).rows[0].count)
 const balance = async (id) => Number((await sql('SELECT balance FROM accounts WHERE id = $1', [id])).rows[0].balance)
@@ -170,7 +171,43 @@ async function run() {
     later.set('time', '23:59')
     if (new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Ho_Chi_Minh' }) < '23:58') assert.throws(() => validation.parseTransactionFormData(later))
 
-    console.log('Transaction checks passed: request ids, balances, negative balances, recent per account, date range, left out of the figures, accounts left out, archived accounts kept.')
+    // Several saved at once (told to the assistant together): all or none,
+    // each under its request id, so saving the batch again adds nothing;
+    // undone at once too.
+    const beforeBatch = await balance(wallet)
+    const batch = [randomUUID(), randomUUID()]
+    const batchItems = [
+      { values: { ...expense, amount: 2_000 }, requestId: batch[0] },
+      { values: { kind: 'transfer', amount: 1_000, fee: 100, fromAccountId: wallet, toAccountId: bank, occurredAt: new Date() }, requestId: batch[1] },
+    ]
+    await transactions.createTransactions(userId, batchItems)
+    await transactions.createTransactions(userId, batchItems)
+    assert.equal(await count('SELECT count(*) FROM transactions WHERE id = ANY($1)', [batch]), 2)
+    assert.equal(await balance(wallet), beforeBatch - 2_000 - 1_100)
+    const broken = randomUUID()
+    await assert.rejects(() => transactions.createTransactions(userId, [
+      { values: { ...expense, amount: 3_000 }, requestId: broken },
+      { values: { ...expense, accountId: randomUUID() }, requestId: randomUUID() },
+    ]))
+    assert.equal(await count('SELECT count(*) FROM transactions WHERE id = $1', [broken]), 0)
+    await transactions.deleteTransactions(userId, batch)
+    await transactions.deleteTransactions(userId, batch)
+    assert.equal(await balance(wallet), beforeBatch)
+    // Who saved last, for what the assistant fills in unsaid.
+    const last = await transactions.getLastAccountIds(userId)
+    assert.equal(last.expense, wallet)
+
+    // A suggested category is made in the group named, or a new group with
+    // the icon suggested; one the user has under that name is used instead.
+    const suggestedMade = await suggested.createSuggestedCategory(userId, { type: 'expense', name: 'Kem', groupId: group, groupName: 'Ăn uống', iconName: 'ice-cream-cone' })
+    assert.equal(suggestedMade.createdItem, true)
+    assert.equal((await sql('SELECT icon_name FROM category_items WHERE id = $1', [suggestedMade.itemId])).rows[0].icon_name, 'ice-cream-cone')
+    assert.equal((await suggested.createSuggestedCategory(userId, { type: 'expense', name: 'kem', groupName: 'Khác' })).itemId, suggestedMade.itemId)
+    const withGroup = await suggested.createSuggestedCategory(userId, { type: 'expense', name: 'Xem phim', groupName: 'Giải trí', iconName: 'film' })
+    assert.ok(withGroup.createdGroupId)
+    assert.equal((await sql('SELECT icon_name FROM category_groups WHERE id = $1', [withGroup.createdGroupId])).rows[0].icon_name, 'film')
+
+    console.log('Transaction checks passed: request ids, balances, negative balances, recent per account, date range, left out of the figures, accounts left out, archived accounts kept, batches, suggested categories.')
   } finally {
     await cleanup()
   }

@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import {
+  FilmIcon,
   ArrowDownLeftIcon,
   ArrowLeftRightIcon,
   ArrowUpRightIcon,
@@ -242,17 +243,17 @@ function CardSection() {
           ]}
         />
       </Block>
-      <Block label="Lưới chọn (PickGrid) · hạng mục, ngân hàng; ô cuối mở danh sách đủ">
+      <Block label="Lưới chọn (PickGrid) · hạng mục, ngân hàng; ô cuối mở danh sách đủ; ô đầu: hạng mục sẽ tạo (IconTile badge Mới)">
         <PickGrid
           id="ds-pick-grid"
           caption="Hạng mục"
           items={[
+            { id: "new", label: "Xem phim", media: <IconTile icon={FilmIcon} tone="card" badge="Mới" /> },
             { id: "food", label: "Ăn uống", media: <IconTile icon={UtensilsCrossedIcon} tone="orange" /> },
             { id: "save", label: "Tiết kiệm", media: <IconTile icon={PiggyBankIcon} tone="pink" /> },
             { id: "bills", label: "Hoá đơn", media: <IconTile icon={FileTextIcon} tone="blue" /> },
             { id: "invest", label: "Đầu tư", media: <IconTile icon={TrendingUpIcon} tone="emerald" /> },
             { id: "gift", label: "Quà tặng", media: <IconTile icon={SparklesIcon} tone="violet" /> },
-            { id: "tag", label: "Mua sắm trực tuyến", media: <IconTile icon={TagIcon} tone="amber" /> },
             { id: "transfer", label: "Chuyển tiền", media: <IconTile icon={ArrowLeftRightIcon} /> },
           ]}
           value={gridPick}

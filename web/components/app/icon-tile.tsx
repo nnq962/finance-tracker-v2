@@ -30,6 +30,8 @@ const iconTileVariants = cva(
 // Meaning colours, for tiles that are not about a category.
 const semanticTones = {
   neutral: "bg-muted text-foreground",
+  // A plain tile that shows on white and grey alike (a bg-field list, a chosen grid cell), where bg-muted vanishes.
+  card: "bg-card text-foreground ring-1 ring-border ring-inset",
   income: "tile-tinted [--tile:var(--income)]",
   expense: "tile-tinted [--tile:var(--expense)]",
   transfer: "tile-tinted [--tile:var(--transfer)]",
@@ -44,23 +46,37 @@ export type IconTileTone = keyof typeof semanticTones | CategoryColorName
  * the row by shape and a hint of colour before reading it. `tone` is a
  * category's colour or a meaning colour, toned down towards grey with the
  * icon in ink (tile-tinted), so a list reads calm rather than as a rainbow;
- * `neutral` is a grey tile.
+ * `neutral` is a grey tile (`card`, white with a fine line, where it may sit
+ * on grey). `badge`: a short word on its top right corner, as on an app icon
+ * ("Mới" for a category still to be made), in the AI's lime ringed in the
+ * card's colour, standing out only a little so it stays clear of the text
+ * beside or under the tile; a plain tile keeps it easy to read.
  */
 export function IconTile({
   icon: Icon,
   tone = "neutral",
   size,
   shape,
+  badge,
   className,
-}: { icon: LucideIcon; tone?: IconTileTone; className?: string } & VariantProps<typeof iconTileVariants>) {
+}: { icon: LucideIcon; tone?: IconTileTone; badge?: string; className?: string } & VariantProps<typeof iconTileVariants>) {
   const toneClassName =
     tone in semanticTones
       ? semanticTones[tone as keyof typeof semanticTones]
       : cn("tile-tinted", getCategoryColor(tone as CategoryColorName).tileClassName)
 
-  return (
+  const tile = (
     <span data-slot="icon-tile" data-size={size ?? "md"} aria-hidden="true" className={cn(iconTileVariants({ size, shape }), toneClassName, className)}>
       <Icon />
+    </span>
+  )
+  if (!badge) return tile
+  return (
+    <span className="relative inline-flex shrink-0">
+      {tile}
+      <span className="absolute -top-1.5 -right-1.5 rounded-full bg-ai px-1.5 text-[10px] leading-4 font-semibold whitespace-nowrap text-ai-foreground ring-2 ring-card">
+        {badge}
+      </span>
     </span>
   )
 }

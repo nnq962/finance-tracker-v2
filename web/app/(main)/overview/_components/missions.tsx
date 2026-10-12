@@ -17,6 +17,7 @@ import {
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
+import { useOpenAssistant } from "@/components/ai-assistant/assistant"
 import { AddAccountSheet } from "@/app/(main)/budget/_components/add-account/add-account-sheet"
 import { AddContactSheet } from "@/app/(main)/debts/_components/add-contact-sheet"
 import { AddDebtSheet } from "@/app/(main)/debts/_components/add-debt-sheet"
@@ -75,6 +76,7 @@ function unwrap<T>(result: { success: true; data: T } | { success: false; error:
  */
 export function Missions({ state, accounts, contacts, categoryGroups }: MissionsProps) {
   const router = useRouter()
+  const openAssistant = useOpenAssistant()
   const [sheet, setSheet] = React.useState<OpenSheet>(null)
   const [installGuideOpen, setInstallGuideOpen] = React.useState(false)
   // Claimed here before the page reloads with them.
@@ -119,7 +121,7 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
       title: missionTitles.ai,
       description: hasAccount ? "Gõ hoặc nói một câu" : needAccount,
       done: state.done.ai,
-      start: () => (hasAccount ? router.push("/transactions?ai=1") : setSheet("account")),
+      start: () => (hasAccount ? openAssistant() : setSheet("account")),
     },
     {
       key: "transfer",

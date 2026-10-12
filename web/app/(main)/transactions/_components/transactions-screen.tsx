@@ -6,6 +6,7 @@ import { PlusIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { AiAssistButton } from "@/components/ai-assist/ai-assist-button"
+import { useOpenAssistant } from "@/components/ai-assistant/assistant"
 import { Collapse } from "@/components/app/collapse"
 import { FloatingActions } from "@/components/app/floating-actions"
 import { MonthSelect } from "@/components/app/month-select"
@@ -28,7 +29,6 @@ import { forFigures } from "@/lib/transactions/types"
 import type { Transaction, TransactionFilter, TransactionSearchFilters } from "../_types/transaction"
 import { AddTransactionButton } from "./add-transaction-button"
 import { AddTransactionSheet } from "./add-transaction/add-transaction-sheet"
-import { AiTransactionDrawer } from "./ai-transaction/ai-transaction-drawer"
 import { NeedAccountState } from "./add-transaction/need-account-state"
 import { TransactionHistoryProvider } from "./add-transaction/transaction-history-context"
 import { MonthSummary } from "./month-summary"
@@ -55,10 +55,6 @@ type TransactionsScreenProps = {
   transactions: Transaction[]
   /** This month's AI requests, the plan's limit and AI credits, as the page loaded. */
   aiQuota: AiQuota
-  /** Opens the AI assistant straight away. */
-  initialAiOpen?: boolean
-  /** A sentence for it to read as it opens, handed over by the app's assistant. */
-  initialAiRequest?: { text: string; key: string }
   /** Opened from a reminder to write something down. */
   initialAddOpen?: boolean
   /** A Pro purchase to write down, opened from the plan screen or an admin's sale notice. */
@@ -92,9 +88,7 @@ export function TransactionsScreen({
   selectedMonth,
   todayDateKey,
   transactions,
-  aiQuota: initialAiQuota,
-  initialAiOpen = false,
-  initialAiRequest,
+  aiQuota,
   initialAddOpen = false,
   purchaseDraft,
 }: TransactionsScreenProps) {
@@ -134,9 +128,9 @@ export function TransactionsScreen({
   }, [allMonths, everyTransaction, transactions])
 
   const hasAccount = accounts.some((account) => account.status === "active")
-  const [aiOpen, setAiOpen] = React.useState(initialAiOpen && hasAccount)
   // Without an account the AI could not save what it reads, so it asks for one first.
-  const [needAccountOpen, setNeedAccountOpen] = React.useState(initialAiOpen && !hasAccount)
+  const [needAccountOpen, setNeedAccountOpen] = React.useState(false)
+  const openAssistant = useOpenAssistant()
   // Kept after the link's address is cleared, so the sheet stays filled in.
   const [draft] = React.useState(purchaseDraft)
   const [draftOpen, setDraftOpen] = React.useState(Boolean(purchaseDraft && !purchaseDraft.recorded))
@@ -148,22 +142,8 @@ export function TransactionsScreen({
     // Reloading the page should not open the draft again.
     window.history.replaceState(null, "", pathname)
   }, [draft, pathname])
-  const openAi = () => (hasAccount ? setAiOpen(true) : setNeedAccountOpen(true))
-  // A sentence handed over by the app's assistant, also while this page is
-  // already open (the address changes, the page stays): read as it opens.
-  const [aiRequest, setAiRequest] = React.useState(hasAccount ? initialAiRequest?.text : undefined)
-  const [aiRequestKey, setAiRequestKey] = React.useState(initialAiRequest?.key)
-  if (initialAiRequest && initialAiRequest.key !== aiRequestKey) {
-    setAiRequestKey(initialAiRequest.key)
-    if (hasAccount) {
-      setAiRequest(initialAiRequest.text)
-      setAiOpen(true)
-    } else {
-      setNeedAccountOpen(true)
-    }
-  }
-  // Follows each request's answer, which carries the count after it.
-  const [aiQuota, setAiQuota] = React.useState(initialAiQuota)
+  // Writing down by AI is LiuLiu's, the app's assistant (2026-10-12).
+  const openAi = () => (hasAccount ? openAssistant() : setNeedAccountOpen(true))
   const aiMonthRemaining = Math.max(0, aiQuota.limit - aiQuota.used)
   // Credits from missions count once the month's requests are used up.
   const aiRemaining = aiMonthRemaining + aiQuota.credits
@@ -391,17 +371,6 @@ export function TransactionsScreen({
           onOpenChange={setDraftOpen}
         />
       ) : null}
-      <AiTransactionDrawer
-        open={aiOpen}
-        onOpenChange={setAiOpen}
-        accounts={accounts}
-        categoryGroups={categoryGroups}
-        todayDateKey={todayDateKey}
-        quota={{ remaining: aiMonthRemaining, limit: aiQuota.limit, credits: aiQuota.credits }}
-        onQuotaChange={setAiQuota}
-        initialRequest={aiRequest}
-        onInitialRequestTaken={() => setAiRequest(undefined)}
-      />
     </TransactionHistoryProvider>
   )
 }
