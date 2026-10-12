@@ -30,7 +30,7 @@ export function MonthSummary({
       tiles={[
         {
           value: "income",
-          label: "Tiền vào",
+          label: "Thu",
           amount: totals.income,
           caption: `${count("income")} giao dịch`,
           icon: ArrowDownLeftIcon,
@@ -38,7 +38,7 @@ export function MonthSummary({
         },
         {
           value: "expense",
-          label: "Tiền ra",
+          label: "Chi",
           amount: totals.expense,
           caption: `${count("expense")} giao dịch`,
           icon: ArrowUpRightIcon,

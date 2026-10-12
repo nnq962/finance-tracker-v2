@@ -32,6 +32,16 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "5.4.0",
+    date: "2026-10-12",
+    title: "Tài khoản ngừng sử dụng giữ nguyên số dư",
+    changes: [
+      { kind: "improved", text: "Tài khoản ngừng sử dụng giữ nguyên số dư: không đổi số tiền hay xoá giao dịch của nó cho đến khi dùng lại (vẫn sửa được ghi chú, hạng mục, ngày)" },
+      { kind: "improved", text: "Trang Giao dịch gọi là Thu / Chi, phân biệt với tiền vào ra của từng tài khoản" },
+      { kind: "fixed", text: "LiuLiu không còn tính chuyển khoản giữa các tài khoản của bạn là cả tiền vào lẫn tiền ra, và bỏ tài khoản không tính khi hỏi tiền vào ra" },
+    ],
+  },
+  {
     version: "5.3.0",
     date: "2026-10-12",
     title: "Tiền lãi vay vào thu chi",

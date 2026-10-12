@@ -837,11 +837,21 @@ async function answerAccountFlow(plan: QuestionPlan, sources: AnswerSources): Pr
   const { today } = sources
   const range = resolvePeriod(plan.period.preset === "all" ? { ...plan.period, preset: "this_month" } : plan.period, today)
   const flows = await sources.flows(range.start, range.end)
+  // Accounts left out of the figures only when named.
   const chosen = plan.accountIds.length
     ? sources.accounts.filter((account) => plan.accountIds.includes(account.id))
-    : sources.accounts.filter((account) => account.status === "active")
-  const moneyIn = chosen.reduce((sum, account) => sum + (flows[account.id]?.moneyIn ?? 0), 0)
-  const moneyOut = chosen.reduce((sum, account) => sum + (flows[account.id]?.moneyOut ?? 0), 0)
+    : sources.accounts.filter((account) => account.status === "active" && !account.excluded)
+  // Money moved between two of the chosen accounts went neither in nor out
+  // of them together; only its fee left.
+  const chosenIds = new Set(chosen.map((account) => account.id))
+  const within =
+    chosen.length > 1
+      ? (await sources.transactions(range.start, range.end))
+          .filter((row) => row.kind === "transfer" && chosenIds.has(row.fromAccountId ?? "") && chosenIds.has(row.toAccountId ?? ""))
+          .reduce((sum, row) => sum + Math.abs(row.amount), 0)
+      : 0
+  const moneyIn = chosen.reduce((sum, account) => sum + (flows[account.id]?.moneyIn ?? 0), 0) - within
+  const moneyOut = chosen.reduce((sum, account) => sum + (flows[account.id]?.moneyOut ?? 0), 0) - within
   const highest = Math.max(moneyIn, moneyOut, 1)
   const one = chosen.length === 1 ? chosen[0] : undefined
   return {

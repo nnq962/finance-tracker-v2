@@ -451,6 +451,23 @@ export async function createTransaction(
   })
 }
 
+/**
+ * An archived account's balance stays as it was left: a change that would
+ * move it (an amount, an account, a delete) waits until it is used again,
+ * as its own balance and its loans do. A note, a category or a date may
+ * still change.
+ */
+function assertNoArchivedChange(accounts: Map<string, LockedAccount>, impacts: Map<string, number>) {
+  for (const [accountId, delta] of impacts) {
+    const account = accounts.get(accountId)
+    if (delta !== 0 && account?.status === "archived") {
+      throw new TransactionValidationError(
+        `“${account.name}” đã ngừng sử dụng. Dùng lại tài khoản này trước khi đổi số tiền hoặc xoá giao dịch.`,
+      )
+    }
+  }
+}
+
 async function lockExisting(
   trx: DbTransaction<DB>,
   userId: string,
@@ -497,6 +514,7 @@ export async function updateTransaction(
 
     getBalanceImpacts(existing).forEach((delta, accountId) => merge(accountId, -delta))
     getBalanceImpacts(toMovement(values)).forEach((delta, accountId) => merge(accountId, delta))
+    assertNoArchivedChange(accounts, impacts)
 
     await applyImpacts(trx, accounts, impacts)
     await trx
@@ -527,6 +545,7 @@ export async function deleteTransaction(userId: string, transactionId: string) {
     const impacts = new Map<string, number>()
 
     getBalanceImpacts(existing).forEach((delta, accountId) => impacts.set(accountId, -delta))
+    assertNoArchivedChange(accounts, impacts)
     await applyImpacts(trx, accounts, impacts)
     await trx.deleteFrom("transactions").where("id", "=", transactionId).execute()
   })

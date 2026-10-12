@@ -145,7 +145,19 @@ async function run() {
     await sql('UPDATE accounts SET excluded = false WHERE id = $1', [wallet])
     assert.ok((await transactions.getTransactions(userId)).some((row) => row.accountId === wallet && !isLeftOut(row)))
 
-    console.log('Transaction checks passed: request ids, balances, negative balances, recent per account, date range, left out of the figures, accounts left out.')
+    // An archived account's balance stays as it was left: no amount change or
+    // delete moves it, while a note may still change.
+    const kept = randomUUID()
+    await transactions.createTransaction(userId, { ...expense, amount: 3_000 }, kept)
+    await sql("UPDATE accounts SET status = 'archived' WHERE id = $1", [wallet])
+    const archivedBalance = await balance(wallet)
+    await assert.rejects(() => transactions.updateTransaction(userId, kept, { ...expense, amount: 4_000 }))
+    await assert.rejects(() => transactions.deleteTransaction(userId, kept))
+    await transactions.updateTransaction(userId, kept, { ...expense, amount: 3_000, note: 'Ghi chú' })
+    assert.equal(await balance(wallet), archivedBalance)
+    await sql("UPDATE accounts SET status = 'active' WHERE id = $1", [wallet])
+
+    console.log('Transaction checks passed: request ids, balances, negative balances, recent per account, date range, left out of the figures, accounts left out, archived accounts kept.')
   } finally {
     await cleanup()
   }

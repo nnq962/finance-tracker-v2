@@ -33,8 +33,8 @@ import type {
 /** The kinds a list can be narrowed to, as chips. */
 export const transactionKindOptions = [
   { label: "Tất cả", value: "all" },
-  { label: "Tiền vào", value: "income" },
-  { label: "Tiền ra", value: "expense" },
+  { label: "Thu", value: "income" },
+  { label: "Chi", value: "expense" },
   { label: "Chuyển khoản", value: "transfer" },
   { label: "Vay nợ", value: "debt" },
 ] as const satisfies readonly { label: string; value: TransactionFilter }[]
