@@ -21,7 +21,8 @@ import { classifyRequest } from "./intent"
 import { buildQuestionPrompt, questionPlanSchema, readQuestionReply } from "./question-plan"
 import type { Answer, AssistantContext, AssistantReply, QuestionPlan } from "./types"
 
-const MAX_LENGTH = 300
+// Long enough for ten transactions told at once.
+const MAX_LENGTH = 600
 
 /** A Vietnam day's start, as a moment. */
 const dayStart = (dateKey: string) => new Date(`${dateKey}T00:00:00+07:00`)
@@ -123,7 +124,7 @@ export async function askAssistantAction(request: string, previous?: unknown): P
   if (intent === "usage") return { kind: "usage", answer: await usageAnswer(user.uid) }
   if (intent === "chat") {
     if (!takeChat(user.uid)) {
-      return { kind: "chat", limited: true, text: `Hôm nay mình với bạn nói chuyện nhiều rồi đó 😄 Mai ${ASSISTANT_NAME} lại tán gẫu tiếp nhé, giờ mình quay lại chuyện tiền nong thôi.` }
+      return { kind: "chat", limited: true, text: `Hôm nay ní tám với tui quá trời rồi đó, ${ASSISTANT_NAME} hết pin xã giao rồi 🪫 Mai tám tiếp, giờ hỏi chuyện tiền nong thôi nha.` }
     }
     try {
       return { kind: "chat", text: await chatReply(text, context) }

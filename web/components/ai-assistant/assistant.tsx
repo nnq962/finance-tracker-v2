@@ -269,9 +269,9 @@ function Composer({ assistant }: { assistant: Assistant }) {
             value={text}
             onChange={(event) => setText(event.target.value)}
             enterKeyHint="send"
-            maxLength={300}
+            maxLength={600}
             aria-label="Câu hỏi cho trợ lý"
-            placeholder={phase === "result" ? "Hỏi tiếp…" : "Hỏi về tiền của bạn…"}
+            placeholder={phase === "result" ? "Hỏi tiếp…" : "Hỏi hoặc kể khoản chi…"}
             className="w-full min-w-0 bg-transparent text-base outline-none placeholder:text-muted-foreground"
           />
         )}
@@ -442,7 +442,7 @@ function Talk({ assistant, onNavigate }: BodyProps) {
               <p className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
                 <BotIcon blink="once" className="size-4 text-ai-strong" /> LiuLiu
               </p>
-              <p className="text-lg font-semibold">Bạn muốn biết gì?</p>
+              <p className="text-lg font-semibold">Nay ní cháy ví vụ gì dzậy?</p>
             </div>
             <div className="flex flex-wrap gap-2">
               {suggestions.map((text) => (
@@ -505,9 +505,9 @@ function MorphCard({ contentKey, children }: { contentKey: string; children: Rea
 
 /** Steps of the wait, said as they would happen: sorting the question, reading it, looking it up. */
 const thinkingSteps = [
-  { at: 0, text: "Đang hiểu câu hỏi…" },
-  { at: 1500, text: "Đang tìm trong giao dịch của bạn…" },
-  { at: 4000, text: "Sắp xong…" },
+  { at: 0, text: "Đợi tui xíu…" },
+  { at: 1500, text: "Đang lục sổ của ní…" },
+  { at: 4000, text: "Sắp xong rồi, đừng hối…" },
 ]
 
 function Thinking() {

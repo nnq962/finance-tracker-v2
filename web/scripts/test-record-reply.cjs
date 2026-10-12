@@ -79,4 +79,13 @@ assert.equal(read(Array.from({ length: 14 }, () => ({ ...blank, kind: 'expense',
 assert.deepEqual(readRecordReply({ isTransaction: false, items: [{ ...blank, kind: 'expense', amount: 1 }] }, { request: 'x', lists, today, now: '19:00', lastAccountIds: {} }), [])
 assert.deepEqual(readRecordReply('nonsense', { request: 'x', lists, today, now: '19:00', lastAccountIds: {} }), [])
 
+// Said for later today: clamped to now, as a time after now cannot be saved.
+const [tonight] = read([{ ...blank, kind: 'expense', amount: 1, dayPeriod: 'tối' }])
+assert.equal(tonight.time, '19:00')
+const [early] = readRecordReply({ isTransaction: true, items: [{ ...blank, kind: 'expense', amount: 1, dayPeriod: 'tối' }] }, { request: 'x', lists, today, now: '08:15', lastAccountIds: {} })
+assert.equal(early.time, '08:15')
+// A transfer never ends on the account it leaves, the fallback included.
+const [sameSide] = read([{ ...blank, kind: 'transfer', amount: 1, toAccountId: key('accounts', 'momo') }], { transfer: 'momo' })
+assert.deepEqual([sameSide.accountId, sameSide.toAccountId], ['momo', undefined])
+
 console.log('Record reply checks passed.')

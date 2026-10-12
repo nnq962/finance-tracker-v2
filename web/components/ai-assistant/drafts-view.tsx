@@ -24,10 +24,14 @@ import type { Account } from "@/lib/accounts/types"
 import type { AssistantDraft } from "@/lib/ai/assistant/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCompactCurrency } from "@/lib/format-currency"
-import { formatShortDate, toDateKey } from "@/lib/format-date"
+import { getCurrentLocalDateTime } from "@/lib/date-time"
+import { formatShortDate } from "@/lib/format-date"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import type { SupportedTransactionKind, Transaction } from "@/lib/transactions/types"
 import { cn } from "@/lib/utils"
+
+/** Each turn's drafts as last left, by its first draft's id, for the card shown again. */
+const draftsCache = new Map<string, { drafts: AssistantDraft[]; saved: SavedDrafts | null }>()
 
 /** What a draft still needs before it can be saved, in the words its row shows; null when ready. */
 function missing(draft: AssistantDraft) {
@@ -36,6 +40,9 @@ function missing(draft: AssistantDraft) {
   if (draft.kind === "transfer" && !draft.toAccountId) return "Chọn tài khoản nhận"
   // A suggested category is made as it is saved (2026-10-12).
   if (draft.kind !== "transfer" && !draft.categoryId && !draft.suggestedCategory) return "Chọn hạng mục"
+  // A time after now cannot be saved (changed in the form, or a clock moved on).
+  const now = getCurrentLocalDateTime()
+  if (draft.date > now.date || (draft.date === now.date && draft.time > now.time)) return "Giờ ở tương lai, chạm để sửa"
   return null
 }
 
@@ -107,6 +114,8 @@ function fromForm(formData: FormData, draft: AssistantDraft): AssistantDraft {
     toAccountId: kind === "transfer" ? text("toAccountId") || undefined : undefined,
     // The suggested category kept ("Mới" in the grid), or one picked instead.
     categoryId: kind === "transfer" || text("categoryId") === NEW_CATEGORY_ID ? undefined : text("categoryId") || undefined,
+    // A suggestion belongs to its kind: switching kind drops it.
+    suggestedCategory: kind === draft.kind ? draft.suggestedCategory : undefined,
     fee: kind === "transfer" ? Number(text("fee")) || 0 : 0,
     excluded: kind !== "transfer" && (formData.get("excluded") === "on"),
   }
@@ -129,11 +138,26 @@ export function DraftsView({
   categoryGroups: CategoryGroup[]
 }) {
   const router = useRouter()
-  const [drafts, setDrafts] = React.useState(initial)
+  // Kept by turn, so the card shown again (a question stopped midway brings
+  // it back) has its edits and its saved state, not the AI's first reading.
+  const turnKey = initial[0]?.id ?? ""
+  const [drafts, setDraftsState] = React.useState(() => draftsCache.get(turnKey)?.drafts ?? initial)
+  const setDrafts = (next: AssistantDraft[] | ((current: AssistantDraft[]) => AssistantDraft[])) =>
+    setDraftsState((current) => {
+      const value = typeof next === "function" ? next(current) : next
+      draftsCache.set(turnKey, { drafts: value, saved: draftsCache.get(turnKey)?.saved ?? null })
+      return value
+    })
   const [editing, setEditing] = React.useState<string | null>(null)
-  const [saved, setSaved] = React.useState<SavedDrafts | null>(null)
+  const [saved, setSavedState] = React.useState<SavedDrafts | null>(() => draftsCache.get(turnKey)?.saved ?? null)
+  const setSaved = (value: SavedDrafts | null) => {
+    draftsCache.set(turnKey, { drafts: draftsCache.get(turnKey)?.drafts ?? drafts, saved: value })
+    setSavedState(value)
+  }
+  // The toast offering Hoàn tác, closed once it no longer fits (undone, saved again).
+  const undoToast = React.useRef<string | number | undefined>(undefined)
   const [isPending, startTransition] = React.useTransition()
-  const today = toDateKey(new Date())
+  const today = getCurrentLocalDateTime().date
 
   const accountName = (id?: string) => accounts.find((account) => account.id === id)?.name
   const category = (id?: string) => {
@@ -165,6 +189,7 @@ export function DraftsView({
         return
       }
       setSaved(null)
+      toast.dismiss(undoToast.current)
       toast.success("Đã hoàn tác")
       router.refresh()
     })
@@ -193,7 +218,8 @@ export function DraftsView({
       const done = { ids: result.ids, categoryIds: result.categoryIds, groupIds: result.groupIds }
       setSaved(done)
       const made = done.categoryIds.length ? ` và ${done.categoryIds.length} hạng mục mới` : ""
-      toast.success(`${done.ids.length > 1 ? `Đã ghi ${done.ids.length} giao dịch` : "Đã ghi giao dịch"}${made}`, {
+      toast.dismiss(undoToast.current)
+      undoToast.current = toast.success(`${done.ids.length > 1 ? `Đã ghi ${done.ids.length} giao dịch` : "Đã ghi giao dịch"}${made}`, {
         action: { label: "Hoàn tác", onClick: () => undo(done) },
       })
       router.refresh()

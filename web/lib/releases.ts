@@ -32,6 +32,20 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "5.6.1",
+    date: "2026-10-12",
+    title: "LiuLiu lầy hơn, ghi giao dịch chắc hơn",
+    changes: [
+      { kind: "improved", text: "LiuLiu đổi giọng Gen Z: xưng tui, gọi ní, hay cà khịa chuyện cháy ví; gặp chuyện buồn thật thì thôi đùa" },
+      { kind: "fixed", text: "Khoản nói cho tối nay hay giờ sắp tới được ghi vào giờ hiện tại, không còn lưu không được mà không rõ lý do" },
+      { kind: "fixed", text: "Một khoản lưu không được thì không còn để lại hạng mục mới vừa tạo" },
+      { kind: "fixed", text: "Chuyển khoản không nói tài khoản nguồn không còn bị trùng tài khoản hai bên" },
+      { kind: "fixed", text: "Đổi khoản chi thành khoản thu trong form thì bỏ gợi ý hạng mục chi cũ" },
+      { kind: "fixed", text: "Hoàn tác chỉ thu hồi hạng mục mới khi chưa có giao dịch nào khác dùng nó" },
+      { kind: "fixed", text: "Thẻ ghi giao dịch giữ nguyên chỗ đã sửa và trạng thái đã lưu khi hiện lại; câu nói dài hơn (tối đa 600 ký tự)" },
+    ],
+  },
+  {
     version: "5.6.0",
     date: "2026-10-12",
     title: "LiuLiu ghi nhiều giao dịch một lần",

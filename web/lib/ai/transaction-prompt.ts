@@ -511,7 +511,9 @@ export function readTransactionReply(
     kind !== "transfer" && found && !category && !cleanName(value.newCategoryName)
       ? { newCategoryName: found.group.name, newGroupName: found.group.name }
       : {}
-  const fromId = accountId(value.accountId)
+  // The account the money leaves (or, for income, comes into): the one said,
+  // else the fallback; a transfer's other side is compared with that.
+  const fromId = accountId(value.accountId) ?? fallbackAccountId(kind)
   // A withdrawal that does not say where to goes into cash, which the model
   // knows but does not always tie to a cash account under another name ("Ví").
   const cash = lists.accounts.find(({ account }) => account.type === "cash" && account.id !== fromId)
@@ -536,8 +538,7 @@ export function readTransactionReply(
       : category
         ? { categoryId: category.id }
         : readNewCategory({ ...value, ...crossed }, kind, lists)),
-    // Unsaid, the money comes from the first account, as the add sheet starts.
-    accountId: fromId ?? fallbackAccountId(kind),
+    accountId: fromId,
     toAccountId: toId !== fromId ? toId : undefined,
     date: resolveDay(value, today),
     time: resolveTime(value, now),
@@ -577,6 +578,9 @@ export function readRecordReply(
       },
     )
     if (!draft) return []
+    // Said for later today ("tối nay" in the morning): not yet happened, so now,
+    // as a time after now cannot be saved.
+    if (draft.date === context.today && draft.time > context.now) draft.time = context.now
     const fee = fields.fee
     return [
       {

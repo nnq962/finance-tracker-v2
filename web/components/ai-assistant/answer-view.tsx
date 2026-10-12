@@ -311,8 +311,8 @@ export function ReplyView({
     case "unread":
       return (
         <AnswerShell
-          kicker="Chưa đọc được khoản nào"
-          line="Nói rõ số tiền và việc chi, ví dụ “ăn phở 35k” hoặc “cà phê 25k, ăn trưa 50k”. Câu này chưa bị tính lượt."
+          kicker="Ủa khoản nào dzậy ní?"
+          line="Tui chưa thấy số tiền đâu hết. Nói kiểu “ăn phở 35k, cà phê 25k” là tui ghi liền. Câu này khum tính lượt nha."
         />
       )
     case "chat":
@@ -328,23 +328,23 @@ export function ReplyView({
     case "action":
       return (
         <AnswerShell
-          kicker="Chưa làm được việc này"
-          line="Trợ lý hiện trả lời câu hỏi và ghi thu chi. Ghi vay nợ, sửa hay xoá giao dịch sẽ có sau."
+          kicker="Vụ này tui chưa làm được"
+          line="Tui mới biết trả lời và ghi thu chi thôi. Ghi vay nợ, sửa hay xoá giao dịch thì đợi tui lên level nha 😤"
           follow={chips}
         />
       )
     case "other":
       return (
         <AnswerShell
-          kicker="Chưa trả lời được"
-          line="Mình chỉ trả lời về tiền bạn đã ghi trong app: chi tiêu, thu nhập, số dư và các khoản nợ."
+          kicker="Câu này khó quá ní ơi"
+          line="Tui chỉ rành tiền ní đã ghi trong app thôi: chi tiêu, thu nhập, số dư, ai nợ ai."
           follow={chips}
         />
       )
     case "quota":
       return (
         <AnswerShell
-          kicker="Hết lượt AI tháng này"
+          kicker="Hết lượt AI tháng này rồi ní ơi"
           figure={
             <p className="text-xl font-semibold">
               {reply.quota.limit}/{reply.quota.limit} lượt đã dùng
@@ -364,7 +364,7 @@ export function ReplyView({
       )
     case "unheard":
       return (
-        <AnswerShell kicker="Chưa nghe rõ" line={`${reply.message} Thử nói gần micro hơn, hoặc gõ câu hỏi bên dưới.`}>
+        <AnswerShell kicker="Tui nghe hong rõ" line={`${reply.message} Nói to rõ gần micro xíu, hoặc gõ vô dưới kia cũng được.`}>
           <Button onClick={listen}>
             <MicIcon /> Nói lại
           </Button>
@@ -372,7 +372,7 @@ export function ReplyView({
       )
     default:
       return (
-        <AnswerShell kicker="Chưa kết nối được" line="Mạng chậm hoặc AI đang bận. Câu này chưa bị tính lượt.">
+        <AnswerShell kicker="Lag rồi ní ơi" line="Mạng chậm hay tui đang ngáo xíu. Thử lại phát nữa nha, câu này chưa bị tính lượt.">
           {said ? (
             <Button variant="secondary" onClick={() => ask(said)}>
               Thử lại

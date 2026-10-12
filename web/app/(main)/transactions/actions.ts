@@ -3,6 +3,7 @@
 import { revalidatePath, updateTag } from "next/cache"
 
 import { MAX_RECORD_ITEMS } from "@/lib/ai/transaction-prompt"
+import { getDb } from "@/lib/db/client"
 import { requireSession } from "@/lib/auth/session"
 import { categoryGroupsCacheTag } from "@/lib/cache-tags"
 import { archiveCategoryGroup, archiveCategoryItem } from "@/lib/categories/repository"
@@ -169,22 +170,18 @@ export async function saveCheckedDraftsAction(
     if (!Array.isArray(drafts) || drafts.length === 0 || drafts.length > MAX_RECORD_ITEMS) {
       throw new TransactionValidationError("Không có giao dịch hợp lệ để lưu.")
     }
-    // The suggested categories first, one per name and kind however many
-    // drafts share it (a name the user already has is used as it is).
-    const madeFor = new Map<string, string>()
-    for (const draft of drafts) {
-      if (draft.kind === "transfer" || draft.categoryId || !draft.newCategory) continue
-      const key = `${draft.kind}:${draft.newCategory.name.trim().toLocaleLowerCase("vi-VN")}`
-      if (!madeFor.has(key)) {
-        const created = await createSuggestedCategory(user.uid, { type: draft.kind, ...draft.newCategory })
-        madeFor.set(key, created.itemId)
-        if (created.createdItem) made.categoryIds.push(created.itemId)
-        if (created.createdGroupId) made.groupIds.push(created.createdGroupId)
-      }
-      draft.categoryId = madeFor.get(key)
-    }
-    if (made.categoryIds.length) updateTag(categoryGroupsCacheTag(user.uid))
+    // Each read as the form's would be, before anything is made: a draft
+    // that cannot be saved leaves no category behind. One still to be made
+    // stands in under a placeholder id, swapped once it exists.
+    const placeholder = "00000000-0000-4000-8000-000000000000"
     const items = drafts.map((draft, index) => {
+      if (draft.kind !== "expense" && draft.kind !== "income" && draft.kind !== "transfer") {
+        throw new TransactionValidationError("Loại giao dịch không hợp lệ.")
+      }
+      const pending = draft.kind !== "transfer" && !draft.categoryId && draft.newCategory
+      if (pending && (typeof draft.newCategory?.name !== "string" || typeof draft.newCategory.groupName !== "string")) {
+        throw new TransactionValidationError("Hạng mục mới không hợp lệ.")
+      }
       const formData = new FormData()
       const fields: Record<string, unknown> = {
         kind: draft.kind,
@@ -194,12 +191,12 @@ export async function saveCheckedDraftsAction(
         time: draft.time,
         ...(draft.kind === "transfer"
           ? { fromAccountId: draft.accountId, toAccountId: draft.toAccountId, fee: draft.fee }
-          : { accountId: draft.accountId, categoryId: draft.categoryId, excluded: draft.excluded ? "on" : "" }),
+          : { accountId: draft.accountId, categoryId: pending ? placeholder : draft.categoryId, excluded: draft.excluded ? "on" : "" }),
       }
       for (const [key, value] of Object.entries(fields)) if (value !== undefined && value !== null) formData.set(key, String(value))
       assertTransactionId(draft.id)
       try {
-        return { values: parseTransactionFormData(formData), requestId: draft.id }
+        return { values: parseTransactionFormData(formData), requestId: draft.id, newCategory: pending ? draft.newCategory : undefined }
       } catch (error) {
         // Says which one, when there are several.
         if (error instanceof TransactionValidationError && drafts.length > 1) {
@@ -208,7 +205,28 @@ export async function saveCheckedDraftsAction(
         throw error
       }
     })
+
+    // Already saved (a second tap, or the card shown again): nothing more to
+    // make or write, and nothing for this save to take back.
+    const fresh = await unsavedIds(user.uid, items.map((item) => item.requestId))
+    if (fresh.length === 0) return { success: true, ids: items.map((item) => item.requestId), ...made }
+
     try {
+      // The suggested categories, one per name and kind however many drafts
+      // share it (a name the user already has is used as it is).
+      const madeFor = new Map<string, string>()
+      for (const item of items) {
+        if (!item.newCategory || item.values.kind === "transfer") continue
+        const key = `${item.values.kind}:${item.newCategory.name.trim().toLocaleLowerCase("vi-VN")}`
+        if (!madeFor.has(key)) {
+          const created = await createSuggestedCategory(user.uid, { type: item.values.kind, ...item.newCategory })
+          madeFor.set(key, created.itemId)
+          if (created.createdItem) made.categoryIds.push(created.itemId)
+          if (created.createdGroupId) made.groupIds.push(created.createdGroupId)
+        }
+        item.values = { ...item.values, categoryId: madeFor.get(key)! }
+      }
+      if (made.categoryIds.length) updateTag(categoryGroupsCacheTag(user.uid))
       await createTransactions(user.uid, items)
     } catch (error) {
       // Nothing was written down: what was made for it goes too.
@@ -223,11 +241,45 @@ export async function saveCheckedDraftsAction(
   }
 }
 
-/** Archives categories (and groups) a save made, once nothing uses them. */
+/**
+ * Archives categories (and groups) a save made, but only while nothing else
+ * uses them: a category no transaction is under, a group with no other
+ * active category, both made within the day (the ids come from the client).
+ */
 async function takeBackCategories(userId: string, made: Omit<SavedDrafts, "ids">) {
-  for (const id of made.categoryIds) await archiveCategoryItem(userId, id).catch(() => undefined)
-  for (const id of made.groupIds) await archiveCategoryGroup(userId, id).catch(() => undefined)
-  if (made.categoryIds.length || made.groupIds.length) updateTag(categoryGroupsCacheTag(userId))
+  const since = new Date(Date.now() - 86_400_000)
+  const unused = made.categoryIds.length
+    ? await getDb()
+        .selectFrom("categoryItems as ci")
+        .select("ci.id")
+        .where("ci.userId", "=", userId)
+        .where("ci.id", "in", made.categoryIds)
+        .where("ci.createdAt", ">", since)
+        .where((eb) => eb.not(eb.exists(eb.selectFrom("transactions as t").select("t.id").whereRef("t.categoryItemId", "=", "ci.id"))))
+        .execute()
+    : []
+  for (const { id } of unused) await archiveCategoryItem(userId, id).catch(() => undefined)
+  const emptyGroups = made.groupIds.length
+    ? await getDb()
+        .selectFrom("categoryGroups as cg")
+        .select("cg.id")
+        .where("cg.userId", "=", userId)
+        .where("cg.id", "in", made.groupIds)
+        .where("cg.createdAt", ">", since)
+        .where((eb) =>
+          eb.not(eb.exists(eb.selectFrom("categoryItems as ci").select("ci.id").whereRef("ci.groupId", "=", "cg.id").where("ci.status", "=", "active"))),
+        )
+        .execute()
+    : []
+  for (const { id } of emptyGroups) await archiveCategoryGroup(userId, id).catch(() => undefined)
+  if (unused.length || emptyGroups.length) updateTag(categoryGroupsCacheTag(userId))
+}
+
+/** Which of these transaction ids the user has not saved yet. */
+async function unsavedIds(userId: string, ids: string[]) {
+  const saved = await getDb().selectFrom("transactions").select("id").where("userId", "=", userId).where("id", "in", ids).execute()
+  const have = new Set(saved.map((row) => row.id))
+  return ids.filter((id) => !have.has(id))
 }
 
 /** Takes back transactions just saved from the assistant, all or none, and the categories made for them. */
