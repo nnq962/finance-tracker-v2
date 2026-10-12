@@ -60,4 +60,17 @@ assert.deepEqual(summarizeAllocation(transactions), {
   '2026-09': { expense: { food: 500_000 }, income: { other: 2_000_000 } },
 })
 
+// A transfer's fee is spending everywhere, in a group of its own, unless the
+// account paying it is left out of the figures; the transfer counts once.
+const withFee = [
+  ...transactions,
+  { id: 'fee', kind: 'transfer', amount: 1_000_000, fee: 20_000, occurredAt },
+  { id: 'fee-left-out', kind: 'transfer', amount: 1_000_000, fee: 5_000, fromAccountExcluded: true, occurredAt },
+]
+assert.equal(getOverviewSummary(accounts, debts, contacts, withFee, '2026-09-23').cashFlow.current.expense, 520_000)
+assert.deepEqual(summarizeDays(withFee)['2026-09-22'], { income: 2_000_000, expense: 520_000, count: 5 })
+assert.deepEqual(summarizeAllocation(withFee)['2026-09'].expense, { food: 500_000, 'transfer-fee': 20_000 })
+const { getTransactionSummary } = require('../app/(main)/transactions/_lib/get-transaction-summary.ts')
+assert.equal(getTransactionSummary(withFee).expense, 520_000)
+
 console.log('Overview summary checks passed.')

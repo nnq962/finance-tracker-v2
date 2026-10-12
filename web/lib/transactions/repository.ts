@@ -91,7 +91,7 @@ function selectTransactions(userId: string) {
     .select([
       "t.id", "t.kind", "t.amount", "t.fee", "t.note", "t.occurredAt", "t.debtId", "t.excluded",
       "t.accountId", "a.name as accountName", "a.excluded as accountExcluded",
-      "t.fromAccountId", "fa.name as fromAccountName",
+      "t.fromAccountId", "fa.name as fromAccountName", "fa.excluded as fromAccountExcluded",
       "t.toAccountId", "ta.name as toAccountName",
       "t.categoryItemId", "ci.name as categoryName",
       "ci.groupId as categoryGroupId", "cg.name as categoryGroupName",
@@ -122,6 +122,7 @@ function toTransaction(row: TransactionRow): Transaction {
       fee: row.fee,
       fromAccountId: row.fromAccountId ?? undefined,
       fromAccountName,
+      ...(row.fromAccountExcluded ? { fromAccountExcluded: true } : {}),
       toAccountId: row.toAccountId ?? undefined,
       toAccountName,
       note,

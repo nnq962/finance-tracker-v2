@@ -8,7 +8,7 @@ import type { Contact, Debt } from "@/lib/debts/types"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDayLabel, formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
 import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
-import { isLeftOut, type AccountFlow, type Transaction } from "@/lib/transactions/types"
+import { isLeftOut, withFees, type AccountFlow, type Transaction } from "@/lib/transactions/types"
 
 import type { AccountMark, Answer, AnswerBlock, AnswerIcon, AnswerRow, QuestionPlan } from "./types"
 
@@ -354,9 +354,14 @@ async function answerFlow(plan: QuestionPlan, sources: AnswerSources): Promise<A
       accountIds.has(transaction.toAccountId ?? "")) &&
     (!search || fold(`${transaction.note ?? ""} ${transaction.title} ${transaction.categoryName ?? ""}`).includes(search))
 
+  // Spending counts transfer fees, as an expense of their own, as every page does.
+  const load = (start: string, end: string) =>
+    sources
+      .transactions(start, end)
+      .then((rows) => (measure === "spending" || measure === "net" ? withFees(rows) : rows).filter(keep))
   const [current, previous] = await Promise.all([
-    sources.transactions(range.start, range.end).then((rows) => rows.filter(keep)),
-    before ? sources.transactions(before.start, before.end).then((rows) => rows.filter(keep)) : Promise.resolve(null),
+    load(range.start, range.end),
+    before ? load(before.start, before.end) : Promise.resolve(null),
   ])
 
   const sum = (rows: Transaction[], kind?: string) =>
@@ -698,9 +703,11 @@ async function answerNetWorth(sources: AnswerSources): Promise<Answer> {
 
 async function answerBalance(plan: QuestionPlan, sources: AnswerSources): Promise<Answer> {
   const { today } = sources
-  const active = sources.accounts.filter((account) => account.status === "active")
-  const chosen = plan.accountIds.length ? active.filter((account) => plan.accountIds.includes(account.id)) : active
-  // As the accounts page totals them: those left out of the figures are listed, not added.
+  // Every account, archived ones too, as the accounts page totals them; those
+  // left out of the figures are listed, not added.
+  const chosen = plan.accountIds.length
+    ? sources.accounts.filter((account) => plan.accountIds.includes(account.id))
+    : sources.accounts.filter((account) => account.status === "active" || account.balance !== 0)
   const leftOut = chosen.filter((account) => account.excluded)
   const total = chosen.filter((account) => !account.excluded).reduce((sum, account) => sum + account.balance, 0)
 

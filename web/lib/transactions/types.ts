@@ -63,6 +63,10 @@ export type Transaction = {
   categoryGroupId?: string
   categoryGroupName?: string
   fee?: number
+  /** A transfer whose source account (which pays the fee) is left out of the figures. */
+  fromAccountExcluded?: boolean
+  /** A transfer's fee as an expense of its own (withFees), for the figures only. */
+  isFee?: boolean
   fromAccountId?: string
   fromAccountName?: string
   toAccountId?: string
@@ -93,4 +97,40 @@ export type AccountFlow = { moneyIn: number; moneyOut: number; inCount: number; 
  */
 export function isLeftOut(transaction: Pick<Transaction, "excluded" | "accountExcluded">) {
   return Boolean(transaction.excluded || transaction.accountExcluded)
+}
+
+/** The category group key a transfer fee is summed under, as MISA's "Phí chuyển khoản". */
+export const TRANSFER_FEE_GROUP = "transfer-fee"
+export const TRANSFER_FEE_NAME = "Phí chuyển khoản"
+
+/**
+ * The transactions, and after each transfer with a fee that fee as an
+ * expense paid by the source account (left out with it), so every figure
+ * counts fees as spending the same way. For sums only; lists show the
+ * transfer alone.
+ */
+export function withFees(transactions: Transaction[]): Transaction[] {
+  return transactions.flatMap((transaction) =>
+    transaction.kind === "transfer" && transaction.fee
+      ? [
+          transaction,
+          {
+            id: `${transaction.id}:fee`,
+            isFee: true,
+            kind: "expense" as const,
+            title: TRANSFER_FEE_NAME,
+            description: `${TRANSFER_FEE_NAME} · ${transaction.fromAccountName ?? "Tài khoản"}`,
+            amount: -transaction.fee,
+            occurredAt: transaction.occurredAt,
+            note: transaction.note,
+            accountId: transaction.fromAccountId,
+            accountName: transaction.fromAccountName,
+            ...(transaction.fromAccountExcluded ? { accountExcluded: true } : {}),
+            categoryGroupId: TRANSFER_FEE_GROUP,
+            categoryGroupName: TRANSFER_FEE_NAME,
+            categoryName: TRANSFER_FEE_NAME,
+          },
+        ]
+      : [transaction],
+  )
 }

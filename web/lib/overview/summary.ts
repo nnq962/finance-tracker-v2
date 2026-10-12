@@ -1,7 +1,7 @@
 import type { Account } from "@/lib/accounts/types"
 import { getPaymentMetrics } from "@/lib/debts/calculations"
 import type { Contact, Debt } from "@/lib/debts/types"
-import { isLeftOut, type Transaction } from "@/lib/transactions/types"
+import { isLeftOut, withFees, type Transaction } from "@/lib/transactions/types"
 
 import { toDateKey as dateKey } from "@/lib/format-date"
 
@@ -46,7 +46,7 @@ export function getOverviewSummary(
   const monthByKey = new Map(months.map((month) => [month.key, month]))
   const currentMonth = today.slice(0, 7)
 
-  for (const transaction of transactions) {
+  for (const transaction of withFees(transactions)) {
     if (transaction.source || transaction.kind === "transfer" || isLeftOut(transaction)) continue
     const month = dateKey(transaction.occurredAt).slice(0, 7)
     const bucket = monthByKey.get(month)

@@ -32,6 +32,17 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "5.1.1",
+    date: "2026-10-12",
+    title: "Phí chuyển khoản tính đúng ở mọi nơi",
+    changes: [
+      { kind: "fixed", text: "Phí chuyển khoản tính là chi tiêu ở cả Tổng quan, lịch, biểu đồ phân bổ và LiuLiu, không chỉ ở trang Giao dịch" },
+      { kind: "fixed", text: "Phí trả từ tài khoản không tính không còn bị cộng vào chi tiêu" },
+      { kind: "fixed", text: "LiuLiu tính cả tài khoản ngừng sử dụng còn tiền khi trả lời tổng số dư" },
+      { kind: "improved", text: "Biểu đồ phân bổ có mục riêng \"Phí chuyển khoản\"" },
+    ],
+  },
+  {
     version: "5.1.0",
     date: "2026-10-12",
     title: "Tài khoản không tính vào thống kê",

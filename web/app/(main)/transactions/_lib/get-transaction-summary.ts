@@ -1,4 +1,4 @@
-import { isLeftOut } from "@/lib/transactions/types"
+import { isLeftOut, withFees } from "@/lib/transactions/types"
 import type {
   Transaction,
   TransactionSummaryData,
@@ -7,10 +7,11 @@ import type {
 export function getTransactionSummary(
   transactions: Transaction[],
 ): TransactionSummaryData {
-  const summary = transactions.reduce(
+  const summary = withFees(transactions).reduce(
     (totals, transaction) => {
       // Loans and repayments move money without being income or spending;
       // a transaction the user left out of the figures is left out here.
+      // A transfer's fee comes as an expense of its own (withFees).
       if (transaction.source === "debt" || isLeftOut(transaction)) return totals
 
       if (transaction.kind === "income") {
@@ -19,10 +20,6 @@ export function getTransactionSummary(
 
       if (transaction.kind === "expense") {
         totals.expense += Math.abs(transaction.amount)
-      }
-
-      if (transaction.kind === "transfer") {
-        totals.expense += transaction.fee ?? 0
       }
 
       return totals

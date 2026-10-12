@@ -1,9 +1,10 @@
-import { CircleHelpIcon, EllipsisIcon, type LucideIcon } from "lucide-react"
+import { ArrowLeftRightIcon, CircleHelpIcon, EllipsisIcon, type LucideIcon } from "lucide-react"
 
 import { getCategoryColor, type CategoryColorName } from "@/lib/categories/category-colors"
 import type { CategoryGroup, CategoryType } from "@/lib/categories/types"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import type { MonthAllocation } from "@/lib/overview/month-data"
+import { TRANSFER_FEE_GROUP, TRANSFER_FEE_NAME } from "@/lib/transactions/types"
 
 // Five groups and the rest folded into one neutral "Khác" slice.
 const MAX_SLICES = 5
@@ -42,10 +43,12 @@ export function allocationSlices(
   const slices: AllocationSlice[] = visible.map(([key, amount]) => {
     const group = groupsById.get(key)
     const color = group?.colorName ?? OTHER_COLOR
+    // Transfer fees have no category group of the user's; they get their own slice.
+    const isFee = key === TRANSFER_FEE_GROUP
     return {
       key,
-      icon: group ? categoryIconRegistry[group.iconName] : CircleHelpIcon,
-      name: group?.name ?? "Chưa phân loại",
+      icon: group ? categoryIconRegistry[group.iconName] : isFee ? ArrowLeftRightIcon : CircleHelpIcon,
+      name: group?.name ?? (isFee ? TRANSFER_FEE_NAME : "Chưa phân loại"),
       amount,
       share: toShare(amount),
       color,
