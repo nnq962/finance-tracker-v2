@@ -97,18 +97,19 @@ async function run() {
       const noAccount = await repository.createDebt(otherUid, {...opening, contactId:otherContact.id}, randomUUID())
       await repository.changeDebt(otherUid, noAccount.id, null, randomUUID())
       equal((await repository.getDebts(otherUid)).length, 0)
-      // Deleting an account a loan was only paid from keeps the loan and its
-      // other payments: only that account's payments go.
+      // An account a loan was paid through cannot be deleted: the loan and
+      // its payments stay whole. Once the loan is gone, the account can go.
       await addAccount('opening_cascade', 10000000)
       const cascade = await repository.createDebt(uid, opening, randomUUID())
       await repository.saveDebtPayment(uid, cascade.id, undefined, {...pay, accountId:acc.opening_cascade, amount:1000000}, randomUUID())
       await repository.saveDebtPayment(uid, cascade.id, undefined, {...pay, accountId:acc.b, amount:1000000}, randomUUID())
       const paidFromB = await balance('b')
-      await deleteAccount(uid, acc.opening_cascade)
+      await rejects(() => deleteAccount(uid, acc.opening_cascade))
       equal(await balance('b'), paidFromB)
-      equal(await count('debts', 'id', cascade.id), 1)
-      equal(await count('debt_payments', 'debt_id', cascade.id), 1)
+      equal(await count('debt_payments', 'debt_id', cascade.id), 2)
       await repository.changeDebt(uid, cascade.id, null, randomUUID())
+      await deleteAccount(uid, acc.opening_cascade)
+      equal(await count('accounts', 'id', acc.opening_cascade), 0)
     }
     await rejects(() => repository.createDebt(uid, {recordingMode:'invalid'}, randomUUID()))
     // A due date ahead shows principal plus the interest accrued by then, less what is paid.
@@ -270,9 +271,14 @@ async function run() {
     const openingBefore = await opening('c')
     await updateAccount(uid, acc.c, {name:'c', type:'cash', balance:750000}, 699000)
     equal(await balance('c'), 750000)
-    // The opening balance moves with a corrected balance, so the two still differ by the transactions alone.
-    equal(await opening('c'), openingBefore + 51000)
-    equal((await getTransactions(uid)).length, transactionCount)
+    // A corrected balance is written down as a "Điều chỉnh số dư" transaction,
+    // left out of the figures; the opening balance stays.
+    equal(await opening('c'), openingBefore)
+    const corrections = (await getTransactions(uid)).filter(item => item.adjustment && item.accountId === acc.c)
+    equal(corrections.map(item => [item.kind, item.amount, item.excluded, item.title]), [['income', 51000, true, 'Điều chỉnh số dư']])
+    equal((await getTransactions(uid)).length, transactionCount + 1)
+    // It is deleted to undo, never edited.
+    await rejects(() => updateTransaction(uid, corrections[0].id, {kind:'income', amount:1, accountId:acc.c, categoryId:randomUUID(), occurredAt:new Date()}))
     await updateAccount(uid, acc.c, {name:'Đổi tên', type:'cash', balance:699000}, 699000)
     equal(await balance('c'), 750000)
     // Renaming shows the new name on transfers and loan movements.
@@ -285,22 +291,21 @@ async function run() {
     await setAccount('c', 'status', 'archived')
     await rejects(() => updateAccount(uid, acc.c, {name:'Đã sửa', type:'cash', balance:0}, 699000))
     await setAccount('c', 'status', 'active')
-    await deleteAccount(uid, acc.c)
-    equal(await count('accounts', 'id', acc.c), 0)
-    equal(await balance('d'), 1000000)
-    equal((await repository.getDebts(uid)).some(item => item.id === linkedDebt.id), false)
-    equal(await count('debt_payments', 'debt_id', linkedDebt.id), 0)
-    equal((await getTransactions(uid)).some(item => item.accountId === acc.c || item.fromAccountId === acc.c || item.toAccountId === acc.c || item.debtId === linkedDebt.id), false)
+    // Tied to d by a transfer and to a loan: it cannot be deleted, and nothing moves.
+    const dBefore = await balance('d')
+    await rejects(() => deleteAccount(uid, acc.c))
+    equal(await count('accounts', 'id', acc.c), 1)
+    equal(await balance('d'), dBefore)
+    equal((await repository.getDebts(uid)).some(item => item.id === linkedDebt.id), true)
 
     for (const id of ['e', 'f']) await addAccount(id, 1000000)
     const paymentLinkedDebt = await repository.createDebt(uid, {...values, accountId:acc.e, amount:200000, hasInterest:false}, randomUUID())
     await repository.saveDebtPayment(uid, paymentLinkedDebt.id, undefined, {...payment, accountId:acc.f, amount:50000, paidAt:todayDate()}, randomUUID())
     equal(await balance('e'), 800000)
-    await deleteAccount(uid, acc.f)
-    // The loan recorded into e stays, with its money still in e; only f's payment goes.
+    // f took a repayment: it cannot be deleted, and the loan keeps it.
+    await rejects(() => deleteAccount(uid, acc.f))
     equal(await balance('e'), 800000)
-    equal((await repository.getDebts(uid)).some(item => item.id === paymentLinkedDebt.id), true)
-    equal(await count('debt_payments', 'debt_id', paymentLinkedDebt.id), 0)
+    equal(await count('debt_payments', 'debt_id', paymentLinkedDebt.id), 1)
     await repository.changeDebt(uid, paymentLinkedDebt.id, null, randomUUID())
     equal(await balance('e'), 1000000)
     const archivedPrincipal = await repository.createDebt(uid, {...values, amount:100000, direction:'borrowed', hasInterest:false}, randomUUID())

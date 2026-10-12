@@ -1,10 +1,21 @@
-import { ArrowLeftRightIcon, CircleHelpIcon, EllipsisIcon, type LucideIcon } from "lucide-react"
+import { ArrowLeftRightIcon, CircleHelpIcon, EllipsisIcon, SlidersHorizontalIcon, type LucideIcon } from "lucide-react"
 
 import { getCategoryColor, type CategoryColorName } from "@/lib/categories/category-colors"
 import type { CategoryGroup, CategoryType } from "@/lib/categories/types"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import type { MonthAllocation } from "@/lib/overview/month-data"
-import { TRANSFER_FEE_GROUP, TRANSFER_FEE_NAME } from "@/lib/transactions/types"
+import {
+  BALANCE_ADJUSTMENT_GROUP,
+  BALANCE_ADJUSTMENT_NAME,
+  TRANSFER_FEE_GROUP,
+  TRANSFER_FEE_NAME,
+} from "@/lib/transactions/types"
+
+/** Slices that are no group of the user's: transfer fees, balances corrected by hand. */
+const systemGroups: Record<string, { name: string; icon: LucideIcon }> = {
+  [TRANSFER_FEE_GROUP]: { name: TRANSFER_FEE_NAME, icon: ArrowLeftRightIcon },
+  [BALANCE_ADJUSTMENT_GROUP]: { name: BALANCE_ADJUSTMENT_NAME, icon: SlidersHorizontalIcon },
+}
 
 // Five groups and the rest folded into one neutral "Khác" slice.
 const MAX_SLICES = 5
@@ -43,12 +54,11 @@ export function allocationSlices(
   const slices: AllocationSlice[] = visible.map(([key, amount]) => {
     const group = groupsById.get(key)
     const color = group?.colorName ?? OTHER_COLOR
-    // Transfer fees have no category group of the user's; they get their own slice.
-    const isFee = key === TRANSFER_FEE_GROUP
+    const system = systemGroups[key]
     return {
       key,
-      icon: group ? categoryIconRegistry[group.iconName] : isFee ? ArrowLeftRightIcon : CircleHelpIcon,
-      name: group?.name ?? (isFee ? TRANSFER_FEE_NAME : "Chưa phân loại"),
+      icon: group ? categoryIconRegistry[group.iconName] : (system?.icon ?? CircleHelpIcon),
+      name: group?.name ?? system?.name ?? "Chưa phân loại",
       amount,
       share: toShare(amount),
       color,

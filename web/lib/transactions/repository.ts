@@ -5,11 +5,13 @@ import { sql, type Transaction as DbTransaction } from "kysely"
 import { lockAccounts, setBalance, shiftBalance, type LockedAccount } from "@/lib/db/accounts"
 import { getDb } from "@/lib/db/client"
 import type { DB } from "@/lib/db/types"
-import type {
-  AccountFlow,
-  SupportedTransactionKind,
-  Transaction,
-  TransactionFormValues,
+import {
+  BALANCE_ADJUSTMENT_GROUP,
+  BALANCE_ADJUSTMENT_NAME,
+  type AccountFlow,
+  type SupportedTransactionKind,
+  type Transaction,
+  type TransactionFormValues,
 } from "@/lib/transactions/types"
 import { TransactionValidationError } from "@/lib/transactions/validation"
 
@@ -89,7 +91,7 @@ function selectTransactions(userId: string) {
     .leftJoin("debts as d", "d.id", "t.debtId")
     .leftJoin("contacts as c", "c.id", "d.contactId")
     .select([
-      "t.id", "t.kind", "t.amount", "t.fee", "t.note", "t.occurredAt", "t.debtId", "t.excluded",
+      "t.id", "t.kind", "t.amount", "t.fee", "t.note", "t.occurredAt", "t.debtId", "t.excluded", "t.adjustment",
       "t.accountId", "a.name as accountName", "a.excluded as accountExcluded",
       "t.fromAccountId", "fa.name as fromAccountName", "fa.excluded as fromAccountExcluded",
       "t.toAccountId", "ta.name as toAccountName",
@@ -130,11 +132,18 @@ function toTransaction(row: TransactionRow): Transaction {
     }
   }
 
-  // A loan's initial cash movement has no category; it is labelled from the loan.
+  // A loan's initial cash movement has no category; it is labelled from the
+  // loan. A balance corrected by hand has none either.
   const categoryName = row.debtId
     ? `${row.debtDirection === "borrowed" ? "Đi vay" : "Cho vay"} · ${row.contactName ?? "Người liên hệ"}`
-    : row.categoryName ?? undefined
-  const categoryGroupName = row.debtId ? "Vay & nợ" : row.categoryGroupName ?? undefined
+    : row.adjustment
+      ? BALANCE_ADJUSTMENT_NAME
+      : row.categoryName ?? undefined
+  const categoryGroupName = row.debtId
+    ? "Vay & nợ"
+    : row.adjustment
+      ? BALANCE_ADJUSTMENT_NAME
+      : row.categoryGroupName ?? undefined
   const accountName = row.accountName ?? undefined
 
   return {
@@ -148,8 +157,9 @@ function toTransaction(row: TransactionRow): Transaction {
     accountName,
     categoryId: row.categoryItemId ?? undefined,
     categoryName,
-    categoryGroupId: row.categoryGroupId ?? undefined,
+    categoryGroupId: row.adjustment ? BALANCE_ADJUSTMENT_GROUP : row.categoryGroupId ?? undefined,
     categoryGroupName,
+    ...(row.adjustment ? { adjustment: true } : {}),
     note,
     ...(row.excluded ? { excluded: true } : {}),
     ...(row.accountExcluded ? { accountExcluded: true } : {}),
@@ -439,7 +449,7 @@ async function lockExisting(
 ) {
   const existing = await trx
     .selectFrom("transactions")
-    .select(["kind", "amount", "fee", "accountId", "fromAccountId", "toAccountId", "categoryItemId", "debtId"])
+    .select(["kind", "amount", "fee", "accountId", "fromAccountId", "toAccountId", "categoryItemId", "debtId", "adjustment"])
     .where("id", "=", transactionId)
     .where("userId", "=", userId)
     .forUpdate()
@@ -453,6 +463,11 @@ async function lockExisting(
     throw new TransactionValidationError(
       `Hãy ${action} giao dịch này tại trang Vay nợ để giữ đồng bộ khoản nợ.`,
     )
+  }
+
+  // A correction has no category to edit; deleting it undoes it.
+  if (existing.adjustment && action === "sửa") {
+    throw new TransactionValidationError("Giao dịch điều chỉnh số dư chỉ xoá được, không sửa được.")
   }
 
   return existing

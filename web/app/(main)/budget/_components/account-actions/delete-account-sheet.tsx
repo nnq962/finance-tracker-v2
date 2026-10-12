@@ -12,6 +12,8 @@ type DeleteAccountSheetProps = {
   open: boolean
   /** After the delete is confirmed (it can still be undone from the toast). */
   onConfirmed?: () => void
+  /** Offered instead when the account cannot be deleted; unset once archived. */
+  onArchive?: () => void
 }
 
 /**
@@ -24,6 +26,7 @@ export function DeleteAccountSheet({
   onOpenChange,
   open,
   onConfirmed,
+  onArchive,
 }: DeleteAccountSheetProps) {
   const handleDelete = () => {
     onConfirmed?.()
@@ -41,11 +44,26 @@ export function DeleteAccountSheet({
     })
   }
 
+  // Tied to other accounts or to loans: deleting it would change their
+  // balances, so it can only be archived (2026-10-12).
+  if (account.linked) {
+    return (
+      <ActionSheet
+        open={open}
+        onOpenChange={onOpenChange}
+        title={`“${account.name}” đã có chuyển khoản hoặc vay nợ nên không xoá được, để các tài khoản và khoản nợ khác giữ đúng số dư.${onArchive ? " Ngừng sử dụng để ẩn nó đi." : ""}`}
+        options={onArchive ? [{ value: "archive", label: "Ngừng sử dụng" }] : []}
+        onSelect={() => onArchive?.()}
+        cancelLabel={onArchive ? "Huỷ" : "Đóng"}
+      />
+    )
+  }
+
   return (
     <ActionSheet
       open={open}
       onOpenChange={onOpenChange}
-      title={`Xoá “${account.name}”? Mọi giao dịch, khoản vay nợ và lần trả nợ ghi vào tài khoản này cũng sẽ bị xoá.`}
+      title={`Xoá “${account.name}”? Các khoản thu chi của tài khoản này cũng sẽ bị xoá.`}
       options={[{ value: "delete", label: "Xoá tài khoản", destructive: true }]}
       onSelect={handleDelete}
     />

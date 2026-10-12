@@ -75,6 +75,8 @@ export function TransactionDetailsSheet({
   const router = useRouter()
   const isDebt = transaction.source === "debt"
   const isTransfer = transaction.kind === "transfer"
+  // A balance corrected by hand: no category, deleted rather than edited or copied.
+  const isAdjustment = Boolean(transaction.adjustment)
   const occurredAt = new Date(transaction.occurredAt)
   const accountById = new Map(accounts.map((account) => [account.id, account]))
 
@@ -127,7 +129,7 @@ export function TransactionDetailsSheet({
       onOpenChange={onOpenChange}
       className="gap-6"
       action={
-        isDebt ? null : (
+        isDebt || isAdjustment ? null : (
           <Button type="button" variant="secondary" size="icon" aria-label="Sửa giao dịch" onClick={onEdit}>
             <PencilIcon />
           </Button>
@@ -201,8 +203,8 @@ export function TransactionDetailsSheet({
               </span>
             }
           />
-          {/* A loan is named in the title above. */}
-          {isDebt ? null : (
+          {/* A loan, or a correction, is named in the title above. */}
+          {isDebt || isAdjustment ? null : (
             <>
               <SettingsRow
                 title="Hạng mục"
@@ -269,10 +271,14 @@ export function TransactionDetailsSheet({
         </SettingsGroup>
       ) : (
         <>
-          <SettingsGroup>
-            <SettingsRow icon={CopyIcon} title="Ghi lại giao dịch này" description="Điền sẵn, ngày là hôm nay" onClick={onCopy} />
-          </SettingsGroup>
-          <SettingsGroup>
+          {isAdjustment ? null : (
+            <SettingsGroup>
+              <SettingsRow icon={CopyIcon} title="Ghi lại giao dịch này" description="Điền sẵn, ngày là hôm nay" onClick={onCopy} />
+            </SettingsGroup>
+          )}
+          <SettingsGroup
+            footer={isAdjustment ? "Xoá để đưa số dư về như trước khi điều chỉnh." : undefined}
+          >
             <SettingsRow destructive title="Xoá giao dịch" onClick={handleDelete} />
           </SettingsGroup>
         </>

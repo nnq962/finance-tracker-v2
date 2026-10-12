@@ -3,6 +3,7 @@ import {
   ArrowUpRightIcon,
   HandCoinsIcon,
   Repeat2Icon,
+  SlidersHorizontalIcon,
 } from "lucide-react"
 
 import type { CategoryColorName } from "@/lib/categories/category-colors"
@@ -57,7 +58,7 @@ export const transactionPresentation = {
 /**
  * A transaction's category, with the icon and colour it shows in a list:
  * the category's own; loans, transfers and unknown categories fall back to
- * an icon for their kind.
+ * an icon for their kind; a balance corrected by hand, a slider.
  */
 export function getTransactionVisual(transaction: Transaction, categoryGroups: CategoryGroup[]) {
   const category = transaction.categoryId
@@ -72,10 +73,14 @@ export function getTransactionVisual(transaction: Transaction, categoryGroups: C
     ? categoryIconRegistry[category.iconName]
     : transaction.source === "debt"
       ? HandCoinsIcon
-      : transactionPresentation[transaction.kind].icon
+      : transaction.adjustment
+        ? SlidersHorizontalIcon
+        : transactionPresentation[transaction.kind].icon
   const color: CategoryColorName = category
     ? category.colorName
-    : transaction.kind === "transfer"
+    : transaction.adjustment
+      ? "slate"
+      : transaction.kind === "transfer"
       ? "blue"
       : transaction.kind === "income"
         ? "emerald"

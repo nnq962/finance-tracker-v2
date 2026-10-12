@@ -440,8 +440,13 @@ CREATE TABLE public.transactions (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     excluded boolean DEFAULT false NOT NULL,
+    adjustment boolean DEFAULT false NOT NULL,
     CONSTRAINT transactions_amount_check CHECK (((amount >= 1) AND (amount <= '999999999999999'::bigint))),
-    CONSTRAINT transactions_check CHECK ((((kind = 'transfer'::text) AND (from_account_id IS NOT NULL) AND (to_account_id IS NOT NULL) AND (from_account_id <> to_account_id) AND (account_id IS NULL) AND (category_item_id IS NULL) AND (debt_id IS NULL)) OR ((kind = ANY (ARRAY['expense'::text, 'income'::text])) AND (account_id IS NOT NULL) AND (from_account_id IS NULL) AND (to_account_id IS NULL) AND (fee = 0) AND ((category_item_id IS NULL) <> (debt_id IS NULL))))),
+    CONSTRAINT transactions_check CHECK ((((kind = 'transfer'::text) AND (from_account_id IS NOT NULL) AND (to_account_id IS NOT NULL) AND (from_account_id <> to_account_id) AND (account_id IS NULL) AND (category_item_id IS NULL) AND (debt_id IS NULL) AND (NOT adjustment)) OR ((kind = ANY (ARRAY['expense'::text, 'income'::text])) AND (account_id IS NOT NULL) AND (from_account_id IS NULL) AND (to_account_id IS NULL) AND (fee = 0) AND
+CASE
+    WHEN adjustment THEN ((category_item_id IS NULL) AND (debt_id IS NULL))
+    ELSE ((category_item_id IS NULL) <> (debt_id IS NULL))
+END))),
     CONSTRAINT transactions_excluded_check CHECK (((NOT excluded) OR ((kind = ANY (ARRAY['expense'::text, 'income'::text])) AND (debt_id IS NULL)))),
     CONSTRAINT transactions_fee_check CHECK (((fee >= 0) AND (fee <= '999999999999999'::bigint))),
     CONSTRAINT transactions_kind_check CHECK ((kind = ANY (ARRAY['expense'::text, 'income'::text, 'transfer'::text]))),
@@ -1221,4 +1226,5 @@ INSERT INTO dbmate.schema_migrations (version) VALUES
     ('20261004000001'),
     ('20261004000002'),
     ('20261011000001'),
-    ('20261012000001');
+    ('20261012000001'),
+    ('20261012000002');

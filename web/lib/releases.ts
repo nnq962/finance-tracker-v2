@@ -32,6 +32,17 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "5.2.0",
+    date: "2026-10-12",
+    title: "Điều chỉnh số dư và xoá tài khoản an toàn",
+    changes: [
+      { kind: "new", text: "Sửa số dư tài khoản sẽ ghi một giao dịch \"Điều chỉnh số dư\" cho phần chênh lệch, không tính vào thống kê trừ khi bạn bật lên; xoá giao dịch đó để hoàn tác" },
+      { kind: "improved", text: "Số dư ban đầu của tài khoản giữ nguyên khi sửa số dư" },
+      { kind: "fixed", text: "Tài khoản đã có chuyển khoản hoặc vay nợ không xoá được nữa (trước đây xoá làm sai số dư tài khoản khác và khoản nợ), chỉ ngừng sử dụng" },
+      { kind: "fixed", text: "Chú thích \"Ngừng sử dụng\" nói đúng là số dư vẫn tính vào tổng" },
+    ],
+  },
+  {
     version: "5.1.1",
     date: "2026-10-12",
     title: "Phí chuyển khoản tính đúng ở mọi nơi",

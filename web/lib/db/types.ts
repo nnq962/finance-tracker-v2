@@ -216,6 +216,7 @@ export interface Subscriptions {
 
 export interface Transactions {
   accountId: string | null;
+  adjustment: Generated<boolean>;
   amount: number;
   categoryItemId: string | null;
   createdAt: Generated<Timestamp>;

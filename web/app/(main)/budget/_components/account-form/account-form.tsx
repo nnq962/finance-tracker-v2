@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { AccountActionResult, AccountFormValues, AccountType } from "@/lib/accounts/types"
 import { getCurrentLocalDateTime, getLocalDateTime } from "@/lib/date-time"
+import { formatCurrency } from "@/lib/format-currency"
 import { toDateKey } from "@/lib/format-date"
 import { getInstitutionsByType } from "@/lib/institutions"
 import { randomId } from "@/lib/random-id"
@@ -91,6 +92,10 @@ export function AccountForm({
     defaultValues?.openedAt ? getLocalDateTime(defaultValues.openedAt) : getCurrentLocalDateTime(),
   )
   const today = toDateKey(new Date())
+  // Editing, a changed balance is written down as a correction for the difference.
+  const signedBalance = balance === null ? null : balanceNegative ? -balance : balance
+  const adjustment =
+    expectedBalance !== undefined && signedBalance !== null ? signedBalance - expectedBalance : 0
 
   const institutions = accountType === "cash" ? null : getInstitutionsByType(accountType)
   const institutionLabel = accountType === "bank" ? "Ngân hàng" : "Ví điện tử"
@@ -233,7 +238,14 @@ export function AccountForm({
             invalid={Boolean(errors.balance)}
             required
           />
-          {errors.balance ? <FieldError className="text-center">{errors.balance}</FieldError> : null}
+          {errors.balance ? (
+            <FieldError className="text-center">{errors.balance}</FieldError>
+          ) : adjustment ? (
+            <p className="text-center text-xs text-muted-foreground">
+              Ghi giao dịch “Điều chỉnh số dư” {adjustment > 0 ? "+" : "−"}
+              {formatCurrency(Math.abs(adjustment))}
+            </p>
+          ) : null}
         </div>
 
         {institutions ? (

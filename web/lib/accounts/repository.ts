@@ -7,7 +7,7 @@ import type {
   AccountType,
 } from "@/lib/accounts/types"
 import { AccountValidationError } from "@/lib/accounts/validation"
-import { lockAccounts, setBalance, shiftBalance } from "@/lib/db/accounts"
+import { lockAccounts } from "@/lib/db/accounts"
 import { getDb } from "@/lib/db/client"
 import { retryOnDeadlock } from "@/lib/db/retry"
 import { getInstitution } from "@/lib/institutions"
@@ -31,6 +31,8 @@ export async function getAccounts(userId: string): Promise<Account[]> {
     .orderBy("id")
     .execute()
 
+  const linked = await getLinkedAccountIds(userId)
+
   return rows.map((row) => {
     const type = row.type as AccountType
     const institution =
@@ -52,10 +54,50 @@ export async function getAccounts(userId: string): Promise<Account[]> {
       logoFallback: getLogoFallback(row.name, institutionName),
       status: row.status as AccountStatus,
       excluded: row.excluded,
+      linked: linked.has(row.id),
       openedAt: row.openedAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
     }
   })
+}
+
+/**
+ * Accounts tied to others or to loans: a transfer to or from them, a loan
+ * recorded into them, a repayment through them. Deleting one would change
+ * another account's balance or a loan's, so they can only be archived.
+ */
+async function getLinkedAccountIds(userId: string, executor: Pick<ReturnType<typeof getDb>, "selectFrom"> = getDb(), accountId?: string) {
+  const [transfers, debts, payments] = await Promise.all([
+    executor
+      .selectFrom("transactions")
+      .select(["fromAccountId", "toAccountId"])
+      .where("userId", "=", userId)
+      .where("kind", "=", "transfer")
+      .$if(Boolean(accountId), (query) =>
+        query.where((eb) => eb.or([eb("fromAccountId", "=", accountId!), eb("toAccountId", "=", accountId!)])),
+      )
+      .execute(),
+    executor
+      .selectFrom("debts")
+      .select("accountId")
+      .where("userId", "=", userId)
+      .where("accountId", "is not", null)
+      .$if(Boolean(accountId), (query) => query.where("accountId", "=", accountId!))
+      .execute(),
+    executor
+      .selectFrom("debtPayments")
+      .select("accountId")
+      .where("userId", "=", userId)
+      .$if(Boolean(accountId), (query) => query.where("accountId", "=", accountId!))
+      .execute(),
+  ])
+  return new Set(
+    [
+      ...transfers.flatMap((row) => [row.fromAccountId, row.toAccountId]),
+      ...debts.map((row) => row.accountId),
+      ...payments.map((row) => row.accountId),
+    ].filter((id): id is string => Boolean(id)),
+  )
 }
 
 /** The request id becomes the account id, so a retried request adds nothing. */
@@ -113,26 +155,30 @@ export async function updateAccount(
       throw new AccountValidationError("Số dư tài khoản vừa thay đổi. Vui lòng tải lại trang rồi thử lại.")
     }
 
-    // A corrected balance means the account started with that much more or
-    // less: the opening balance moves with it, so the opening balance and the
-    // transactions still add up to the balance, and what the account shows
-    // as having moved since is only what its transactions moved.
-    let openingBalance: number | undefined
+    // A corrected balance is written down as a "Điều chỉnh số dư" transaction
+    // for the difference, as MISA does, left out of the figures until the
+    // user counts it; the opening balance stays what it was, so the opening
+    // balance and the transactions still add up to the balance.
     if (balanceChanged) {
-      const { openingBalance: current } = await trx
-        .selectFrom("accounts")
-        .select("openingBalance")
-        .where("id", "=", accountId)
-        .executeTakeFirstOrThrow()
-      const shifted = shiftBalance(current, values.balance - account.balance)
-      if (shifted === null) throw new AccountValidationError("Số dư không hợp lệ.")
-      openingBalance = shifted
+      const difference = values.balance - account.balance
+      await trx
+        .insertInto("transactions")
+        .values({
+          userId,
+          kind: difference > 0 ? "income" : "expense",
+          amount: Math.abs(difference),
+          accountId,
+          adjustment: true,
+          excluded: true,
+          occurredAt: new Date(),
+        })
+        .execute()
     }
 
     await trx
       .updateTable("accounts")
       .set({
-        ...(balanceChanged ? { balance: values.balance, openingBalance } : {}),
+        ...(balanceChanged ? { balance: values.balance } : {}),
         name: values.name,
         type: values.type,
         institutionId: values.institutionId ?? null,
@@ -164,12 +210,11 @@ export async function setAccountArchived(
 }
 
 /**
- * Deletes the account with every transaction that touches it and every loan
- * recorded into it (with all of that loan's payments), and reverses their
- * effect on the user's other accounts, atomically. A loan recorded into
- * another account stays: only its payments from this account go, which moved
- * no other account. Should the database break a deadlock with a concurrent
- * change (a transfer, a loan payment, locking in another order), it runs again.
+ * Deletes the account with its own income and spending, atomically. An
+ * account tied to others (a transfer, a loan, a repayment) is refused:
+ * deleting it would change another account's balance or a loan's, so it can
+ * only be archived. Should the database break a deadlock with a concurrent
+ * change, it runs again.
  */
 export async function deleteAccount(userId: string, accountId: string) {
   return retryOnDeadlock(() => deleteAccountOnce(userId, accountId))
@@ -180,90 +225,14 @@ async function deleteAccountOnce(userId: string, accountId: string) {
     const account = (await lockAccounts(trx, userId, [accountId])).get(accountId)
     if (!account) return
 
-    const transactions = await trx
-      .selectFrom("transactions")
-      .select(["id", "kind", "amount", "fee", "accountId", "fromAccountId", "toAccountId"])
-      .where("userId", "=", userId)
-      // A loan's own cash movement goes with the loan below.
-      .where("debtId", "is", null)
-      .where((eb) => eb.or([
-        eb("accountId", "=", accountId),
-        eb("fromAccountId", "=", accountId),
-        eb("toAccountId", "=", accountId),
-      ]))
-      .execute()
-
-    // The loans recorded into this account go whole.
-    const debts = await trx
-      .selectFrom("debts")
-      .select(["id", "direction", "recordingMode", "accountId", "amount"])
-      .where("userId", "=", userId)
-      .where("accountId", "=", accountId)
-      .forUpdate()
-      .execute()
-
-    const payments = debts.length
-      ? await trx
-        .selectFrom("debtPayments")
-        .select(["debtId", "accountId", "amount"])
-        .where("debtId", "in", debts.map((debt) => debt.id))
-        .execute()
-      : []
-
-    // Undo each movement on the accounts that are kept.
-    const deltas = new Map<string, number>()
-    const addDelta = (id: string | null, value: number) => {
-      if (id && id !== accountId) deltas.set(id, (deltas.get(id) ?? 0) + value)
+    if ((await getLinkedAccountIds(userId, trx, accountId)).size > 0) {
+      throw new AccountValidationError(
+        "Tài khoản đã có chuyển khoản hoặc vay nợ nên không xoá được. Hãy chọn Ngừng sử dụng.",
+      )
     }
 
-    for (const transaction of transactions) {
-      if (transaction.kind === "transfer") {
-        addDelta(transaction.fromAccountId, transaction.amount + transaction.fee)
-        addDelta(transaction.toAccountId, -transaction.amount)
-      } else {
-        addDelta(transaction.accountId, transaction.kind === "income" ? -transaction.amount : transaction.amount)
-      }
-    }
-
-    for (const debt of debts) {
-      // Borrowing brought money in; lending sent it out. Payments go the other way.
-      const principalSign = debt.direction === "borrowed" ? 1 : -1
-      if (debt.recordingMode !== "opening") addDelta(debt.accountId, -principalSign * debt.amount)
-      for (const payment of payments.filter((item) => item.debtId === debt.id)) {
-        addDelta(payment.accountId, principalSign * payment.amount)
-      }
-    }
-
-    const relatedAccounts = await lockAccounts(trx, userId, deltas.keys())
-
-    for (const [id, delta] of deltas) {
-      const related = relatedAccounts.get(id)
-      const balance = related ? shiftBalance(related.balance, delta) : null
-
-      if (balance === null) {
-        throw new AccountValidationError(
-          "Không thể xoá vì số dư của tài khoản liên quan sẽ không hợp lệ.",
-        )
-      }
-      if (delta !== 0) await setBalance(trx, id, balance)
-    }
-
-    if (transactions.length) {
-      await trx
-        .deleteFrom("transactions")
-        .where("id", "in", transactions.map((transaction) => transaction.id))
-        .execute()
-    }
-    if (debts.length) {
-      // Cascades to the loans' payments and cash movements.
-      await trx
-        .deleteFrom("debts")
-        .where("id", "in", debts.map((debt) => debt.id))
-        .execute()
-    }
-    // Other loans' payments from this account: they only moved this account.
     await trx
-      .deleteFrom("debtPayments")
+      .deleteFrom("transactions")
       .where("userId", "=", userId)
       .where("accountId", "=", accountId)
       .execute()

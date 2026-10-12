@@ -207,8 +207,8 @@ export function AccountSheet({
         <SettingsGroup
           footer={
             isLocked
-              ? "Hiện lại khi ghi giao dịch và tính vào tổng số dư."
-              : "Ẩn khi ghi giao dịch, không tính vào tổng số dư. Lịch sử vẫn giữ."
+              ? "Hiện lại khi ghi giao dịch."
+              : "Ẩn khi ghi giao dịch. Số dư vẫn tính vào tổng, lịch sử vẫn giữ."
           }
         >
           <SettingsRow
@@ -234,6 +234,7 @@ export function AccountSheet({
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         onConfirmed={() => onOpenChange(false)}
+        onArchive={isLocked ? undefined : handleArchivedChange}
       />
     </>
   )

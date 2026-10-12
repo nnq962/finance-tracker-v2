@@ -31,6 +31,11 @@ export type Account = {
    * worth, its income and spending not in the monthly figures. It still works.
    */
   excluded: boolean
+  /**
+   * Tied to others or to loans (a transfer, a loan, a repayment): it cannot
+   * be deleted, as that would change another balance, only archived.
+   */
+  linked: boolean
   /** When the account was opened, as the user says. */
   openedAt: string
   updatedAt: string

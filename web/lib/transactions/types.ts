@@ -67,6 +67,8 @@ export type Transaction = {
   fromAccountExcluded?: boolean
   /** A transfer's fee as an expense of its own (withFees), for the figures only. */
   isFee?: boolean
+  /** A balance corrected by hand ("Điều chỉnh số dư"): no category, deleted rather than edited. */
+  adjustment?: boolean
   fromAccountId?: string
   fromAccountName?: string
   toAccountId?: string
@@ -102,6 +104,9 @@ export function isLeftOut(transaction: Pick<Transaction, "excluded" | "accountEx
 /** The category group key a transfer fee is summed under, as MISA's "Phí chuyển khoản". */
 export const TRANSFER_FEE_GROUP = "transfer-fee"
 export const TRANSFER_FEE_NAME = "Phí chuyển khoản"
+/** Likewise for balances corrected by hand. */
+export const BALANCE_ADJUSTMENT_GROUP = "balance-adjustment"
+export const BALANCE_ADJUSTMENT_NAME = "Điều chỉnh số dư"
 
 /**
  * The transactions, and after each transfer with a fee that fee as an
