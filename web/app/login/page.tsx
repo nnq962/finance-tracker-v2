@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next"
-import Image from "next/image"
 import { LoginForm } from "@/components/login-form"
+import { TimiIcon } from "@/components/timi-icon"
 import { TimiWordmark } from "@/components/timi-wordmark"
 import { getSafeRedirectPath } from "@/lib/auth/redirect"
 import { getSessionUser } from "@/lib/auth/session"
@@ -48,7 +48,7 @@ export default async function LoginPage({
       <div className="mx-auto grid min-h-svh max-w-6xl lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-10">
         <div className="flex min-h-svh flex-col px-6 pt-[max(env(safe-area-inset-top),1.25rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)] lg:order-2 lg:min-h-0 lg:py-0">
           <p className="flex items-center gap-2 text-sm font-semibold">
-            <Image src="/icon.svg" alt="" width={28} height={28} className="size-7" />
+            <TimiIcon size={28} className="size-7" />
             <TimiWordmark className="text-xl" />
           </p>
           <div className="flex flex-1 items-center py-8 lg:hidden">

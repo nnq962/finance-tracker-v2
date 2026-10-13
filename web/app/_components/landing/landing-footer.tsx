@@ -1,6 +1,6 @@
-import Image from "next/image"
 import Link from "next/link"
 
+import { TimiIcon } from "@/components/timi-icon"
 import { TimiWordmark } from "@/components/timi-wordmark"
 import { Button } from "@/components/ui/button"
 
@@ -19,7 +19,7 @@ export function LandingFooter() {
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6 md:flex-row md:items-center md:justify-between">
         <div className="space-y-2">
           <Link href="/" className="flex w-fit items-center gap-2 rounded-lg">
-            <Image src="/icon.svg" alt="" width={28} height={28} className="size-7" />
+            <TimiIcon size={28} className="size-7" />
             <TimiWordmark className="text-xl" />
           </Link>
           <p className="text-sm text-muted-foreground">

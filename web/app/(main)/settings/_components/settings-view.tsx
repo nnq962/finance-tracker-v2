@@ -13,7 +13,6 @@ import {
   SwatchBookIcon,
   TagsIcon,
 } from "lucide-react"
-import Image from "next/image"
 import { useRouter } from "next/navigation"
 
 import { PageSheet } from "@/components/app/page-sheet"
@@ -21,6 +20,7 @@ import { CategoryManagementSheet } from "@/components/categories/category-manage
 import { PlanOverlay } from "@/components/plans/plan-overlay"
 import { useWelcome } from "@/components/onboarding/welcome"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { TimiIcon } from "@/components/timi-icon"
 import { TimiWordmark } from "@/components/timi-wordmark"
 import type { SessionUser } from "@/lib/auth/session"
 import type { CategoryGroup } from "@/lib/categories/types"
@@ -256,7 +256,7 @@ export function SettingsView({
 
         {/* The app itself at the foot, as an iOS app's About: its icon, its name, its version. */}
         <div className="flex flex-col items-center gap-2 pt-2 pb-4 text-muted-foreground">
-          <Image src="/icon.svg" alt="" width={48} height={48} className="size-12" />
+          <TimiIcon size={48} className="size-12" />
           <TimiWordmark className="text-xl text-foreground" />
           <p className="text-xs">
             Phiên bản {process.env.NEXT_PUBLIC_APP_VERSION} · Beta

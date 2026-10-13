@@ -1,7 +1,7 @@
-import Image from "next/image"
 
 import { NotificationsButton } from "@/components/notifications-sheet"
 import { PageHeader } from "@/components/page"
+import { TimiIcon } from "@/components/timi-icon"
 import { TimiWordmark } from "@/components/timi-wordmark"
 import { Badge } from "@/components/ui/badge"
 import type { PlanState } from "@/lib/plans/plans"
@@ -26,7 +26,7 @@ export function OverviewHeader({
       title="Tổng quan"
       lead={
         <div className="flex min-h-11 min-w-0 items-center gap-3">
-          <Image src="/icon.svg" alt="" width={40} height={40} priority className="size-10 shrink-0 md:hidden" />
+          <TimiIcon size={40} priority className="size-10 md:hidden" />
           <span className="min-w-0">
             <span className="flex items-center gap-1.5 md:hidden">
               <TimiWordmark className="text-lg" />

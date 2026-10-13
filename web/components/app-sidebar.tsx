@@ -2,10 +2,10 @@
 
 import * as React from "react"
 import Link from "next/link"
-import Image from "next/image"
 import { SettingsIcon } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
+import { TimiIcon } from "@/components/timi-icon"
 import { TimiWordmark } from "@/components/timi-wordmark"
 import {
   Sidebar,
@@ -47,7 +47,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   if (isMobile) setOpenMobile(false)
                 }}
               >
-                <Image src="/icon.svg" alt="" width={32} height={32} className="size-8 shrink-0" />
+                <TimiIcon size={32} className="size-8" />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   {/* The name as the logo writes it, Beta beside it as beta builds of apps are named. */}
                   <span className="flex items-center gap-1.5">

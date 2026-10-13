@@ -1,12 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 import Link from "next/link"
 import { ArrowRightIcon } from "lucide-react"
 import { useMotionValueEvent, useScroll } from "motion/react"
 
 import { ThemeToggle } from "@/components/theme-toggle"
+import { TimiIcon } from "@/components/timi-icon"
 import { TimiWordmark } from "@/components/timi-wordmark"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -44,14 +44,7 @@ export function LandingHeader() {
           className="group flex shrink-0 items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           aria-label="Timi – Trang chủ"
         >
-          <Image
-            src="/icon.svg"
-            alt=""
-            width={36}
-            height={36}
-            priority
-            className="size-9 transition-transform duration-500 ease-out group-hover:scale-105"
-          />
+          <TimiIcon size={36} priority className="size-9 transition-transform duration-500 ease-out group-hover:scale-105" />
           <TimiWordmark className="hidden text-2xl min-[360px]:inline" />
         </Link>
 

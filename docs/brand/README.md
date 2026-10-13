@@ -15,6 +15,15 @@ the name, read as "t timi".
   corners. `timi-icon-square.svg` is the same full bleed, for iOS (`web/app/apple-icon.png`,
   iOS rounds it). `timi-icon-maskable.svg` shrinks the mark to 82% so Android's circle mask
   keeps it clear (`web/public/icons/pwa-maskable-512.png`).
+- `timi-icon-dark.svg` is the icon in the app's dark theme (chosen 2026-10-13, "Tối 3"): a white
+  tile, ink bars, the last bar and sparkle in a deeper lime `#7FA300`, since the ink tile sinks into
+  the dark background. `web/public/icon-dark.svg`; `TimiIcon` (`web/components/timi-icon.tsx`)
+  shows it in dark and the ink tile in light. The favicon and installed icons stay the ink tile.
+- `timi-icon-light.svg` (cream tile, ink bars, deeper lime) and `timi-icon-lime.svg` (lime tile, ink
+  mark) are for other light backgrounds and promotion; `timi-mono-black.svg` is the mark in one
+  colour.
+- `timi-lockup.png` / `timi-lockup-dark.png`: icon + name for light and dark backgrounds, exported
+  at 3x (the name is Manrope, which an SVG file cannot carry).
 - `timi-badge.svg`: the mark alone in white, for the one-colour badge Android shows in the
   status bar beside a notification (`web/public/icons/badge-96.png`).
 
