@@ -925,7 +925,7 @@ async function answerAccountInfo(plan: QuestionPlan, sources: AnswerSources): Pr
     const [account] = chosen
     const rows: AnswerRow[] = [
       { icon: accountIcon(account), name: "Số dư ban đầu", sub: `Từ ngày ${opened(account)}`, amount: account.openingBalance, amountTone: "plain" },
-      { icon: accountIcon(account), name: "Số dư hiện tại", sub: account.status === "archived" ? "Đã lưu trữ" : "Đang dùng", amount: account.balance, amountTone: account.balance < 0 ? "expense" : "plain" },
+      { icon: accountIcon(account), name: "Số dư hiện tại", sub: account.status === "archived" ? "Đã khoá" : "Đang dùng", amount: account.balance, amountTone: account.balance < 0 ? "expense" : "plain" },
     ]
     return {
       kicker: `Tài khoản · ${account.name}`,
@@ -933,7 +933,7 @@ async function answerAccountInfo(plan: QuestionPlan, sources: AnswerSources): Pr
       line: [
         `Mở từ ${opened(account)}`,
         `số dư ban đầu ${money(account.openingBalance)}`,
-        account.status === "archived" ? "đã lưu trữ" : null,
+        account.status === "archived" ? "đã khoá" : null,
         account.excluded ? "không tính vào báo cáo" : null,
         account.note ? `ghi chú: ${account.note}` : null,
       ]
@@ -947,9 +947,9 @@ async function answerAccountInfo(plan: QuestionPlan, sources: AnswerSources): Pr
 
   const archived = chosen.filter((account) => account.status === "archived").length
   return {
-    kicker: `Tài khoản · ${chosen.length - archived} đang dùng${archived ? `, ${archived} đã lưu trữ` : ""}`,
+    kicker: `Tài khoản · ${chosen.length - archived} đang dùng${archived ? `, ${archived} đã khoá` : ""}`,
     figureText: `${chosen.length} tài khoản`,
-    line: archived ? "Tài khoản đã lưu trữ vẫn giữ giao dịch cũ, không dùng cho giao dịch mới." : "Chưa có tài khoản nào được lưu trữ.",
+    line: archived ? "Tài khoản đã khoá vẫn giữ giao dịch cũ, không dùng cho giao dịch mới." : "Chưa có tài khoản nào bị khoá.",
     blocks: [
       {
         type: "rows",
@@ -958,7 +958,7 @@ async function answerAccountInfo(plan: QuestionPlan, sources: AnswerSources): Pr
             rows: chosen.slice(0, 10).map((account) => ({
               icon: accountIcon(account),
               name: account.name,
-              sub: `${account.status === "archived" ? "Đã lưu trữ · " : ""}${account.excluded ? "Ngoài báo cáo · " : ""}Mở từ ${opened(account)}`,
+              sub: `${account.status === "archived" ? "Đã khoá · " : ""}${account.excluded ? "Ngoài báo cáo · " : ""}Mở từ ${opened(account)}`,
               subTone: undefined,
               amount: account.balance,
               amountTone: account.balance < 0 ? ("expense" as const) : ("plain" as const),

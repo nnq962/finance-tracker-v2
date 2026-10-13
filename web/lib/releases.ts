@@ -32,6 +32,16 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.4.0",
+    date: "2026-10-13",
+    title: "Khoá và xoá tài khoản trong trang sửa",
+    changes: [
+      { kind: "improved", text: "Chi tiết tài khoản chỉ còn để xem; khoá và xoá tài khoản chuyển vào trang sửa (bút chì)." },
+      { kind: "new", text: "“Ngừng sử dụng” đổi thành công tắc “Khoá tài khoản”: bật rồi bấm Lưu. Tắt rồi Lưu để mở khoá." },
+      { kind: "improved", text: "Xoá tài khoản là nút thùng rác cạnh nút Lưu, như khi sửa hạng mục." },
+    ],
+  },
+  {
     version: "6.3.4",
     date: "2026-10-13",
     title: "Nút ở chân sheet gọn hơn",

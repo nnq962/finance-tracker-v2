@@ -176,7 +176,7 @@ function buildKeys({ accounts, categoryGroups, contacts }: Context) {
   lines.push("Tài khoản (accountIds):")
   accounts.forEach((account, index) => {
     add(`a${index + 1}`, account.id)
-    lines.push(`- a${index + 1}: ${account.name}${account.status === "archived" ? " (đã lưu trữ)" : ""}`)
+    lines.push(`- a${index + 1}: ${account.name}${account.status === "archived" ? " (đã khoá)" : ""}`)
   })
   lines.push("Người vay và cho vay (contactIds):")
   contacts.forEach((contact, index) => {
@@ -199,7 +199,7 @@ Các trường:
 - measure, trong một khoảng thời gian:
   spending = tiền đã chi (kể cả phí chuyển khoản và tiền lãi trả cho khoản đi vay); income = tiền đã nhận (kể cả tiền lãi người khác trả cho khoản cho vay; tiền gốc vay và trả nợ không phải thu chi); net = thu trừ chi (dư bao nhiêu, lời lỗ, thu chi); transactions = mọi giao dịch, không phân biệt thu chi; transfers = chuyển tiền giữa các tài khoản của người dùng (kèm phí); account_flow = tiền vào và tiền ra của tài khoản ("tiền vào ra Vietcombank"); collected = tiền người khác trả nợ cho người dùng (thu nợ); repaid = tiền người dùng trả nợ cho người khác (trả nợ); new_lent = khoản cho vay mới ghi; new_borrowed = khoản đi vay mới ghi.
 - measure, hiện tại (không cần thời gian):
-  balance = số dư tài khoản; account_info = thông tin tài khoản: số dư ban đầu, ngày mở, ghi chú, tài khoản đã lưu trữ; lent = người khác đang nợ người dùng (cho vay); borrowed = người dùng đang nợ người khác (đi vay); debts = cả cần thu lẫn cần trả; debts_due = khoản nợ sắp đến hạn hoặc quá hạn, cả hai chiều; net_worth = tài sản ròng (tổng tài sản, "mình có bao nhiêu tiền tất cả"). Hỏi về một khoản nợ của một người (đã trả bao nhiêu, lãi, hạn trả, lịch sử trả) là lent hoặc borrowed với contactIds của người đó.
+  balance = số dư tài khoản; account_info = thông tin tài khoản: số dư ban đầu, ngày mở, ghi chú, tài khoản đã khoá; lent = người khác đang nợ người dùng (cho vay); borrowed = người dùng đang nợ người khác (đi vay); debts = cả cần thu lẫn cần trả; debts_due = khoản nợ sắp đến hạn hoặc quá hạn, cả hai chiều; net_worth = tài sản ròng (tổng tài sản, "mình có bao nhiêu tiền tất cả"). Hỏi về một khoản nợ của một người (đã trả bao nhiêu, lãi, hạn trả, lịch sử trả) là lent hoặc borrowed với contactIds của người đó.
 - view: total = một con số; by_group = chia theo nhóm hạng mục; by_category = chia theo hạng mục; by_account = chia theo tài khoản; by_day = theo từng ngày ("ngày nào chi nhiều nhất"); by_month = theo từng tháng ("6 tháng gần đây", "từng tháng năm nay"); top = những khoản lớn nhất; list = liệt kê các giao dịch. Hỏi "tiêu vào đâu", "hạng mục nào nhiều nhất" là by_group (hoặc by_category khi đã chọn một nhóm). Hỏi "khoản nào lớn nhất" là top. Hỏi "những khoản", "các giao dịch", "đã chi gì" là list.
 - order: most = nhiều nhất, lớn nhất (mặc định); least = ít nhất, nhỏ nhất, "chi gì ít nhất", "khoản nhỏ nhất". Dùng cùng view top (từng khoản) hoặc by_group / by_category / by_account (theo nhóm).
 - periodPreset: today, yesterday, this_week, last_week, this_month, last_month, this_year, last_year; last_days = n ngày gần đây (periodDays = n); last_months = n tháng gần đây kể cả tháng này (periodMonths = n); month = một tháng (periodMonth, periodYear nếu nói năm, không thì null); year = một năm (periodYear); range = từ ngày đến ngày (periodFrom, periodTo dạng YYYY-MM-DD); all = từ trước tới nay. Không nói thời gian: các measure hiện tại dùng all; by_month không nói thời gian dùng last_months với periodMonths = 6; còn lại dùng this_month.

@@ -219,7 +219,7 @@ export function TransactionFilterSheet({
                 key={account.id}
                 media={<AccountLogo account={account} />}
                 title={account.name}
-                description={account.status === "archived" ? "Đã lưu trữ" : undefined}
+                description={account.status === "archived" ? "Đã khoá" : undefined}
                 checked={accountIds.includes(account.id)}
                 onClick={() => change({ accountIds: toggle(accountIds, account.id) })}
               />

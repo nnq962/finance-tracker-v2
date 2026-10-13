@@ -1,9 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { ArchiveIcon, ArchiveRestoreIcon, ArrowDownLeftIcon, ArrowUpRightIcon, PencilIcon } from "lucide-react"
+import { ArrowDownLeftIcon, ArrowUpRightIcon, PencilIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { toast } from "sonner"
 
 import { AccountLogo } from "@/components/account-logo"
 import { FlowTiles } from "@/components/app/flow-tiles"
@@ -20,8 +19,6 @@ import type { AccountFlow, Transaction } from "@/lib/transactions/types"
 
 import { TransactionHistoryProvider } from "../../transactions/_components/add-transaction/transaction-history-context"
 import { TransactionItem } from "../../transactions/_components/transaction-item"
-import { setAccountArchivedAction } from "../actions"
-import { DeleteAccountSheet } from "./account-actions/delete-account-sheet"
 import { EditAccountSheet } from "./account-actions/edit-account-sheet"
 
 /** How a transaction moved this account's balance: a transfer out also pays its fee. */
@@ -62,8 +59,8 @@ type AccountSheetProps = {
  * An account as the transaction's sheet shows one: its logo, name, balance
  * and kind at the top, edited from the pencil in the bar; this month's money
  * in and out; when it started, what it started with and how much it has
- * moved since; its latest transactions, each opening its own sheet; then
- * putting it away (said what it does) and deleting it.
+ * moved since; its latest transactions, each opening its own sheet. Locking
+ * and deleting it are in its editor, behind the pencil.
  */
 export function AccountSheet({
   account,
@@ -75,9 +72,7 @@ export function AccountSheet({
   onOpenChange,
 }: AccountSheetProps) {
   const router = useRouter()
-  const [isPending, startTransition] = React.useTransition()
   const [editOpen, setEditOpen] = React.useState(false)
-  const [deleteOpen, setDeleteOpen] = React.useState(false)
   // Keeps the last account on screen while the sheet slides closed.
   const [shown, setShown] = React.useState(account)
   if (account && account !== shown) setShown(account)
@@ -86,24 +81,7 @@ export function AccountSheet({
 
   const isLocked = shown.status === "archived"
   const change = shown.balance - shown.openingBalance
-  const subtitle = [accountDescription(shown), isLocked ? "Đã ngừng sử dụng" : undefined].filter(Boolean).join(" · ")
-
-  const handleArchivedChange = () => {
-    startTransition(async () => {
-      try {
-        const result = await setAccountArchivedAction(shown.id, !isLocked)
-
-        if (result.success) {
-          toast.success(isLocked ? "Đã dùng lại tài khoản" : "Đã ngừng sử dụng tài khoản")
-          return
-        }
-
-        toast.error(result.error)
-      } catch {
-        toast.error("Không thể cập nhật trạng thái tài khoản. Vui lòng thử lại.")
-      }
-    })
-  }
+  const subtitle = [accountDescription(shown), isLocked ? "Đã khoá" : undefined].filter(Boolean).join(" · ")
 
   return (
     <>
@@ -113,15 +91,8 @@ export function AccountSheet({
         onOpenChange={onOpenChange}
         className="gap-6"
         action={
-          // An account put away is not edited; using it again brings the pencil back.
-          <Button
-            type="button"
-            variant="secondary"
-            size="icon"
-            aria-label="Sửa tài khoản"
-            disabled={isLocked || isPending}
-            onClick={() => setEditOpen(true)}
-          >
+          // Also for a locked account: unlocking and deleting it are in the editor.
+          <Button type="button" variant="secondary" size="icon" aria-label="Sửa tài khoản" onClick={() => setEditOpen(true)}>
             <PencilIcon />
           </Button>
         }
@@ -210,39 +181,8 @@ export function AccountSheet({
             <SettingsRow title="Chưa có giao dịch" />
           )}
         </SettingsGroup>
-
-        <SettingsGroup
-          footer={
-            isLocked
-              ? "Hiện lại khi ghi giao dịch."
-              : "Ẩn khi ghi giao dịch. Số dư vẫn tính vào tổng, lịch sử vẫn giữ."
-          }
-        >
-          <SettingsRow
-            icon={isLocked ? ArchiveRestoreIcon : ArchiveIcon}
-            title={isLocked ? "Dùng lại tài khoản" : "Ngừng sử dụng"}
-            chevron={false}
-            disabled={isPending}
-            onClick={handleArchivedChange}
-          />
-        </SettingsGroup>
-        <SettingsGroup>
-          <SettingsRow
-            destructive
-            title="Xoá tài khoản"
-            disabled={isPending}
-            onClick={() => setDeleteOpen(true)}
-          />
-        </SettingsGroup>
       </PageSheet>
-      <EditAccountSheet account={shown} open={editOpen} onOpenChange={setEditOpen} />
-      <DeleteAccountSheet
-        account={shown}
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        onConfirmed={() => onOpenChange(false)}
-        onArchive={isLocked ? undefined : handleArchivedChange}
-      />
+      <EditAccountSheet account={shown} open={editOpen} onOpenChange={setEditOpen} onDeleted={() => onOpenChange(false)} />
     </>
   )
 }

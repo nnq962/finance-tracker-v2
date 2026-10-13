@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { EyeOffIcon, SaveIcon } from "lucide-react"
+import { EyeOffIcon, LockIcon, SaveIcon, Trash2Icon } from "lucide-react"
 import { toast } from "sonner"
 
 import { PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
@@ -54,6 +54,14 @@ type AccountFormProps = {
   onSuccess: () => void
   submitLabel?: string
   successMessage: string
+  /**
+   * Editing: the account's lock, a switch last in the form that Save applies.
+   * Switched on, the fields are shown but cannot change; `setLocked` locks or
+   * unlocks it on the server.
+   */
+  lock?: { locked: boolean; setLocked: (locked: boolean) => Promise<AccountActionResult> }
+  /** Editing: deleting, a red bin beside Save that asks again before it goes. */
+  onDelete?: () => void
 }
 
 /**
@@ -62,7 +70,8 @@ type AccountFormProps = {
  * bank or wallet a grid of the common logos (all of them, searchable, on a
  * deeper screen), then rows for its name (taken from the bank until typed),
  * whether the balance is below zero, when it starts and a note. Missing fields
- * are pointed out where they are before sending.
+ * are pointed out where they are before sending. Editing, locking it is the
+ * last switch and deleting sits beside Save.
  */
 export function AccountForm({
   action,
@@ -71,6 +80,8 @@ export function AccountForm({
   onSuccess,
   submitLabel = "Lưu tài khoản",
   successMessage,
+  lock,
+  onDelete,
 }: AccountFormProps) {
   const [isPending, startTransition] = React.useTransition()
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
@@ -87,6 +98,13 @@ export function AccountForm({
   )
   const [balanceNegative, setBalanceNegative] = React.useState((defaultValues?.balance ?? 0) < 0)
   const [excluded, setExcluded] = React.useState(defaultValues?.excluded ?? false)
+  // The lock as switched, applied on Save; follows the account when it changes.
+  const [lockOn, setLockOn] = React.useState(lock?.locked ?? false)
+  const [savedLock, setSavedLock] = React.useState(lock?.locked)
+  if (lock?.locked !== savedLock) {
+    setSavedLock(lock?.locked)
+    setLockOn(lock?.locked ?? false)
+  }
   // A new account starts now; an edited one keeps its date.
   const [when, setWhen] = React.useState(() =>
     defaultValues?.openedAt ? getLocalDateTime(defaultValues.openedAt) : getCurrentLocalDateTime(),
@@ -144,6 +162,22 @@ export function AccountForm({
         const formData = new FormData(event.currentTarget)
         setErrorMessage(null)
 
+        // Switched on: only the lock is saved; the fields stay as they were.
+        if (lock && lockOn) {
+          if (lock.locked) return
+          startTransition(async () => {
+            try {
+              const result = await lock.setLocked(true)
+              if (!result.success) return setErrorMessage(result.error)
+              toast.success("Đã khoá tài khoản.")
+              onSuccess()
+            } catch {
+              setErrorMessage("Không thể khoá tài khoản. Vui lòng thử lại.")
+            }
+          })
+          return
+        }
+
         const found: typeof errors = {}
         if (balance === null) found.balance = "Nhập số dư."
         if (institutions && !institutionId) found.institutionId = `Chọn ${institutionLabel.toLowerCase()}.`
@@ -164,10 +198,17 @@ export function AccountForm({
 
         startTransition(async () => {
           try {
+            // Switched off on a locked account: unlocked first, as only an unlocked one is edited.
+            const unlocking = Boolean(lock?.locked)
+            if (lock && unlocking) {
+              const unlocked = await lock.setLocked(false)
+              if (!unlocked.success) return setErrorMessage(unlocked.error)
+            }
+
             const result = await action(formData)
 
             if (result.success) {
-              toast.success(successMessage)
+              toast.success(unlocking ? "Đã mở khoá tài khoản." : successMessage)
               setRequestId(randomId())
               onSuccess()
               return
@@ -199,166 +240,191 @@ export function AccountForm({
       ) : null}
 
       <div className={cn("flex flex-col gap-6 pb-4", picking && "hidden")}>
-        <Tabs
-          value={accountType}
-          onValueChange={(value) => {
-            const type = value as AccountType
-            setAccountType(type)
-            setInstitutionId("")
-            if (!nameEdited) setName(type === "cash" ? CASH_NAME : "")
-            clearError("institutionId")
-            clearError("name")
-          }}
-          className="w-full"
-        >
-          <TabsList className="w-full" aria-label="Loại tài khoản">
-            {accountTypeOptions.map(({ value, label }) => (
-              <TabsTrigger key={value} value={value}>
-                {label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-
-        <div className="flex flex-col items-center gap-2">
-          <FieldLabel htmlFor="account-balance" className="text-xs font-normal text-muted-foreground">
-            {expectedBalance === undefined ? "Số dư ban đầu" : "Số dư hiện tại"}
-          </FieldLabel>
-          <CurrencyInput
-            variant="hero"
-            id="account-balance"
-            name="balance"
-            value={balance}
+        {/* Locked (the switch on), the fields are only shown; the switch after them still works. */}
+        <fieldset disabled={lockOn} className={cn("flex min-w-0 flex-col gap-6", lockOn && "opacity-50")}>
+          <Tabs
+            value={accountType}
             onValueChange={(value) => {
-              setBalance(value)
-              clearError("balance")
+              const type = value as AccountType
+              setAccountType(type)
+              setInstitutionId("")
+              if (!nameEdited) setName(type === "cash" ? CASH_NAME : "")
+              clearError("institutionId")
+              clearError("name")
             }}
-            negative={balanceNegative}
-            onNegativeChange={setBalanceNegative}
-            invalid={Boolean(errors.balance)}
-            required
-          />
-          {errors.balance ? (
-            <FieldError className="text-center">{errors.balance}</FieldError>
-          ) : adjustment ? (
-            <p className="text-center text-xs text-muted-foreground">
-              Ghi giao dịch “Điều chỉnh số dư” {adjustment > 0 ? "+" : "−"}
-              {formatCurrency(Math.abs(adjustment))}
-            </p>
+            className="w-full"
+          >
+            <TabsList className="w-full" aria-label="Loại tài khoản">
+              {accountTypeOptions.map(({ value, label }) => (
+                <TabsTrigger key={value} value={value}>
+                  {label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+
+          <div className="flex flex-col items-center gap-2">
+            <FieldLabel htmlFor="account-balance" className="text-xs font-normal text-muted-foreground">
+              {expectedBalance === undefined ? "Số dư ban đầu" : "Số dư hiện tại"}
+            </FieldLabel>
+            <CurrencyInput
+              variant="hero"
+              id="account-balance"
+              name="balance"
+              value={balance}
+              onValueChange={(value) => {
+                setBalance(value)
+                clearError("balance")
+              }}
+              negative={balanceNegative}
+              onNegativeChange={setBalanceNegative}
+              invalid={Boolean(errors.balance)}
+              required
+            />
+            {errors.balance ? (
+              <FieldError className="text-center">{errors.balance}</FieldError>
+            ) : adjustment ? (
+              <p className="text-center text-xs text-muted-foreground">
+                Ghi giao dịch “Điều chỉnh số dư” {adjustment > 0 ? "+" : "−"}
+                {formatCurrency(Math.abs(adjustment))}
+              </p>
+            ) : null}
+          </div>
+
+          {institutions ? (
+            <InstitutionGrid
+              id="account-institution"
+              caption={institutionLabel}
+              institutions={institutions}
+              value={institutionId}
+              onValueChange={pickInstitution}
+              onShowAll={() => setPicking(true)}
+              error={errors.institutionId}
+            />
           ) : null}
-        </div>
 
-        {institutions ? (
-          <InstitutionGrid
-            id="account-institution"
-            caption={institutionLabel}
-            institutions={institutions}
-            value={institutionId}
-            onValueChange={pickInstitution}
-            onShowAll={() => setPicking(true)}
-            error={errors.institutionId}
-          />
-        ) : null}
-
-        <div className="flex flex-col gap-2">
-          <SettingsGroup>
-            {/* The name typed in place, at the row's end, as iOS settings do. */}
-            <li className={cn("flex min-h-16 items-center gap-3 px-4 py-3", settingsSeparatorClassName())}>
-              <label htmlFor="account-name" className={cn("shrink-0 text-sm font-medium", errors.name && "text-destructive")}>
-                Tên
-              </label>
-              <input
-                id="account-name"
-                name="name"
-                value={name}
-                onChange={(event) => {
-                  setName(event.target.value)
-                  setNameEdited(event.target.value.trim().length > 0)
-                  clearError("name")
-                }}
-                placeholder="Tên tài khoản"
-                autoComplete="off"
-                maxLength={80}
-                required
-                aria-invalid={Boolean(errors.name) || undefined}
-                className="min-w-0 flex-1 bg-transparent text-right text-sm outline-none placeholder:text-muted-foreground"
-              />
-            </li>
-            <SettingsRow
-              title="Số dư âm"
-              description="Đang nợ, thấu chi"
-              action={
-                <Switch
-                  aria-label="Số dư âm"
-                  checked={balanceNegative}
-                  onCheckedChange={setBalanceNegative}
+          <div className="flex flex-col gap-2">
+            <SettingsGroup>
+              {/* The name typed in place, at the row's end, as iOS settings do. */}
+              <li className={cn("flex min-h-16 items-center gap-3 px-4 py-3", settingsSeparatorClassName())}>
+                <label htmlFor="account-name" className={cn("shrink-0 text-sm font-medium", errors.name && "text-destructive")}>
+                  Tên
+                </label>
+                <input
+                  id="account-name"
+                  name="name"
+                  value={name}
+                  onChange={(event) => {
+                    setName(event.target.value)
+                    setNameEdited(event.target.value.trim().length > 0)
+                    clearError("name")
+                  }}
+                  placeholder="Tên tài khoản"
+                  autoComplete="off"
+                  maxLength={80}
+                  required
+                  aria-invalid={Boolean(errors.name) || undefined}
+                  className="min-w-0 flex-1 bg-transparent text-right text-sm outline-none placeholder:text-muted-foreground"
                 />
+              </li>
+              <SettingsRow
+                title="Số dư âm"
+                description="Đang nợ, thấu chi"
+                action={
+                  <Switch
+                    aria-label="Số dư âm"
+                    checked={balanceNegative}
+                    onCheckedChange={setBalanceNegative}
+                  />
+                }
+              />
+              <TimeRows
+                idPrefix="account"
+                title="Bắt đầu từ"
+                quickDays={false}
+                date={when.date}
+                time={when.time}
+                today={today}
+                onDateChange={(date) => {
+                  setWhen((current) => ({ ...current, date }))
+                  clearError("openedAt")
+                }}
+                onTimeChange={(time) => {
+                  setWhen((current) => ({ ...current, time }))
+                  clearError("openedAt")
+                }}
+                invalid={Boolean(errors.openedAt)}
+              />
+              {/* The note typed in place, as tall as a row of the list (64) and growing with what is written. */}
+              <li className={cn("flex min-h-16 items-center px-4 py-3", settingsSeparatorClassName())}>
+                <label htmlFor="account-note" className="sr-only">
+                  Ghi chú
+                </label>
+                <textarea
+                  ref={noteRef}
+                  id="account-note"
+                  name="note"
+                  rows={1}
+                  defaultValue={defaultValues?.note}
+                  placeholder="Ghi chú (tuỳ chọn)"
+                  onInput={(event) => fitNote(event.currentTarget)}
+                  className="block min-h-6 w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                />
+              </li>
+            </SettingsGroup>
+            {errors.name || errors.openedAt ? (
+              <FieldError className="px-4">{errors.name ?? errors.openedAt}</FieldError>
+            ) : null}
+          </div>
+
+          {/* Last, as it is seldom wanted, as on a transaction's form. */}
+          <SettingsGroup>
+            <SettingsRow
+              icon={EyeOffIcon}
+              tone="neutral"
+              title="Không tính vào báo cáo"
+              description="Số dư và thu chi không cộng vào tổng"
+              action={
+                <>
+                  <Switch aria-label="Không tính vào báo cáo" checked={excluded} onCheckedChange={setExcluded} />
+                  {excluded ? <input type="hidden" name="excluded" value="on" /> : null}
+                </>
               }
             />
-            <TimeRows
-              idPrefix="account"
-              title="Bắt đầu từ"
-              quickDays={false}
-              date={when.date}
-              time={when.time}
-              today={today}
-              onDateChange={(date) => {
-                setWhen((current) => ({ ...current, date }))
-                clearError("openedAt")
-              }}
-              onTimeChange={(time) => {
-                setWhen((current) => ({ ...current, time }))
-                clearError("openedAt")
-              }}
-              invalid={Boolean(errors.openedAt)}
-            />
-            {/* The note typed in place, as tall as a row of the list (64) and growing with what is written. */}
-            <li className={cn("flex min-h-16 items-center px-4 py-3", settingsSeparatorClassName())}>
-              <label htmlFor="account-note" className="sr-only">
-                Ghi chú
-              </label>
-              <textarea
-                ref={noteRef}
-                id="account-note"
-                name="note"
-                rows={1}
-                defaultValue={defaultValues?.note}
-                placeholder="Ghi chú (tuỳ chọn)"
-                onInput={(event) => fitNote(event.currentTarget)}
-                className="block min-h-6 w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-              />
-            </li>
           </SettingsGroup>
-          {errors.name || errors.openedAt ? (
-            <FieldError className="px-4">{errors.name ?? errors.openedAt}</FieldError>
-          ) : null}
-        </div>
+        </fieldset>
 
-        {/* Last, as it is seldom wanted, as on a transaction's form. */}
-        <SettingsGroup>
-          <SettingsRow
-            icon={EyeOffIcon}
-            tone="neutral"
-            title="Không tính vào báo cáo"
-            description="Số dư và thu chi không cộng vào tổng"
-            action={
-              <>
-                <Switch aria-label="Không tính vào báo cáo" checked={excluded} onCheckedChange={setExcluded} />
-                {excluded ? <input type="hidden" name="excluded" value="on" /> : null}
-              </>
-            }
-          />
-        </SettingsGroup>
+        {lock ? (
+          <SettingsGroup>
+            <SettingsRow
+              icon={LockIcon}
+              tone="neutral"
+              title="Khoá tài khoản"
+              description="Ẩn khi ghi giao dịch, không sửa được. Số dư và lịch sử vẫn giữ."
+              fullDescription
+              action={
+                <Switch aria-label="Khoá tài khoản" checked={lockOn} disabled={isPending} onCheckedChange={setLockOn} />
+              }
+            />
+          </SettingsGroup>
+        ) : null}
       </div>
 
       {picking ? null : (
         <PageSheetFooter>
           {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
-          {/* Back is in the header, so the footer only saves. */}
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? <Spinner /> : <SaveIcon />}
-            {isPending ? "Đang lưu..." : submitLabel}
-          </Button>
+          {/* Back is in the header; deleting beside saving, as tall as it, as in the category editor. */}
+          <div className="flex items-center gap-2">
+            {onDelete ? (
+              <Button type="button" variant="destructive" size="icon" aria-label="Xoá tài khoản" disabled={isPending} onClick={onDelete}>
+                <Trash2Icon />
+              </Button>
+            ) : null}
+            <Button type="submit" className="flex-1" disabled={isPending || (lockOn && lock?.locked)}>
+              {isPending ? <Spinner /> : <SaveIcon />}
+              {isPending ? "Đang lưu..." : submitLabel}
+            </Button>
+          </div>
         </PageSheetFooter>
       )}
     </form>

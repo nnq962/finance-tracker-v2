@@ -46,7 +46,7 @@ export function AccountPicker({
                 key={account.id}
                 media={<AccountLogo account={account} />}
                 title={account.name}
-                description={account.status === "archived" ? "Đã lưu trữ" : formatCurrency(account.balance)}
+                description={account.status === "archived" ? "Đã khoá" : formatCurrency(account.balance)}
                 checked={value === account.id}
                 onClick={() => onPick(account.id)}
               />

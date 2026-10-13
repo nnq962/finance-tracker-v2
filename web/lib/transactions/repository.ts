@@ -370,7 +370,7 @@ async function prepare(
 
     if (!account || (account.status !== "active" && !previousAccountIds.includes(accountId))) {
       throw new TransactionValidationError(
-        "Tài khoản không tồn tại hoặc đã ngừng sử dụng.",
+        "Tài khoản không tồn tại hoặc đã khoá.",
       )
     }
   }
@@ -516,7 +516,7 @@ function assertNoArchivedChange(accounts: Map<string, LockedAccount>, impacts: M
     const account = accounts.get(accountId)
     if (delta !== 0 && account?.status === "archived") {
       throw new TransactionValidationError(
-        `“${account.name}” đã ngừng sử dụng. Dùng lại tài khoản này trước khi đổi số tiền hoặc xoá giao dịch.`,
+        `“${account.name}” đã khoá. Mở khoá tài khoản này trước khi đổi số tiền hoặc xoá giao dịch.`,
       )
     }
   }

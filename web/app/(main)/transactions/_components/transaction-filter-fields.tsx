@@ -255,7 +255,7 @@ export function TransactionFilterFields({
             <ToggleGroupItem key={account.id} value={account.id}>
               <AccountLogo account={account} size="xs" />
               {account.name}
-              {account.status === "archived" ? " (đã lưu trữ)" : ""}
+              {account.status === "archived" ? " (đã khoá)" : ""}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>

@@ -211,7 +211,7 @@ export async function deleteContact(userId: string, contactId: string) {
 }
 
 function assertAccount(account: LockedAccount | undefined, allowArchived = false): LockedAccount {
-  if (!account || (!allowArchived && account.status !== "active")) throw new DebtValidationError("Tài khoản không tồn tại hoặc đã ngừng sử dụng.")
+  if (!account || (!allowArchived && account.status !== "active")) throw new DebtValidationError("Tài khoản không tồn tại hoặc đã khoá.")
   return account
 }
 
@@ -321,7 +321,7 @@ export async function saveDebtPayment(userId: string, debtId: string, paymentId:
       const delta = (values?.accountId === account.id ? sign * values.amount : 0) - (previous?.accountId === account.id ? sign * previous.amount : 0)
       // An archived account's balance stays as it was left, whichever side it is on.
       if (account.status !== "active" && delta !== 0) {
-        throw new DebtValidationError(`“${account.name}” đã ngừng sử dụng. Dùng lại tài khoản này trước khi đổi lần thanh toán.`)
+        throw new DebtValidationError(`“${account.name}” đã khoá. Mở khoá tài khoản này trước khi đổi lần thanh toán.`)
       }
       await applyBalance(trx, account, delta)
     }
@@ -378,7 +378,7 @@ export async function changeDebt(userId: string, debtId: string, input: unknown 
       const account = assertAccount(accounts.get(id), !isSelectedAccount || id === debt.accountId)
       // An archived account's balance stays as it was left, whichever side it is on.
       if (account.status !== "active" && delta !== 0) {
-        throw new DebtValidationError(`“${account.name}” đã ngừng sử dụng. Dùng lại tài khoản này trước khi đổi khoản nợ.`)
+        throw new DebtValidationError(`“${account.name}” đã khoá. Mở khoá tài khoản này trước khi đổi khoản nợ.`)
       }
       await applyBalance(trx, account, delta)
     }

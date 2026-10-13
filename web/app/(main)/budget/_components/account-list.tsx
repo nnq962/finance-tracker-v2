@@ -89,7 +89,7 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
     <div className="space-y-6 md:space-y-8">
       {activeAccounts.length > 0 ? (
         <>
-          {/* Named like the "Ngừng sử dụng" group below it. A list on phones;
+          {/* Named like the "Đã khoá" group below it. A list on phones;
               from lg up a grid of cards with this month's in and out, so the
               page uses its width. */}
           <div className="lg:hidden">
@@ -121,7 +121,7 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
               of those in use, as the group above them. */}
           <div className="lg:hidden">
             <SettingsGroup
-              title="Ngừng sử dụng"
+              title="Đã khoá"
               collapsible={{ showLabel: `Hiện ${archivedAccounts.length} tài khoản`, defaultOpen: activeAccounts.length === 0 }}
             >
               {archivedAccounts.map((account) => (
@@ -132,7 +132,7 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
           <div className="hidden lg:block">
             <SettingsGroup
               plain
-              title="Ngừng sử dụng"
+              title="Đã khoá"
               collapsible={{ showLabel: `Hiện ${archivedAccounts.length} tài khoản`, defaultOpen: activeAccounts.length === 0 }}
             >
               <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">

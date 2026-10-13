@@ -144,7 +144,7 @@ export async function updateAccount(
     const account = (await lockAccounts(trx, userId, [accountId])).get(accountId)
 
     if (!account || account.status !== "active") {
-      throw new AccountValidationError("Tài khoản đã ngừng sử dụng. Hãy kích hoạt lại trước khi chỉnh sửa.")
+      throw new AccountValidationError("Tài khoản đã khoá. Hãy mở khoá trước khi chỉnh sửa.")
     }
 
     // The balance is overwritten directly, without a transaction record, and
@@ -228,7 +228,7 @@ async function deleteAccountOnce(userId: string, accountId: string) {
 
     if ((await getLinkedAccountIds(userId, trx, accountId)).size > 0) {
       throw new AccountValidationError(
-        "Tài khoản đã có chuyển khoản hoặc vay nợ nên không xoá được. Hãy chọn Ngừng sử dụng.",
+        "Tài khoản đã có chuyển khoản hoặc vay nợ nên không xoá được. Hãy khoá tài khoản thay vì xoá.",
       )
     }
 
