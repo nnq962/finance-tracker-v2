@@ -32,6 +32,20 @@ function timeLabel(date: string, time: string | undefined, today: string) {
 }
 
 /**
+ * With a mouse, a click anywhere on a date or time field opens the browser's
+ * picker, not only its small icon (Chrome and Safari on a computer otherwise
+ * only put the caret in a segment). A phone opens its own on a tap already.
+ */
+function openPicker(event: React.MouseEvent<HTMLInputElement>) {
+  if (!window.matchMedia("(pointer: fine)").matches) return
+  try {
+    event.currentTarget.showPicker()
+  } catch {
+    // Not allowed here (or not supported): typing in the segments still works.
+  }
+}
+
+/**
  * When something happened, as rows of a group: "Thời gian … Hôm nay,
  * 20:02", with today, yesterday and the day before as chips under it (unless
  * `quickDays` is off), and the date and time fields (the phone's own pickers)
@@ -118,8 +132,17 @@ export function TimeRows({
             ))}
           </ToggleGroup>
         ) : null}
-        <Collapse open={open}>
-          <div className={cn("grid gap-3", time === undefined ? "grid-cols-1" : "grid-cols-2", withQuickDays ? "pt-2" : "py-2")}>
+        {/* 4px of room around the fields inside the fold, which clips, so
+            their ring (focused, or wrong) is not cut at the sides or foot;
+            the fold reaches out as far, so the fields stay where they were. */}
+        <Collapse open={open} className={cn("-mx-1", open && withQuickDays && "-mb-1")}>
+          <div
+            className={cn(
+              "grid gap-3 px-1",
+              time === undefined ? "grid-cols-1" : "grid-cols-2",
+              withQuickDays ? "pt-2 pb-1" : "py-2",
+            )}
+          >
             <Input
               id={`${idPrefix}-date`}
               aria-label="Ngày"
@@ -129,6 +152,7 @@ export function TimeRows({
               min={min}
               max={today}
               onChange={(event) => onDateChange(event.target.value)}
+              onClick={openPicker}
               aria-invalid={invalid || undefined}
             />
             {time === undefined ? null : (
@@ -139,6 +163,7 @@ export function TimeRows({
                 name="time"
                 value={time}
                 onChange={(event) => onTimeChange?.(event.target.value)}
+                onClick={openPicker}
                 aria-invalid={invalid || undefined}
               />
             )}
