@@ -9,6 +9,7 @@ import { useMotionValueEvent, useScroll } from "motion/react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { TimiWordmark } from "@/components/timi-wordmark"
 
 const NAV_LINKS = [
   { href: "#tinh-nang", label: "Tính năng" },
@@ -51,9 +52,7 @@ export function LandingHeader() {
             priority
             className="size-9 transition-transform duration-500 ease-out group-hover:scale-105"
           />
-          <span className="hidden whitespace-nowrap text-base font-semibold min-[360px]:inline sm:text-lg">
-            Timi
-          </span>
+          <TimiWordmark className="hidden h-9 min-[360px]:block" />
         </Link>
 
         <ul className="hidden items-center gap-1 md:flex">

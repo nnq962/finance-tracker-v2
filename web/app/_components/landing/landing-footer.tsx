@@ -2,6 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
+import { TimiWordmark } from "@/components/timi-wordmark"
 
 const FOOTER_LINKS = [
   { href: "#tinh-nang", label: "Tính năng" },
@@ -19,7 +20,8 @@ export function LandingFooter() {
         <div className="space-y-2">
           <Link href="/" className="flex w-fit items-center gap-2 rounded-lg">
             <Image src="/icon.svg" alt="" width={28} height={28} className="size-7" />
-            <span className="font-semibold">Timi</span>
+            <TimiWordmark className="h-7" />
+            <span className="sr-only">Timi</span>
           </Link>
           <p className="text-sm text-muted-foreground">
             Quản lý tài chính cá nhân rõ ràng và đơn giản.

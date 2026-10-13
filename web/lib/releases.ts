@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.1.1",
+    date: "2026-10-13",
+    title: "Chữ timi theo logo",
+    changes: [
+      { kind: "improved", text: "Trang chủ và màn đăng nhập viết chữ \"timi\" đúng kiểu logo, ngôi sao làm dấu chấm chữ i" },
+    ],
+  },
+  {
     version: "6.1.0",
     date: "2026-10-13",
     title: "Logo mới của Timi",

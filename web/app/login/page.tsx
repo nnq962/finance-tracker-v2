@@ -6,6 +6,7 @@ import { getSessionUser } from "@/lib/auth/session"
 import { redirect } from "next/navigation"
 
 import { LoginCollage } from "./_components/login-collage"
+import { TimiWordmark } from "@/components/timi-wordmark"
 
 export const metadata: Metadata = {
   title: "Đăng nhập",
@@ -48,7 +49,8 @@ export default async function LoginPage({
         <div className="flex min-h-svh flex-col px-6 pt-[max(env(safe-area-inset-top),1.25rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)] lg:order-2 lg:min-h-0 lg:py-0">
           <p className="flex items-center gap-2 text-sm font-semibold">
             <Image src="/icon.svg" alt="" width={28} height={28} className="size-7" />
-            Timi
+            <TimiWordmark className="h-7" />
+            <span className="sr-only">Timi</span>
           </p>
           <div className="flex flex-1 items-center py-8 lg:hidden">
             <LoginCollage />
