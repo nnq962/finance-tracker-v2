@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { PlusIcon, SaveIcon } from "lucide-react"
+import { PlusIcon, SaveIcon, Trash2Icon } from "lucide-react"
 import { toast } from "sonner"
 
 import { AccountLogo } from "@/components/account-logo"
@@ -71,6 +71,8 @@ type TransactionFormProps = {
   onSuccess: () => void
   submitLabel?: string
   successMessage: string
+  /** Editing: deleting, a red bin beside Save. */
+  onDelete?: () => void
 }
 
 /**
@@ -98,6 +100,7 @@ export function TransactionForm({
   onSuccess,
   submitLabel = "Lưu giao dịch",
   successMessage,
+  onDelete,
 }: TransactionFormProps) {
   const [isPending, startTransition] = React.useTransition()
   // Kept across retries of one entry so the server records it only once.
@@ -482,11 +485,18 @@ export function TransactionForm({
       {screen ? null : (
         <PageSheetFooter>
           {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
-          {/* Back is in the header, so the footer only saves. */}
-          <Button type="submit" className="w-full" disabled={isPending || blocked}>
-            {isPending ? <Spinner /> : <SaveIcon />}
-            {isPending ? "Đang lưu..." : submitLabel}
-          </Button>
+          {/* Back is in the header; deleting beside saving, as tall as it, as in the account's editor. */}
+          <div className="flex items-center gap-2">
+            {onDelete ? (
+              <Button type="button" variant="destructive" size="icon" aria-label="Xoá giao dịch" disabled={isPending} onClick={onDelete}>
+                <Trash2Icon />
+              </Button>
+            ) : null}
+            <Button type="submit" className="flex-1" disabled={isPending || blocked}>
+              {isPending ? <Spinner /> : <SaveIcon />}
+              {isPending ? "Đang lưu..." : submitLabel}
+            </Button>
+          </div>
         </PageSheetFooter>
       )}
     </form>

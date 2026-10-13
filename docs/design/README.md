@@ -371,8 +371,9 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   là thẻ "Từ → Đến" có logo hai bên, rồi Phí và Tổng trừ (chỉ khi có phí; phí trừ cùng số tiền ở
   tài khoản đi). Dưới đó "[Hạng mục] gần đây" (3 giao dịch cùng hạng mục trang đang có), "Ghi lại
   giao dịch này" (mở Giao dịch mới điền sẵn số tiền, tài khoản, hạng mục, phí, ghi chú; ngày là bây
-  giờ, qua `TransactionDraft.copyOf`), cuối cùng "Xoá giao dịch" (hoàn tác 6 giây). Giao dịch vay nợ
-  không có bút chì, chỉ "Mở trong Vay nợ".
+  giờ, qua `TransactionDraft.copyOf`). Xoá nằm trong sheet sửa (2026-10-13, như tài khoản): nút thùng
+  rác đỏ tròn cạnh "Lưu thay đổi", hoàn tác 6 giây, không hỏi lại. Điều chỉnh số dư không có sheet sửa
+  nên vẫn có "Xoá giao dịch" ở cuối chi tiết. Giao dịch vay nợ không có bút chì, chỉ "Mở trong Vay nợ".
 - **Ngày trong lịch thu chi** (Tổng quan, chạm một ngày): page sheet tên ngày ("Thứ Năm, 01/10"), `FlowTiles`
   Tiền vào / Tiền ra của ngày như trang Giao dịch (số giao dịch mỗi chiều dưới số tiền, "Đang tải…" khi chưa
   tới; khoản vay không tính), rồi "N GIAO DỊCH" là các `TransactionItem`.

@@ -5,12 +5,13 @@ import * as React from "react"
 import { PageSheet } from "@/components/app/page-sheet"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
+import { scheduleUndoableDelete } from "@/lib/undoable-delete"
 import type {
   SupportedTransactionKind,
   Transaction,
 } from "@/lib/transactions/types"
 
-import { updateTransactionAction } from "../actions"
+import { deleteTransactionAction, updateTransactionAction } from "../actions"
 import { TransactionForm } from "./add-transaction/transaction-form"
 import { TransactionKindSelector } from "./add-transaction/transaction-kind-selector"
 
@@ -22,6 +23,11 @@ type EditTransactionSheetProps = {
   transaction: Transaction
 }
 
+/**
+ * The transaction's form, and deleting it, the red bin beside Save (moved
+ * here from its details on 2026-10-13, as for an account). Deleting waits six
+ * seconds with an undo, so it needs no confirmation first.
+ */
 export function EditTransactionSheet({
   accounts,
   categoryGroups,
@@ -32,6 +38,22 @@ export function EditTransactionSheet({
   const [kind, setKind] = React.useState<SupportedTransactionKind>(
     transaction.kind,
   )
+
+  const handleDelete = () => {
+    onOpenChange(false)
+    scheduleUndoableDelete({
+      key: `transaction:${transaction.id}`,
+      title: `Đã xoá “${transaction.title}”`,
+      pendingMessage: "Đang xoá giao dịch…",
+      undoMessage: "Đã giữ lại giao dịch.",
+      errorMessage: "Không thể xoá giao dịch. Vui lòng thử lại.",
+      onCommit: async () => {
+        const result = await deleteTransactionAction(transaction.id)
+
+        if (!result.success) throw new Error(result.error)
+      },
+    })
+  }
 
   return (
     <PageSheet
@@ -54,6 +76,7 @@ export function EditTransactionSheet({
         onSuccess={() => onOpenChange(false)}
         submitLabel="Lưu thay đổi"
         successMessage="Đã cập nhật giao dịch."
+        onDelete={handleDelete}
       />
     </PageSheet>
   )

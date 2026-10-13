@@ -57,8 +57,9 @@ function AccountMark({ account, name, size = "xs" }: { account?: Account; name?:
  * the category with its icon, its group; a transfer as its two accounts side
  * by side, its fee and what left the first one), the note in full, the
  * category's last few transactions to compare with, and a way to write it
- * down again. Edit is the pencil in the bar; delete is last, with an undo.
- * A loan's movement opens on the debts page instead.
+ * down again. Edit is the pencil in the bar, and deleting is in the editor;
+ * a balance correction, which has no editor, is deleted here, last, with an
+ * undo. A loan's movement opens on the debts page instead.
  */
 export function TransactionDetailsSheet({
   accounts,
@@ -86,7 +87,7 @@ export function TransactionDetailsSheet({
     ? history.filter((item) => item.categoryId === transaction.categoryId).slice(0, RECENT_COUNT)
     : []
 
-  // Deleting waits six seconds with an undo, so it needs no confirmation first.
+  // A correction only (others are deleted from the editor); six seconds with an undo, no confirmation.
   const handleDelete = () => {
     onDeleted()
     scheduleUndoableDelete({
@@ -271,16 +272,15 @@ export function TransactionDetailsSheet({
         </SettingsGroup>
       ) : (
         <>
-          {isAdjustment ? null : (
+          {isAdjustment ? (
+            <SettingsGroup footer="Xoá để đưa số dư về như trước khi điều chỉnh.">
+              <SettingsRow destructive title="Xoá giao dịch" onClick={handleDelete} />
+            </SettingsGroup>
+          ) : (
             <SettingsGroup>
               <SettingsRow icon={CopyIcon} title="Ghi lại giao dịch này" description="Điền sẵn, ngày là hôm nay" onClick={onCopy} />
             </SettingsGroup>
           )}
-          <SettingsGroup
-            footer={isAdjustment ? "Xoá để đưa số dư về như trước khi điều chỉnh." : undefined}
-          >
-            <SettingsRow destructive title="Xoá giao dịch" onClick={handleDelete} />
-          </SettingsGroup>
         </>
       )}
     </PageSheet>
