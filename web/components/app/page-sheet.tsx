@@ -38,7 +38,10 @@ const footerFade = (() => {
 /**
  * A PageSheet's footer, e.g. the Save button (default size, full width) and
  * an error above it. It stays at the sheet's bottom edge over the content,
- * which scrolls under it and fades, and the content's end stops above it.
+ * which scrolls under it and fades down to the very edge, the home
+ * indicator's strip too; the button sits just above that strip (16px where
+ * there is none) and floats, with the same soft shadow as the bar's round
+ * buttons. The content's end stops above it.
  * Put it last in the sheet's content, inside a form when it submits one: the
  * form then fills the sheet (`flex flex-1 flex-col`) so the footer sits at
  * the bottom even when the fields are few.
@@ -47,7 +50,7 @@ export function PageSheetFooter({ className, style, ...props }: React.ComponentP
   return (
     <div
       data-slot="page-sheet-footer"
-      className={cn("sticky bottom-0 z-10 -mx-4 -mb-4 mt-auto flex flex-col gap-2 px-4 pt-8 pb-4", className)}
+      className={cn("sticky bottom-0 z-10 -mx-4 mt-auto -mb-[calc(1rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-2 px-4 pt-8 pb-[max(1rem,env(safe-area-inset-bottom,0px))] [&_[data-slot=button]]:shadow-[0_4px_16px_rgb(0_0_0/0.12)]", className)}
       style={{ backgroundImage: footerFade, ...style }}
       {...props}
     />
@@ -194,7 +197,7 @@ export function PageSheet({
             onScroll={(event) => setScrolled(event.currentTarget.scrollTop > 0)}
             className="absolute inset-0 overflow-y-auto"
           >
-            <div className={cn("flex min-h-full flex-col px-4 pt-20 pb-4", className)}>
+            <div className={cn("flex min-h-full flex-col px-4 pt-20 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]", className)}>
               <PageSheetScreenContext value={setScreen}>{children}</PageSheetScreenContext>
               {footer && !screen ? <PageSheetFooter>{footer}</PageSheetFooter> : null}
             </div>

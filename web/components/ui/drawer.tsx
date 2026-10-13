@@ -89,7 +89,7 @@ function DrawerOverlay({
 // will-change-auto: vaul keeps will-change: transform on every drawer, which
 // may keep Safari from taking the sheet's colour for the status bar.
 const pageSheetClassName =
-  "fixed will-change-auto! inset-x-0 bottom-0 top-0 z-50 flex flex-col overflow-hidden supports-[overflow:clip]:overflow-clip bg-popover pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] text-sm text-popover-foreground shadow-xl outline-none sm:inset-x-auto sm:left-1/2 sm:top-[6dvh] sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:rounded-t-[28px] sm:pt-0"
+  "fixed will-change-auto! inset-x-0 bottom-0 top-0 z-50 flex flex-col overflow-hidden supports-[overflow:clip]:overflow-clip bg-popover pt-[env(safe-area-inset-top,0px)] text-sm text-popover-foreground shadow-xl outline-none sm:inset-x-auto sm:left-1/2 sm:top-[6dvh] sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:rounded-t-[28px] sm:pt-0"
 
 function DrawerContent({
   className,

@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.3.4",
+    date: "2026-10-13",
+    title: "Nút ở chân sheet gọn hơn",
+    changes: [
+      { kind: "improved", text: "Nút ở chân sheet nằm thấp hơn, sát thanh vuốt của điện thoại, và nổi lên như các nút ở đầu sheet." },
+      { kind: "improved", text: "Nội dung cuộn mờ dần xuống tận mép dưới sheet, không còn dải nền đặc dưới nút." },
+    ],
+  },
+  {
     version: "6.3.3",
     date: "2026-10-13",
     title: "Logo rõ ở giao diện tối",

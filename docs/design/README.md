@@ -431,6 +431,6 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   Pro, xoá mã) cũng là `ActionSheet` đỏ.
 - **Form:** `PageSheet` nền xám; các trường gom trong một `FormSection` (thẻ trắng, ô nhập
   xám bên trong), dòng chọn và công tắc trong `SettingsGroup`; form `flex flex-1 flex-col`, nút
-  lưu cỡ thường rộng hết trong `PageSheetFooter` cuối form, nổi ở đáy sheet. Không bọc một ô lẻ
+  lưu cỡ thường rộng hết trong `PageSheetFooter` cuối form, nổi ở đáy sheet (bóng mềm như nút tròn ở thanh trên, ngay trên dải thanh vuốt; nội dung cuộn dưới nó mờ dần tới tận mép dưới). Không bọc một ô lẻ
   trong thẻ riêng. Nút ✕ là cách huỷ, không cần nút "Huỷ"; màn con trong sheet (sửa hạng mục)
   dùng `onBack` để nút trái thành ‹.
