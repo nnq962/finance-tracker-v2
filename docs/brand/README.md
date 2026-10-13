@@ -9,6 +9,8 @@ rounded "t" with a lime sparkle (the app's AI mark) on a deep green tile.
   rounded corners. `timi-icon-square.svg` is the same full bleed, for iOS
   (`web/app/apple-icon.png`, iOS rounds it). `timi-icon-maskable.svg` shrinks the mark
   to 82% so Android's circle mask keeps it clear (`web/public/icons/pwa-maskable-512.png`).
+- `timi-badge.svg`: the mark alone in white, for the one-colour badge Android shows in the
+  status bar beside a notification (`web/public/icons/badge-96.png`).
 - `timi-icon-light/lime/mono`, `timi-wordmark*` and `timi-lockup*` are kept for later use
   (landing page, social images); the wordmark's last "i" carries the sparkle as its dot.
 

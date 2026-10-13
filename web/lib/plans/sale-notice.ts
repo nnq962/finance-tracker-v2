@@ -5,6 +5,7 @@ import { after } from "next/server"
 import { getDb } from "@/lib/db/client"
 import { getFirebaseAdminAuth, getFirebaseAdminMessaging } from "@/lib/firebase/admin"
 import { formatCurrency } from "@/lib/format-currency"
+import { PUSH_ICONS } from "@/lib/notifications/types"
 import { adminEmails } from "@/lib/plans/admin"
 import { proPrices, type PlanPeriod } from "@/lib/plans/plans"
 
@@ -43,7 +44,7 @@ export function noticeSale(orderCode: number) {
             fid,
             notification: { title: "💰 Có người mua Pro", body },
             data: { type: "sale", url },
-            webpush: { notification: { tag: `sale-${orderCode}` } },
+            webpush: { notification: { tag: `sale-${orderCode}`, ...PUSH_ICONS } },
           }),
         ),
       )

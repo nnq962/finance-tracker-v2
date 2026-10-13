@@ -23,6 +23,15 @@ const color = {
   income: "#2e8b57",
   tile: "#f8e3d8",
   tileInk: "#8a4a2b",
+  brandTile: "#0e2a1f",
+  /** --ai-strong: the lime that holds on the light canvas. */
+  limeDeep: "#669000",
+}
+
+/** The logo's four-point sparkle, centred on (x, y), reaching `r` each way. */
+function sparkle(x: number, y: number, r: number) {
+  const k = r * 0.28
+  return `M${x} ${y - r}C${x + k} ${y - k} ${x + k} ${y - k} ${x + r} ${y}C${x + k} ${y + k} ${x + k} ${y + k} ${x} ${y + r}C${x - k} ${y + k} ${x - k} ${y + k} ${x - r} ${y}C${x - k} ${y - k} ${x - k} ${y - k} ${x} ${y - r}Z`
 }
 
 const title = "Tiền của bạn, gọn trong một chỗ."
@@ -70,13 +79,24 @@ export async function createSocialPreviewImage() {
         {/* The words: the name, the AI badge, the title and one line. */}
         <div style={{ display: "flex", width: 560, flexDirection: "column", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 28 }}>
-            <svg width={44} height={44} viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="#96ccee" d="M9.85 4.28a.59.59 0 0 1 .44.15.54.54 0 0 1 .18.41c0 1.11 0 3.43 0 4.41a.58.58 0 0 1-.45.56 3.42 3.42 0 1 0 4.25 3.81.55.55 0 0 1 .55-.49c1 0 3.34 0 4.4 0a.52.52 0 0 1 .39.17.54.54 0 0 1 .15.4 8.89 8.89 0 1 1-9.92-9.4Z" />
-              <path fill="#ffeabb" d="m13.5 2.34-.38.07V7a.58.58 0 0 0 .5.57 3.38 3.38 0 0 1 2.88 2.86.56.56 0 0 0 .56.49c1 0 3.29 0 4.36 0a.56.56 0 0 0 .42-.18.57.57 0 0 0 .15-.42A8.89 8.89 0 0 0 13.55 2c-.15 0 .09.34-.05.34Z" />
-              <path fill="#f7bf75" d="M13.12 2.2a.19.19 0 0 1 .19-.2h.35A8.33 8.33 0 0 1 22 9.76l0 .53a.57.57 0 0 1-.15.42.56.56 0 0 1-.42.18H18.7a8.88 8.88 0 0 0-5.58-8.25Z" />
-              <path fill="#6f73d5" d="M17.07 13.11a8.89 8.89 0 0 1-7.53 8.78A8.81 8.81 0 0 0 10.9 22a8.9 8.9 0 0 0 8.87-8.32.59.59 0 0 0-.15-.4.55.55 0 0 0-.39-.16Z" />
+            {/* Timi's icon and wordmark (docs/brand), the lockup's gap between them. */}
+            <svg width={52} height={52} viewBox="0 0 100 100" aria-hidden="true">
+              <rect width="100" height="100" rx="24" fill={color.brandTile} />
+              <path d="M42 24V62Q42 78 58 78M28 44H56" stroke="#ffffff" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              <path d={sparkle(70, 30, 13)} fill={color.lime} />
             </svg>
-            {SITE_NAME}
+            <svg width={94} height={52} viewBox="0 0 181 100" aria-label={SITE_NAME}>
+              <path
+                d="M22 18V70Q22 90 40 90M8 42H38M62 48V90M86 90V60Q86 46 100 46Q114 46 114 60V90M114 60Q114 46 128 46Q142 46 142 60V90M166 48V90"
+                stroke={color.ink}
+                strokeWidth="14"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
+              <circle cx="62" cy="22" r="8" fill={color.ink} />
+              <path d={sparkle(166, 20, 14)} fill={color.limeDeep} />
+            </svg>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
             <div

@@ -384,6 +384,9 @@ class ReminderWorker:
                     headers={"TTL": "600"},
                     notification=messaging.WebpushNotification(
                         tag=f"daily-reminder-{day.isoformat()}",
+                        # Timi's icon, and the one-colour badge Android shows in the status bar.
+                        icon="/icons/pwa-192.png",
+                        badge="/icons/badge-96.png",
                     ),
                 ),
             )

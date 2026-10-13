@@ -6,6 +6,7 @@ import Image from "next/image"
 import { SettingsIcon } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
+import { TimiWordmark } from "@/components/timi-wordmark"
 import {
   Sidebar,
   SidebarContent,
@@ -48,11 +49,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
               >
                 <Image src="/icon.svg" alt="" width={32} height={32} className="size-8 shrink-0" />
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  {/* Beta as part of the name, as beta builds of apps are
-                      named: a pill beside it left the name no room in the
-                      16rem sidebar and cut it to "Finance Track…". */}
-                  <span className="truncate font-medium">
-                    Timi <span className="font-normal text-muted-foreground">Beta</span>
+                  {/* The name as the logo writes it, Beta beside it as beta builds of apps are named. */}
+                  <span className="flex items-center gap-1.5">
+                    {/* Important: the menu button sizes every svg in it to an icon's 16px. */}
+                    <TimiWordmark className="h-5! w-auto!" />
+                    <span className="sr-only">Timi</span>
+                    <span className="text-muted-foreground">Beta</span>
                   </span>
                   <span className="truncate text-xs">
                     Tài chính cá nhân · v{process.env.NEXT_PUBLIC_APP_VERSION}

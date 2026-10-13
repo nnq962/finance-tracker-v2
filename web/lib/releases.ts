@@ -32,6 +32,16 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.2.0",
+    date: "2026-10-13",
+    title: "Logo Timi khắp app",
+    changes: [
+      { kind: "new", text: "Tổng quan mở đầu bằng logo Timi và lời chào, như một app trên điện thoại" },
+      { kind: "new", text: "Cuối Cài đặt có logo và số phiên bản" },
+      { kind: "improved", text: "Thanh bên trên máy tính, ảnh khi chia sẻ link và thông báo đẩy dùng logo mới" },
+    ],
+  },
+  {
     version: "6.1.2",
     date: "2026-10-13",
     title: "Ngôi sao rõ hơn trên nền sáng",

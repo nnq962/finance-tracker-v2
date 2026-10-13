@@ -1,6 +1,7 @@
 import "server-only"
 
 import { getFirebaseAdminMessaging } from "@/lib/firebase/admin"
+import { PUSH_ICONS } from "@/lib/notifications/types"
 
 /**
  * Greets a device the moment it is linked, so the user sees at once that
@@ -18,7 +19,7 @@ export async function sendWelcomePush(fid: string) {
       data: { type: "welcome" },
       webpush: {
         headers: { TTL: "600" },
-        notification: { tag: "welcome" },
+        notification: { tag: "welcome", ...PUSH_ICONS },
       },
     })
   } catch (error) {

@@ -13,6 +13,7 @@ import {
   SwatchBookIcon,
   TagsIcon,
 } from "lucide-react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 
 import { PageSheet } from "@/components/app/page-sheet"
@@ -20,6 +21,7 @@ import { CategoryManagementSheet } from "@/components/categories/category-manage
 import { PlanOverlay } from "@/components/plans/plan-overlay"
 import { useWelcome } from "@/components/onboarding/welcome"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { TimiWordmark } from "@/components/timi-wordmark"
 import type { SessionUser } from "@/lib/auth/session"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { NotificationState } from "@/lib/notifications/types"
@@ -247,10 +249,19 @@ export function SettingsView({
           </SettingsGroup>
         ) : null}
 
-        {/* Signing out last and alone, as in native settings, with the version under it. */}
-        <SettingsGroup footer={<span className="block text-center">Timi {process.env.NEXT_PUBLIC_APP_VERSION} · Beta</span>}>
+        {/* Signing out last and alone, as in native settings. */}
+        <SettingsGroup>
           <SignOutRow />
         </SettingsGroup>
+
+        {/* The app itself at the foot, as an iOS app's About: its icon, its name, its version. */}
+        <div className="flex flex-col items-center gap-2 pt-2 pb-4 text-muted-foreground">
+          <Image src="/icon.svg" alt="" width={48} height={48} className="size-12" />
+          <TimiWordmark className="h-6 text-foreground" />
+          <p className="text-xs">
+            <span className="sr-only">Timi, </span>Phiên bản {process.env.NEXT_PUBLIC_APP_VERSION} · Beta
+          </p>
+        </div>
       </div>
 
       {/* Screens slide in like native navigation. */}
