@@ -7,9 +7,9 @@ import { ArrowRightIcon } from "lucide-react"
 import { useMotionValueEvent, useScroll } from "motion/react"
 
 import { ThemeToggle } from "@/components/theme-toggle"
+import { TimiWordmark } from "@/components/timi-wordmark"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { TimiWordmark } from "@/components/timi-wordmark"
 
 const NAV_LINKS = [
   { href: "#tinh-nang", label: "Tính năng" },

@@ -1,6 +1,6 @@
 import Image from "next/image"
 
-import { SITE_NAME } from "@/lib/site"
+import { TimiWordmark } from "@/components/timi-wordmark"
 
 export default function RootLoading() {
   return (
@@ -18,9 +18,7 @@ export default function RootLoading() {
           priority
           alt=""
         />
-        <p className="mt-8 text-xl font-semibold">
-          {SITE_NAME}
-        </p>
+        <TimiWordmark className="mt-8 block text-2xl" />
         <p className="mt-3 animate-pulse text-sm text-muted-foreground motion-reduce:animate-none">
           Đang khởi động…
         </p>

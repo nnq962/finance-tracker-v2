@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.3.2",
+    date: "2026-10-13",
+    title: "Màn khởi động đồng bộ tên Timi",
+    changes: [
+      { kind: "fixed", text: "Màn khởi động viết tên Timi đúng kiểu chữ như các chỗ khác" },
+      { kind: "fixed", text: "Thông báo \"Có gì mới\" nói rõ app đã đổi tên thành Timi và có địa chỉ mới" },
+    ],
+  },
+  {
     version: "6.3.1",
     date: "2026-10-13",
     title: "Logo đúng bản đã chọn",
@@ -42,10 +51,12 @@ export const releases: Release[] = [
   {
     version: "6.3.0",
     date: "2026-10-13",
-    title: "Logo mới: cột tăng dần",
+    title: "Finance Tracker giờ là Timi",
     changes: [
-      { kind: "new", text: "Logo mới: ba cột tăng dần, cột cuối xanh chanh có ngôi sao, trên nền đen như các nút của app" },
-      { kind: "improved", text: "Tên Timi viết bằng đúng font của app, đặt cạnh logo không còn bị đọc thành hai chữ t" },
+      { kind: "new", text: "App có tên mới là Timi, dễ đọc dễ nhớ hơn, và địa chỉ mới timi.nnqlab.dev (địa chỉ cũ tự chuyển sang)" },
+      { kind: "new", text: "Logo mới: ba cột tăng dần, cột cuối xanh chanh có ngôi sao, trên icon app, màn khởi động, thông báo và khi chia sẻ link" },
+      { kind: "improved", text: "Tổng quan mở đầu bằng logo và lời chào; cuối Cài đặt có logo và số phiên bản" },
+      { kind: "improved", text: "Tên Timi viết bằng đúng font của app" },
     ],
   },
   {

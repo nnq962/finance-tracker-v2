@@ -1,8 +1,8 @@
 import Image from "next/image"
 import Link from "next/link"
 
-import { Button } from "@/components/ui/button"
 import { TimiWordmark } from "@/components/timi-wordmark"
+import { Button } from "@/components/ui/button"
 
 const FOOTER_LINKS = [
   { href: "#tinh-nang", label: "Tính năng" },

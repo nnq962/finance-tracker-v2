@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next"
 import Image from "next/image"
 import { LoginForm } from "@/components/login-form"
+import { TimiWordmark } from "@/components/timi-wordmark"
 import { getSafeRedirectPath } from "@/lib/auth/redirect"
 import { getSessionUser } from "@/lib/auth/session"
 import { redirect } from "next/navigation"
 
 import { LoginCollage } from "./_components/login-collage"
-import { TimiWordmark } from "@/components/timi-wordmark"
 
 export const metadata: Metadata = {
   title: "Đăng nhập",
