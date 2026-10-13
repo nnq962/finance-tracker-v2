@@ -32,6 +32,12 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.4.1",
+    date: "2026-10-13",
+    title: "Nút xoá đặc nền",
+    changes: [{ kind: "fixed", text: "Nút xoá tròn ở chân sheet có nền đặc, không còn nhìn xuyên thấy nội dung phía sau." }],
+  },
+  {
     version: "6.4.0",
     date: "2026-10-13",
     title: "Khoá và xoá tài khoản trong trang sửa",

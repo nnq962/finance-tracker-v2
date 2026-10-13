@@ -23,8 +23,10 @@ const buttonVariants = cva(
           "bg-field text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--field),var(--foreground)_5%)] aria-expanded:bg-field aria-expanded:text-secondary-foreground",
         ghost:
           "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+        // Solid: the red tint mixed into the page's colour, not see-through,
+        // as it floats over content in a sheet's footer (2026-10-13).
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
+          "bg-[color-mix(in_oklab,var(--destructive)_10%,var(--background))] text-destructive hover:bg-[color-mix(in_oklab,var(--destructive)_20%,var(--background))] focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-[color-mix(in_oklab,var(--destructive)_20%,var(--background))] dark:hover:bg-[color-mix(in_oklab,var(--destructive)_30%,var(--background))] dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
