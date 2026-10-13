@@ -91,12 +91,12 @@ async function run() {
     assert.throws(() => accountValidation.parseAccountFormData(accountForm({ balance: '-1000000000000000' })))
     // The opening time is read in Vietnam time and cannot be after now, also later today.
     assert.equal(accountValidation.parseAccountFormData(accountForm({})).openedAt.toISOString(), '2026-01-05T01:30:00.000Z')
-    assert.throws(() => accountValidation.parseAccountFormData(accountForm({ date: toDateKey(new Date(Date.now() + 86_400_000)) })), /sau bây giờ/)
+    assert.throws(() => accountValidation.parseAccountFormData(accountForm({ date: toDateKey(new Date(Date.now() + 86_400_000)) })), /trong tương lai/)
     const inTwoHours = new Date(Date.now() + 2 * 3_600_000)
     const vietnamTime = (date) => date.toLocaleTimeString('en-GB', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit' })
     // Only while two hours on is still today in Vietnam.
     if (toDateKey(inTwoHours) === toDateKey(new Date())) {
-      assert.throws(() => accountValidation.parseAccountFormData(accountForm({ date: toDateKey(inTwoHours), time: vietnamTime(inTwoHours) })), /sau bây giờ/)
+      assert.throws(() => accountValidation.parseAccountFormData(accountForm({ date: toDateKey(inTwoHours), time: vietnamTime(inTwoHours) })), /trong tương lai/)
     }
     const opened = randomUUID()
     await accounts.createAccount(userId, { name: 'Mở cũ', type: 'cash', balance: 0, openedAt: new Date('2026-01-05T01:30:00Z') }, opened)
@@ -111,7 +111,7 @@ async function run() {
     const today = toDateKey(new Date())
     const tomorrow = toDateKey(new Date(Date.now() + 86_400_000))
     assert.equal(toDateKey(validation.parseTransactionFormData(form(today)).occurredAt), today)
-    assert.throws(() => validation.parseTransactionFormData(form(tomorrow)), /sau hôm nay/)
+    assert.throws(() => validation.parseTransactionFormData(form(tomorrow)), /trong tương lai/)
     assert.throws(() => validation.parseTransactionFormData(form('1999-12-31')), /năm 2000/)
 
     // Left out of the figures: the form's switch is read, the balance still
