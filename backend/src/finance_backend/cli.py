@@ -2,7 +2,7 @@ import argparse
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Finance Tracker backend services.")
+    parser = argparse.ArgumentParser(description="Timi backend services.")
     commands = parser.add_subparsers(dest="command", required=True)
     reminders = commands.add_parser(
         "reminders", help="Run the independent reminder worker."

@@ -42,7 +42,7 @@ export function FeaturesSection() {
   return (
     <section aria-labelledby="features-title" className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:py-24">
       <SectionHeading anchor="tinh-nang" id="features-title" label="Một nơi để theo dõi" title="Từng khoản ghi lại, cả bức tranh hiện ra.">
-        Các phần trong Finance Tracker nối với nhau: ghi một giao dịch là số dư, tổng quan và vay nợ cùng khớp theo.
+        Các phần trong Timi nối với nhau: ghi một giao dịch là số dư, tổng quan và vay nợ cùng khớp theo.
       </SectionHeading>
 
       <div className="mt-12 grid gap-4 lg:grid-cols-3">

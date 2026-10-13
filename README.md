@@ -1,9 +1,9 @@
-# Finance Tracker
+# Timi
 
-Ứng dụng quản lý tài chính cá nhân, tự host tại `finance.nnqlab.dev`.
+Ứng dụng quản lý tài chính cá nhân, tự host tại `timi.nnqlab.dev`.
 
 ```
-finance.nnqlab.dev → Cloudflare Tunnel → web (Next.js) → PostgreSQL
+timi.nnqlab.dev → Cloudflare Tunnel → web (Next.js) → PostgreSQL
                                                          ↑
                                      backend (worker nhắc thông báo)
 Firebase: chỉ dùng cho đăng nhập Google (Auth) và thông báo đẩy (FCM)

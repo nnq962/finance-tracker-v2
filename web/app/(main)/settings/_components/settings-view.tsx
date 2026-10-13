@@ -248,7 +248,7 @@ export function SettingsView({
         ) : null}
 
         {/* Signing out last and alone, as in native settings, with the version under it. */}
-        <SettingsGroup footer={<span className="block text-center">Finance Tracker {process.env.NEXT_PUBLIC_APP_VERSION} · Beta</span>}>
+        <SettingsGroup footer={<span className="block text-center">Timi {process.env.NEXT_PUBLIC_APP_VERSION} · Beta</span>}>
           <SignOutRow />
         </SettingsGroup>
       </div>

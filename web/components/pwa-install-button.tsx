@@ -202,7 +202,7 @@ function AddScreenPicture() {
       <div className="flex items-center gap-2 rounded-lg bg-card p-2">
         {/* eslint-disable-next-line @next/next/no-img-element -- the app's own icon, as the Home Screen will show it */}
         <img src="/icons/pwa-192.png" alt="" className="size-8 rounded-[8px]" />
-        <span className="font-medium">Finance Tracker</span>
+        <span className="font-medium">Timi</span>
       </div>
       <div className="flex items-center justify-between rounded-lg bg-card p-2">
         Mở dưới dạng ứng dụng web
@@ -279,7 +279,7 @@ export function IosInstallSheet({
       : [{ title: "Mở trang này bằng Safari", hint: "Chép liên kết, dán vào Safari rồi làm tiếp ở đó.", picture: <OpenInSafariPicture origin={origin} /> }]),
     { title: "Chạm ••• rồi Chia sẻ", hint: "iOS cũ hơn: nút Chia sẻ nằm ngay trên thanh dưới.", picture: <SafariBarPicture origin={origin} /> },
     { title: "Chọn Thêm vào Màn hình chính", hint: "Chưa thấy thì cuộn xuống danh sách.", picture: <ShareSheetPicture /> },
-    { title: "Bật ứng dụng web, chạm Thêm", hint: "Finance Tracker sẽ nằm trên Màn hình chính.", picture: <AddScreenPicture /> },
+    { title: "Bật ứng dụng web, chạm Thêm", hint: "Timi sẽ nằm trên Màn hình chính.", picture: <AddScreenPicture /> },
   ]
 
   return (
@@ -289,7 +289,7 @@ export function IosInstallSheet({
         <div className="flex flex-col items-center px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] text-center">
           {/* eslint-disable-next-line @next/next/no-img-element -- the app's own icon, as the Home Screen will show it */}
           <img src="/icons/pwa-192.png" alt="" className="size-14 rounded-[14px] shadow-sm" />
-          <DrawerTitle className="mt-3 text-lg">Cài Finance Tracker</DrawerTitle>
+          <DrawerTitle className="mt-3 text-lg">Cài Timi</DrawerTitle>
           <DrawerDescription className="text-sm text-muted-foreground">
             {steps.length} bước để mở như một ứng dụng
           </DrawerDescription>

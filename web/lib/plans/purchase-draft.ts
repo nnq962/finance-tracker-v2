@@ -58,7 +58,7 @@ export async function getPurchaseDraft(
   // A year runs twelve times a month's length; anything past two months reads as one.
   const days = (new Date(subscription.endsAt).getTime() - new Date(subscription.startsAt).getTime()) / 86_400_000
   const label = proPrices[days > 60 ? "year" : "month"].label
-  let note = `Finance Tracker Pro ${label}`
+  let note = `Timi Pro ${label}`
   if (!own) {
     const buyer = await getFirebaseAdminAuth()
       .getUser(subscription.userId)

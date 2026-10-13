@@ -20,7 +20,7 @@ export function CtaSection() {
             href="/overview"
             className="flex h-14 items-center justify-center gap-2 rounded-full bg-inverse-foreground px-7 text-base font-semibold text-inverse active:scale-[0.97]"
           >
-            Mở Finance Tracker
+            Mở Timi
             <ArrowRightIcon className="size-5" />
           </Link>
           <Link

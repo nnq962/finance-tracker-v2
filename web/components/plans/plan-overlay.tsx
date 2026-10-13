@@ -23,8 +23,8 @@ type PlanOverlayProps = {
 
 /** Outcomes said once, in a toast; the rest stay on the plans as a banner (PlanScreen). */
 const toastOutcomes: Partial<Record<PaymentOutcome, { kind: "success" | "error"; title: string; description?: string }>> = {
-  granted: { kind: "success", title: "Đã nâng cấp Pro", description: "Cảm ơn bạn đã tin dùng Finance Tracker." },
-  settled: { kind: "success", title: "Đã nâng cấp Pro", description: "Cảm ơn bạn đã tin dùng Finance Tracker." },
+  granted: { kind: "success", title: "Đã nâng cấp Pro", description: "Cảm ơn bạn đã tin dùng Timi." },
+  settled: { kind: "success", title: "Đã nâng cấp Pro", description: "Cảm ơn bạn đã tin dùng Timi." },
   cancelled: { kind: "error", title: "Thanh toán đã bị huỷ" },
   expired: { kind: "error", title: "Phiên thanh toán đã hết hạn", description: "Vui lòng thử lại." },
 }

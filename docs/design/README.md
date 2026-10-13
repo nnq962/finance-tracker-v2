@@ -1,6 +1,6 @@
 # Hệ thống thiết kế
 
-Finance Tracker trông và cảm giác như một app iOS/Android thật. Hệ thống được chốt ngày
+Timi trông và cảm giác như một app iOS/Android thật. Hệ thống được chốt ngày
 2026-10-07, theo mockup "Mobile Finance Dashboard Design" (Figma Make: bảng tin và trang "Thư viện
 UI") mà người dùng đã duyệt. Mockup và ảnh mẫu không còn giữ trong repo: trang `/design` là bản
 chuẩn duy nhất.
@@ -404,7 +404,7 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   mở tiếp "Thêm tài khoản".
 - **Hướng dẫn cài trên iPhone** (`IosInstallSheet`, `components/pwa-install-button.tsx`, 2026-10-09; mở từ
   "Cài ứng dụng" ở Cài đặt, nhiệm vụ ở Tổng quan, trang giới thiệu): sheet đáy nền xám, không ✕ (kéo
-  xuống hay "Đã hiểu" để đóng); icon app, "Cài Finance Tracker", "N bước để mở như một ứng dụng"; rồi
+  xuống hay "Đã hiểu" để đóng); icon app, "Cài Timi", "N bước để mở như một ứng dụng"; rồi
   từng bước như onboarding: thẻ trắng vẽ nhỏ đúng màn hình của bước (thanh dưới Safari với ••• và
   menu Chia sẻ, danh sách chia sẻ, màn Thêm vào MH chính), chỗ cần chạm viền xanh `transfer`, vòng sáng
   toả ra rồi mờ dần mỗi 1,6 giây (`animate-tap-ring` trong `globals.css`; đứng yên khi giảm chuyển động), dưới thẻ "Bước 2/3", tiêu đề và một dòng gợi ý. Các bước đi
@@ -416,9 +416,9 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   duy nhất là dòng "Nâng cấp Pro" / "Gói Pro" cuối nhóm Lượt AI, cạnh số lượt còn lại.
 - **Desktop:** phần tử trong cột bám (rail) không co lại (`*:shrink-0`); rail cao hơn cửa sổ thì tự
   cuộn. Tài khoản: rail lùi xuống 32 để thẻ dẫn đầu thẳng với thẻ list; cả trang tối đa 64rem
-  (68rem từ xl, `budgetPageClassName`), nên nút ở đầu trang thẳng mép phải với list. Thanh bên: "Finance Tracker" kèm "Beta" chữ mờ trên cùng dòng.
+  (68rem từ xl, `budgetPageClassName`), nên nút ở đầu trang thẳng mép phải với list. Thanh bên: "Timi" kèm "Beta" chữ mờ trên cùng dòng.
 - **Màn gói** (duyệt 2026-10-07, theo màn "Get more Claude"): page sheet nền xám, tiêu đề lớn giữa
-  ("Nâng cấp Finance Tracker" / "Bạn đang dùng Pro"); thẻ Pro trước với `ChoiceTiles tone="ai"`
+  ("Nâng cấp Timi" / "Bạn đang dùng Pro"); thẻ Pro trước với `ChoiceTiles tone="ai"`
   chọn kỳ (mặc định theo năm), nút `lg` rộng hết, ghi chú nhỏ, rồi đường kẻ và "Mọi thứ của gói
   Free, thêm:"; thẻ Free gọn hơn; cuối là dòng payOS và câu hỏi thường gặp (`Accordion` trong
   `SettingsGroup`). Kết quả thanh toán: đã trả, huỷ, hết hạn là toast một lần (đã trả kèm nút "Ghi khoản chi"), rồi `order` rời khỏi URL; đang chờ xác nhận và trả thiếu là `NoticeBanner` ở đầu, vì vẫn còn đúng tới khi được xử lý. Lúc đang chờ, sheet hỏi lại payOS mỗi 5 giây trong 2 phút (khi app đang hiện); tiền về thì banner thành toast "Đã nâng cấp Pro". Nút nâng cấp mở **sheet thanh toán**

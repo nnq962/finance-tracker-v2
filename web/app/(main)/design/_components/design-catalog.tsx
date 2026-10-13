@@ -62,7 +62,7 @@ export function DesignCatalog() {
           </div>
         </div>
         <div className="mt-4 min-w-0">
-          <p className="text-sm text-muted-foreground">Finance Tracker · hệ thống thiết kế</p>
+          <p className="text-sm text-muted-foreground">Timi · hệ thống thiết kế</p>
           <h1 className="text-[28px] leading-tight font-semibold tracking-tight">Thư viện UI</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {catalogSections.length} nhóm component, tất cả đều chạm thử được.

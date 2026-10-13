@@ -1,6 +1,6 @@
 # Lộ trình: giao diện PWA như một app di động thật
 
-Viết 2026-10-08. Finance Tracker vẫn là PWA (chưa có tài khoản Apple Developer nên chưa làm app
+Viết 2026-10-08. Timi vẫn là PWA (chưa có tài khoản Apple Developer nên chưa làm app
 native). Chấp nhận không có rung, vuốt lại native và chuyển cảnh như app thật; mục tiêu là **nhìn
 vào thấy giống app**, như các bản thiết kế app trên Figma.
 

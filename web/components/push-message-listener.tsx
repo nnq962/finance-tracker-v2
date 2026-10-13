@@ -21,7 +21,7 @@ export function PushMessageListener() {
     void import("firebase/messaging").then(async ({ getMessaging, isSupported, onMessage }) => {
       if (!(await isSupported()) || disposed) return
       unsubscribe = onMessage(getMessaging(firebaseApp), (payload) => {
-        const title = payload.notification?.title ?? "Finance Tracker"
+        const title = payload.notification?.title ?? "Timi"
         // The welcome proves notifications reach the device, and it always
         // arrives with the app open (it is sent as notifications are turned
         // on), so it shows as a system notification rather than a toast.

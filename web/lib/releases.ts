@@ -32,6 +32,16 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.0.0",
+    date: "2026-10-13",
+    title: "Finance Tracker giờ là Timi",
+    changes: [
+      { kind: "new", text: "App có tên mới: Timi, dễ đọc dễ nhớ hơn" },
+      { kind: "new", text: "Địa chỉ mới timi.nnqlab.dev; địa chỉ cũ tự chuyển sang" },
+      { kind: "improved", text: "Màn khởi động trên iPhone, iPad dùng đúng font và tên mới" },
+    ],
+  },
+  {
     version: "5.7.0",
     date: "2026-10-12",
     title: "Thông báo thật",

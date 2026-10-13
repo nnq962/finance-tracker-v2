@@ -41,7 +41,7 @@ export function LandingHeader() {
         <Link
           href="/"
           className="group flex shrink-0 items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-          aria-label="Finance Tracker – Trang chủ"
+          aria-label="Timi – Trang chủ"
         >
           <Image
             src="/icon.svg"
@@ -52,7 +52,7 @@ export function LandingHeader() {
             className="size-9 transition-transform duration-500 ease-out group-hover:rotate-[20deg]"
           />
           <span className="hidden whitespace-nowrap text-base font-semibold min-[360px]:inline sm:text-lg">
-            Finance Tracker
+            Timi
           </span>
         </Link>
 

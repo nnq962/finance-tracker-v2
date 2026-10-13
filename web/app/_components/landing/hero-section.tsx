@@ -29,7 +29,7 @@ export function HeroSection() {
             Tiền của bạn, gọn trong một chỗ.
           </h1>
           <p className="max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
-            Finance Tracker gom thu chi, số dư tài khoản và các khoản vay nợ về một nơi, để bạn luôn biết tiền đang đi
+            Timi gom thu chi, số dư tài khoản và các khoản vay nợ về một nơi, để bạn luôn biết tiền đang đi
             đâu. Cài như một app trên điện thoại, dùng được cả trên máy tính.
           </p>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">

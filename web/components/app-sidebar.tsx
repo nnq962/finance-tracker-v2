@@ -52,7 +52,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                       named: a pill beside it left the name no room in the
                       16rem sidebar and cut it to "Finance Track…". */}
                   <span className="truncate font-medium">
-                    Finance Tracker <span className="font-normal text-muted-foreground">Beta</span>
+                    Timi <span className="font-normal text-muted-foreground">Beta</span>
                   </span>
                   <span className="truncate text-xs">
                     Tài chính cá nhân · v{process.env.NEXT_PUBLIC_APP_VERSION}

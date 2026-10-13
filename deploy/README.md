@@ -4,7 +4,7 @@ App chạy bằng Docker Compose trên máy chủ ở nhà, ra Internet qua Clou
 Tunnel. Không mở port nào trên router.
 
 ```
-finance.nnqlab.dev → Cloudflare → Tunnel → web (Next.js) → postgres
+timi.nnqlab.dev → Cloudflare → Tunnel → web (Next.js) → postgres
 ```
 
 | File | Vai trò |
@@ -47,7 +47,7 @@ chmod 600 deploy/.env
   **Đổi mật khẩu sau khi database đã tạo sẽ không có tác dụng** — chúng chỉ
   được dùng lần khởi tạo đầu tiên.
 - `NEXT_PUBLIC_FIREBASE_*`: chép từ `web/.env.local`, riêng
-  `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=finance.nnqlab.dev`.
+  `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=timi.nnqlab.dev`.
 - `FIREBASE_CREDENTIALS_FILE`: đường dẫn tuyệt đối tới file JSON service account
   (cùng file `GOOGLE_APPLICATION_CREDENTIALS` trong `web/.env.local`).
 - `CLOUDFLARE_TUNNEL_TOKEN`: xem phần Tunnel; có thể để trống lúc đầu.
@@ -106,7 +106,7 @@ thì dùng gemma.
 
 Thiếu một trong ba khoá payOS thì nút thanh toán tắt, màn hình Gói ghi "Liên hệ
 quản trị viên". Webhook của kênh thanh toán trên payOS trỏ về
-`https://finance.nnqlab.dev/api/payos/webhook`. Giá và hạn mức AI nằm trong
+`https://timi.nnqlab.dev/api/payos/webhook`. Giá và hạn mức AI nằm trong
 `web/lib/plans/plans.ts`.
 
 ## Cloudflare Tunnel
@@ -119,11 +119,11 @@ Có hai cách, chọn một:
    Cloudflared, đặt tên (ví dụ `finance`).
 2. Chép token (chuỗi sau `--token`) vào `CLOUDFLARE_TUNNEL_TOKEN` trong
    `deploy/.env`. Bỏ qua bước cài connector mà Cloudflare gợi ý.
-3. *Public Hostname*: `finance.nnqlab.dev` → Service `HTTP` → `web:3000`.
+3. *Public Hostname*: `timi.nnqlab.dev` → Service `HTTP` → `web:3000`.
 4. Chạy lại `deploy/scripts/deploy.sh`.
 
 **B. Dùng tunnel `cloudflared` đã có sẵn trên máy**: thêm public hostname
-`finance.nnqlab.dev` → `http://127.0.0.1:3010`, để trống `CLOUDFLARE_TUNNEL_TOKEN`.
+`timi.nnqlab.dev` → `http://127.0.0.1:3010`, để trống `CLOUDFLARE_TUNNEL_TOKEN`.
 
 ## Tunnel cho dev server (thử trên điện thoại)
 
@@ -164,7 +164,7 @@ không phải đổi.
 1. Kiểm tra bản production ở `127.0.0.1:3010`: đăng nhập, thêm giao dịch…
 2. Cloudflare DNS: xoá bản ghi `finance` đang trỏ tới Vercel, rồi thêm public
    hostname cho tunnel (Cloudflare tự tạo bản ghi mới).
-3. Mở `https://finance.nnqlab.dev`, đăng nhập lại để kiểm tra.
+3. Mở `https://timi.nnqlab.dev`, đăng nhập lại để kiểm tra.
 4. Giữ project Vercel vài ngày. Nếu có sự cố, trỏ DNS về Vercel là quay lại bản cũ.
 
 ## Cập nhật hằng ngày

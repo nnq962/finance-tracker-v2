@@ -23,7 +23,7 @@ const tabRoots = new Set([...appNavigationItems.map((item) => item.url), "/setti
 export function MainBreadcrumb() {
   const pathname = usePathname()
   if (tabRoots.has(pathname)) return null
-  const label = routeLabels[pathname] ?? "Finance Tracker"
+  const label = routeLabels[pathname] ?? "Timi"
 
   return (
     <>

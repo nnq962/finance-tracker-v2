@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og"
 
 import { SITE_NAME } from "@/lib/site"
 
-export const socialPreviewAlt = "Finance Tracker: tiền của bạn, gọn trong một chỗ. Nói một câu, AI ghi giúp."
+export const socialPreviewAlt = "Timi: tiền của bạn, gọn trong một chỗ. Nói một câu, AI ghi giúp."
 
 export const socialPreviewSize = {
   width: 1200,

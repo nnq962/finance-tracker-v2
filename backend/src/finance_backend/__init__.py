@@ -1,1 +1,1 @@
-"""Backend services and background workers for Finance Tracker."""
+"""Backend services and background workers for Timi."""

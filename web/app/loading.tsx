@@ -7,7 +7,7 @@ export default function RootLoading() {
     <div
       className="min-h-svh bg-background px-6 pt-[34svh] text-foreground"
       role="status"
-      aria-label="Đang khởi động Finance Tracker"
+      aria-label="Đang khởi động Timi"
       aria-busy="true"
     >
       <div className="mx-auto flex w-fit flex-col items-center text-center">

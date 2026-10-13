@@ -211,7 +211,7 @@ export function DebtsPicture() {
         <img src="/icons/pwa-192.png" alt="" className="size-9 rounded-[9px]" />
         <div className="min-w-0 flex-1 text-sm">
           <p className="flex justify-between gap-2">
-            <span className="font-semibold">Finance Tracker</span>
+            <span className="font-semibold">Timi</span>
             <span className="text-xs text-muted-foreground">21:00</span>
           </p>
           <p className="truncate text-muted-foreground">Hôm nay bạn chưa ghi chi tiêu nào</p>

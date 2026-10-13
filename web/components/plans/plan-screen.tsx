@@ -161,7 +161,7 @@ export function PlanScreen({ planState, checkoutEnabled, paymentOutcome }: PlanS
 
       <header className="flex flex-col items-center gap-2 pt-2 text-center">
         <h2 className="text-[28px] leading-tight font-semibold tracking-tight text-balance">
-          {isPro ? `Bạn đang dùng ${plans.pro.label}` : "Nâng cấp Finance Tracker"}
+          {isPro ? `Bạn đang dùng ${plans.pro.label}` : "Nâng cấp Timi"}
         </h2>
         <p className="text-base text-muted-foreground">
           {isPro && planState.proEndsAt

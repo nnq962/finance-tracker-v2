@@ -131,7 +131,7 @@ export function WelcomeProvider({
               </Button>
             </div>
             <StepFlow
-              label="Giới thiệu Finance Tracker"
+              label="Giới thiệu Timi"
               step={step}
               onStepChange={setStep}
               doneLabel="Bắt đầu"

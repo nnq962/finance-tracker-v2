@@ -157,7 +157,7 @@ export async function startProCheckoutAction(
       amount: payment.amount,
       // Shown on the transfer; kept short, as some banks allow few characters.
       description: period === "month" ? "FT PRO1T" : "FT PRO12T",
-      items: [{ name: `Finance Tracker Pro ${proPrices[period].label}`, quantity: 1, price: payment.amount }],
+      items: [{ name: `Timi Pro ${proPrices[period].label}`, quantity: 1, price: payment.amount }],
       returnUrl: back,
       cancelUrl: back,
       expiredAt: Math.floor(Date.now() / 1000) + 15 * 60,

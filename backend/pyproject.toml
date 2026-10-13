@@ -1,7 +1,7 @@
 [project]
 name = "finance-backend"
 version = "0.1.0"
-description = "Background workers for Finance Tracker"
+description = "Background workers for Timi"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [

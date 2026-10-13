@@ -1,4 +1,4 @@
-# Finance Tracker — web
+# Timi — web
 
 The Next.js app (UI and server). Commands below run from this `web/` folder.
 See the [project README](../README.md) for how the parts fit together.
@@ -52,11 +52,11 @@ setup, deploys, backups and the DNS cutover are in
 
 `next.config.ts` rewrites Firebase's OAuth helper at `/__/auth/*` to the
 project's `firebaseapp.com` domain, so production can set
-`NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=finance.nnqlab.dev` and keep its own domain
+`NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=timi.nnqlab.dev` and keep its own domain
 visible to Google Sign-In. That requires:
 
-1. `finance.nnqlab.dev` in Firebase Authentication's authorized domains.
-2. `https://finance.nnqlab.dev/__/auth/handler` in the authorized redirect URIs
+1. `timi.nnqlab.dev` in Firebase Authentication's authorized domains.
+2. `https://timi.nnqlab.dev/__/auth/handler` in the authorized redirect URIs
    of the Google OAuth web client for this Firebase project.
 
 `deploy.sh` builds with `NEXT_DEPLOYMENT_ID` set to the commit, so a tab left
