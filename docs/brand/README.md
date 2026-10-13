@@ -1,8 +1,9 @@
 # Timi brand
 
 The logo (chosen 2026-10-13, direction "C · Cột tăng dần" of the mockups): three rounded
-bars rising on an ink tile, the last one lime with the app's AI sparkle above it, for money
-kept in order and growing, with AI writing it down. It replaced a "t" mark that, set beside
+bars on an ink tile, short then tall, the last one lime and a little lower with the app's AI
+sparkle above it, for money kept in order and growing, with AI writing it down. The shape is
+the mockup as the user chose it: do not "fix" the lime bar's height. It replaced a "t" mark that, set beside
 the name, read as "t timi".
 
 - Colours: tile `#171717` (the app's `--primary` ink), bars `#FFFFFF`, last bar and sparkle

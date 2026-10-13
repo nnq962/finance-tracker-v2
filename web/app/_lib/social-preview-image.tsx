@@ -79,10 +79,10 @@ export async function createSocialPreviewImage() {
             {/* Timi's icon (docs/brand) and its name, as the app sets them. */}
             <svg width={52} height={52} viewBox="0 0 100 100" aria-hidden="true">
               <rect width="100" height="100" rx="24" fill={color.ink} />
-              <rect x="23" y="63" width="14" height="18" rx="7" fill="#ffffff" />
-              <rect x="43" y="51" width="14" height="30" rx="7" fill="#ffffff" />
-              <rect x="63" y="39" width="14" height="42" rx="7" fill={color.lime} />
-              <path d={sparkle(70, 26, 7)} fill={color.lime} />
+              <rect x="23" y="52" width="14" height="25" rx="7" fill="#ffffff" />
+              <rect x="43" y="40" width="14" height="37" rx="7" fill="#ffffff" />
+              <rect x="63" y="44" width="14" height="33" rx="7" fill={color.lime} />
+              <path d={sparkle(70, 28, 9)} fill={color.lime} />
             </svg>
             <span style={{ fontSize: 38, fontWeight: 800, letterSpacing: "-0.03em" }}>{SITE_NAME}</span>
           </div>
