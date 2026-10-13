@@ -312,10 +312,15 @@ export function MobileBottomNav() {
           of their own behind the icons: with the blur on the list itself,
           Safari redrew the icons as the pill slid and they shook. */}
       <div ref={barRef} className="pointer-events-auto relative isolate h-15 min-w-0 max-w-md flex-1">
-        {/* The shadow on a plain capsule: blurred this wide, the ends' shape does not show in it. */}
+        {/* The shadow on a plain capsule: blurred this wide, the ends' shape does
+            not show in it. A pixel inside the bar all round: the continuous ends
+            start bending before a round end does, so just off the straight edge
+            they lie up to 0.7px inside it, and there a full-size capsule, which
+            paints no shadow within itself, left a bright sliver at all four
+            joins in the light theme. */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 -z-20 rounded-full shadow-[0_14px_44px_rgb(0_0_0/0.16),0_2px_8px_rgb(0_0_0/0.06)] dark:shadow-[0_14px_44px_rgb(0_0_0/0.5)]"
+          className="absolute inset-px -z-20 rounded-full shadow-[0_14px_44px_rgb(0_0_0/0.16),0_2px_8px_rgb(0_0_0/0.06)] dark:shadow-[0_14px_44px_rgb(0_0_0/0.5)]"
         />
         <div
           aria-hidden="true"

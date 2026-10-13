@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.4.6",
+    date: "2026-10-13",
+    title: "Thanh tab liền mạch",
+    changes: [
+      { kind: "fixed", text: "Thanh tab dưới không còn lộ vệt sáng ở bốn chỗ nối giữa cạnh thẳng và đầu bo tròn (giao diện sáng)." },
+    ],
+  },
+  {
     version: "6.4.5",
     date: "2026-10-13",
     title: "Kiểm thử theo câu báo lỗi mới",
