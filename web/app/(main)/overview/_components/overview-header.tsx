@@ -29,8 +29,7 @@ export function OverviewHeader({
           <Image src="/icon.svg" alt="" width={40} height={40} priority className="size-10 shrink-0 md:hidden" />
           <span className="min-w-0">
             <span className="flex items-center gap-1.5 md:hidden">
-              <TimiWordmark className="h-[22px]" />
-              <span className="sr-only">Timi</span>
+              <TimiWordmark className="text-lg" />
               {planState.plan === "pro" ? (
                 <Badge variant="ai">Pro</Badge>
               ) : null}

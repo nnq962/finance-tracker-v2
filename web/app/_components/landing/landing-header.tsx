@@ -52,7 +52,7 @@ export function LandingHeader() {
             priority
             className="size-9 transition-transform duration-500 ease-out group-hover:scale-105"
           />
-          <TimiWordmark className="hidden h-9 min-[360px]:block" />
+          <TimiWordmark className="hidden text-2xl min-[360px]:inline" />
         </Link>
 
         <ul className="hidden items-center gap-1 md:flex">

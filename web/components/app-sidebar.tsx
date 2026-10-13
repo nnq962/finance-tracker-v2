@@ -51,9 +51,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   {/* The name as the logo writes it, Beta beside it as beta builds of apps are named. */}
                   <span className="flex items-center gap-1.5">
-                    {/* Important: the menu button sizes every svg in it to an icon's 16px. */}
-                    <TimiWordmark className="h-5! w-auto!" />
-                    <span className="sr-only">Timi</span>
+                    <TimiWordmark className="text-base" />
                     <span className="text-muted-foreground">Beta</span>
                   </span>
                   <span className="truncate text-xs">

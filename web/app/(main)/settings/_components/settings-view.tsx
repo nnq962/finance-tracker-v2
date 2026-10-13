@@ -257,9 +257,9 @@ export function SettingsView({
         {/* The app itself at the foot, as an iOS app's About: its icon, its name, its version. */}
         <div className="flex flex-col items-center gap-2 pt-2 pb-4 text-muted-foreground">
           <Image src="/icon.svg" alt="" width={48} height={48} className="size-12" />
-          <TimiWordmark className="h-6 text-foreground" />
+          <TimiWordmark className="text-xl text-foreground" />
           <p className="text-xs">
-            <span className="sr-only">Timi, </span>Phiên bản {process.env.NEXT_PUBLIC_APP_VERSION} · Beta
+            Phiên bản {process.env.NEXT_PUBLIC_APP_VERSION} · Beta
           </p>
         </div>
       </div>

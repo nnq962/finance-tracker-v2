@@ -23,9 +23,6 @@ const color = {
   income: "#2e8b57",
   tile: "#f8e3d8",
   tileInk: "#8a4a2b",
-  brandTile: "#0e2a1f",
-  /** --ai-strong: the lime that holds on the light canvas. */
-  limeDeep: "#669000",
 }
 
 /** The logo's four-point sparkle, centred on (x, y), reaching `r` each way. */
@@ -79,24 +76,15 @@ export async function createSocialPreviewImage() {
         {/* The words: the name, the AI badge, the title and one line. */}
         <div style={{ display: "flex", width: 560, flexDirection: "column", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 28 }}>
-            {/* Timi's icon and wordmark (docs/brand), the lockup's gap between them. */}
+            {/* Timi's icon (docs/brand) and its name, as the app sets them. */}
             <svg width={52} height={52} viewBox="0 0 100 100" aria-hidden="true">
-              <rect width="100" height="100" rx="24" fill={color.brandTile} />
-              <path d="M42 24V62Q42 78 58 78M28 44H56" stroke="#ffffff" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-              <path d={sparkle(70, 30, 13)} fill={color.lime} />
+              <rect width="100" height="100" rx="24" fill={color.ink} />
+              <rect x="23" y="63" width="14" height="18" rx="7" fill="#ffffff" />
+              <rect x="43" y="51" width="14" height="30" rx="7" fill="#ffffff" />
+              <rect x="63" y="39" width="14" height="42" rx="7" fill={color.lime} />
+              <path d={sparkle(70, 26, 7)} fill={color.lime} />
             </svg>
-            <svg width={94} height={52} viewBox="0 0 181 100" aria-label={SITE_NAME}>
-              <path
-                d="M22 18V70Q22 90 40 90M8 42H38M62 48V90M86 90V60Q86 46 100 46Q114 46 114 60V90M114 60Q114 46 128 46Q142 46 142 60V90M166 48V90"
-                stroke={color.ink}
-                strokeWidth="14"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-              />
-              <circle cx="62" cy="22" r="8" fill={color.ink} />
-              <path d={sparkle(166, 20, 14)} fill={color.limeDeep} />
-            </svg>
+            <span style={{ fontSize: 38, fontWeight: 800, letterSpacing: "-0.03em" }}>{SITE_NAME}</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
             <div

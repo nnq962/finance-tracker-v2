@@ -20,8 +20,7 @@ export function LandingFooter() {
         <div className="space-y-2">
           <Link href="/" className="flex w-fit items-center gap-2 rounded-lg">
             <Image src="/icon.svg" alt="" width={28} height={28} className="size-7" />
-            <TimiWordmark className="h-7" />
-            <span className="sr-only">Timi</span>
+            <TimiWordmark className="text-xl" />
           </Link>
           <p className="text-sm text-muted-foreground">
             Quản lý tài chính cá nhân rõ ràng và đơn giản.
