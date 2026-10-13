@@ -49,7 +49,7 @@ export function LandingHeader() {
             width={36}
             height={36}
             priority
-            className="size-9 transition-transform duration-500 ease-out group-hover:rotate-[20deg]"
+            className="size-9 transition-transform duration-500 ease-out group-hover:scale-105"
           />
           <span className="hidden whitespace-nowrap text-base font-semibold min-[360px]:inline sm:text-lg">
             Timi
