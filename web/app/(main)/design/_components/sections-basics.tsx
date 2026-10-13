@@ -60,6 +60,7 @@ const colors = [
   ["transfer", "Chuyển khoản", "bg-transfer"],
   ["ai", "AI, Pro, điểm nhấn", "bg-ai"],
   ["ai-strong", "Chữ, icon AI", "bg-ai-strong"],
+  ["ai-on-primary", "Icon AI trên nút chính", "bg-ai-on-primary"],
   ["warning", "Nhắc nhở", "bg-warning"],
   ["destructive", "Xoá, lỗi", "bg-destructive"],
   ["muted", "Nền phụ", "bg-muted"],

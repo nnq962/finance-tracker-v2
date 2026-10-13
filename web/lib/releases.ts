@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.4.7",
+    date: "2026-10-13",
+    title: "Nút AI rõ hơn ở giao diện tối",
+    changes: [
+      { kind: "improved", text: "Ở giao diện tối, icon trên nút AI cạnh thanh tab và nút “Hỏi AI” dùng xanh chanh đậm như logo, dễ nhìn trên nền trắng." },
+    ],
+  },
+  {
     version: "6.4.6",
     date: "2026-10-13",
     title: "Thanh tab liền mạch",

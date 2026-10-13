@@ -53,7 +53,7 @@ export function AssistantTabButton({ className }: { className?: string }) {
         className,
       )}
     >
-      <BotIcon className="size-6 text-ai" />
+      <BotIcon className="size-6 text-ai-on-primary" />
     </button>
   )
 }
@@ -63,7 +63,7 @@ export function AssistantHeaderButton() {
   const open = useOpenAssistant()
   return (
     <Button size="sm" onClick={open}>
-      <BotIcon className="text-ai" /> Hỏi AI
+      <BotIcon className="text-ai-on-primary" /> Hỏi AI
     </Button>
   )
 }

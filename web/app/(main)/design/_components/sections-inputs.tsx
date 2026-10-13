@@ -636,7 +636,7 @@ function BotIconSample() {
   return (
     <div className="flex flex-wrap items-center gap-4">
       <Button>
-        <BotIcon className="text-ai" /> Rê hoặc chạm
+        <BotIcon className="text-ai-on-primary" /> Rê hoặc chạm
       </Button>
       <Button variant="secondary" onClick={() => setShown((count) => count + 1)}>
         <BotIcon key={shown} blink="once" className="text-ai-strong" /> Hiện ra lại

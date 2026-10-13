@@ -53,6 +53,7 @@
   --color-ai: var(--ai);
   --color-ai-foreground: var(--ai-foreground);
   --color-ai-strong: var(--ai-strong);
+  --color-ai-on-primary: var(--ai-on-primary);
   --color-island: var(--island);
   --color-island-foreground: var(--island-foreground);
   --color-island-accent: var(--island-accent);
@@ -161,6 +162,8 @@
   --ai: oklch(0.911 0.1775 119.6);
   --ai-foreground: oklch(0.209 0.0042 264.5);
   --ai-strong: oklch(0.6 0.16 127);
+  /* The AI's mark on a primary button (the ✦ tab, Hỏi AI): the lime on the ink. */
+  --ai-on-primary: oklch(0.911 0.1775 119.6);
   /*
    * Toasts, as iOS's Dynamic Island: the opposite of the page, black on the
    * light theme and white on the dark one (2026-10-09). island-accent is the
@@ -230,6 +233,8 @@
   --ai-foreground: oklch(0.209 0.0042 264.5);
   /* On the dark page the lime itself reads well. */
   --ai-strong: oklch(0.911 0.1775 119.6);
+  /* The primary turns white here: the logo's deep lime (#7FA300), as the lime fades on white. */
+  --ai-on-primary: oklch(0.664 0.1647 123.9);
   --island: oklch(1 0 0);
   --island-foreground: oklch(0.205 0 0);
   --island-accent: oklch(0.6 0.16 127);
