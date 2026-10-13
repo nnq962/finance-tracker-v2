@@ -328,7 +328,7 @@ function DebtForm({
           if (!contactId) found.contactId = lent ? "Chọn người vay." : "Chọn người cho vay."
           if (!isOpening && !account) found.accountId = "Chọn tài khoản."
           if (!/^\d{4}-\d{2}-\d{2}$/.test(recordedAt)) found.recordedAt = "Chọn ngày."
-          else if (recordedAt > today) found.recordedAt = "Không thể chọn ngày sau hôm nay."
+          else if (recordedAt > today) found.recordedAt = "Không thể chọn ngày trong tương lai."
           if (dueAt && dueAt < recordedAt) found.dueAt = "Hẹn trả phải từ ngày vay trở đi."
           if (hasInterest && !(rate > 0 && rate <= 100)) found.interestRate = "Nhập lãi suất từ 0 đến 100%."
           setErrors(found)

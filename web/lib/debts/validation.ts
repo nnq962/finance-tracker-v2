@@ -71,7 +71,7 @@ export function parseDebt(value: unknown): NewDebt {
   const recordingMode = input.recordingMode ?? "cash-flow"
   if (recordingMode !== "cash-flow" && recordingMode !== "opening") throw new DebtValidationError("Cách ghi nhận khoản nợ không hợp lệ.")
   const recordedAt = date(input.recordedAt, "Ngày ghi")
-  if (recordedAt > todayDate()) throw new DebtValidationError("Ngày ghi không được sau hôm nay.")
+  if (recordedAt > todayDate()) throw new DebtValidationError("Không thể chọn ngày trong tương lai.")
   const dueAt = input.dueAt ? date(input.dueAt, "Hẹn trả") : undefined
   if (dueAt && dueAt < recordedAt) throw new DebtValidationError("Hẹn trả phải từ ngày ghi trở đi.")
   let interestRate: number | undefined
@@ -92,7 +92,7 @@ export function parseDebt(value: unknown): NewDebt {
 export function parsePayment(value: unknown): NewDebtPayment {
   const input = object(value)
   const paidAt = date(input.paidAt, "Ngày thanh toán")
-  if (paidAt > todayDate()) throw new DebtValidationError("Ngày thanh toán không được sau hôm nay.")
+  if (paidAt > todayDate()) throw new DebtValidationError("Không thể chọn ngày trong tương lai.")
   const paidTime = text(input.paidTime, "Giờ thanh toán", 5)
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(paidTime)) throw new DebtValidationError("Giờ thanh toán không hợp lệ.")
   return { amount: money(input.amount), accountId: id(input.accountId), paidAt, paidTime, note: text(input.note, "Ghi chú", 500) }

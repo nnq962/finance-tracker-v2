@@ -102,11 +102,11 @@ function getOccurredAt(formData: FormData) {
   // Recorded money has already moved: no later than today (Vietnam time),
   // and not before 2000, which catches a mistyped year.
   if (date > toDateKey(new Date())) {
-    throw new TransactionValidationError("Ngày giao dịch không được sau hôm nay.")
+    throw new TransactionValidationError("Không thể chọn thời gian trong tương lai.")
   }
   // Today, no later than now (a minute's grace for the clocks).
   if (occurredAt.getTime() > Date.now() + 60_000) {
-    throw new TransactionValidationError("Giờ giao dịch không được sau bây giờ.")
+    throw new TransactionValidationError("Không thể chọn thời gian trong tương lai.")
   }
   if (date < EARLIEST_DATE) {
     throw new TransactionValidationError("Ngày giao dịch phải từ năm 2000 trở đi.")

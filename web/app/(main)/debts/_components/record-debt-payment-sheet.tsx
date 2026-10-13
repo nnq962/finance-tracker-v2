@@ -165,7 +165,7 @@ function PaymentForm({
         else if (amount > remainingAmount) found.amount = `Nhiều hơn số còn lại (${formatCurrency(remainingAmount, { signDisplay: "never" })}).`
         if (!account) found.accountId = "Chọn tài khoản."
         if (!/^\d{4}-\d{2}-\d{2}$/.test(paidAt) || !/^\d{2}:\d{2}/.test(paidTime)) found.paidAt = "Chọn ngày và giờ."
-        else if (paidAt > today) found.paidAt = "Không thể chọn ngày sau hôm nay."
+        else if (paidAt > today) found.paidAt = "Không thể chọn ngày trong tương lai."
         else if (paidAt < debt.recordedAt) found.paidAt = "Không thể chọn ngày trước ngày ghi khoản nợ."
         setErrors(found)
         const first = fieldOrder.find((field) => found[field])

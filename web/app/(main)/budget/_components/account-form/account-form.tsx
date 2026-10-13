@@ -184,7 +184,7 @@ export function AccountForm({
         if (!name.trim()) found.name = "Nhập tên tài khoản."
         if (!/^\d{4}-\d{2}-\d{2}$/.test(when.date) || !when.time) found.openedAt = "Chọn ngày và giờ."
         else if (when.date > today || (when.date === today && when.time > getCurrentLocalDateTime().time)) {
-          found.openedAt = "Không thể chọn thời điểm sau bây giờ."
+          found.openedAt = "Không thể chọn thời gian trong tương lai."
         }
         else if (when.date < "2000-01-01") found.openedAt = "Chọn ngày từ năm 2000 trở đi."
         setErrors(found)

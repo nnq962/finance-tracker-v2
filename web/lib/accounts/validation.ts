@@ -74,7 +74,7 @@ function getOpenedAt(formData: FormData) {
   }
   // Today counts up to now, with the minute being typed.
   if (date > toDateKey(new Date()) || openedAt.getTime() > Date.now() + 60_000) {
-    throw new AccountValidationError("Thời gian bắt đầu không được sau bây giờ.")
+    throw new AccountValidationError("Không thể chọn thời gian trong tương lai.")
   }
   if (date < "2000-01-01") {
     throw new AccountValidationError("Thời gian bắt đầu phải từ năm 2000 trở đi.")
