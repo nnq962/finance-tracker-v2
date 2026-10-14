@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
 
+import { GoogleOneTap } from "@/components/google-one-tap"
+
 import { AiSection } from "./_components/landing/ai-section"
 import { CtaSection } from "./_components/landing/cta-section"
 import { FeaturesSection } from "./_components/landing/features-section"
@@ -81,6 +83,7 @@ export default function HomePage() {
         <CtaSection />
       </main>
       <LandingFooter />
+      <GoogleOneTap />
     </div>
   )
 }

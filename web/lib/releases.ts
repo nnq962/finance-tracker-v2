@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.5.0",
+    date: "2026-10-14",
+    title: "Đăng nhập một chạm với Google",
+    changes: [
+      { kind: "new", text: "Ở trang chủ và trang đăng nhập, Google hiện gợi ý các tài khoản đang đăng nhập trên trình duyệt: chạm một tài khoản là vào app. Gợi ý chỉ hiện khi trình duyệt đã đăng nhập Google." },
+    ],
+  },
+  {
     version: "6.4.9",
     date: "2026-10-14",
     title: "Trợ lý không còn khựng sau mỗi lần cập nhật",

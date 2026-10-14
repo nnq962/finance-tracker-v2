@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next"
+import { GoogleOneTap } from "@/components/google-one-tap"
 import { LoginForm } from "@/components/login-form"
 import { TimiIcon } from "@/components/timi-icon"
 import { TimiWordmark } from "@/components/timi-wordmark"
@@ -64,6 +65,7 @@ export default async function LoginPage({
               </p>
             </div>
             <LoginForm redirectTo={redirectTo} />
+            <GoogleOneTap redirectTo={redirectTo} />
           </div>
         </div>
         <div className="hidden h-[min(42rem,85svh)] items-center justify-center rounded-[32px] bg-track lg:order-1 lg:flex dark:bg-foreground/5">

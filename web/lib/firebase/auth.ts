@@ -1,6 +1,7 @@
 import { FirebaseError } from "firebase/app"
 import {
   GoogleAuthProvider,
+  signInWithCredential,
   signInWithPopup,
   signOut,
   type User,
@@ -16,6 +17,11 @@ googleProvider.setCustomParameters({ prompt: "select_account" })
 
 export function signInWithGoogle() {
   return signInWithPopup(firebaseAuth, googleProvider)
+}
+
+/** Signs in with the ID token Google's One Tap hands over for the account picked. */
+export function signInWithGoogleIdToken(idToken: string) {
+  return signInWithCredential(firebaseAuth, GoogleAuthProvider.credential(idToken))
 }
 
 // Serialize cookie mutations so late login/refresh requests cannot undo logout.
