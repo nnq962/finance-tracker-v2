@@ -173,7 +173,6 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
               setTargetError(null)
             }}
             invalid={Boolean(targetError)}
-            suggestions={false}
             required
           />
           {targetError ? <FieldError className="text-center">{targetError}</FieldError> : null}
@@ -215,7 +214,7 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
             </li>
             <SettingsRow
               title="Đặt hạn"
-              description="Biết mỗi tháng nên bỏ bao nhiêu"
+              description="Tính số tiền cần nạp mỗi tháng"
               action={<Switch aria-label="Đặt hạn" checked={withDue} onCheckedChange={setWithDue} />}
             />
             {withDue ? (
@@ -227,7 +226,7 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
             ) : null}
           </SettingsGroup>
           {monthly ? (
-            <p className="px-4 text-xs text-muted-foreground">Mỗi tháng nên bỏ khoảng {formatCurrency(monthly)} là kịp.</p>
+            <p className="px-4 text-xs text-muted-foreground">Cần nạp khoảng {formatCurrency(monthly)} mỗi tháng để đạt mục tiêu đúng hạn.</p>
           ) : null}
         </div>
       </div>
@@ -261,7 +260,7 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
         <ActionSheet
           open={confirmDelete}
           onOpenChange={setConfirmDelete}
-          title={`Xoá hũ “${jar.name}”? Các lần bỏ vào, rút ra cũng bị xoá, tiền về lại tài khoản đã bỏ vào.${
+          title={`Xoá hũ “${jar.name}”? Các lần nạp, rút cũng bị xoá, tiền về lại tài khoản đã nạp.${
             jar.goal?.completedAt ? " Khoản chi lúc mua cũng bị xoá." : ""
           }`}
           options={[{ value: "delete", label: "Xoá hũ", destructive: true }]}

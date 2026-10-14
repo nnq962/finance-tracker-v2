@@ -24,7 +24,7 @@ function describe(transaction: Transaction, jarId: string) {
     return {
       icon: into ? ArrowDownLeftIcon : ArrowUpRightIcon,
       tone: into ? ("income" as const) : ("neutral" as const),
-      title: into ? "Bỏ vào" : "Rút ra",
+      title: into ? "Nạp vào" : "Rút ra",
       where: `${into ? "Từ" : "Về"} ${other ?? "tài khoản khác"}`,
       amount: into ? Math.abs(transaction.amount) : -Math.abs(transaction.amount),
     }
@@ -96,7 +96,7 @@ export function JarSheet({
               </Button>
             ) : (
               <Button className="flex-1" onClick={() => onMove("in")}>
-                <ArrowDownLeftIcon /> Bỏ vào hũ
+                <ArrowDownLeftIcon /> Nạp vào hũ
               </Button>
             )}
           </div>
@@ -125,7 +125,7 @@ export function JarSheet({
           <SettingsRow title="Mục tiêu" value={<Money amount={target} size="sm" tone="muted" />} />
           <SettingsRow title="Còn thiếu" value={left ? <Money amount={left} size="sm" tone="muted" /> : "Đã đủ"} />
           {due ? <SettingsRow title="Hạn" value={`${formatDate(due)} · còn ${monthsLeft(due, today)} tháng`} /> : null}
-          {monthly ? <SettingsRow title="Mỗi tháng nên bỏ" value={<Money amount={monthly} size="sm" />} /> : null}
+          {monthly ? <SettingsRow title="Mỗi tháng nên nạp" value={<Money amount={monthly} size="sm" />} /> : null}
         </SettingsGroup>
       )}
 

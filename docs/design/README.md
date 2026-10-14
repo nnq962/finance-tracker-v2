@@ -366,20 +366,20 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   chuyển khoản hay vay nợ thì không xoá được, gợi ý "Khoá tài khoản") rồi xoá có hoàn tác, đóng cả
   hai sheet.
 - **Hũ tiết kiệm** (2026-10-14, `budget/_components/savings/`): hũ là một tài khoản loại `savings` (không lãi, để
-  dành mua một món), tiền vào ra là chuyển khoản. Trang Tài khoản có nhóm "HŨ TIẾT KIỆM · N" trên "Đang dùng":
+  dành mua một món), tiền vào ra là chuyển khoản. Trang Tài khoản có nhóm "HŨ TIẾT KIỆM · N" dưới "TÀI KHOẢN CHÍNH · N" (tên cũ "Đang dùng", đổi 2026-10-14):
   mỗi hũ một dòng, ô đầu là `JarRing` (vòng tiến độ 36 quanh biểu tượng, màu theo biểu tượng, đầy thì xanh lá),
   dòng phụ "Còn 3 tháng · 5tr/tháng" / "Còn thiếu …" / "Đủ tiền rồi 🎉" (xanh lá), bên phải số đã có và "/ 15tr";
   cuối nhóm "Thêm hũ". Hũ đã mua nằm trong "Hũ đã hoàn thành" (thu gọn, dưới cùng, dòng xám "Đã mua 14/10 ·
   giá"). Thẻ Tổng số dư có dòng "Hũ tiết kiệm" (tối đa 3 icon xếp chồng để số không xuống dòng). Chi tiết hũ
-  (`JarSheet`): vòng lớn, tên, số đã có `xl`, "60% của …"; Mục tiêu, Còn thiếu, Hạn, Mỗi tháng nên bỏ; "Lịch
-  sử" 5 lần gần nhất + "Xem tất cả"; chân sheet "Rút ra" (secondary) và "Bỏ vào hũ", đủ tiền thì thông báo xanh
+  (`JarSheet`): vòng lớn, tên, số đã có `xl`, "60% của …"; Mục tiêu, Còn thiếu, Hạn, Mỗi tháng nên nạp; "Lịch
+  sử" 5 lần gần nhất + "Xem tất cả"; chân sheet "Rút ra" (secondary) và "Nạp vào hũ", đủ tiền thì thông báo xanh
   và "Đã mua". Bút chì mở `JarFormSheet` (cũng là màn tạo): Mục tiêu lớn, lưới "Để dành cho" (7 + Tất cả,
   biểu tượng đặt tên cho tới khi gõ tên), Tên, công tắc "Đặt hạn" + dòng Hạn (`MonthPickerSheet` từ tháng này),
-  "Mỗi tháng nên bỏ khoảng … là kịp"; thùng rác cạnh Lưu xoá hũ (hỏi lại; các lần bỏ vào, rút ra bị xoá, tiền
+  "Cần nạp khoảng … mỗi tháng để đạt mục tiêu đúng hạn" (Mục tiêu có gợi ý nhập nhanh như ô số tiền khác); thùng rác cạnh Lưu xoá hũ (hỏi lại; các lần nạp, rút bị xoá, tiền
   về tài khoản cũ). `MoveJarSheet`: số tiền lớn + nút điền nhanh "Tháng này · 5tr", "Đủ mục tiêu · 15tr" (rút ra:
   "Rút hết"), Từ/Về tài khoản (màn sâu), thời gian, ghi chú. `BoughtSheet`: Giá mua (mặc định mục tiêu), Hạng
   mục (màn sâu), thời gian; mua rẻ hơn thì "Còn thừa" + "Chuyển về", đắt hơn thì "Thiếu" + "Trả thêm từ"; ghi
-  khoản chi từ hũ và hũ sang Đã hoàn thành. Một tên gọi xuyên suốt: "hũ".
+  khoản chi từ hũ và hũ sang Đã hoàn thành. Một tên gọi xuyên suốt: "hũ"; đưa tiền vào hũ là "nạp" (2026-10-14).
 - **Chi tiết giao dịch** (`TransactionDetailsSheet`), như biên lai: icon lớn, tên, số tiền lớn, ngày
   giờ; Sửa là nút bút chì tròn bên phải thanh. Thông tin dạng nhãn trái, giá trị phải: Tài khoản
   (logo `xs` + tên), Hạng mục (`IconTile xs` + tên), Nhóm; ghi chú xuống dòng đầy đủ. Chuyển khoản

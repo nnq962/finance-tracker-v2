@@ -25,11 +25,11 @@ export function amountLeft(jar: Pick<Account, "balance" | "goal">) {
   return Math.max((jar.goal?.target ?? 0) - jar.balance, 0)
 }
 
-/** What to put in each month to reach the target by the due month, rounded up to 100.000đ. */
+/** What to put in each month to reach the target by the due month, rounded up to 100.000đ but never past what is left. */
 export function monthlyAmount(jar: Pick<Account, "balance" | "goal">, today: string) {
   const left = amountLeft(jar)
   if (!jar.goal?.due || left === 0) return null
-  return Math.ceil(left / monthsLeft(jar.goal.due, today) / ROUND_TO) * ROUND_TO
+  return Math.min(Math.ceil(left / monthsLeft(jar.goal.due, today) / ROUND_TO) * ROUND_TO, left)
 }
 
 /** The share saved, 0 to 1. */

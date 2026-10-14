@@ -81,6 +81,7 @@ async function run() {
     assert.equal(plan.monthsLeft('2026-09-30', '2026-10-14'), 1)
     assert.equal(plan.monthlyAmount({ balance: 18_000_000, goal: { target: 30_000_000, icon: 'bike', due: '2026-12-31' } }, '2026-10-14'), 4_000_000)
     assert.equal(plan.monthlyAmount({ balance: 0, goal: { target: 1_000_000, icon: 'bike', due: '2026-12-31' } }, '2026-10-14'), 400_000)
+    assert.equal(plan.monthlyAmount({ balance: 0, goal: { target: 30, icon: 'bike', due: '2026-12-31' } }, '2026-10-14'), 30)
     assert.equal(plan.jarPlanLabel({ balance: 5, goal: { target: 5, icon: 'bike' } }, '2026-10-14'), 'Đủ tiền rồi')
 
     // Bought for less: the price spent from the jar, the rest back to an account, the jar finished.

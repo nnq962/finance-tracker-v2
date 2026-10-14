@@ -32,6 +32,16 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.6.2",
+    date: "2026-10-14",
+    title: "Hũ tiết kiệm gọn chữ hơn",
+    changes: [
+      { kind: "improved", text: "Nhóm “Đang dùng” đổi tên thành “Tài khoản chính” và nằm trên nhóm Hũ tiết kiệm." },
+      { kind: "improved", text: "Ô Mục tiêu của hũ có lại gợi ý nhập nhanh số tiền." },
+      { kind: "improved", text: "Đưa tiền vào hũ gọi là “nạp”: Nạp vào hũ, Mỗi tháng nên nạp, Cần nạp khoảng … mỗi tháng để đạt mục tiêu đúng hạn." },
+    ],
+  },
+  {
     version: "6.6.1",
     date: "2026-10-14",
     title: "Kiểm thử hũ tiết kiệm",

@@ -90,22 +90,20 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
 
   return (
     <div className="space-y-6 md:space-y-8">
-      <JarList jars={jars} accounts={accounts} recentTransactions={recentTransactions} categoryGroups={categoryGroups} part="open" />
-
       {activeAccounts.length > 0 ? (
         <>
-          {/* Named like the "Đã khoá" group below it. A list on phones;
+          {/* "Tài khoản chính" (2026-10-14, was "Đang dùng"), beside "Hũ tiết kiệm" and "Đã khoá" below it. A list on phones;
               from lg up a grid of cards with this month's in and out, so the
               page uses its width. */}
           <div className="lg:hidden">
-            <SettingsGroup title={`Đang dùng · ${activeAccounts.length}`}>
+            <SettingsGroup title={`Tài khoản chính · ${activeAccounts.length}`}>
               {activeAccounts.map((account) => (
                 <AccountRow key={account.id} account={account} onSelect={() => setOpenAccountId(account.id)} />
               ))}
             </SettingsGroup>
           </div>
           <section className="hidden flex-col gap-2 lg:flex">
-            <h2 className={cn("px-4", groupCaptionClassName)}>Đang dùng · {activeAccounts.length}</h2>
+            <h2 className={cn("px-4", groupCaptionClassName)}>Tài khoản chính · {activeAccounts.length}</h2>
             <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
               {activeAccounts.map((account) => (
                 <AccountCard
@@ -119,6 +117,9 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
           </section>
         </>
       ) : null}
+
+      {/* The savings jars under the accounts in use, the locked accounts and finished jars after them. */}
+      <JarList jars={jars} accounts={accounts} recentTransactions={recentTransactions} categoryGroups={categoryGroups} part="open" />
 
       {archivedAccounts.length > 0 ? (
         <>

@@ -43,7 +43,7 @@ export function MoveJarSheet({
   onOpenChange: (open: boolean) => void
 }) {
   return (
-    <PageSheet title={way === "in" ? `Bỏ vào hũ ${jar.name}` : `Rút từ hũ ${jar.name}`} open={open} onOpenChange={onOpenChange}>
+    <PageSheet title={way === "in" ? `Nạp vào hũ ${jar.name}` : `Rút từ hũ ${jar.name}`} open={open} onOpenChange={onOpenChange}>
       {open ? <MoveForm jar={jar} way={way} accounts={accounts} onDone={() => onOpenChange(false)} /> : null}
     </PageSheet>
   )
@@ -91,7 +91,7 @@ function MoveForm({ jar, way, accounts, onDone }: { jar: Account; way: "in" | "o
       try {
         const result = await moveJarAction(jar.id, way, formData)
         if (!result.success) return setError(result.error)
-        toast.success(way === "in" ? `Đã bỏ vào hũ ${jar.name}.` : `Đã rút từ hũ ${jar.name}.`)
+        toast.success(way === "in" ? `Đã nạp vào hũ ${jar.name}.` : `Đã rút từ hũ ${jar.name}.`)
         onDone()
       } catch {
         setError("Không thể lưu. Vui lòng thử lại.")
@@ -193,7 +193,7 @@ function MoveForm({ jar, way, accounts, onDone }: { jar: Account; way: "in" | "o
           {error ? <FieldError>{error}</FieldError> : null}
           <Button type="submit" className="w-full" disabled={pending}>
             {pending ? <Spinner /> : null}
-            {pending ? "Đang lưu..." : way === "in" ? "Bỏ vào hũ" : "Rút ra"}
+            {pending ? "Đang lưu..." : way === "in" ? "Nạp vào hũ" : "Rút ra"}
           </Button>
         </PageSheetFooter>
       )}

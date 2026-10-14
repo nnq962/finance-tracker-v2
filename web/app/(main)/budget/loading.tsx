@@ -50,7 +50,7 @@ export default function AccountsLoading() {
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
         <PageHeaderSkeleton title="Tài khoản" actions={["w-44"]} />
         <BudgetLayout summary={<BalanceHeroSkeleton />}>
-          {/* "Đang dùng": on phones each account's logo, name and kind, balance
+          {/* "Tài khoản chính": on phones each account's logo, name and kind, balance
               and chevron; from lg up AccountCard's footprint in the grid. */}
           <div className="lg:hidden">
             <SettingsGroupSkeleton rows={3} description trailing="value" chevron />
