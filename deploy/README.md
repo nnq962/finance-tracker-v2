@@ -72,6 +72,10 @@ tiên (câu đầu tiên sau khi nạp cũng chậm hơn 10 giây): nạp mất 
 mức web chờ (10 giây), mà Ollama lại bỏ dở việc nạp khi request bị huỷ, nên để
 câu hỏi đầu tiên nạp thì model không bao giờ lên được.
 
+Kernel CUDA mà driver biên dịch cho GPU (mỗi kích thước lô mới một lần, request
+đó khựng vài giây) được giữ trong volume, ở `/root/.ollama/cuda-cache`, nên
+deploy không làm mất. Đổi bản Ollama hay driver thì chúng được biên dịch lại.
+
 Model nằm trong volume `finance-ollama`, volume này nằm ngoài compose nên
 `down -v` không xoá model. `deploy.sh` chỉ tải model khi chưa có. Muốn đổi model
 thì đặt `OLLAMA_MODEL` trong `deploy/.env` (web cũng đọc biến này để gọi đúng

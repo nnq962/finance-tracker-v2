@@ -97,6 +97,12 @@ services:
       OLLAMA_NUM_PARALLEL: "1"
       OLLAMA_CONTEXT_LENGTH: "4096"
       WARM_MODEL: ${OLLAMA_MODEL:-gemma4:e4b}
+      # The CUDA driver compiles a kernel the first time each batch shape
+      # comes up on this GPU, a stall of seconds on that request. Kept in the
+      # volume (up to the 4GB most), the compiled kernels outlive a new
+      # container, so each is compiled once rather than after every deploy.
+      CUDA_CACHE_PATH: /root/.ollama/cuda-cache
+      CUDA_CACHE_MAXSIZE: "4294967296"
     # Loading the model takes about 30s, longer than web waits for a reply
     # (10s), and Ollama drops a load whose request was given up: left to the
     # first request, it never finishes. So it is loaded as soon as the server

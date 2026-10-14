@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.4.9",
+    date: "2026-10-14",
+    title: "Trợ lý không còn khựng sau mỗi lần cập nhật",
+    changes: [
+      { kind: "fixed", text: "Sau mỗi lần cập nhật app, LiuLiu không còn lúc khựng vài giây hay phải chờ 10 giây: phần tính toán AI đã chuẩn bị được giữ lại thay vì làm lại từ đầu." },
+    ],
+  },
+  {
     version: "6.4.8",
     date: "2026-10-14",
     title: "Trợ lý trả lời nhanh ngay sau khi máy chủ khởi động lại",
