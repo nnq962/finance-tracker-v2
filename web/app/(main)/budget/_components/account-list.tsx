@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils"
 
 import { AccountCard } from "./account-card"
 import { AccountSheet } from "./account-sheet"
+import { AddCard } from "./add-card"
 import { AddAccountSheet } from "./add-account/add-account-sheet"
 import { JarList } from "./savings/jar-section"
 
@@ -89,8 +90,7 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
             <EmptyTitle>Chưa có tài khoản</EmptyTitle>
             <EmptyDescription>Thêm tài khoản đầu tiên để bắt đầu.</EmptyDescription>
           </EmptyHeader>
-          {/* On phones only: from md the header has the button. */}
-          <EmptyContent className="md:hidden">
+          <EmptyContent>
             <Button type="button" onClick={() => setAdding(true)}>
               <PlusIcon />
               Thêm tài khoản
@@ -106,7 +106,7 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
     <div className="space-y-6 md:space-y-8">
       {/* "Tài khoản chính" (2026-10-14, was "Đang dùng"), "Hũ tiết kiệm" and "Đã khoá" below it. A list on
           phones, ending with "Thêm tài khoản" (also when every account is locked); from lg up a grid of
-          cards with this month's in and out, so the page uses its width, added from the header's button. */}
+          cards with this month's in and out, so the page uses its width, the last a dashed card to add one. */}
       <div className="lg:hidden">
         <SettingsGroup title={activeAccounts.length ? `Tài khoản chính · ${activeAccounts.length}` : "Tài khoản chính"}>
           {activeAccounts.map((account) => (
@@ -120,23 +120,22 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
           />
         </SettingsGroup>
       </div>
-      {activeAccounts.length > 0 ? (
-        <>
-          <section className="hidden flex-col gap-2 lg:flex">
-            <h2 className={cn("px-4", groupCaptionClassName)}>Tài khoản chính · {activeAccounts.length}</h2>
-            <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
-              {activeAccounts.map((account) => (
-                <AccountCard
-                  key={account.id}
-                  account={account}
-                  flow={flows[account.id]}
-                  onSelect={() => setOpenAccountId(account.id)}
-                />
-              ))}
-            </div>
-          </section>
-        </>
-      ) : null}
+      <section className="hidden flex-col gap-2 lg:flex">
+        <h2 className={cn("px-4", groupCaptionClassName)}>
+          {activeAccounts.length ? `Tài khoản chính · ${activeAccounts.length}` : "Tài khoản chính"}
+        </h2>
+        <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
+          {activeAccounts.map((account) => (
+            <AccountCard
+              key={account.id}
+              account={account}
+              flow={flows[account.id]}
+              onSelect={() => setOpenAccountId(account.id)}
+            />
+          ))}
+          <AddCard label="Thêm tài khoản" onClick={() => setAdding(true)} />
+        </div>
+      </section>
 
       {/* The savings jars under the accounts in use, the locked accounts and finished jars after them. */}
       <JarList jars={jars} accounts={accounts} recentTransactions={recentTransactions} categoryGroups={categoryGroups} part="open" />

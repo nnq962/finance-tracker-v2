@@ -5,7 +5,7 @@ import { PlusIcon } from "lucide-react"
 
 import { IconTile } from "@/components/app/icon-tile"
 import { Money } from "@/components/app/money"
-import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { groupCaptionClassName, SettingsGroup, SettingsRow } from "@/components/settings-list"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
@@ -13,8 +13,11 @@ import { formatShortDate, toDateKey } from "@/lib/format-date"
 import { getJarIcon } from "@/lib/savings/jar-icons"
 import { amountLeft, jarPlanLabel } from "@/lib/savings/plan"
 import type { Transaction } from "@/lib/transactions/types"
+import { cn } from "@/lib/utils"
 
+import { AddCard } from "../add-card"
 import { BoughtSheet } from "./bought-sheet"
+import { JarCard } from "./jar-card"
 import { JarFormSheet } from "./jar-form-sheet"
 import { JarRing } from "./jar-ring"
 import { JarSheet } from "./jar-sheet"
@@ -79,17 +82,31 @@ export function JarList({
   return (
     <>
       {part === "open" ? (
-        <SettingsGroup title={filling.length ? `Hũ tiết kiệm · ${filling.length}` : "Hũ tiết kiệm"}>
-          {filling.map((jar) => (
-            <JarRow key={jar.id} jar={jar} today={today} onSelect={() => setOpenId(jar.id)} />
-          ))}
-          <SettingsRow
-            media={<IconTile icon={PlusIcon} tone="neutral" size="sm" />}
-            title="Thêm hũ"
-            chevron={false}
-            onClick={() => setForm({ open: true, mode: "new" })}
-          />
-        </SettingsGroup>
+        <>
+          {/* A list on phones; from lg up cards the size of the accounts', the last a dashed one to add. */}
+          <div className="lg:hidden">
+            <SettingsGroup title={filling.length ? `Hũ tiết kiệm · ${filling.length}` : "Hũ tiết kiệm"}>
+              {filling.map((jar) => (
+                <JarRow key={jar.id} jar={jar} today={today} onSelect={() => setOpenId(jar.id)} />
+              ))}
+              <SettingsRow
+                media={<IconTile icon={PlusIcon} tone="neutral" size="sm" />}
+                title="Thêm hũ"
+                chevron={false}
+                onClick={() => setForm({ open: true, mode: "new" })}
+              />
+            </SettingsGroup>
+          </div>
+          <section className="hidden flex-col gap-2 lg:flex">
+            <h2 className={cn("px-4", groupCaptionClassName)}>{filling.length ? `Hũ tiết kiệm · ${filling.length}` : "Hũ tiết kiệm"}</h2>
+            <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
+              {filling.map((jar) => (
+                <JarCard key={jar.id} jar={jar} today={today} onSelect={() => setOpenId(jar.id)} />
+              ))}
+              <AddCard label="Thêm hũ" onClick={() => setForm({ open: true, mode: "new" })} />
+            </div>
+          </section>
+        </>
       ) : done.length > 0 ? (
         <SettingsGroup title="Hũ đã hoàn thành" collapsible={{ showLabel: `Hiện ${done.length} hũ` }}>
           {done.map((jar) => {

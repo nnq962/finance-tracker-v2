@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.6.4",
+    date: "2026-10-14",
+    title: "Hũ dạng thẻ trên máy tính",
+    changes: [
+      { kind: "improved", text: "Trên máy tính, hũ tiết kiệm hiện thành thẻ lớn như tài khoản, có mục tiêu và số nên nạp mỗi tháng." },
+      { kind: "improved", text: "Thêm tài khoản và thêm hũ bằng thẻ viền nét đứt cuối mỗi nhóm; bỏ nút ở đầu trang." },
+    ],
+  },
+  {
     version: "6.6.3",
     date: "2026-10-14",
     title: "Thêm tài khoản ngay trong danh sách",

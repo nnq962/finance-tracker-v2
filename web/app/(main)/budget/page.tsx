@@ -7,7 +7,6 @@ import { toDateKey } from "@/lib/format-date"
 import { getAccountFlows, getRecentTransactionsByAccount } from "@/lib/transactions/repository"
 
 import { AccountList } from "./_components/account-list"
-import { AddAccountButton } from "./_components/add-account-button"
 import { BalanceHero } from "./_components/balance-hero"
 import { BudgetLayout } from "./_components/budget-layout"
 
@@ -41,10 +40,8 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
 
   return (
     <Page>
-      <PageHeader
-        title="Tài khoản"
-        actions={<AddAccountButton />}
-      />
+      {/* Accounts and jars are added from the lists themselves (2026-10-14). */}
+      <PageHeader title="Tài khoản" />
 
       {accounts.length > 0 ? (
         <BudgetLayout
