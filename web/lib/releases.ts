@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.4.8",
+    date: "2026-10-14",
+    title: "Trợ lý trả lời nhanh ngay sau khi máy chủ khởi động lại",
+    changes: [
+      { kind: "fixed", text: "Sau khi máy chủ khởi động lại, mỗi câu hỏi LiuLiu không còn phải chờ thêm khoảng 10 giây: model AI nội bộ được nạp sẵn ngay khi máy chủ chạy." },
+    ],
+  },
+  {
     version: "6.4.7",
     date: "2026-10-13",
     title: "Nút AI rõ hơn ở giao diện tối",

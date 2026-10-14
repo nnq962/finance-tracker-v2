@@ -66,6 +66,11 @@ Service `ollama` chạy model `gemma4:e4b` trên GPU (khoảng 5GB VRAM), không
 port: chỉ các service trong mạng compose gọi được, qua `http://ollama:11434`.
 Cần NVIDIA Container Toolkit trên máy chủ.
 
+Mỗi lần container `ollama` khởi động (deploy hay máy chủ khởi động lại), nó nạp
+model lên GPU ngay, không đợi câu hỏi đầu tiên: nạp mất khoảng 30 giây, lâu hơn
+mức web chờ (10 giây), mà Ollama lại bỏ dở việc nạp khi request bị huỷ, nên để
+câu hỏi đầu tiên nạp thì model không bao giờ lên được.
+
 Model nằm trong volume `finance-ollama`, volume này nằm ngoài compose nên
 `down -v` không xoá model. `deploy.sh` chỉ tải model khi chưa có. Muốn đổi model
 thì đặt `OLLAMA_MODEL` trong `deploy/.env` (web cũng đọc biến này để gọi đúng
