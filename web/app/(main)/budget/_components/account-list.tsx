@@ -1,14 +1,17 @@
 "use client"
 
 import * as React from "react"
-import { WalletCardsIcon } from "lucide-react"
+import { PlusIcon, WalletCardsIcon } from "lucide-react"
 
 import { AccountLogo } from "@/components/account-logo"
+import { IconTile } from "@/components/app/icon-tile"
 import { Money } from "@/components/app/money"
 import { SettingsGroup, SettingsRow, groupCaptionClassName } from "@/components/settings-list"
+import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import {
   Empty,
+  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -22,6 +25,7 @@ import { cn } from "@/lib/utils"
 
 import { AccountCard } from "./account-card"
 import { AccountSheet } from "./account-sheet"
+import { AddAccountSheet } from "./add-account/add-account-sheet"
 import { JarList } from "./savings/jar-section"
 
 type AccountListProps = {
@@ -61,6 +65,8 @@ function AccountRow({ account, onSelect }: { account: Account; onSelect: () => v
 
 export function AccountList({ accounts, recentTransactions, flows, monthLabel, categoryGroups, initialOpenId }: AccountListProps) {
   const [openAccountId, setOpenAccountId] = React.useState<string | null>(initialOpenId ?? null)
+  // Adding an account: the last row of "Tài khoản chính" on phones, as "Thêm hũ" is under the jars.
+  const [adding, setAdding] = React.useState(false)
   // Every account in use in one list, largest balance first, those left out
   // of the figures among them (still used, only not counted), marked so.
   // Savings jars are accounts too, listed in groups of their own.
@@ -83,25 +89,39 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
             <EmptyTitle>Chưa có tài khoản</EmptyTitle>
             <EmptyDescription>Thêm tài khoản đầu tiên để bắt đầu.</EmptyDescription>
           </EmptyHeader>
+          {/* On phones only: from md the header has the button. */}
+          <EmptyContent className="md:hidden">
+            <Button type="button" onClick={() => setAdding(true)}>
+              <PlusIcon />
+              Thêm tài khoản
+            </Button>
+          </EmptyContent>
         </Empty>
+        <AddAccountSheet open={adding} onOpenChange={setAdding} />
       </Card>
     )
   }
 
   return (
     <div className="space-y-6 md:space-y-8">
+      {/* "Tài khoản chính" (2026-10-14, was "Đang dùng"), "Hũ tiết kiệm" and "Đã khoá" below it. A list on
+          phones, ending with "Thêm tài khoản" (also when every account is locked); from lg up a grid of
+          cards with this month's in and out, so the page uses its width, added from the header's button. */}
+      <div className="lg:hidden">
+        <SettingsGroup title={activeAccounts.length ? `Tài khoản chính · ${activeAccounts.length}` : "Tài khoản chính"}>
+          {activeAccounts.map((account) => (
+            <AccountRow key={account.id} account={account} onSelect={() => setOpenAccountId(account.id)} />
+          ))}
+          <SettingsRow
+            media={<IconTile icon={PlusIcon} tone="neutral" size="sm" />}
+            title="Thêm tài khoản"
+            chevron={false}
+            onClick={() => setAdding(true)}
+          />
+        </SettingsGroup>
+      </div>
       {activeAccounts.length > 0 ? (
         <>
-          {/* "Tài khoản chính" (2026-10-14, was "Đang dùng"), beside "Hũ tiết kiệm" and "Đã khoá" below it. A list on phones;
-              from lg up a grid of cards with this month's in and out, so the
-              page uses its width. */}
-          <div className="lg:hidden">
-            <SettingsGroup title={`Tài khoản chính · ${activeAccounts.length}`}>
-              {activeAccounts.map((account) => (
-                <AccountRow key={account.id} account={account} onSelect={() => setOpenAccountId(account.id)} />
-              ))}
-            </SettingsGroup>
-          </div>
           <section className="hidden flex-col gap-2 lg:flex">
             <h2 className={cn("px-4", groupCaptionClassName)}>Tài khoản chính · {activeAccounts.length}</h2>
             <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
@@ -157,6 +177,8 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
       ) : null}
 
       <JarList jars={jars} accounts={accounts} recentTransactions={recentTransactions} categoryGroups={categoryGroups} part="done" />
+
+      <AddAccountSheet open={adding} onOpenChange={setAdding} />
 
       <AccountSheet
         account={openAccount}

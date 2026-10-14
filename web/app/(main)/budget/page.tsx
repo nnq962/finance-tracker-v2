@@ -1,5 +1,4 @@
 import { Page, PageHeader } from "@/components/page"
-import { FloatingActions } from "@/components/app/floating-actions"
 import { loadWithSession } from "@/lib/auth/session"
 import { getAccounts } from "@/lib/accounts/repository"
 import { getBalanceSummary } from "@/lib/accounts/summary"
@@ -71,9 +70,6 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
             categoryGroups={categoryGroups}
           />
       )}
-      <FloatingActions>
-        <AddAccountButton fab />
-      </FloatingActions>
     </Page>
   )
 }

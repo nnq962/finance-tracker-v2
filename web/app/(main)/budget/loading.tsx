@@ -1,4 +1,3 @@
-import { FloatingActionsSkeleton } from "@/components/app/floating-actions"
 import { Page, PageHeaderSkeleton } from "@/components/page"
 import { SettingsGroupSkeleton } from "@/components/settings-list"
 import { Card, CardContent } from "@/components/ui/card"
@@ -84,7 +83,6 @@ export default function AccountsLoading() {
             </div>
           </div>
         </BudgetLayout>
-        <FloatingActionsSkeleton />
       </div>
 
       <span className="sr-only">Đang tải dữ liệu tài khoản...</span>

@@ -4,21 +4,19 @@ import { Button } from "@/components/ui/button"
 
 import { AddAccountSheet } from "./add-account/add-account-sheet"
 
-/** `fab`: the round button floating above the tab bar on phones. */
-export function AddAccountButton({ fab = false }: { fab?: boolean }) {
+/**
+ * The header's "Thêm tài khoản" (md and up). On phones an account is added
+ * from the last row of "Tài khoản chính" instead (2026-10-14; the floating
+ * button above the tab bar is gone).
+ */
+export function AddAccountButton() {
   return (
     <AddAccountSheet
       trigger={
-        fab ? (
-          <Button type="button" size="fab" aria-label="Thêm tài khoản">
-            <PlusIcon />
-          </Button>
-        ) : (
-          <Button type="button">
-            <PlusIcon />
-            Thêm tài khoản
-          </Button>
-        )
+        <Button type="button">
+          <PlusIcon />
+          Thêm tài khoản
+        </Button>
       }
     />
   )
