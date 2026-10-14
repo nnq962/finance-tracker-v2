@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
  * When the eyes blink:
  * - hover: as the button around it is hovered or pressed (a `group/button`)
  * - once: once, as it appears
- * - loop: now and then, a double blink, while LiuLiu thinks
+ * - loop: now and then, a double blink, while Timi thinks
  * - none: never
  */
 type Blink = "hover" | "once" | "loop" | "none"
@@ -20,7 +20,7 @@ const eyes: Record<Blink, string> = {
 }
 
 /**
- * LiuLiu's face (chosen 2026-10-11, after lucide-animated's Bot): Lucide's
+ * Timi's face (chosen 2026-10-11, after lucide-animated's Bot): Lucide's
  * bot, drawn as Lucide draws it so it sizes and aligns as any Lucide icon in
  * a button or a tile, with eyes that blink by CSS, shut to a dot and open
  * again. The sparkle stays for Pro and AI requests; the bot is the assistant.

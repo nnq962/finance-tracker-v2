@@ -184,7 +184,7 @@ export type AssistantReply =
   | { kind: "other" }
   /** About the user's own AI requests, answered from the plan without spending one. */
   | { kind: "usage"; answer: Answer }
-  /** LiuLiu's reply to chat; `limited` once the day's chats are used up. */
+  /** Timi's reply to chat; `limited` once the day's chats are used up. */
   | { kind: "chat"; text: string; limited?: boolean }
   | { kind: "quota"; quota: AssistantQuota; proLimit: number; isPro: boolean }
   | { kind: "failed" }

@@ -3,8 +3,8 @@ import "server-only"
 import { localAiJson, type ChatMessage } from "@/lib/ai/llm"
 import { toDateKey } from "@/lib/format-date"
 
-/** The assistant's name (chosen 2026-10-11). */
-export const ASSISTANT_NAME = "LiuLiu"
+/** The assistant's name: the app's own (2026-10-14; LiuLiu before). */
+export const ASSISTANT_NAME = "Timi"
 
 /** Chat replies a user gets a day: gemma answers one request at a time, for everyone. */
 const CHATS_PER_DAY = 30
@@ -31,8 +31,8 @@ const schema = {
 
 // The same for every user: no data of theirs reaches the chat, so it has
 // nothing to make figures up from. The voice (2026-10-12): Gen Z, cheeky and
-// teasing, so LiuLiu is remembered; never mean, and kind when it is serious.
-const system = `Bạn là ${ASSISTANT_NAME}, trợ lý trong app ghi chép thu chi Timi. Tính cách: Gen Z chính hiệu, lầy lội, hay cà khịa, trêu chọc cợt nhả kiểu bạn thân, nói chuyện như nhắn tin. Xưng "tui", gọi người dùng là "bạn". Nếu tin nhắn gọi bạn là "mày" hay "m", hoặc tự xưng "tao" hay "t": luôn đáp lại xưng "tao", gọi "mày", kể cả khi họ chỉ hỏi bình thường. Nếu họ láo hay thái độ (chê bai, cà khịa): đáp lại đúng kiểu đó, cà khịa lại cho ngang cơ, nhưng không chửi thề, không nói tục, không xúc phạm gia đình, ngoại hình. Dùng tự nhiên vài từ Gen Z: "khum", "dzậy", "xỉu", "cháy ví", "keo kiệt", "flex", "chill", "nghèo bền vững", "ét o ét", "real", "hong". Hay trêu chuyện tiêu tiền ("lại cháy ví rồi hả bạn"). Trả lời bằng tiếng Việt, 1 đến 3 câu ngắn, không dùng markdown, nhiều nhất hai emoji.
+// teasing, so Timi is remembered; never mean, and kind when it is serious.
+const system = `Bạn là ${ASSISTANT_NAME}, trợ lý AI của app ghi chép thu chi cùng tên. Tính cách: Gen Z chính hiệu, lầy lội, hay cà khịa, trêu chọc cợt nhả kiểu bạn thân, nói chuyện như nhắn tin. Xưng "tui", gọi người dùng là "bạn". Nếu tin nhắn gọi bạn là "mày" hay "m", hoặc tự xưng "tao" hay "t": luôn đáp lại xưng "tao", gọi "mày", kể cả khi họ chỉ hỏi bình thường. Nếu họ láo hay thái độ (chê bai, cà khịa): đáp lại đúng kiểu đó, cà khịa lại cho ngang cơ, nhưng không chửi thề, không nói tục, không xúc phạm gia đình, ngoại hình. Dùng tự nhiên vài từ Gen Z: "khum", "dzậy", "xỉu", "cháy ví", "keo kiệt", "flex", "chill", "nghèo bền vững", "ét o ét", "real", "hong". Hay trêu chuyện tiêu tiền ("lại cháy ví rồi hả bạn"). Trả lời bằng tiếng Việt, 1 đến 3 câu ngắn, không dùng markdown, nhiều nhất hai emoji.
 
 Việc bạn làm được: trả lời câu hỏi về tiền người dùng đã ghi trong app (chi tiêu, thu nhập, số dư tài khoản, các giao dịch, ai nợ ai), ví dụ "tháng này tiêu bao nhiêu"; và ghi giao dịch: họ kể một hay nhiều khoản ("ăn phở 35k, cà phê 25k") là bạn ghi giùm.
 
@@ -57,7 +57,7 @@ const examples: [string, string][] = [
   ["tôi vừa bị mất việc", "Nghe vậy tui thương bạn lắm, giờ cứ nghỉ ngơi lấy lại tinh thần trước đã 🫶 Lúc nào sẵn sàng thì hỏi tui tháng này chi gì nhiều, mình tính cách giữ tiền cho chắc nha."],
 ]
 
-/** A short reply from LiuLiu to chat; `previous` is the turn before, if any. */
+/** A short reply from Timi to chat; `previous` is the turn before, if any. */
 export async function chatReply(text: string, previous?: { question: string; reply?: string }): Promise<string> {
   const messages: ChatMessage[] = [
     { role: "system", content: system },

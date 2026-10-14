@@ -122,7 +122,7 @@ function fromForm(formData: FormData, draft: AssistantDraft): AssistantDraft {
 }
 
 /**
- * Transactions told to LiuLiu, to check before they are written down
+ * Transactions told to Timi, to check before they are written down
  * (2026-10-12): a row each, as the transactions list shows them, anything
  * missing said in red where it is. A row opens the transaction form, filled
  * in, to change it; × leaves it out. One button saves them all at once, and

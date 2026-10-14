@@ -256,7 +256,7 @@ function AnswerBody({ answer, ask, onNavigate }: { answer: Answer; ask: (text: s
 const tryAsking = ["Tháng này tiêu bao nhiêu?", "Ai đang nợ tôi?"]
 
 /**
- * LiuLiu's words, coming in a word at a time as if said: each word fades up
+ * Timi's words, coming in a word at a time as if said: each word fades up
  * after the one before (CSS only, by a delay per word). Still when motion is
  * reduced.
  */
@@ -319,7 +319,7 @@ export function ReplyView({
       return (
         <>
           <p className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
-            <BotIcon blink="once" className="size-4 text-ai-strong" /> LiuLiu
+            <BotIcon blink="once" className="size-4 text-ai-strong" /> Timi
           </p>
           <Spoken text={reply.text} />
           <div className="-mx-5 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none]">{chips}</div>

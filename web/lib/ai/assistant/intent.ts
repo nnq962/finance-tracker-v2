@@ -9,7 +9,7 @@ import { localAiJson, type ChatMessage } from "@/lib/ai/llm"
  * - action: wants something else done in the app (a loan, an edit, a delete…)
  * - usage: about the user's own AI requests and plan, answered from the plan
  * - chat: anything else (greetings, who it is, jokes, small talk, things
- *   outside the app's data), which LiuLiu answers in a line or two
+ *   outside the app's data), which Timi answers in a line or two
  */
 export type Intent = "question" | "record" | "action" | "usage" | "chat"
 

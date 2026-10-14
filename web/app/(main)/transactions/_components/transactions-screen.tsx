@@ -231,7 +231,7 @@ export function TransactionsScreen({
     startNavigation(() => router.push(month === thisMonth ? pathname : `${pathname}?month=${month}`, { scroll: false }))
   }
   const shownMonth = isNavigating ? requestedMonth : selectedMonth
-  // Writing down by AI is LiuLiu's, opened from the tab bar or the header (2026-10-12).
+  // Writing down by AI is Timi's, opened from the tab bar or the header (2026-10-12).
   const headerActions = <AddTransactionButton accounts={accounts} categoryGroups={categoryGroups} />
 
   // While a month loads, what is shown stays and dims.

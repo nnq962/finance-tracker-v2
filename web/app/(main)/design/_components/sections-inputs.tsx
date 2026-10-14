@@ -482,7 +482,7 @@ function ProgressSection() {
       <Block label="Sóng giọng nói · khi ghi âm">
         <VoiceWaveSample />
       </Block>
-      <Block label="LiuLiu · BotIcon (chớp mắt khi rê/chạm, khi hiện ra, khi đang nghĩ)">
+      <Block label="Timi · BotIcon (chớp mắt khi rê/chạm, khi hiện ra, khi đang nghĩ)">
         <BotIconSample />
       </Block>
       <Block label="Trợ lý AI · thẻ trả lời (khối ghép theo câu hỏi)">
