@@ -1,4 +1,4 @@
-import { BanknoteIcon, LandmarkIcon, SmartphoneIcon, type LucideIcon } from "lucide-react"
+import { BanknoteIcon, LandmarkIcon, PiggyBankIcon, SmartphoneIcon, type LucideIcon } from "lucide-react"
 
 import { CardLabel } from "@/components/app/card-label"
 import { Money } from "@/components/app/money"
@@ -12,6 +12,7 @@ const accountTypeIcons: Record<AccountType, LucideIcon> = {
   bank: LandmarkIcon,
   "e-wallet": SmartphoneIcon,
   cash: BanknoteIcon,
+  savings: PiggyBankIcon,
 }
 
 /**
@@ -47,7 +48,8 @@ export function BalanceHero({ summary, accounts }: { summary: BalanceSummary; ac
           </div>
           {parts.length > 0 ? (
             <div aria-hidden="true" className="flex shrink-0 -space-x-2 pt-1">
-              {parts.map((part, index) => {
+              {/* Three at most, so a long total keeps its line (the savings jars come fourth). */}
+              {parts.slice(0, 3).map((part, index) => {
                 const Icon = accountTypeIcons[part.type]
                 return (
                   <span

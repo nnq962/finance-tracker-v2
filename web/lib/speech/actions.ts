@@ -35,7 +35,7 @@ function accountNames(accounts: Account[]): SpokenAccount[] {
     .flatMap((account) => {
       const wallet = account.type === "e-wallet"
       const brand =
-        account.institutionId && account.type !== "cash"
+        account.institutionId && (account.type === "bank" || account.type === "e-wallet")
           ? getInstitution(account.type, account.institutionId)?.shortName
           : undefined
       return [

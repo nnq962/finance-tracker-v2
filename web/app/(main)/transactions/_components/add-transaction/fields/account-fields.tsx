@@ -14,6 +14,7 @@ const accountTypeGroups = [
   { value: "cash", label: "Tiền mặt" },
   { value: "bank", label: "Ngân hàng" },
   { value: "e-wallet", label: "Ví điện tử" },
+  { value: "savings", label: "Hũ tiết kiệm" },
 ] satisfies Array<{ value: Account["type"]; label: string }>
 
 /** A transfer needs two accounts it can use: active ones, or those of the transfer being edited. */

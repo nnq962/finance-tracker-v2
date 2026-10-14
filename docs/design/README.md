@@ -162,7 +162,7 @@ component ở đó là cả app đổi theo.
 | `Collapse` | Thu gọn và mở lại một khối: chiều cao (hoặc rộng, `axis="x"`) trượt về 0 kèm mờ dần trong 300ms, phần bên dưới trôi lên mượt thay vì nhảy; khi đóng vẫn giữ trong cây nhưng `inert`. Dùng cho màn tìm ở Giao dịch (đầu trang và thẻ tổng thu lại, "Huỷ" trượt ra). Tức thì khi giảm chuyển động |
 | `ChipRow` | Hàng chip cuộn ngang, chạy tới mép màn (bù `--main-content-px`), chip đầu vẫn thẳng hàng trang; có chừa 4px trên dưới cho viền focus. Đi kèm `ChipButton` (chip mở một thứ, như sheet lọc; `active` tô đậm khi điều kiện đang bật, ghi "Lọc · 2") và `ChipRowDivider` (vạch đứng giữa nút lọc và các chip loại). `ChipButton variant="outline"` (2026-10-12): chip trắng viền mảnh cho chip nằm trên nền xám (thẻ ghi giao dịch của trợ lý), nơi chip xám mặc định biến mất; chip không bao giờ co lại, hàng chip cuộn ngang. Chip chọn là `ToggleGroup` `size="sm"`. Chip đổi màu tức thì, không chuyển màu (chuyển trắng sang đen đi qua xám, và khựng lại thành nháy khi trang đang bận); chip lọc ở Giao dịch hiện chọn ngay rồi mới lọc trang trong transition |
 | `SettingsGroup plain` | Nhóm giữ tiêu đề, chú thích và nút Hiện/Thu gọn nhưng không bọc thẻ danh sách, cho một nhóm gồm thẻ (2026-10-12: tài khoản đã khoá trên desktop là thẻ cùng cỡ với tài khoản đang dùng). Tài khoản không tính vào báo cáo vẫn ở nhóm Đang dùng: dòng phụ mở đầu "Ngoài báo cáo", số dư xám; trên thẻ desktop nhãn "Số dư · Ngoài báo cáo" (2026-10-12: đổi từ "Không tính", nghe thiếu chuyên nghiệp; công tắc "Không tính vào báo cáo" như MISA, nhãn ngắn "Ngoài báo cáo") |
-| `MonthPickerSheet` | Chọn tháng từ sheet đáy: năm với ‹ ›, lưới 12 tháng, tháng chưa tới mờ đi, nút "Tháng hiện tại" (cỡ thường, đen). Nền xám như mọi sheet (`DrawerContent surface="grouped"`, nay dùng được cả cho sheet đáy ngắn), ô tháng trắng; action sheet thì vẫn là khối trắng nổi trên lớp phủ như iOS |
+| `MonthPickerSheet` | Chọn tháng từ sheet đáy: năm với ‹ ›, lưới 12 tháng, tháng chưa tới mờ đi (`min` cho tháng phía trước như hạn của hũ tiết kiệm: tháng đã qua mờ đi, "Tháng hiện tại" chọn `min`), nút "Tháng hiện tại" (cỡ thường, đen). Nền xám như mọi sheet (`DrawerContent surface="grouped"`, nay dùng được cả cho sheet đáy ngắn), ô tháng trắng; action sheet thì vẫn là khối trắng nổi trên lớp phủ như iOS |
 | `MonthSelect` | Tháng đang xem dạng nút viên thuốc "Tháng 10, 2026 ▾", chạm mở `MonthPickerSheet`; tới tháng nào cũng hai chạm. Một cách đổi tháng duy nhất cho trang có tháng, không kèm mũi tên ‹ ›. `size="bar"`: cao 44 và gọn ("Tháng 10", năm khác thì "Tháng 10/2025") cho đầu trang |
 | `Stepper` | Đếm từng bước bằng − / + (số người, số tháng) |
 | `OtpInput` | Mã một lần trong các ô riêng; tự nhảy ô, dán được cả mã |
@@ -365,6 +365,21 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   (`DeleteAccountSheet`: "Xoá “Ví MoMo”? …", dòng đỏ "Xoá tài khoản", "Huỷ" tách riêng; tài khoản có
   chuyển khoản hay vay nợ thì không xoá được, gợi ý "Khoá tài khoản") rồi xoá có hoàn tác, đóng cả
   hai sheet.
+- **Hũ tiết kiệm** (2026-10-14, `budget/_components/savings/`): hũ là một tài khoản loại `savings` (không lãi, để
+  dành mua một món), tiền vào ra là chuyển khoản. Trang Tài khoản có nhóm "HŨ TIẾT KIỆM · N" trên "Đang dùng":
+  mỗi hũ một dòng, ô đầu là `JarRing` (vòng tiến độ 36 quanh biểu tượng, màu theo biểu tượng, đầy thì xanh lá),
+  dòng phụ "Còn 3 tháng · 5tr/tháng" / "Còn thiếu …" / "Đủ tiền rồi 🎉" (xanh lá), bên phải số đã có và "/ 15tr";
+  cuối nhóm "Thêm hũ". Hũ đã mua nằm trong "Hũ đã hoàn thành" (thu gọn, dưới cùng, dòng xám "Đã mua 14/10 ·
+  giá"). Thẻ Tổng số dư có dòng "Hũ tiết kiệm" (tối đa 3 icon xếp chồng để số không xuống dòng). Chi tiết hũ
+  (`JarSheet`): vòng lớn, tên, số đã có `xl`, "60% của …"; Mục tiêu, Còn thiếu, Hạn, Mỗi tháng nên bỏ; "Lịch
+  sử" 5 lần gần nhất + "Xem tất cả"; chân sheet "Rút ra" (secondary) và "Bỏ vào hũ", đủ tiền thì thông báo xanh
+  và "Đã mua". Bút chì mở `JarFormSheet` (cũng là màn tạo): Mục tiêu lớn, lưới "Để dành cho" (7 + Tất cả,
+  biểu tượng đặt tên cho tới khi gõ tên), Tên, công tắc "Đặt hạn" + dòng Hạn (`MonthPickerSheet` từ tháng này),
+  "Mỗi tháng nên bỏ khoảng … là kịp"; thùng rác cạnh Lưu xoá hũ (hỏi lại; các lần bỏ vào, rút ra bị xoá, tiền
+  về tài khoản cũ). `MoveJarSheet`: số tiền lớn + nút điền nhanh "Tháng này · 5tr", "Đủ mục tiêu · 15tr" (rút ra:
+  "Rút hết"), Từ/Về tài khoản (màn sâu), thời gian, ghi chú. `BoughtSheet`: Giá mua (mặc định mục tiêu), Hạng
+  mục (màn sâu), thời gian; mua rẻ hơn thì "Còn thừa" + "Chuyển về", đắt hơn thì "Thiếu" + "Trả thêm từ"; ghi
+  khoản chi từ hũ và hũ sang Đã hoàn thành. Một tên gọi xuyên suốt: "hũ".
 - **Chi tiết giao dịch** (`TransactionDetailsSheet`), như biên lai: icon lớn, tên, số tiền lớn, ngày
   giờ; Sửa là nút bút chì tròn bên phải thanh. Thông tin dạng nhãn trái, giá trị phải: Tài khoản
   (logo `xs` + tên), Hạng mục (`IconTile xs` + tên), Nhóm; ghi chú xuống dòng đầy đủ. Chuyển khoản

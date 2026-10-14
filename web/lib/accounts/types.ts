@@ -1,4 +1,5 @@
-export type AccountType = "cash" | "bank" | "e-wallet"
+/** `savings`: a savings jar ("hũ tiết kiệm"), money put aside for something to buy; it carries `goal`. */
+export type AccountType = "cash" | "bank" | "e-wallet" | "savings"
 
 export type AccountStatus = "active" | "archived"
 
@@ -39,6 +40,19 @@ export type Account = {
   /** When the account was opened, as the user says. */
   openedAt: string
   updatedAt: string
+  /** A savings jar's goal (type `savings` only). */
+  goal?: SavingsGoal
+}
+
+export type SavingsGoal = {
+  /** How much is to be put aside. */
+  target: number
+  /** What it is for (lib/savings/jar-icons), which also gives its colour. */
+  icon: string
+  /** "YYYY-MM-DD", the due month's last day, if one is set. */
+  due?: string
+  /** When what it was for was bought; the jar is then archived, in "Hũ đã hoàn thành". */
+  completedAt?: string
 }
 
 export type BalanceSummary = {

@@ -4,6 +4,7 @@ export const accountTypeLabels: Record<AccountType, string> = {
   bank: "Ngân hàng",
   "e-wallet": "Ví điện tử",
   cash: "Tiền mặt",
+  savings: "Hũ tiết kiệm",
 }
 
 /** An account's type, and its bank or wallet, leaving out what its name already says: "Ví điện tử · MoMo". */

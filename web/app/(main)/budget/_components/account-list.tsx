@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils"
 
 import { AccountCard } from "./account-card"
 import { AccountSheet } from "./account-sheet"
+import { JarList } from "./savings/jar-section"
 
 type AccountListProps = {
   accounts: Account[]
@@ -62,10 +63,12 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
   const [openAccountId, setOpenAccountId] = React.useState<string | null>(initialOpenId ?? null)
   // Every account in use in one list, largest balance first, those left out
   // of the figures among them (still used, only not counted), marked so.
+  // Savings jars are accounts too, listed in groups of their own.
+  const jars = accounts.filter((account) => account.type === "savings")
   const activeAccounts = accounts
-    .filter((account) => account.status === "active")
+    .filter((account) => account.status === "active" && account.type !== "savings")
     .sort((left, right) => right.balance - left.balance)
-  const archivedAccounts = accounts.filter((account) => account.status === "archived")
+  const archivedAccounts = accounts.filter((account) => account.status === "archived" && account.type !== "savings")
   // A deleted account closes its sheet.
   const openAccount = accounts.find((account) => account.id === openAccountId)
 
@@ -87,6 +90,8 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
 
   return (
     <div className="space-y-6 md:space-y-8">
+      <JarList jars={jars} accounts={accounts} recentTransactions={recentTransactions} categoryGroups={categoryGroups} part="open" />
+
       {activeAccounts.length > 0 ? (
         <>
           {/* Named like the "Đã khoá" group below it. A list on phones;
@@ -149,6 +154,8 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
           </div>
         </>
       ) : null}
+
+      <JarList jars={jars} accounts={accounts} recentTransactions={recentTransactions} categoryGroups={categoryGroups} part="done" />
 
       <AccountSheet
         account={openAccount}

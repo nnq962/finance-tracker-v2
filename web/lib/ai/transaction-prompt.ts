@@ -114,6 +114,7 @@ const accountTypeLabels: Record<Account["type"], string> = {
   cash: "tiền mặt",
   bank: "ngân hàng",
   "e-wallet": "ví điện tử",
+  savings: "hũ tiết kiệm",
 }
 
 /** Lower case without Vietnamese marks, so "Ăn trưa" matches "an trua". */

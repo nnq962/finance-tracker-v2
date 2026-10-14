@@ -36,7 +36,7 @@ export async function getAccounts(userId: string): Promise<Account[]> {
   return rows.map((row) => {
     const type = row.type as AccountType
     const institution =
-      type !== "cash" && row.institutionId
+      (type === "bank" || type === "e-wallet") && row.institutionId
         ? getInstitution(type, row.institutionId)
         : undefined
     const institutionName = institution?.shortName ?? institution?.name
@@ -57,6 +57,16 @@ export async function getAccounts(userId: string): Promise<Account[]> {
       linked: linked.has(row.id),
       openedAt: row.openedAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
+      ...(type === "savings" && row.goalTarget !== null
+        ? {
+            goal: {
+              target: row.goalTarget,
+              icon: row.goalIcon ?? "other",
+              ...(row.goalDue ? { due: row.goalDue } : {}),
+              ...(row.completedAt ? { completedAt: row.completedAt.toISOString() } : {}),
+            },
+          }
+        : {}),
     }
   })
 }

@@ -67,14 +67,21 @@ CREATE TABLE public.accounts (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     opened_at timestamp with time zone DEFAULT now() NOT NULL,
     excluded boolean DEFAULT false NOT NULL,
+    goal_target bigint,
+    goal_icon text,
+    goal_due date,
+    completed_at timestamp with time zone,
     CONSTRAINT accounts_balance_check CHECK (((balance >= '-999999999999999'::bigint) AND (balance <= '999999999999999'::bigint))),
-    CONSTRAINT accounts_check CHECK (((type = 'cash'::text) = (institution_id IS NULL))),
+    CONSTRAINT accounts_check CHECK (((type = ANY (ARRAY['cash'::text, 'savings'::text])) = (institution_id IS NULL))),
+    CONSTRAINT accounts_goal_check CHECK ((((type = 'savings'::text) = ((goal_target IS NOT NULL) AND (goal_icon IS NOT NULL))) AND ((type = 'savings'::text) OR ((goal_due IS NULL) AND (completed_at IS NULL))))),
+    CONSTRAINT accounts_goal_icon_check CHECK (((char_length(goal_icon) >= 1) AND (char_length(goal_icon) <= 32))),
+    CONSTRAINT accounts_goal_target_check CHECK (((goal_target > 0) AND (goal_target <= '999999999999999'::bigint))),
     CONSTRAINT accounts_institution_id_check CHECK (((char_length(institution_id) >= 1) AND (char_length(institution_id) <= 64))),
     CONSTRAINT accounts_name_check CHECK (((char_length(name) >= 1) AND (char_length(name) <= 80))),
     CONSTRAINT accounts_note_check CHECK ((char_length(note) <= 500)),
     CONSTRAINT accounts_opening_balance_check CHECK (((opening_balance >= '-999999999999999'::bigint) AND (opening_balance <= '999999999999999'::bigint))),
     CONSTRAINT accounts_status_check CHECK ((status = ANY (ARRAY['active'::text, 'archived'::text]))),
-    CONSTRAINT accounts_type_check CHECK ((type = ANY (ARRAY['cash'::text, 'bank'::text, 'e-wallet'::text])))
+    CONSTRAINT accounts_type_check CHECK ((type = ANY (ARRAY['cash'::text, 'bank'::text, 'e-wallet'::text, 'savings'::text])))
 );
 
 
@@ -1256,4 +1263,5 @@ INSERT INTO dbmate.schema_migrations (version) VALUES
     ('20261011000001'),
     ('20261012000001'),
     ('20261012000002'),
-    ('20261012000003');
+    ('20261012000003'),
+    ('20261014000001');

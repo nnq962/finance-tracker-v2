@@ -13,8 +13,12 @@ export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
 export interface Accounts {
   balance: number;
+  completedAt: Timestamp | null;
   createdAt: Generated<Timestamp>;
   excluded: Generated<boolean>;
+  goalDue: string | null;
+  goalIcon: string | null;
+  goalTarget: number | null;
   id: Generated<string>;
   institutionId: string | null;
   name: string;

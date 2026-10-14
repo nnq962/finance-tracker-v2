@@ -442,7 +442,8 @@ export async function createTransaction(
   await retryOnDeadlock(() => getDb().transaction().execute((trx) => insertTransaction(trx, userId, values, requestId)))
 }
 
-async function insertTransaction(trx: DbTransaction<DB>, userId: string, values: TransactionFormValues, requestId?: string) {
+/** Records a transaction inside a database transaction of the caller's (a savings jar's purchase, with its transfers). */
+export async function insertTransaction(trx: DbTransaction<DB>, userId: string, values: TransactionFormValues, requestId?: string) {
   // Locks the accounts first, so a concurrent retry waits here and then
   // sees the row this request inserted.
   const accounts = await prepare(trx, userId, values)
@@ -600,7 +601,8 @@ export async function deleteTransaction(userId: string, transactionId: string) {
   await retryOnDeadlock(() => getDb().transaction().execute((trx) => deleteOne(trx, userId, transactionId)))
 }
 
-async function deleteOne(trx: DbTransaction<DB>, userId: string, transactionId: string) {
+/** Deletes a transaction, moving its balances back, inside the caller's database transaction (a savings jar deleted). */
+export async function deleteOne(trx: DbTransaction<DB>, userId: string, transactionId: string) {
   const existing = await lockExisting(trx, userId, transactionId, "xoá")
   if (!existing) return
   const accounts = await lockAccounts(trx, userId, getAccountIds(existing))

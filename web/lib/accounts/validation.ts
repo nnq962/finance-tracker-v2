@@ -91,7 +91,7 @@ export function parseAccountFormData(formData: FormData) {
   }
 
   if (
-    type !== "cash" &&
+    (type === "bank" || type === "e-wallet") &&
     (!institutionId || !getInstitution(type, institutionId))
   ) {
     throw new AccountValidationError(

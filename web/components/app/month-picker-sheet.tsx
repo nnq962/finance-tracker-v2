@@ -9,7 +9,8 @@ import { cn } from "@/lib/utils"
 
 /**
  * A month chosen from a bottom sheet: the year with arrows, then its twelve
- * months as a grid. Months after `max` cannot be chosen; the one shown is
+ * months as a grid. Months after `max` (or before `min`, for a month ahead
+ * such as a savings jar's due month) cannot be chosen; the one shown is
  * dark. Choosing one closes the sheet.
  */
 export function MonthPickerSheet({
@@ -17,6 +18,7 @@ export function MonthPickerSheet({
   onOpenChange,
   value,
   max,
+  min,
   onValueChange,
 }: {
   open: boolean
@@ -24,10 +26,15 @@ export function MonthPickerSheet({
   /** "YYYY-MM", the month shown. */
   value: string
   /** "YYYY-MM", the latest month that can be chosen, usually this one. */
-  max: string
+  max?: string
+  /** "YYYY-MM", the earliest month that can be chosen; with no `max`, "Tháng hiện tại" chooses it. */
+  min?: string
   onValueChange: (month: string) => void
 }) {
-  const maxYear = Number(max.slice(0, 4))
+  const maxYear = max ? Number(max.slice(0, 4)) : Infinity
+  const minYear = min ? Number(min.slice(0, 4)) : -Infinity
+  // This month, which the button under the grid goes back to.
+  const current = max ?? min ?? value
   const [year, setYear] = React.useState(Number(value.slice(0, 4)))
   // Each time it opens, on the year of the month shown.
   const [shownFor, setShownFor] = React.useState(open)
@@ -49,7 +56,7 @@ export function MonthPickerSheet({
           <DrawerTitle className="text-center text-base">Chọn tháng</DrawerTitle>
 
           <div className="mt-3 flex items-center justify-between">
-            <Button type="button" variant="secondary" size="icon" aria-label="Năm trước" onClick={() => setYear(year - 1)}>
+            <Button type="button" variant="secondary" size="icon" aria-label="Năm trước" disabled={year <= minYear} onClick={() => setYear(year - 1)}>
               <ChevronLeftIcon />
             </Button>
             <span className="text-xl font-semibold tabular-nums" aria-live="polite">
@@ -71,7 +78,7 @@ export function MonthPickerSheet({
             {Array.from({ length: 12 }, (_, index) => {
               const month = `${year}-${String(index + 1).padStart(2, "0")}`
               const selected = month === value
-              const later = month > max
+              const later = (max !== undefined && month > max) || (min !== undefined && month < min)
               return (
                 <button
                   key={month}
@@ -95,8 +102,8 @@ export function MonthPickerSheet({
           <Button
             type="button"
             className="mt-5 w-full"
-            disabled={value === max}
-            onClick={() => choose(max)}
+            disabled={value === current}
+            onClick={() => choose(current)}
           >
             Tháng hiện tại
           </Button>

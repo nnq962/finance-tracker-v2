@@ -3,13 +3,14 @@ import { BanknoteIcon } from "lucide-react"
 
 import { IconTile } from "@/components/app/icon-tile"
 import type { Account } from "@/lib/accounts/types"
+import { getJarIcon } from "@/lib/savings/jar-icons"
 import { cn } from "@/lib/utils"
 
 type AccountLogoProps = {
   account: Pick<
     Account,
     "institutionName" | "logoFallback" | "logoUrl" | "name" | "type"
-  >
+  > & { goal?: Pick<NonNullable<Account["goal"]>, "icon"> }
   /** lg: the head of the account's sheet (48, as IconTile lg); sm: a list row's tile (36, as IconTile sm); xs: beside a name in a select. */
   size?: "lg" | "sm" | "xs"
   className?: string
@@ -24,16 +25,18 @@ const tileClassName = {
 /**
  * An account's mark as a tile, the same soft square as the icons in every
  * list (IconTile): the bank's or wallet's logo on white, cash as a green
- * banknote, or the initials when there is no logo. Its name is always
+ * banknote, a savings jar as what it is for (its icon and colour), or the
+ * initials when there is no logo. Its name is always
  * written beside it, so it is not read out a second time.
  */
 export function AccountLogo({ account, size = "sm", className }: AccountLogoProps) {
-  if (account.type === "cash") {
+  if (account.type === "cash" || account.type === "savings") {
+    const jar = account.type === "savings" ? getJarIcon(account.goal?.icon) : null
     return (
       <span aria-hidden="true" className={className}>
         <IconTile
-          icon={BanknoteIcon}
-          tone="emerald"
+          icon={jar?.icon ?? BanknoteIcon}
+          tone={jar?.tone ?? "emerald"}
           size={size === "lg" ? "lg" : "sm"}
           className={cn(size === "xs" && "size-5 rounded-[6px] [&_svg]:size-3")}
         />

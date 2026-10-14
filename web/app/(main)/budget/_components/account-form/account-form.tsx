@@ -115,7 +115,7 @@ export function AccountForm({
   const adjustment =
     expectedBalance !== undefined && signedBalance !== null ? signedBalance - expectedBalance : 0
 
-  const institutions = accountType === "cash" ? null : getInstitutionsByType(accountType)
+  const institutions = accountType === "bank" || accountType === "e-wallet" ? getInstitutionsByType(accountType) : null
   const institutionLabel = accountType === "bank" ? "Ngân hàng" : "Ví điện tử"
 
   const [errors, setErrors] = React.useState<Partial<Record<FieldName, string>>>({})
