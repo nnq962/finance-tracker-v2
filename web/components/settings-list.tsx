@@ -238,8 +238,11 @@ const rowClassName = "min-h-16 gap-3 py-3"
 // grey a native row shows under the finger (hover only exists with a mouse),
 // and the selected state of the row whose screen is shown beside the list.
 // The row is flush, so the grey fills it and the card rounds the corners.
+// The grey covers both dividers that bound the row (2026-10-14): raised over
+// its own (drawn at its top) and reaching a pixel down over the next row's,
+// which before showed under the grey while the one above did not.
 const pressableRow =
-  "text-left transition-colors duration-150 hover:bg-muted active:bg-muted disabled:pointer-events-none disabled:opacity-50 md:data-[active=true]:bg-muted"
+  "relative text-left transition-[color,background-color,box-shadow] duration-150 hover:z-1 hover:bg-muted active:z-1 active:bg-muted disabled:pointer-events-none disabled:opacity-50 md:data-[active=true]:z-1 md:data-[active=true]:bg-muted [li:not(:last-child)>&]:hover:shadow-[0_1px_0_var(--muted)] [li:not(:last-child)>&]:active:shadow-[0_1px_0_var(--muted)] md:[li:not(:last-child)>&]:data-[active=true]:shadow-[0_1px_0_var(--muted)]"
 
 function SettingsRow({
   id,

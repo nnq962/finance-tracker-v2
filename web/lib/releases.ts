@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.4.8",
+    date: "2026-10-14",
+    title: "Dòng đang chạm phủ đều",
+    changes: [
+      { kind: "fixed", text: "Chạm vào một dòng trong danh sách, nền xám phủ lên cả đường kẻ phía trên lẫn phía dưới, không còn lệch một bên." },
+    ],
+  },
+  {
     version: "6.5.1",
     date: "2026-10-14",
     title: "Trợ lý AI đổi tên thành Timi",
