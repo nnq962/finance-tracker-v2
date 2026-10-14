@@ -67,7 +67,8 @@ port: chỉ các service trong mạng compose gọi được, qua `http://ollama
 Cần NVIDIA Container Toolkit trên máy chủ.
 
 Mỗi lần container `ollama` khởi động (deploy hay máy chủ khởi động lại), nó nạp
-model lên GPU ngay, không đợi câu hỏi đầu tiên: nạp mất khoảng 30 giây, lâu hơn
+model lên GPU và cho nó trả lời thử một câu ngắn ngay, không đợi câu hỏi đầu
+tiên (câu đầu tiên sau khi nạp cũng chậm hơn 10 giây): nạp mất khoảng 30 giây, lâu hơn
 mức web chờ (10 giây), mà Ollama lại bỏ dở việc nạp khi request bị huỷ, nên để
 câu hỏi đầu tiên nạp thì model không bao giờ lên được.
 

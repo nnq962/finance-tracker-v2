@@ -100,14 +100,15 @@ services:
     # Loading the model takes about 30s, longer than web waits for a reply
     # (10s), and Ollama drops a load whose request was given up: left to the
     # first request, it never finishes. So it is loaded as soon as the server
-    # starts, on every start (a deploy or the host booting).
+    # starts, on every start (a deploy or the host booting). A short reply
+    # too: the first one after a load also takes over 10s.
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
         ollama serve & pid=$$!
         trap 'kill -TERM $$pid' TERM INT
         until ollama list >/dev/null 2>&1; do sleep 1; done
-        ollama run "$$WARM_MODEL" "" </dev/null >/dev/null 2>&1 || echo "Could not load $$WARM_MODEL" >&2
+        ollama run "$$WARM_MODEL" --think=false "hi" </dev/null >/dev/null 2>&1 || echo "Could not load $$WARM_MODEL" >&2
         wait $$pid; wait $$pid
     volumes:
       - ollama:/root/.ollama
