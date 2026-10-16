@@ -42,6 +42,18 @@ export async function createJar(userId: string, values: JarFormValues, requestId
   }
 }
 
+/** A jar's due day as stored, so an edit may keep it once it has passed; null when it has none or is not the user's jar. */
+export async function getJarDue(userId: string, jarId: string) {
+  const row = await getDb()
+    .selectFrom("accounts")
+    .select("goalDue")
+    .where("id", "=", jarId)
+    .where("userId", "=", userId)
+    .where("type", "=", "savings")
+    .executeTakeFirst()
+  return row?.goalDue ?? null
+}
+
 /** Its name, what it is for, the target and the due month; its money is moved only by transfers. */
 export async function updateJar(userId: string, jarId: string, values: JarFormValues) {
   const result = await getDb()
@@ -161,7 +173,10 @@ export async function deleteJar(userId: string, jarId: string) {
         .execute()
       // What went out of it undone first, then what went in, so it never dips below zero on the way.
       const into = (move: (typeof moves)[number]) => move.kind === "income" || move.toAccountId === jarId
-      for (const move of [...moves.filter((move) => !into(move)), ...moves.filter(into)]) await deleteOne(trx, userId, move.id)
+      // Back to where it came from even if that account was locked since, as deleting the jar says it does.
+      for (const move of [...moves.filter((move) => !into(move)), ...moves.filter(into)]) {
+        await deleteOne(trx, userId, move.id, { allowArchived: true })
+      }
       await trx.deleteFrom("accounts").where("id", "=", jarId).execute()
     }),
   )

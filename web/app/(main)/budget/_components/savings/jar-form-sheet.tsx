@@ -20,7 +20,7 @@ import { formatCurrency } from "@/lib/format-currency"
 import { formatDate, toDateKey } from "@/lib/format-date"
 import { randomId } from "@/lib/random-id"
 import { getJarIcon, jarIcons } from "@/lib/savings/jar-icons"
-import { lastDayOfMonth, monthlyAmount, monthsLeft } from "@/lib/savings/plan"
+import { dueLeftLabel, lastDayOfMonth, monthlyAmount } from "@/lib/savings/plan"
 import { scheduleUndoableDelete } from "@/lib/undoable-delete"
 import { cn } from "@/lib/utils"
 
@@ -220,7 +220,7 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
             {withDue ? (
               <SettingsRow
                 title="Hạn"
-                value={`${formatDate(lastDayOfMonth(dueMonth))} · còn ${monthsLeft(dueMonth, today)} tháng`}
+                value={`${formatDate(lastDayOfMonth(dueMonth))} · ${dueLeftLabel(dueMonth, today)}`}
                 onClick={() => setPickingMonth(true)}
               />
             ) : null}

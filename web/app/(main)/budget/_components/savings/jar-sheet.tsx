@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import type { Account } from "@/lib/accounts/types"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDate, formatShortDate, toDateKey } from "@/lib/format-date"
-import { amountLeft, monthlyAmount, monthsLeft, savedShare } from "@/lib/savings/plan"
+import { amountLeft, dueLeftLabel, monthlyAmount, savedShare } from "@/lib/savings/plan"
 import type { Transaction } from "@/lib/transactions/types"
 
 import { JarRing } from "./jar-ring"
@@ -124,7 +124,7 @@ export function JarSheet({
         <SettingsGroup>
           <SettingsRow title="Mục tiêu" value={<Money amount={target} size="sm" tone="muted" />} />
           <SettingsRow title="Còn thiếu" value={left ? <Money amount={left} size="sm" tone="muted" /> : "Đã đủ"} />
-          {due ? <SettingsRow title="Hạn" value={`${formatDate(due)} · còn ${monthsLeft(due, today)} tháng`} /> : null}
+          {due ? <SettingsRow title="Hạn" value={`${formatDate(due)} · ${dueLeftLabel(due, today)}`} /> : null}
           {monthly ? <SettingsRow title="Mỗi tháng nên nạp" value={<Money amount={monthly} size="sm" />} /> : null}
         </SettingsGroup>
       )}

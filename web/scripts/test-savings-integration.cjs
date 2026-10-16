@@ -42,6 +42,9 @@ async function run() {
     assert.throws(() => parseJarFormData(form({ name: 'X', icon: 'rocket', target: 1 })), /Biểu tượng/)
     assert.throws(() => parseJarFormData(form({ name: 'X', icon: 'bike', target: 0 })), /Mục tiêu/)
     assert.throws(() => parseJarFormData(form({ name: '  ', icon: 'bike', target: 1 })), /tên hũ/)
+    // Editing an overdue jar keeps its passed due month; only a new one must be from this month on.
+    assert.equal(parseJarFormData(form({ name: 'X', icon: 'bike', target: 1, dueMonth: '2000-01' }), '2000-01-31').due, '2000-01-31')
+    assert.throws(() => parseJarFormData(form({ name: 'X', icon: 'bike', target: 1, dueMonth: '2000-02' }), '2000-01-31'), /từ tháng này/)
 
     // A retried "new jar" adds one, empty, and it reads back with its goal.
     const jar = randomUUID()
@@ -95,6 +98,12 @@ async function run() {
     assert.equal(plan.monthlyAmount({ balance: 0, goal: { target: 500_000, icon: 'bike', due: '2027-12-31' } }, '2026-10-14'), 34_000)
     assert.equal(plan.monthlyAmount({ balance: 0, goal: { target: 30, icon: 'bike', due: '2026-12-31' } }, '2026-10-14'), 30)
     assert.equal(plan.jarPlanLabel({ balance: 5, goal: { target: 5, icon: 'bike' } }, '2026-10-14'), 'Đủ tiền rồi')
+    // Overdue: no monthly amount, said so.
+    const overdue = { balance: 0, goal: { target: 2_000_000, icon: 'bike', due: '2026-08-31' } }
+    assert.equal(plan.monthlyAmount(overdue, '2026-10-14'), null)
+    assert.equal(plan.jarPlanLabel(overdue, '2026-10-14'), 'Quá hạn · còn thiếu 2tr')
+    assert.equal(plan.dueLeftLabel('2026-08-31', '2026-10-14'), 'đã quá hạn')
+    assert.equal(plan.dueLeftLabel('2026-12-31', '2026-10-14'), 'còn 3 tháng')
 
     // Bought for less: the price spent from the jar, the rest back to an account, the jar finished.
     // Not bought before the last move in or out of it.
@@ -118,7 +127,10 @@ async function run() {
     await assert.rejects(() => transactions.createTransaction(userId, transfer(1, bank, jar), randomUUID()))
 
     // Deleted: every move undone, the purchase too, so the accounts are as before it.
+    // The cash account it paid the rest into is locked meanwhile: the money still goes back.
+    await sql("UPDATE accounts SET status = 'archived' WHERE id = $1", [cash])
     await savings.deleteJar(userId, jar)
+    await sql("UPDATE accounts SET status = 'active' WHERE id = $1", [cash])
     assert.equal(await count('SELECT count(*) FROM accounts WHERE id = $1', [jar]), 0)
     assert.equal(await count('SELECT count(*) FROM transactions WHERE account_id = $1 OR from_account_id = $1 OR to_account_id = $1', [jar]), 0)
     assert.equal(await balance(bank), 50_000_000)

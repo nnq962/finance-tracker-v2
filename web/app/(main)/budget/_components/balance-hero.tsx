@@ -27,7 +27,8 @@ export function BalanceHero({ summary, accounts }: { summary: BalanceSummary; ac
   const left = accounts.filter((account) => account.excluded)
   const leftTotal = left.reduce((total, account) => total + account.balance, 0)
   const parts = (Object.keys(accountTypeLabels) as AccountType[])
-    .filter((type) => active.some((account) => account.type === type))
+    // Finished jars hold nothing: no "Hũ tiết kiệm 0đ" line for them alone.
+    .filter((type) => active.some((account) => account.type === type && !account.goal?.completedAt))
     .map((type) => ({
       type,
       total: active.filter((account) => account.type === type).reduce((total, account) => total + account.balance, 0),

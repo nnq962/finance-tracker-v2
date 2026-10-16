@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache"
 import { requireSession } from "@/lib/auth/session"
 import type { AccountActionResult } from "@/lib/accounts/types"
 import { AccountValidationError, assertAccountId } from "@/lib/accounts/validation"
-import { assertOpenJar, buyWithJar, createJar, deleteJar, updateJar } from "@/lib/savings/repository"
+import { assertOpenJar, buyWithJar, createJar, deleteJar, getJarDue, updateJar } from "@/lib/savings/repository"
 import { parseJarFormData } from "@/lib/savings/validation"
 import { createTransaction } from "@/lib/transactions/repository"
 import { parseTransactionFormData, TransactionValidationError } from "@/lib/transactions/validation"
@@ -44,7 +44,7 @@ export async function updateJarAction(jarId: string, formData: FormData): Promis
   const user = await requireSession()
   try {
     assertAccountId(jarId)
-    await updateJar(user.uid, jarId, parseJarFormData(formData))
+    await updateJar(user.uid, jarId, parseJarFormData(formData, await getJarDue(user.uid, jarId)))
     revalidateAccountPaths()
     return { success: true }
   } catch (error) {

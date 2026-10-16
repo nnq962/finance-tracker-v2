@@ -32,6 +32,16 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.6.8",
+    date: "2026-10-16",
+    title: "Sửa lỗi hũ quá hạn và xoá hũ",
+    changes: [
+      { kind: "fixed", text: "Hũ đã quá hạn sửa được mà không phải đổi hạn; hũ ghi \"đã quá hạn\" thay vì \"còn 1 tháng\" và không còn gợi ý số tiền mỗi tháng." },
+      { kind: "fixed", text: "Xoá hũ được cả khi tài khoản từng nạp vào hũ nay đã khoá; tiền vẫn về lại tài khoản đó." },
+      { kind: "fixed", text: "Thẻ Tổng số dư không còn dòng \"Hũ tiết kiệm 0đ\" khi chỉ còn hũ đã hoàn thành." },
+    ],
+  },
+  {
     version: "6.6.7",
     date: "2026-10-16",
     title: "Nút Xoá và Lưu về cỡ thường",

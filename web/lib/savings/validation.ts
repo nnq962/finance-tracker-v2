@@ -19,8 +19,13 @@ function getText(formData: FormData, name: string) {
   return typeof value === "string" ? value.trim() : ""
 }
 
-/** A jar's name, what it is for, how much and by which month (none, or this month or later). */
-export function parseJarFormData(formData: FormData): JarFormValues {
+/**
+ * A jar's name, what it is for, how much and by which month (none, or this
+ * month or later). `keepDue`: editing, the jar's own due day, which may stay
+ * even once its month has passed (2026-10-16: an overdue jar could not be
+ * renamed); only a new due month must be from this one on.
+ */
+export function parseJarFormData(formData: FormData, keepDue?: string | null): JarFormValues {
   const name = getText(formData, "name")
   if (!name) throw new AccountValidationError("Nhập tên hũ.")
   if (name.length > 80) throw new AccountValidationError("Tên hũ không được vượt quá 80 ký tự.")
@@ -36,7 +41,8 @@ export function parseJarFormData(formData: FormData): JarFormValues {
   const month = getText(formData, "dueMonth")
   if (!month) return { name, icon, target }
   if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) throw new AccountValidationError("Hạn không hợp lệ.")
-  if (month < toDateKey(new Date()).slice(0, 7)) throw new AccountValidationError("Hạn phải từ tháng này trở đi.")
+  const kept = keepDue?.slice(0, 7) === month
+  if (!kept && month < toDateKey(new Date()).slice(0, 7)) throw new AccountValidationError("Hạn phải từ tháng này trở đi.")
   if (month > "2100-12") throw new AccountValidationError("Hạn không hợp lệ.")
   return { name, icon, target, due: lastDayOfMonth(month) }
 }

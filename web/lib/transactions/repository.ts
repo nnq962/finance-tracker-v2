@@ -603,15 +603,24 @@ export async function deleteTransaction(userId: string, transactionId: string) {
   await retryOnDeadlock(() => getDb().transaction().execute((trx) => deleteOne(trx, userId, transactionId)))
 }
 
-/** Deletes a transaction, moving its balances back, inside the caller's database transaction (a savings jar deleted). */
-export async function deleteOne(trx: DbTransaction<DB>, userId: string, transactionId: string) {
+/**
+ * Deletes a transaction, moving its balances back, inside the caller's
+ * database transaction (a savings jar deleted). `allowArchived`: the money
+ * may move back into a locked account too (a jar deleted with its moves).
+ */
+export async function deleteOne(
+  trx: DbTransaction<DB>,
+  userId: string,
+  transactionId: string,
+  { allowArchived = false }: { allowArchived?: boolean } = {},
+) {
   const existing = await lockExisting(trx, userId, transactionId, "xoá")
   if (!existing) return
   const accounts = await lockAccounts(trx, userId, getAccountIds(existing))
   const impacts = new Map<string, number>()
 
   getBalanceImpacts(existing).forEach((delta, accountId) => impacts.set(accountId, -delta))
-  assertNoArchivedChange(accounts, impacts)
+  if (!allowArchived) assertNoArchivedChange(accounts, impacts)
   await applyImpacts(trx, accounts, impacts)
   await trx.deleteFrom("transactions").where("id", "=", transactionId).execute()
 }

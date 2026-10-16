@@ -27,15 +27,25 @@ export function monthsLeft(due: string, today: string) {
   return Math.max(1, (dueYear - year) * 12 + (dueMonth - month) + 1)
 }
 
+/** Its due month is behind this one (2026-10-16): no more months to spread the saving over. */
+export function isOverdue(due: string, today: string) {
+  return monthOf(due) < monthOf(today)
+}
+
+/** "còn 3 tháng", or "đã quá hạn" once the due month has passed. */
+export function dueLeftLabel(due: string, today: string) {
+  return isOverdue(due, today) ? "đã quá hạn" : `còn ${monthsLeft(due, today)} tháng`
+}
+
 /** How much a jar still needs: none once its balance reaches the target. */
 export function amountLeft(jar: Pick<Account, "balance" | "goal">) {
   return Math.max((jar.goal?.target ?? 0) - jar.balance, 0)
 }
 
-/** What to put in each month to reach the target by the due month, rounded up (see roundUp) but never past what is left. */
+/** What to put in each month to reach the target by the due month, rounded up (see roundUp) but never past what is left; none once overdue. */
 export function monthlyAmount(jar: Pick<Account, "balance" | "goal">, today: string) {
   const left = amountLeft(jar)
-  if (!jar.goal?.due || left === 0) return null
+  if (!jar.goal?.due || left === 0 || isOverdue(jar.goal.due, today)) return null
   return Math.min(roundUp(left / monthsLeft(jar.goal.due, today)), left)
 }
 
@@ -45,10 +55,11 @@ export function savedShare(jar: Pick<Account, "balance" | "goal">) {
   return target > 0 ? Math.min(Math.max(jar.balance / target, 0), 1) : 0
 }
 
-/** A jar's line under its name: "Còn 3 tháng · 6tr/tháng", "Còn thiếu 12tr", or "Đủ tiền rồi". */
+/** A jar's line under its name: "Còn 3 tháng · 6tr/tháng", "Quá hạn · còn thiếu 2tr", "Còn thiếu 12tr", or "Đủ tiền rồi". */
 export function jarPlanLabel(jar: Pick<Account, "balance" | "goal">, today: string) {
   const left = amountLeft(jar)
   if (left === 0) return "Đủ tiền rồi"
+  if (jar.goal?.due && isOverdue(jar.goal.due, today)) return `Quá hạn · còn thiếu ${formatCompactCurrency(left, 1)}`
   const monthly = monthlyAmount(jar, today)
   if (!jar.goal?.due || monthly === null) return `Còn thiếu ${formatCompactCurrency(left, 1)}`
   return `Còn ${monthsLeft(jar.goal.due, today)} tháng · ${formatCompactCurrency(monthly, 1)}/tháng`
