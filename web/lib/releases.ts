@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.8.0",
+    date: "2026-10-16",
+    title: "Xoá toàn bộ dữ liệu",
+    changes: [
+      { kind: "new", text: "Cài đặt có dòng \"Xoá toàn bộ dữ liệu\": xoá tài khoản, hũ, giao dịch, vay nợ, danh bạ và đưa hạng mục về mặc định, sau khi gõ XOÁ để xác nhận. Tài khoản đăng nhập, gói Pro, lượt AI và giờ nhắc vẫn giữ." },
+    ],
+  },
+  {
     version: "6.7.8",
     date: "2026-10-16",
     title: "Bỏ đường kẻ dưới thanh trên",

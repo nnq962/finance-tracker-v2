@@ -45,7 +45,8 @@ component ở đó là cả app đổi theo.
    đưa vào sheet sửa (bút chì), như Danh bạ iOS. Sheet sửa / form có nút Lưu ở chân: xoá là nút
    "🗑 Xoá" có chữ `Button variant="destructive"` rộng 120 (`w-30 px-0`; nền đỏ nhạt đặc, không nhìn xuyên) đứng bên trái nút
    Lưu trên cùng hàng, cả hai cỡ thường cao 44, Lưu giãn hết phần còn lại (2026-10-16: nút tròn chỉ có icon khó bấm;
-   thử cao 56 thì to quá). Xoá luôn có hoàn tác, không hộp xác nhận.
+   thử cao 56 thì to quá). Xoá luôn có hoàn tác, không hộp xác nhận. Ngoại lệ duy nhất là "Xoá toàn bộ dữ
+   liệu" ở Cài đặt: không hoàn tác được nên phải gõ XOÁ (xem Cài đặt bên dưới).
 
 ## Nền tảng
 
@@ -435,7 +436,13 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   bằng `StepFlow` (vuốt, chấm, ‹ co giãn, "Tiếp" thành "Đã hiểu" ở bước cuối); mỗi lần mở lại từ bước đầu. Mở trong trình duyệt
   khác (Chrome, Zalo, Facebook…) thì có thêm bước đầu "Mở trang này bằng Safari" với nút "Chép liên kết".
 - **Cài đặt:** một cột căn trái, tối đa `md:max-w-2xl`, thẳng với tên trang. Thứ tự: hồ sơ, Lượt AI,
-  Chung, Thông báo, Ứng dụng, Quản trị (hoặc Nhà phát triển trên dev server), Đăng xuất cuối. Hồ sơ chỉ hiển
+  Chung, Thông báo, Ứng dụng, Quản trị (hoặc Nhà phát triển trên dev server), "Xoá toàn bộ dữ liệu", Đăng xuất cuối;
+  hai dòng đỏ mỗi dòng một nhóm riêng. **Xoá toàn bộ dữ liệu** (`WipeDataGroup`, duyệt 2026-10-16): chú thích dưới
+  dòng "Tài khoản đăng nhập và gói Pro vẫn được giữ."; mở `PageSheet` "Xoá dữ liệu": ô `IconTile expense` lg, "Xoá toàn
+  bộ dữ liệu?" và một câu "không khôi phục được"; nhóm "Sẽ bị xoá" (tài khoản và hũ, giao dịch, khoản vay nợ, danh bạ
+  kèm số; hạng mục "Về mặc định"), chú thích "Vẫn giữ: …"; `FormSection` một ô "Gõ XOÁ để xác nhận" (nhận cả XÓA,
+  xoa); chân sheet nút `destructive` "Xoá vĩnh viễn" luôn bấm được (nút tắt thì trong suốt, chữ dưới lộ ra), gõ sai
+  thì báo lỗi dưới ô. Xoá xong tải lại về Tổng quan, hạng mục mặc định và màn chào như người mới. Hồ sơ chỉ hiển
   thị (avatar, tên, email, nhãn gói `Badge` "Free" xám / "Pro" màu `ai`), không bấm được; màn gói mở từ một chỗ
   duy nhất là dòng "Nâng cấp Pro" / "Gói Pro" cuối nhóm Lượt AI, cạnh số lượt còn lại.
 - **Desktop:** phần tử trong cột bám (rail) không co lại (`*:shrink-0`); rail cao hơn cửa sổ thì tự

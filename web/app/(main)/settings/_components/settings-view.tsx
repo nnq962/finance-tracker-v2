@@ -28,6 +28,7 @@ import type { NotificationState } from "@/lib/notifications/types"
 import type { AdminData } from "@/lib/plans/admin-data"
 import type { PaymentOutcome } from "@/lib/plans/payos"
 import { plans, type PlanState } from "@/lib/plans/plans"
+import type { UserDataSummary } from "@/lib/user-data/repository"
 
 import { AdminScreen } from "./admin-screen"
 import { AiQuotaGroup } from "./ai-quota-group"
@@ -40,6 +41,7 @@ import { SalaryCalculator } from "./salary-calculator"
 import { SignOutRow } from "./sign-out-row"
 import { ThemeOptions, themeOptions, useThemeChoice } from "./theme-options"
 import { VoiceLab } from "./voice-lab"
+import { WipeDataGroup } from "./wipe-data"
 
 /** Screens opened from the list, in a sheet that slides in from the side. */
 const screens = {
@@ -74,6 +76,8 @@ type SettingsViewProps = {
   notifications: NotificationState
   categoryGroups: CategoryGroup[]
   planState: PlanState
+  /** What wiping the user's data would delete. */
+  dataSummary: UserDataSummary
   /** payOS is set up, so Pro can be bought here. */
   checkoutEnabled: boolean
   /** How the payment the user just came back from stands. */
@@ -89,6 +93,7 @@ export function SettingsView({
   notifications,
   categoryGroups,
   planState,
+  dataSummary,
   checkoutEnabled,
   paymentOutcome,
   adminData,
@@ -248,6 +253,9 @@ export function SettingsView({
             ) : null}
           </SettingsGroup>
         ) : null}
+
+        {/* Wiping the data alone above signing out, so neither is hit for the other. */}
+        <WipeDataGroup summary={dataSummary} />
 
         {/* Signing out last and alone, as in native settings. */}
         <SettingsGroup>

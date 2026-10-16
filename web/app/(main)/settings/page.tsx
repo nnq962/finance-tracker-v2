@@ -9,6 +9,7 @@ import { isAdmin } from "@/lib/plans/admin"
 import { getAdminData } from "@/lib/plans/admin-data"
 import { checkReturningPayment, getPayOS } from "@/lib/plans/payos"
 import { getPlanState } from "@/lib/plans/repository"
+import { getUserDataSummary } from "@/lib/user-data/repository"
 
 import { settingsPageClassName } from "./_components/settings-layout"
 import { SettingsView } from "./_components/settings-view"
@@ -25,7 +26,7 @@ export default async function SettingsPage({
   const { screen, order } = await searchParams
   const {
     user,
-    data: [notifications, categoryGroups, planState, adminData, paymentOutcome],
+    data: [notifications, categoryGroups, planState, adminData, paymentOutcome, dataSummary],
   } = await loadWithSession(async (user) => {
     // Settled first, so the plan read next already shows it.
     const paymentOutcome = await checkReturningPayment(user.uid, order)
@@ -37,6 +38,7 @@ export default async function SettingsPage({
       getPlanState(user.uid),
       isAdmin(user) ? getAdminData() : undefined,
       paymentOutcome,
+      getUserDataSummary(user.uid),
     ])
   })
 
@@ -50,6 +52,7 @@ export default async function SettingsPage({
         notifications={notifications}
         categoryGroups={categoryGroups}
         planState={planState}
+        dataSummary={dataSummary}
         checkoutEnabled={getPayOS() !== null}
         paymentOutcome={paymentOutcome}
         adminData={adminData}

@@ -1,5 +1,6 @@
 import "server-only"
 
+import type { Transaction } from "kysely"
 import { unstable_cache } from "next/cache"
 
 import { categoryGroupsCacheTag } from "@/lib/cache-tags"
@@ -12,6 +13,7 @@ import type {
 } from "@/lib/categories/types"
 import { CategoryValidationError } from "@/lib/categories/validation"
 import { getDb } from "@/lib/db/client"
+import type { DB } from "@/lib/db/types"
 
 const MAX_GROUPS_PER_TYPE = 100
 const MAX_ITEMS_PER_GROUP = 200
@@ -23,6 +25,41 @@ function compareByOrderThenName<T extends { id: string; name: string; sortOrder:
   return left.sortOrder - right.sortOrder ||
     left.name.localeCompare(right.name, "vi") ||
     left.id.localeCompare(right.id)
+}
+
+/**
+ * Writes the default category groups and their items. For a user with no
+ * categories, inside the caller's transaction.
+ */
+export async function insertDefaultCategories(trx: Transaction<DB>, userId: string) {
+  for (const [groupIndex, group] of defaultCategoryGroups.entries()) {
+    const { id: groupId } = await trx
+      .insertInto("categoryGroups")
+      .values({
+        userId,
+        type: group.type,
+        name: group.name,
+        iconName: group.iconName,
+        colorName: group.colorName,
+        sortOrder: groupIndex,
+      })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    if (group.items.length > 0) {
+      await trx
+        .insertInto("categoryItems")
+        .values(group.items.map((item, itemIndex) => ({
+          userId,
+          groupId,
+          type: group.type,
+          name: item.name,
+          iconName: item.iconName,
+          sortOrder: itemIndex,
+        })))
+        .execute()
+    }
+  }
 }
 
 /**
@@ -54,36 +91,7 @@ export async function ensureDefaultCategories(userId: string) {
       .limit(1)
       .executeTakeFirst()
 
-    if (!existing) {
-      for (const [groupIndex, group] of defaultCategoryGroups.entries()) {
-        const { id: groupId } = await trx
-          .insertInto("categoryGroups")
-          .values({
-            userId,
-            type: group.type,
-            name: group.name,
-            iconName: group.iconName,
-            colorName: group.colorName,
-            sortOrder: groupIndex,
-          })
-          .returning("id")
-          .executeTakeFirstOrThrow()
-
-        if (group.items.length > 0) {
-          await trx
-            .insertInto("categoryItems")
-            .values(group.items.map((item, itemIndex) => ({
-              userId,
-              groupId,
-              type: group.type,
-              name: item.name,
-              iconName: item.iconName,
-              sortOrder: itemIndex,
-            })))
-            .execute()
-        }
-      }
-    }
+    if (!existing) await insertDefaultCategories(trx, userId)
 
     await trx
       .updateTable("users")
