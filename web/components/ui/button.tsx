@@ -23,10 +23,10 @@ const buttonVariants = cva(
           "bg-field text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--field),var(--foreground)_5%)] aria-expanded:bg-field aria-expanded:text-secondary-foreground",
         ghost:
           "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
-        // Solid: the red tint mixed into the page's colour, not see-through,
-        // as it floats over content in a sheet's footer (2026-10-13).
+        // Solid red, white text (2026-10-16): the pale red tint of before read
+        // faded in both themes beside Save; the veil darkens it on hover.
         destructive:
-          "bg-[color-mix(in_oklab,var(--destructive)_10%,var(--background))] text-destructive hover:bg-[color-mix(in_oklab,var(--destructive)_20%,var(--background))] focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-[color-mix(in_oklab,var(--destructive)_20%,var(--background))] dark:hover:bg-[color-mix(in_oklab,var(--destructive)_30%,var(--background))] dark:focus-visible:ring-destructive/40",
+          "relative isolate bg-destructive text-destructive-foreground after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:bg-black/10 after:opacity-0 after:transition-opacity after:duration-150 hover:after:opacity-100 focus-visible:border-destructive/40 focus-visible:ring-destructive/30 motion-reduce:after:transition-none",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

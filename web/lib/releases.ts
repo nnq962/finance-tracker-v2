@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.8.4",
+    date: "2026-10-16",
+    title: "Nút Xoá đỏ đặc",
+    changes: [
+      { kind: "improved", text: "Nút Xoá ở chân các sheet (và nút xoá dữ liệu) là đỏ đặc chữ trắng, thay cho nền đỏ nhạt trông mờ ở cả hai theme." },
+    ],
+  },
+  {
     version: "6.8.3",
     date: "2026-10-16",
     title: "Theme tối kiểu iOS",

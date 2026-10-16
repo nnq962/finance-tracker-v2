@@ -34,6 +34,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -125,6 +126,8 @@
   --accent-foreground: oklch(0.205 0 0);
   /* The expense's red (#d9534f), 2026-10-10. */
   --destructive: oklch(0.619 0.1694 25);
+  /* Text on a solid red fill (the delete button, 2026-10-16). */
+  --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.97 0 0);
   /* Hairline between rows of a list, the page's grey a step darker, clearer than --border on a white card. */
   --separator: oklch(0.93 0.003 286);
@@ -216,6 +219,7 @@
   --accent: oklch(0.294 0.0036 286.2);
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.7 0.15 25);
+  --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.294 0.0036 286.2);
   --separator: oklch(0.341 0.0034 286.2);
   --input: oklch(1 0 0 / 0.15);

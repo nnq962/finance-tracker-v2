@@ -43,7 +43,7 @@ component ở đó là cả app đổi theo.
    dịch, chi tiết tài khoản): dòng "Xoá …" đỏ ở cuối nội dung, như cuối trang Cài đặt iOS. Sheet
    chi tiết có nút hành động ở chân (chi tiết khoản nợ, "Ghi nhận thu"): không đặt xoá ở cuối mà
    đưa vào sheet sửa (bút chì), như Danh bạ iOS. Sheet sửa / form có nút Lưu ở chân: xoá là nút
-   "🗑 Xoá" có chữ `Button variant="destructive"` rộng 120 (`w-30 px-0`; nền đỏ nhạt đặc, không nhìn xuyên) đứng bên trái nút
+   "🗑 Xoá" có chữ `Button variant="destructive"` rộng 120 (`w-30 px-0`; đỏ đặc `destructive`, chữ trắng `destructive-foreground`, 2026-10-16, trước là nền đỏ nhạt nhìn mờ) đứng bên trái nút
    Lưu trên cùng hàng, cả hai cỡ thường cao 44, Lưu giãn hết phần còn lại (2026-10-16: nút tròn chỉ có icon khó bấm;
    thử cao 56 thì to quá). Xoá luôn có hoàn tác, không hộp xác nhận. Ngoại lệ duy nhất là "Xoá toàn bộ dữ
    liệu" ở Cài đặt: không hoàn tác được nên phải gõ XOÁ (xem Cài đặt bên dưới).
