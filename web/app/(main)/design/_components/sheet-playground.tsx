@@ -65,13 +65,13 @@ export function PageSheetPlayground() {
       }
       footer={
         withFooter ? (
-          // A form's foot: "Xoá" with its word beside Save, both 56 tall (2026-10-16).
+          // A form's foot: "Xoá" with its word beside Save, both 44 tall (2026-10-16).
           <div className="flex items-center gap-2">
-            <Button variant="destructive" size="lg" className="w-30 px-0" onClick={() => toast("Đã xoá")}>
+            <Button variant="destructive" className="w-30 px-0" onClick={() => toast("Đã xoá")}>
               <Trash2Icon />
               Xoá
             </Button>
-            <Button size="lg" className="flex-1" onClick={() => toast.success("Đã lưu")}>
+            <Button className="flex-1" onClick={() => toast.success("Đã lưu")}>
               <SaveIcon />
               Lưu thay đổi
             </Button>

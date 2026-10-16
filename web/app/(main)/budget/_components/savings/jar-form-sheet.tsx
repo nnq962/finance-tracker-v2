@@ -237,12 +237,12 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
           {/* Deleting beside saving, as tall as it, as in the account's editor. */}
           <div className="flex items-center gap-2">
             {jar ? (
-              <Button type="button" variant="destructive" size="lg" className="w-30 px-0" aria-label="Xoá hũ" disabled={pending} onClick={() => setConfirmDelete(true)}>
+              <Button type="button" variant="destructive" className="w-30 px-0" aria-label="Xoá hũ" disabled={pending} onClick={() => setConfirmDelete(true)}>
                 <Trash2Icon />
                 Xoá
               </Button>
             ) : null}
-            <Button type="submit" size="lg" className="flex-1" disabled={pending}>
+            <Button type="submit" className="flex-1" disabled={pending}>
               {pending ? <Spinner /> : jar ? <SaveIcon /> : null}
               {pending ? "Đang lưu..." : jar ? "Lưu thay đổi" : "Tạo hũ"}
             </Button>

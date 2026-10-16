@@ -345,7 +345,6 @@ function PaymentForm({
               <Button
                 type="button"
                 variant="destructive"
-                size="lg"
                 className="w-30 px-0"
                 aria-label={collecting ? "Xoá lần thu này" : "Xoá lần trả này"}
                 disabled={pending}
@@ -358,7 +357,7 @@ function PaymentForm({
                 Xoá
               </Button>
             ) : null}
-            <Button type="submit" size="lg" className="flex-1" disabled={pending}>
+            <Button type="submit" className="flex-1" disabled={pending}>
               <CheckIcon />
               {pending ? "Đang lưu…" : payment ? "Lưu thay đổi" : collecting ? "Xác nhận đã thu" : "Xác nhận đã trả"}
             </Button>

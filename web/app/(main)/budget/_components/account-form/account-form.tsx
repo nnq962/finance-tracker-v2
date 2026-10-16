@@ -416,12 +416,12 @@ export function AccountForm({
           {/* Back is in the header; deleting beside saving, as tall as it, as in the category editor. */}
           <div className="flex items-center gap-2">
             {onDelete ? (
-              <Button type="button" variant="destructive" size="lg" className="w-30 px-0" aria-label="Xoá tài khoản" disabled={isPending} onClick={onDelete}>
+              <Button type="button" variant="destructive" className="w-30 px-0" aria-label="Xoá tài khoản" disabled={isPending} onClick={onDelete}>
                 <Trash2Icon />
                 Xoá
               </Button>
             ) : null}
-            <Button type="submit" size="lg" className="flex-1" disabled={isPending || (lockOn && lock?.locked)}>
+            <Button type="submit" className="flex-1" disabled={isPending || (lockOn && lock?.locked)}>
               {isPending ? <Spinner /> : <SaveIcon />}
               {isPending ? "Đang lưu..." : submitLabel}
             </Button>
