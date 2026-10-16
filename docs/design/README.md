@@ -354,9 +354,7 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   tài khoản" có bút chì tròn để sửa (cả khi đã khoá); đầu sheet là logo `lg`, tên, số dư `xl`
   ở giữa (âm thì đỏ, đã khoá thì mờ), dòng phụ loại · ngân hàng (bỏ phần tên đã nói) và "Đã
   khoá" (Tiền vào / Tiền ra của tháng bỏ 2026-10-16: gồm cả chuyển khoản và điều chỉnh số dư nên dễ hiểu
-  lầm); rồi nhóm Bắt đầu từ, Số dư ban đầu, Đã tăng /
-  Đã giảm (số dư trừ số dư ban đầu; sửa số dư thì số dư ban đầu dời theo đúng phần chênh, nên dòng
-  này chỉ phản ánh giao dịch), ghi chú; "Giao dịch gần đây" là `TransactionItem` (chạm mở chi
+  lầm); rồi nhóm Bắt đầu từ và ghi chú (Số dư ban đầu, Đã tăng / Đã giảm bỏ 2026-10-16 cho gọn); "Giao dịch gần đây" là `TransactionItem` (chạm mở chi
   tiết giao dịch; có cả các lần thu, trả nợ như trang Giao dịch), mô tả là đầu kia của chuyển khoản ("Đến Ví MoMo") hay nhóm hạng mục, số tiền theo
   tài khoản này, ngày dưới số tiền. Sheet chỉ để xem; khoá và xoá nằm trong sheet sửa (2026-10-13).
 - **Sửa tài khoản** (`EditAccountSheet`): form tài khoản, cuối form công tắc "Khoá tài khoản" (icon ổ

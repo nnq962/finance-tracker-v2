@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.8.6",
+    date: "2026-10-16",
+    title: "Chi tiết tài khoản gọn hơn",
+    changes: [
+      { kind: "improved", text: "Bỏ dòng Số dư ban đầu và Đã tăng / Đã giảm ở chi tiết tài khoản." },
+    ],
+  },
+  {
     version: "6.8.5",
     date: "2026-10-16",
     title: "Bỏ viền quanh nút tròn trên sheet (theme tối)",

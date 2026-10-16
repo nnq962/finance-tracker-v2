@@ -52,8 +52,9 @@ type AccountSheetProps = {
 
 /**
  * An account as the transaction's sheet shows one: its logo, name, balance
- * and kind at the top, edited from the pencil in the bar; when it started, what it started with and how much it has
- * moved since; its latest transactions, each opening its own sheet. Locking
+ * and kind at the top, edited from the pencil in the bar; when it started
+ * (the opening balance and how much it moved since left it on 2026-10-16);
+ * its latest transactions, each opening its own sheet. Locking
  * and deleting it are in its editor, behind the pencil.
  */
 export function AccountSheet({
@@ -72,7 +73,6 @@ export function AccountSheet({
   if (!shown) return null
 
   const isLocked = shown.status === "archived"
-  const change = shown.balance - shown.openingBalance
   const subtitle = [accountDescription(shown), isLocked ? "Đã khoá" : undefined].filter(Boolean).join(" · ")
 
   return (
@@ -102,17 +102,6 @@ export function AccountSheet({
 
         <SettingsGroup>
           <SettingsRow title="Bắt đầu từ" value={formatDate(toDateKey(shown.openedAt))} />
-          <SettingsRow title="Số dư ban đầu" value={<Money amount={shown.openingBalance} size="sm" tone="muted" />} />
-          <SettingsRow
-            title={change > 0 ? "Đã tăng" : change < 0 ? "Đã giảm" : "Thay đổi"}
-            value={
-              change === 0 ? (
-                "Chưa đổi"
-              ) : (
-                <Money amount={change} sign="always" size="sm" tone={change > 0 ? "income" : "default"} />
-              )
-            }
-          />
           {shown.note ? (
             <SettingsRow title="Ghi chú" description={<span className="select-text">{shown.note}</span>} fullDescription />
           ) : null}
