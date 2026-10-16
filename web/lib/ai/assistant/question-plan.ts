@@ -1,6 +1,7 @@
 import "server-only"
 
 import type { ChatMessage } from "@/lib/ai/llm"
+import { archivedLabel } from "@/lib/accounts/labels"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { Contact } from "@/lib/debts/types"
@@ -176,7 +177,7 @@ function buildKeys({ accounts, categoryGroups, contacts }: Context) {
   lines.push("Tài khoản (accountIds):")
   accounts.forEach((account, index) => {
     add(`a${index + 1}`, account.id)
-    lines.push(`- a${index + 1}: ${account.name}${account.status === "archived" ? " (đã khoá)" : ""}`)
+    lines.push(`- a${index + 1}: ${account.name}${account.status === "archived" ? ` (${archivedLabel(account)})` : ""}`)
   })
   lines.push("Người vay và cho vay (contactIds):")
   contacts.forEach((contact, index) => {

@@ -13,3 +13,8 @@ export function accountDescription(account: Pick<Account, "type" | "name" | "ins
   if (account.institutionName && account.institutionName !== account.name) return `${type} · ${account.institutionName}`
   return type === account.name ? undefined : type
 }
+
+/** Why an account is out of use, as a short word: a finished savings jar was bought ("đã mua"), any other was locked. */
+export function archivedLabel(account: Pick<Account, "goal">) {
+  return account.goal?.completedAt ? "đã mua" : "đã khoá"
+}

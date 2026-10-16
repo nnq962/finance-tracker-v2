@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/field"
 import { Switch } from "@/components/ui/switch"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { archivedLabel } from "@/lib/accounts/labels"
 import type { Account } from "@/lib/accounts/types"
 import { getCategoryColor } from "@/lib/categories/category-colors"
 import type { CategoryGroup } from "@/lib/categories/types"
@@ -255,7 +256,7 @@ export function TransactionFilterFields({
             <ToggleGroupItem key={account.id} value={account.id}>
               <AccountLogo account={account} size="xs" />
               {account.name}
-              {account.status === "archived" ? " (đã khoá)" : ""}
+              {account.status === "archived" ? ` (${archivedLabel(account)})` : ""}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
