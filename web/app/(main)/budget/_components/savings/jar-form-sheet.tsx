@@ -267,7 +267,7 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
             ) : null}
             <Button type="submit" className="flex-1" disabled={pending}>
               {pending ? <Spinner /> : jar ? <SaveIcon /> : null}
-              {pending ? "Đang lưu..." : jar ? "Lưu thay đổi" : "Tạo hũ"}
+              {pending ? "Đang lưu…" : jar ? "Lưu thay đổi" : "Tạo hũ"}
             </Button>
           </div>
         </PageSheetFooter>

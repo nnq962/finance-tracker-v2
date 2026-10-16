@@ -51,7 +51,7 @@ export function DeleteAccountSheet({
       <ActionSheet
         open={open}
         onOpenChange={onOpenChange}
-        title={`“${account.name}” đã có chuyển khoản hoặc vay nợ nên không xoá được, để các tài khoản và khoản nợ khác giữ đúng số dư.${onArchive ? " Khoá để ẩn nó đi." : ""}`}
+        title={`Không xoá được “${account.name}” vì đã có chuyển khoản hoặc vay nợ.${onArchive ? " Bạn có thể khoá để ẩn tài khoản." : ""}`}
         options={onArchive ? [{ value: "archive", label: "Khoá tài khoản" }] : []}
         onSelect={() => onArchive?.()}
         cancelLabel={onArchive ? "Huỷ" : "Đóng"}

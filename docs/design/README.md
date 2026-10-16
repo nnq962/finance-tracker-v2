@@ -354,7 +354,7 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   tài khoản" có bút chì tròn để sửa (cả khi đã khoá); đầu sheet là logo `lg`, tên, số dư `xl`
   ở giữa (âm thì đỏ, đã khoá thì mờ), dòng phụ loại · ngân hàng (bỏ phần tên đã nói) và "Đã
   khoá" (Tiền vào / Tiền ra của tháng bỏ 2026-10-16: gồm cả chuyển khoản và điều chỉnh số dư nên dễ hiểu
-  lầm); rồi nhóm Bắt đầu từ và ghi chú (Số dư ban đầu, Đã tăng / Đã giảm bỏ 2026-10-16 cho gọn); "Giao dịch gần đây" là `TransactionItem` (chạm mở chi
+  lầm); dòng phụ có thêm "từ 31/08/2026" (thẻ "Bắt đầu từ" riêng, Số dư ban đầu, Đã tăng / Đã giảm bỏ 2026-10-16 cho gọn); ghi chú (nếu có); "Giao dịch gần đây" là `TransactionItem` (chạm mở chi
   tiết giao dịch; có cả các lần thu, trả nợ như trang Giao dịch), mô tả là đầu kia của chuyển khoản ("Đến Ví MoMo") hay nhóm hạng mục, số tiền theo
   tài khoản này, ngày dưới số tiền. Sheet chỉ để xem; khoá và xoá nằm trong sheet sửa (2026-10-13).
 - **Sửa tài khoản** (`EditAccountSheet`): form tài khoản, cuối form công tắc "Khoá tài khoản" (icon ổ
@@ -371,7 +371,7 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   dòng phụ "Còn 3 tháng · 5tr/tháng" / "Còn thiếu …" / "Đủ tiền rồi 🎉" (xanh lá), bên phải số đã có và "/ 15tr";
   cuối nhóm "Thêm hũ". Hũ đã mua nằm trong "Hũ đã hoàn thành" (thu gọn, dưới cùng, dòng xám "Đã mua 14/10 ·
   giá"). Thẻ Tổng số dư có dòng "Hũ tiết kiệm" (tối đa 3 icon xếp chồng để số không xuống dòng). Chi tiết hũ
-  (`JarSheet`): vòng lớn, tên, số đã có `xl`, "60% của …"; Mục tiêu, Còn thiếu, Hạn, Mỗi tháng nên nạp; "Lịch
+  (`JarSheet`): vòng lớn, tên, số đã có `xl`, "60% của …"; Còn thiếu, Hạn, Mỗi tháng nên nạp (dòng Mục tiêu bỏ 2026-10-16 vì trùng "% của"); "Lịch
   sử" 5 lần gần nhất + "Xem tất cả"; chân sheet "Rút ra" (secondary) và "Nạp vào hũ", đủ tiền thì thông báo xanh
   và "Đã mua". Bút chì mở `JarFormSheet` (cũng là màn tạo; 2026-10-16 bày như màn sửa danh mục): vòng hũ theo lựa chọn,
   Mục tiêu lớn, Tên (người dùng tự gõ), "Biểu tượng" là `IconPicker` của danh mục (gợi ý theo tên, ô cuối mở

@@ -118,7 +118,7 @@ function BoughtForm({
     }
     if (!categoryId) return setError("Chọn hạng mục.")
     if (earliest && `${when.date} ${when.time}` < `${earliest.date} ${earliest.time}`) {
-      return setError(`Ngày mua phải từ ${formatDate(earliest.date)}, lần nạp rút gần nhất của hũ, trở đi.`)
+      return setError(`Ngày mua không được trước lần nạp/rút gần nhất (${formatDate(earliest.date)}).`)
     }
     if (rest !== 0 && !accountId) return setError(rest > 0 ? "Chọn tài khoản nhận phần thừa." : "Chọn tài khoản trả phần thiếu.")
     const formData = new FormData(event.currentTarget)
@@ -126,7 +126,7 @@ function BoughtForm({
       try {
         const result = await buyWithJarAction(jar.id, formData)
         if (!result.success) return setError(result.error)
-        toast.success(`Đã ghi khoản chi. Hũ ${jar.name} đã hoàn thành.`)
+        toast.success(`Đã mua “${jar.name}”. Hũ chuyển sang Đã hoàn thành.`)
         onDone()
       } catch {
         setError("Không thể lưu. Vui lòng thử lại.")
@@ -211,7 +211,7 @@ function BoughtForm({
         ) : null}
         {rest !== 0 ? (
           <SettingsGroup
-            footer={rest > 0 ? "Phần thừa chuyển về tài khoản này, hũ chuyển sang Đã hoàn thành." : "Phần thiếu trả từ tài khoản này."}
+            footer={rest > 0 ? "Phần thừa sẽ chuyển về tài khoản này." : "Phần thiếu trả từ tài khoản này."}
           >
             <SettingsRow title={rest > 0 ? "Còn thừa" : "Thiếu"} value={<Money amount={Math.abs(rest)} size="sm" />} />
             <SettingsRow
@@ -229,7 +229,7 @@ function BoughtForm({
           {error ? <FieldError>{error}</FieldError> : null}
           <Button type="submit" className="w-full" disabled={pending}>
             {pending ? <Spinner /> : null}
-            {pending ? "Đang lưu..." : "Ghi khoản chi"}
+            {pending ? "Đang lưu…" : "Ghi khoản chi"}
           </Button>
         </PageSheetFooter>
       )}

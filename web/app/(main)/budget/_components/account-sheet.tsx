@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button"
 import { accountDescription } from "@/lib/accounts/labels"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
-import { formatCompactCurrency } from "@/lib/format-currency"
 import { formatDate, formatShortDate, toDateKey } from "@/lib/format-date"
 import type { Transaction } from "@/lib/transactions/types"
 
@@ -52,9 +51,8 @@ type AccountSheetProps = {
 
 /**
  * An account as the transaction's sheet shows one: its logo, name, balance
- * and kind at the top, edited from the pencil in the bar; when it started
- * (the opening balance and how much it moved since left it on 2026-10-16);
- * its latest transactions, each opening its own sheet. Locking
+ * and kind (and since when) at the top, edited from the pencil in the bar; its
+ * note; its latest transactions, each opening its own sheet. Locking
  * and deleting it are in its editor, behind the pencil.
  */
 export function AccountSheet({
@@ -73,7 +71,10 @@ export function AccountSheet({
   if (!shown) return null
 
   const isLocked = shown.status === "archived"
-  const subtitle = [accountDescription(shown), isLocked ? "Đã khoá" : undefined].filter(Boolean).join(" · ")
+  // Its kind, since when, and whether it is locked, in one line under the balance (2026-10-16: "Bắt đầu từ" was a card of its own).
+  const subtitle = [accountDescription(shown), `từ ${formatDate(toDateKey(shown.openedAt))}`, isLocked ? "Đã khoá" : undefined]
+    .filter(Boolean)
+    .join(" · ")
 
   return (
     <>
@@ -100,18 +101,17 @@ export function AccountSheet({
           {subtitle ? <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p> : null}
         </div>
 
-        <SettingsGroup>
-          <SettingsRow title="Bắt đầu từ" value={formatDate(toDateKey(shown.openedAt))} />
-          {shown.note ? (
+        {shown.note ? (
+          <SettingsGroup>
             <SettingsRow title="Ghi chú" description={<span className="select-text">{shown.note}</span>} fullDescription />
-          ) : null}
-        </SettingsGroup>
+          </SettingsGroup>
+        ) : null}
 
         <SettingsGroup title="Giao dịch gần đây">
           {transactions.length > 0 ? (
             // What the transactions' sheets compare with and learn quick picks from.
             <TransactionHistoryProvider transactions={transactions}>
-              {transactions.map((transaction, index) => (
+              {transactions.map((transaction) => (
                 <TransactionItem
                   key={transaction.id}
                   accounts={accounts}
@@ -119,13 +119,8 @@ export function AccountSheet({
                   transaction={transaction}
                   description={getAccountDescription(transaction, shown.id)}
                   amount={getAccountAmount(transaction, shown.id)}
-                  // The balance right after it, as a bank statement shows it:
-                  // today's, less what the newer ones moved.
-                  dateLabel={`${formatShortDate(toDateKey(transaction.occurredAt))} · còn ${formatCompactCurrency(
-                    shown.balance -
-                      transactions.slice(0, index).reduce((sum, newer) => sum + getAccountAmount(newer, shown.id), 0),
-                    1,
-                  )}`}
+                  // The day alone: the balance after each ("· còn 593k") read as another amount (2026-10-16).
+                  dateLabel={formatShortDate(toDateKey(transaction.occurredAt))}
                 />
               ))}
               <SettingsRow

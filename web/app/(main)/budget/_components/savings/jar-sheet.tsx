@@ -39,8 +39,8 @@ function describe(transaction: Transaction, jarId: string) {
 }
 
 /**
- * A savings jar: its ring, name, what it holds and how far it is; then the
- * target, what is missing, the due month and what to put in each month; its
+ * A savings jar: its ring, name, what it holds and how far it is of the
+ * target; then what is missing, the due month and what to put in each month; its
  * latest moves. At the foot, take out and put in, or once it is full,
  * "Đã mua". The pencil edits it (and deletes it). A finished jar only shows.
  */
@@ -116,13 +116,12 @@ export function JarSheet({
 
       {full ? (
         <NoticeBanner tone="income" icon={PartyPopperIcon} title={`Hũ “${jar.name}” đã đủ tiền`}>
-          Mua xong thì bấm Đã mua để ghi khoản chi từ hũ.
+          Mua xong thì bấm Đã mua.
         </NoticeBanner>
       ) : null}
 
       {done ? null : (
         <SettingsGroup>
-          <SettingsRow title="Mục tiêu" value={<Money amount={target} size="sm" tone="muted" />} />
           <SettingsRow title="Còn thiếu" value={left ? <Money amount={left} size="sm" tone="muted" /> : "Đã đủ"} />
           {due ? <SettingsRow title="Hạn" value={`${formatDate(due)} · ${dueLeftLabel(due, today)}`} /> : null}
           {monthly ? <SettingsRow title="Mỗi tháng nên nạp" value={<Money amount={monthly} size="sm" />} /> : null}

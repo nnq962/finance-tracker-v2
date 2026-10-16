@@ -495,7 +495,7 @@ export function TransactionForm({
             ) : null}
             <Button type="submit" className="flex-1" disabled={isPending || blocked}>
               {isPending ? <Spinner /> : <SaveIcon />}
-              {isPending ? "Đang lưu..." : submitLabel}
+              {isPending ? "Đang lưu…" : submitLabel}
             </Button>
           </div>
         </PageSheetFooter>

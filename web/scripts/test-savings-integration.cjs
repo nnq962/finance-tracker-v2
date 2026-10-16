@@ -109,7 +109,7 @@ async function run() {
     // Bought for less: the price spent from the jar, the rest back to an account, the jar finished.
     // Not bought before the last move in or out of it.
     const early = { kind: 'expense', amount: 17_500_000, accountId: jar, categoryId: shopping, occurredAt: new Date(Date.now() - 86_400_000) }
-    await assert.rejects(() => savings.buyWithJar(userId, jar, early, cash, randomUUID()), /Ngày mua phải từ/)
+    await assert.rejects(() => savings.buyWithJar(userId, jar, early, cash, randomUUID()), /Ngày mua không được trước/)
     const cheaper = { kind: 'expense', amount: 17_500_000, accountId: jar, categoryId: shopping, occurredAt: new Date() }
     await assert.rejects(() => savings.buyWithJar(userId, jar, cheaper, undefined, randomUUID()), /nhận phần thừa/)
     const bought = randomUUID()

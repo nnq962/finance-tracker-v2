@@ -400,7 +400,7 @@ export function AccountForm({
               icon={LockIcon}
               tone="neutral"
               title="Khoá tài khoản"
-              description="Ẩn khi ghi giao dịch, không sửa được. Số dư và lịch sử vẫn giữ."
+              description="Ẩn khỏi danh sách khi ghi giao dịch. Số dư và lịch sử vẫn giữ."
               fullDescription
               action={
                 <Switch aria-label="Khoá tài khoản" checked={lockOn} disabled={isPending} onCheckedChange={setLockOn} />
@@ -423,7 +423,7 @@ export function AccountForm({
             ) : null}
             <Button type="submit" className="flex-1" disabled={isPending || (lockOn && lock?.locked)}>
               {isPending ? <Spinner /> : <SaveIcon />}
-              {isPending ? "Đang lưu..." : submitLabel}
+              {isPending ? "Đang lưu…" : submitLabel}
             </Button>
           </div>
         </PageSheetFooter>

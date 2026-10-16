@@ -32,6 +32,16 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.8.7",
+    date: "2026-10-16",
+    title: "Trang Tài khoản gọn chữ hơn",
+    changes: [
+      { kind: "improved", text: "Chi tiết tài khoản: ngày bắt đầu gộp vào dòng dưới số dư; giao dịch gần đây chỉ ghi ngày (bỏ \"còn …\")." },
+      { kind: "improved", text: "Chi tiết hũ bỏ dòng Mục tiêu (đã có \"% của …\"); sheet rút bỏ dòng \"Trong hũ đang có\"; thông báo đủ tiền ngắn lại." },
+      { kind: "improved", text: "Thẻ tài khoản trên máy tính bỏ chữ \"Số dư\"; các câu thông báo xoá, mua hũ, ngày mua, khoá tài khoản ngắn và rõ hơn; tên hũ trong thông báo có ngoặc kép." },
+    ],
+  },
+  {
     version: "6.8.6",
     date: "2026-10-16",
     title: "Chi tiết tài khoản gọn hơn",

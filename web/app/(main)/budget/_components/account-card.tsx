@@ -26,8 +26,8 @@ export function AccountCard({ account, onSelect }: { account: Account; onSelect:
             </span>
           </span>
           <span className="flex flex-col">
-            {/* Left out of the figures: said by the label, the balance grey, as in the list. */}
-            <CardLabel as="span">{account.excluded ? "Số dư · Ngoài báo cáo" : "Số dư"}</CardLabel>
+            {/* The figure says it is the balance (no "Số dư" label since 2026-10-16); left out of the figures, it says so, the balance grey. */}
+            {account.excluded ? <CardLabel as="span">Ngoài báo cáo</CardLabel> : null}
             <Money
               amount={account.balance}
               size="lg"

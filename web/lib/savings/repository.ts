@@ -126,7 +126,7 @@ export async function buyWithJar(
         .limit(1)
         .executeTakeFirst()
       if (last && expense.occurredAt < last.occurredAt) {
-        throw new TransactionValidationError(`Ngày mua phải từ ${formatDate(toDateKey(last.occurredAt))}, lần nạp rút gần nhất của hũ, trở đi.`)
+        throw new TransactionValidationError(`Ngày mua không được trước lần nạp/rút gần nhất (${formatDate(toDateKey(last.occurredAt))}).`)
       }
 
       const rest = jar.balance - expense.amount
