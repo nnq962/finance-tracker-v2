@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.6.6",
+    date: "2026-10-16",
+    title: "Nút xoá dễ bấm hơn",
+    changes: [
+      { kind: "improved", text: "Ở chân các sheet sửa (tài khoản, giao dịch, khoản nợ, lần trả nợ, danh mục, hũ), nút Xoá có chữ và cao 56px như nút Lưu, thay cho nút tròn nhỏ." },
+    ],
+  },
+  {
     version: "6.6.5",
     date: "2026-10-16",
     title: "Sửa lỗi hũ tiết kiệm và trang tài khoản",

@@ -584,11 +584,12 @@ function DebtForm({
             {/* Deleting sits beside saving, as tall as it (with an undo, so the two side by side are safe). */}
             <div className="flex items-center gap-2">
               {debt && onDelete ? (
-                <Button type="button" variant="destructive" size="icon" aria-label="Xoá khoản nợ" disabled={pending} onClick={onDelete}>
+                <Button type="button" variant="destructive" size="lg" className="w-30 px-0" aria-label="Xoá khoản nợ" disabled={pending} onClick={onDelete}>
                   <Trash2Icon />
+                Xoá
                 </Button>
               ) : null}
-              <Button type="submit" className="flex-1" disabled={pending || (!isOpening && activeAccounts.length === 0)}>
+              <Button type="submit" size="lg" className="flex-1" disabled={pending || (!isOpening && activeAccounts.length === 0)}>
                 <SaveIcon />
                 {pending ? "Đang lưu…" : debt ? "Lưu thay đổi" : "Lưu khoản nợ"}
               </Button>

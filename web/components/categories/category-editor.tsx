@@ -158,15 +158,17 @@ export function CategoryEditor({
               <Button
                 type="button"
                 variant="destructive"
-                size="icon"
+                size="lg"
+                className="w-30 px-0"
                 aria-label={`Xoá ${noun}`}
                 disabled={pending}
                 onClick={() => setConfirmDelete(true)}
               >
                 <Trash2Icon />
+                Xoá
               </Button>
             ) : null}
-            <Button type="submit" className="flex-1" disabled={pending}>
+            <Button type="submit" size="lg" className="flex-1" disabled={pending}>
               {pending ? <Spinner /> : <SaveIcon />}
               {pending ? "Đang lưu…" : editing ? "Lưu thay đổi" : kind === "group" ? "Thêm nhóm" : "Thêm hạng mục"}
             </Button>

@@ -43,8 +43,9 @@ component ở đó là cả app đổi theo.
    dịch, chi tiết tài khoản): dòng "Xoá …" đỏ ở cuối nội dung, như cuối trang Cài đặt iOS. Sheet
    chi tiết có nút hành động ở chân (chi tiết khoản nợ, "Ghi nhận thu"): không đặt xoá ở cuối mà
    đưa vào sheet sửa (bút chì), như Danh bạ iOS. Sheet sửa / form có nút Lưu ở chân: xoá là nút
-   tròn thùng rác `Button variant="destructive" size="icon"` (44, bằng nút Lưu; nền đỏ nhạt đặc, không nhìn xuyên) đứng bên trái nút
-   Lưu trên cùng hàng. Xoá luôn có hoàn tác, không hộp xác nhận.
+   "🗑 Xoá" có chữ `Button variant="destructive" size="lg"` rộng 120 (`w-30 px-0`; nền đỏ nhạt đặc, không nhìn xuyên) đứng bên trái nút
+   Lưu trên cùng hàng, cả hai cao 56 (`size="lg"`, Lưu giãn hết phần còn lại; 2026-10-16, trước đó nút tròn 44 khó bấm).
+   Form ấy khi thêm mới (không có Xoá) vẫn để Lưu cao 56. Xoá luôn có hoàn tác, không hộp xác nhận.
 
 ## Nền tảng
 
@@ -307,7 +308,7 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   chỗ (màu nhóm, vòng quanh ô như chấm màu; chọn từ màn "Tất cả" mà không có trong lưới thì vào ô cuối), rồi gợi ý theo tên đang gõ (so từ với nhãn tiếng Việt của biểu tượng, bỏ từ đệm "và", "của"…; có dấu
   thì dấu tính, nên "sữa" không ra "sửa"), rồi biểu tượng của nhóm và các hạng mục trong nhóm; ô cuối mở màn sâu
   "Biểu tượng" (`IconPickerScreen`, form ẩn chứ không gỡ nên lưới giữ thứ tự: ô tìm, mỗi từ gõ là đầu một từ của nhãn; lưới đủ 200, chạm là chọn và quay
-  lại). Chân: nút tròn xoá cạnh "Lưu thay đổi" ("Thêm nhóm" / "Thêm hạng mục" khi thêm); xoá hỏi lại bằng
+  lại). Chân: nút "Xoá" có chữ cạnh "Lưu thay đổi" ("Thêm nhóm" / "Thêm hạng mục" khi thêm); xoá hỏi lại bằng
   `ActionSheet` ("Xoá nhóm “Ăn uống” và 3 hạng mục bên trong? Giao dịch cũ vẫn được giữ."), vì xoá nhóm kéo theo
   các hạng mục và chưa có hoàn tác.
 - **Danh bạ** (`ContactsSheet`, Vay nợ): nút người + trên thanh để thêm; ô "Tìm người" (tên, mối quan
