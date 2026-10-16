@@ -56,8 +56,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
                 aria-hidden="true"
                 className="h-[env(safe-area-inset-top,0px)] shrink-0 md:hidden"
               />
-              {/* A hairline under the bar sets it apart from the page below (2026-10-16). */}
-              <header className="sticky top-0 z-20 hidden h-16 shrink-0 items-center border-b border-separator bg-background md:flex">
+              <header className="sticky top-0 z-20 hidden h-16 shrink-0 items-center bg-background md:flex">
                 <div className="flex w-full items-center justify-between gap-3 px-(--main-content-px) transition-[padding] duration-200 ease-linear">
                   <div className="flex items-center gap-2">
                     <SidebarTrigger className="-ml-1" />
