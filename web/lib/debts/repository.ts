@@ -3,7 +3,7 @@ import "server-only"
 import { createHash } from "node:crypto"
 import type { Transaction } from "kysely"
 
-import { lockAccounts, setBalance, shiftBalance, type LockedAccount } from "@/lib/db/accounts"
+import { jarShortfall, lockAccounts, setBalance, shiftBalance, type LockedAccount } from "@/lib/db/accounts"
 import { getDb } from "@/lib/db/client"
 import { retryOnDeadlock } from "@/lib/db/retry"
 import type { DB } from "@/lib/db/types"
@@ -220,6 +220,8 @@ async function applyBalance(trx: Trx, account: LockedAccount, delta: number) {
   const balance = shiftBalance(account.balance, delta)
   // Accounts may go below zero; only the bound either way stops a change.
   if (balance === null) throw new DebtValidationError("Số dư tài khoản vượt giới hạn cho phép.")
+  const shortfall = jarShortfall(account, delta, balance)
+  if (shortfall) throw new DebtValidationError(shortfall)
   await setBalance(trx, account.id, balance)
   account.balance = balance
 }

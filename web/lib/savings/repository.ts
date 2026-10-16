@@ -3,6 +3,7 @@ import "server-only"
 import { AccountValidationError } from "@/lib/accounts/validation"
 import { lockAccounts } from "@/lib/db/accounts"
 import { getDb } from "@/lib/db/client"
+import { formatDate, toDateKey } from "@/lib/format-date"
 import { retryOnDeadlock } from "@/lib/db/retry"
 import { randomId } from "@/lib/random-id"
 import type { JarFormValues } from "@/lib/savings/validation"
@@ -90,6 +91,19 @@ export async function buyWithJar(
       if (!jar || row?.type !== "savings") throw new AccountValidationError("Không tìm thấy hũ. Vui lòng tải lại trang.")
       if (row.completedAt) throw new AccountValidationError("Hũ này đã hoàn thành.")
 
+      // Bought once it had the money: not before the last time money went in or out of it.
+      const last = await trx
+        .selectFrom("transactions")
+        .select("occurredAt")
+        .where("userId", "=", userId)
+        .where((eb) => eb.or([eb("accountId", "=", jarId), eb("fromAccountId", "=", jarId), eb("toAccountId", "=", jarId)]))
+        .orderBy("occurredAt", "desc")
+        .limit(1)
+        .executeTakeFirst()
+      if (last && expense.occurredAt < last.occurredAt) {
+        throw new TransactionValidationError(`Ngày mua phải từ ${formatDate(toDateKey(last.occurredAt))}, lần nạp rút gần nhất của hũ, trở đi.`)
+      }
+
       const rest = jar.balance - expense.amount
       if (rest !== 0 && !otherAccountId) {
         throw new TransactionValidationError(rest > 0 ? "Chọn tài khoản nhận phần thừa." : "Chọn tài khoản trả phần thiếu.")
@@ -106,7 +120,7 @@ export async function buyWithJar(
       await insertTransaction(trx, userId, { ...expense, accountId: jarId }, requestId)
       if (rest > 0) await transfer(rest, jarId, otherAccountId!, "Phần thừa sau khi mua")
 
-      await trx.updateTable("accounts").set({ status: "archived", completedAt: new Date() }).where("id", "=", jarId).execute()
+      await trx.updateTable("accounts").set({ status: "archived", completedAt: expense.occurredAt }).where("id", "=", jarId).execute()
     }),
   )
 }
@@ -141,11 +155,13 @@ export async function deleteJar(userId: string, jarId: string) {
       await trx.updateTable("accounts").set({ status: "active", completedAt: null }).where("id", "=", jarId).execute()
       const moves = await trx
         .selectFrom("transactions")
-        .select("id")
+        .select(["id", "kind", "toAccountId"])
         .where("userId", "=", userId)
         .where((eb) => eb.or([eb("accountId", "=", jarId), eb("fromAccountId", "=", jarId), eb("toAccountId", "=", jarId)]))
         .execute()
-      for (const move of moves) await deleteOne(trx, userId, move.id)
+      // What went out of it undone first, then what went in, so it never dips below zero on the way.
+      const into = (move: (typeof moves)[number]) => move.kind === "income" || move.toAccountId === jarId
+      for (const move of [...moves.filter((move) => !into(move)), ...moves.filter(into)]) await deleteOne(trx, userId, move.id)
       await trx.deleteFrom("accounts").where("id", "=", jarId).execute()
     }),
   )

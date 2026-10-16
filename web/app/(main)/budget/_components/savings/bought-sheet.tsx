@@ -1,10 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { ShoppingBagIcon } from "lucide-react"
+import { ShoppingBagIcon, WalletCardsIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { AccountLogo } from "@/components/account-logo"
+import { NoticeBanner } from "@/components/app/notice-banner"
 import { IconTile } from "@/components/app/icon-tile"
 import { Money } from "@/components/app/money"
 import { PageSheet, PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
@@ -16,9 +17,9 @@ import { FieldError } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
-import { getCurrentLocalDateTime } from "@/lib/date-time"
+import { getCurrentLocalDateTime, getLocalDateTime } from "@/lib/date-time"
 import { formatCurrency } from "@/lib/format-currency"
-import { toDateKey } from "@/lib/format-date"
+import { formatDate, toDateKey } from "@/lib/format-date"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { randomId } from "@/lib/random-id"
 import { cn } from "@/lib/utils"
@@ -37,6 +38,7 @@ export function BoughtSheet({
   jar,
   accounts,
   categoryGroups,
+  since,
   open,
   onOpenChange,
   onDone,
@@ -44,6 +46,8 @@ export function BoughtSheet({
   jar: Account
   accounts: Account[]
   categoryGroups: CategoryGroup[]
+  /** When money last went in or out of the jar: it is not bought before that. */
+  since?: string
   open: boolean
   onOpenChange: (open: boolean) => void
   /** Saved: the jar's own sheet closes too, as the jar moves to the done ones. */
@@ -56,6 +60,7 @@ export function BoughtSheet({
           jar={jar}
           accounts={accounts}
           categoryGroups={categoryGroups}
+          since={since}
           onDone={() => {
             onOpenChange(false)
             onDone()
@@ -70,11 +75,13 @@ function BoughtForm({
   jar,
   accounts,
   categoryGroups,
+  since,
   onDone,
 }: {
   jar: Account
   accounts: Account[]
   categoryGroups: CategoryGroup[]
+  since?: string
   onDone: () => void
 }) {
   const today = toDateKey(new Date())
@@ -99,6 +106,7 @@ function BoughtForm({
   const category = items.find((item) => item.id === categoryId)
   const account = choices.find((item) => item.id === accountId)
   const rest = jar.balance - (price ?? 0)
+  const earliest = since ? getLocalDateTime(since) : null
 
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -109,6 +117,9 @@ function BoughtForm({
       return
     }
     if (!categoryId) return setError("Chọn hạng mục.")
+    if (earliest && `${when.date} ${when.time}` < `${earliest.date} ${earliest.time}`) {
+      return setError(`Ngày mua phải từ ${formatDate(earliest.date)}, lần nạp rút gần nhất của hũ, trở đi.`)
+    }
     if (rest !== 0 && !accountId) return setError(rest > 0 ? "Chọn tài khoản nhận phần thừa." : "Chọn tài khoản trả phần thiếu.")
     const formData = new FormData(event.currentTarget)
     startTransition(async () => {
@@ -186,12 +197,18 @@ function BoughtForm({
             date={when.date}
             time={when.time}
             today={today}
+            min={earliest?.date}
             onDateChange={(date) => setWhen((current) => ({ ...current, date }))}
             onTimeChange={(time) => setWhen((current) => ({ ...current, time }))}
             invalid={false}
           />
         </SettingsGroup>
 
+        {rest !== 0 && choices.length === 0 ? (
+          <NoticeBanner tone="warning" icon={WalletCardsIcon} title="Không có tài khoản nào khả dụng">
+            {`Các tài khoản chính đều đã khoá. Mở khoá hoặc thêm một tài khoản để ${rest > 0 ? "nhận phần thừa" : "trả phần thiếu"}, hoặc nhập giá bằng số tiền trong hũ.`}
+          </NoticeBanner>
+        ) : null}
         {rest !== 0 ? (
           <SettingsGroup
             footer={rest > 0 ? "Phần thừa chuyển về tài khoản này, hũ chuyển sang Đã hoàn thành." : "Phần thiếu trả từ tài khoản này."}
@@ -200,8 +217,8 @@ function BoughtForm({
             <SettingsRow
               media={account ? <AccountLogo account={account} /> : undefined}
               title={rest > 0 ? "Chuyển về" : "Trả thêm từ"}
-              value={account?.name ?? "Chọn tài khoản"}
-              onClick={() => setPicking("account")}
+              value={account?.name ?? (choices.length ? "Chọn tài khoản" : "Không có")}
+              onClick={choices.length ? () => setPicking("account") : undefined}
             />
           </SettingsGroup>
         ) : null}

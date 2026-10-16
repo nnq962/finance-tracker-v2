@@ -88,7 +88,8 @@ export function TimeRows({
     { key: today, label: "Hôm nay" },
     { key: shiftDate(today, 1), label: "Hôm qua" },
     { key: shiftDate(today, 2), label: "Hôm kia" },
-  ]
+    // None before the earliest day allowed.
+  ].filter((day) => day.key >= min)
 
   return (
     <>

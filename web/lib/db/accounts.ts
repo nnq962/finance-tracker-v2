@@ -4,6 +4,7 @@ import type { Transaction } from "kysely"
 
 import type { DB } from "@/lib/db/types"
 
+import { formatCurrency } from "@/lib/format-currency"
 import { MAX_MONEY } from "@/lib/money"
 
 export { MAX_MONEY }
@@ -13,6 +14,7 @@ export type LockedAccount = {
   name: string
   balance: number
   status: string
+  type: string
 }
 
 /**
@@ -32,7 +34,7 @@ export async function lockAccounts(
 
   const rows = await trx
     .selectFrom("accounts")
-    .select(["id", "name", "balance", "status"])
+    .select(["id", "name", "balance", "status", "type"])
     .where("userId", "=", userId)
     .where("id", "in", ids)
     .orderBy("id")
@@ -49,6 +51,16 @@ export function shiftBalance(balance: number, delta: number) {
   return Number.isSafeInteger(next) && next >= -MAX_MONEY && next <= MAX_MONEY
     ? next
     : null
+}
+
+/**
+ * Why money cannot leave an account, or null when it can: a savings jar never
+ * goes below zero (2026-10-16), what it holds is all that can come out of it.
+ * Other accounts may.
+ */
+export function jarShortfall(account: LockedAccount, delta: number, balance: number) {
+  if (account.type !== "savings" || delta >= 0 || balance >= 0) return null
+  return `Hũ “${account.name}” chỉ còn ${formatCurrency(Math.max(account.balance, 0))}, không đủ để lấy ra.`
 }
 
 export async function setBalance(

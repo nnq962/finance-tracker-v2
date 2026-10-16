@@ -53,6 +53,7 @@ export function JarList({
   recentTransactions,
   categoryGroups,
   part,
+  initialOpenId,
 }: {
   /** Every savings jar, finished ones too. */
   jars: Account[]
@@ -61,9 +62,14 @@ export function JarList({
   categoryGroups: CategoryGroup[]
   /** `open`: the group being filled, above the accounts; `done`: the finished ones, below them. */
   part: "open" | "done"
+  /** A jar whose sheet opens straight away (a link to it). */
+  initialOpenId?: string
 }) {
   const today = toDateKey(new Date())
-  const [openId, setOpenId] = React.useState<string | null>(null)
+  // Opened by the group it is listed in, so only one sheet opens.
+  const [openId, setOpenId] = React.useState<string | null>(
+    () => jars.find((jar) => jar.id === initialOpenId && (part === "done") === Boolean(jar.goal?.completedAt))?.id ?? null,
+  )
   // Each sheet keeps what it showed while it slides closed.
   const [form, setForm] = React.useState<{ open: boolean; mode: "new" | "edit" }>({ open: false, mode: "new" })
   const [move, setMove] = React.useState<{ open: boolean; way: "in" | "out" }>({ open: false, way: "in" })
@@ -148,6 +154,8 @@ export function JarList({
             jar={shown}
             accounts={accounts}
             categoryGroups={categoryGroups}
+            // Its moves come newest first.
+            since={recentTransactions[shown.id]?.[0]?.occurredAt}
             open={buying}
             onOpenChange={setBuying}
             onDone={() => setOpenId(null)}

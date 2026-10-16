@@ -70,6 +70,16 @@ async function run() {
     assert.equal(await balance(jar), 19_000_000)
     assert.equal(await balance(bank), 30_000_000)
     assert.equal(await balance(cash), 2_000_000)
+    // A jar never goes below zero: no more out of it than it holds, nor a move in undone that it has spent.
+    await assert.rejects(() => transactions.createTransaction(userId, transfer(19_000_001, jar, cash), randomUUID()), /chỉ còn 19\.000\.000/)
+    const smallIn = randomUUID()
+    await transactions.createTransaction(userId, transfer(500_000, bank, jar), smallIn)
+    await transactions.createTransaction(userId, transfer(19_500_000, jar, cash), randomUUID())
+    await assert.rejects(() => transactions.deleteTransaction(userId, smallIn), /không đủ/)
+    await transactions.createTransaction(userId, transfer(19_500_000, cash, jar), randomUUID())
+    await transactions.deleteTransaction(userId, smallIn)
+    assert.equal(await balance(jar), 19_000_000)
+    assert.equal(await balance(cash), 2_000_000)
     await savings.assertOpenJar(userId, jar)
     await assert.rejects(() => savings.assertOpenJar(userId, bank), /Không tìm thấy hũ/)
 
@@ -80,11 +90,16 @@ async function run() {
     assert.equal(plan.monthsLeft('2026-10-31', '2026-10-14'), 1)
     assert.equal(plan.monthsLeft('2026-09-30', '2026-10-14'), 1)
     assert.equal(plan.monthlyAmount({ balance: 18_000_000, goal: { target: 30_000_000, icon: 'bike', due: '2026-12-31' } }, '2026-10-14'), 4_000_000)
-    assert.equal(plan.monthlyAmount({ balance: 0, goal: { target: 1_000_000, icon: 'bike', due: '2026-12-31' } }, '2026-10-14'), 400_000)
+    assert.equal(plan.monthlyAmount({ balance: 0, goal: { target: 1_000_000, icon: 'bike', due: '2026-12-31' } }, '2026-10-14'), 340_000)
+    // Rounded to the amount's own scale: 500k over 15 months is 34k a month, not 100k.
+    assert.equal(plan.monthlyAmount({ balance: 0, goal: { target: 500_000, icon: 'bike', due: '2027-12-31' } }, '2026-10-14'), 34_000)
     assert.equal(plan.monthlyAmount({ balance: 0, goal: { target: 30, icon: 'bike', due: '2026-12-31' } }, '2026-10-14'), 30)
     assert.equal(plan.jarPlanLabel({ balance: 5, goal: { target: 5, icon: 'bike' } }, '2026-10-14'), 'Đủ tiền rồi')
 
     // Bought for less: the price spent from the jar, the rest back to an account, the jar finished.
+    // Not bought before the last move in or out of it.
+    const early = { kind: 'expense', amount: 17_500_000, accountId: jar, categoryId: shopping, occurredAt: new Date(Date.now() - 86_400_000) }
+    await assert.rejects(() => savings.buyWithJar(userId, jar, early, cash, randomUUID()), /Ngày mua phải từ/)
     const cheaper = { kind: 'expense', amount: 17_500_000, accountId: jar, categoryId: shopping, occurredAt: new Date() }
     await assert.rejects(() => savings.buyWithJar(userId, jar, cheaper, undefined, randomUUID()), /nhận phần thừa/)
     const bought = randomUUID()
@@ -95,7 +110,8 @@ async function run() {
     assert.equal(await count('SELECT count(*) FROM transactions WHERE account_id = $1 AND kind = $2', [jar, 'expense']), 1)
     const finished = (await sql('SELECT status, completed_at FROM accounts WHERE id = $1', [jar])).rows[0]
     assert.equal(finished.status, 'archived')
-    assert.ok(finished.completed_at)
+    // Finished on the day it was bought, not the day it was written down.
+    assert.equal(finished.completed_at.getTime(), cheaper.occurredAt.getTime())
     await assert.rejects(() => savings.buyWithJar(userId, jar, cheaper, cash, randomUUID()), /đã hoàn thành/)
     await assert.rejects(() => savings.assertOpenJar(userId, jar), /đã hoàn thành/)
     // Its moves can no longer change while it is finished (archived).
@@ -114,16 +130,16 @@ async function run() {
     await savings.createJar(userId, { name: 'Điện thoại', icon: 'phone', target: 10_000_000 }, phone)
     await transactions.createTransaction(userId, transfer(10_000_000, bank, phone), randomUUID())
     await assert.rejects(
-      () => savings.buyWithJar(userId, phone, { ...cheaper, amount: 12_000_000, accountId: phone }, undefined, randomUUID()),
+      () => savings.buyWithJar(userId, phone, { ...cheaper, amount: 12_000_000, accountId: phone, occurredAt: new Date() }, undefined, randomUUID()),
       /trả phần thiếu/,
     )
-    await savings.buyWithJar(userId, phone, { ...cheaper, amount: 12_000_000, accountId: phone }, bank, randomUUID())
+    await savings.buyWithJar(userId, phone, { ...cheaper, amount: 12_000_000, accountId: phone, occurredAt: new Date() }, bank, randomUUID())
     assert.equal(await balance(phone), 0)
     assert.equal(await balance(bank), 38_000_000)
     const tv = randomUUID()
     await savings.createJar(userId, { name: 'Ti vi', icon: 'tv', target: 5_000_000 }, tv)
     await transactions.createTransaction(userId, transfer(5_000_000, bank, tv), randomUUID())
-    await savings.buyWithJar(userId, tv, { ...cheaper, amount: 5_000_000, accountId: tv }, undefined, randomUUID())
+    await savings.buyWithJar(userId, tv, { ...cheaper, amount: 5_000_000, accountId: tv, occurredAt: new Date() }, undefined, randomUUID())
     assert.equal(await balance(tv), 0)
     assert.equal(await count('SELECT count(*) FROM transactions WHERE from_account_id = $1 OR to_account_id = $1', [tv]), 1)
 

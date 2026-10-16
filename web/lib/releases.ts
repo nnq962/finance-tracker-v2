@@ -32,6 +32,19 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.6.5",
+    date: "2026-10-16",
+    title: "Sửa lỗi hũ tiết kiệm và trang tài khoản",
+    changes: [
+      { kind: "fixed", text: "Hũ không bao giờ bị âm: không rút quá số tiền đang có, kể cả khi sửa hay xoá giao dịch nạp." },
+      { kind: "fixed", text: "Ngày mua không được trước lần nạp rút gần nhất của hũ; hũ hoàn thành đúng vào ngày mua đã chọn." },
+      { kind: "fixed", text: "Số tiền nên nạp mỗi tháng làm tròn theo cỡ mục tiêu (500k trong 15 tháng là 34k, không còn 100k)." },
+      { kind: "improved", text: "Nạp, rút hay mua khi mọi tài khoản đều đã khoá thì báo không có tài khoản nào khả dụng." },
+      { kind: "fixed", text: "Khoá tài khoản cuối cùng thì nhóm Đã khoá mở ra ngay; link tới một hũ mở đúng sheet của hũ." },
+      { kind: "fixed", text: "Thẻ nét đứt thêm tài khoản, thêm hũ lún xuống khi bấm giống các thẻ khác." },
+    ],
+  },
+  {
     version: "6.6.4",
     date: "2026-10-14",
     title: "Hũ dạng thẻ trên máy tính",

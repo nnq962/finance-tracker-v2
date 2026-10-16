@@ -77,7 +77,7 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
     .sort((left, right) => right.balance - left.balance)
   const archivedAccounts = accounts.filter((account) => account.status === "archived" && account.type !== "savings")
   // A deleted account closes its sheet.
-  const openAccount = accounts.find((account) => account.id === openAccountId)
+  const openAccount = accounts.find((account) => account.id === openAccountId && account.type !== "savings")
 
   if (accounts.length === 0) {
     return (
@@ -138,7 +138,7 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
       </section>
 
       {/* The savings jars under the accounts in use, the locked accounts and finished jars after them. */}
-      <JarList jars={jars} accounts={accounts} recentTransactions={recentTransactions} categoryGroups={categoryGroups} part="open" />
+      <JarList jars={jars} accounts={accounts} recentTransactions={recentTransactions} categoryGroups={categoryGroups} part="open" initialOpenId={initialOpenId} />
 
       {archivedAccounts.length > 0 ? (
         <>
@@ -146,6 +146,8 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
               of those in use, as the group above them. */}
           <div className="lg:hidden">
             <SettingsGroup
+              // Opened again once the last account in use is locked, not only on the next visit.
+              key={activeAccounts.length === 0 ? "open" : "folded"}
               title="Đã khoá"
               collapsible={{ showLabel: `Hiện ${archivedAccounts.length} tài khoản`, defaultOpen: activeAccounts.length === 0 }}
             >
@@ -156,6 +158,7 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
           </div>
           <div className="hidden lg:block">
             <SettingsGroup
+              key={activeAccounts.length === 0 ? "open" : "folded"}
               plain
               title="Đã khoá"
               collapsible={{ showLabel: `Hiện ${archivedAccounts.length} tài khoản`, defaultOpen: activeAccounts.length === 0 }}
@@ -175,7 +178,7 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
         </>
       ) : null}
 
-      <JarList jars={jars} accounts={accounts} recentTransactions={recentTransactions} categoryGroups={categoryGroups} part="done" />
+      <JarList jars={jars} accounts={accounts} recentTransactions={recentTransactions} categoryGroups={categoryGroups} part="done" initialOpenId={initialOpenId} />
 
       <AddAccountSheet open={adding} onOpenChange={setAdding} />
 

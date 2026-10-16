@@ -1,9 +1,11 @@
 "use client"
 
 import * as React from "react"
+import { WalletCardsIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { AccountLogo } from "@/components/account-logo"
+import { NoticeBanner } from "@/components/app/notice-banner"
 import { PageSheet, PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { TimeRows } from "@/components/forms/time-rows"
@@ -85,6 +87,12 @@ function MoveForm({ jar, way, accounts, onDone }: { jar: Account; way: "in" | "o
       document.getElementById("jar-move-amount")?.focus()
       return
     }
+    // A jar never goes below zero: what it holds is all that can come out.
+    if (way === "out" && amount > jar.balance) {
+      setAmountError(`Trong hũ chỉ có ${formatCurrency(jar.balance)}.`)
+      document.getElementById("jar-move-amount")?.focus()
+      return
+    }
     if (!accountId) return setError("Chọn tài khoản.")
     const formData = new FormData(event.currentTarget)
     startTransition(async () => {
@@ -117,6 +125,12 @@ function MoveForm({ jar, way, accounts, onDone }: { jar: Account; way: "in" | "o
       ) : null}
 
       <div className={cn("flex flex-col gap-6 pb-4", picking && "hidden")}>
+        {/* Every account locked (or none yet): nothing to move the money from or to. */}
+        {choices.length === 0 ? (
+          <NoticeBanner tone="warning" icon={WalletCardsIcon} title="Không có tài khoản nào khả dụng">
+            {`Các tài khoản chính đều đã khoá. Mở khoá hoặc thêm một tài khoản để ${way === "in" ? "nạp vào hũ" : "nhận tiền rút ra"}.`}
+          </NoticeBanner>
+        ) : null}
         <div className="flex flex-col items-center gap-2">
           <label htmlFor="jar-move-amount" className="text-xs text-muted-foreground">
             Số tiền
@@ -160,8 +174,8 @@ function MoveForm({ jar, way, accounts, onDone }: { jar: Account; way: "in" | "o
           <SettingsRow
             media={account ? <AccountLogo account={account} /> : undefined}
             title={way === "in" ? "Từ tài khoản" : "Về tài khoản"}
-            value={account?.name ?? "Chọn tài khoản"}
-            onClick={() => setPicking(true)}
+            value={account?.name ?? (choices.length ? "Chọn tài khoản" : "Không có")}
+            onClick={choices.length ? () => setPicking(true) : undefined}
           />
           <TimeRows
             idPrefix="jar-move"
@@ -191,7 +205,7 @@ function MoveForm({ jar, way, accounts, onDone }: { jar: Account; way: "in" | "o
       {picking ? null : (
         <PageSheetFooter>
           {error ? <FieldError>{error}</FieldError> : null}
-          <Button type="submit" className="w-full" disabled={pending}>
+          <Button type="submit" className="w-full" disabled={pending || choices.length === 0}>
             {pending ? <Spinner /> : null}
             {pending ? "Đang lưu..." : way === "in" ? "Nạp vào hũ" : "Rút ra"}
           </Button>

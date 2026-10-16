@@ -2,7 +2,7 @@ import "server-only"
 
 import { sql, type Transaction as DbTransaction } from "kysely"
 
-import { lockAccounts, setBalance, shiftBalance, type LockedAccount } from "@/lib/db/accounts"
+import { jarShortfall, lockAccounts, setBalance, shiftBalance, type LockedAccount } from "@/lib/db/accounts"
 import { getDb } from "@/lib/db/client"
 import { retryOnDeadlock } from "@/lib/db/retry"
 import { getPaymentInterests } from "@/lib/debts/calculations"
@@ -78,6 +78,8 @@ async function applyImpacts(
     if (balance === null) {
       throw new TransactionValidationError("Số dư tài khoản vượt quá giới hạn cho phép.")
     }
+    const shortfall = account && jarShortfall(account, delta, balance)
+    if (shortfall) throw new TransactionValidationError(shortfall)
 
     await setBalance(trx, accountId, balance)
   }
