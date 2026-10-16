@@ -47,8 +47,10 @@ export type Account = {
 export type SavingsGoal = {
   /** How much is to be put aside. */
   target: number
-  /** What it is for (lib/savings/jar-icons), which also gives its colour. */
+  /** Its icon, one of the category icons (lib/icons/category-icon-registry). */
   icon: string
+  /** Its colour, one of the category colours. */
+  color: string
   /** "YYYY-MM-DD", the due month's last day, if one is set. */
   due?: string
   /** When what it was for was bought; the jar is then archived, in "Hũ đã hoàn thành". */

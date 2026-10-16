@@ -14,7 +14,7 @@ export function JarRing({ jar, size = "row" }: { jar: Pick<Account, "balance" | 
   // A finished jar was spent: full, as it was when bought.
   const share = jar.goal?.completedAt ? 1 : savedShare(jar)
   const full = share >= 1
-  const icon = getJarIcon(jar.goal?.icon)
+  const icon = getJarIcon(jar.goal)
   const length = 2 * Math.PI * 16
   return (
     <span
@@ -37,7 +37,11 @@ export function JarRing({ jar, size = "row" }: { jar: Pick<Account, "balance" | 
           />
         ) : null}
       </svg>
-      <icon.icon className={cn(size === "row" ? "size-[18px]" : "size-10", full ? "text-income" : "text-foreground")} />
+      {/* In the jar's colour, as the user chose it (2026-10-16), green once full. */}
+      <icon.icon
+        className={cn(size === "row" ? "size-[18px]" : "size-10", full && "text-income")}
+        style={full ? undefined : { color: getCategoryColor(icon.tone).chartFill }}
+      />
     </span>
   )
 }

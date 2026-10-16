@@ -5,36 +5,42 @@ import { SaveIcon, Trash2Icon } from "lucide-react"
 import { toast } from "sonner"
 
 import { ActionSheet } from "@/components/app/action-sheet"
-import { IconTile } from "@/components/app/icon-tile"
 import { MonthPickerSheet } from "@/components/app/month-picker-sheet"
 import { PageSheet, PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
-import { gridChoices, PickGrid } from "@/components/app/pick-grid"
+import { ColorPicker } from "@/components/forms/color-picker"
 import { CurrencyInput } from "@/components/forms/currency-input"
-import { SettingsGroup, SettingsRow, settingsSeparatorClassName } from "@/components/settings-list"
+import { IconPicker, IconPickerScreen } from "@/components/forms/icon-picker"
+import { InlineInput } from "@/components/forms/inline-input"
+import { groupCaptionClassName, SettingsFieldRow, SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import type { Account } from "@/lib/accounts/types"
+import type { CategoryColorName } from "@/lib/categories/category-colors"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDate, toDateKey } from "@/lib/format-date"
 import { randomId } from "@/lib/random-id"
-import { getJarIcon, jarIcons } from "@/lib/savings/jar-icons"
+import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
+import { DEFAULT_JAR_COLOR, DEFAULT_JAR_ICON, isJarColorName, isJarIconName } from "@/lib/savings/jar-icons"
 import { dueLeftLabel, lastDayOfMonth, monthlyAmount } from "@/lib/savings/plan"
 import { scheduleUndoableDelete } from "@/lib/undoable-delete"
 import { cn } from "@/lib/utils"
 
 import { createJarAction, deleteJarAction, updateJarAction } from "../../savings-actions"
+import { JarRing } from "./jar-ring"
 
-/** The default when a new jar opens: the first idea, named after it. */
-const FIRST_ICON = jarIcons[0]
+function Caption({ children }: { children: React.ReactNode }) {
+  return <h3 className={cn("px-4", groupCaptionClassName)}>{children}</h3>
+}
 
 /**
- * A jar made or changed: how much (the target, large at the top), what for
- * (a grid of icons that also names it until a name is typed; all of them on
- * a deeper screen), its name, and if wanted the month it is due, which
- * says how much to put in each month. Editing, the red bin beside Save
- * deletes it, asked once more.
+ * A jar made or changed, laid out as a category's editor (2026-10-16): the
+ * jar's ring following each choice, how much (the target, large), its name
+ * typed by the user, its icon from the app's category icons (suggested by
+ * the name; all of them, with a search, on a deeper screen) and its colour,
+ * and if wanted the month it is due, which says how much to put in each
+ * month. Editing, the red bin beside Save deletes it, asked once more.
  */
 export function JarFormSheet({
   jar,
@@ -65,10 +71,13 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
   const [error, setError] = React.useState<string | null>(null)
   const [targetError, setTargetError] = React.useState<string | null>(null)
   const [target, setTarget] = React.useState<number | null>(jar?.goal?.target ?? null)
-  const [icon, setIcon] = React.useState<string>(jar?.goal?.icon ?? FIRST_ICON.id)
-  const [name, setName] = React.useState(jar?.name ?? FIRST_ICON.label)
-  // Typed by the user, so picking another icon leaves it alone.
-  const [named, setNamed] = React.useState(Boolean(jar))
+  const [icon, setIcon] = React.useState<CategoryIconName>(() =>
+    jar?.goal && isJarIconName(jar.goal.icon) ? jar.goal.icon : DEFAULT_JAR_ICON,
+  )
+  const [color, setColor] = React.useState<CategoryColorName>(() =>
+    jar?.goal && isJarColorName(jar.goal.color) ? jar.goal.color : DEFAULT_JAR_COLOR,
+  )
+  const [name, setName] = React.useState(jar?.name ?? "")
   const [withDue, setWithDue] = React.useState(Boolean(jar?.goal?.due) || !jar)
   // Three months ahead to start with: a near goal, easily moved.
   const [dueMonth, setDueMonth] = React.useState(() => {
@@ -80,16 +89,11 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
   const [pickingMonth, setPickingMonth] = React.useState(false)
   const [allIcons, setAllIcons] = React.useState(false)
   const [confirmDelete, setConfirmDelete] = React.useState(false)
-  usePageSheetScreen(allIcons ? { title: "Để dành cho", onBack: () => setAllIcons(false) } : null)
-
-  const pick = (id: string) => {
-    setIcon(id)
-    if (!named) setName(getJarIcon(id).label)
-  }
+  usePageSheetScreen(allIcons ? { title: "Biểu tượng", onBack: () => setAllIcons(false) } : null)
 
   // What is still needed spread over the months to the due one, as the jar's sheet will say.
   const monthly =
-    withDue && target ? monthlyAmount({ balance: jar?.balance ?? 0, goal: { target, icon, due: lastDayOfMonth(dueMonth) } }, today) : null
+    withDue && target ? monthlyAmount({ balance: jar?.balance ?? 0, goal: { target, icon, color, due: lastDayOfMonth(dueMonth) } }, today) : null
 
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -138,27 +142,27 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
     <form noValidate onSubmit={submit} className="flex flex-1 flex-col">
       <input type="hidden" name="requestId" value={requestId} />
       <input type="hidden" name="icon" value={icon} />
+      <input type="hidden" name="color" value={color} />
       {withDue ? <input type="hidden" name="dueMonth" value={dueMonth} /> : null}
 
       {/* The deeper screen; the first stays mounted under it, so nothing typed is lost. */}
       {allIcons ? (
-        <SettingsGroup>
-          {jarIcons.map((item) => (
-            <SettingsRow
-              key={item.id}
-              media={<IconTile icon={item.icon} tone={item.tone} size="sm" />}
-              title={item.label}
-              checked={icon === item.id}
-              onClick={() => {
-                pick(item.id)
-                setAllIcons(false)
-              }}
-            />
-          ))}
-        </SettingsGroup>
+        <IconPickerScreen
+          value={icon}
+          color={color}
+          onPick={(next) => {
+            setIcon(next)
+            setAllIcons(false)
+          }}
+        />
       ) : null}
 
       <div className={cn("flex flex-col gap-6 pb-4", allIcons && "hidden")}>
+        {/* What it will look like, following each choice. */}
+        <div className="flex justify-center pt-2">
+          <JarRing jar={{ balance: jar?.balance ?? 0, goal: { target: target ?? 0, icon, color } }} size="lead" />
+        </div>
+
         <div className="flex flex-col items-center gap-2">
           <label htmlFor="jar-target" className="text-xs text-muted-foreground">
             Mục tiêu
@@ -178,40 +182,39 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
           {targetError ? <FieldError className="text-center">{targetError}</FieldError> : null}
         </div>
 
-        <PickGrid
-          id="jar-icon"
-          caption="Để dành cho"
-          items={gridChoices(jarIcons, icon).map((item) => ({
-            id: item.id,
-            label: item.label,
-            media: <IconTile icon={item.icon} tone={item.tone} />,
-          }))}
-          value={icon}
-          onValueChange={pick}
-          onShowAll={() => setAllIcons(true)}
-        />
+        <SettingsGroup>
+          <SettingsFieldRow htmlFor="jar-name" title="Tên">
+            <InlineInput
+              id="jar-name"
+              name="name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Mua xe máy"
+              maxLength={80}
+            />
+          </SettingsFieldRow>
+        </SettingsGroup>
+
+        <section className="flex flex-col gap-2">
+          <Caption>Biểu tượng</Caption>
+          <IconPicker
+            value={icon}
+            color={color}
+            name={name}
+            fallback={[DEFAULT_JAR_ICON]}
+            onValueChange={setIcon}
+            onShowAll={() => setAllIcons(true)}
+          />
+          <p className="px-4 text-xs text-muted-foreground">Gợi ý theo tên. Ô cuối mở tất cả biểu tượng.</p>
+        </section>
+
+        <section className="flex flex-col gap-2">
+          <Caption>Màu</Caption>
+          <ColorPicker value={color} onValueChange={setColor} />
+        </section>
 
         <div className="flex flex-col gap-2">
           <SettingsGroup>
-            {/* The name typed in place, at the row's end, as iOS settings do. */}
-            <li className={cn("flex min-h-16 items-center gap-3 px-4 py-3", settingsSeparatorClassName())}>
-              <label htmlFor="jar-name" className="shrink-0 text-sm font-medium">
-                Tên
-              </label>
-              <input
-                id="jar-name"
-                name="name"
-                value={name}
-                onChange={(event) => {
-                  setName(event.target.value)
-                  setNamed(event.target.value.trim().length > 0)
-                }}
-                placeholder="Tên hũ"
-                autoComplete="off"
-                maxLength={80}
-                className="min-w-0 flex-1 bg-transparent text-right text-sm outline-none placeholder:text-muted-foreground"
-              />
-            </li>
             <SettingsRow
               title="Đặt hạn"
               description="Tính số tiền cần nạp mỗi tháng"

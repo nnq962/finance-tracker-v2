@@ -368,14 +368,16 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   hai sheet.
 - **Hũ tiết kiệm** (2026-10-14, `budget/_components/savings/`): hũ là một tài khoản loại `savings` (không lãi, để
   dành mua một món), tiền vào ra là chuyển khoản. Trang Tài khoản có nhóm "HŨ TIẾT KIỆM · N" dưới "TÀI KHOẢN CHÍNH · N" (tên cũ "Đang dùng", đổi 2026-10-14):
-  mỗi hũ một dòng, ô đầu là `JarRing` (vòng tiến độ 36 quanh biểu tượng, màu theo biểu tượng, đầy thì xanh lá),
+  mỗi hũ một dòng, ô đầu là `JarRing` (vòng tiến độ 36 quanh biểu tượng, vòng và biểu tượng theo màu hũ, đầy thì xanh lá),
   dòng phụ "Còn 3 tháng · 5tr/tháng" / "Còn thiếu …" / "Đủ tiền rồi 🎉" (xanh lá), bên phải số đã có và "/ 15tr";
   cuối nhóm "Thêm hũ". Hũ đã mua nằm trong "Hũ đã hoàn thành" (thu gọn, dưới cùng, dòng xám "Đã mua 14/10 ·
   giá"). Thẻ Tổng số dư có dòng "Hũ tiết kiệm" (tối đa 3 icon xếp chồng để số không xuống dòng). Chi tiết hũ
   (`JarSheet`): vòng lớn, tên, số đã có `xl`, "60% của …"; Mục tiêu, Còn thiếu, Hạn, Mỗi tháng nên nạp; "Lịch
   sử" 5 lần gần nhất + "Xem tất cả"; chân sheet "Rút ra" (secondary) và "Nạp vào hũ", đủ tiền thì thông báo xanh
-  và "Đã mua". Bút chì mở `JarFormSheet` (cũng là màn tạo): Mục tiêu lớn, lưới "Để dành cho" (7 + Tất cả,
-  biểu tượng đặt tên cho tới khi gõ tên), Tên, công tắc "Đặt hạn" + dòng Hạn (`MonthPickerSheet` từ tháng này),
+  và "Đã mua". Bút chì mở `JarFormSheet` (cũng là màn tạo; 2026-10-16 bày như màn sửa danh mục): vòng hũ theo lựa chọn,
+  Mục tiêu lớn, Tên (người dùng tự gõ), "Biểu tượng" là `IconPicker` của danh mục (gợi ý theo tên, ô cuối mở
+  `IconPickerScreen` đủ bộ icon danh mục có ô tìm), "Màu" là `ColorPicker` (màu danh mục; tô cả vòng lẫn biểu
+  tượng ở mọi nơi hũ hiện), công tắc "Đặt hạn" + dòng Hạn (`MonthPickerSheet` từ tháng này),
   "Cần nạp khoảng … mỗi tháng để đạt mục tiêu đúng hạn" (Mục tiêu có gợi ý nhập nhanh như ô số tiền khác); thùng rác cạnh Lưu xoá hũ (hỏi lại; các lần nạp, rút bị xoá, tiền
   về tài khoản cũ). `MoveJarSheet`: số tiền lớn + nút điền nhanh "Tháng này · 5tr", "Đủ mục tiêu · 15tr" (rút ra:
   "Rút hết"), Từ/Về tài khoản (màn sâu), thời gian, ghi chú. `BoughtSheet`: Giá mua (mặc định mục tiêu), Hạng

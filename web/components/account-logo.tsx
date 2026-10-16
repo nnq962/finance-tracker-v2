@@ -10,7 +10,7 @@ type AccountLogoProps = {
   account: Pick<
     Account,
     "institutionName" | "logoFallback" | "logoUrl" | "name" | "type"
-  > & { goal?: Pick<NonNullable<Account["goal"]>, "icon"> }
+  > & { goal?: Pick<NonNullable<Account["goal"]>, "icon" | "color"> }
   /** lg: the head of the account's sheet (48, as IconTile lg); sm: a list row's tile (36, as IconTile sm); xs: beside a name in a select. */
   size?: "lg" | "sm" | "xs"
   className?: string
@@ -31,7 +31,7 @@ const tileClassName = {
  */
 export function AccountLogo({ account, size = "sm", className }: AccountLogoProps) {
   if (account.type === "cash" || account.type === "savings") {
-    const jar = account.type === "savings" ? getJarIcon(account.goal?.icon) : null
+    const jar = account.type === "savings" ? getJarIcon(account.goal) : null
     return (
       <span aria-hidden="true" className={className}>
         <IconTile

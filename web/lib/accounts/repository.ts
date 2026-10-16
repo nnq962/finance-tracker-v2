@@ -61,7 +61,8 @@ export async function getAccounts(userId: string): Promise<Account[]> {
         ? {
             goal: {
               target: row.goalTarget,
-              icon: row.goalIcon ?? "other",
+              icon: row.goalIcon ?? "piggy-bank",
+              color: row.goalColor ?? "orange",
               ...(row.goalDue ? { due: row.goalDue } : {}),
               ...(row.completedAt ? { completedAt: row.completedAt.toISOString() } : {}),
             },

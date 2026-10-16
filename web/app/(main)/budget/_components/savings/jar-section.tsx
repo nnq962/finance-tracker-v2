@@ -116,7 +116,7 @@ export function JarList({
       ) : done.length > 0 ? (
         <SettingsGroup title="Hũ đã hoàn thành" collapsible={{ showLabel: `Hiện ${done.length} hũ` }}>
           {done.map((jar) => {
-            const icon = getJarIcon(jar.goal?.icon)
+            const icon = getJarIcon(jar.goal)
             const price = recentTransactions[jar.id]?.find((transaction) => transaction.kind === "expense" && transaction.accountId === jar.id)?.amount
             return (
               <SettingsRow

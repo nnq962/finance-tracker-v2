@@ -16,6 +16,7 @@ export interface Accounts {
   completedAt: Timestamp | null;
   createdAt: Generated<Timestamp>;
   excluded: Generated<boolean>;
+  goalColor: string | null;
   goalDue: string | null;
   goalIcon: string | null;
   goalTarget: number | null;

@@ -30,6 +30,7 @@ export async function createJar(userId: string, values: JarFormValues, requestId
       balance: 0,
       goalTarget: values.target,
       goalIcon: values.icon,
+      goalColor: values.color,
       goalDue: values.due ?? null,
     })
     .onConflict((conflict) => conflict.column("id").doNothing())
@@ -58,7 +59,7 @@ export async function getJarDue(userId: string, jarId: string) {
 export async function updateJar(userId: string, jarId: string, values: JarFormValues) {
   const result = await getDb()
     .updateTable("accounts")
-    .set({ name: values.name, goalIcon: values.icon, goalTarget: values.target, goalDue: values.due ?? null })
+    .set({ name: values.name, goalIcon: values.icon, goalColor: values.color, goalTarget: values.target, goalDue: values.due ?? null })
     .where("id", "=", jarId)
     .where("userId", "=", userId)
     .where("type", "=", "savings")

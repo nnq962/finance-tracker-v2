@@ -71,9 +71,15 @@ CREATE TABLE public.accounts (
     goal_icon text,
     goal_due date,
     completed_at timestamp with time zone,
+    goal_color text,
     CONSTRAINT accounts_balance_check CHECK (((balance >= '-999999999999999'::bigint) AND (balance <= '999999999999999'::bigint))),
     CONSTRAINT accounts_check CHECK (((type = ANY (ARRAY['cash'::text, 'savings'::text])) = (institution_id IS NULL))),
-    CONSTRAINT accounts_goal_check CHECK ((((type = 'savings'::text) = ((goal_target IS NOT NULL) AND (goal_icon IS NOT NULL))) AND ((type = 'savings'::text) OR ((goal_due IS NULL) AND (completed_at IS NULL))))),
+    CONSTRAINT accounts_goal_check CHECK (
+CASE
+    WHEN (type = 'savings'::text) THEN ((goal_target IS NOT NULL) AND (goal_icon IS NOT NULL) AND (goal_color IS NOT NULL))
+    ELSE ((goal_target IS NULL) AND (goal_icon IS NULL) AND (goal_color IS NULL) AND (goal_due IS NULL) AND (completed_at IS NULL))
+END),
+    CONSTRAINT accounts_goal_color_check CHECK (((char_length(goal_color) >= 1) AND (char_length(goal_color) <= 32))),
     CONSTRAINT accounts_goal_icon_check CHECK (((char_length(goal_icon) >= 1) AND (char_length(goal_icon) <= 32))),
     CONSTRAINT accounts_goal_target_check CHECK (((goal_target > 0) AND (goal_target <= '999999999999999'::bigint))),
     CONSTRAINT accounts_institution_id_check CHECK (((char_length(institution_id) >= 1) AND (char_length(institution_id) <= 64))),
@@ -1264,4 +1270,5 @@ INSERT INTO dbmate.schema_migrations (version) VALUES
     ('20261012000001'),
     ('20261012000002'),
     ('20261012000003'),
-    ('20261014000001');
+    ('20261014000001'),
+    ('20261016000001');

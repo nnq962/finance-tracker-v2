@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.7.0",
+    date: "2026-10-16",
+    title: "Hũ tự đặt tên, chọn biểu tượng và màu",
+    changes: [
+      { kind: "new", text: "Tạo hoặc sửa hũ: tự gõ tên, chọn biểu tượng trong bộ khoảng 200 biểu tượng của app (gợi ý theo tên, có ô tìm) và chọn màu, như khi sửa danh mục." },
+      { kind: "improved", text: "Biểu tượng của hũ có màu của hũ ở danh sách, thẻ và chi tiết hũ. Các hũ cũ giữ biểu tượng gần nhất và màu cũ." },
+    ],
+  },
+  {
     version: "6.6.8",
     date: "2026-10-16",
     title: "Sửa lỗi hũ quá hạn và xoá hũ",
