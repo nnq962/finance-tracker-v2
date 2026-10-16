@@ -4,6 +4,8 @@ type OverviewLayoutProps = {
   netWorth: React.ReactNode
   /** The new user's missions, with Pro at their end; Pro's banner once every reward is in. */
   missions?: React.ReactNode
+  /** This month's spending limits; empty while none is set. */
+  budgets?: React.ReactNode
   calendar: React.ReactNode
   /** Debts coming due; left out when there are none. */
   dueDebts?: React.ReactNode
@@ -14,7 +16,7 @@ type OverviewLayoutProps = {
 /**
  * The overview's sections, shared with its loading state. Below lg they stack
  * in one column: net worth (the page's dark lead card), missions (or, once
- * they are done, the Pro invitation), calendar, allocation, trend, and due
+ * they are done, the Pro invitation), spending limits (when set), calendar, allocation, trend, and due
  * debts last. From lg up the lists form a rail on the left
  * (24rem wide from xl) and the calendar and trend chart, which read better
  * wide, take the rest. A slot whose content renders nothing
@@ -23,6 +25,7 @@ type OverviewLayoutProps = {
 export function OverviewLayout({
   netWorth,
   missions,
+  budgets,
   calendar,
   dueDebts,
   allocation,
@@ -37,6 +40,7 @@ export function OverviewLayout({
       <div className={columnClassName}>
         <div className="order-1">{netWorth}</div>
         {missions ? <div className="order-2 empty:hidden">{missions}</div> : null}
+        {budgets ? <div className="order-3 empty:hidden">{budgets}</div> : null}
         <div className="order-5">{allocation}</div>
         {dueDebts ? <div className="order-7">{dueDebts}</div> : null}
       </div>

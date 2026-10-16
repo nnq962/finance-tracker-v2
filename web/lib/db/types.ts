@@ -38,6 +38,24 @@ export interface AiUsage {
   userId: string;
 }
 
+export interface BudgetAlerts {
+  budgetId: string;
+  createdAt: Generated<Timestamp>;
+  level: number;
+  month: string;
+  userId: string;
+}
+
+export interface Budgets {
+  amount: number;
+  categoryGroupId: string | null;
+  categoryType: Generated<string>;
+  createdAt: Generated<Timestamp>;
+  id: Generated<string>;
+  updatedAt: Generated<Timestamp>;
+  userId: string;
+}
+
 export interface CategoryGroups {
   colorName: string;
   createdAt: Generated<Timestamp>;
@@ -255,6 +273,8 @@ export interface Users {
 export interface DB {
   accounts: Accounts;
   aiUsage: AiUsage;
+  budgetAlerts: BudgetAlerts;
+  budgets: Budgets;
   categoryGroups: CategoryGroups;
   categoryItems: CategoryItems;
   contacts: Contacts;

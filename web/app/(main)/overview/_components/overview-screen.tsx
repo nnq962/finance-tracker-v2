@@ -68,6 +68,7 @@ export function OverviewScreen({
   minMonth,
   summary,
   missions,
+  budgets,
 }: {
   accounts: Account[]
   categoryGroups: CategoryGroup[]
@@ -77,6 +78,8 @@ export function OverviewScreen({
   minMonth: string
   summary: OverviewSummary
   missions?: React.ReactNode
+  /** This month's spending limits, under net worth; renders nothing while none is set. */
+  budgets?: React.ReactNode
 }) {
   const [month, setMonth] = React.useState(today.slice(0, 7))
   // The calendar takes the new month at once; the categories' ring follows
@@ -104,6 +107,7 @@ export function OverviewScreen({
     <OverviewLayout
       netWorth={netWorth}
       missions={missions}
+      budgets={budgets}
       calendar={
         <MonthSection
           accounts={accounts}

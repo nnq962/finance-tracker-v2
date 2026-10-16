@@ -105,6 +105,37 @@ CREATE TABLE public.ai_usage (
 
 
 --
+-- Name: budget_alerts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.budget_alerts (
+    user_id text NOT NULL,
+    budget_id uuid NOT NULL,
+    month date NOT NULL,
+    level smallint NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT budget_alerts_level_check CHECK ((level = ANY (ARRAY[80, 100])))
+);
+
+
+--
+-- Name: budgets; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.budgets (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    user_id text NOT NULL,
+    category_group_id uuid,
+    category_type text DEFAULT 'expense'::text NOT NULL,
+    amount bigint NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT budgets_amount_check CHECK (((amount >= 1) AND (amount <= '999999999999999'::bigint))),
+    CONSTRAINT budgets_category_type_check CHECK ((category_type = 'expense'::text))
+);
+
+
+--
 -- Name: category_groups; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -534,6 +565,30 @@ ALTER TABLE ONLY public.ai_usage
 
 
 --
+-- Name: budget_alerts budget_alerts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.budget_alerts
+    ADD CONSTRAINT budget_alerts_pkey PRIMARY KEY (budget_id, month, level);
+
+
+--
+-- Name: budgets budgets_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.budgets
+    ADD CONSTRAINT budgets_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: budgets budgets_user_id_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.budgets
+    ADD CONSTRAINT budgets_user_id_id_key UNIQUE (user_id, id);
+
+
+--
 -- Name: category_groups category_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -773,6 +828,13 @@ CREATE INDEX accounts_user_created_idx ON public.accounts USING btree (user_id, 
 
 
 --
+-- Name: budgets_user_group_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX budgets_user_group_idx ON public.budgets USING btree (user_id, category_group_id) NULLS NOT DISTINCT;
+
+
+--
 -- Name: category_groups_user_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -913,6 +975,13 @@ CREATE TRIGGER accounts_set_updated_at BEFORE UPDATE ON public.accounts FOR EACH
 
 
 --
+-- Name: budgets budgets_set_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER budgets_set_updated_at BEFORE UPDATE ON public.budgets FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
 -- Name: category_groups category_groups_set_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -989,6 +1058,30 @@ ALTER TABLE ONLY public.accounts
 
 ALTER TABLE ONLY public.ai_usage
     ADD CONSTRAINT ai_usage_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: budget_alerts budget_alerts_user_id_budget_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.budget_alerts
+    ADD CONSTRAINT budget_alerts_user_id_budget_id_fkey FOREIGN KEY (user_id, budget_id) REFERENCES public.budgets(user_id, id) ON DELETE CASCADE;
+
+
+--
+-- Name: budgets budgets_user_id_category_group_id_category_type_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.budgets
+    ADD CONSTRAINT budgets_user_id_category_group_id_category_type_fkey FOREIGN KEY (user_id, category_group_id, category_type) REFERENCES public.category_groups(user_id, id, type) ON DELETE CASCADE;
+
+
+--
+-- Name: budgets budgets_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.budgets
+    ADD CONSTRAINT budgets_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -1271,4 +1364,5 @@ INSERT INTO dbmate.schema_migrations (version) VALUES
     ('20261012000002'),
     ('20261012000003'),
     ('20261014000001'),
-    ('20261016000001');
+    ('20261016000001'),
+    ('20261016000002');

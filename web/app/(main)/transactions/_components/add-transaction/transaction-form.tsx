@@ -6,6 +6,7 @@ import { toast } from "sonner"
 
 import { AccountLogo } from "@/components/account-logo"
 import { PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
+import { BudgetHint } from "@/components/budgets/budget-hint"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { TimeRows } from "@/components/forms/time-rows"
 import { SettingsGroup, SettingsRow, settingsSeparatorClassName } from "@/components/settings-list"
@@ -347,19 +348,27 @@ export function TransactionForm({
             {groups.length === 0 && !retired && !offered ? (
               <p className="px-4 text-sm text-muted-foreground">Chưa có hạng mục</p>
             ) : (
-              <CategoryGrid
-                id="transaction-category"
-                items={gridCategories(items, usage, cashFlowPick?.categoryId ?? "", (retired ? 1 : 0) + (offered ? 1 : 0))}
-                retired={retired}
-                suggested={offered}
-                value={cashFlowPick?.categoryId ?? ""}
-                onValueChange={(id) => {
-                  setCashFlowPick({ categoryId: id })
-                  clearError("categoryId")
-                }}
-                onShowAll={() => setScreen({ type: "category" })}
-                error={errors.categoryId}
-              />
+              <div className="flex flex-col gap-2">
+                <CategoryGrid
+                  id="transaction-category"
+                  items={gridCategories(items, usage, cashFlowPick?.categoryId ?? "", (retired ? 1 : 0) + (offered ? 1 : 0))}
+                  retired={retired}
+                  suggested={offered}
+                  value={cashFlowPick?.categoryId ?? ""}
+                  onValueChange={(id) => {
+                    setCashFlowPick({ categoryId: id })
+                    clearError("categoryId")
+                  }}
+                  onShowAll={() => setScreen({ type: "category" })}
+                  error={errors.categoryId}
+                />
+                {kind === "expense" ? (
+                  <BudgetHint
+                    groupId={groups.find((group) => group.items.some((item) => item.id === cashFlowPick?.categoryId))?.id}
+                    date={when.date}
+                  />
+                ) : null}
+              </div>
             )}
             <input type="hidden" name="categoryId" value={cashFlowPick?.categoryId ?? ""} />
             <input type="hidden" name="accountId" value={cashFlowPick?.accountId ?? ""} />

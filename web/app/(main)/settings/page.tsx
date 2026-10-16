@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 
 import { Page, PageHeader } from "@/components/page"
 import { loadWithSession } from "@/lib/auth/session"
+import { getBudgetOverview } from "@/lib/budgets/repository"
 import { getCategoryGroups } from "@/lib/categories/repository"
 import { getNotificationState } from "@/lib/notifications/repository"
 import { getPushContext } from "@/lib/notifications/context"
@@ -26,7 +27,7 @@ export default async function SettingsPage({
   const { screen, order } = await searchParams
   const {
     user,
-    data: [notifications, categoryGroups, planState, adminData, paymentOutcome, dataSummary],
+    data: [notifications, categoryGroups, planState, adminData, paymentOutcome, dataSummary, budgets],
   } = await loadWithSession(async (user) => {
     // Settled first, so the plan read next already shows it.
     const paymentOutcome = await checkReturningPayment(user.uid, order)
@@ -39,6 +40,7 @@ export default async function SettingsPage({
       isAdmin(user) ? getAdminData() : undefined,
       paymentOutcome,
       getUserDataSummary(user.uid),
+      getBudgetOverview(user.uid),
     ])
   })
 
@@ -51,6 +53,7 @@ export default async function SettingsPage({
         user={user}
         notifications={notifications}
         categoryGroups={categoryGroups}
+        budgets={budgets}
         planState={planState}
         dataSummary={dataSummary}
         checkoutEnabled={getPayOS() !== null}

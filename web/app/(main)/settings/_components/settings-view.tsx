@@ -5,6 +5,7 @@ import {
   BellRingIcon,
   CalculatorIcon,
   CircleHelpIcon,
+  GaugeIcon,
   HistoryIcon,
   MicIcon,
   PaletteIcon,
@@ -16,6 +17,7 @@ import {
 import { useRouter } from "next/navigation"
 
 import { PageSheet } from "@/components/app/page-sheet"
+import { BudgetsSheet } from "@/components/budgets/budgets-sheet"
 import { CategoryManagementSheet } from "@/components/categories/category-management-sheet"
 import { PlanOverlay } from "@/components/plans/plan-overlay"
 import { useWelcome } from "@/components/onboarding/welcome"
@@ -23,7 +25,9 @@ import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { TimiIcon } from "@/components/timi-icon"
 import { TimiWordmark } from "@/components/timi-wordmark"
 import type { SessionUser } from "@/lib/auth/session"
+import type { BudgetOverview } from "@/lib/budgets/types"
 import type { CategoryGroup } from "@/lib/categories/types"
+import { formatCompactCurrency } from "@/lib/format-currency"
 import type { NotificationState } from "@/lib/notifications/types"
 import type { AdminData } from "@/lib/plans/admin-data"
 import type { PaymentOutcome } from "@/lib/plans/payos"
@@ -70,11 +74,20 @@ const screens = {
 
 export type Screen = keyof typeof screens
 
+/** The limits' row: the month's limit, else how many groups have one. */
+function budgetsSummary(overview: BudgetOverview) {
+  if (overview.total.limit !== null) return `${formatCompactCurrency(overview.total.limit, 1)}/tháng`
+  const groups = overview.groups.filter((group) => group.limit !== null).length
+  return groups ? `${groups} nhóm` : "Chưa đặt"
+}
+
 
 type SettingsViewProps = {
   user: SessionUser
   notifications: NotificationState
   categoryGroups: CategoryGroup[]
+  /** This month's spending limits, for their row and sheet. */
+  budgets: BudgetOverview
   planState: PlanState
   /** What wiping the user's data would delete. */
   dataSummary: UserDataSummary
@@ -92,6 +105,7 @@ export function SettingsView({
   user,
   notifications,
   categoryGroups,
+  budgets,
   planState,
   dataSummary,
   checkoutEnabled,
@@ -104,6 +118,7 @@ export function SettingsView({
   )
   const [planOpen, setPlanOpen] = React.useState(initialScreen === "plan")
   const [categoriesOpen, setCategoriesOpen] = React.useState(false)
+  const [budgetsOpen, setBudgetsOpen] = React.useState(false)
   // Summaries on the list follow changes made in the screens.
   const [reminder, setReminder] = React.useState(notifications.settings)
   const [devices, setDevices] = React.useState(notifications)
@@ -187,6 +202,7 @@ export function SettingsView({
             value={`${categoryCount} mục`}
             onClick={() => setCategoriesOpen(true)}
           />
+          <SettingsRow icon={GaugeIcon} title="Hạn mức chi tiêu" value={budgetsSummary(budgets)} onClick={() => setBudgetsOpen(true)} />
         </SettingsGroup>
 
         <SettingsGroup title="Thông báo">
@@ -294,6 +310,7 @@ export function SettingsView({
         open={categoriesOpen}
         onOpenChange={setCategoriesOpen}
       />
+      <BudgetsSheet overview={budgets} open={budgetsOpen} onOpenChange={setBudgetsOpen} />
     </>
   )
 }

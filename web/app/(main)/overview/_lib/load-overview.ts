@@ -2,6 +2,7 @@ import "server-only"
 
 import { getAccounts } from "@/lib/accounts/repository"
 import { loadWithSession } from "@/lib/auth/session"
+import { getBudgetOverview } from "@/lib/budgets/repository"
 import { getCategoryGroups } from "@/lib/categories/repository"
 import { todayDate } from "@/lib/debts/calculations"
 import { getContacts, getDebts } from "@/lib/debts/repository"
@@ -36,7 +37,7 @@ export async function loadOverview(order?: string) {
   const transactionRange = getOverviewTransactionRange(today)
   const {
     user,
-    data: [accounts, debts, contacts, transactions, categoryGroups, missions, planState, paymentOutcome],
+    data: [accounts, debts, contacts, transactions, categoryGroups, missions, planState, paymentOutcome, budgets],
   } = await loadWithSession(async (user) => {
     // Back from payOS: settled first, so the plan read next already shows it.
     const paymentOutcome = await checkReturningPayment(user.uid, order)
@@ -53,6 +54,7 @@ export async function loadOverview(order?: string) {
       getMissionState(user.uid),
       getPlanState(user.uid),
       paymentOutcome,
+      getBudgetOverview(user.uid, today),
     ])
   })
 
@@ -65,6 +67,7 @@ export async function loadOverview(order?: string) {
     missions,
     planState,
     paymentOutcome,
+    budgets,
     checkoutEnabled: getPayOS() !== null,
     summary: getOverviewSummary(accounts, debts, contacts, transactions, today),
     // Totals only: the page does not send six months of transactions.

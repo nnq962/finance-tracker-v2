@@ -5,6 +5,7 @@ import { revalidatePath, updateTag } from "next/cache"
 import { MAX_RECORD_ITEMS } from "@/lib/ai/transaction-prompt"
 import { getDb } from "@/lib/db/client"
 import { requireSession } from "@/lib/auth/session"
+import { scheduleBudgetAlerts } from "@/lib/budgets/schedule"
 import { categoryGroupsCacheTag } from "@/lib/cache-tags"
 import { archiveCategoryGroup, archiveCategoryItem } from "@/lib/categories/repository"
 import { createSuggestedCategory } from "@/lib/categories/suggested"
@@ -55,7 +56,9 @@ export async function createTransactionAction(
   try {
     const requestId = formData.get("requestId") ?? undefined
     if (requestId !== undefined) assertTransactionId(requestId)
-    await createTransaction(user.uid, parseTransactionFormData(formData), requestId as string | undefined)
+    const values = parseTransactionFormData(formData)
+    await createTransaction(user.uid, values, requestId as string | undefined)
+    if (values.kind === "expense") scheduleBudgetAlerts(user.uid)
     revalidateTransactionPaths()
     return { success: true }
   } catch (error) {
@@ -71,11 +74,9 @@ export async function updateTransactionAction(
 
   try {
     assertTransactionId(transactionId)
-    await updateTransaction(
-      user.uid,
-      transactionId,
-      parseTransactionFormData(formData),
-    )
+    const values = parseTransactionFormData(formData)
+    await updateTransaction(user.uid, transactionId, values)
+    if (values.kind === "expense") scheduleBudgetAlerts(user.uid)
     revalidateTransactionPaths()
     return { success: true }
   } catch (error) {
@@ -93,6 +94,7 @@ export async function setTransactionExcludedAction(
   try {
     assertTransactionId(transactionId)
     await setTransactionExcluded(user.uid, transactionId, excluded === true)
+    if (excluded !== true) scheduleBudgetAlerts(user.uid)
     revalidateTransactionPaths()
     return { success: true }
   } catch (error) {
@@ -230,6 +232,7 @@ export async function saveCheckedDraftsAction(
       await takeBackCategories(user.uid, made)
       throw error
     }
+    scheduleBudgetAlerts(user.uid)
     revalidateTransactionPaths()
     return { success: true, ids: items.map((item) => item.requestId), ...made }
   } catch (error) {

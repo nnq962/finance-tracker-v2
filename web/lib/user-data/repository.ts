@@ -49,6 +49,7 @@ export async function wipeUserData(userId: string) {
     await trx.deleteFrom("debtOperations").where("userId", "=", userId).execute()
     await trx.deleteFrom("contacts").where("userId", "=", userId).execute()
     await trx.deleteFrom("accounts").where("userId", "=", userId).execute()
+    await trx.deleteFrom("budgets").where("userId", "=", userId).execute()
     await trx.deleteFrom("categoryItems").where("userId", "=", userId).execute()
     await trx.deleteFrom("categoryGroups").where("userId", "=", userId).execute()
 

@@ -10,12 +10,15 @@ import { DateStrip } from "@/components/app/date-strip"
 import { IconTile } from "@/components/app/icon-tile"
 import { InlineSelect } from "@/components/app/inline-select"
 import { OtpInput } from "@/components/app/otp-input"
+import { LimitBar } from "@/components/app/limit-bar"
+import { LimitRow } from "@/components/app/limit-row"
 import { ProgressRing } from "@/components/app/progress-ring"
 import { Rating } from "@/components/app/rating"
 import { RulerSlider } from "@/components/app/ruler-slider"
 import { SegmentedProgress } from "@/components/app/steps"
 import { Stepper } from "@/components/app/stepper"
 import { ReplyView } from "@/components/ai-assistant/answer-view"
+import { BudgetTotal } from "@/components/budgets/budget-total"
 import { DraftsView } from "@/components/ai-assistant/drafts-view"
 import type { Account } from "@/lib/accounts/types"
 import type { AssistantDraft } from "@/lib/ai/assistant/types"
@@ -29,6 +32,7 @@ import { IconPicker } from "@/components/forms/icon-picker"
 import { TimeRows } from "@/components/forms/time-rows"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
 import { Progress } from "@/components/ui/progress"
@@ -45,8 +49,11 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Slider } from "@/components/ui/slider"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
+import { limitTone, remainingLabel } from "@/lib/budgets/calculations"
+import type { BudgetOverview } from "@/lib/budgets/types"
 import type { CategoryColorName } from "@/lib/categories/category-colors"
-import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
+import { categoryIconRegistry, type CategoryIconName } from "@/lib/icons/category-icon-registry"
+import { formatCompactCurrency } from "@/lib/format-currency"
 
 import { Block, CatalogSection, Wide } from "./catalog-kit"
 
@@ -440,6 +447,60 @@ function SliderSection() {
   )
 }
 
+/** A month's limits as they show (16/31 gone): the plain bar by tone, the rows, the whole month's lead figure. */
+const sampleBudgets: BudgetOverview = {
+  month: "2026-10",
+  day: 16,
+  daysInMonth: 31,
+  total: { budgetId: "total", limit: 12_000_000, spent: 7_450_000, average: 10_900_000 },
+  groups: [],
+}
+
+function LimitSample() {
+  const rows = [
+    { name: "Ăn uống", icon: "utensils", tone: "orange", spent: 3_420_000, limit: 4_000_000 },
+    { name: "Mua sắm", icon: "shopping-bag", tone: "pink", spent: 2_250_000, limit: 2_000_000 },
+    { name: "Đi lại", icon: "bus", tone: "blue", spent: 380_000, limit: 1_000_000 },
+  ] as const
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 rounded-[20px] bg-card p-4">
+          <LimitBar value={38} max={100} label="Dưới 80%" />
+          <LimitBar value={86} max={100} tone="near" label="Từ 80%, hay chi nhanh hơn kế hoạch" />
+          <LimitBar value={113} max={100} tone="over" label="Đã vượt" />
+          <LimitBar value={62} max={100} tone="near" size="md" label="Cỡ md, cho con số dẫn đầu" />
+        </div>
+        <Card size="lg">
+          <CardContent>
+            <BudgetTotal overview={sampleBudgets} />
+          </CardContent>
+        </Card>
+      </div>
+      <SettingsGroup title="Theo nhóm · 3">
+        {rows.map((row) => (
+          <LimitRow
+            key={row.name}
+            media={<IconTile icon={categoryIconRegistry[row.icon]} tone={row.tone} size="sm" />}
+            title={row.name}
+            figure={
+              <>
+                <span className="font-semibold">{formatCompactCurrency(row.spent, 1)}</span>
+                <span className="text-muted-foreground"> / {formatCompactCurrency(row.limit, 1)}</span>
+              </>
+            }
+            value={row.spent}
+            max={row.limit}
+            tone={limitTone(row.spent, row.limit)}
+            caption={remainingLabel(row.spent, row.limit, 16)}
+            onClick={() => toast("Mở sửa hạn mức")}
+          />
+        ))}
+      </SettingsGroup>
+    </div>
+  )
+}
+
 function ProgressSection() {
   const [progress, setProgress] = React.useState(64)
   const [step, setStep] = React.useState(1)
@@ -478,6 +539,9 @@ function ProgressSection() {
             Tiếp
           </Button>
         </div>
+      </Block>
+      <Block label="Hạn mức · LimitBar, LimitRow, BudgetTotal" wide>
+        <LimitSample />
       </Block>
       <Block label="Sóng giọng nói · khi ghi âm">
         <VoiceWaveSample />

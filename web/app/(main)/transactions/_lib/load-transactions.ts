@@ -1,5 +1,6 @@
 import { getAccounts } from "@/lib/accounts/repository"
 import { loadWithSession } from "@/lib/auth/session"
+import { getBudgetOverview } from "@/lib/budgets/repository"
 import { getCategoryGroups } from "@/lib/categories/repository"
 import { getPurchaseDraft } from "@/lib/plans/purchase-draft"
 import { getDebtPaymentsInRange, getTransactionsInRange } from "@/lib/transactions/repository"
@@ -21,7 +22,7 @@ export async function loadTransactions({ month, account, add, order, grant }: Tr
   const selectedMonth = getTransactionMonthKey(month, todayDateKey)
   const range = getTransactionMonthRange(selectedMonth, 1)
   const {
-    data: [transactions, accounts, categoryGroups, purchaseDraft],
+    data: [transactions, accounts, categoryGroups, purchaseDraft, budgets],
   } = await loadWithSession((user) =>
     Promise.all([
       // Loans and their repayments are listed too, so every change to a
@@ -36,6 +37,8 @@ export async function loadTransactions({ month, account, add, order, grant }: Tr
       getCategoryGroups(user.uid),
       // A Pro purchase to write down: the buyer's expense, or an admin's income.
       order || grant ? getPurchaseDraft(user, { order, grant }) : undefined,
+      // This month's limits, whichever month is shown: the line under the figures and the spending form's hint.
+      getBudgetOverview(user.uid, todayDateKey),
     ]),
   )
 
@@ -49,5 +52,6 @@ export async function loadTransactions({ month, account, add, order, grant }: Tr
     transactions,
     initialAddOpen: add === "1",
     purchaseDraft,
+    budgets,
   }
 }

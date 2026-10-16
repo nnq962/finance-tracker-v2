@@ -8,10 +8,13 @@ import { toast } from "sonner"
 import { Collapse } from "@/components/app/collapse"
 import { FloatingActions } from "@/components/app/floating-actions"
 import { MonthSelect } from "@/components/app/month-select"
+import { BudgetProvider } from "@/components/budgets/budget-hint"
+import { BudgetMonthLine } from "@/components/budgets/budget-month-line"
 import { PageHeader } from "@/components/page"
 import { Button } from "@/components/ui/button"
 import { appEvents, listenToAppEvent } from "@/lib/app-events"
 import type { Account } from "@/lib/accounts/types"
+import type { BudgetOverview } from "@/lib/budgets/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { cn } from "@/lib/utils"
 import type { PurchaseDraft } from "@/lib/plans/purchase-draft"
@@ -53,6 +56,8 @@ type TransactionsScreenProps = {
   initialAddOpen?: boolean
   /** A Pro purchase to write down, opened from the plan screen or an admin's sale notice. */
   purchaseDraft?: PurchaseDraft
+  /** This month's spending limits. */
+  budgets: BudgetOverview
 }
 
 const initialSearchFilters: TransactionSearchFilters = {
@@ -84,6 +89,7 @@ export function TransactionsScreen({
   transactions,
   initialAddOpen = false,
   purchaseDraft,
+  budgets,
 }: TransactionsScreenProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -238,6 +244,7 @@ export function TransactionsScreen({
   const loadingClassName = cn("transition-opacity duration-200", isNavigating && "opacity-50")
 
   return (
+    <BudgetProvider overview={budgets}>
     <TransactionHistoryProvider transactions={transactions}>
       {/* Searching on a phone the field takes the top, and the tab bar makes way. */}
       {searching ? <div data-hide-tab-bar hidden /> : null}
@@ -253,7 +260,13 @@ export function TransactionsScreen({
 
       <TransactionsLayout
         listOnly={searching}
-        summary={<MonthSummary transactions={summaryTransactions} className={loadingClassName} />}
+        summary={
+          <div className={cn("flex flex-col gap-3", loadingClassName)}>
+            <MonthSummary transactions={summaryTransactions} />
+            {/* The limit is this month's: the line shows only there. */}
+            {shownMonth === thisMonth ? <BudgetMonthLine overview={budgets} /> : null}
+          </div>
+        }
         filters={
           <TransactionFilterPanel
             accounts={accounts}
@@ -334,5 +347,6 @@ export function TransactionsScreen({
         />
       ) : null}
     </TransactionHistoryProvider>
+    </BudgetProvider>
   )
 }

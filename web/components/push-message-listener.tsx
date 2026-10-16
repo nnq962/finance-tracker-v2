@@ -32,6 +32,7 @@ export function PushMessageListener() {
           return
         }
         const saleUrl = payload.data?.type === "sale" ? payload.data.url : undefined
+        const budgetUrl = payload.data?.type === "budget" ? payload.data.url : undefined
         toast(title, {
           description: payload.notification?.body,
           // Daily reminders ask to log spending, so offer the Transactions page;
@@ -42,6 +43,10 @@ export function PushMessageListener() {
           } : saleUrl?.startsWith("/") ? {
             label: "Ghi khoản thu",
             onClick: () => { router.push(saleUrl) },
+          } : budgetUrl?.startsWith("/") ? {
+            // A spending limit reached: every limit, on the overview.
+            label: "Xem hạn mức",
+            onClick: () => { router.push(budgetUrl) },
           } : undefined,
         })
       })

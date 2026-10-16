@@ -1,3 +1,4 @@
+import { BudgetOverviewCard } from "@/components/budgets/budget-overview-card"
 import { Page } from "@/components/page"
 
 import { Missions } from "./_components/missions"
@@ -33,6 +34,8 @@ export default async function OverviewPage({
           today={data.today}
           minMonth={data.minMonth}
           summary={data.summary}
+          // A push about a limit opens them all.
+          budgets={<BudgetOverviewCard key={screen} overview={data.budgets} initialOpen={screen === "budgets"} />}
           missions={
             <Missions
               state={data.missions}

@@ -32,6 +32,17 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.9.0",
+    date: "2026-10-16",
+    title: "Hạn mức chi tiêu",
+    changes: [
+      { kind: "new", text: "Đặt hạn mức chi mỗi tháng, cho cả tháng và cho từng nhóm hạng mục; tự lặp lại mỗi tháng, gợi ý bằng mức chi trung bình 3 tháng gần nhất." },
+      { kind: "new", text: "Thẻ \"Hạn mức tháng này\" ở Tổng quan, dòng \"Đã dùng …% hạn mức tháng\" ở Giao dịch và mục \"Hạn mức chi tiêu\" trong Cài đặt: còn được chi, còn bao nhiêu mỗi ngày, đang chi nhanh hay chậm hơn kế hoạch." },
+      { kind: "new", text: "Khi ghi khoản chi, dưới hạng mục hiện nhóm đó còn bao nhiêu tháng này." },
+      { kind: "new", text: "Thông báo khi một hạn mức chạm 80% và khi vượt." },
+    ],
+  },
+  {
     version: "6.8.7",
     date: "2026-10-16",
     title: "Trang Tài khoản gọn chữ hơn",

@@ -152,6 +152,8 @@ component ở đó là cả app đổi theo.
 | `BotIcon` | Gương mặt của Timi (2026-10-11, theo Bot của lucide-animated): SVG như icon Lucide (đặt trong nút, ô icon như mọi icon), hai mắt chớp bằng CSS (co thành chấm rồi mở): `hover` khi rê/chạm nút chứa nó (`group/button`), `once` khi hiện ra, `loop` chớp đôi thỉnh thoảng khi đang nghĩ. Dùng cho mọi chỗ là trợ lý (nút cạnh thanh tab, Hỏi AI, nhãn Timi, dòng đang nghĩ); ✦ `Sparkles` vẫn là ký hiệu của gói Pro và lượt AI. Giảm chuyển động: mắt đứng yên |
 | `VoiceWave` | Giọng nói khi đang ghi âm, như app Ghi âm của iPhone (chọn 2026-10-11): thanh mảnh 3px màu mực, đủ số thanh lấp kín bề ngang, trôi đều từ phải sang trái theo từng khung hình (không nhảy từng nấc); mỗi thanh là mức âm thanh của một lúc (70ms), thanh mới nhất mọc ra ở mép phải và cao thấp theo giọng lúc đó; phía trái mờ dần (mask, đặt trên nền nào cũng được); vẽ trong khung riêng (`contain: paint`) để không kéo nút bên cạnh vẽ lại theo. `level` là hàm trả mức 0–1, đọc mỗi khung hình; thanh được vẽ thẳng lên trang, không qua React. Trong trợ lý AI nó thay dòng "Đang nghe…" khi ghi âm gửi lên máy chủ. Giảm chuyển động: thanh đứng yên, cả hàng chỉ sáng lên theo giọng |
 | `ProgressRing` | Tiến độ dạng vòng mảnh có số ở giữa. Mỗi lần vòng hiện ra (tải trang hay mở từ thanh tab), cung vẽ trống rồi quét từ 12 giờ tới giá trị trong 0,9 giây (dừng chậm dần); đổi giá trị thì cung chạy tiếp tới giá trị mới. Giảm chuyển động: hiện ngay |
+| `LimitBar` | Đã dùng so với một hạn mức (2026-10-16): thanh trơn như Thời gian sử dụng của iOS, không vạch mốc hay lớp "kế hoạch" (đã thử khía, tam giác, hai tông, chấm, lớp được chi, vòng Activity; người dùng chọn thanh trơn). `tone`: `ok` màu mực, `near` amber (từ 80%, hay hạn mức cả tháng khi chi nhanh hơn kế hoạch), `over` đỏ, đầy thanh khi vượt. `size` `sm` dày 6 (dòng), `md` dày 10 (con số dẫn đầu). Thanh chạy tới giá trị trong 500ms (150ms khi giảm chuyển động); `role="progressbar"` |
+| `LimitRow` | Dòng của `SettingsGroup` cho một hạn mức (2026-10-16): ô icon, tên và "đã chi / hạn mức" một hàng, `LimitBar` dưới, chú thích dưới thanh ("Còn 580k · 36k/ngày", hay "Vượt 250k" đỏ khi `tone="over"`), mũi tên; cao 76 thay vì 64 vì có thanh |
 | `FormSection` | Các trường của một form trong thẻ trắng, có tiêu đề nhỏ, ghi chú và nội dung phụ bên dưới |
 | `PromoBanner` | Thẻ sáng cho một điều đáng chú ý, như lời mời Pro (dưới tài sản ròng ở Tổng quan, khi đã xong nhiệm vụ): ô icon `lg` màu `tone` (mặc định `ai`), tiêu đề, một dòng, mũi tên. Sáng để không tranh với thẻ dẫn đầu. Luôn rộng hết chỗ chứa; nơi dùng không đặt độ rộng |
 | `FloatingActions` | Nút hành động chính nổi phía trên thanh tab, trên điện thoại; tự chừa một khoảng cuối trang để dòng cuối cuộn lên khỏi nút. `FloatingActionsSkeleton`: nút + đứng sẵn chỗ trong màn tải, không bấm được, để khỏi bật ra khi trang tới |
@@ -365,6 +367,28 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   (`DeleteAccountSheet`: "Xoá “Ví MoMo”? …", dòng đỏ "Xoá tài khoản", "Huỷ" tách riêng; tài khoản có
   chuyển khoản hay vay nợ thì không xoá được, gợi ý "Khoá tài khoản") rồi xoá có hoàn tác, đóng cả
   hai sheet.
+- **Hạn mức chi tiêu** (2026-10-16, `components/budgets/`, `lib/budgets/`): hạn mức theo tháng, tự lặp lại: một
+  cho cả tháng và một cho mỗi nhóm hạng mục chi (không theo hạng mục con). Đã chi chỉ tính khoản chi có hạng mục,
+  trong báo cáo (giao dịch và tài khoản không "Ngoài báo cáo"), không trả bằng hũ tiết kiệm; không tính chuyển
+  khoản (cả nạp/rút hũ, phí chuyển), điều chỉnh số dư, cho vay, trả nợ và lãi vay. Không có tab riêng, mở cùng một
+  `PageSheet` "Hạn mức tháng 10" từ ba chỗ: thẻ "Hạn mức tháng này" ở Tổng quan (dưới nhiệm vụ, chỉ khi đã đặt ít
+  nhất một hạn mức: `BudgetTotal` rồi 2–3 nhóm gần chạm hay đã vượt, mỗi nhóm thanh `sm` và "%" hay "Vượt 250k",
+  "Xem tất cả ›"), dòng "Đã dùng 62% hạn mức tháng · còn 4,55tr" dưới thẻ Thu / Chi ở Giao dịch (thẻ trắng
+  bo 16 cao 44+, chỉ ở tháng hiện tại và khi có hạn mức cả tháng), dòng "Hạn mức chi tiêu" ở Cài đặt › Chung
+  ("12tr/tháng", "2 nhóm", "Chưa đặt"). `BudgetTotal`: "Còn được chi" và số tiền lớn (hay "Đã vượt hạn mức" đỏ),
+  "62% / của 12tr" bên phải, `LimitBar md` màu theo tốc độ chi, dòng "Chi nhanh hơn kế hoạch · còn 284k/ngày"
+  (tốc độ: % đã chi so với % tháng đã qua tính cả hôm nay, lệch quá 10 điểm là nhanh/chậm; chữ amber khi nhanh).
+  Sheet: thẻ `BudgetTotal` (chạm để sửa), `NoticeBanner warning` khi chi nhanh hơn kế hoạch, "THEO NHÓM · N" là
+  các `LimitRow` (gần chạm nhất lên đầu), "CHƯA ĐẶT HẠN MỨC" là các nhóm còn lại với "Trung bình 4,12tr/tháng" và
+  dấu +; chưa có hạn mức nào thì một ô icon, một câu và nút "Đặt hạn mức tháng". Sheet sửa: ô icon nhóm `lg`, tên,
+  "Mỗi tháng, tự lặp lại", `CurrencyInput hero` bắt đầu từ mức chi trung bình 3 tháng gần nhất làm tròn lên
+  (100k từ 1 triệu, dưới đó 50k; chia cho số tháng có chi trong 3 tháng đó), chip gợi ý là số đó, hai dòng
+  "Trung bình 3 tháng" / "Đã chi tháng này", chân là Xoá (có hoàn tác) và Lưu. Trong form ghi khoản chi, dưới lưới
+  hạng mục: "Ăn uống còn 580k tháng này" (amber từ 80%) hay "Ăn uống đã vượt hạn mức 150k" (đỏ), chỉ khi nhóm có
+  hạn mức và ngày ghi trong tháng này. Thông báo đẩy (`lib/budgets/alerts.ts`): mỗi hạn mức một lần khi chạm 80%
+  ("Ăn uống đã dùng 86% hạn mức", "Còn 560.000đ cho 16 ngày, khoảng 35.000đ mỗi ngày.") và một lần khi vượt
+  ("Vượt hạn mức Ăn uống", "Đã chi 4.150.000đ, hơn hạn mức 150.000đ."), mỗi tháng; gửi sau khi lưu khoản chi, chỉ
+  khi bật thông báo; chạm mở Tổng quan với sheet. Đặt hay sửa hạn mức thì mức đang đứng được ghi lại không báo.
 - **Hũ tiết kiệm** (2026-10-14, `budget/_components/savings/`): hũ là một tài khoản loại `savings` (không lãi, để
   dành mua một món), tiền vào ra là chuyển khoản. Trang Tài khoản có nhóm "HŨ TIẾT KIỆM · N" dưới "TÀI KHOẢN CHÍNH · N" (tên cũ "Đang dùng", đổi 2026-10-14):
   mỗi hũ một dòng, ô đầu là `JarRing` (vòng tiến độ 36 quanh biểu tượng, vòng và biểu tượng theo màu hũ, đầy thì xanh lá),
