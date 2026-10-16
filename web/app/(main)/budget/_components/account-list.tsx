@@ -20,7 +20,7 @@ import {
 import { accountDescription } from "@/lib/accounts/labels"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
-import type { AccountFlow, Transaction } from "@/lib/transactions/types"
+import type { Transaction } from "@/lib/transactions/types"
 import { cn } from "@/lib/utils"
 
 import { AccountCard } from "./account-card"
@@ -32,10 +32,6 @@ import { JarList } from "./savings/jar-section"
 type AccountListProps = {
   accounts: Account[]
   recentTransactions: Record<string, Transaction[]>
-  /** This month's money in and out of each account. */
-  flows: Record<string, AccountFlow>
-  /** The month `flows` covers, e.g. "Tháng 10". */
-  monthLabel: string
   categoryGroups: CategoryGroup[]
   /** An account whose sheet opens straight away (a notice about it). */
   initialOpenId?: string
@@ -64,7 +60,7 @@ function AccountRow({ account, onSelect }: { account: Account; onSelect: () => v
   )
 }
 
-export function AccountList({ accounts, recentTransactions, flows, monthLabel, categoryGroups, initialOpenId }: AccountListProps) {
+export function AccountList({ accounts, recentTransactions, categoryGroups, initialOpenId }: AccountListProps) {
   const [openAccountId, setOpenAccountId] = React.useState<string | null>(initialOpenId ?? null)
   // Adding an account: the last row of "Tài khoản chính" on phones, as "Thêm hũ" is under the jars.
   const [adding, setAdding] = React.useState(false)
@@ -106,7 +102,7 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
     <div className="space-y-6 md:space-y-8">
       {/* "Tài khoản chính" (2026-10-14, was "Đang dùng"), "Hũ tiết kiệm" and "Đã khoá" below it. A list on
           phones, ending with "Thêm tài khoản" (also when every account is locked); from lg up a grid of
-          cards with this month's in and out, so the page uses its width, the last a dashed card to add one. */}
+          cards with logo, name and balance, so the page uses its width, the last a dashed card to add one. */}
       <div className="lg:hidden">
         <SettingsGroup title={activeAccounts.length ? `Tài khoản chính · ${activeAccounts.length}` : "Tài khoản chính"}>
           {activeAccounts.map((account) => (
@@ -129,7 +125,6 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
             <AccountCard
               key={account.id}
               account={account}
-              flow={flows[account.id]}
               onSelect={() => setOpenAccountId(account.id)}
             />
           ))}
@@ -168,8 +163,7 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
                   <AccountCard
                     key={account.id}
                     account={account}
-                    flow={flows[account.id]}
-                    onSelect={() => setOpenAccountId(account.id)}
+                          onSelect={() => setOpenAccountId(account.id)}
                   />
                 ))}
               </div>
@@ -186,8 +180,6 @@ export function AccountList({ accounts, recentTransactions, flows, monthLabel, c
         account={openAccount}
         accounts={accounts}
         transactions={openAccount ? recentTransactions[openAccount.id] ?? [] : []}
-        flow={openAccount ? flows[openAccount.id] : undefined}
-        monthLabel={monthLabel}
         categoryGroups={categoryGroups}
         onOpenChange={(open) => {
           if (!open) setOpenAccountId(null)

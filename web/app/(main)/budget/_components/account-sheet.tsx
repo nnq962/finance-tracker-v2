@@ -1,21 +1,20 @@
 "use client"
 
 import * as React from "react"
-import { ArrowDownLeftIcon, ArrowUpRightIcon, PencilIcon } from "lucide-react"
+import { PencilIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 import { AccountLogo } from "@/components/account-logo"
-import { FlowTiles } from "@/components/app/flow-tiles"
 import { Money } from "@/components/app/money"
 import { PageSheet } from "@/components/app/page-sheet"
-import { groupCaptionClassName, SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { accountDescription } from "@/lib/accounts/labels"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCompactCurrency } from "@/lib/format-currency"
 import { formatDate, formatShortDate, toDateKey } from "@/lib/format-date"
-import type { AccountFlow, Transaction } from "@/lib/transactions/types"
+import type { Transaction } from "@/lib/transactions/types"
 
 import { TransactionHistoryProvider } from "../../transactions/_components/add-transaction/transaction-history-context"
 import { TransactionItem } from "../../transactions/_components/transaction-item"
@@ -46,10 +45,6 @@ type AccountSheetProps = {
   accounts: Account[]
   /** Its latest transactions. */
   transactions: Transaction[]
-  /** What came in and went out this month. */
-  flow?: AccountFlow
-  /** The month `flow` covers, e.g. "Tháng 10". */
-  monthLabel: string
   /** For the transactions' category icons. */
   categoryGroups: CategoryGroup[]
   onOpenChange: (open: boolean) => void
@@ -57,8 +52,7 @@ type AccountSheetProps = {
 
 /**
  * An account as the transaction's sheet shows one: its logo, name, balance
- * and kind at the top, edited from the pencil in the bar; this month's money
- * in and out; when it started, what it started with and how much it has
+ * and kind at the top, edited from the pencil in the bar; when it started, what it started with and how much it has
  * moved since; its latest transactions, each opening its own sheet. Locking
  * and deleting it are in its editor, behind the pencil.
  */
@@ -66,8 +60,6 @@ export function AccountSheet({
   account,
   accounts,
   transactions,
-  flow,
-  monthLabel,
   categoryGroups,
   onOpenChange,
 }: AccountSheetProps) {
@@ -107,31 +99,6 @@ export function AccountSheet({
           />
           {subtitle ? <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p> : null}
         </div>
-
-        {/* The month's figures as on the transactions page, under a caption like a group's. */}
-        <section aria-label={`${monthLabel}: tiền vào và ra`} className="flex flex-col gap-2">
-          <h3 className={`px-4 ${groupCaptionClassName}`}>{monthLabel}</h3>
-          <FlowTiles
-            tiles={[
-              {
-                value: "in",
-                label: "Tiền vào",
-                amount: flow?.moneyIn ?? 0,
-                caption: flow?.inCount ? `${flow.inCount} giao dịch` : "Chưa có",
-                icon: ArrowDownLeftIcon,
-                tone: "income",
-              },
-              {
-                value: "out",
-                label: "Tiền ra",
-                amount: flow?.moneyOut ?? 0,
-                caption: flow?.outCount ? `${flow.outCount} giao dịch` : "Chưa có",
-                icon: ArrowUpRightIcon,
-                tone: "expense",
-              },
-            ]}
-          />
-        </section>
 
         <SettingsGroup>
           <SettingsRow title="Bắt đầu từ" value={formatDate(toDateKey(shown.openedAt))} />

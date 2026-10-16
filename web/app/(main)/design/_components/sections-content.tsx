@@ -173,7 +173,7 @@ function CardSection() {
         />
       </Wide>
       <Wide>
-        <BlockLabel className="px-1">Hai chiều tiền, chỉ hiển thị số (FlowTiles không có onValueChange), như sheet một ngày và sheet tài khoản</BlockLabel>
+        <BlockLabel className="px-1">Hai chiều tiền, chỉ hiển thị số (FlowTiles không có onValueChange), như sheet một ngày</BlockLabel>
         <FlowTiles
           tiles={[
             { value: "in", label: "Thu", amount: 18_000_000, caption: "1 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },

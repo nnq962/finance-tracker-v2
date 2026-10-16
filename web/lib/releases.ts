@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.7.2",
+    date: "2026-10-16",
+    title: "Bỏ Tiền vào / Tiền ra của tài khoản",
+    changes: [
+      { kind: "improved", text: "Bỏ Tiền vào / Tiền ra tháng này ở chi tiết tài khoản và trên thẻ tài khoản (máy tính), vì con số gồm cả chuyển khoản và điều chỉnh số dư nên dễ hiểu lầm. Thẻ tài khoản gọn lại: tên ở trên, số dư ở dưới." },
+    ],
+  },
+  {
     version: "6.7.1",
     date: "2026-10-16",
     title: "Hũ đã hoàn thành chỉ đổi tên",

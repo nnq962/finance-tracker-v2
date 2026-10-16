@@ -3,35 +3,20 @@ import { loadWithSession } from "@/lib/auth/session"
 import { getAccounts } from "@/lib/accounts/repository"
 import { getBalanceSummary } from "@/lib/accounts/summary"
 import { getCategoryGroups } from "@/lib/categories/repository"
-import { toDateKey } from "@/lib/format-date"
-import { getAccountFlows, getRecentTransactionsByAccount } from "@/lib/transactions/repository"
+import { getRecentTransactionsByAccount } from "@/lib/transactions/repository"
 
 import { AccountList } from "./_components/account-list"
 import { BalanceHero } from "./_components/balance-hero"
 import { BudgetLayout } from "./_components/budget-layout"
 
-/** This month in Vietnam time, from its first day to the next month's. */
-function currentMonth() {
-  const [year, month] = toDateKey(new Date()).split("-").map(Number)
-  const next = month === 12 ? `${year + 1}-01` : `${year}-${String(month + 1).padStart(2, "0")}`
-  return {
-    label: `Tháng ${month}`,
-    start: new Date(`${year}-${String(month).padStart(2, "0")}-01T00:00:00+07:00`),
-    end: new Date(`${next}-01T00:00:00+07:00`),
-  }
-}
-
 export default async function AccountsPage({ searchParams }: { searchParams: Promise<{ account?: string }> }) {
   // An account to open straight away, e.g. from a notice.
   const { account: openAccountId } = await searchParams
-  const month = currentMonth()
-  const { data: [accounts, recentTransactions, flows, categoryGroups] } = await loadWithSession((user) =>
+  const { data: [accounts, recentTransactions, categoryGroups] } = await loadWithSession((user) =>
     Promise.all([
       getAccounts(user.uid),
       // A few per account, shown when its sheet opens without another round trip.
       getRecentTransactionsByAccount(user.uid),
-      // What each account took in and paid out this month, for its sheet.
-      getAccountFlows(user.uid, month.start, month.end),
       // Their categories' icons.
       getCategoryGroups(user.uid),
     ]),
@@ -50,8 +35,6 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
           <AccountList
             accounts={accounts}
             recentTransactions={recentTransactions}
-            flows={flows}
-            monthLabel={month.label}
             categoryGroups={categoryGroups}
             initialOpenId={openAccountId}
             // Another account asked for (a second notice) opens afresh.
@@ -62,8 +45,6 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
         <AccountList
             accounts={accounts}
             recentTransactions={recentTransactions}
-            flows={flows}
-            monthLabel={month.label}
             categoryGroups={categoryGroups}
           />
       )}
