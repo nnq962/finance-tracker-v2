@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.7.3",
+    date: "2026-10-16",
+    title: "Danh sách tài khoản gọn hơn",
+    changes: [
+      { kind: "improved", text: "Trên điện thoại, dòng tài khoản chỉ còn tên, bỏ dòng loại tài khoản bên dưới (vẫn giữ \"Ngoài báo cáo\")." },
+      { kind: "improved", text: "Trên máy tính, thẻ tài khoản và thẻ thêm tài khoản thấp lại cho vừa nội dung." },
+    ],
+  },
+  {
     version: "6.7.2",
     date: "2026-10-16",
     title: "Bỏ Tiền vào / Tiền ra của tài khoản",

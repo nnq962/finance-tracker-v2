@@ -60,7 +60,7 @@ export default function AccountsLoading() {
             </div>
             <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
               {[0, 1, 2].map((index) => (
-                <Card key={index} size="lg" className="min-h-48">
+                <Card key={index} size="lg">
                   <CardContent className="flex flex-1 flex-col justify-between gap-5">
                     <div className="flex items-center gap-3">
                       <Skeleton className="size-9 rounded-[10px]" />

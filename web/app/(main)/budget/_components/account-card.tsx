@@ -17,7 +17,7 @@ export function AccountCard({ account, onSelect }: { account: Account; onSelect:
     <Card size="lg" asChild className="pressable text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/30">
       <button type="button" onClick={onSelect}>
         {/* Its name at the top and its balance at the foot, as tall as the cards beside it. */}
-        <CardContent className="flex flex-1 flex-col justify-between gap-5">
+        <CardContent className="flex flex-1 flex-col justify-between gap-4">
           <span className="flex min-w-0 items-center gap-3">
             <AccountLogo account={account} />
             <span className="flex min-w-0 flex-col">

@@ -17,7 +17,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
-import { accountDescription } from "@/lib/accounts/labels"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { Transaction } from "@/lib/transactions/types"
@@ -45,8 +44,9 @@ function AccountRow({ account, onSelect }: { account: Account; onSelect: () => v
     <SettingsRow
       media={<AccountLogo account={account} />}
       title={account.name}
-      // Still used, only not counted ("Ngoài báo cáo"): said first, so a long kind cannot cut it off; its balance grey.
-      description={[account.excluded ? "Ngoài báo cáo" : null, accountDescription(account)].filter(Boolean).join(" · ") || undefined}
+      // Its kind is left to the logo (2026-10-16), the desktop card still says it; only
+      // "Ngoài báo cáo" stays under the name: still used, not counted, its balance grey.
+      description={account.excluded ? "Ngoài báo cáo" : undefined}
       action={
         <Money
           amount={account.balance}
