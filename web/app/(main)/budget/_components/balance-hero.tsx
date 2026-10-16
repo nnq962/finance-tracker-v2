@@ -38,9 +38,10 @@ export function BalanceHero({ summary, accounts }: { summary: BalanceSummary; ac
     <Card size="lg" variant="inverse" discs={false}>
       <CardContent>
         <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 flex-col gap-1">
+          {/* The figure fits its column on one line (from 100 triệu up it wrapped mid-number beside the icons, 2026-10-16). */}
+          <div className="@container flex min-w-0 flex-1 flex-col gap-1">
             <CardLabel>Tổng số dư</CardLabel>
-            <Money amount={summary.totalBalance} size="xl" tone={summary.totalBalance < 0 ? "expense" : "default"} />
+            <Money amount={summary.totalBalance} size="xl" fit tone={summary.totalBalance < 0 ? "expense" : "default"} />
             {left.length > 0 ? (
               <p className="text-xs text-inverse-foreground/60">
                 {left.length} tài khoản ngoài báo cáo · {formatCompactCurrency(leftTotal, 1)}

@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.8.1",
+    date: "2026-10-16",
+    title: "Sửa lỗi hiển thị trang Tài khoản",
+    changes: [
+      { kind: "fixed", text: "Tổng số dư từ 100 triệu trở lên không còn bị ngắt xuống dòng giữa số trên điện thoại; số nhỏ lại cho vừa một dòng." },
+      { kind: "fixed", text: "Tên hũ giữ nguyên như đã gõ trong thông báo đủ tiền và sheet Đã mua (trước bị đổi thành chữ thường, ví dụ \"iPhone\" thành \"iphone\")." },
+    ],
+  },
+  {
     version: "6.8.0",
     date: "2026-10-16",
     title: "Xoá toàn bộ dữ liệu",

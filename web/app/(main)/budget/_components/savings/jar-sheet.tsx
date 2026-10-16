@@ -115,7 +115,7 @@ export function JarSheet({
       </div>
 
       {full ? (
-        <NoticeBanner tone="income" icon={PartyPopperIcon} title={`Đủ tiền mua ${jar.name.toLocaleLowerCase("vi-VN")} rồi`}>
+        <NoticeBanner tone="income" icon={PartyPopperIcon} title={`Hũ “${jar.name}” đã đủ tiền`}>
           Mua xong thì bấm Đã mua để ghi khoản chi từ hũ.
         </NoticeBanner>
       ) : null}

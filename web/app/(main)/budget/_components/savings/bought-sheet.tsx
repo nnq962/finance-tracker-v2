@@ -54,7 +54,7 @@ export function BoughtSheet({
   onDone: () => void
 }) {
   return (
-    <PageSheet title={`Đã mua ${jar.name.toLocaleLowerCase("vi-VN")}`} open={open} onOpenChange={onOpenChange}>
+    <PageSheet title={`Đã mua “${jar.name}”`} open={open} onOpenChange={onOpenChange}>
       {open ? (
         <BoughtForm
           jar={jar}
