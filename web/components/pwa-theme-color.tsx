@@ -8,7 +8,7 @@ import { useTheme } from "next-themes"
 // status bar never has to change while one slides in.
 const APP_BACKGROUND = {
   light: "#f7f7f8",
-  dark: "#0a0a0a",
+  dark: "#000000",
 } as const
 
 export function PwaThemeColor() {

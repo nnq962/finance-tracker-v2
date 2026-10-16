@@ -94,7 +94,7 @@
  * Colours after the approved Figma Make mockup (see docs/design/colors.md):
  * Tailwind's neutral greys on a warm off-white page (#f2f2f1), white,
  * borderless cards, neutral-900 as the one strong colour, and meaning
- * colours used sparingly. Dark: a #0a0a0a page and #171717 cards.
+ * colours used sparingly. Dark: a black page (#000) and #1c1c1e cards, as iOS (2026-10-16; was #0a0a0a / #171717).
  * `.light` brings the light colours back inside a dark page, as `.dark` does
  * the other way, e.g. the theme picker's light preview.
  */
@@ -198,25 +198,26 @@
 
 .dark {
   --card-shadow: none;
-  --background: oklch(0.145 0 0);
+  /* iOS dark grouped (2026-10-16): a black page (#000), cards #1c1c1e, raised fills #2c2c2e, lines #38383a. */
+  --background: oklch(0 0 0);
   --foreground: oklch(1 0 0);
-  --card: oklch(0.205 0 0);
+  --card: oklch(0.227 0.0038 286.1);
   --card-foreground: oklch(1 0 0);
-  --inverse: oklch(0.269 0 0);
+  --inverse: oklch(0.294 0.0036 286.2);
   --inverse-foreground: oklch(1 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.227 0.0038 286.1);
   --popover-foreground: oklch(1 0 0);
   --primary: oklch(1 0 0);
   --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  --secondary: oklch(0.294 0.0036 286.2);
   --secondary-foreground: oklch(1 0 0);
-  --muted: oklch(0.269 0 0);
+  --muted: oklch(0.294 0.0036 286.2);
   --muted-foreground: oklch(0.66 0 0);
-  --accent: oklch(0.269 0 0);
+  --accent: oklch(0.294 0.0036 286.2);
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.7 0.15 25);
-  --border: oklch(0.269 0 0);
-  --separator: oklch(0.32 0 0);
+  --border: oklch(0.294 0.0036 286.2);
+  --separator: oklch(0.341 0.0034 286.2);
   --input: oklch(1 0 0 / 0.15);
   --ring: oklch(0.556 0 0);
   --chart-1: oklch(0.707 0.166 290.2);
@@ -225,13 +226,13 @@
   --chart-4: oklch(0.714 0.143 254.6);
   --chart-5: oklch(0.725 0.175 349.8);
   --chart-neutral: oklch(0.66 0 0);
-  --sidebar: oklch(0.205 0 0);
+  --sidebar: oklch(0.227 0.0038 286.1);
   --sidebar-foreground: oklch(1 0 0);
   --sidebar-primary: oklch(1 0 0);
   --sidebar-primary-foreground: oklch(0.205 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent: oklch(0.294 0.0036 286.2);
   --sidebar-accent-foreground: oklch(1 0 0);
-  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-border: oklch(0.294 0.0036 286.2);
   --sidebar-ring: oklch(0.556 0 0);
   /* The same hues, lighter, to read on the dark. */
   --income: oklch(0.72 0.13 154.9);

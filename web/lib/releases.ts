@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.8.3",
+    date: "2026-10-16",
+    title: "Theme tối kiểu iOS",
+    changes: [
+      { kind: "improved", text: "Theme tối theo iOS: nền đen #000, thẻ #1c1c1e, ô và thẻ nổi #2c2c2e, đường kẻ #38383a; thẻ tách khỏi nền rõ hơn. Thanh trạng thái đổi theo." },
+    ],
+  },
+  {
     version: "6.8.2",
     date: "2026-10-16",
     title: "Logo ngân hàng và ví hiện ngay",
