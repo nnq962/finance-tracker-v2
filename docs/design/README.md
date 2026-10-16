@@ -18,7 +18,7 @@ component ở đó là cả app đổi theo.
 
 ## Nguyên tắc
 
-1. **Thẻ mềm trên nền xám.** Nền kem ấm rất nhạt (`#f5f4f0`, đổi 2026-10-09 từ `#f2f2f1` theo mẫu "Mobile Expense Tracker"; rãnh `track` và đường kẻ `separator` ngả ấm theo); thẻ trắng
+1. **Thẻ mềm trên nền xám.** Nền xám rất nhạt, hơi lạnh (`#f7f7f8`, đổi 2026-10-16 vì kem ấm `#f5f4f0` trông vàng; trước nữa `#f2f2f1`); `muted`, rãnh `track` và đường kẻ `separator` cùng sắc đó, đậm dần; thẻ trắng
    bo 20, không viền, không bóng, tách khỏi nền nhờ chênh màu. Xám trên thẻ là thang `neutral` của
    Tailwind (không ngả xanh). Theme tối: nền `#0a0a0a`, thẻ `#171717`.
 2. **Một khuôn trang** (2026-10-08). Mọi trang mở đầu giống nhau: một hàng gọn, tên trang bên

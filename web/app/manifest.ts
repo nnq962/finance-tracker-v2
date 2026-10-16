@@ -11,8 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/overview",
     scope: "/",
     display: "standalone",
-    background_color: "#f5f4f0",
-    theme_color: "#f5f4f0",
+    background_color: "#f7f7f8",
+    theme_color: "#f7f7f8",
     lang: "vi-VN",
     categories: ["finance", "productivity"],
     icons: [
