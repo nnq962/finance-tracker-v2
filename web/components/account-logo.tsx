@@ -62,6 +62,9 @@ export function AccountLogo({ account, size = "sm", className }: AccountLogoProp
           alt=""
           width={size === "lg" ? 48 : 36}
           height={size === "lg" ? 48 : 36}
+          // A handful of small files, cached for long: shown at once when a
+          // grid or list mounts (a sheet, a tab), not after it lays out.
+          loading="eager"
           className="size-full object-contain p-[14%]"
         />
       ) : (

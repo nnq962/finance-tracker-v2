@@ -20,14 +20,24 @@ const nextConfig: NextConfig = {
   // Dev only: never cache. The dev tunnel goes through Cloudflare, which turns
   // the dev server's no-cache into a 4-hour browser cache; dev chunks keep
   // their URL across edits, so phones kept stale CSS. no-store it respects.
+  //
+  // Bank and wallet logos, everywhere: kept 30 days, then served from the
+  // cache while it checks again, so a sheet's grid of logos never waits on
+  // the network. Their names carry no hash: a redrawn logo takes a new name.
+  // Last, so in dev it wins over the no-store above.
   async headers() {
-    if (process.env.NODE_ENV !== "development") return [];
+    const logos = {
+      source: "/institutions/:path*",
+      headers: [{ key: "Cache-Control", value: "public, max-age=2592000, stale-while-revalidate=31536000" }],
+    };
+    if (process.env.NODE_ENV !== "development") return [logos];
 
     return [
       {
         source: "/:path*",
         headers: [{ key: "Cache-Control", value: "no-store, must-revalidate" }],
       },
+      logos,
     ];
   },
   // Serve Firebase's OAuth helper from this domain, so Google Sign-In works

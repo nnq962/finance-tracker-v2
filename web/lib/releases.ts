@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.8.2",
+    date: "2026-10-16",
+    title: "Logo ngân hàng và ví hiện ngay",
+    changes: [
+      { kind: "improved", text: "Logo ngân hàng và ví điện tử được lưu lại trên máy 30 ngày và hiện ngay khi mở form hay đổi giữa Ngân hàng và Ví điện tử, không phải tải lại mỗi lần." },
+      { kind: "improved", text: "Logo Bảo Việt, Đông Á và Bắc Á nhẹ hơn (tổng từ 425KB còn 270KB), hình không đổi." },
+    ],
+  },
+  {
     version: "6.8.1",
     date: "2026-10-16",
     title: "Sửa lỗi hiển thị trang Tài khoản",
