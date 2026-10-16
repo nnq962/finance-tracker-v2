@@ -377,7 +377,8 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   và "Đã mua". Bút chì mở `JarFormSheet` (cũng là màn tạo; 2026-10-16 bày như màn sửa danh mục): vòng hũ theo lựa chọn,
   Mục tiêu lớn, Tên (người dùng tự gõ), "Biểu tượng" là `IconPicker` của danh mục (gợi ý theo tên, ô cuối mở
   `IconPickerScreen` đủ bộ icon danh mục có ô tìm), "Màu" là `ColorPicker` (màu danh mục; tô cả vòng lẫn biểu
-  tượng ở mọi nơi hũ hiện), công tắc "Đặt hạn" + dòng Hạn (`MonthPickerSheet` từ tháng này),
+  tượng ở mọi nơi hũ hiện), công tắc "Đặt hạn" + dòng Hạn. Hũ đã hoàn thành chỉ còn vòng đầy, dòng "Đã mua …
+  Hũ đã hoàn thành chỉ đổi được tên." và ô Tên (server cũng chỉ đổi tên), cạnh Lưu vẫn có Xoá (`MonthPickerSheet` từ tháng này),
   "Cần nạp khoảng … mỗi tháng để đạt mục tiêu đúng hạn" (Mục tiêu có gợi ý nhập nhanh như ô số tiền khác); thùng rác cạnh Lưu xoá hũ (hỏi lại; các lần nạp, rút bị xoá, tiền
   về tài khoản cũ). `MoveJarSheet`: số tiền lớn + nút điền nhanh "Tháng này · 5tr", "Đủ mục tiêu · 15tr" (rút ra:
   "Rút hết"), Từ/Về tài khoản (màn sâu), thời gian, ghi chú. `BoughtSheet`: Giá mua (mặc định mục tiêu), Hạng

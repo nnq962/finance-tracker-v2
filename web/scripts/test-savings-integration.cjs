@@ -124,6 +124,11 @@ async function run() {
     assert.equal(finished.completed_at.getTime(), cheaper.occurredAt.getTime())
     await assert.rejects(() => savings.buyWithJar(userId, jar, cheaper, cash, randomUUID()), /đã hoàn thành/)
     await assert.rejects(() => savings.assertOpenJar(userId, jar), /đã hoàn thành/)
+    // Finished, only its name changes; its goal stays what it was.
+    await savings.updateJar(userId, jar, { name: 'Xe đã mua', icon: 'gift', color: 'rose', target: 1 })
+    read = (await accounts.getAccounts(userId)).find((account) => account.id === jar)
+    assert.equal(read.name, 'Xe đã mua')
+    assert.deepEqual([read.goal.icon, read.goal.color, read.goal.target, read.goal.due], ['motorbike', 'orange', 30_000_000, '2099-12-31'])
     // Its moves can no longer change while it is finished (archived).
     await assert.rejects(() => transactions.createTransaction(userId, transfer(1, bank, jar), randomUUID()))
 

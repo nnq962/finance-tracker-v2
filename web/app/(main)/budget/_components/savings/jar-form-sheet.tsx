@@ -78,6 +78,8 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
     jar?.goal && isJarColorName(jar.goal.color) ? jar.goal.color : DEFAULT_JAR_COLOR,
   )
   const [name, setName] = React.useState(jar?.name ?? "")
+  // Bought: only its name is edited.
+  const done = Boolean(jar?.goal?.completedAt)
   const [withDue, setWithDue] = React.useState(Boolean(jar?.goal?.due) || !jar)
   // Three months ahead to start with: a near goal, easily moved.
   const [dueMonth, setDueMonth] = React.useState(() => {
@@ -157,82 +159,100 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
         />
       ) : null}
 
-      <div className={cn("flex flex-col gap-6 pb-4", allIcons && "hidden")}>
-        {/* What it will look like, following each choice. */}
-        <div className="flex justify-center pt-2">
-          <JarRing jar={{ balance: jar?.balance ?? 0, goal: { target: target ?? 0, icon, color } }} size="lead" />
-        </div>
-
-        <div className="flex flex-col items-center gap-2">
-          <label htmlFor="jar-target" className="text-xs text-muted-foreground">
-            Mục tiêu
-          </label>
-          <CurrencyInput
-            variant="hero"
-            id="jar-target"
-            name="target"
-            value={target}
-            onValueChange={(value) => {
-              setTarget(value)
-              setTargetError(null)
-            }}
-            invalid={Boolean(targetError)}
-            required
-          />
-          {targetError ? <FieldError className="text-center">{targetError}</FieldError> : null}
-        </div>
-
-        <SettingsGroup>
-          <SettingsFieldRow htmlFor="jar-name" title="Tên">
-            <InlineInput
-              id="jar-name"
-              name="name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Mua xe máy"
-              maxLength={80}
-            />
-          </SettingsFieldRow>
-        </SettingsGroup>
-
-        <section className="flex flex-col gap-2">
-          <Caption>Biểu tượng</Caption>
-          <IconPicker
-            value={icon}
-            color={color}
-            name={name}
-            fallback={[DEFAULT_JAR_ICON]}
-            onValueChange={setIcon}
-            onShowAll={() => setAllIcons(true)}
-          />
-          <p className="px-4 text-xs text-muted-foreground">Gợi ý theo tên. Ô cuối mở tất cả biểu tượng.</p>
-        </section>
-
-        <section className="flex flex-col gap-2">
-          <Caption>Màu</Caption>
-          <ColorPicker value={color} onValueChange={setColor} />
-        </section>
-
-        <div className="flex flex-col gap-2">
+      {done ? (
+        // Bought: its goal is what it was, only its name changes (and it can be deleted).
+        <div className="flex flex-col gap-6 pb-4">
+          <input type="hidden" name="target" value={target ?? ""} />
+          <div className="flex flex-col items-center gap-2 pt-2 text-center">
+            <JarRing jar={jar!} size="lead" />
+            <p className="text-sm text-muted-foreground">
+              Đã mua {formatDate(toDateKey(jar!.goal!.completedAt!))}. Hũ đã hoàn thành chỉ đổi được tên.
+            </p>
+          </div>
           <SettingsGroup>
-            <SettingsRow
-              title="Đặt hạn"
-              description="Tính số tiền cần nạp mỗi tháng"
-              action={<Switch aria-label="Đặt hạn" checked={withDue} onCheckedChange={setWithDue} />}
-            />
-            {withDue ? (
-              <SettingsRow
-                title="Hạn"
-                value={`${formatDate(lastDayOfMonth(dueMonth))} · ${dueLeftLabel(dueMonth, today)}`}
-                onClick={() => setPickingMonth(true)}
-              />
-            ) : null}
+            <SettingsFieldRow htmlFor="jar-name" title="Tên">
+              <InlineInput id="jar-name" name="name" value={name} onChange={(event) => setName(event.target.value)} maxLength={80} />
+            </SettingsFieldRow>
           </SettingsGroup>
-          {monthly ? (
-            <p className="px-4 text-xs text-muted-foreground">Cần nạp khoảng {formatCurrency(monthly)} mỗi tháng để đạt mục tiêu đúng hạn.</p>
-          ) : null}
         </div>
-      </div>
+      ) : (
+        <div className={cn("flex flex-col gap-6 pb-4", allIcons && "hidden")}>
+          {/* What it will look like, following each choice. */}
+          <div className="flex justify-center pt-2">
+            <JarRing jar={{ balance: jar?.balance ?? 0, goal: { target: target ?? 0, icon, color } }} size="lead" />
+          </div>
+
+          <div className="flex flex-col items-center gap-2">
+            <label htmlFor="jar-target" className="text-xs text-muted-foreground">
+              Mục tiêu
+            </label>
+            <CurrencyInput
+              variant="hero"
+              id="jar-target"
+              name="target"
+              value={target}
+              onValueChange={(value) => {
+                setTarget(value)
+                setTargetError(null)
+              }}
+              invalid={Boolean(targetError)}
+              required
+            />
+            {targetError ? <FieldError className="text-center">{targetError}</FieldError> : null}
+          </div>
+
+          <SettingsGroup>
+            <SettingsFieldRow htmlFor="jar-name" title="Tên">
+              <InlineInput
+                id="jar-name"
+                name="name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="Mua xe máy"
+                maxLength={80}
+              />
+            </SettingsFieldRow>
+          </SettingsGroup>
+
+          <section className="flex flex-col gap-2">
+            <Caption>Biểu tượng</Caption>
+            <IconPicker
+              value={icon}
+              color={color}
+              name={name}
+              fallback={[DEFAULT_JAR_ICON]}
+              onValueChange={setIcon}
+              onShowAll={() => setAllIcons(true)}
+            />
+            <p className="px-4 text-xs text-muted-foreground">Gợi ý theo tên. Ô cuối mở tất cả biểu tượng.</p>
+          </section>
+
+          <section className="flex flex-col gap-2">
+            <Caption>Màu</Caption>
+            <ColorPicker value={color} onValueChange={setColor} />
+          </section>
+
+          <div className="flex flex-col gap-2">
+            <SettingsGroup>
+              <SettingsRow
+                title="Đặt hạn"
+                description="Tính số tiền cần nạp mỗi tháng"
+                action={<Switch aria-label="Đặt hạn" checked={withDue} onCheckedChange={setWithDue} />}
+              />
+              {withDue ? (
+                <SettingsRow
+                  title="Hạn"
+                  value={`${formatDate(lastDayOfMonth(dueMonth))} · ${dueLeftLabel(dueMonth, today)}`}
+                  onClick={() => setPickingMonth(true)}
+                />
+              ) : null}
+            </SettingsGroup>
+            {monthly ? (
+              <p className="px-4 text-xs text-muted-foreground">Cần nạp khoảng {formatCurrency(monthly)} mỗi tháng để đạt mục tiêu đúng hạn.</p>
+            ) : null}
+          </div>
+        </div>
+      )}
 
       {allIcons ? null : (
         <PageSheetFooter>

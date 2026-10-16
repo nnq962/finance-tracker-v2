@@ -57,9 +57,21 @@ export async function getJarDue(userId: string, jarId: string) {
 
 /** Its name, what it is for, the target and the due month; its money is moved only by transfers. */
 export async function updateJar(userId: string, jarId: string, values: JarFormValues) {
+  // A finished jar (bought) only changes its name: its goal is what it was (2026-10-16).
+  const jar = await getDb()
+    .selectFrom("accounts")
+    .select("completedAt")
+    .where("id", "=", jarId)
+    .where("userId", "=", userId)
+    .where("type", "=", "savings")
+    .executeTakeFirst()
   const result = await getDb()
     .updateTable("accounts")
-    .set({ name: values.name, goalIcon: values.icon, goalColor: values.color, goalTarget: values.target, goalDue: values.due ?? null })
+    .set(
+      jar?.completedAt
+        ? { name: values.name }
+        : { name: values.name, goalIcon: values.icon, goalColor: values.color, goalTarget: values.target, goalDue: values.due ?? null },
+    )
     .where("id", "=", jarId)
     .where("userId", "=", userId)
     .where("type", "=", "savings")
