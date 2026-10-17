@@ -2,6 +2,7 @@ import "server-only"
 
 import { sql } from "kysely"
 
+import { shiftMonthKey } from "@/lib/budgets/months"
 import type { BudgetGroupLine, BudgetOverview } from "@/lib/budgets/types"
 import type { CategoryColorName } from "@/lib/categories/category-colors"
 import { getDb } from "@/lib/db/client"
@@ -12,14 +13,10 @@ import { MAX_MONEY } from "@/lib/money"
 export class BudgetValidationError extends Error {}
 
 /** "YYYY-MM" moved by `by` months. */
-function shiftMonth(month: string, by: number) {
-  const [year, index] = month.split("-").map(Number)
-  const date = new Date(Date.UTC(year, index - 1 + by, 1))
-  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`
-}
+export const shiftMonth = shiftMonthKey
 
 /** A month's first moment in Vietnam, as every month in the app is counted. */
-function monthStart(month: string) {
+export function monthStart(month: string) {
   return new Date(`${month}-01T00:00:00+07:00`)
 }
 
@@ -32,7 +29,7 @@ const monthOf = sql<string>`to_char(t.occurred_at AT TIME ZONE 'Asia/Ho_Chi_Minh
  * their account, and not paid from a savings jar (that money was set aside
  * for it). Transfers and loan repayments are other kinds or other tables.
  */
-async function spendingByGroupAndMonth(userId: string, from: string, to: string) {
+export async function spendingByGroupAndMonth(userId: string, from: string, to: string) {
   return getDb()
     .selectFrom("transactions as t")
     .innerJoin("accounts as a", "a.id", "t.accountId")

@@ -389,6 +389,25 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   ("Ăn uống đã dùng 86% hạn mức", "Còn 560.000đ cho 16 ngày, khoảng 35.000đ mỗi ngày.") và một lần khi vượt
   ("Vượt hạn mức Ăn uống", "Đã chi 4.150.000đ, hơn hạn mức 150.000đ."), mỗi tháng; gửi sau khi lưu khoản chi, chỉ
   khi bật thông báo; chạm mở Tổng quan với sheet. Đặt hay sửa hạn mức thì mức đang đứng được ghi lại không báo.
+  **Chi tiết** (2026-10-17, `budget-detail.tsx`, `budget-charts.tsx`, dữ liệu `lib/budgets/month.ts`): sheet tên
+  "Hạn mức", đầu nội dung là "Tháng 10" với hai nút tròn ‹ › (như lịch ở Tổng quan; lùi tới tháng có giao dịch
+  đầu tiên). Thẻ cả tháng kèm `KeptMonths` dưới vạch kẻ: "Giữ được hạn mức 4/6 tháng trước đó" và sáu chấm
+  (xanh giữ, đỏ vượt, xám là tháng trước khi có giao dịch, không tính). Tháng đã qua: thẻ là `BudgetResult`
+  ("Tháng 9 đã chi", số lớn, %, thanh, "Giữ được hạn mức · dư 400k" xanh hay "Đã vượt 300k" đỏ), dòng nhóm ghi
+  "Giữ được · dư …" / "Đã vượt …", tiêu đề "THEO NHÓM · GIỮ ĐƯỢC 3/4", không có phần chưa đặt hạn mức; tháng
+  cũ so với hạn mức hiện tại (chưa lưu hạn mức theo từng tháng). Chạm thẻ cả tháng hay một nhóm mở màn sâu
+  (`usePageSheetScreen`, ‹ quay lại, bút chì sửa hạn mức ở bên phải, tháng cũ không có bút chì; tiêu đề "Ăn uống",
+  "Ăn uống · tháng 9", "Cả tháng 10"): thẻ đầu như trên, "CHI THEO NGÀY" (`BudgetDailyChart`: hai số "Đến hôm nay"
+  / "Kế hoạch đến hôm nay", hay "Cả tháng 9" / "Hạn mức"; đường chi luỹ kế màu mực, amber khi chi nhanh hơn kế
+  hoạch, đỏ khi vượt, nền mờ cùng màu; đường đứt "đúng kế hoạch" từ 0 tới hạn mức ngày cuối tháng, vạch đỏ mờ là
+  hạn mức; tháng này dừng ở hôm nay, tháng cũ chạy tới ngày cuối, đi ngang sau khoản cuối và ghi "Vượt hạn mức từ
+  ngày 27/09, cuối tháng hơn 300k." hay "Giữ được hạn mức đến hết 30/09, dư 350k."), "THEO HẠNG MỤC" (màn nhóm)
+  hay "THEO NHÓM" (màn cả tháng, thêm dòng "Chưa đặt hạn mức" gom các nhóm không có hạn mức) là các `LimitRow`
+  với thanh tỉ lệ và "44% · 22 giao dịch", "SO VỚI CÁC THÁNG TRƯỚC" (`BudgetMonthsChart`: trung bình các tháng
+  trước và hạn mức, bảy cột sáu tháng trước và tháng đang xem, cột vượt đỏ, cột tháng đang xem đậm, vạch hạn mức
+  đứt), rồi (màn nhóm) ba khoản chi mới nhất theo ngày và "Xem tất cả N giao dịch", mở Giao dịch của tháng đó
+  lọc theo nhóm (`?group=`; chạm một hạng mục cũng mở theo nhóm). Trục số chỉ có 0, nửa hạn mức, hạn mức; khi chi
+  vượt xa thì hạn mức và đỉnh.
 - **Hũ tiết kiệm** (2026-10-14, `budget/_components/savings/`): hũ là một tài khoản loại `savings` (không lãi, để
   dành mua một món), tiền vào ra là chuyển khoản. Trang Tài khoản có nhóm "HŨ TIẾT KIỆM · N" dưới "TÀI KHOẢN CHÍNH · N" (tên cũ "Đang dùng", đổi 2026-10-14):
   mỗi hũ một dòng, ô đầu là `JarRing` (vòng tiến độ 36 quanh biểu tượng, vòng và biểu tượng theo màu hũ, đầy thì xanh lá),

@@ -18,7 +18,8 @@ import { RulerSlider } from "@/components/app/ruler-slider"
 import { SegmentedProgress } from "@/components/app/steps"
 import { Stepper } from "@/components/app/stepper"
 import { ReplyView } from "@/components/ai-assistant/answer-view"
-import { BudgetTotal } from "@/components/budgets/budget-total"
+import { BudgetDailyChart, BudgetMonthsChart, KeptMonths } from "@/components/budgets/budget-charts"
+import { BudgetResult, BudgetTotal } from "@/components/budgets/budget-total"
 import { DraftsView } from "@/components/ai-assistant/drafts-view"
 import type { Account } from "@/lib/accounts/types"
 import type { AssistantDraft } from "@/lib/ai/assistant/types"
@@ -456,6 +457,10 @@ const sampleBudgets: BudgetOverview = {
   groups: [],
 }
 
+/** Six months before October and October so far; spending by day in October (17 days gone, ahead of plan). */
+const sampleHistory = [10_800_000, 12_900_000, 11_200_000, 11_500_000, 12_400_000, 11_600_000, 7_450_000]
+const sampleDaily = Array.from({ length: 31 }, (_, index) => (index < 17 ? [320_000, 0, 180_000, 90_000, 260_000][index % 5] : 0))
+
 function LimitSample() {
   const rows = [
     { name: "Ăn uống", icon: "utensils", tone: "orange", spent: 3_420_000, limit: 4_000_000 },
@@ -474,9 +479,25 @@ function LimitSample() {
         <Card size="lg">
           <CardContent>
             <BudgetTotal overview={sampleBudgets} />
+            <KeptMonths history={sampleHistory} limit={12_000_000} month="2026-10" minMonth="2026-01" className="mt-4 border-t border-separator pt-3.5" />
+          </CardContent>
+        </Card>
+        <Card size="lg">
+          <CardContent>
+            <BudgetResult spent={2_300_000} limit={2_000_000} label="Tháng 9 đã chi" />
           </CardContent>
         </Card>
       </div>
+      <Card size="lg">
+        <CardContent>
+          <BudgetDailyChart daily={sampleDaily} limit={4_000_000} month="2026-10" gone={17} past={false} />
+        </CardContent>
+      </Card>
+      <Card size="lg">
+        <CardContent>
+          <BudgetMonthsChart history={sampleHistory} limit={12_000_000} month="2026-10" minMonth="2026-01" past={false} />
+        </CardContent>
+      </Card>
       <SettingsGroup title="Theo nhóm · 3">
         {rows.map((row) => (
           <LimitRow
@@ -540,7 +561,7 @@ function ProgressSection() {
           </Button>
         </div>
       </Block>
-      <Block label="Hạn mức · LimitBar, LimitRow, BudgetTotal" wide>
+      <Block label="Hạn mức · LimitBar, LimitRow, BudgetTotal, BudgetResult, KeptMonths, biểu đồ" wide>
         <LimitSample />
       </Block>
       <Block label="Sóng giọng nói · khi ghi âm">

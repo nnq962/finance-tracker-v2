@@ -60,7 +60,7 @@ export function remainingLabel(spent: number, limit: number, days: number) {
   return `Còn ${formatCompactCurrency(limit - spent, 1)} · ${formatCompactCurrency(perDay(spent, limit, days))}/ngày`
 }
 
-export function hasLimit<T extends BudgetLine>(line: T): line is T & { budgetId: string; limit: number } {
+export function hasLimit<T extends Pick<BudgetLine, "budgetId" | "limit">>(line: T): line is T & { budgetId: string; limit: number } {
   return line.budgetId !== null && line.limit !== null
 }
 

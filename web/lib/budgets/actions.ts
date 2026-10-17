@@ -4,8 +4,9 @@ import { revalidatePath } from "next/cache"
 
 import { requireSession } from "@/lib/auth/session"
 import { syncBudgetAlerts } from "@/lib/budgets/alerts"
+import { getBudgetMonth } from "@/lib/budgets/month"
 import { BudgetValidationError, deleteBudget, saveBudget } from "@/lib/budgets/repository"
-import type { BudgetActionResult } from "@/lib/budgets/types"
+import type { BudgetActionResult, BudgetMonth } from "@/lib/budgets/types"
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -53,5 +54,16 @@ export async function deleteBudgetAction(budgetId: string): Promise<BudgetAction
     return { success: true }
   } catch (error) {
     return failure(error)
+  }
+}
+
+/** One month of the limits in detail, for the sheet: this month or one gone by. Null when it cannot be read. */
+export async function loadBudgetMonthAction(month: string): Promise<BudgetMonth | null> {
+  const user = await requireSession()
+  try {
+    return await getBudgetMonth(user.uid, typeof month === "string" ? month : "")
+  } catch (error) {
+    console.error("Budget month failed", error)
+    return null
   }
 }

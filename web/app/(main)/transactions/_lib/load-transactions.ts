@@ -10,6 +10,8 @@ import { getTransactionDateKey, getTransactionMonthKey, getTransactionMonthRange
 export type TransactionsSearchParams = {
   month?: string
   account?: string
+  /** Category group ids, comma-separated: start filtered to them (from a spending limit). */
+  group?: string
   /** "1": opens the add-transaction sheet, e.g. from the daily reminder. */
   add?: string
   order?: string
@@ -17,7 +19,7 @@ export type TransactionsSearchParams = {
 }
 
 /** Everything the transactions page shows, for the month in the address (this month by default). */
-export async function loadTransactions({ month, account, add, order, grant }: TransactionsSearchParams) {
+export async function loadTransactions({ month, account, group, add, order, grant }: TransactionsSearchParams) {
   const todayDateKey = getTransactionDateKey(new Date())
   const selectedMonth = getTransactionMonthKey(month, todayDateKey)
   const range = getTransactionMonthRange(selectedMonth, 1)
@@ -46,6 +48,8 @@ export async function loadTransactions({ month, account, add, order, grant }: Tr
     accounts,
     // Opened from an account's sheet: start filtered to that account.
     initialAccountId: accounts.some((item) => item.id === account) ? account : undefined,
+    // Opened from a spending limit: start filtered to its groups.
+    initialGroupIds: (group ?? "").split(",").filter((id) => categoryGroups.some((item) => item.id === id)),
     categoryGroups,
     selectedMonth,
     todayDateKey,

@@ -40,3 +40,61 @@ export type BudgetOverview = {
 export type BudgetActionResult =
   | { success: true }
   | { success: false; error: string }
+
+/** A category's spending in a month, within its group. */
+export type BudgetMonthItem = {
+  itemId: string
+  name: string
+  iconName: CategoryIconName
+  amount: number
+  count: number
+}
+
+/** One of the month's latest spendings in a group. */
+export type BudgetMonthEntry = {
+  id: string
+  /** ISO time. */
+  occurredAt: string
+  itemName: string
+  iconName: CategoryIconName
+  accountName: string
+  amount: number
+}
+
+/** A limit over one month in detail. Past months are measured against today's limit (limits are not kept per month). */
+export type BudgetMonthLine = {
+  budgetId: string | null
+  limit: number | null
+  spent: number
+  /** Spent in each of the six months before, oldest first, then this one. */
+  history: number[]
+  /** Spent on each day of the month, the 1st first; days after today are 0. */
+  daily: number[]
+}
+
+export type BudgetMonthGroup = BudgetMonthLine & {
+  groupId: string
+  name: string
+  iconName: CategoryIconName
+  colorName: CategoryColorName
+  /** By category, largest first. */
+  items: BudgetMonthItem[]
+  /** The three latest, newest first. */
+  recent: BudgetMonthEntry[]
+  count: number
+}
+
+/** A month of limits in detail: the sheet's month (this one or one gone by) and its detail screens. */
+export type BudgetMonth = {
+  /** "YYYY-MM". */
+  month: string
+  days: number
+  /** Days gone: up to today in the running month, all of them in a month gone by. */
+  gone: number
+  past: boolean
+  /** The earliest month with any transaction, as far back as the sheet goes. */
+  minMonth: string
+  total: BudgetMonthLine
+  /** Every active spending group, in the user's order. */
+  groups: BudgetMonthGroup[]
+}

@@ -63,3 +63,30 @@ export function BudgetTotal({ overview, compact = false }: { overview: BudgetOve
     </div>
   )
 }
+
+/**
+ * How a month gone by ended, in the place of BudgetTotal: what was spent
+ * large, the share of the limit, the bar, then kept (green, what was left)
+ * or over (red, by how much).
+ */
+export function BudgetResult({ spent, limit, label }: { spent: number; limit: number; label: string }) {
+  const over = spent > limit
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-end justify-between gap-3">
+        <span className="flex min-w-0 flex-col">
+          <CardLabel as="span">{label}</CardLabel>
+          <Money amount={spent} size="xl" className="mt-1" />
+        </span>
+        <span className="flex shrink-0 flex-col items-end pb-1">
+          <span className="text-sm font-semibold tabular-nums">{budgetPercent(spent, limit)}%</span>
+          <span className="text-xs text-muted-foreground tabular-nums">của {formatCompactCurrency(limit, 1)}</span>
+        </span>
+      </div>
+      <LimitBar value={spent} max={limit} tone={limitTone(spent, limit)} size="md" label="Hạn mức đã dùng" className="mt-4.5" />
+      <p className={cn("mt-2.5 text-xs font-medium", over ? "text-expense" : "text-income")}>
+        {over ? `Đã vượt ${formatCompactCurrency(spent - limit, 1)}` : `Giữ được hạn mức · dư ${formatCompactCurrency(limit - spent, 1)}`}
+      </p>
+    </div>
+  )
+}

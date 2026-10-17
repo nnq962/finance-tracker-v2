@@ -32,6 +32,16 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.10.0",
+    date: "2026-10-17",
+    title: "Hạn mức chi tiết hơn",
+    changes: [
+      { kind: "new", text: "Chạm một nhóm (hay thẻ cả tháng) trong Hạn mức để xem chi tiết: chi luỹ kế theo ngày so với kế hoạch, chia theo hạng mục (hay theo nhóm), so với 6 tháng trước, các khoản chi mới nhất." },
+      { kind: "new", text: "Xem lại các tháng trước bằng ‹ ›: giữ được hay vượt hạn mức, dư hay vượt bao nhiêu; kèm \"Giữ được hạn mức x/6 tháng trước đó\"." },
+      { kind: "improved", text: "\"Xem tất cả giao dịch\" mở trang Giao dịch lọc sẵn theo nhóm của tháng đó." },
+    ],
+  },
+  {
     version: "6.9.1",
     date: "2026-10-17",
     title: "Sheet chọn tháng gọn trên máy tính",

@@ -48,6 +48,8 @@ import { TransactionsView } from "./transactions-view"
 type TransactionsScreenProps = {
   accounts: Account[]
   initialAccountId?: string
+  /** Start filtered to these category groups (from a spending limit). */
+  initialGroupIds?: string[]
   categoryGroups: CategoryGroup[]
   selectedMonth: string
   todayDateKey: string
@@ -83,6 +85,7 @@ const initialSearchFilters: TransactionSearchFilters = {
 export function TransactionsScreen({
   accounts,
   initialAccountId,
+  initialGroupIds = [],
   categoryGroups,
   selectedMonth,
   todayDateKey,
@@ -99,7 +102,15 @@ export function TransactionsScreen({
   const [searchFilters, setSearchFilters] = React.useState<TransactionSearchFilters>(() => ({
     ...initialSearchFilters,
     accountIds: initialAccountId ? [initialAccountId] : [],
+    categoryGroupIds: initialGroupIds,
   }))
+  // A limit's "Xem tất cả" while this page is open: its groups filter the list.
+  const groupKey = initialGroupIds.join()
+  const [seenGroupKey, setSeenGroupKey] = React.useState(groupKey)
+  if (groupKey !== seenGroupKey) {
+    setSeenGroupKey(groupKey)
+    if (groupKey) setSearchFilters((current) => ({ ...current, categoryGroupIds: initialGroupIds }))
+  }
   const [filterOpen, setFilterOpen] = React.useState(false)
   const [addOpen, setAddOpen] = React.useState(initialAddOpen)
   // A reminder tapped while this page is shown opens the sheet here.
