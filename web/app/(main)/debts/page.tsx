@@ -2,7 +2,6 @@ import { getAccounts } from "@/lib/accounts/repository"
 import { loadWithSession } from "@/lib/auth/session"
 
 import { DebtsDashboard } from "./_components/debts-dashboard"
-import { compareDebtsByUrgency } from "./_lib/debt-presentation"
 import {
   getContacts,
   getDebts,
@@ -11,7 +10,7 @@ import {
 export default async function DebtsPage({ searchParams }: { searchParams: Promise<{ debt?: string }> }) {
   const { debt } = await searchParams
   const {
-    data: [accounts, contacts, allDebts],
+    data: [accounts, contacts, debts],
   } = await loadWithSession((user) =>
     Promise.all([
       getAccounts(user.uid),
@@ -19,21 +18,12 @@ export default async function DebtsPage({ searchParams }: { searchParams: Promis
       getDebts(user.uid),
     ]),
   )
-  // Without a debt in the URL, the side panel opens the most urgent open one.
-  const defaultDebt = allDebts
-    .filter((item) => item.status !== "settled")
-    .sort(compareDebtsByUrgency)[0] ?? allDebts[0]
-  const requestedDebtId = allDebts.some((item) => item.id === debt) ? debt : undefined
-  const selectedDebtId = requestedDebtId ?? defaultDebt?.id
-  // Only the selected debt's payment history goes to the browser; another
-  // debt's loads when it is selected (the URL changes and the page reloads).
-  const debts = allDebts.map((item) =>
-    item.id === selectedDebtId ? item : { ...item, payments: undefined },
-  )
+  const requestedDebtId = debts.some((item) => item.id === debt) ? debt : undefined
 
+  // Every debt comes with its payment history, so a tapped one's sheet opens
+  // at once from what the browser has (2026-10-17).
   return (
     <DebtsDashboard
-      selectedDebtId={selectedDebtId}
       requestedDebtId={requestedDebtId}
       accounts={accounts}
       initialContacts={contacts}

@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.14",
+    date: "2026-10-17",
+    title: "Chi tiết khoản nợ mở ngay khi chạm",
+    changes: [
+      { kind: "improved", text: "Chạm một khoản ở trang Vay nợ, kể cả khoản đã tất toán, chi tiết và lịch sử trả hiện ngay, không còn chờ tải." },
+    ],
+  },
+  {
     version: "6.15.13",
     date: "2026-10-17",
     title: "Hạn mức tổng tính cả phí chuyển khoản và lãi vay",

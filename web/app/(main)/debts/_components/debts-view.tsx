@@ -5,7 +5,6 @@ import {
   HandshakeIcon,
   TriangleAlertIcon,
 } from "lucide-react"
-import { useRouter } from "next/navigation"
 
 import type { Account } from "@/lib/accounts/types"
 import { NoticeBanner } from "@/components/app/notice-banner"
@@ -27,7 +26,6 @@ import {
 import type { Contact, Debt, DebtDirection, NewDebt, NewDebtPayment } from "../_types/debt"
 import {
   DebtDetailInfo,
-  DebtDetailSkeleton,
   DebtEditButton,
   DebtRecordPaymentButton,
 } from "./debt-detail-panel"
@@ -41,7 +39,6 @@ type DebtsViewProps = {
   /** The debt a link to the page names (`/debts?debt=…`, from a transaction, the overview or a notice): its sheet opens. */
   requestedDebtId?: string
   onChangeDebt: (id: string, values: NewDebt | null) => Promise<void>
-  initialSelectedDebtId?: string
   accounts: Account[]
   onEditPayment: (debtId: string, paymentId: string, values: NewDebtPayment) => Promise<void>
   onDeletePayment: (debtId: string, paymentId: string) => Promise<void>
@@ -64,27 +61,21 @@ export function DebtsView({
   requestedDebtId,
   onChangeDebt,
   contacts,
-  initialSelectedDebtId,
   debts,
   onRecordPayment,
   accounts,
   onEditPayment,
   onDeletePayment,
 }: DebtsViewProps) {
-  const router = useRouter()
-  const [, startNavigation] = React.useTransition()
   const [sheetDebtId, setSheetDebtId] = React.useState<string | null>(null)
-  // A link from elsewhere opens its debt (its payments came with the page),
-  // when the URL comes to name it. The URL a tap on a row sets is not such a
-  // link: until it lands the URL still names the debt shown before, which
-  // must not open again over the one tapped (2026-10-17).
+  // A link from elsewhere opens its debt when the URL comes to name it. A tap
+  // on a row leaves the URL alone: every debt came with its payments, so the
+  // sheet opens at once, with no page to load (2026-10-17).
   const [seenRequest, setSeenRequest] = React.useState<string>()
-  const [tappedDebtId, setTappedDebtId] = React.useState<string>()
   if (requestedDebtId !== seenRequest) {
     setSeenRequest(requestedDebtId)
-    if (requestedDebtId && requestedDebtId !== tappedDebtId) setSheetDebtId(requestedDebtId)
+    if (requestedDebtId) setSheetDebtId(requestedDebtId)
   }
-  const selectedDebtId = initialSelectedDebtId ?? debts[0]?.id
   const contactById = new Map(contacts.map((contact) => [contact.id, contact]))
   const openDebts = debts.filter((debt) => !isSettled(debt)).sort(compareDebtsByUrgency)
   const settledDebts = debts
@@ -109,24 +100,14 @@ export function DebtsView({
       borrowedCount={openCount("borrowed")}
     />
   )
-  // Payments are only loaded for the selected debt, so the sheet waits for
-  // the navigation that selects it. A deleted debt closes the sheet.
+  // A deleted debt closes the sheet. The last debt stays on screen while it slides closed.
   const sheetDebt = sheetDebtId ? debts.find((debt) => debt.id === sheetDebtId) : undefined
-  const sheetContact = sheetDebt ? contactById.get(sheetDebt.contactId) : undefined
-  const isSheetReady = sheetDebt !== undefined && sheetDebt.id === selectedDebtId
+  const [shownDebt, setShownDebt] = React.useState(sheetDebt)
+  if (sheetDebt && sheetDebt !== shownDebt) setShownDebt(sheetDebt)
+  const shownContact = shownDebt ? contactById.get(shownDebt.contactId) : undefined
 
   function selectDebt(debtId: string) {
     setSheetDebtId(debtId)
-    // The URL this navigation sets is not a link to open it again (closed while it loads, it stays closed).
-    setTappedDebtId(debtId)
-
-    if (debtId === selectedDebtId) return
-
-    startNavigation(() =>
-      router.replace(`/debts?debt=${encodeURIComponent(debtId)}`, {
-        scroll: false,
-      }),
-    )
   }
 
   // Shown as a tap on its row would: in its sheet.
@@ -245,8 +226,8 @@ export function DebtsView({
       <PageSheet
         title="Chi tiết khoản nợ"
         action={
-          isSheetReady && sheetDebt && sheetContact ? (
-            <DebtEditButton {...getDetailProps(sheetDebt, sheetContact)} />
+          shownDebt && shownContact ? (
+            <DebtEditButton {...getDetailProps(shownDebt, shownContact)} />
           ) : undefined
         }
         open={sheetDebt !== undefined}
@@ -254,27 +235,19 @@ export function DebtsView({
           if (!open) setSheetDebtId(null)
         }}
       >
-        {isSheetReady && sheetDebt && sheetContact ? (
-          <React.Fragment key={sheetDebt.id}>
+        {shownDebt && shownContact ? (
+          <React.Fragment key={shownDebt.id}>
             <div className="pb-4">
-              <DebtDetailInfo {...getDetailProps(sheetDebt, sheetContact)} />
+              <DebtDetailInfo {...getDetailProps(shownDebt, shownContact)} />
             </div>
             {/* Nothing left to collect or repay once settled. */}
-            {isSettled(sheetDebt) ? null : (
+            {isSettled(shownDebt) ? null : (
               <PageSheetFooter>
-                <DebtRecordPaymentButton {...getDetailProps(sheetDebt, sheetContact)} />
+                <DebtRecordPaymentButton {...getDetailProps(shownDebt, shownContact)} />
               </PageSheetFooter>
             )}
           </React.Fragment>
-        ) : (
-          <div
-            className="space-y-6 pb-4"
-            role="status"
-            aria-label="Đang tải chi tiết khoản nợ"
-          >
-            <DebtDetailSkeleton />
-          </div>
-        )}
+        ) : null}
       </PageSheet>
     </div>
   )

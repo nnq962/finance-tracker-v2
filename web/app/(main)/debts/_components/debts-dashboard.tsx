@@ -25,7 +25,6 @@ import { ContactsSheet } from "./contacts-sheet"
 import { DebtsView } from "./debts-view"
 
 type DebtsDashboardProps = {
-  selectedDebtId?: string
   /** The debt a link to the page names, opened in its sheet. */
   requestedDebtId?: string
   accounts: Account[]
@@ -37,7 +36,6 @@ export function DebtsDashboard({
   accounts,
   initialContacts,
   initialDebts,
-  selectedDebtId,
   requestedDebtId,
 }: DebtsDashboardProps) {
   const contacts = initialContacts
@@ -141,7 +139,6 @@ export function DebtsDashboard({
       <DebtsView
         openRequest={openRequest}
         requestedDebtId={requestedDebtId}
-        initialSelectedDebtId={selectedDebtId}
         contacts={contacts}
         debts={debts}
         accounts={accounts}
