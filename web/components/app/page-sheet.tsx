@@ -276,15 +276,17 @@ export function PageSheet({
             ref={fadeRef}
             aria-hidden="true"
             className={cn(
-              "pointer-events-none absolute inset-x-0 top-0 h-21 opacity-0 transition-opacity duration-200 ease-out",
+              "pointer-events-none absolute inset-x-0 top-0 z-10 h-21 opacity-0 transition-opacity duration-200 ease-out",
               scrolled && "opacity-100",
             )}
             style={{ backgroundImage: fadeGradient(surfaceColor, !hideTitle || Boolean(screen)) }}
           />
           {/* 16 above (the grabber floats in it) and 8 below a 44 button: ✕ sits 16 from the sheet's top and side.
               Its round buttons always float: a soft shadow, so they look the same at rest and scrolled. No hairline in the
-              dark since 2026-10-16: the button's grey already stands off the black sheet. */}
-          <div className="absolute inset-x-0 top-0 grid h-17 grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2 px-4 pt-4 pb-2 [&_[data-variant=secondary]]:shadow-[0_4px_16px_rgb(0_0_0/0.1)]">
+              dark since 2026-10-16: the button's grey already stands off the black sheet.
+              Fade and bar sit above the content (2026-10-17): a row lifts itself (z-1) while hovered
+              or pressed, which otherwise drew its grey over ✕ and the pencil. */}
+          <div className="absolute inset-x-0 top-0 z-20 grid h-17 grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2 px-4 pt-4 pb-2 [&_[data-variant=secondary]]:shadow-[0_4px_16px_rgb(0_0_0/0.1)]">
             {back ? (
               <Button type="button" variant="secondary" size="icon" aria-label={backLabel} disabled={disabled} onClick={back}>
                 <ChevronLeftIcon />

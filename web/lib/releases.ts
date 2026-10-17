@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.9",
+    date: "2026-10-17",
+    title: "Nút trên sheet không bị dòng che",
+    changes: [
+      { kind: "fixed", text: "Giữ chuột hoặc ngón tay trên một dòng rồi cuộn lên, nền xám của dòng không còn đè lên nút đóng, quay lại và sửa ở đầu sheet." },
+    ],
+  },
+  {
     version: "6.15.8",
     date: "2026-10-17",
     title: "Sửa trang Tổng quan sau một lượt test",

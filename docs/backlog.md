@@ -74,6 +74,4 @@ Những thứ chỉ kiểm được bằng trình duyệt giả lập, chưa th�
 
 ## 8. Đang chờ người dùng quyết
 
-- **Trang Cài đặt:** có chặn đặt trùng tên hạng mục không, và có sửa 2 lỗi giao diện mà lần rà soát
-  tìm ra không.
-- **Trang Tổng quan:** đang rà soát, chờ danh sách lỗi.
+- Không còn việc nào (Cài đặt sửa ở 6.15.6, có chặn trùng tên hạng mục; Tổng quan sửa ở 6.15.8).
