@@ -38,6 +38,8 @@ import { DebtListItem } from "./debt-list-item"
 type DebtsViewProps = {
   /** A debt to show, asked from outside the list (the contacts); a new `key` asks again for the same one. */
   openRequest?: { debtId: string; key: number }
+  /** The debt a link to the page names (`/debts?debt=…`, from a transaction, the overview or a notice): its sheet opens. */
+  requestedDebtId?: string
   onChangeDebt: (id: string, values: NewDebt | null) => Promise<void>
   initialSelectedDebtId?: string
   accounts: Account[]
@@ -59,6 +61,7 @@ const sections: Array<{ direction: DebtDirection; label: string }> = [
 
 export function DebtsView({
   openRequest,
+  requestedDebtId,
   onChangeDebt,
   contacts,
   initialSelectedDebtId,
@@ -71,13 +74,28 @@ export function DebtsView({
   const router = useRouter()
   const [, startNavigation] = React.useTransition()
   const [sheetDebtId, setSheetDebtId] = React.useState<string | null>(null)
+  // A link from elsewhere opens its debt (its payments came with the page),
+  // once per link: closed, it stays closed until another one asks.
+  const [openedRequest, setOpenedRequest] = React.useState<string>()
+  if (requestedDebtId !== openedRequest) {
+    setOpenedRequest(requestedDebtId)
+    if (requestedDebtId) setSheetDebtId(requestedDebtId)
+  }
   const selectedDebtId = initialSelectedDebtId ?? debts[0]?.id
   const contactById = new Map(contacts.map((contact) => [contact.id, contact]))
   const openDebts = debts.filter((debt) => !isSettled(debt)).sort(compareDebtsByUrgency)
   const settledDebts = debts
     .filter(isSettled)
     .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt))
+  // Overdue first (the list's order), then those due today; the banner counts each apart.
   const overdueDebts = openDebts.filter((debt) => getDebtDeadline(debt).isOverdue)
+  const pastDueCount = overdueDebts.filter((debt) => getDebtDeadline(debt).isPastDue).length
+  const dueTodayCount = overdueDebts.length - pastDueCount
+  const overdueTitle = [
+    // Both: one short line on a phone ("2 quá hạn · 1 đến hạn hôm nay").
+    pastDueCount > 0 ? `${pastDueCount}${dueTodayCount > 0 ? "" : " khoản"} quá hạn` : null,
+    dueTodayCount > 0 ? `${dueTodayCount}${pastDueCount > 0 ? "" : " khoản"} đến hạn hôm nay` : null,
+  ].filter(Boolean).join(" · ")
   const summary = getDebtSummary(debts)
   const openCount = (side: DebtDirection) => openDebts.filter((debt) => debt.direction === side).length
   const tiles = (
@@ -96,6 +114,8 @@ export function DebtsView({
 
   function selectDebt(debtId: string) {
     setSheetDebtId(debtId)
+    // The URL this navigation sets is not a link to open it again (closed while it loads, it stays closed).
+    setOpenedRequest(debtId)
 
     if (debtId === selectedDebtId) return
 
@@ -177,7 +197,7 @@ export function DebtsView({
             tone="expense"
             surface="card"
             icon={TriangleAlertIcon}
-            title={`${overdueDebts.length} khoản quá hạn`}
+            title={overdueTitle}
             // Opens the one overdue the longest; the rest sit at the top of their sections.
             onClick={() => selectDebt(overdueDebts[0].id)}
           >
@@ -187,8 +207,9 @@ export function DebtsView({
 
       {/* The totals are on the card above. Stacked on phones; from lg up the
           two sides stand side by side, Cần thu | Cần trả, an empty side kept
-          with a line so the other stays in its column. */}
-      <div className="grid items-start gap-6 md:gap-8 lg:grid-cols-2">
+          with a line so the other stays in its column. One column on phones,
+          as wide as the page: a long note is cut, not widening it (2026-10-17). */}
+      <div className="grid grid-cols-1 items-start gap-6 md:gap-8 lg:grid-cols-2">
         {sections.map(({ direction: side, label }) => {
           const items = openDebts.filter((debt) => debt.direction === side)
           if (items.length === 0) {

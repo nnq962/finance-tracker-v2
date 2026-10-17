@@ -7,7 +7,9 @@ import { jarShortfall, lockAccounts, setBalance, shiftBalance, type LockedAccoun
 import { getDb } from "@/lib/db/client"
 import { retryOnDeadlock } from "@/lib/db/retry"
 import type { DB } from "@/lib/db/types"
-import { getPaymentMetrics, todayDate, updateDebtPayment } from "./calculations"
+import { formatCurrency } from "@/lib/format-currency"
+import { formatTime } from "@/lib/format-date"
+import { getInterest, getPaymentMetrics, todayDate, updateDebtPayment } from "./calculations"
 import { getInitials } from "./initials"
 import type { Contact, Debt, DebtPayment, NewDebt } from "./types"
 import { assertDebtId, DebtValidationError, MAX_MONEY, parseContact, parseDebt, parsePayment } from "./validation"
@@ -250,11 +252,16 @@ function assertWithinLimit(before: Debt, after: Debt) {
   }
 }
 
-/** The loan's own cash movement, shown on the Transactions page. */
-function movementColumns(debt: Pick<Debt, "direction" | "amount" | "note" | "recordedAt">, accountId: string) {
+/**
+ * The loan's own cash movement, shown on the Transactions page. The debt has
+ * a day but no time: the movement takes `time` ("HH:MM", Vietnam time), the
+ * moment it was first recorded, so it sits among that day's transactions
+ * rather than at 00:00 (2026-10-17).
+ */
+function movementColumns(debt: Pick<Debt, "direction" | "amount" | "note" | "recordedAt">, accountId: string, time: string) {
   return {
     kind: debt.direction === "borrowed" ? "income" : "expense", amount: debt.amount, accountId,
-    note: optional(debt.note), occurredAt: new Date(`${debt.recordedAt}T00:00:00+07:00`),
+    note: optional(debt.note), occurredAt: new Date(`${debt.recordedAt}T${time}:00+07:00`),
   }
 }
 
@@ -274,7 +281,7 @@ export async function createDebt(userId: string, input: unknown, operationId: st
     await trx.insertInto("debts").values({ id: operationId, userId, ...debtColumns(values) }).execute()
     if (account) {
       await applyBalance(trx, account, values.direction === "lent" ? -values.amount : values.amount)
-      await trx.insertInto("transactions").values({ userId, debtId: operationId, ...movementColumns(values, account.id) }).execute()
+      await trx.insertInto("transactions").values({ userId, debtId: operationId, ...movementColumns(values, account.id, formatTime(new Date())) }).execute()
     }
     return debt
   })
@@ -357,6 +364,13 @@ export async function changeDebt(userId: string, debtId: string, input: unknown 
       try {
         updated = updateDebtPayment({ ...debt, ...values, paidAmount: debt.paidAmount }, undefined, null)
       } catch (error) {
+        // Most often the amount went below what is already paid: said as such.
+        const last = payments.at(-1)
+        const owed = last ? getInterest({ ...debt, ...values }, last.paidAt).totalAmount : Infinity
+        if (debt.paidAmount > owed) {
+          const what = values.hasInterest ? "Số tiền cộng lãi" : "Số tiền"
+          throw new DebtValidationError(`${what} không được ít hơn số đã ${debt.direction === "lent" ? "thu" : "trả"} (${formatCurrency(debt.paidAmount, { signDisplay: "never" })}).`)
+        }
         throw new DebtValidationError(error instanceof Error ? error.message : "Lịch sử thanh toán không hợp lệ.")
       }
       assertWithinLimit(debt, updated)
@@ -387,7 +401,9 @@ export async function changeDebt(userId: string, debtId: string, input: unknown 
     if (values) {
       await trx.updateTable("debts").set(debtColumns(values)).where("id", "=", debtId).execute()
       if (values.recordingMode !== "opening") {
-        const movement = movementColumns(values, values.accountId!)
+        // The time it was first recorded stays; a new day keeps it too.
+        const existing = await trx.selectFrom("transactions").select("occurredAt").where("debtId", "=", debtId).executeTakeFirst()
+        const movement = movementColumns(values, values.accountId!, formatTime(existing?.occurredAt ?? new Date()))
         await trx
           .insertInto("transactions")
           .values({ userId, debtId, ...movement })

@@ -18,7 +18,7 @@ export default function DebtsLoading() {
             side from lg up), each person's avatar, name and note, what is left
             and when it is due, and the chevron. */}
         <DebtBalanceSkeleton />
-        <div className="grid items-start gap-6 md:gap-8 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-start gap-6 md:gap-8 lg:grid-cols-2">
           {[0, 1].map((index) => (
             <SettingsGroupSkeleton key={index} rows={2} media="avatar" description trailing="amount" chevron />
           ))}

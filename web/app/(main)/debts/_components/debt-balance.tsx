@@ -42,6 +42,8 @@ function balanceNote(net: number, total: number) {
  * figures under its ends and a line says which way it leans. From lg up the
  * card lies across the page (chosen 2026-10-09): the ring on the left, the
  * balance, owed to you and owed by you as three figures on the right.
+ * Each figure fits its column on one line, shrinking or going short rather
+ * than wrapping mid-number (2026-10-17).
  */
 export function DebtBalance({
   lent,
@@ -63,46 +65,47 @@ export function DebtBalance({
           <svg viewBox="0 0 200 110" className="w-full" aria-hidden="true">
             <HalfRing share={total === 0 ? null : lent / total} />
           </svg>
-          <div className="absolute inset-x-0 bottom-1 flex flex-col items-center lg:hidden">
+          {/* Inside the ring's ends (its inner edge is 14% in from each side, with room to spare), so a long figure shrinks rather than touching them. */}
+          <div className="@container absolute inset-x-[18%] bottom-1 flex flex-col items-center lg:hidden">
             <CardLabel>Ròng</CardLabel>
-            <Money amount={net} size="lg" sign={net === 0 ? "never" : "always"} />
+            <Money amount={net} size="lg" fit sign={net === 0 ? "never" : "always"} />
           </div>
         </div>
         <div className="hidden grid-cols-3 gap-6 lg:grid">
-          <div className="flex min-w-0 flex-col gap-1">
+          <div className="@container flex min-w-0 flex-col gap-1">
             <CardLabel>Ròng</CardLabel>
-            <Money amount={net} size="lg" sign={net === 0 ? "never" : "always"} />
+            <Money amount={net} size="lg" fit sign={net === 0 ? "never" : "always"} />
             <span className="text-xs text-muted-foreground">{balanceNote(net, total)}</span>
           </div>
-          <div className="flex min-w-0 flex-col gap-1">
+          <div className="@container flex min-w-0 flex-col gap-1">
             <span className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
               <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-income" />
               <span className="truncate">Cần thu · {lentCount} khoản</span>
             </span>
-            <Money amount={lent} size="lg" tone={lent > 0 ? "income" : "default"} />
+            <Money amount={lent} size="lg" fit tone={lent > 0 ? "income" : "default"} />
           </div>
-          <div className="flex min-w-0 flex-col gap-1">
+          <div className="@container flex min-w-0 flex-col gap-1">
             <span className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
               <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-foreground" />
               <span className="truncate">Cần trả · {borrowedCount} khoản</span>
             </span>
-            <Money amount={borrowed} size="lg" />
+            <Money amount={borrowed} size="lg" fit />
           </div>
         </div>
         <div className="mt-4 grid w-full grid-cols-2 gap-4 lg:hidden">
-          <div className="flex min-w-0 flex-col gap-0.5">
+          <div className="@container flex min-w-0 flex-col gap-0.5">
             <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
               <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-income" />
               <span className="truncate">Cần thu · {lentCount} khoản</span>
             </span>
-            <Money amount={lent} size="md" tone={lent > 0 ? "income" : "default"} />
+            <Money amount={lent} size="md" fit tone={lent > 0 ? "income" : "default"} />
           </div>
-          <div className="flex min-w-0 flex-col items-end gap-0.5 text-right">
+          <div className="@container flex min-w-0 flex-col items-end gap-0.5 text-right">
             <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
               <span className="truncate">Cần trả · {borrowedCount} khoản</span>
               <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-foreground" />
             </span>
-            <Money amount={borrowed} size="md" />
+            <Money amount={borrowed} size="md" fit />
           </div>
         </div>
         <span className="mt-4 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground lg:hidden">

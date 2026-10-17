@@ -121,13 +121,16 @@ function PaymentForm({
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   const submitting = React.useRef(false)
   const noteRef = React.useRef<HTMLTextAreaElement>(null)
-  const clear = (field: PaymentField) =>
+  // A change to the form takes away the save's error: it may no longer hold.
+  const clear = (field: PaymentField) => {
+    setErrorMessage(null)
     setErrors((current) => {
       if (!current[field]) return current
       const next = { ...current }
       delete next[field]
       return next
     })
+  }
 
   // What is left before this payment, on its day: an edited one's own amount is left out.
   const baseDebt = payment
@@ -155,6 +158,7 @@ function PaymentForm({
       noValidate
       className="flex flex-1 flex-col"
       aria-busy={pending}
+      onChange={() => setErrorMessage(null)}
       onSubmit={async (event) => {
         event.preventDefault()
         if (submitting.current) return

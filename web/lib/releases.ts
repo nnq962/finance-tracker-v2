@@ -32,6 +32,20 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.3",
+    date: "2026-10-17",
+    title: "Vay nợ: mở đúng khoản từ nơi khác, list không tràn",
+    changes: [
+      { kind: "fixed", text: "“Mở trong Vay nợ” ở Giao dịch, khoản sắp đến hạn ở Tổng quan và thông báo đến hạn giờ mở thẳng chi tiết khoản đó, không chỉ dừng ở danh sách." },
+      { kind: "fixed", text: "Khoản có ghi chú dài không còn làm cả nhóm Cần thu/Cần trả tràn ngang trên điện thoại (số tiền bị đẩy ra ngoài màn hình)." },
+      { kind: "fixed", text: "Bấm Hoàn tác trên thông báo không còn đóng sheet đang mở, ví dụ sau khi xoá một lần thu nợ." },
+      { kind: "fixed", text: "Lỗi khi lưu hiện trên nền riêng, không đè lên các dòng phía sau, và tự mất khi sửa lại form." },
+      { kind: "improved", text: "Banner tách khoản quá hạn với khoản đến hạn hôm nay (“2 quá hạn · 1 đến hạn hôm nay”); danh bạ ghi “Đến hạn hôm nay” thay vì “Quá hạn”." },
+      { kind: "improved", text: "Lãi suất quá 2 số thập phân được báo ngay ở ô lãi; hạ số tiền khoản xuống dưới số đã thu/trả có câu báo rõ ràng." },
+      { kind: "improved", text: "Số tiền rất lớn ở thẻ tổng thu nhỏ hoặc ghi gọn thay vì ngắt giữa số; khoản vay mới trên trang Giao dịch mang giờ lúc ghi thay vì 00:00." },
+    ],
+  },
+  {
     version: "6.15.2",
     date: "2026-10-17",
     title: "Giao dịch: tìm kiếm, bộ lọc và xoá chính xác hơn",

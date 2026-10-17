@@ -42,6 +42,8 @@ const footerFade = (() => {
  * indicator's strip too; the button sits just above that strip (16px where
  * there is none) and floats, with the same soft shadow as the bar's round
  * buttons. The content's end stops above it.
+ * An error above the button sits on the sheet's own surface, so the content
+ * scrolling under the footer never shows through its text (2026-10-17).
  * Put it last in the sheet's content, inside a form when it submits one: the
  * form then fills the sheet (`flex flex-1 flex-col`) so the footer sits at
  * the bottom even when the fields are few.
@@ -50,7 +52,7 @@ export function PageSheetFooter({ className, style, ...props }: React.ComponentP
   return (
     <div
       data-slot="page-sheet-footer"
-      className={cn("sticky bottom-0 z-10 -mx-4 mt-auto -mb-[calc(1rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-2 px-4 pt-8 pb-[max(1rem,env(safe-area-inset-bottom,0px))] [&_[data-slot=button]]:shadow-[0_4px_16px_rgb(0_0_0/0.12)]", className)}
+      className={cn("sticky bottom-0 z-10 -mx-4 mt-auto -mb-[calc(1rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-2 px-4 pt-8 pb-[max(1rem,env(safe-area-inset-bottom,0px))] [&_[data-slot=button]]:shadow-[0_4px_16px_rgb(0_0_0/0.12)] [&>[data-slot=field-error]]:rounded-xl [&>[data-slot=field-error]]:bg-(--page-sheet-surface) [&>[data-slot=field-error]]:px-3 [&>[data-slot=field-error]]:py-2", className)}
       style={{ backgroundImage: footerFade, ...style }}
       {...props}
     />

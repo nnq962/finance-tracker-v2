@@ -212,7 +212,14 @@ async function run() {
     await repository.changeDebt(uid, editDebt.id, editValues, editOperation)
     equal(await balance('b'), beforeB - 1500000)
     equal((await getTransactions(uid)).find(item => item.debtId === editDebt.id).amount, -1500000)
-    await rejects(() => repository.changeDebt(uid, editDebt.id, {...editValues, amount:100000}, randomUUID()))
+    // Below what is paid is said as such, not as a payment past what is left.
+    await assert.rejects(() => repository.changeDebt(uid, editDebt.id, {...editValues, amount:100000}, randomUUID()), /Số tiền không được ít hơn số đã thu \(200\.000đ\)/); checks++
+    // The loan's movement took the time it was recorded, not 00:00, and an edit keeps it.
+    const movedAt = async (id) => (await sql('SELECT occurred_at FROM transactions WHERE debt_id = $1', [id])).rows[0].occurred_at
+    const firstMovedAt = await movedAt(editDebt.id)
+    await repository.changeDebt(uid, editDebt.id, {...editValues, note:'Edited again'}, randomUUID())
+    equal((await movedAt(editDebt.id)).getTime(), firstMovedAt.getTime())
+    equal(new Date(firstMovedAt.getTime() + 7 * 3600000).toISOString().slice(0, 10), '2026-08-01')
     await rejects(() => repository.changeDebt(uid, editDebt.id, {...editValues, recordedAt:todayDate()}, randomUUID()))
     await rejects(() => repository.changeDebt(uid, editDebt.id, {...editValues, direction:'borrowed'}, randomUUID()))
     await rejects(() => repository.changeDebt(otherUid, editDebt.id, null, randomUUID()))

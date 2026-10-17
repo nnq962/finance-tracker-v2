@@ -60,7 +60,8 @@ function getStanding(debts: Debt[]) {
     toCollect: left("lent"),
     toPay: left("borrowed"),
     count: (direction: Debt["direction"]) => open.filter((debt) => debt.direction === direction).length,
-    overdue: open.some((debt) => getDebtDeadline(debt).isOverdue),
+    overdue: open.some((debt) => getDebtDeadline(debt).isPastDue),
+    dueToday: open.some((debt) => getDebtDeadline(debt).isOverdue && !getDebtDeadline(debt).isPastDue),
   }
 }
 
@@ -78,8 +79,8 @@ function ContactListRow({ contact, debts, onSelect }: { contact: Contact; debts:
         standing.open.length > 0 ? (
           <span className="flex flex-col items-end">
             <Money amount={net} sign={net === 0 ? "never" : "always"} size="sm" tone={net > 0 ? "income" : "default"} />
-            <span className={cn("text-xs text-muted-foreground", standing.overdue && "text-expense")}>
-              {standing.overdue ? "Quá hạn" : net > 0 ? "Cần thu" : net < 0 ? "Cần trả" : "Hoà"}
+            <span className={cn("text-xs text-muted-foreground", (standing.overdue || standing.dueToday) && "text-expense")}>
+              {standing.overdue ? "Quá hạn" : standing.dueToday ? "Đến hạn hôm nay" : net > 0 ? "Cần thu" : net < 0 ? "Cần trả" : "Hoà"}
             </span>
           </span>
         ) : undefined

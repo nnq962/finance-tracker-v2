@@ -279,13 +279,16 @@ function DebtForm({
   const [addingContact, setAddingContact] = React.useState(false)
   const submitting = React.useRef(false)
   const noteRef = React.useRef<HTMLTextAreaElement>(null)
-  const clear = (field: DebtField) =>
+  // A change to the form takes away the save's error: it may no longer hold.
+  const clear = (field: DebtField) => {
+    setErrorMessage(null)
     setErrors((current) => {
       if (!current[field]) return current
       const next = { ...current }
       delete next[field]
       return next
     })
+  }
 
   const lent = direction === "lent"
   const lockedDirection = Boolean(debt?.payments?.length)
@@ -318,6 +321,7 @@ function DebtForm({
         noValidate
         className="flex flex-1 flex-col"
         aria-busy={pending}
+        onChange={() => setErrorMessage(null)}
         onSubmit={async (event) => {
           event.preventDefault()
           if (submitting.current) return
@@ -325,12 +329,16 @@ function DebtForm({
 
           const found: Partial<Record<DebtField, string>> = {}
           if (!(amount && amount > 0)) found.amount = "Nhập số tiền."
+          // Without interest, less than already paid would leave the payments over it.
+          else if (debt && !hasInterest && amount < debt.paidAmount) found.amount = `Ít hơn số đã ${lent ? "thu" : "trả"} (${formatCurrency(debt.paidAmount, { signDisplay: "never" })}).`
           if (!contactId) found.contactId = lent ? "Chọn người vay." : "Chọn người cho vay."
           if (!isOpening && !account) found.accountId = "Chọn tài khoản."
           if (!/^\d{4}-\d{2}-\d{2}$/.test(recordedAt)) found.recordedAt = "Chọn ngày."
           else if (recordedAt > today) found.recordedAt = "Không thể chọn ngày trong tương lai."
           if (dueAt && dueAt < recordedAt) found.dueAt = "Hẹn trả phải từ ngày vay trở đi."
-          if (hasInterest && !(rate > 0 && rate <= 100)) found.interestRate = "Nhập lãi suất từ 0 đến 100%."
+          if (hasInterest && !(rate > 0 && rate <= 100 && Math.abs(rate * 100 - Math.round(rate * 100)) < 1e-8)) {
+            found.interestRate = "Lãi suất lớn hơn 0, tối đa 100%, nhiều nhất 2 số thập phân."
+          }
           setErrors(found)
           const first = fieldOrder.find((field) => found[field])
           if (first) {

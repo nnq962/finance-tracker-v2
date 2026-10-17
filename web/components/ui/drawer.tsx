@@ -91,11 +91,26 @@ function DrawerOverlay({
 const pageSheetClassName =
   "fixed will-change-auto! inset-x-0 bottom-0 top-0 z-50 flex flex-col overflow-hidden supports-[overflow:clip]:overflow-clip bg-popover pt-[env(safe-area-inset-top,0px)] text-sm text-popover-foreground shadow-xl outline-none sm:inset-x-auto sm:left-1/2 sm:top-[6dvh] sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:rounded-t-[28px] sm:pt-0"
 
+/**
+ * A tap on a toast (its Undo, or swiping it away) is not a tap outside the
+ * sheet: the sheet stays open, the debt's sheet after undoing a deleted
+ * repayment among them (2026-10-17).
+ */
+type InteractOutside = React.ComponentProps<typeof DrawerPrimitive.Content>["onInteractOutside"]
+
+function keepOpenForToasts(onInteractOutside: InteractOutside): InteractOutside {
+  return (event) => {
+    if (event.target instanceof Element && event.target.closest("[data-sonner-toaster]")) event.preventDefault()
+    onInteractOutside?.(event)
+  }
+}
+
 function DrawerContent({
   className,
   children,
   variant = "default",
   surface = "plain",
+  onInteractOutside,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Content> & {
   variant?: "default" | "page"
@@ -123,6 +138,7 @@ function DrawerContent({
           data-surface={surface}
           className={cn(pageSheetClassName, surface === "grouped" && "surface-grouped bg-background", className)}
           {...props}
+          onInteractOutside={keepOpenForToasts(onInteractOutside)}
         >
           <span
             aria-hidden="true"
@@ -146,6 +162,7 @@ function DrawerContent({
           className
         )}
         {...props}
+        onInteractOutside={keepOpenForToasts(onInteractOutside)}
       >
         <div className="mx-auto mt-3 hidden h-1.5 w-10 shrink-0 rounded-full bg-input group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
         {/* Content taller than the sheet's cap scrolls rather than being cut

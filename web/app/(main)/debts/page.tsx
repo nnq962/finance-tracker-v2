@@ -23,9 +23,8 @@ export default async function DebtsPage({ searchParams }: { searchParams: Promis
   const defaultDebt = allDebts
     .filter((item) => item.status !== "settled")
     .sort(compareDebtsByUrgency)[0] ?? allDebts[0]
-  const selectedDebtId = allDebts.some((item) => item.id === debt)
-    ? debt
-    : defaultDebt?.id
+  const requestedDebtId = allDebts.some((item) => item.id === debt) ? debt : undefined
+  const selectedDebtId = requestedDebtId ?? defaultDebt?.id
   // Only the selected debt's payment history goes to the browser; another
   // debt's loads when it is selected (the URL changes and the page reloads).
   const debts = allDebts.map((item) =>
@@ -35,6 +34,7 @@ export default async function DebtsPage({ searchParams }: { searchParams: Promis
   return (
     <DebtsDashboard
       selectedDebtId={selectedDebtId}
+      requestedDebtId={requestedDebtId}
       accounts={accounts}
       initialContacts={contacts}
       initialDebts={debts}

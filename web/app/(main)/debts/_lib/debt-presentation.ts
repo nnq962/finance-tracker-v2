@@ -24,11 +24,13 @@ export function getDebtDeadline(debt: Debt) {
     return {
       label: `Quá hạn ${Math.abs(daysUntilDue)} ngày`,
       isOverdue: true,
+      isPastDue: true,
     }
   }
 
+  // Red as an overdue one, but not past due yet: counted apart from those.
   if (daysUntilDue === 0) {
-    return { label: "Đến hạn hôm nay", isOverdue: true }
+    return { label: "Đến hạn hôm nay", isOverdue: true, isPastDue: false }
   }
 
   return { label: `Còn ${daysUntilDue} ngày`, isOverdue: false }
