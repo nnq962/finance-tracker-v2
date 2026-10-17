@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.13.3",
+    date: "2026-10-17",
+    title: "Trục số của đồ thị hạn mức hiện đủ",
+    changes: [
+      { kind: "fixed", text: "Đồ thị chi theo ngày và so với các tháng trước không còn cắt số ở trục dọc khi số tiền lớn (như 20,9tr); từ một tỷ ghi \"tỷ\"." },
+    ],
+  },
+  {
     version: "6.13.2",
     date: "2026-10-17",
     title: "Sheet hạn mức mở không còn nháy",

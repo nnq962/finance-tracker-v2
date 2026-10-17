@@ -26,9 +26,18 @@ function limitTicks(limit: number, top: number) {
 }
 
 function compact(value: number) {
+  if (value >= 1_000_000_000) return `${Number((value / 1_000_000_000).toFixed(1)).toLocaleString("vi-VN")}tỷ`
   if (value >= 1_000_000) return `${Number((value / 1_000_000).toFixed(1)).toLocaleString("vi-VN")}tr`
   if (value >= 1_000) return `${Math.round(value / 1_000)}k`
   return String(value)
+}
+
+/**
+ * The Y axis's width for its marks (2026-10-17: a fixed 40 cut "20,9tr"):
+ * about 7px a character of the 12px labels, and room to breathe.
+ */
+function axisWidth(ticks: number[]) {
+  return Math.max(32, Math.max(...ticks.map((tick) => compact(tick).length)) * 7 + 10)
 }
 
 const monthNumber = (month: string) => Number(month.slice(5))
@@ -142,6 +151,7 @@ export function BudgetDailyChart({
           ? "var(--warning)"
           : "var(--color-spent)"
   const date = (day: number) => `${String(day).padStart(2, "0")}/${month.slice(5)}`
+  const dailyTicks = limitTicks(limit ?? running, running)
 
   return (
     <div className="flex flex-col gap-3">
@@ -174,11 +184,11 @@ export function BudgetDailyChart({
           <CartesianGrid vertical={false} verticalCoordinatesGenerator={() => []} strokeDasharray="3 4" />
           <XAxis dataKey="day" ticks={[1, 8, 15, 22, days]} tickLine={false} axisLine={false} tickMargin={8} interval={0} />
           <YAxis
-            width={40}
+            width={axisWidth(dailyTicks)}
             tickLine={false}
             axisLine={false}
             interval={0}
-            ticks={limitTicks(limit ?? running, running)}
+            ticks={dailyTicks}
             domain={[0, Math.max(limit ?? 0, running, 1) * 1.08]}
             tickFormatter={compact}
           />
@@ -245,6 +255,7 @@ export function BudgetMonthsChart({
   const before = data.filter((entry) => !entry.now)
   const average = before.length ? Math.round(before.reduce((sum, entry) => sum + entry.spent, 0) / before.length / 1_000) * 1_000 : 0
   const top = Math.max(...data.map((entry) => entry.spent))
+  const monthTicks = limitTicks(limit, top).filter((tick) => tick !== limit / 2)
 
   return (
     <div className="flex flex-col gap-3">
@@ -267,11 +278,11 @@ export function BudgetMonthsChart({
           <CartesianGrid vertical={false} verticalCoordinatesGenerator={() => []} strokeDasharray="3 4" />
           <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} interval={0} />
           <YAxis
-            width={40}
+            width={axisWidth(monthTicks)}
             tickLine={false}
             axisLine={false}
             interval={0}
-            ticks={limitTicks(limit, top).filter((tick) => tick !== limit / 2)}
+            ticks={monthTicks}
             tickFormatter={compact}
             domain={[0, Math.max(limit, top) * 1.1]}
           />
