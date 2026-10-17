@@ -4,6 +4,7 @@ import { CamelCasePlugin, Kysely, PostgresDialect } from "kysely"
 import pg from "pg"
 
 import type { DB } from "@/lib/db/types"
+import { logIfSlow } from "@/lib/slow-log"
 
 const { builtins } = pg.types
 
@@ -37,6 +38,10 @@ function createDatabase() {
     }),
     // Columns are snake_case in SQL and camelCase in TypeScript.
     plugins: [new CamelCasePlugin()],
+    // A slow query is logged by its SQL, cut short; its values are never in it.
+    log(event) {
+      if (event.level === "query") logIfSlow("query", event.queryDurationMillis, event.query.sql.slice(0, 120))
+    },
   })
 }
 

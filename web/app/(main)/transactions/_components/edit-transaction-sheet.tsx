@@ -12,7 +12,7 @@ import type {
 
 import { updateTransactionAction } from "../actions"
 import { deleteTransactionWithUndo } from "./delete-transaction"
-import { TransactionForm } from "./add-transaction/transaction-form"
+import { TransactionForm } from "./add-transaction/lazy-transaction-form"
 import { TransactionKindSelector } from "./add-transaction/transaction-kind-selector"
 
 type EditTransactionSheetProps = {

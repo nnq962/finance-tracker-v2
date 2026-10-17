@@ -13,7 +13,7 @@ import type { SupportedTransactionKind } from "@/lib/transactions/types"
 import { createTransactionAction } from "../../actions"
 import type { TransactionDraft } from "./form-types"
 import { NeedAccountState } from "./need-account-state"
-import { TransactionForm } from "./transaction-form"
+import { TransactionForm } from "./lazy-transaction-form"
 import { TransactionKindSelector } from "./transaction-kind-selector"
 
 type AddTransactionSheetProps = {

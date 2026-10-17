@@ -7,6 +7,7 @@ import type { Auth, DecodedIdToken } from "firebase-admin/auth"
 import { SESSION_COOKIE_NAME } from "@/lib/auth/constants"
 import { DEV_SESSION_VALUE, DEV_TUNNEL_KEY_COOKIE, DEV_USER, isDevLoginEnabled } from "@/lib/auth/dev-session"
 import { getFirebaseAdminAuth } from "@/lib/firebase/admin"
+import { logIfSlow } from "@/lib/slow-log"
 
 export type SessionUser = {
   uid: string
@@ -50,8 +51,10 @@ function checkNotRevoked(auth: Auth, sessionCookie: string): Promise<boolean> {
   const pending = checking.get(key)
   if (pending) return pending
 
+  const startedAt = performance.now()
   const check = auth.verifySessionCookie(sessionCookie, true).then(
     () => {
+      logIfSlow("revocation check", performance.now() - startedAt)
       // Old entries go once the map grows; a minute's worth of users is small.
       if (notRevokedUntil.size > 5000) {
         const now = Date.now()
@@ -165,21 +168,35 @@ export async function requireSession() {
 /**
  * For page reads: runs `load` in parallel with the revocation check and only
  * returns its result once the session is confirmed, so a revoked session never
- * receives data while the check no longer delays the reads.
+ * receives data while the check no longer delays the reads. A page whose
+ * reads were slow is logged by its name (`page`), with how long the reads and
+ * the session each took (lib/slow-log).
  */
 export async function loadWithSession<T>(
+  page: string,
   load: (user: SessionUser) => Promise<T>,
 ): Promise<{ user: SessionUser; data: T }> {
+  const startedAt = performance.now()
   const session = await getVerifiedSession()
 
   if (!session) {
     redirect("/login")
   }
 
+  const since = () => Math.round(performance.now() - startedAt)
+  let sessionMs = 0
+  let dataMs = 0
   const [notRevoked, data] = await Promise.all([
-    session.notRevoked,
-    load(session.user),
+    session.notRevoked.then((value) => {
+      sessionMs = since()
+      return value
+    }),
+    load(session.user).then((value) => {
+      dataMs = since()
+      return value
+    }),
   ])
+  logIfSlow(`page ${page}`, performance.now() - startedAt, `data ${dataMs}ms, session ${sessionMs}ms`)
 
   if (!notRevoked) {
     redirect("/login")

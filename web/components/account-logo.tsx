@@ -13,6 +13,8 @@ type AccountLogoProps = {
   > & { goal?: Pick<NonNullable<Account["goal"]>, "icon" | "color"> }
   /** lg: the head of the account's sheet (48, as IconTile lg); sm: a list row's tile (36, as IconTile sm); xs: beside a name in a select. */
   size?: "lg" | "sm" | "xs"
+  /** Loads the logo only as it nears the screen: for a long list, such as every bank to pick from. */
+  lazy?: boolean
   className?: string
 }
 
@@ -29,7 +31,7 @@ const tileClassName = {
  * initials when there is no logo. Its name is always
  * written beside it, so it is not read out a second time.
  */
-export function AccountLogo({ account, size = "sm", className }: AccountLogoProps) {
+export function AccountLogo({ account, size = "sm", lazy = false, className }: AccountLogoProps) {
   if (account.type === "cash" || account.type === "savings") {
     const jar = account.type === "savings" ? getJarIcon(account.goal) : null
     return (
@@ -64,7 +66,10 @@ export function AccountLogo({ account, size = "sm", className }: AccountLogoProp
           height={size === "lg" ? 48 : 36}
           // A handful of small files, cached for long: shown at once when a
           // grid or list mounts (a sheet, a tab), not after it lays out.
-          loading="eager"
+          loading={lazy ? "lazy" : "eager"}
+          // Drawn at the size shown (SVG, or WebP three times the largest
+          // tile): served as they are, not through the image optimizer.
+          unoptimized
           className="size-full object-contain p-[14%]"
         />
       ) : (

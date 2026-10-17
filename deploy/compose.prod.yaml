@@ -38,6 +38,9 @@ services:
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite,gemini-3.1-flash-lite}
       # Dictation on this server (sherpa-onnx), on every browser.
       STT_URL: http://stt:8000
+      # Pages, revocation checks and queries slower than this (ms) are logged
+      # as "[slow] …" (web/lib/slow-log.ts); 0 logs every one.
+      SLOW_LOG_MS: ${SLOW_LOG_MS:-300}
     volumes:
       - type: bind
         source: ${FIREBASE_CREDENTIALS_FILE:?Set the absolute path to the Firebase Admin credentials JSON}

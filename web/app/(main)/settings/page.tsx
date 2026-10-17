@@ -29,7 +29,7 @@ export default async function SettingsPage({
   const {
     user,
     data: [notifications, categoryGroups, planState, adminData, paymentOutcome, dataSummary, budgets, broadcasts],
-  } = await loadWithSession(async (user) => {
+  } = await loadWithSession("settings", async (user) => {
     // Settled first, so the plan read next already shows it.
     const paymentOutcome = await checkReturningPayment(user.uid, order)
     return Promise.all([

@@ -20,7 +20,7 @@ const fake = new Module(sessionFile)
 fake.filename = sessionFile
 fake.loaded = true
 fake.exports = {
-  loadWithSession: async (fn) => ({ user: { uid: currentUser }, data: await fn({ uid: currentUser }) }),
+  loadWithSession: async (_page, fn) => ({ user: { uid: currentUser }, data: await fn({ uid: currentUser }) }),
   requireSession: async () => ({ uid: currentUser }),
 }
 require.cache[sessionFile] = fake

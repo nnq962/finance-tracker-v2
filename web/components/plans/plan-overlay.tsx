@@ -5,11 +5,33 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { PageSheet } from "@/components/app/page-sheet"
+import { Skeleton } from "@/components/ui/skeleton"
 import { checkPaymentAction } from "@/lib/plans/actions"
 import type { PaymentOutcome } from "@/lib/plans/payos"
 import type { PlanState } from "@/lib/plans/plans"
+import { preloadWhenIdle } from "@/lib/preload-when-idle"
 
-import { PlanScreen } from "./plan-screen"
+/*
+ * The plans load apart from the page and come in once the page is idle
+ * (2026-10-17). Opened before then: grey blocks where the title and the
+ * plans' cards go.
+ */
+const loadPlanScreen = () => import("./plan-screen")
+const PlanScreen = React.lazy(() => loadPlanScreen().then((module) => ({ default: module.PlanScreen })))
+preloadWhenIdle(loadPlanScreen)
+
+function PlanScreenSkeleton() {
+  return (
+    <div aria-hidden="true" className="space-y-6">
+      <div className="flex flex-col items-center gap-3 pt-3">
+        <Skeleton className="h-7 w-52" />
+        <Skeleton className="h-4 w-40" />
+      </div>
+      <Skeleton className="h-96 w-full rounded-[24px]" />
+      <Skeleton className="h-64 w-full rounded-[24px]" />
+    </div>
+  )
+}
 
 type PlanOverlayProps = {
   open: boolean
@@ -84,11 +106,13 @@ export function PlanOverlay({ open, onOpenChange, planState, checkoutEnabled, pa
 
   return (
     <PageSheet title="Gói của bạn" hideTitle surface="grouped" open={open} onOpenChange={onOpenChange}>
-      <PlanScreen
-        planState={planState}
-        checkoutEnabled={checkoutEnabled}
-        paymentOutcome={outcome && !toastOutcomes[outcome] ? outcome : undefined}
-      />
+      <React.Suspense fallback={<PlanScreenSkeleton />}>
+        <PlanScreen
+          planState={planState}
+          checkoutEnabled={checkoutEnabled}
+          paymentOutcome={outcome && !toastOutcomes[outcome] ? outcome : undefined}
+        />
+      </React.Suspense>
     </PageSheet>
   )
 }

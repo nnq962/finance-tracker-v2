@@ -11,7 +11,7 @@ export default async function DebtsPage({ searchParams }: { searchParams: Promis
   const { debt } = await searchParams
   const {
     data: [accounts, contacts, debts],
-  } = await loadWithSession((user) =>
+  } = await loadWithSession("debts", (user) =>
     Promise.all([
       getAccounts(user.uid),
       getContacts(user.uid),

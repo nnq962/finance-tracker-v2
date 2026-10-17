@@ -72,14 +72,16 @@ chuyển trang.
 
 - **Cloudflare Cache Rule cho `/__/auth/*`** (người dùng làm trong dashboard): Edge TTL 4 giờ, khoá theo
   query string, để đăng nhập Google không đi qua tunnel.
-- **Firebase popup chỉ ở trang đăng nhập**: `initializeAuth` không kèm `popupRedirectResolver`, truyền
-  `browserPopupRedirectResolver` lúc bấm; khởi tạo trước trên `/login`. Thử trên iOS Safari và PWA.
-- **Tải lười các sheet và trợ lý Timi** (thêm giao dịch, thêm khoản nợ, màn gói, chọn ngân hàng…), nạp
-  ngầm lúc rảnh; thử trên iPhone (iOS mất cú chạm khi nội dung đang hiện ra).
+- ~~Firebase popup chỉ ở trang đăng nhập~~ (6.15.19, `lib/firebase/google-popup.ts`). **Còn thử trên iPhone**:
+  bấm "Tiếp tục với Google" ở Safari và ở PWA phải mở popup ngay, không báo bị chặn.
+- ~~Tải lười các sheet và trợ lý Timi~~ (6.15.19: trợ lý, form giao dịch, khoản nợ, tài khoản, màn gói;
+  `lib/preload-when-idle.ts`). **Còn thử trên iPhone**: lần mở đầu mỗi sheet không trắng, cú chạm đầu
+  trong sheet không bị nuốt.
 - **Firebase auth phía trình duyệt nạp sau hydrate** ở các tab chính (`AuthSessionGuard`).
 - **motion và bộ icon hạng mục** (lucide ~100 KB): xem lại sau khi đo trên iPhone.
-- **Logo ngân hàng SVG nặng** (`baoviet-bank.svg` 185 KB…) và lưới chọn tải hết một lần.
-- **Đo thời gian phục vụ thật trên production** (`Server-Timing` hoặc log có ngưỡng).
+- ~~Logo ngân hàng SVG nặng~~ (6.15.19: svgo, BaoViet/PG/Bắc Á sang WebP, danh sách chọn tải lười).
+- ~~Đo thời gian phục vụ thật~~ (6.15.19: log `[slow]` từ 300 ms, `lib/slow-log.ts`; xem bằng
+  `docker compose logs web | grep '\[slow\]'`, đổi ngưỡng bằng `SLOW_LOG_MS`). Đọc log sau vài ngày.
 - **Gọn `getBudgetOverview`** (~17 truy vấn, đọc lại nợ nhiều lần) và bỏ `getLinkedAccountIds` khỏi
   `getAccounts`; chỉ đáng làm khi dữ liệu lớn.
 - **Phiên tự quản trong Postgres** (vẫn đăng nhập bằng Google): bỏ hẳn vòng hỏi Google mỗi request, thu hồi

@@ -25,7 +25,7 @@ export async function loadTransactions({ month, account, group, add, order, gran
   const range = getTransactionMonthRange(selectedMonth, 1)
   const {
     data: [transactions, accounts, categoryGroups, purchaseDraft, budgets],
-  } = await loadWithSession((user) =>
+  } = await loadWithSession("transactions", (user) =>
     Promise.all([
       // Loans and their repayments are listed too, so every change to a
       // balance shows here; they are edited on the debts page.

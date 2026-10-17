@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { PageSheet } from "@/components/app/page-sheet"
 import type { Account } from "@/lib/accounts/types"
 
-import { AccountForm } from "../account-form/account-form"
+import { AccountForm } from "../account-form/lazy-account-form"
 import { setAccountArchivedAction, updateAccountAction } from "../../actions"
 import { DeleteAccountSheet } from "./delete-account-sheet"
 

@@ -45,13 +45,15 @@ async function main() {
     '@/lib/auth/constants': { SESSION_COOKIE_NAME: '__session' },
     '@/lib/auth/dev-session': { DEV_SESSION_VALUE: 'dev-session', DEV_TUNNEL_KEY_COOKIE: 'k', DEV_USER: {}, isDevLoginEnabled: () => false },
     '@/lib/firebase/admin': { getFirebaseAdminAuth: () => auth },
+    '@/lib/slow-log': { logIfSlow: (what) => logged.push(what) },
   }
+  const logged = []
   const filename = 'lib/auth/session.ts'
   const exports = {}
   vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(process.cwd(), filename), 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
   }).outputText, {
-    exports, Map, Promise, Number,
+    exports, Map, Promise, Number, performance,
     Date: { now: () => now },
     require(id) {
       assert.ok(id in mocks, `Unexpected dependency: ${id}`)
@@ -66,6 +68,7 @@ async function main() {
   now += 59_000
   assert.equal((await getSessionUser()).uid, 'uid-cookie-a')
   assert.equal(googleChecks, 1, 'Remembered for a minute')
+  assert.deepEqual(logged, ['revocation check'], 'Only the check with Google is timed for the slow log')
 
   // After a minute Google is asked again.
   now += 2_000

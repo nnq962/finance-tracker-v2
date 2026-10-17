@@ -16,10 +16,11 @@ function label(institution: FinancialInstitution) {
   return institution.shortName ?? institution.name
 }
 
-/** The bank's or wallet's logo as an account's tile, the same as in the account list. */
-export function InstitutionLogo({ institution }: { institution: FinancialInstitution }) {
+/** The bank's or wallet's logo as an account's tile, the same as in the account list; `lazy` in a long list. */
+export function InstitutionLogo({ institution, lazy }: { institution: FinancialInstitution; lazy?: boolean }) {
   return (
     <AccountLogo
+      lazy={lazy}
       account={{
         type: institution.type,
         logoUrl: institution.logoPath,
@@ -130,13 +131,14 @@ export function InstitutionPicker({
           </InputGroupAddon>
         ) : null}
       </InputGroup>
-      {groups.map((group) => (
+      {/* The first group's logos come at once; the rest of the 60-odd as they near the screen (2026-10-17). */}
+      {groups.map((group, groupIndex) => (
         <SettingsGroup key={group.title} title={group.title}>
           {group.items.length > 0 ? (
             group.items.map((institution) => (
               <SettingsRow
                 key={institution.id}
-                media={<InstitutionLogo institution={institution} />}
+                media={<InstitutionLogo institution={institution} lazy={groupIndex > 0} />}
                 title={label(institution)}
                 description={institution.shortName && institution.shortName !== institution.name ? institution.name : undefined}
                 checked={value === institution.id}

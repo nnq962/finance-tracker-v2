@@ -32,6 +32,17 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.19",
+    date: "2026-10-17",
+    title: "Trang nhẹ hơn, đăng nhập Google chỉ chuẩn bị ở trang đăng nhập",
+    changes: [
+      { kind: "improved", text: "Trên điện thoại, các trang trong app không còn tải khung đăng nhập của Google; việc đó chỉ làm ở trang đăng nhập, ngay khi mở trang." },
+      { kind: "improved", text: "Trợ lý Timi, form thêm giao dịch, khoản nợ, tài khoản và màn gói tải riêng lúc máy rảnh, nên các tab chính nhẹ hơn khoảng 20–38 KB." },
+      { kind: "improved", text: "Logo ngân hàng và ví nhẹ hơn, danh sách chọn ngân hàng chỉ tải logo khi cuộn tới." },
+      { kind: "improved", text: "Máy chủ ghi lại trang, truy vấn và lần kiểm tra phiên chậm để đo tốc độ thật." },
+    ],
+  },
+  {
     version: "6.15.18",
     date: "2026-10-17",
     title: "Mở app và chuyển trang nhanh hơn",

@@ -12,7 +12,7 @@ import { BudgetLayout } from "./_components/budget-layout"
 export default async function AccountsPage({ searchParams }: { searchParams: Promise<{ account?: string }> }) {
   // An account to open straight away, e.g. from a notice.
   const { account: openAccountId } = await searchParams
-  const { data: [accounts, recentTransactions, categoryGroups] } = await loadWithSession((user) =>
+  const { data: [accounts, recentTransactions, categoryGroups] } = await loadWithSession("budget", (user) =>
     Promise.all([
       getAccounts(user.uid),
       // A few per account, shown when its sheet opens without another round trip.

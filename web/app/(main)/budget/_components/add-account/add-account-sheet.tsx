@@ -4,7 +4,7 @@ import * as React from "react"
 
 import { PageSheet } from "@/components/app/page-sheet"
 
-import { AccountForm } from "../account-form/account-form"
+import { AccountForm } from "../account-form/lazy-account-form"
 import { createAccountAction } from "../../actions"
 
 type AddAccountSheetProps = {

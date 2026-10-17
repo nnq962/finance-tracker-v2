@@ -38,7 +38,7 @@ export async function loadOverview(order?: string) {
   const {
     user,
     data: [accounts, debts, contacts, transactions, categoryGroups, missions, planState, paymentOutcome, budgets],
-  } = await loadWithSession(async (user) => {
+  } = await loadWithSession("overview", async (user) => {
     // Back from payOS: settled first, so the plan read next already shows it.
     const paymentOutcome = await checkReturningPayment(user.uid, order)
     return Promise.all([

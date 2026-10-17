@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { LoaderCircleIcon, ShieldCheckIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
-import { getAuthErrorMessage, signInWithGoogle, syncServerSession } from "@/lib/firebase/auth"
+import { getAuthErrorMessage, syncServerSession } from "@/lib/firebase/auth"
+import { prepareGoogleSignIn, signInWithGoogle } from "@/lib/firebase/google-popup"
 
 /** Google's G in its four colours, on a white disc so it reads on the black button. */
 function GoogleMark() {
@@ -24,6 +25,8 @@ function GoogleMark() {
 /** Signing in, with Google only: the button across the column and a line on safety under it. */
 export function LoginForm({ redirectTo = "/overview" }: { redirectTo?: string }) {
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(prepareGoogleSignIn, [])
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
