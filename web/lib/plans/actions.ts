@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache"
 import { findBalanceMismatches, type BalanceMismatch } from "@/lib/accounts/reconcile"
 import { requireSession } from "@/lib/auth/session"
 import { requireAdmin } from "@/lib/plans/admin"
+import { getAdminData, type AdminData } from "@/lib/plans/admin-data"
 import {
   createCoupon,
   deleteCoupon,
@@ -81,6 +82,17 @@ export async function revokeProAction(userId: unknown): Promise<PlanActionResult
 }
 
 /** Accounts whose balance no longer adds up, across every user. Admins only. */
+/** Every user, this month's takings and the coupons, for the admin screen when it opens. Admins only. */
+export async function getAdminDataAction(): Promise<{ success: true; data: AdminData } | { success: false; error: string }> {
+  await requireAdmin()
+  try {
+    return { success: true, data: await getAdminData() }
+  } catch (error) {
+    console.error("Unable to load the admin screen", error)
+    return { success: false, error: "Không tải được dữ liệu quản trị. Vui lòng thử lại." }
+  }
+}
+
 export async function checkBalancesAction(): Promise<
   { success: true; checked: number; mismatches: BalanceMismatch[] } | { success: false; error: string }
 > {

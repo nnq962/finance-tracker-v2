@@ -1,5 +1,8 @@
 import "server-only"
 
+import { sql } from "kysely"
+
+import { getDb } from "@/lib/db/client"
 import { getFirebaseAdminAuth } from "@/lib/firebase/admin"
 import { listCouponsForAdmin, type AdminCoupon } from "@/lib/plans/coupons"
 import { getMonthTakings, listUsersForAdmin } from "@/lib/plans/repository"
@@ -39,4 +42,24 @@ export async function getAdminData(): Promise<AdminData> {
     takings,
     coupons,
   }
+}
+
+/**
+ * What the settings list says about the admin's screens, cheap to read on
+ * every visit: how many users there are and how many broadcasts wait to go
+ * out. The screens themselves load their data when opened (2026-10-17: the
+ * whole of it, Firebase lookups included, came with every settings page).
+ */
+export async function getAdminSummary(): Promise<{ users: number; scheduled: number }> {
+  const db = getDb()
+  const [users, scheduled] = await Promise.all([
+    db.selectFrom("users").select(sql<number>`count(*)::int`.as("n")).executeTakeFirstOrThrow(),
+    db
+      .selectFrom("broadcasts")
+      .select(sql<number>`count(*)::int`.as("n"))
+      .where("status", "=", "scheduled")
+      .where("revokedAt", "is", null)
+      .executeTakeFirstOrThrow(),
+  ])
+  return { users: users.n, scheduled: scheduled.n }
 }

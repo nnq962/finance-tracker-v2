@@ -42,6 +42,8 @@ import {
 import { formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
 import { cn } from "@/lib/utils"
 
+import { AdminScreenSkeleton } from "./admin-screen-skeleton"
+
 /** "14/10 · 09:30", in Vietnam time. */
 const momentOf = (iso: string) => `${formatShortDate(toDateKey(iso))} · ${formatTime(iso)}`
 
@@ -59,12 +61,49 @@ function rowValue(item: BroadcastItem) {
  * The admin's "Tin từ Timi": those set for later, those sent with how they
  * went, each opening its detail on a screen of the sheet, and the sheet to
  * write a new one. `onChange` keeps the settings row's count in step.
+ * Without `initial` (first opened since the page loaded) it reads them
+ * itself and shows the rows' outline meanwhile; the settings page no longer
+ * brings them along (2026-10-17).
  */
 export function AdminBroadcasts({
   initial,
   onChange,
 }: {
+  initial?: BroadcastScreenData
+  onChange: (data: BroadcastScreenData) => void
+}) {
+  const [first, setFirst] = React.useState(initial)
+  // Read here on the first opening, so the screen need not read it again.
+  const [fresh] = React.useState(!initial)
+  React.useEffect(() => {
+    if (first) return
+    let current = true
+    getBroadcastScreenAction().then((result) => {
+      if (!current) return
+      if (!result.success) {
+        toast.error(result.error)
+        return
+      }
+      setFirst(result.data)
+      onChange(result.data)
+    })
+    return () => {
+      current = false
+    }
+  }, [first, onChange])
+
+  if (!first) return <AdminScreenSkeleton />
+  return <BroadcastsScreen initial={first} fresh={fresh} onChange={onChange} />
+}
+
+function BroadcastsScreen({
+  initial,
+  fresh,
+  onChange,
+}: {
   initial: BroadcastScreenData
+  /** Just read from the server: no need to read it again on opening. */
+  fresh: boolean
   onChange: (data: BroadcastScreenData) => void
 }) {
   const [data, setData] = React.useState(initial)
@@ -87,6 +126,7 @@ export function AdminBroadcasts({
 
   // Pushes go out after the page loaded: read how they stand on opening.
   React.useEffect(() => {
+    if (fresh) return
     let current = true
     getBroadcastScreenAction().then((result) => {
       if (!current || !result.success) return
@@ -96,7 +136,7 @@ export function AdminBroadcasts({
     return () => {
       current = false
     }
-  }, [onChange])
+  }, [fresh, onChange])
 
   if (detail) {
     return (

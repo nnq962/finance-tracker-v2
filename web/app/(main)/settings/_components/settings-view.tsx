@@ -42,7 +42,7 @@ import { plans, type PlanState } from "@/lib/plans/plans"
 import type { UserDataSummary } from "@/lib/user-data/repository"
 
 import { AdminBroadcasts } from "./admin-broadcasts"
-import { AdminScreen } from "./admin-screen"
+import { AdminScreenLoader } from "./admin-screen"
 import { AiQuotaGroup } from "./ai-quota-group"
 import { InstallAppRow } from "./install-app-row"
 import { NotificationDevices } from "./notification-devices"
@@ -120,10 +120,12 @@ type SettingsViewProps = {
   checkoutEnabled: boolean
   /** How the payment the user just came back from stands. */
   paymentOutcome?: PaymentOutcome
-  /** Only for admins: every user and the month's takings. */
-  adminData?: AdminData
-  /** Only for admins: the notices sent to users and each audience's reach. */
-  broadcasts?: BroadcastScreenData
+  /**
+   * Only for admins: how many users and broadcasts waiting to go out, for the
+   * rows. Their screens load the rest when opened; a new object after each
+   * refresh tells the open admin screen to read again.
+   */
+  admin?: { users: number; scheduled: number }
   /** Opens this screen straight away, e.g. from the missions on the overview, or the plans back from payOS. */
   initialScreen?: Screen | "plan"
 }
@@ -137,8 +139,7 @@ export function SettingsView({
   dataSummary,
   checkoutEnabled,
   paymentOutcome,
-  adminData,
-  broadcasts,
+  admin,
   initialScreen,
 }: SettingsViewProps) {
   const [sheetScreen, setSheetScreen] = React.useState<Screen | null>(
@@ -151,7 +152,9 @@ export function SettingsView({
   const [reminder, setReminder] = React.useState(notifications.settings)
   const [devices, setDevices] = React.useState(notifications)
   const [news, setNews] = React.useState(notifications.broadcastsEnabled)
-  const [broadcastData, setBroadcastData] = React.useState(broadcasts)
+  // Kept once loaded, so the admin screens open again at once.
+  const [adminData, setAdminData] = React.useState<AdminData>()
+  const [broadcastData, setBroadcastData] = React.useState<BroadcastScreenData>()
   const { choice } = useThemeChoice()
   const { openWelcome } = useWelcome()
   const router = useRouter()
@@ -159,14 +162,14 @@ export function SettingsView({
   const open = (screen: Screen) => setSheetScreen(screen)
   const isPro = planState.plan === "pro"
   // The design catalogue, like its page: for admins, and anyone on the dev server.
-  const showDesign = Boolean(adminData) || process.env.NODE_ENV !== "production"
+  const showDesign = Boolean(admin) || process.env.NODE_ENV !== "production"
 
   const renderScreen = (screen: Screen) => {
     switch (screen) {
       case "admin":
-        return adminData ? <AdminScreen data={adminData} /> : null
+        return admin ? <AdminScreenLoader data={adminData} version={admin} onLoad={setAdminData} /> : null
       case "broadcasts":
-        return broadcastData ? <AdminBroadcasts initial={broadcastData} onChange={setBroadcastData} /> : null
+        return admin ? <AdminBroadcasts initial={broadcastData} onChange={setBroadcastData} /> : null
       case "appearance":
         return <ThemeOptions />
       case "notifications":
@@ -215,7 +218,9 @@ export function SettingsView({
       toast.error(result.error)
     }
   }
-  const scheduledCount = broadcastData?.items.filter((item) => item.status === "scheduled").length ?? 0
+  const scheduledCount = broadcastData
+    ? broadcastData.items.filter((item) => item.status === "scheduled").length
+    : (admin?.scheduled ?? 0)
 
   const categoryCount = categoryGroups.reduce((total, group) => total + group.items.length, 0)
   const initials = user.name
@@ -305,14 +310,14 @@ export function SettingsView({
         {/* Tools for the people running the app, after the user's own
             settings: the admin's, the design catalogue among them (on the dev
             server for anyone). */}
-        {adminData || showDesign ? (
-          <SettingsGroup title={adminData ? "Quản trị" : "Nhà phát triển"}>
-            {adminData ? (
+        {admin || showDesign ? (
+          <SettingsGroup title={admin ? "Quản trị" : "Nhà phát triển"}>
+            {admin ? (
               <>
                 <SettingsRow
                   icon={ShieldCheckIcon}
                   title="Người dùng & gói"
-                  value={String(adminData.users.length)}
+                  value={String(admin.users)}
                   onClick={() => open("admin")}
                 />
                 <SettingsRow

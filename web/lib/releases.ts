@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.20",
+    date: "2026-10-17",
+    title: "Cài đặt của quản trị viên nhẹ hơn",
+    changes: [
+      { kind: "improved", text: "Trang Cài đặt của quản trị viên không còn tải sẵn danh sách người dùng và thông báo đã gửi; hai màn này tự tải khi mở." },
+    ],
+  },
+  {
     version: "6.15.19",
     date: "2026-10-17",
     title: "Trang nhẹ hơn, đăng nhập Google chỉ chuẩn bị ở trang đăng nhập",

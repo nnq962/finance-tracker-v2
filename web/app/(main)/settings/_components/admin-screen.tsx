@@ -17,13 +17,14 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Spinner } from "@/components/ui/spinner"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDate, toDateKey } from "@/lib/format-date"
-import { getGrantsAction, grantProAction, revokeProAction } from "@/lib/plans/actions"
+import { getAdminDataAction, getGrantsAction, grantProAction, revokeProAction } from "@/lib/plans/actions"
 import type { AdminData, AdminUser } from "@/lib/plans/admin-data"
 import { paymentReference, plans, proPrices, type PlanPeriod } from "@/lib/plans/plans"
 import type { SubscriptionGrant } from "@/lib/plans/repository"
 
 import { AdminBalanceCheck } from "./admin-balance-check"
 import { AdminCoupons } from "./admin-coupons"
+import { AdminScreenSkeleton } from "./admin-screen-skeleton"
 
 const dateOf = (iso: string) => formatDate(toDateKey(iso))
 
@@ -35,6 +36,37 @@ const plain = (text: string) =>
  * Users and their plans, for the admin: the month's takings, everyone with a
  * search, and per user a form to grant Pro once a payment arrives.
  */
+/**
+ * The admin screen as settings opens it: its data is read on opening (the
+ * settings page no longer brings it along, 2026-10-17), and again whenever
+ * the page is refreshed after a change (a grant, a coupon), which hands down
+ * a new `version`. What was read last shows meanwhile, kept by settings in
+ * `data`; the outline only the first time.
+ */
+export function AdminScreenLoader({
+  data,
+  version,
+  onLoad,
+}: {
+  data?: AdminData
+  version: unknown
+  onLoad: (data: AdminData) => void
+}) {
+  React.useEffect(() => {
+    let current = true
+    getAdminDataAction().then((result) => {
+      if (!current) return
+      if (result.success) onLoad(result.data)
+      else toast.error(result.error)
+    })
+    return () => {
+      current = false
+    }
+  }, [version, onLoad])
+
+  return data ? <AdminScreen data={data} /> : <AdminScreenSkeleton />
+}
+
 export function AdminScreen({ data }: { data: AdminData }) {
   const [query, setQuery] = React.useState("")
   const [selectedId, setSelectedId] = React.useState<string | null>(null)
