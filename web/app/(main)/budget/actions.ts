@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache"
 
 import { requireSession } from "@/lib/auth/session"
+import { scheduleBudgetAlerts } from "@/lib/budgets/schedule"
+import { getDb } from "@/lib/db/client"
 import {
   createAccount,
   deleteAccount,
@@ -67,12 +69,11 @@ export async function updateAccountAction(
 
   try {
     assertAccountId(accountId)
-    await updateAccount(
-      user.uid,
-      accountId,
-      parseAccountFormData(formData),
-      parseExpectedBalance(formData),
-    )
+    const values = parseAccountFormData(formData)
+    const before = await getDb().selectFrom("accounts").select("excluded").where("id", "=", accountId).where("userId", "=", user.uid).executeTakeFirst()
+    await updateAccount(user.uid, accountId, values, parseExpectedBalance(formData))
+    // Counted again: its spending may take a limit to its next level.
+    if (before?.excluded && !values.excluded) scheduleBudgetAlerts(user.uid)
     revalidateAccountPaths()
     return { success: true }
   } catch (error) {

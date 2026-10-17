@@ -25,6 +25,7 @@ import {
   hasLimit,
   limitTone,
   limitsConflict,
+  nearLevel,
   monthShare,
   remainingLabel,
   suggestedLimit,
@@ -37,7 +38,7 @@ import { scheduleUndoableDelete } from "@/lib/undoable-delete"
 import { cn } from "@/lib/utils"
 
 import { KeptMonths } from "./budget-charts"
-import { BudgetDetailSkeleton, BudgetGroupDetail, BudgetTotalDetail, JarsNote } from "./budget-detail"
+import { BudgetDetailSkeleton, BudgetGroupDetail, BudgetTotalDetail, OTHER_ICONS, OTHER_NAMES, UncountedNote } from "./budget-detail"
 import { BudgetAdjustHint } from "./budget-adjust-hint"
 import { BudgetSpendingList } from "./budget-spending"
 import { BudgetAlertSettingsScreen, budgetAlertsSummary } from "./budget-alert-settings"
@@ -376,7 +377,7 @@ function ThisMonthList({
             <CardContent>
               <TotalHeading />
               <BudgetTotal overview={overview} />
-              <JarsNote amount={total.fromJars} className="mt-1.5" />
+              <UncountedNote line={total} className="mt-1.5" />
               <Allocation total={total.limit} groups={limited.map((group) => group.limit)} />
               {/* From the page's data, so the card does not change once the month's detail loads. */}
               <KeptLine month={overview.month} limit={total.limit} kept={overview.kept} />
@@ -423,8 +424,8 @@ function ThisMonthList({
               }
               value={group.spent}
               max={group.limit}
-              // The same colour as everywhere else: amber from 80% or while running fast for the time gone.
-              tone={limitTone(group.spent, group.limit, share)}
+              // The same colour as everywhere else: amber from the early warning or while running fast for the time gone.
+              tone={limitTone(group.spent, group.limit, share, nearLevel(overview.alerts))}
               caption={remainingLabel(group.spent, group.limit, days)}
               onClick={() => onOpen({ type: "group", groupId: group.groupId })}
             />
@@ -457,8 +458,9 @@ function ThisMonthList({
 
 /**
  * A month gone by: how the whole month and each group with a limit ended;
- * then every other group with what it spent, so the parts add up to the
- * whole. A limit set after that month did not judge it: its group is listed
+ * then every other group with what it spent, and what the whole month
+ * counts outside them (deleted groups, fees, interest), so the parts add up
+ * to the whole. A limit set after that month did not judge it: its group is listed
  * with the others, and the whole month's card only says what was spent.
  */
 function PastMonthList({
@@ -480,8 +482,13 @@ function PastMonthList({
   const totalCard = (
     <CardContent>
       <TotalHeading chevron={hasLimit(data.total)} />
-      <BudgetResult spent={data.total.spent} limit={totalJudged ? data.total.limit! : undefined} label={`Tháng ${number} đã chi`} />
-      <JarsNote amount={data.total.fromJars} className="mt-1.5" />
+      <BudgetResult
+        spent={data.total.spent}
+        limit={totalJudged ? data.total.limit! : undefined}
+        label={`Tháng ${number} đã chi`}
+        near={nearLevel(data.alerts)}
+      />
+      <UncountedNote line={data.total} className="mt-1.5" />
       <KeptLine month={data.month} limit={data.total.limit} kept={{ history: data.total.history, since: data.total.since, minMonth: data.minMonth }} />
     </CardContent>
   )
@@ -516,7 +523,7 @@ function PastMonthList({
               }
               value={group.spent}
               max={group.limit!}
-              tone={limitTone(group.spent, group.limit!)}
+              tone={limitTone(group.spent, group.limit!, undefined, nearLevel(data.alerts))}
               caption={
                 group.spent > group.limit!
                   ? `Vượt ${formatCompactCurrency(group.spent - group.limit!, 1)}`
@@ -527,7 +534,7 @@ function PastMonthList({
           ))}
         </SettingsGroup>
       ) : null}
-      {others.length > 0 ? (
+      {others.length > 0 || data.others.length > 0 ? (
         <SettingsGroup title="Chưa đặt hạn mức">
           {others.map((group) => (
             <SettingsRow
@@ -540,6 +547,19 @@ function PastMonthList({
                 hasLimit(group)
                   ? onOpen({ type: "group", groupId: group.groupId })
                   : onShowTransactions({ title: `Giao dịch ${group.name}`, groupIds: [group.groupId] })
+              }
+            />
+          ))}
+          {/* What the whole month counts outside the groups in use, so the rows add up to it: deleted groups (opening their spending), fees, interest. */}
+          {data.others.map((other) => (
+            <SettingsRow
+              key={other.key}
+              media={<IconTile icon={OTHER_ICONS[other.key]} tone="neutral" size="sm" />}
+              title={OTHER_NAMES[other.key]}
+              description={other.key === "deleted" ? undefined : "Chỉ tính vào hạn mức tổng"}
+              value={<Money amount={other.spent} size="sm" tone="muted" />}
+              onClick={
+                other.key === "deleted" ? () => onShowTransactions({ title: OTHER_NAMES.deleted, groupIds: other.groupIds }) : undefined
               }
             />
           ))}

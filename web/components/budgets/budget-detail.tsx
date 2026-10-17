@@ -1,14 +1,16 @@
 "use client"
 
 import * as React from "react"
+import { ArchiveIcon, ArrowLeftRightIcon, PercentIcon, type LucideIcon } from "lucide-react"
 
 import { IconTile } from "@/components/app/icon-tile"
 import { Money } from "@/components/app/money"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { nearLevel } from "@/lib/budgets/calculations"
 import { limitJudges } from "@/lib/budgets/months"
-import type { BudgetMonth, BudgetMonthGroup, BudgetMonthLine, BudgetOverview } from "@/lib/budgets/types"
+import type { BudgetMonth, BudgetMonthGroup, BudgetMonthLine, BudgetMonthOther, BudgetOverview } from "@/lib/budgets/types"
 import { categoryColorOptions, getCategoryColor, type CategoryColorName } from "@/lib/categories/category-colors"
 import { formatCompactCurrency } from "@/lib/format-currency"
 import { formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
@@ -18,27 +20,44 @@ import { cn } from "@/lib/utils"
 import { BudgetDailyChart, BudgetMonthsChart, BudgetSplit, KeptMonths } from "./budget-charts"
 import { BudgetResult, BudgetTotal } from "./budget-total"
 
+/** The whole month's parts outside the groups in use (BudgetMonth.others), named and drawn. */
+export const OTHER_NAMES: Record<BudgetMonthOther["key"], string> = {
+  deleted: "Nhóm đã xoá",
+  fee: "Phí chuyển khoản",
+  interest: "Lãi đi vay",
+}
+export const OTHER_ICONS: Record<BudgetMonthOther["key"], LucideIcon> = {
+  deleted: ArchiveIcon,
+  fee: ArrowLeftRightIcon,
+  interest: PercentIcon,
+}
+
 /** A month's line as BudgetTotal reads it: the running month's figure and pace. */
 export function overviewOf(month: BudgetMonth, line: BudgetMonthLine): BudgetOverview {
   return {
     month: month.month,
     day: month.gone,
     daysInMonth: month.days,
-    total: { budgetId: line.budgetId, limit: line.limit, spent: line.spent, average: 0, fromJars: line.fromJars, adjust: null },
+    total: { budgetId: line.budgetId, limit: line.limit, spent: line.spent, average: 0, fromJars: line.fromJars, adjustments: line.adjustments, adjust: null },
     groups: [],
-    alerts: { enabled: true, level: 80 },
+    alerts: month.alerts,
     kept: { history: line.history, since: line.since, minMonth: month.minMonth },
   }
 }
 
-/** Under a limit's figure: what was paid from savings jars, which it leaves out though the other pages count it. */
-export function JarsNote({ amount, className }: { amount: number; className?: string }) {
-  if (amount <= 0) return null
-  return (
-    <p className={cn("text-xs text-muted-foreground", className)}>
-      Không tính {formatCompactCurrency(amount, 1)} mua bằng hũ tiết kiệm
-    </p>
-  )
+/**
+ * Under a limit's figure: what it leaves out though "Chi" counts it, so the
+ * two can be squared: what savings jars paid and, for the whole month,
+ * balance adjustments ("Không tính 400k mua bằng hũ tiết kiệm, 13k điều
+ * chỉnh số dư").
+ */
+export function UncountedNote({ line, className }: { line: Pick<BudgetMonthLine, "fromJars" | "adjustments">; className?: string }) {
+  const parts = [
+    line.fromJars > 0 ? `${formatCompactCurrency(line.fromJars, 1)} mua bằng hũ tiết kiệm` : null,
+    line.adjustments > 0 ? `${formatCompactCurrency(line.adjustments, 1)} điều chỉnh số dư` : null,
+  ].filter(Boolean)
+  if (parts.length === 0) return null
+  return <p className={cn("text-xs text-muted-foreground", className)}>Không tính {parts.join(", ")}</p>
 }
 
 /**
@@ -53,11 +72,11 @@ export function BudgetHead({ month, line }: { month: BudgetMonth; line: BudgetMo
       {!month.past ? (
         <BudgetTotal overview={overviewOf(month, line)} />
       ) : limitJudges(line.since, month.month) ? (
-        <BudgetResult spent={line.spent} limit={line.limit} label={label} />
+        <BudgetResult spent={line.spent} limit={line.limit} label={label} near={nearLevel(month.alerts)} />
       ) : (
         <BudgetResult spent={line.spent} label={label} />
       )}
-      <JarsNote amount={line.fromJars} className="mt-1.5" />
+      <UncountedNote line={line} className="mt-1.5" />
       <KeptMonths
         history={line.history}
         limit={line.limit}
@@ -197,7 +216,8 @@ export function BudgetGroupDetail({
 /**
  * The whole month's limit over a month: as a group's, split by group
  * instead (a tap opens that group's, if it has a limit), the groups without
- * a limit together in one row.
+ * a limit together in one row, then deleted groups, transfer fees and loan
+ * interest each in one, so the rows add up to the whole.
  */
 export function BudgetTotalDetail({
   month,
@@ -215,8 +235,7 @@ export function BudgetTotalDetail({
   const total = month.total as BudgetMonthLine & { limit: number }
   const limited = month.groups.filter((group) => group.limit !== null && group.spent > 0).sort((a, b) => b.spent - a.spent)
   const unlimited = month.groups.filter((group) => group.limit === null)
-  // Spending in groups no longer in use counts in the month too; it joins the groups without a limit.
-  const elsewhere = total.spent - limited.reduce((sum, group) => sum + group.spent, 0)
+  const unlimitedSpent = unlimited.reduce((sum, group) => sum + group.spent, 0)
   return (
     <div className="flex flex-col gap-6">
       <Card size="lg">
@@ -250,18 +269,27 @@ export function BudgetTotalDetail({
                     : undefined,
                 onClick: () => onGroup(group.groupId),
               })),
-              ...(elsewhere > 0
+              ...(unlimitedSpent > 0
                 ? [
                     {
                       key: "unlimited",
                       name: "Nhóm chưa đặt hạn mức",
-                      amount: elsewhere,
+                      amount: unlimitedSpent,
                       fill: "var(--chart-neutral)",
                       onClick: () =>
                         onShowTransactions({ title: "Nhóm chưa đặt hạn mức", groupIds: unlimited.map((group) => group.groupId) }),
                     },
                   ]
                 : []),
+              // Groups since deleted (their spending listed), transfer fees and loan interest (counted only here).
+              ...month.others.map((other) => ({
+                key: other.key,
+                name: OTHER_NAMES[other.key],
+                amount: other.spent,
+                fill: "var(--chart-neutral)",
+                onClick:
+                  other.key === "deleted" ? () => onShowTransactions({ title: OTHER_NAMES.deleted, groupIds: other.groupIds }) : undefined,
+              })),
             ]}
           />
         </ChartCard>

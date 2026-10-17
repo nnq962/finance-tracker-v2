@@ -454,7 +454,7 @@ const sampleBudgets: BudgetOverview = {
   month: "2026-10",
   day: 16,
   daysInMonth: 31,
-  total: { budgetId: "total", limit: 12_000_000, spent: 7_450_000, average: 10_900_000, fromJars: 0, adjust: null },
+  total: { budgetId: "total", limit: 12_000_000, spent: 7_450_000, average: 10_900_000, fromJars: 0, adjustments: 0, adjust: null },
   groups: [],
   alerts: { enabled: true, level: 80 },
   kept: { history: [10_800_000, 12_900_000, 11_200_000, 11_500_000, 12_400_000, 11_600_000, 7_450_000], since: "2026-01", minMonth: "2026-01" },
@@ -467,7 +467,7 @@ const sampleDaily = Array.from({ length: 31 }, (_, index) => (index < 17 ? [320_
 /** No limit yet, three months of spending: what the invitation suggests from. */
 const sampleInvite: BudgetOverview = {
   ...sampleBudgets,
-  total: { budgetId: null, limit: null, spent: 7_450_000, average: 11_280_000, fromJars: 0, adjust: null },
+  total: { budgetId: null, limit: null, spent: 7_450_000, average: 11_280_000, fromJars: 0, adjustments: 0, adjust: null },
   groups: (
     [
       ["housing", "Nhà cửa", "house", "emerald", 4_120_000],
@@ -485,6 +485,7 @@ const sampleInvite: BudgetOverview = {
     spent: 0,
     average,
     fromJars: 0,
+    adjustments: 0,
     adjust: null,
   })),
 }
@@ -499,8 +500,8 @@ function LimitSample() {
     <div className="grid gap-4 md:grid-cols-2">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 rounded-[20px] bg-card p-4">
-          <LimitBar value={38} max={100} label="Dưới 80%" />
-          <LimitBar value={86} max={100} tone="near" label="Từ 80%, hay đang chi nhanh" />
+          <LimitBar value={38} max={100} label="Dưới mốc báo sớm (80%)" />
+          <LimitBar value={86} max={100} tone="near" label="Từ mốc báo sớm (80% hay 90%), hay đang chi nhanh" />
           <LimitBar value={113} max={100} tone="over" label="Đã vượt" />
           <LimitBar value={62} max={100} tone="near" size="md" label="Cỡ md, cho con số dẫn đầu" />
         </div>

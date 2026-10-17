@@ -3,7 +3,7 @@
 import * as React from "react"
 import { GaugeIcon, TriangleAlertIcon } from "lucide-react"
 
-import { hasLimit, limitTone, monthShare } from "@/lib/budgets/calculations"
+import { daysLeft, hasLimit, limitTone, monthShare, nearLevel, remainingLabel } from "@/lib/budgets/calculations"
 import type { BudgetOverview } from "@/lib/budgets/types"
 import { formatCompactCurrency } from "@/lib/format-currency"
 import { cn } from "@/lib/utils"
@@ -28,10 +28,12 @@ export type CountedSpending = { groupId?: string; amount: number; month: string 
  * the chosen category's group, or the whole month, past its limit
  * (2026-10-17, "2A"): in red, "Khoản này làm Ăn uống vượt 50k, hạn mức tổng
  * vượt 90k" (it still saves; this only warns). Otherwise what the group has
- * left this month ("Ăn uống còn 580k tháng này", amber from 80% or while
- * running fast). Nothing for another month, spending that does not count
- * (left out, or paid from a jar: `counted` false, then only what is left),
- * a group without a limit and no warning, or outside a BudgetProvider.
+ * left as its row says it (remainingLabel: "Ăn uống · Còn 580k · 36k mỗi
+ * ngày", amber from the early warning or while running fast). Nothing for
+ * another month, spending that does not count (left out, or paid from a
+ * jar: `counted` false, then only what is left), a group without a limit
+ * and no warning, or outside a BudgetProvider. A transfer's fee, which the
+ * whole month's limit counts, passes no group: only the warning.
  */
 export function BudgetHint({
   groupId,
@@ -76,13 +78,11 @@ export function BudgetHint({
   }
 
   if (!group || !hasLimit(group)) return null
-  const state = limitTone(groupBefore, group.limit, monthShare(overview))
+  const state = limitTone(groupBefore, group.limit, monthShare(overview), nearLevel(overview.alerts))
   return (
     <p className={cn("flex items-center gap-1.5 px-4 text-xs text-muted-foreground", state === "near" && "text-warning", state === "over" && "text-expense")}>
       <GaugeIcon className="size-3.5 shrink-0" aria-hidden="true" />
-      {groupBefore > group.limit
-        ? `${group.name} đã vượt hạn mức ${formatCompactCurrency(groupBefore - group.limit, 1)}`
-        : `${group.name} còn ${formatCompactCurrency(group.limit - groupBefore, 1)} tháng này`}
+      {group.name} · {remainingLabel(groupBefore, group.limit, daysLeft(overview))}
     </p>
   )
 }

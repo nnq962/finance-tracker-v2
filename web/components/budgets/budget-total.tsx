@@ -9,6 +9,7 @@ import {
   formatBudgetPercent,
   daysLeft,
   limitTone,
+  nearLevel,
   monthShare,
   perDay,
 } from "@/lib/budgets/calculations"
@@ -43,7 +44,7 @@ export function BudgetTotal({ overview, compact = false }: { overview: BudgetOve
       <LimitBar
         value={spent}
         max={limit}
-        tone={limitTone(spent, limit, monthShare(overview))}
+        tone={limitTone(spent, limit, monthShare(overview), nearLevel(overview.alerts))}
         size="md"
         label="Hạn mức tháng đã dùng"
         className={compact ? "mt-3.5" : "mt-4.5"}
@@ -70,7 +71,7 @@ export function BudgetTotal({ overview, compact = false }: { overview: BudgetOve
  * or over (red, by how much). Without `limit` (a month before it was set):
  * what was spent, and "Chưa đặt hạn mức trong tháng này".
  */
-export function BudgetResult({ spent, limit, label }: { spent: number; limit?: number; label: string }) {
+export function BudgetResult({ spent, limit, label, near }: { spent: number; limit?: number; label: string; near?: number }) {
   // A month before the limit was set: what was spent, and that there was no limit.
   if (limit === undefined) {
     return (
@@ -94,7 +95,7 @@ export function BudgetResult({ spent, limit, label }: { spent: number; limit?: n
           <span className="text-xs text-muted-foreground tabular-nums">của {formatCompactCurrency(limit, 1)}</span>
         </span>
       </div>
-      <LimitBar value={spent} max={limit} tone={limitTone(spent, limit)} size="md" label="Hạn mức đã dùng" className="mt-4.5" />
+      <LimitBar value={spent} max={limit} tone={limitTone(spent, limit, undefined, near)} size="md" label="Hạn mức đã dùng" className="mt-4.5" />
       <p className={cn("mt-2.5 text-xs font-medium", over ? "text-expense" : "text-income")}>
         {over ? `Vượt hạn mức ${formatCompactCurrency(spent - limit, 1)}` : `Trong hạn mức · còn dư ${formatCompactCurrency(limit - spent, 1)}`}
       </p>

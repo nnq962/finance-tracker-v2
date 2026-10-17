@@ -7,13 +7,13 @@ import { IconTile } from "@/components/app/icon-tile"
 import { LimitBar } from "@/components/app/limit-bar"
 import { Section } from "@/components/app/section-header"
 import { Card, CardContent } from "@/components/ui/card"
-import { budgetPercent, groupsByUse, hasAnyBudget, hasLimit, limitTone, monthShare } from "@/lib/budgets/calculations"
+import { budgetPercent, groupsByUse, hasAnyBudget, hasLimit, limitTone, monthShare, nearLevel } from "@/lib/budgets/calculations"
 import type { BudgetOverview } from "@/lib/budgets/types"
 import { formatCompactCurrency } from "@/lib/format-currency"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { cn } from "@/lib/utils"
 
-import { JarsNote } from "./budget-detail"
+import { UncountedNote } from "./budget-detail"
 import { BudgetTotal } from "./budget-total"
 import { BudgetInvite, BudgetSuggestSheet } from "./budget-suggest"
 import { BudgetFormSheet, BudgetsSheet } from "./budgets-sheet"
@@ -110,7 +110,7 @@ export function BudgetOverviewCard({ overview, initialOpen = false }: { overview
                 <p className="mb-3 text-sm font-semibold">Hạn mức tổng</p>
                 <BudgetTotal overview={overview} compact />
                 {/* As in the sheet: "Theo hạng mục" just below counts what jars paid, the limits do not. */}
-                <JarsNote amount={overview.total.fromJars} className="mt-1.5" />
+                <UncountedNote line={overview.total} className="mt-1.5" />
               </>
             ) : null}
             {closest.length > 0 ? (
@@ -120,8 +120,8 @@ export function BudgetOverviewCard({ overview, initialOpen = false }: { overview
               ) : null}
               <ul className={cn("flex flex-col gap-4", hasLimit(overview.total) && "mt-3")}>
                 {closest.map((group) => {
-                  // One rule for the colour everywhere: amber from 80% or while running fast for the time gone.
-                  const state = limitTone(group.spent, group.limit, monthShare(overview))
+                  // One rule for the colour everywhere: amber from the early warning or while running fast for the time gone.
+                  const state = limitTone(group.spent, group.limit, monthShare(overview), nearLevel(overview.alerts))
                   return (
                     <li key={group.groupId} className="flex items-center gap-3">
                       <IconTile icon={categoryIconRegistry[group.iconName]} tone={group.colorName} size="sm" />
@@ -147,7 +147,7 @@ export function BudgetOverviewCard({ overview, initialOpen = false }: { overview
               </>
             ) : null}
             {/* Without the month's limit, under the groups instead. */}
-            {hasLimit(overview.total) ? null : <JarsNote amount={overview.total.fromJars} className="mt-3" />}
+            {hasLimit(overview.total) ? null : <UncountedNote line={overview.total} className="mt-3" />}
           </CardContent>
         </button>
       </Card>

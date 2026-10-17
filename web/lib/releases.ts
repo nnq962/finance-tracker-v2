@@ -32,6 +32,20 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.13",
+    date: "2026-10-17",
+    title: "Hạn mức tổng tính cả phí chuyển khoản và lãi vay",
+    changes: [
+      { kind: "improved", text: "Hạn mức tổng tính cả phí chuyển khoản và lãi đi vay, như ô Chi; dưới hạn mức ghi rõ phần không tính (mua bằng hũ, điều chỉnh số dư), cả ở dòng hạn mức trang Giao dịch." },
+      { kind: "improved", text: "Thanh hạn mức chuyển vàng theo mốc báo sớm đã chọn trong Cảnh báo hạn mức (80% hay 90%)." },
+      { kind: "improved", text: "Form chuyển khoản báo khi phí làm vượt hạn mức tổng; form chi ghi phần còn lại như dòng nhóm (còn bao nhiêu, mỗi ngày bao nhiêu)." },
+      { kind: "fixed", text: "Tháng đã qua: chi của nhóm đã xoá, phí chuyển khoản và lãi vay có dòng riêng, các dòng cộng đúng bằng tổng." },
+      { kind: "fixed", text: "Gợi ý \"Hạn mức có thể quá cao\" không còn đề xuất số lớn hơn hạn mức hiện tại." },
+      { kind: "fixed", text: "Phần trăm đã dùng làm tròn xuống khi chưa vượt (không còn hiện 100% khi vẫn còn tiền)." },
+      { kind: "fixed", text: "Bỏ \"Ngoài báo cáo\" của tài khoản, lưu phí chuyển khoản hay khoản trả nợ có lãi giờ cũng gửi cảnh báo hạn mức khi chạm mốc." },
+    ],
+  },
+  {
     version: "6.15.12",
     date: "2026-10-17",
     title: "Chuyển tháng ở Tổng quan dùng lại hiệu ứng cũ",

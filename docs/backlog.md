@@ -42,7 +42,8 @@ hạn mức, cảnh báo vượt trong form, gợi ý chỉnh hạn mức, cài 
 - **"Hỏi Timi về nhóm này":** mở trợ lý với câu hỏi đã điền sẵn.
 - **Dồn phần chưa chi sang tháng sau** (rollover).
 - **Tóm tắt hạn mức mỗi tuần** qua thông báo.
-- Vay nợ, trả nợ hiện không tính vào hạn mức (mặc định khi làm); nếu muốn tính thì cần quyết lại.
+- Vay nợ và tiền gốc trả nợ không tính vào hạn mức; lãi đi vay và phí chuyển khoản tính vào hạn mức tổng (2026-10-17).
+- Trợ lý Timi chưa biết về hạn mức chi tiêu.
 
 ## 4. Hũ tiết kiệm
 

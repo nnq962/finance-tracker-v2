@@ -58,7 +58,8 @@ export async function createTransactionAction(
     if (requestId !== undefined) assertTransactionId(requestId)
     const values = parseTransactionFormData(formData)
     await createTransaction(user.uid, values, requestId as string | undefined)
-    if (values.kind === "expense") scheduleBudgetAlerts(user.uid)
+    // Spending, or a transfer's fee, which the whole month's limit counts.
+    if (values.kind !== "income") scheduleBudgetAlerts(user.uid)
     revalidateTransactionPaths()
     return { success: true }
   } catch (error) {
@@ -76,7 +77,7 @@ export async function updateTransactionAction(
     assertTransactionId(transactionId)
     const values = parseTransactionFormData(formData)
     await updateTransaction(user.uid, transactionId, values)
-    if (values.kind === "expense") scheduleBudgetAlerts(user.uid)
+    if (values.kind !== "income") scheduleBudgetAlerts(user.uid)
     revalidateTransactionPaths()
     return { success: true }
   } catch (error) {

@@ -2,12 +2,20 @@ import "server-only"
 
 import { sql } from "kysely"
 
-import { monthStart, shiftMonth, spendingByGroupAndMonth } from "@/lib/budgets/repository"
-import type { BudgetMonth, BudgetMonthEntry, BudgetMonthGroup, BudgetMonthItem, BudgetMonthLine } from "@/lib/budgets/types"
+import {
+  adjustmentsIn,
+  feesAndInterest,
+  getBudgetAlertSettings,
+  monthStart,
+  shiftMonth,
+  spendingByGroupAndMonth,
+} from "@/lib/budgets/repository"
+import type { BudgetMonth, BudgetMonthEntry, BudgetMonthGroup, BudgetMonthItem, BudgetMonthLine, BudgetMonthOther } from "@/lib/budgets/types"
 import type { CategoryColorName } from "@/lib/categories/category-colors"
 import { getDb } from "@/lib/db/client"
 import { toDateKey } from "@/lib/format-date"
 import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
+import { DEBT_INTEREST_GROUP, TRANSFER_FEE_GROUP } from "@/lib/transactions/types"
 
 /**
  * Spending as limits count it (see spendingByGroupAndMonth): with a
@@ -32,8 +40,9 @@ const dayOf = sql<number>`extract(day from t.occurred_at AT TIME ZONE 'Asia/Ho_C
 
 /**
  * One month of the user's limits in detail, `month` this one or one gone by
- * (never ahead of `today`): for the whole month and each active spending
- * group, the limit (today's: limits are not kept per month), what was spent,
+ * (never ahead of `today`): for the whole month (fees and loan interest
+ * included, and what it counts outside the active groups) and each active
+ * spending group, the limit (today's: limits are not kept per month), what was spent,
  * day by day and in each of the six months before; for each group, its
  * categories and its three latest spendings.
  */
@@ -44,7 +53,7 @@ export async function getBudgetMonth(userId: string, month: string, today = toDa
   const days = new Date(Date.UTC(year, monthIndex, 0)).getUTCDate()
   const past = month < thisMonth
 
-  const [groups, budgets, months, byDay, recent, first, jars] = await Promise.all([
+  const [groups, budgets, months, byDay, recent, first, jars, extras, adjustments, alerts] = await Promise.all([
     getDb()
       .selectFrom("categoryGroups")
       .select(["id", "name", "iconName", "colorName"])
@@ -94,6 +103,10 @@ export async function getBudgetMonth(userId: string, month: string, today = toDa
       .where("userId", "=", userId)
       .executeTakeFirst(),
     spendingByGroupAndMonth(userId, month, month, true),
+    // Fees and interest by day, for the whole month's chart.
+    feesAndInterest(userId, month, month),
+    adjustmentsIn(userId, month),
+    getBudgetAlertSettings(userId),
   ])
 
   const monthKeys = Array.from({ length: 7 }, (_, index) => shiftMonth(month, index - 6))
@@ -104,6 +117,9 @@ export async function getBudgetMonth(userId: string, month: string, today = toDa
     )
     const daily = Array.from({ length: days }, () => 0)
     for (const row of byDay) if (groupId === null || row.groupId === groupId) daily[row.day - 1] += row.amount
+    if (groupId === null) {
+      for (const extra of extras) if (!extra.jar) daily[Number(toDateKey(extra.occurredAt).slice(8, 10)) - 1] += extra.amount
+    }
     return {
       budgetId: budget?.id ?? null,
       limit: budget?.amount ?? null,
@@ -112,8 +128,20 @@ export async function getBudgetMonth(userId: string, month: string, today = toDa
       daily,
       since: budget ? toDateKey(budget.createdAt).slice(0, 7) : null,
       fromJars: jars.filter((row) => groupId === null || row.groupId === groupId).reduce((sum, row) => sum + row.spent, 0),
+      adjustments: groupId === null ? adjustments : 0,
     }
   }
+
+  // The month's spending outside the active groups: groups since deleted, fees, interest.
+  const active = new Set(groups.map((group) => group.id))
+  const inMonth = months.filter((row) => row.month === month)
+  const sumOf = (rows: typeof inMonth) => rows.reduce((sum, row) => sum + row.spent, 0)
+  const deleted = inMonth.filter((row) => !active.has(row.groupId) && row.groupId !== TRANSFER_FEE_GROUP && row.groupId !== DEBT_INTEREST_GROUP)
+  const others: BudgetMonthOther[] = [
+    { key: "deleted" as const, spent: sumOf(deleted), groupIds: [...new Set(deleted.map((row) => row.groupId))] },
+    { key: "fee" as const, spent: sumOf(inMonth.filter((row) => row.groupId === TRANSFER_FEE_GROUP)), groupIds: [] },
+    { key: "interest" as const, spent: sumOf(inMonth.filter((row) => row.groupId === DEBT_INTEREST_GROUP)), groupIds: [] },
+  ].filter((other) => other.spent > 0)
 
   return {
     month,
@@ -122,6 +150,8 @@ export async function getBudgetMonth(userId: string, month: string, today = toDa
     past,
     minMonth: first?.first ? toDateKey(first.first).slice(0, 7) : month,
     total: line(null),
+    others,
+    alerts,
     groups: groups.map((group): BudgetMonthGroup => {
       const rows = byDay.filter((row) => row.groupId === group.id)
       const items = new Map<string, BudgetMonthItem>()

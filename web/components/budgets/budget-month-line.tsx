@@ -5,17 +5,19 @@ import { ChevronRightIcon, GaugeIcon } from "lucide-react"
 
 import { LimitBar } from "@/components/app/limit-bar"
 import { Skeleton } from "@/components/ui/skeleton"
-import { formatBudgetPercent, hasLimit, limitTone, monthShare } from "@/lib/budgets/calculations"
+import { formatBudgetPercent, hasLimit, limitTone, monthShare, nearLevel } from "@/lib/budgets/calculations"
 import type { BudgetOverview } from "@/lib/budgets/types"
 import { formatCompactCurrency } from "@/lib/format-currency"
 import { cn } from "@/lib/utils"
 
+import { UncountedNote } from "./budget-detail"
 import { BudgetsSheet } from "./budgets-sheet"
 
 /**
  * Under the transactions' Thu / Chi tiles, this month only and with a month
- * limit set: how much of it is used, what is left and the plain bar; a tap
- * opens every limit.
+ * limit set: how much of it is used, what is left and the plain bar, then
+ * what "Chi" counts and it does not (jars, adjustments); a tap opens every
+ * limit.
  */
 export function BudgetMonthLine({ overview, className }: { overview: BudgetOverview; className?: string }) {
   const [open, setOpen] = React.useState(false)
@@ -42,7 +44,9 @@ export function BudgetMonthLine({ overview, className }: { overview: BudgetOverv
               {over ? "vượt" : "còn"} {formatCompactCurrency(Math.abs(total.limit - total.spent), 1)}
             </span>
           </span>
-          <LimitBar value={total.spent} max={total.limit} tone={limitTone(total.spent, total.limit, monthShare(overview))} />
+          <LimitBar value={total.spent} max={total.limit} tone={limitTone(total.spent, total.limit, monthShare(overview), nearLevel(overview.alerts))} />
+          {/* "Chi" above counts these; the limit does not, so the two square. */}
+          <UncountedNote line={total} />
         </span>
         <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       </button>

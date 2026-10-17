@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils"
 
-/** ok: in the ink; near: amber (from 80%, or spending ahead of plan); over: red, past the limit. */
+/** ok: in the ink; near: amber (from the early warning, 80% or 90%, or spending ahead of plan); over: red, past the limit. */
 export type LimitTone = "ok" | "near" | "over"
 
 const fillClassName: Record<LimitTone, string> = {

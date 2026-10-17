@@ -10,6 +10,8 @@ import { getDb } from "@/lib/db/client"
 import { toDateKey } from "@/lib/format-date"
 import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
 import { MAX_MONEY } from "@/lib/money"
+import { getDebtPaymentsInRange } from "@/lib/transactions/repository"
+import { DEBT_INTEREST_GROUP, TRANSFER_FEE_GROUP } from "@/lib/transactions/types"
 
 export class BudgetValidationError extends Error {}
 
@@ -24,35 +26,111 @@ export function monthStart(month: string) {
 const monthOf = sql<string>`to_char(t.occurred_at AT TIME ZONE 'Asia/Ho_Chi_Minh', 'YYYY-MM')`
 
 /**
+ * What the whole month's limit counts besides spending with a category
+ * (2026-10-17, as the figures count it): transfer fees, paid by the source
+ * account, and the interest part of repayments on loans taken. Each with
+ * its moment, amount and whether a savings jar paid it (then it is left out
+ * as a jar's purchase is, but said). Left out with the account paying it, and
+ * interest also with the loan's account, as every figure leaves them out.
+ */
+export async function feesAndInterest(userId: string, from: string, to: string) {
+  const start = monthStart(from)
+  const end = monthStart(shiftMonth(to, 1))
+  const [fees, repayments, jars] = await Promise.all([
+    getDb()
+      .selectFrom("transactions as t")
+      .innerJoin("accounts as a", "a.id", "t.fromAccountId")
+      .select(["t.occurredAt", "t.fee", "a.type"])
+      .where("t.userId", "=", userId)
+      .where("t.kind", "=", "transfer")
+      .where("t.fee", ">", 0)
+      .where("a.excluded", "=", false)
+      .where("t.occurredAt", ">=", start)
+      .where("t.occurredAt", "<", end)
+      .execute(),
+    getDebtPaymentsInRange(userId, start, end),
+    getDb().selectFrom("accounts").select("id").where("userId", "=", userId).where("type", "=", "savings").execute(),
+  ])
+  const jarIds = new Set(jars.map((jar) => jar.id))
+  return [
+    ...fees.map((row) => ({ groupId: TRANSFER_FEE_GROUP, occurredAt: new Date(row.occurredAt), amount: row.fee, jar: row.type === "savings" })),
+    ...repayments
+      .filter((row) => row.kind === "expense" && row.interest && !row.accountExcluded && !row.interestLeftOut)
+      .map((row) => ({
+        groupId: DEBT_INTEREST_GROUP,
+        occurredAt: new Date(row.occurredAt),
+        amount: row.interest!,
+        jar: Boolean(row.accountId && jarIds.has(row.accountId)),
+      })),
+  ]
+}
+
+/**
  * Spending as limits count it, by category group and month, from `from`
  * (a month) to the end of `to`: expenses with a category (so no loans, which
  * carry none, and no balance adjustments), not left out themselves nor by
  * their account, and not paid from a savings jar (that money was set aside
- * for it). Transfers and loan repayments are other kinds or other tables.
- * `fromJars`: instead only what was paid from a savings jar, which limits
+ * for it); then transfer fees and loan interest (feesAndInterest), under
+ * their own keys (TRANSFER_FEE_GROUP, DEBT_INTEREST_GROUP), which only the
+ * whole month's limit counts. Transfers and loans themselves are not
+ * spending. `fromJars`: instead only what a savings jar paid, which limits
  * leave out but the other figures count, so the sheet can say so.
  */
 export async function spendingByGroupAndMonth(userId: string, from: string, to: string, fromJars = false) {
-  return getDb()
-    .selectFrom("transactions as t")
-    .innerJoin("accounts as a", "a.id", "t.accountId")
-    .innerJoin("categoryItems as c", "c.id", "t.categoryItemId")
-    .select(["c.groupId as groupId", monthOf.as("month"), sql<number>`sum(t.amount)`.as("spent")])
-    .where("t.userId", "=", userId)
-    .where("t.kind", "=", "expense")
-    .where("t.adjustment", "=", false)
-    .where("t.excluded", "=", false)
-    .where("a.excluded", "=", false)
-    .where("a.type", fromJars ? "=" : "<>", "savings")
-    .where("t.occurredAt", ">=", monthStart(from))
-    .where("t.occurredAt", "<", monthStart(shiftMonth(to, 1)))
-    .groupBy(["c.groupId", monthOf])
-    .execute()
+  const [rows, extras] = await Promise.all([
+    getDb()
+      .selectFrom("transactions as t")
+      .innerJoin("accounts as a", "a.id", "t.accountId")
+      .innerJoin("categoryItems as c", "c.id", "t.categoryItemId")
+      .select(["c.groupId as groupId", monthOf.as("month"), sql<number>`sum(t.amount)`.as("spent")])
+      .where("t.userId", "=", userId)
+      .where("t.kind", "=", "expense")
+      .where("t.adjustment", "=", false)
+      .where("t.excluded", "=", false)
+      .where("a.excluded", "=", false)
+      .where("a.type", fromJars ? "=" : "<>", "savings")
+      .where("t.occurredAt", ">=", monthStart(from))
+      .where("t.occurredAt", "<", monthStart(shiftMonth(to, 1)))
+      .groupBy(["c.groupId", monthOf])
+      .execute(),
+    feesAndInterest(userId, from, to),
+  ])
+  const sums = new Map<string, { groupId: string; month: string; spent: number }>()
+  for (const extra of extras) {
+    if (extra.jar !== fromJars) continue
+    const month = toDateKey(extra.occurredAt).slice(0, 7)
+    const row = sums.get(`${extra.groupId}|${month}`) ?? { groupId: extra.groupId, month, spent: 0 }
+    row.spent += extra.amount
+    sums.set(`${extra.groupId}|${month}`, row)
+  }
+  return [...rows, ...sums.values()]
 }
 
 /**
- * This month's limits for the user: the whole month's and every active
- * spending group's (set or not), each with what is spent so far and the
+ * Balance adjustments that took money out in `month`, counted in the
+ * figures (not left out, nor their account): limits never count them, so
+ * the whole month's limit says how much it leaves out beside "Chi".
+ */
+export async function adjustmentsIn(userId: string, month: string) {
+  const row = await getDb()
+    .selectFrom("transactions as t")
+    .innerJoin("accounts as a", "a.id", "t.accountId")
+    .select(sql<number>`coalesce(sum(t.amount), 0)`.as("amount"))
+    .where("t.userId", "=", userId)
+    .where("t.kind", "=", "expense")
+    .where("t.adjustment", "=", true)
+    .where("t.excluded", "=", false)
+    .where("a.excluded", "=", false)
+    .where("t.occurredAt", ">=", monthStart(month))
+    .where("t.occurredAt", "<", monthStart(shiftMonth(month, 1)))
+    .executeTakeFirst()
+  return Number(row?.amount ?? 0)
+}
+
+/**
+ * This month's limits for the user: the whole month's (transfer fees and
+ * loan interest included) and every active spending group's (set or not),
+ * each with what is spent so far and the
  * average of the last three months that had spending (fewer for a newer
  * user), rounded to the thousand.
  */
@@ -61,7 +139,7 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
   const [year, monthIndex] = month.split("-").map(Number)
   const daysInMonth = new Date(Date.UTC(year, monthIndex, 0)).getUTCDate()
 
-  const [groups, budgets, sixMonths, jars, alerts, first] = await Promise.all([
+  const [groups, budgets, sixMonths, jars, alerts, first, adjustments] = await Promise.all([
     getDb()
       .selectFrom("categoryGroups")
       .select(["id", "name", "iconName", "colorName"])
@@ -81,6 +159,7 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
     spendingByGroupAndMonth(userId, month, month, true),
     getBudgetAlertSettings(userId),
     getDb().selectFrom("transactions").select(sql<Date | null>`min(occurred_at)`.as("first")).where("userId", "=", userId).executeTakeFirst(),
+    adjustmentsIn(userId, month),
   ])
   const spending = sixMonths.filter((row) => row.month >= shiftMonth(month, -3))
   const fromJars = (groupId?: string) => jars.filter((row) => !groupId || row.groupId === groupId).reduce((sum, row) => sum + row.spent, 0)
@@ -120,8 +199,9 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
       const shared = budgets.filter((row) => row.categoryGroupId !== null && activeIds.has(row.categoryGroupId)).reduce((sum, row) => sum + row.amount, 0)
       if (to < shared) return null
     }
-    if (average > budget.amount * 1.2) return { kind: "low", to }
-    if (average < budget.amount * 0.5) return { kind: "high", to }
+    // The suggestion goes the hint's way: rounded up, a small limit's could otherwise be above it ("quá cao", Đặt 50k on 40k).
+    if (average > budget.amount * 1.2 && to > budget.amount) return { kind: "low", to }
+    if (average < budget.amount * 0.5 && to < budget.amount) return { kind: "high", to }
     return null
   }
 
@@ -135,7 +215,14 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
     month,
     day: Number(today.slice(8, 10)),
     daysInMonth,
-    total: { budgetId: total?.id ?? null, limit: total?.amount ?? null, ...sums(), fromJars: fromJars(), adjust: adjustOf(total, sums().average) },
+    total: {
+      budgetId: total?.id ?? null,
+      limit: total?.amount ?? null,
+      ...sums(),
+      fromJars: fromJars(),
+      adjustments,
+      adjust: adjustOf(total, sums().average),
+    },
     alerts,
     kept: {
       history,
@@ -153,6 +240,7 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
         limit: budget?.amount ?? null,
         ...sums(group.id),
         fromJars: fromJars(group.id),
+        adjustments: 0,
         adjust: adjustOf(budget, sums(group.id).average),
       }
     }),

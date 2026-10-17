@@ -4,9 +4,11 @@ import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
 /**
  * Monthly spending limits ("hạn mức chi tiêu", 2026-10-16): one for the whole
  * month and one per expense category group, repeating every month. What is
- * spent counts only spending with a category (lib/budgets/repository): not
- * transfers, not purchases from a savings jar, nothing left out of the
- * figures, no balance adjustments, no loans or their repayments.
+ * spent counts spending with a category (lib/budgets/repository) and, for
+ * the whole month only, transfer fees and loan interest (2026-10-17, as
+ * "Chi" counts them): not transfers, not what a savings jar paid, nothing
+ * left out of the figures, no balance adjustments, no loans or the
+ * principal of their repayments.
  */
 
 /**
@@ -29,6 +31,8 @@ export type BudgetLine = {
   average: number
   /** This month's spending paid from savings jars: not counted, but the other figures count it. */
   fromJars: number
+  /** This month's balance adjustments taking money out, which "Chi" counts and limits never do; 0 for a group. */
+  adjustments: number
   /** Whether to suggest changing the limit, unless put off for this month. */
   adjust: BudgetAdjust | null
 }
@@ -91,6 +95,8 @@ export type BudgetMonthLine = {
   since: string | null
   /** The month's spending paid from savings jars: not counted, but the other figures count it. */
   fromJars: number
+  /** The month's balance adjustments taking money out, which "Chi" counts and limits never do; 0 for a group. */
+  adjustments: number
 }
 
 export type BudgetMonthGroup = BudgetMonthLine & {
@@ -118,4 +124,19 @@ export type BudgetMonth = {
   total: BudgetMonthLine
   /** Every active spending group, in the user's order. */
   groups: BudgetMonthGroup[]
+  /**
+   * What the whole month counts outside the active groups, so the parts add
+   * up to it: spending in groups since deleted, transfer fees, loan interest.
+   */
+  others: BudgetMonthOther[]
+  /** How limit pushes are set: the bars turn amber at the early warning. */
+  alerts: BudgetAlertSettings
+}
+
+/** A part of the whole month outside the active groups (BudgetMonth.others). */
+export type BudgetMonthOther = {
+  key: "deleted" | "fee" | "interest"
+  spent: number
+  /** For "deleted": the groups it is in, to list their spending. */
+  groupIds: string[]
 }

@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { ChevronRightIcon } from "lucide-react"
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Label, Pie, PieChart, ReferenceLine, XAxis, YAxis } from "recharts"
 
@@ -324,6 +325,17 @@ export function BudgetMonthsChart({
   )
 }
 
+/** A row of BudgetSplit: a button when it opens something, else plain. */
+function SplitRow({ onClick, children }: { onClick?: () => void; children: React.ReactNode }) {
+  const className = "flex min-h-12 w-full items-center gap-3 rounded-xl px-2 text-left"
+  if (!onClick) return <div className={className}>{children}</div>
+  return (
+    <button type="button" onClick={onClick} className={cn(className, "transition-colors duration-150 hover:bg-muted active:bg-muted")}>
+      {children}
+    </button>
+  )
+}
+
 export type BudgetSplitPart = {
   key: string
   name: string
@@ -332,7 +344,8 @@ export type BudgetSplitPart = {
   fill: string
   /** Under the name, in red: how far the part is past its own limit. */
   over?: string
-  onClick: () => void
+  /** Opens the part; without it, the row only says it (no chevron). */
+  onClick?: () => void
 }
 
 /**
@@ -407,11 +420,7 @@ export function BudgetSplit({ parts, total }: { parts: BudgetSplitPart[]; total:
       <ul className="-mx-2 flex flex-col">
         {shown.map((part) => (
           <li key={part.key}>
-            <button
-              type="button"
-              onClick={part.onClick}
-              className="flex min-h-12 w-full items-center gap-3 rounded-xl px-2 text-left transition-colors duration-150 hover:bg-muted active:bg-muted"
-            >
+            <SplitRow onClick={part.onClick}>
               <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: part.fill }} />
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-sm">{part.name}</span>
@@ -419,8 +428,8 @@ export function BudgetSplit({ parts, total }: { parts: BudgetSplitPart[]; total:
               </span>
               <span className="shrink-0 text-sm font-semibold tabular-nums">{formatCompactCurrency(part.amount, 1)}</span>
               <span className="w-9 shrink-0 text-right text-xs text-muted-foreground tabular-nums">{share(part.amount)}%</span>
-              <ChevronRightIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
-            </button>
+              {part.onClick ? <ChevronRightIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" /> : <span className="size-4 shrink-0" />}
+            </SplitRow>
           </li>
         ))}
       </ul>

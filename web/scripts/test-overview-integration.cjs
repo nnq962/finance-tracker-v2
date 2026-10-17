@@ -206,9 +206,10 @@ async function run() {
     check('D6', 'Lãi cho vay là một lát riêng bên Thu nhập', () => eq(data.allocation[month].income['debt-interest'] ?? 0, interest))
 
     // Budgets vs overview.
-    check('E1', 'Hạn mức: đã chi tháng này = chi theo hạng mục có danh mục, bỏ hũ (3tr), bỏ phí', () => eq(budget.total.spent, 1_500_000 + 40_000 + 210_000))
+    // Since 2026-10-17 the whole month's limit counts transfer fees and loan interest, as "Chi" does.
+    check('E1', 'Hạn mức: đã chi tháng này = chi theo hạng mục có danh mục + phí chuyển (10k), bỏ hũ (3tr)', () => eq(budget.total.spent, 1_500_000 + 40_000 + 210_000 + 10_000))
     check('E2', 'Hạn mức: ghi riêng phần trả bằng hũ (fromJars)', () => eq(budget.total.fromJars, 3_000_000))
-    check('E3', 'Chênh lệch Tổng quan − Hạn mức = hũ + phí chuyển + lãi đi vay (giải thích được)', () => eq(data.summary.cashFlow.current.expense - budget.total.spent, 3_000_000 + 10_000))
+    check('E3', 'Chênh lệch Tổng quan − Hạn mức = phần trả bằng hũ + điều chỉnh (đều ghi dưới hạn mức)', () => eq(data.summary.cashFlow.current.expense - budget.total.spent, budget.total.fromJars + budget.total.adjustments))
     check('E4', 'Mua bằng hũ: Tổng quan và Giao dịch cùng tính vào chi', () => eq(data.allocation[month].expense[shop], txPage.expense - (1_500_000 + 40_000 + 210_000 + 10_000)))
 
     // Due debts.

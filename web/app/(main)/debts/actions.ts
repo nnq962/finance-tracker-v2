@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { requireSession } from "@/lib/auth/session"
+import { scheduleBudgetAlerts } from "@/lib/budgets/schedule"
 import { createContact, updateContact, deleteContact, createDebt, saveDebtPayment, changeDebt } from "@/lib/debts/repository"
 import { DebtValidationError } from "@/lib/debts/validation"
 
@@ -29,10 +30,19 @@ export async function deleteContactAction(id: string) {
 export async function createDebtAction(input: unknown, operationId: string) {
   return mutate((uid) => createDebt(uid, input, operationId))
 }
+// A repayment's interest, or a loan's rate changed, counts in the whole month's limit (2026-10-17).
 export async function saveDebtPaymentAction(debtId: string, paymentId: string | undefined, input: unknown | null, operationId: string) {
-  return mutate((uid) => saveDebtPayment(uid, debtId, paymentId, input, operationId))
+  return mutate(async (uid) => {
+    const data = await saveDebtPayment(uid, debtId, paymentId, input, operationId)
+    scheduleBudgetAlerts(uid)
+    return data
+  })
 }
 
 export async function changeDebtAction(debtId: string, input: unknown | null, operationId: string) {
-  return mutate((uid) => changeDebt(uid, debtId, input, operationId))
+  return mutate(async (uid) => {
+    const data = await changeDebt(uid, debtId, input, operationId)
+    scheduleBudgetAlerts(uid)
+    return data
+  })
 }

@@ -1,16 +1,24 @@
-import type { BudgetGroupLine, BudgetLine, BudgetOverview } from "@/lib/budgets/types"
+import type { BudgetAlertSettings, BudgetGroupLine, BudgetLine, BudgetOverview } from "@/lib/budgets/types"
 import { formatCompactCurrency } from "@/lib/format-currency"
 
-/** ok: under 80%; near: from 80% to the limit; over: past it. */
+/** ok: under the early warning (80% unless set otherwise); near: from it to the limit; over: past it. */
 export type BudgetState = "ok" | "near" | "over"
 
 /** Spent against the share of the month gone, ten points either way counting as on plan. */
 export type BudgetPace = "fast" | "slow" | "even"
 
-export function budgetState(spent: number, limit: number): BudgetState {
+export function budgetState(spent: number, limit: number, near = 80): BudgetState {
   if (spent > limit) return "over"
-  if (spent >= limit * 0.8) return "near"
+  if (spent >= (limit * near) / 100) return "near"
   return "ok"
+}
+
+/**
+ * Where the bars turn amber (2026-10-17): the first push the user chose
+ * (80% or 90%); 80% with limit pushes off or no early warning.
+ */
+export function nearLevel(alerts: BudgetAlertSettings) {
+  return alerts.enabled && alerts.level !== null ? alerts.level : 80
 }
 
 /** The days left in the month, today included. */
@@ -41,9 +49,13 @@ export function perDay(spent: number, limit: number, days: number) {
   return Math.floor(Math.max(limit - spent, 0) / Math.max(days, 1) / 1_000) * 1_000
 }
 
-/** Percent of the limit spent, rounded. */
+/**
+ * Percent of the limit spent: rounded down while within it, so 99.5% never
+ * reads 100% with money left; up once past it, so past it never reads 100%.
+ */
 export function budgetPercent(spent: number, limit: number) {
-  return Math.round((spent / limit) * 100)
+  const percent = (spent / limit) * 100
+  return spent > limit ? Math.ceil(percent) : Math.floor(percent)
 }
 
 /** The share as shown: ">999%" far past a limit, where the figure says nothing more (2026-10-17: "114654%"). */
@@ -81,12 +93,12 @@ export function groupsByUse(overview: BudgetOverview): (BudgetGroupLine & { budg
 }
 
 /**
- * The bar's colour: red past the limit; amber from 80%, or for the whole
- * month's limit (`share`, how far the month has gone) when spending runs
- * ahead of plan; else the ink.
+ * The bar's colour: red past the limit; amber from the early warning
+ * (`near`, nearLevel), or while spending runs ahead of the month gone
+ * (`share`); else the ink.
  */
-export function limitTone(spent: number, limit: number, share?: number): "ok" | "near" | "over" {
-  const state = budgetState(spent, limit)
+export function limitTone(spent: number, limit: number, share?: number, near = 80): "ok" | "near" | "over" {
+  const state = budgetState(spent, limit, near)
   if (state !== "ok") return state
   return share !== undefined && budgetPace(spent, limit, share) === "fast" ? "near" : "ok"
 }

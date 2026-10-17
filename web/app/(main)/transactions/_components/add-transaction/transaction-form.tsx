@@ -264,6 +264,13 @@ export function TransactionForm({
           month: getLocalDateTime(defaultValues.occurredAt).date.slice(0, 7),
         }
       : undefined
+  // Editing a transfer whose fee the month's limit already counts: taken out before adding the fee typed.
+  const fromAccount = accounts.find((account) => account.id === picks.fromAccountId)
+  const savedFrom = accounts.find((account) => account.id === defaultValues?.fromAccountId)
+  const feeBefore =
+    defaultValues?.kind === "transfer" && defaultValues.fee && !defaultValues.fromAccountExcluded && savedFrom?.type !== "savings"
+      ? { amount: defaultValues.fee, month: getLocalDateTime(defaultValues.occurredAt).date.slice(0, 7) }
+      : undefined
   // Dated before an account was opened: allowed, as older accounts may hold
   // such transactions, but said, as "Số dư ban đầu từ ngày …" no longer holds.
   // Compared to the minute, as the time is picked: one written down in the
@@ -419,30 +426,41 @@ export function TransactionForm({
               toError={errors.toAccountId}
             />
             {/* The fee, seldom set, folded under a row until asked for. */}
-            <SettingsGroup>
-              {feeOpen ? (
-                <li ref={feeRef} className="flex flex-col gap-2 px-4 py-3">
-                  <FieldLabel htmlFor="transfer-fee">Phí chuyển khoản</FieldLabel>
-                  <CurrencyInput
-                    id="transfer-fee"
-                    name="fee"
-                    value={picks.fee}
-                    onValueChange={(fee) => setPicks((current) => ({ ...current, fee }))}
-                    suggestions={false}
+            <div className="flex flex-col gap-2">
+              <SettingsGroup>
+                {feeOpen ? (
+                  <li ref={feeRef} className="flex flex-col gap-2 px-4 py-3">
+                    <FieldLabel htmlFor="transfer-fee">Phí chuyển khoản</FieldLabel>
+                    <CurrencyInput
+                      id="transfer-fee"
+                      name="fee"
+                      value={picks.fee}
+                      onValueChange={(fee) => setPicks((current) => ({ ...current, fee }))}
+                      suggestions={false}
+                    />
+                  </li>
+                ) : (
+                  <SettingsRow
+                    icon={PlusIcon}
+                    title="Thêm phí chuyển khoản"
+                    chevron={false}
+                    onClick={() => {
+                      setFeeOpen(true)
+                      requestAnimationFrame(() => feeRef.current?.querySelector("input")?.focus())
+                    }}
                   />
-                </li>
-              ) : (
-                <SettingsRow
-                  icon={PlusIcon}
-                  title="Thêm phí chuyển khoản"
-                  chevron={false}
-                  onClick={() => {
-                    setFeeOpen(true)
-                    requestAnimationFrame(() => feeRef.current?.querySelector("input")?.focus())
-                  }}
+                )}
+              </SettingsGroup>
+              {/* The whole month's limit counts the fee: warned of as spending is. */}
+              {feeOpen ? (
+                <BudgetHint
+                  date={when.date}
+                  amount={picks.fee}
+                  counted={!fromAccount?.excluded && fromAccount?.type !== "savings"}
+                  editing={feeBefore}
                 />
-              )}
-            </SettingsGroup>
+              ) : null}
+            </div>
           </>
         )}
 

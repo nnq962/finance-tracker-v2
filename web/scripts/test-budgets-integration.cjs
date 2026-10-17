@@ -8,6 +8,12 @@ const { getBudgetMonth } = require('../lib/budgets/month.ts')
 const calc = require('../lib/budgets/calculations.ts')
 const { limitJudges } = require('../lib/budgets/months.ts')
 const { toDateKey } = require('../lib/format-date.ts')
+const { getTransactionsInRange, getDebtPaymentsInRange } = require('../lib/transactions/repository.ts')
+const { summarizeFigures, summarizeAllocation } = (() => {
+  const types = require('../lib/transactions/types.ts')
+  return { summarizeFigures: types.summarizeFigures, summarizeAllocation: require('../lib/overview/month-data.ts').summarizeAllocation }
+})()
+const { archiveCategoryGroup } = require('../lib/categories/repository.ts')
 
 const count = async (text, params) => Number((await sql(text, params)).rows[0].count)
 
@@ -72,7 +78,8 @@ async function run() {
     let overview = await budgets.getBudgetOverview(userId)
     assert.equal(overview.month, month)
     // The 1.000.000 paid from the jar is not counted, but said.
-    assert.deepEqual(overview.total, { budgetId: null, limit: null, spent: 500_000, average: 500_000, fromJars: 1_000_000, adjust: null })
+    // The 99.000 adjustment is not counted either, but said beside "Chi".
+    assert.deepEqual(overview.total, { budgetId: null, limit: null, spent: 500_000, average: 500_000, fromJars: 1_000_000, adjustments: 99_000, adjust: null })
     assert.equal(overview.groups.find((g) => g.groupId === food).fromJars, 1_000_000)
     // The whole month's record of kept months comes with the page: six months before, then this one.
     assert.deepEqual(overview.kept, {
@@ -111,10 +118,10 @@ async function run() {
     assert.deepEqual(calc.groupsByUse(overview).map((g) => g.name), ['Ăn uống'])
     assert.equal((await budgets.getBudgetOverview(otherId)).total.limit, null)
 
-    // Alerts: each level once a month. The month at 83%, food at 86%: both at 80%.
+    // Alerts: each level once a month. The month at 83%, food at 85,7% (85%, rounded down): both at 80%.
     let due = await syncBudgetAlerts(userId, { notify: false })
     assert.deepEqual(due.map((d) => [d.budgetId, d.level]).sort(), [[foodId, 80], [totalId, 80]].sort())
-    assert.match(due.find((d) => d.budgetId === foodId).title, /^Ăn uống đã dùng 86% hạn mức$/)
+    assert.match(due.find((d) => d.budgetId === foodId).title, /^Ăn uống đã dùng 85% hạn mức$/)
     assert.deepEqual(await syncBudgetAlerts(userId, { notify: false }), [])
     // Past both: only 100% is new, and says by how much.
     await spend(userId, 150_000, bank, lunch, month)
@@ -318,6 +325,76 @@ async function run() {
     assert.equal(Number((await sql('SELECT amount FROM budgets WHERE user_id = $1 AND category_group_id IS NULL', [bulkUser])).rows[0].amount), 5_000_000)
     assert.equal(Number((await sql('SELECT amount FROM budgets WHERE category_group_id = $1', [bulkFun])).rows[0].amount), 500_000)
 
+    // Transfer fees and loan interest count in the whole month's limit, under no group (2026-10-17);
+    // what a jar pays goes with the jar's purchases; adjustments are said, never counted. "Chi"
+    // (summarizeFigures) is then the limit's spent, what jars paid and the adjustments.
+    const feeUser = await createUser('budgets_test')
+    const fBank = await account(feeUser)
+    const fLeftOut = await account(feeUser, { excluded: true })
+    const fJar = await account(feeUser, { type: 'savings' })
+    const fFood = await group(feeUser, 'Ăn uống')
+    const fOld = await group(feeUser, 'Cũ')
+    const fLunch = await item(feeUser, fFood)
+    await spend(feeUser, 200_000, fBank, fLunch, month)
+    await spend(feeUser, 50_000, fBank, await item(feeUser, fOld), month)
+    await archiveCategoryGroup(feeUser, fOld)
+    await spend(feeUser, 30_000, fJar, fLunch, month)
+    await spend(feeUser, 13_000, fBank, null, month, { adjustment: true })
+    const transferWithFee = (from, to, fee, when = month) => sql(`INSERT INTO transactions (user_id, kind, amount, from_account_id, to_account_id, occurred_at, fee)
+      VALUES ($1, 'transfer', 100000, $2, $3, $4, $5)`, [feeUser, from, to, `${when}-01T12:00:00+07:00`, fee])
+    await transferWithFee(fBank, fJar, 7_000)
+    await transferWithFee(fJar, fBank, 2_000)
+    await transferWithFee(fLeftOut, fBank, 9_000)
+    await transferWithFee(fBank, fJar, 4_000, shift(month, -1))
+    const fContact = (await sql(`INSERT INTO contacts (user_id, name, initials) VALUES ($1, 'Bạn', 'B') RETURNING id`, [feeUser])).rows[0].id
+    const fDebt = (await sql(`INSERT INTO debts (user_id, contact_id, direction, account_id, amount, interest_rate, interest_period, recorded_at)
+      VALUES ($1, $2, 'borrowed', $3, 1000000, 5, 'month', $4) RETURNING id`, [feeUser, fContact, fBank, `${shift(month, -3)}-01`])).rows[0].id
+    await sql(`INSERT INTO transactions (user_id, kind, amount, account_id, debt_id, occurred_at) VALUES ($1, 'income', 1000000, $2, $3, $4)`,
+      [feeUser, fBank, fDebt, `${shift(month, -3)}-01T12:00:00+07:00`])
+    await sql(`INSERT INTO debt_payments (user_id, debt_id, account_id, amount, paid_at, paid_time) VALUES ($1, $2, $3, 1200000, $4, '10:00')`, [feeUser, fDebt, fBank, `${month}-01`])
+    const fStart = budgets.monthStart(month), fEnd = budgets.monthStart(shift(month, 1))
+    const fRows = [...await getTransactionsInRange(feeUser, fStart, fEnd), ...await getDebtPaymentsInRange(feeUser, fStart, fEnd)]
+    const interest = fRows.reduce((sum, row) => sum + (row.interest ?? 0), 0)
+    assert.ok(interest > 0)
+    const fOverview = await budgets.getBudgetOverview(feeUser)
+    assert.equal(fOverview.total.spent, 200_000 + 50_000 + 7_000 + interest)
+    assert.equal(fOverview.total.fromJars, 30_000 + 2_000)
+    assert.equal(fOverview.total.adjustments, 13_000)
+    assert.equal(fOverview.groups.find((g) => g.groupId === fFood).spent, 200_000, 'fees and interest are in no group')
+    assert.equal(fOverview.kept.history[5], 4_000, "last month's fee in the record")
+    assert.equal(summarizeFigures(fRows).expense, fOverview.total.spent + fOverview.total.fromJars + fOverview.total.adjustments)
+    // Each group as Tổng quan's "Theo hạng mục" has it, less what jars paid.
+    const fAllocation = summarizeAllocation(fRows)[month].expense
+    assert.equal(fAllocation[fFood], 200_000 + 30_000)
+    // The month in detail: the parts outside the groups in use, so the rows add up to the whole.
+    const fMonth = await getBudgetMonth(feeUser, month)
+    assert.equal(fMonth.total.spent, fOverview.total.spent)
+    assert.equal(fMonth.total.adjustments, 13_000)
+    assert.deepEqual(fMonth.others.map((o) => [o.key, o.spent]), [['deleted', 50_000], ['fee', 7_000], ['interest', interest]])
+    assert.deepEqual(fMonth.others[0].groupIds, [fOld])
+    assert.equal(fMonth.groups.reduce((sum, g) => sum + g.spent, 0) + fMonth.others.reduce((sum, o) => sum + o.spent, 0), fMonth.total.spent)
+    assert.equal(fMonth.total.daily.reduce((sum, amount) => sum + amount, 0), fMonth.total.spent)
+    assert.deepEqual(fMonth.alerts, { enabled: true, level: 80 })
+    // A fee takes the whole month's limit to its levels as spending does.
+    const fTotal = await budgets.saveBudget(feeUser, null, Math.floor(fOverview.total.spent / 0.85))
+    // Set at 85%: 80 written down as it is saved, without a push.
+    assert.deepEqual((await syncBudgetAlerts(feeUser, { notify: false, rearm: fTotal })).map((d) => d.level), [80])
+    await transferWithFee(fBank, fJar, Math.ceil(fOverview.total.spent / 0.85) - fOverview.total.spent + 1_000)
+    assert.deepEqual((await syncBudgetAlerts(feeUser, { notify: false })).map((d) => [d.budgetId, d.level]), [[fTotal, 100]])
+
+    // The hint to change a limit goes its way: a small limit's rounded-up average may be above it.
+    const smallUser = await createUser('budgets_test')
+    const sBank = await account(smallUser)
+    const sGroup = await group(smallUser, 'Gửi xe')
+    const sItem = await item(smallUser, sGroup)
+    await spend(smallUser, 19_000, sBank, sItem, shift(month, -1))
+    await spend(smallUser, 19_000, sBank, sItem, shift(month, -2))
+    const sId = await budgets.saveBudget(smallUser, sGroup, 40_000)
+    await sql("UPDATE budgets SET created_at = now() - interval '90 days' WHERE id = $1", [sId])
+    assert.equal((await budgets.getBudgetOverview(smallUser)).groups[0].adjust, null, 'not "quá cao" with Đặt 50k on 40k')
+    await budgets.saveBudget(smallUser, sGroup, 120_000)
+    assert.deepEqual((await budgets.getBudgetOverview(smallUser)).groups[0].adjust, { kind: 'high', to: 50_000 })
+
     // A limit judges only from the month it was set in.
     assert.equal(limitJudges(null, '2026-10'), false)
     assert.equal(limitJudges('2026-10', '2026-09'), false)
@@ -329,6 +406,20 @@ async function run() {
     assert.equal(calc.budgetState(80, 100), 'near')
     assert.equal(calc.budgetState(100, 100), 'near')
     assert.equal(calc.budgetState(101, 100), 'over')
+    // Amber from the first push the user chose; 80% with pushes off or no early warning.
+    assert.equal(calc.budgetState(85, 100, 90), 'ok')
+    assert.equal(calc.budgetState(90, 100, 90), 'near')
+    assert.equal(calc.nearLevel({ enabled: true, level: 90 }), 90)
+    assert.equal(calc.nearLevel({ enabled: true, level: null }), 80)
+    assert.equal(calc.nearLevel({ enabled: false, level: 90 }), 80)
+    assert.equal(calc.limitTone(85, 100, 0.9, 90), 'ok')
+    assert.equal(calc.limitTone(85, 100, 0.9), 'near')
+    // Percent: down while within the limit, up past it.
+    assert.equal(calc.budgetPercent(995, 1_000), 99)
+    assert.equal(calc.budgetPercent(1_000, 1_000), 100)
+    assert.equal(calc.budgetPercent(1_001, 1_000), 101)
+    assert.equal(budgetPushMessage('Ăn', { spent: 995_000, limit: 1_000_000 }, 90, 3).title, 'Ăn đã dùng 99% hạn mức')
+    assert.equal(calc.remainingLabel(1_000, 1_000, 3), 'Đã dùng hết')
     assert.equal(calc.budgetPace(62, 100, 0.52), 'even')
     assert.equal(calc.budgetPace(63, 100, 0.52), 'fast')
     assert.equal(calc.budgetPace(30, 100, 0.52), 'slow')
@@ -340,7 +431,7 @@ async function run() {
     assert.equal(calc.remainingLabel(2_250_000, 2_000_000, 16), 'Vượt 250k')
     assert.equal(calc.remainingLabel(3_420_000, 4_000_000, 16), 'Còn 580k · 36k mỗi ngày')
 
-    console.log('Budget checks passed: what counts as spent, averages, setting and deleting limits, other users, the database checks, alerts once per level, raised limits, several at once, the groups fit in the month, the hint to change a limit, push settings and levels, a month in detail (by day, by category, six months before, the latest, months gone by to their end), the sums.')
+    console.log('Budget checks passed: what counts as spent, averages, setting and deleting limits, other users, the database checks, alerts once per level, raised limits, several at once, the groups fit in the month, fees and loan interest in the whole month (and "Chi" squared with it), the hint to change a limit (and its way), push settings and levels, a month in detail (by day, by category, six months before, the latest, months gone by to their end), the sums.')
   } finally {
     await cleanup()
   }

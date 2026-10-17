@@ -153,7 +153,7 @@ component ở đó là cả app đổi theo.
 | `BotIcon` | Gương mặt của Timi (2026-10-11, theo Bot của lucide-animated): SVG như icon Lucide (đặt trong nút, ô icon như mọi icon), hai mắt chớp bằng CSS (co thành chấm rồi mở): `hover` khi rê/chạm nút chứa nó (`group/button`), `once` khi hiện ra, `loop` chớp đôi thỉnh thoảng khi đang nghĩ. Dùng cho mọi chỗ là trợ lý (nút cạnh thanh tab, Hỏi AI, nhãn Timi, dòng đang nghĩ); ✦ `Sparkles` vẫn là ký hiệu của gói Pro và lượt AI. Giảm chuyển động: mắt đứng yên |
 | `VoiceWave` | Giọng nói khi đang ghi âm, như app Ghi âm của iPhone (chọn 2026-10-11): thanh mảnh 3px màu mực, đủ số thanh lấp kín bề ngang, trôi đều từ phải sang trái theo từng khung hình (không nhảy từng nấc); mỗi thanh là mức âm thanh của một lúc (70ms), thanh mới nhất mọc ra ở mép phải và cao thấp theo giọng lúc đó; phía trái mờ dần (mask, đặt trên nền nào cũng được); vẽ trong khung riêng (`contain: paint`) để không kéo nút bên cạnh vẽ lại theo. `level` là hàm trả mức 0–1, đọc mỗi khung hình; thanh được vẽ thẳng lên trang, không qua React. Trong trợ lý AI nó thay dòng "Đang nghe…" khi ghi âm gửi lên máy chủ. Giảm chuyển động: thanh đứng yên, cả hàng chỉ sáng lên theo giọng |
 | `ProgressRing` | Tiến độ dạng vòng mảnh có số ở giữa. Mỗi lần vòng hiện ra (tải trang hay mở từ thanh tab), cung vẽ trống rồi quét từ 12 giờ tới giá trị trong 0,9 giây (dừng chậm dần); đổi giá trị thì cung chạy tiếp tới giá trị mới. Giảm chuyển động: hiện ngay |
-| `LimitBar` | Đã dùng so với một hạn mức (2026-10-16): thanh trơn như Thời gian sử dụng của iOS, không vạch mốc hay lớp "kế hoạch" (đã thử khía, tam giác, hai tông, chấm, lớp được chi, vòng Activity; người dùng chọn thanh trơn). `tone`: `ok` màu mực, `near` amber (từ 80%, hay hạn mức cả tháng khi chi nhanh hơn kế hoạch), `over` đỏ, đầy thanh khi vượt. `size` `sm` dày 6 (dòng), `md` dày 10 (con số dẫn đầu). Thanh chạy tới giá trị trong 500ms (150ms khi giảm chuyển động); `role="progressbar"` |
+| `LimitBar` | Đã dùng so với một hạn mức (2026-10-16): thanh trơn như Thời gian sử dụng của iOS, không vạch mốc hay lớp "kế hoạch" (đã thử khía, tam giác, hai tông, chấm, lớp được chi, vòng Activity; người dùng chọn thanh trơn). `tone`: `ok` màu mực, `near` amber (từ mốc báo sớm người dùng chọn, 80% hay 90%, mặc định 80%; hay khi chi nhanh hơn kế hoạch), `over` đỏ, đầy thanh khi vượt. `size` `sm` dày 6 (dòng), `md` dày 10 (con số dẫn đầu). Thanh chạy tới giá trị trong 500ms (150ms khi giảm chuyển động); `role="progressbar"` |
 | `LimitRow` | Dòng của `SettingsGroup` cho một hạn mức (2026-10-16): ô icon, tên và "đã chi / hạn mức" một hàng, `LimitBar` dưới, chú thích dưới thanh ("Còn 580k · 36k/ngày", hay "Vượt 250k" đỏ khi `tone="over"`), mũi tên; cao 76 thay vì 64 vì có thanh |
 | `FormSection` | Các trường của một form trong thẻ trắng, có tiêu đề nhỏ, ghi chú và nội dung phụ bên dưới |
 | `PromoBanner` | Thẻ sáng cho một điều đáng chú ý, như lời mời Pro (dưới tài sản ròng ở Tổng quan, khi đã xong nhiệm vụ): ô icon `lg` màu `tone` (mặc định `ai`), tiêu đề, một dòng, mũi tên. Sáng để không tranh với thẻ dẫn đầu. Luôn rộng hết chỗ chứa; nơi dùng không đặt độ rộng |
@@ -387,10 +387,11 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   "Áp dụng cho mọi tháng", `CurrencyInput hero` bắt đầu từ mức chi trung bình 3 tháng gần nhất làm tròn lên
   (100k từ 1 triệu, dưới đó 50k; chia cho số tháng có chi trong 3 tháng đó), chip gợi ý là số đó, hai dòng
   "Trung bình 3 tháng" / "Đã chi tháng này", chân là Xoá (có hoàn tác) và Lưu. Trong form ghi khoản chi, dưới lưới
-  hạng mục: "Ăn uống còn 580k tháng này" (amber từ 80%) hay "Ăn uống đã vượt hạn mức 150k" (đỏ), chỉ khi nhóm có
-  hạn mức và ngày ghi trong tháng này. Thông báo đẩy (`lib/budgets/alerts.ts`): mỗi hạn mức một lần khi chạm 80%
-  ("Ăn uống đã dùng 86% hạn mức", "Còn 560.000đ cho 16 ngày, khoảng 35.000đ mỗi ngày.") và một lần khi vượt
-  ("Vượt hạn mức Ăn uống", "Đã chi 4.150.000đ, vượt 150.000đ."), mỗi tháng; gửi sau khi lưu khoản chi, chỉ
+  hạng mục: "Ăn uống · Còn 580k · 36k mỗi ngày" (như chú thích dòng nhóm, `remainingLabel`; amber từ mốc báo sớm)
+  hay "Ăn uống · Vượt 150k" (đỏ), chỉ khi nhóm có hạn mức và ngày ghi trong tháng này. Form chuyển khoản: phí làm
+  hạn mức tổng vượt thì báo "Khoản này làm hạn mức tổng vượt 65k" dưới ô phí. Thông báo đẩy (`lib/budgets/alerts.ts`): mỗi hạn mức một lần khi chạm 80%
+  ("Ăn uống đã dùng 85% hạn mức", phần trăm làm tròn xuống khi chưa vượt, lên khi đã vượt; "Còn 560.000đ cho 16 ngày, khoảng 35.000đ mỗi ngày.") và một lần khi vượt
+  ("Vượt hạn mức Ăn uống", "Đã chi 4.150.000đ, vượt 150.000đ."), mỗi tháng; gửi sau khi lưu khoản chi, chuyển khoản (phí), khoản trả nợ (lãi) hay bỏ "Ngoài báo cáo" của tài khoản, chỉ
   theo cài đặt "Cảnh báo hạn mức" (mốc 80% hay 90%, hay chỉ khi vượt); chạm mở Tổng quan với sheet. Đặt hay sửa hạn mức thì mức đang đứng được ghi lại không báo.
   **Chưa có hạn mức nào** (2026-10-17, `budget-suggest.tsx`): ở Tổng quan, chỗ của thẻ hạn mức là "Hạn mức chi
   tiêu" mời đặt (`BudgetInvite`): ô icon, "Đặt mức chi tối đa mỗi tháng", một câu, ✕ "Để sau" (ẩn trên máy này,
@@ -429,21 +430,26 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   còn phụ thuộc công tắc "Nhắc ghi chi tiêu".
   **Cảnh báo khi ghi khoản chi** (2026-10-17, "2A", `BudgetHint`): khi số tiền đang gõ làm nhóm của hạng mục đã chọn
   hay hạn mức tổng vượt, dòng dưới lưới hạng mục thành chữ đỏ đậm có ⚠: "Khoản này làm Ăn uống vượt 110k, hạn mức
-  tổng vượt 90k" (vẫn lưu được, chỉ báo trước); không vượt thì vẫn là "Ăn uống còn 580k tháng này". Không tính khoản
+  tổng vượt 90k" (vẫn lưu được, chỉ báo trước); không vượt thì vẫn là dòng còn lại của nhóm. Không tính khoản
   ngoài báo cáo hay trả bằng hũ; sửa một khoản chi thì trừ số cũ trước khi cộng số mới.
   **Chi tiết** (2026-10-17, `budget-detail.tsx`, `budget-charts.tsx`, dữ liệu `lib/budgets/month.ts`): sheet tên
   "Hạn mức", đầu nội dung là "Tháng 10" với hai nút tròn ‹ › (như lịch ở Tổng quan; lùi tới tháng có giao dịch
   đầu tiên). Thẻ cả tháng kèm `KeptMonths` dưới vạch kẻ, chỉ tính các tháng từ khi đặt hạn mức (`budgets.created_at`;
   2026-10-17, trước đó hạn mức bị áp ngược cho các tháng chưa có nó): "3/4 tháng gần đây trong hạn mức" và mỗi
   tháng một chấm (xanh giữ, đỏ vượt), một tháng thì "Tháng trước: trong hạn mức / vượt hạn mức", chưa tháng nào
-  thì không hiện. Dưới số tiền, khi có, "Không tính 450k mua bằng hũ tiết kiệm" (`JarsNote`; các trang khác vẫn
-  tính khoản này, nên số ở đây nhỏ hơn). Tháng đã qua: thẻ là `BudgetResult`
+  thì không hiện. Hạn mức tổng tính cả phí chuyển khoản và lãi đi vay (2026-10-17, như ô "Chi"); dưới số tiền,
+  khi có, "Không tính 450k mua bằng hũ tiết kiệm, 13k điều chỉnh số dư" (`UncountedNote`; ô "Chi" tính hai khoản
+  này, nên "Chi" = đã dùng hạn mức tổng + hai số đó). Dòng hạn mức tổng dưới ô Thu/Chi ở trang Giao dịch cũng ghi
+  dòng này. Tháng đã qua: thẻ là `BudgetResult`
   ("Tháng 9 đã chi", số lớn, %, thanh, "Trong hạn mức · còn dư 400k" xanh hay "Vượt hạn mức 300k" đỏ), dòng nhóm ghi
   "Còn dư …" / "Vượt …", tiêu đề "THEO NHÓM · 3/4 TRONG HẠN MỨC", rồi "CHƯA ĐẶT HẠN MỨC" là các nhóm khác có chi trong
-  tháng đó (số tiền bên phải; nhóm đặt hạn mức sau tháng đó ghi "Đặt từ tháng 10"), để các phần cộng đủ tổng. Tháng
+  tháng đó (số tiền bên phải; nhóm đặt hạn mức sau tháng đó ghi "Đặt từ tháng 10"), rồi "Nhóm đã xoá" (mở danh
+  sách khoản chi của các nhóm đó), "Phí chuyển khoản", "Lãi đi vay" ("Chỉ tính vào hạn mức tổng", không mở gì), để
+  các phần cộng đủ tổng. Vòng "Theo nhóm" ở màn tổng cũng tách ba phần này (dòng không mở gì thì không có mũi tên). Tháng
   trước khi đặt hạn mức không bị chấm: thẻ chỉ ghi "Tháng 9 đã chi" và "Chưa đặt hạn mức trong tháng này", biểu
   đồ ngày không có vạch hạn mức ("Hạn mức · Chưa đặt"). Tháng cũ so với số hạn mức hiện tại (chưa lưu số theo
-  từng tháng). Màu thanh một quy tắc ở mọi nơi (`limitTone`): mực, amber từ 80% hay khi đang chi nhanh so với
+  từng tháng). Màu thanh một quy tắc ở mọi nơi (`limitTone`): mực, amber từ mốc báo sớm (`nearLevel`: 80% hay 90% theo
+  "Cảnh báo hạn mức", 80% khi tắt hay "Không báo trước") hay khi đang chi nhanh so với
   số ngày đã qua (tháng này), đỏ khi vượt. Chạm thẻ cả tháng hay một nhóm mở màn sâu
   (`usePageSheetScreen`, ‹ quay lại, bút chì sửa hạn mức ở bên phải, tháng cũ không có bút chì; tiêu đề "Ăn uống",
   "Ăn uống · tháng 9", "Hạn mức tổng", "Hạn mức tổng · tháng 9"; 2026-10-17 đổi từ "Cả tháng 10": hạn mức cả tháng gọi là "hạn mức tổng" ở mọi chỗ, cả thông báo đẩy): thẻ đầu như trên, "CHI THEO NGÀY" (`BudgetDailyChart`: hai số "Đã chi"
