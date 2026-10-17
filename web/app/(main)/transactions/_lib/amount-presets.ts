@@ -2,12 +2,16 @@ import { formatCompactCurrency } from "@/lib/format-currency"
 
 import type { TransactionSearchFilters } from "../_types/transaction"
 
-/** Amount ranges picked with one tap; anything else is typed under "Tuỳ chỉnh". */
+/**
+ * Amount ranges picked with one tap; anything else is typed under "Tuỳ chỉnh".
+ * Ranges include both ends, so the presets meet without overlapping: 100k
+ * and 1tr are in "100k – 1tr" only.
+ */
 export const amountPresets = [
   { key: "any", label: "Bất kỳ", min: null, max: null },
-  { key: "under-100k", label: "Dưới 100k", min: null, max: 100_000 },
+  { key: "under-100k", label: "Dưới 100k", min: null, max: 99_999 },
   { key: "100k-1m", label: "100k – 1tr", min: 100_000, max: 1_000_000 },
-  { key: "over-1m", label: "Trên 1tr", min: 1_000_000, max: null },
+  { key: "over-1m", label: "Trên 1tr", min: 1_000_001, max: null },
 ] as const
 
 export type AmountPreset = (typeof amountPresets)[number]

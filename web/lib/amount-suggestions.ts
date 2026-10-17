@@ -29,7 +29,9 @@ export function getFrequentAmounts(amounts: number[]) {
  *
  * - Nothing typed: the most frequent amounts from history.
  * - Typed digits: up to two frequent past amounts starting with those digits,
- *   then the digits scaled to thousands, ten thousands, and so on.
+ *   then the digits scaled to thousands, ten thousands, and so on, while
+ *   they still read as a short form: not once a whole amount is typed
+ *   (ending in 000, or a million and up), where 2.000.000 would offer 2 tỷ.
  *
  * Results are unique, never equal to the typed value, within the allowed
  * range, and sorted ascending.
@@ -50,10 +52,11 @@ export function getAmountSuggestions(
     .filter((amount) => amount !== typed && String(amount).startsWith(digits))
     .slice(0, MAX_HISTORY_MATCHES)
   const scaled: number[] = []
+  const shortForm = typed % BASE_MULTIPLIER !== 0 && typed < 1_000_000
 
   for (
     let amount = typed * BASE_MULTIPLIER;
-    amount <= MAX_AMOUNT && scaled.length < limit;
+    shortForm && amount <= MAX_AMOUNT && scaled.length < limit;
     amount *= 10
   ) {
     scaled.push(amount)

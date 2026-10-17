@@ -5,13 +5,13 @@ import * as React from "react"
 import { PageSheet } from "@/components/app/page-sheet"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
-import { scheduleUndoableDelete } from "@/lib/undoable-delete"
 import type {
   SupportedTransactionKind,
   Transaction,
 } from "@/lib/transactions/types"
 
-import { deleteTransactionAction, updateTransactionAction } from "../actions"
+import { updateTransactionAction } from "../actions"
+import { deleteTransactionWithUndo } from "./delete-transaction"
 import { TransactionForm } from "./add-transaction/transaction-form"
 import { TransactionKindSelector } from "./add-transaction/transaction-kind-selector"
 
@@ -41,18 +41,7 @@ export function EditTransactionSheet({
 
   const handleDelete = () => {
     onOpenChange(false)
-    scheduleUndoableDelete({
-      key: `transaction:${transaction.id}`,
-      title: `Đã xoá “${transaction.title}”`,
-      pendingMessage: "Đang xoá giao dịch…",
-      undoMessage: "Đã giữ lại giao dịch.",
-      errorMessage: "Không thể xoá giao dịch. Vui lòng thử lại.",
-      onCommit: async () => {
-        const result = await deleteTransactionAction(transaction.id)
-
-        if (!result.success) throw new Error(result.error)
-      },
-    })
+    deleteTransactionWithUndo(transaction)
   }
 
   return (

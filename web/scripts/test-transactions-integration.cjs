@@ -10,6 +10,8 @@ const accountValidation = require('../lib/accounts/validation.ts')
 const { toDateKey } = require('../lib/format-date.ts')
 const { isLeftOut } = require('../lib/transactions/types.ts')
 const suggested = require('../lib/categories/suggested.ts')
+const { filterTransactions } = require('../app/(main)/transactions/_lib/filter-transactions.ts')
+const { amountPresets } = require('../app/(main)/transactions/_lib/amount-presets.ts')
 
 const count = async (text, params) => Number((await sql(text, params)).rows[0].count)
 const balance = async (id) => Number((await sql('SELECT balance FROM accounts WHERE id = $1', [id])).rows[0].balance)
@@ -207,7 +209,21 @@ async function run() {
     assert.ok(withGroup.createdGroupId)
     assert.equal((await sql('SELECT icon_name FROM category_groups WHERE id = $1', [withGroup.createdGroupId])).rows[0].icon_name, 'film')
 
-    console.log('Transaction checks passed: request ids, balances, negative balances, recent per account, date range, left out of the figures, accounts left out, archived accounts kept, batches, suggested categories.')
+    // The search reads what a row shows, never its id: a few hex digits find nothing.
+    const listed = await transactions.getTransactions(userId)
+    const noFilters = { query: '', minAmount: null, maxAmount: null, accountIds: [], categoryGroupIds: [] }
+    assert.ok(listed.length > 3)
+    assert.equal(filterTransactions(listed, 'all', { ...noFilters, query: listed[0].id.slice(0, 8) }).length, 0)
+    assert.ok(filterTransactions(listed, 'all', { ...noFilters, query: 'an trua' }).length > 0)
+    // The amount presets meet without overlapping: 100k and 1tr each fall in one.
+    for (const amount of [99_999, 100_000, 1_000_000, 1_000_001]) {
+      const row = { ...listed[0], amount: -amount }
+      const hits = amountPresets.filter((preset) => preset.key !== 'any' &&
+        filterTransactions([row], 'all', { ...noFilters, minAmount: preset.min, maxAmount: preset.max }).length === 1)
+      assert.equal(hits.length, 1, `${amount} falls in ${hits.length} presets`)
+    }
+
+    console.log('Transaction checks passed: request ids, balances, negative balances, recent per account, date range, left out of the figures, accounts left out, archived accounts kept, batches, suggested categories, search and amount presets.')
   } finally {
     await cleanup()
   }

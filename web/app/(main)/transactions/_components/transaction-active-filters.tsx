@@ -4,14 +4,9 @@ import { Chip } from "@/components/app/chip"
 import { ChipRow } from "@/components/app/chip-row"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
-import { formatCurrency } from "@/lib/format-currency"
 
+import { amountSummary } from "../_lib/amount-presets"
 import type { TransactionSearchFilters } from "../_types/transaction"
-
-function amountLabel(minAmount: number | null, maxAmount: number | null) {
-  if (minAmount !== null && maxAmount !== null) return `${formatCurrency(minAmount)} – ${formatCurrency(maxAmount)}`
-  return minAmount !== null ? `Từ ${formatCurrency(minAmount)}` : `Đến ${formatCurrency(maxAmount ?? 0)}`
-}
 
 /**
  * The filters from the filter sheet that are in force (accounts, categories,
@@ -43,7 +38,8 @@ export function getSheetFilterChips(
   if (minAmount !== null || maxAmount !== null) {
     chips.push({
       key: "amount",
-      label: amountLabel(minAmount, maxAmount),
+      // As the filter sheet says it: "100k – 1tr", "Dưới 100k", "Từ 50k".
+      label: amountSummary({ minAmount, maxAmount }),
       remove: () => ({ ...searchFilters, minAmount: null, maxAmount: null }),
     })
   }

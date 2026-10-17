@@ -47,6 +47,8 @@ type TransactionListProps = {
   onClearFilters: () => void
   /** While searching on a phone: the results as one list, the match marked, each row dated. */
   search?: TransactionSearchResults
+  /** A past month shown ("Tháng 9", "Tháng 1/2025"), which an empty list names; unset for this month. */
+  pastMonthLabel?: string
 }
 
 /** The day of a result, with its year when that is not this one. */
@@ -115,9 +117,16 @@ function SearchResults({
       <div className="flex min-h-6 items-center justify-between gap-3 px-4 text-xs">
         <p aria-live="polite" className="min-w-0 text-muted-foreground">
           {transactions.length} kết quả trong {search.scopeLabel}
-          {netBalance !== 0
-            ? ` · tổng ${netBalance > 0 ? "+" : "−"}${formatCurrency(netBalance, { signDisplay: "never" })}`
-            : null}
+          {/* The sum kept whole: a line too long breaks before "tổng", not inside it. */}
+          {netBalance !== 0 ? (
+            <>
+              {" · "}
+              <span className="whitespace-nowrap">
+                tổng {netBalance > 0 ? "+" : "−"}
+                {formatCurrency(netBalance, { signDisplay: "never" })}
+              </span>
+            </>
+          ) : null}
         </p>
         {search.onSearchAllMonths ? (
           <button
@@ -154,6 +163,7 @@ export function TransactionList({
   isFiltering,
   onClearFilters,
   search,
+  pastMonthLabel,
 }: TransactionListProps) {
   if (search) {
     return (
@@ -191,8 +201,18 @@ export function TransactionList({
           <EmptyMedia variant="icon">
             <ReceiptTextIcon />
           </EmptyMedia>
-          <EmptyTitle>Chưa có giao dịch trong tháng này</EmptyTitle>
-          <EmptyDescription>Ghi khoản thu chi đầu tiên để theo dõi tiền của bạn.</EmptyDescription>
+          {/* A past month asks for what was forgotten, not for a first entry. */}
+          {pastMonthLabel ? (
+            <>
+              <EmptyTitle>Không có giao dịch trong {pastMonthLabel}</EmptyTitle>
+              <EmptyDescription>Khoản nào quên ghi, thêm giao dịch và chọn ngày trong tháng đó.</EmptyDescription>
+            </>
+          ) : (
+            <>
+              <EmptyTitle>Chưa có giao dịch trong tháng này</EmptyTitle>
+              <EmptyDescription>Ghi khoản thu chi đầu tiên để theo dõi tiền của bạn.</EmptyDescription>
+            </>
+          )}
         </EmptyHeader>
       </Empty>
     )

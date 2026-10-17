@@ -32,6 +32,19 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.2",
+    date: "2026-10-17",
+    title: "Giao dịch: tìm kiếm, bộ lọc và xoá chính xác hơn",
+    changes: [
+      { kind: "fixed", text: "Tìm giao dịch không còn ra kết quả lạ khi gõ số hoặc vài chữ cái ngắn (trước đây khớp cả mã ẩn của giao dịch)." },
+      { kind: "fixed", text: "Chip “Lọc” đếm một khoảng số tiền là một điều kiện, khớp với số chip đang lọc; khoản đúng 100k hoặc 1tr chỉ nằm trong một mốc số tiền." },
+      { kind: "fixed", text: "Ghi giao dịch ngay sau khi mở tài khoản không còn báo nhầm “trước lúc mở”; khi trước giờ mở trong cùng ngày, câu nhắc ghi rõ giờ." },
+      { kind: "improved", text: "Xoá giao dịch: dòng biến mất ngay (Hoàn tác đưa lại), thông báo ghi số tiền và ngày, và rời app trong 6 giây vẫn xoá như đã báo." },
+      { kind: "improved", text: "Gợi ý số tiền không còn đưa số tỷ khi đã gõ đủ số tiền; chip số tiền ghi gọn như trong bộ lọc (100k – 1tr)." },
+      { kind: "improved", text: "Tháng cũ chưa có giao dịch nhắc cách ghi bù; dòng hạn mức tổng xuống hai dòng thay vì bị cắt trên điện thoại hẹp; nút xoá tìm kiếm và nút đổi chiều chuyển khoản dễ bấm hơn." },
+    ],
+  },
+  {
     version: "6.15.1",
     date: "2026-10-17",
     title: "Hạn mức nhóm cộng lại không vượt hạn mức tổng",

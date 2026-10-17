@@ -52,7 +52,14 @@ assert.deepEqual(getAmountSuggestions(null, []), [])
 
 // Never suggest the typed value itself, never exceed the allowed maximum.
 assert.ok(!getAmountSuggestions(30_000, [30_000]).includes(30_000))
-assert.deepEqual(getAmountSuggestions(999_999_999_999, []), [999_999_999_999_000])
+assert.ok(getAmountSuggestions(999_999, []).every((amount) => amount <= MAX_AMOUNT))
+// A whole amount typed (ending in 000, or a million and up) is not scaled
+// again: 2.000.000 offers no 2 tỷ, only past amounts starting with it.
+assert.deepEqual(getAmountSuggestions(30_000, []), [])
+assert.deepEqual(getAmountSuggestions(2_000_000, []), [])
+assert.deepEqual(getAmountSuggestions(1_234_567, []), [])
+assert.deepEqual(getAmountSuggestions(30_000, [300_000, 300_000]), [300_000])
+assert.deepEqual(getAmountSuggestions(1_500, []).slice(0, 2), [1_500_000, 15_000_000])
 assert.deepEqual(getAmountSuggestions(MAX_AMOUNT, []), [])
 for (const typed of [1, 42, 999, 12_345, 7_000_000]) {
   const suggestions = getAmountSuggestions(typed, history)

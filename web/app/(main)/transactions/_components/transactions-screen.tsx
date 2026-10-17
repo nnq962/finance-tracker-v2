@@ -13,6 +13,7 @@ import { BudgetMonthLine } from "@/components/budgets/budget-month-line"
 import { PageHeader } from "@/components/page"
 import { Button } from "@/components/ui/button"
 import { appEvents, listenToAppEvent } from "@/lib/app-events"
+import { useDeletedKeys } from "@/lib/undoable-delete"
 import type { Account } from "@/lib/accounts/types"
 import type { BudgetOverview } from "@/lib/budgets/types"
 import type { CategoryGroup } from "@/lib/categories/types"
@@ -29,6 +30,7 @@ import { forFigures } from "@/lib/transactions/types"
 import type { Transaction, TransactionFilter, TransactionSearchFilters } from "../_types/transaction"
 import { AddTransactionButton } from "./add-transaction-button"
 import { AddTransactionSheet } from "./add-transaction/add-transaction-sheet"
+import { transactionDeleteKey } from "./delete-transaction"
 import { TransactionHistoryProvider } from "./add-transaction/transaction-history-context"
 import { MonthSummary } from "./month-summary"
 import { getSheetFilterChips, TransactionActiveFilters } from "./transaction-active-filters"
@@ -60,6 +62,17 @@ type TransactionsScreenProps = {
   purchaseDraft?: PurchaseDraft
   /** This month's spending limits. */
   budgets: BudgetOverview
+}
+
+/** "Tháng 9", with the year when it is not this one's: "Tháng 1/2025". */
+function monthLabelOf(month: string, thisMonth: string) {
+  const year = month.slice(0, 4)
+  return `Tháng ${Number(month.slice(5))}${year === thisMonth.slice(0, 4) ? "" : `/${year}`}`
+}
+
+/** The list without what is being deleted. */
+function withoutDeleted(list: Transaction[], deletedKeys: ReadonlySet<string>) {
+  return deletedKeys.size ? list.filter((transaction) => !deletedKeys.has(transactionDeleteKey(transaction.id))) : list
 }
 
 const initialSearchFilters: TransactionSearchFilters = {
@@ -149,9 +162,13 @@ export function TransactionsScreen({
     window.history.replaceState(null, "", pathname)
   }, [draft, pathname])
 
+  // A transaction being deleted leaves the list, the tiles and the days at
+  // once, while its undo waits (it comes back if undone or if deleting fails).
+  const deletedKeys = useDeletedKeys()
+  const shownTransactions = React.useMemo(() => withoutDeleted(transactions, deletedKeys), [transactions, deletedKeys])
   const monthTransactions = React.useMemo(
-    () => getTransactionPeriod(transactions, "month", `${selectedMonth}-01`, todayDateKey, todayDateKey).transactions,
-    [selectedMonth, todayDateKey, transactions],
+    () => getTransactionPeriod(shownTransactions, "month", `${selectedMonth}-01`, todayDateKey, todayDateKey).transactions,
+    [selectedMonth, todayDateKey, shownTransactions],
   )
   // The list follows the filters a moment behind them: a tap on a chip
   // paints the chip at once, then the list (dozens of rows) renders in the
@@ -160,8 +177,12 @@ export function TransactionsScreen({
   const listSearchFilters = React.useDeferredValue(searchFilters)
   const visibleTransactions = React.useMemo(
     () =>
-      filterTransactions(allMonths ? (everyTransaction ?? []) : monthTransactions, listFilter, listSearchFilters),
-    [allMonths, everyTransaction, listFilter, monthTransactions, listSearchFilters],
+      filterTransactions(
+        allMonths ? withoutDeleted(everyTransaction ?? [], deletedKeys) : monthTransactions,
+        listFilter,
+        listSearchFilters,
+      ),
+    [allMonths, deletedKeys, everyTransaction, listFilter, monthTransactions, listSearchFilters],
   )
   // Every filter but the kind, for the tiles: the kind is what they switch.
   // Fees and interest are filtered as rows of their own (forFigures first),
@@ -224,12 +245,9 @@ export function TransactionsScreen({
   const loadingAll = allMonths && !everyTransaction && isLoadingAll
   const search = React.useMemo<TransactionSearchResults | undefined>(() => {
     if (!listSearchFilters.query.trim()) return undefined
-    const year = selectedMonth.slice(0, 4)
     return {
       query: listSearchFilters.query,
-      scopeLabel: allMonths
-        ? "mọi tháng"
-        : `Tháng ${Number(selectedMonth.slice(5))}${year === thisMonth.slice(0, 4) ? "" : `/${year}`}`,
+      scopeLabel: allMonths ? "mọi tháng" : monthLabelOf(selectedMonth, thisMonth),
       onSearchAllMonths: allMonths ? undefined : () => setAllMonths(true),
       loading: loadingAll,
       filterLabels: [
@@ -256,7 +274,7 @@ export function TransactionsScreen({
 
   return (
     <BudgetProvider overview={budgets}>
-    <TransactionHistoryProvider transactions={transactions}>
+    <TransactionHistoryProvider transactions={shownTransactions}>
       {/* Searching on a phone the field takes the top, and the tab bar makes way. */}
       {searching ? <div data-hide-tab-bar hidden /> : null}
       {/* Folds away while searching, so the field slides up to the top. */}
@@ -326,6 +344,7 @@ export function TransactionsScreen({
             isFiltering={isFiltering}
             onClearFilters={clearFilters}
             search={search}
+            pastMonthLabel={selectedMonth === thisMonth ? undefined : monthLabelOf(selectedMonth, thisMonth)}
           />
         </div>
       </TransactionsLayout>

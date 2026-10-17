@@ -123,7 +123,8 @@ export function TransferAccounts({
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1 rounded-[20px] bg-card p-2">
         <TransferSide id="transfer-from-account" label="Từ" account={byId(fromAccountId)} invalid={Boolean(fromError)} onClick={onPickFrom} />
-        <Button type="button" variant="secondary" size="icon-sm" aria-label="Đổi chiều chuyển" onClick={onSwap}>
+        {/* 36px to see, 44px to tap. */}
+        <Button type="button" variant="secondary" size="icon-sm" aria-label="Đổi chiều chuyển" onClick={onSwap} className="relative after:absolute after:-inset-1">
           <ArrowLeftRightIcon />
         </Button>
         <TransferSide id="transfer-to-account" label="Đến" account={byId(toAccountId)} invalid={Boolean(toError)} onClick={onPickTo} />

@@ -39,8 +39,10 @@ export function filterTransactions(
       searchFilters.categoryGroupIds.length === 0 ||
       (transaction.categoryGroupId !== undefined &&
         searchFilters.categoryGroupIds.includes(transaction.categoryGroupId))
+    // What the row shows, never its id: a short query, digits above all,
+    // would otherwise match the id's hex.
     const searchableContent = key(
-      `${transaction.title} ${transaction.description} ${transaction.note ?? ""} ${transaction.id}`,
+      `${transaction.title} ${transaction.description} ${transaction.note ?? ""}`,
     )
 
     return (

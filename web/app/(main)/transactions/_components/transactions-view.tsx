@@ -16,6 +16,7 @@ type TransactionsViewProps = {
   isFiltering: boolean
   onClearFilters: () => void
   search?: TransactionSearchResults
+  pastMonthLabel?: string
 }
 
 /**
@@ -31,6 +32,7 @@ export const TransactionsView = React.memo(function TransactionsView({
   isFiltering,
   onClearFilters,
   search,
+  pastMonthLabel,
 }: TransactionsViewProps) {
   return (
     <section>
@@ -43,6 +45,7 @@ export const TransactionsView = React.memo(function TransactionsView({
         isFiltering={isFiltering}
         onClearFilters={onClearFilters}
         search={search}
+        pastMonthLabel={pastMonthLabel}
       />
     </section>
   )

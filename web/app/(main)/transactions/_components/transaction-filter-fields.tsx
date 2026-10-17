@@ -40,15 +40,14 @@ export const transactionKindOptions = [
   { label: "Vay nợ", value: "debt" },
 ] as const satisfies readonly { label: string; value: TransactionFilter }[]
 
-/** How many conditions narrow the list, not counting the search text. */
+/** How many conditions narrow the list, not counting the search text; an amount range is one, as its chip. */
 export function countActiveFilters(
   filter: TransactionFilter,
   searchFilters: TransactionSearchFilters,
 ) {
   return (
     Number(filter !== "all") +
-    Number(searchFilters.minAmount !== null) +
-    Number(searchFilters.maxAmount !== null) +
+    Number(searchFilters.minAmount !== null || searchFilters.maxAmount !== null) +
     searchFilters.accountIds.length +
     searchFilters.categoryGroupIds.length +
     Number(Boolean(searchFilters.excludedOnly))

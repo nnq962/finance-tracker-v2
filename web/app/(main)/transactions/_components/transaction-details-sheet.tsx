@@ -16,11 +16,11 @@ import type { Account } from "@/lib/accounts/types"
 import type { CategoryColorName } from "@/lib/categories/category-colors"
 import type { CategoryItem } from "@/lib/categories/types"
 import { formatLongDate, formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
-import { scheduleUndoableDelete } from "@/lib/undoable-delete"
 
-import { deleteTransactionAction, setTransactionExcludedAction } from "../actions"
+import { setTransactionExcludedAction } from "../actions"
 import type { Transaction } from "../_types/transaction"
 import { useTransactionHistory } from "./add-transaction/transaction-history-context"
+import { deleteTransactionWithUndo } from "./delete-transaction"
 import { ExcludedRow } from "./excluded-row"
 
 type TransactionDetailsSheetProps = {
@@ -90,18 +90,7 @@ export function TransactionDetailsSheet({
   // A correction only (others are deleted from the editor); six seconds with an undo, no confirmation.
   const handleDelete = () => {
     onDeleted()
-    scheduleUndoableDelete({
-      key: `transaction:${transaction.id}`,
-      title: `Đã xoá “${transaction.title}”`,
-      pendingMessage: "Đang xoá giao dịch…",
-      undoMessage: "Đã giữ lại giao dịch.",
-      errorMessage: "Không thể xoá giao dịch. Vui lòng thử lại.",
-      onCommit: async () => {
-        const result = await deleteTransactionAction(transaction.id)
-
-        if (!result.success) throw new Error(result.error)
-      },
-    })
+    deleteTransactionWithUndo(transaction)
   }
 
   const fee = transaction.fee ?? 0
