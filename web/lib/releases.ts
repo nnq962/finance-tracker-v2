@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.25",
+    date: "2026-10-18",
+    title: "Chuyển trang trên máy tính phản hồi ngay",
+    changes: [
+      { kind: "improved", text: "Trên máy tính, bấm một mục ở thanh bên là khung chờ của trang hiện ngay, thay vì đứng yên tới khi máy chủ trả lời." },
+    ],
+  },
+  {
     version: "6.15.24",
     date: "2026-10-17",
     title: "Chạm tab ngay sau khi mở app không còn phải chờ",

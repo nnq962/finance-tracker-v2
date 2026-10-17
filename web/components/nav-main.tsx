@@ -54,6 +54,9 @@ export function NavMain({ items }: { items: NavItem[] }) {
           // Pages under a section keep it lit.
           const isActive = pathname === item.url || pathname.startsWith(`${item.url}/`) || hasActiveChild
 
+          // Links keep Next's default prefetch: each page's loading skeleton
+          // is fetched ahead, so a click shows it at once (2026-10-18; with
+          // prefetch off a click waited 0.3-0.7 s on the server with no sign).
           if (!item.items?.length) {
             return (
               <SidebarMenuItem key={item.title}>
@@ -64,7 +67,6 @@ export function NavMain({ items }: { items: NavItem[] }) {
                 >
                   <Link
                     href={item.url}
-                    prefetch={false}
                     onNavigate={handleNavigate}
                   >
                     {item.icon}
@@ -89,7 +91,6 @@ export function NavMain({ items }: { items: NavItem[] }) {
                 >
                   <Link
                     href={item.url}
-                    prefetch={false}
                     onNavigate={handleNavigate}
                   >
                     {item.icon}
@@ -112,7 +113,6 @@ export function NavMain({ items }: { items: NavItem[] }) {
                         >
                           <Link
                             href={subItem.url}
-                            prefetch={false}
                             onNavigate={handleNavigate}
                           >
                             {subItem.icon}

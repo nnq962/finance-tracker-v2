@@ -42,7 +42,6 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <Link
                 href="/overview"
-                prefetch={false}
                 onNavigate={() => {
                   if (isMobile) setOpenMobile(false)
                 }}
