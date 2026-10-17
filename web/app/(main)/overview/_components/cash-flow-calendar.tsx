@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { ArrowDownLeftIcon, ArrowUpRightIcon } from "lucide-react"
-import { useReducedMotion } from "motion/react"
+import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { toast } from "sonner"
 
 import { FlowTiles } from "@/components/app/flow-tiles"
@@ -23,6 +23,16 @@ import { cashFlowColors } from "../../transactions/_lib/transaction-presentation
 import { getDayTransactionsAction } from "../actions"
 
 const weekdays = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
+
+// A new month's days slide in from the side its arrow points to, the old
+// ones out the other way, as in Calendar. `transform` rather than `x`, so the
+// browser runs the slide on its own (hardware accelerated) and it stays
+// smooth while the page is busy with the new month.
+const slide = {
+  enter: (direction: number) => ({ transform: `translateX(${direction * 48}px)`, opacity: 0 }),
+  center: { transform: "translateX(0px)", opacity: 1 },
+  exit: (direction: number) => ({ transform: `translateX(${direction * -48}px)`, opacity: 0 }),
+}
 
 // Tiny on a phone-sized card, where seven days share the width; larger once
 // the card is wide (32rem and up).
@@ -45,103 +55,6 @@ export function shiftMonth(month: string, offset: number) {
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`
 }
 
-/**
- * One month's days, Monday first, each with what came in and went out. Days
- * up to today open their sheet through `onOpenDay`; without it (a month
- * sliding away) nothing is a button and the grid is hidden from screen readers.
- */
-const MonthDays = React.memo(function MonthDays({
-  month,
-  days,
-  today,
-  onOpenDay,
-  className,
-  onAnimationEnd,
-}: {
-  month: string
-  days: Record<string, DayTotals>
-  today: string
-  onOpenDay?: (key: string) => void
-  className?: string
-  onAnimationEnd?: () => void
-}) {
-  const [year, monthNumber] = month.split("-").map(Number)
-  const daysInMonth = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate()
-  // Monday-first: getUTCDay() is 0 for Sunday.
-  const leadingBlanks = (new Date(Date.UTC(year, monthNumber - 1, 1)).getUTCDay() + 6) % 7
-
-  return (
-    <div
-      className={cn("grid grid-cols-7 gap-1 text-center", className)}
-      aria-hidden={onOpenDay ? undefined : true}
-      // Only the grid's own slide, not one bubbling up from inside it.
-      onAnimationEnd={onAnimationEnd ? (event) => { if (event.target === event.currentTarget) onAnimationEnd() } : undefined}
-    >
-      {Array.from({ length: leadingBlanks }, (_, index) => (
-        <span key={`blank-${index}`} aria-hidden="true" />
-      ))}
-      {Array.from({ length: daysInMonth }, (_, index) => {
-        const day = index + 1
-        const key = `${month}-${String(day).padStart(2, "0")}`
-        const totals = days[key]
-        const isToday = key === today
-        const content = (
-          <>
-            <span
-              className={cn(
-                "flex size-7 items-center justify-center rounded-full text-sm",
-                isToday && "bg-primary font-medium text-primary-foreground",
-                key > today && "text-muted-foreground",
-              )}
-            >
-              {day}
-            </span>
-            {totals?.income ? (
-              <span className={cn(amountClassName, cashFlowColors.income.text)}>
-                +{formatDayAmount(totals.income)}
-              </span>
-            ) : null}
-            {/* Spending in grey: the minus says it, and red is kept for warnings. */}
-            {totals?.expense ? (
-              <span className={cn(amountClassName, "text-muted-foreground")}>
-                −{formatDayAmount(totals.expense)}
-              </span>
-            ) : null}
-          </>
-        )
-        const cellClassName =
-          "flex min-h-14 min-w-0 flex-col items-center gap-0.5 rounded-2xl pt-1 @lg:min-h-20 @lg:pt-2"
-
-        // Every day up to today opens its sheet, also one without transactions.
-        return onOpenDay && key <= today ? (
-          <button
-            key={key}
-            type="button"
-            className={cn(
-              cellClassName,
-              "outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/30 active:bg-muted",
-            )}
-            aria-label={
-              totals?.income || totals?.expense
-                ? `Ngày ${day}: thu ${formatCurrency(totals.income)}, chi ${formatCurrency(totals.expense)}`
-                : totals
-                  ? `Ngày ${day}: không có thu chi`
-                  : `Ngày ${day}: chưa có giao dịch`
-            }
-            onClick={() => onOpenDay(key)}
-          >
-            {content}
-          </button>
-        ) : (
-          <div key={key} className={cellClassName}>
-            {content}
-          </div>
-        )
-      })}
-    </div>
-  )
-})
-
 type CashFlowCalendarProps = {
   accounts: Account[]
   categoryGroups: CategoryGroup[]
@@ -163,17 +76,13 @@ export function CashFlowCalendar({
 }: CashFlowCalendarProps) {
   const [openDay, setOpenDay] = React.useState<string | null>(null)
   const reduceMotion = useReducedMotion()
-  // A new month's days slide in from the side its arrow points to while the
-  // last month's slide out the other way (CSS keyframes in globals.css, run by
-  // the browser off the main thread). The leaving month is kept until its
-  // slide ends; nothing slides on the first render.
+  // Which way the month moved: later months come from the right.
   const [shownMonth, setShownMonth] = React.useState(month)
-  const [slide, setSlide] = React.useState<{ from: string; next: boolean } | null>(null)
+  const [direction, setDirection] = React.useState(1)
   if (month !== shownMonth) {
     setShownMonth(month)
-    setSlide(reduceMotion ? null : { from: shownMonth, next: month > shownMonth })
+    setDirection(month > shownMonth ? 1 : -1)
   }
-  const openDayOf = React.useCallback((key: string) => setOpenDay(key), [])
 
   // The open day's transactions, loaded when it opens and again whenever
   // the totals change (an edit or delete in the sheet revalidates the page).
@@ -199,6 +108,13 @@ export function CashFlowCalendar({
     dayFigures ? `${kind === "income" ? dayFigures.incomeCount : dayFigures.expenseCount} giao dịch` : "Đang tải…"
 
   const [year, monthNumber] = month.split("-").map(Number)
+  const daysInMonth = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate()
+  // Monday-first: getUTCDay() is 0 for Sunday.
+  const leadingBlanks = (new Date(Date.UTC(year, monthNumber - 1, 1)).getUTCDay() + 6) % 7
+  const monthDays = Array.from({ length: daysInMonth }, (_, index) => {
+    const key = `${month}-${String(index + 1).padStart(2, "0")}`
+    return { key, day: index + 1, totals: days[key] }
+  })
 
   const openTotals = openDay ? (days[openDay] ?? { income: 0, expense: 0 }) : undefined
   // Keeps the last day's title while the sheet slides closed.
@@ -224,30 +140,80 @@ export function CashFlowCalendar({
               </span>
             ))}
           </div>
-          {/* The weekdays stay; the days slide. The leaving month is laid
-              over the new one, so the card takes the new one's height. */}
+          {/* The weekdays stay; the days slide. The old month leaves the flow
+              as it goes (popLayout), so the card takes the new one's height. */}
           <div className="relative">
-            {slide ? (
-              <MonthDays
-                key={`leaving-${slide.from}`}
-                month={slide.from}
-                days={days}
-                today={today}
-                className={cn(
-                  "pointer-events-none absolute inset-x-0 top-0",
-                  slide.next ? "animate-month-out-next" : "animate-month-out-prev",
-                )}
-                onAnimationEnd={() => setSlide(null)}
-              />
-            ) : null}
-            <MonthDays
-              key={month}
-              month={month}
-              days={days}
-              today={today}
-              onOpenDay={openDayOf}
-              className={slide ? (slide.next ? "animate-month-in-next" : "animate-month-in-prev") : undefined}
-            />
+            <AnimatePresence initial={false} custom={direction} mode="popLayout">
+              <motion.div
+                key={month}
+                custom={direction}
+                variants={slide}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={reduceMotion ? { duration: 0 } : { duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className="grid grid-cols-7 gap-1 text-center"
+              >
+                {Array.from({ length: leadingBlanks }, (_, index) => (
+                  <span key={`blank-${index}`} aria-hidden="true" />
+                ))}
+                {monthDays.map(({ key, day, totals }) => {
+                  const isToday = key === today
+                  const content = (
+                    <>
+                      <span
+                        className={cn(
+                          "flex size-7 items-center justify-center rounded-full text-sm",
+                          isToday && "bg-primary font-medium text-primary-foreground",
+                          key > today && "text-muted-foreground",
+                        )}
+                      >
+                        {day}
+                      </span>
+                      {totals?.income ? (
+                        <span className={cn(amountClassName, cashFlowColors.income.text)}>
+                          +{formatDayAmount(totals.income)}
+                        </span>
+                      ) : null}
+                      {/* Spending in grey: the minus says it, and red is kept for warnings. */}
+                      {totals?.expense ? (
+                        <span className={cn(amountClassName, "text-muted-foreground")}>
+                          −{formatDayAmount(totals.expense)}
+                        </span>
+                      ) : null}
+                    </>
+                  )
+                  const cellClassName =
+                    "flex min-h-14 min-w-0 flex-col items-center gap-0.5 rounded-2xl pt-1 @lg:min-h-20 @lg:pt-2"
+
+                  // Every day up to today opens its sheet, also one without transactions.
+                  return key <= today ? (
+                    <button
+                      key={key}
+                      type="button"
+                      className={cn(
+                        cellClassName,
+                        "outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/30 active:bg-muted",
+                      )}
+                      aria-label={
+                        totals?.income || totals?.expense
+                          ? `Ngày ${day}: thu ${formatCurrency(totals.income)}, chi ${formatCurrency(totals.expense)}`
+                          : totals
+                            ? `Ngày ${day}: không có thu chi`
+                            : `Ngày ${day}: chưa có giao dịch`
+                      }
+                      onClick={() => setOpenDay(key)}
+                    >
+                      {content}
+                    </button>
+                  ) : (
+                    <div key={key} className={cellClassName}>
+                      {content}
+                    </div>
+                  )
+                })}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
 

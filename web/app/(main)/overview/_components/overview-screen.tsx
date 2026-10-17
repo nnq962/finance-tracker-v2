@@ -83,14 +83,8 @@ export function OverviewScreen({
 }) {
   const [month, setMonth] = React.useState(today.slice(0, 7))
   // The calendar takes the new month at once; the categories' ring follows
-  // once the calendar's slide (0.28s) is over, so redrawing it never competes
-  // with the slide (it made the slide stutter on iOS, 2026-10-17).
-  const [categoriesMonth, setCategoriesMonth] = React.useState(month)
-  React.useEffect(() => {
-    if (categoriesMonth === month) return
-    const timer = window.setTimeout(() => React.startTransition(() => setCategoriesMonth(month)), 300)
-    return () => window.clearTimeout(timer)
-  }, [month, categoriesMonth])
+  // once it has, so a tap on the arrows answers straight away.
+  const categoriesMonth = React.useDeferredValue(month)
   // Each block is made again only when its own data changes, so a new month
   // redraws the calendar first and the categories after, never the rest.
   const { netWorth: netWorthData, cashFlow, dueDebts: dueDebtsData } = summary

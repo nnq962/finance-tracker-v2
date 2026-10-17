@@ -89,27 +89,6 @@
         0 0 0 14px color-mix(in oklab, var(--transfer) 0%, transparent);
     }
   }
-  /* The overview calendar's month slide, as in Calendar: the new month's
-     days come in from the side its arrow points to while the old ones leave
-     the other way. Plain CSS on transform and opacity only, so the browser
-     runs it off the main thread (smoother on iOS than the JS-driven one,
-     2026-10-17). "next" = a later month. */
-  --animate-month-in-next: month-in-next 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-month-in-prev: month-in-prev 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-month-out-next: month-out-next 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-month-out-prev: month-out-prev 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-  @keyframes month-in-next {
-    from { opacity: 0; transform: translate3d(48px, 0, 0); }
-  }
-  @keyframes month-in-prev {
-    from { opacity: 0; transform: translate3d(-48px, 0, 0); }
-  }
-  @keyframes month-out-next {
-    to { opacity: 0; transform: translate3d(-48px, 0, 0); }
-  }
-  @keyframes month-out-prev {
-    to { opacity: 0; transform: translate3d(48px, 0, 0); }
-  }
 }
 
 /*
