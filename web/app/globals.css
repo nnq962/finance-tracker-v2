@@ -451,6 +451,22 @@
 }
 
 /*
+ * A page sheet open: toasts drop under its bar (✕ or back, the title; 68
+ * high) instead of covering it, so the way back stays in reach while a
+ * "Đã lưu" shows (2026-10-17). From sm the sheet starts 6dvh down.
+ */
+body:has([data-slot="drawer-content"][data-variant="page"][data-state="open"])
+  [data-sonner-toaster][data-y-position="top"] {
+  top: calc(env(safe-area-inset-top, 0px) + 4.25rem) !important;
+}
+@media (min-width: 640px) {
+  body:has([data-slot="drawer-content"][data-variant="page"][data-state="open"])
+    [data-sonner-toaster][data-y-position="top"] {
+    top: calc(6dvh + 4.25rem) !important;
+  }
+}
+
+/*
  * An open sheet or dialog sets pointer-events: none on <body>, which toasts
  * would inherit; they stay usable (Undo, swipe) above any modal.
  */

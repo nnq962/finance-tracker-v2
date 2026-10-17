@@ -76,6 +76,33 @@ async function run() {
         validation.CategoryValidationError,
       )
     }
+    // No two groups of a type, nor two categories in a group, share a name,
+    // whatever the case; the other type, another group, or keeping one's own name is fine.
+    const dupe = await categories.createCategoryGroup(userId, 'expense', { name: 'Đi lại', iconName: 'utensils', colorName: 'blue' })
+    await assert.rejects(() => categories.createCategoryGroup(userId, 'expense', { name: 'ĐI LẠI', iconName: 'utensils', colorName: 'blue' }), /Đã có nhóm chi/)
+    await categories.createCategoryGroup(userId, 'income', { name: 'Đi lại', iconName: 'utensils', colorName: 'blue' })
+    await assert.rejects(() => categories.updateCategoryGroup(userId, food, { name: 'đi lại', iconName: 'utensils', colorName: 'orange' }), /Đã có nhóm chi/)
+    await categories.updateCategoryGroup(userId, dupe, { name: 'Đi lại', iconName: 'coffee', colorName: 'rose' })
+    const taxi = await categories.createCategoryItem(userId, dupe, { name: 'Taxi', iconName: 'coffee' })
+    await assert.rejects(() => categories.createCategoryItem(userId, dupe, { name: 'taxi', iconName: 'coffee' }), /đã có hạng mục/)
+    await categories.createCategoryItem(userId, food, { name: 'Taxi', iconName: 'coffee' })
+    const bus = await categories.createCategoryItem(userId, dupe, { name: 'Xe buýt', iconName: 'coffee' })
+    await assert.rejects(() => categories.updateCategoryItem(userId, bus, { name: 'TAXI', iconName: 'coffee' }), /đã có hạng mục/)
+    await categories.updateCategoryItem(userId, taxi, { name: 'Taxi', iconName: 'utensils' })
+    // Duplicates from before still save their other changes.
+    const old = (await sql(`INSERT INTO category_items (user_id, group_id, type, name, icon_name)
+      VALUES ($1, $2, 'expense', 'Taxi', 'coffee') RETURNING id`, [userId, dupe])).rows[0].id
+    await categories.updateCategoryItem(userId, old, { name: 'Taxi', iconName: 'utensils' })
+    await categories.archiveCategoryItem(userId, old)
+
+    // Deleting a group takes its spending limit (and the limit's alerts) with it.
+    const budget = (await sql(`INSERT INTO budgets (user_id, category_group_id, amount) VALUES ($1, $2, 500000) RETURNING id`, [userId, dupe])).rows[0].id
+    await sql(`INSERT INTO budget_alerts (user_id, budget_id, month, level) VALUES ($1, $2, date_trunc('month', now())::date, 80)`, [userId, budget])
+    await categories.archiveCategoryGroup(userId, dupe)
+    assert.equal(await count('SELECT count(*) FROM budgets WHERE id = $1', [budget]), 0)
+    assert.equal(await count('SELECT count(*) FROM budget_alerts WHERE budget_id = $1', [budget]), 0)
+    await categories.createCategoryGroup(userId, 'expense', { name: 'Đi lại', iconName: 'utensils', colorName: 'blue' })
+
     console.log('Category integration checks passed.')
   } finally {
     await cleanup()

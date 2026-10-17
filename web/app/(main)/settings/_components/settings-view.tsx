@@ -20,6 +20,7 @@ import { toast } from "sonner"
 
 import { PageSheet } from "@/components/app/page-sheet"
 import { BudgetAlertSettingsScreen, budgetAlertsSummary } from "@/components/budgets/budget-alert-settings"
+import { BudgetProvider } from "@/components/budgets/budget-hint"
 import { BudgetsSheet } from "@/components/budgets/budgets-sheet"
 import { CategoryManagementSheet } from "@/components/categories/category-management-sheet"
 import { PlanOverlay } from "@/components/plans/plan-overlay"
@@ -72,7 +73,7 @@ const screens = {
     title: "Thiết bị nhận thông báo",
   },
   budgetAlerts: {
-    title: "Thông báo hạn mức",
+    title: "Cảnh báo hạn mức",
   },
   voice: {
     title: "Thử giọng nói",
@@ -86,6 +87,17 @@ const screens = {
 } as const
 
 export type Screen = keyof typeof screens
+
+/**
+ * Takes a deep link's ?screen= off the address once what it opened is
+ * closed, so a reload or reopening the app does not open it again.
+ */
+function forgetScreenParam() {
+  const url = new URL(window.location.href)
+  if (!url.searchParams.has("screen")) return
+  url.searchParams.delete("screen")
+  window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`)
+}
 
 /** The limits' row: the month's limit, else how many groups have one. */
 function budgetsSummary(overview: BudgetOverview) {
@@ -139,7 +151,6 @@ export function SettingsView({
   const [reminder, setReminder] = React.useState(notifications.settings)
   const [devices, setDevices] = React.useState(notifications)
   const [news, setNews] = React.useState(notifications.broadcastsEnabled)
-  const [budgetAlerts, setBudgetAlerts] = React.useState(budgets.alerts)
   const [broadcastData, setBroadcastData] = React.useState(broadcasts)
   const { choice } = useThemeChoice()
   const { openWelcome } = useWelcome()
@@ -169,10 +180,11 @@ export function SettingsView({
       case "budgetAlerts": {
         const first = budgets.groups.find((group) => group.limit !== null)
         return (
+          // Its row reads the page's limits, refreshed after each save
+          // whichever screen it was made on (here or the limits sheet's).
           <BudgetAlertSettingsScreen
-            initial={budgetAlerts}
+            initial={budgets.alerts}
             example={first ? { name: first.name, limit: first.limit! } : undefined}
-            onChange={setBudgetAlerts}
           />
         )
       }
@@ -258,7 +270,8 @@ export function SettingsView({
             value={reminder.notificationsEnabled ? `Bật · ${reminder.dailyReminderTime}` : "Tắt"}
             onClick={() => open("notifications")}
           />
-          <SettingsRow icon={GaugeIcon} title="Hạn mức chi tiêu" value={budgetAlertsSummary(budgetAlerts)} onClick={() => open("budgetAlerts")} />
+          {/* Not "Hạn mức chi tiêu" again: Chung has that row, for the limits themselves. */}
+          <SettingsRow icon={GaugeIcon} title="Cảnh báo hạn mức" value={budgetAlertsSummary(budgets.alerts)} onClick={() => open("budgetAlerts")} />
           <SettingsRow
             icon={SmartphoneIcon}
             // The group's caption already says THÔNG BÁO; the screen keeps the full name.
@@ -350,24 +363,34 @@ export function SettingsView({
       <PageSheet
         title={sheetScreen ? screens[sheetScreen].title : null}
         open={sheetScreen !== null}
-        onOpenChange={(next) => !next && setSheetScreen(null)}
+        onOpenChange={(next) => {
+          if (next) return
+          setSheetScreen(null)
+          forgetScreenParam()
+        }}
       >
         {sheetScreen ? renderScreen(sheetScreen) : null}
       </PageSheet>
 
       <PlanOverlay
         open={planOpen}
-        onOpenChange={setPlanOpen}
+        onOpenChange={(next) => {
+          setPlanOpen(next)
+          if (!next) forgetScreenParam()
+        }}
         planState={planState}
         checkoutEnabled={checkoutEnabled}
         paymentOutcome={paymentOutcome}
       />
 
-      <CategoryManagementSheet
-        groups={categoryGroups}
-        open={categoriesOpen}
-        onOpenChange={setCategoriesOpen}
-      />
+      {/* The limits known, so deleting a group with one says it goes too. */}
+      <BudgetProvider overview={budgets}>
+        <CategoryManagementSheet
+          groups={categoryGroups}
+          open={categoriesOpen}
+          onOpenChange={setCategoriesOpen}
+        />
+      </BudgetProvider>
       <BudgetsSheet overview={budgets} open={budgetsOpen} onOpenChange={setBudgetsOpen} />
     </>
   )

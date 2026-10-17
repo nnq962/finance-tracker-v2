@@ -174,7 +174,7 @@ function BudgetsSheetBody({
 
   usePageSheetScreen(
     screen?.type === "alerts"
-      ? { title: "Thông báo hạn mức", onBack: back }
+      ? { title: "Cảnh báo hạn mức", onBack: back }
       : screen?.type === "spending"
       ? { title: past ? `${screen.title} · tháng ${number}` : screen.title, onBack: back }
       : screen
@@ -449,7 +449,7 @@ function ThisMonthList({
       ) : null}
 
       <SettingsGroup>
-        <SettingsRow icon={BellRingIcon} title="Thông báo hạn mức" value={budgetAlertsSummary(overview.alerts)} onClick={() => onOpen({ type: "alerts" })} />
+        <SettingsRow icon={BellRingIcon} title="Cảnh báo hạn mức" value={budgetAlertsSummary(overview.alerts)} onClick={() => onOpen({ type: "alerts" })} />
       </SettingsGroup>
     </>
   )

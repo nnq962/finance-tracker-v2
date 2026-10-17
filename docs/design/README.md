@@ -136,7 +136,8 @@ component ở đó là cả app đổi theo.
   (thành công `island-accent`: xanh chanh trên đen, xanh chanh đậm trên trắng; lỗi `expense`, cảnh báo `warning`, thông tin `transfer`, đang tải
   trắng mờ); tiêu đề tối đa hai dòng, hoặc một dòng trên một dòng mô tả, cắt bằng "…", nên
   toast không bao giờ cao lên; nút Hoàn tác là chữ `island-accent` ở cuối. Sonner vẫn lo xếp chồng,
-  vuốt để đóng, hẹn giờ.
+  vuốt để đóng, hẹn giờ. Khi một `PageSheet` đang mở, toast hạ xuống ngay dưới thanh ✕/tiêu đề của sheet (68 dưới
+  safe-area; từ `sm` là 6dvh + 68) để không che nút Đóng hay Quay lại (2026-10-17, `globals.css`).
 - **Dialog, AlertDialog:** bo 20. Chỉ để xác nhận hoặc nhập rất ngắn; nút huỷ màu xám.
 - **DropdownMenu, Select, Combobox (danh sách):** bo 20, dòng cao 40.
 
@@ -390,7 +391,7 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   hạn mức và ngày ghi trong tháng này. Thông báo đẩy (`lib/budgets/alerts.ts`): mỗi hạn mức một lần khi chạm 80%
   ("Ăn uống đã dùng 86% hạn mức", "Còn 560.000đ cho 16 ngày, khoảng 35.000đ mỗi ngày.") và một lần khi vượt
   ("Vượt hạn mức Ăn uống", "Đã chi 4.150.000đ, vượt 150.000đ."), mỗi tháng; gửi sau khi lưu khoản chi, chỉ
-  theo cài đặt "Thông báo hạn mức" (mốc 80% hay 90%, hay chỉ khi vượt); chạm mở Tổng quan với sheet. Đặt hay sửa hạn mức thì mức đang đứng được ghi lại không báo.
+  theo cài đặt "Cảnh báo hạn mức" (mốc 80% hay 90%, hay chỉ khi vượt); chạm mở Tổng quan với sheet. Đặt hay sửa hạn mức thì mức đang đứng được ghi lại không báo.
   **Chưa có hạn mức nào** (2026-10-17, `budget-suggest.tsx`): ở Tổng quan, chỗ của thẻ hạn mức là "Hạn mức chi
   tiêu" mời đặt (`BudgetInvite`): ô icon, "Đặt mức chi tối đa mỗi tháng", một câu, ✕ "Để sau" (ẩn trên máy này,
   `localStorage`; vẫn đặt được từ Cài đặt), khung xám tóm tắt gợi ý (hạn mức tổng và ba nhóm chi nhiều nhất, "và N
@@ -418,8 +419,9 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   trung bình 2,9tr cho Ăn uống, hạn mức 300k thường bị vượt." (tổng: "… mỗi tháng, hạn mức tổng …"), `NoticeBanner
   footer` với "Đặt 2,9tr" (`suggestedLimit` của trung bình) và "Để sau" (ẩn tới hết tháng, `budgets.hint_dismissed_month`).
   Dòng nhóm trong sheet có chấm amber 7px sau tên khi nhóm có gợi ý.
-  **Thông báo hạn mức** (2026-10-17, `BudgetAlertSettingsScreen`): dòng "Hạn mức chi tiêu" ("Bật · 80%", "Bật · khi
-  vượt", "Tắt") trong Cài đặt › Thông báo, và dòng cuối sheet Hạn mức "Thông báo hạn mức", cùng mở màn: công tắc "Báo
+  **Cảnh báo hạn mức** (2026-10-17, `BudgetAlertSettingsScreen`; tên đổi từ "Thông báo hạn mức" ngày 2026-10-17 để
+  khỏi trùng dòng "Hạn mức chi tiêu" của nhóm Chung): dòng "Cảnh báo hạn mức" ("Bật · 80%", "Bật · khi vượt",
+  "Tắt") trong Cài đặt › Thông báo, và dòng cuối sheet Hạn mức cùng tên, cùng mở màn: công tắc "Báo
   khi chạm hạn mức" (chú thích "Báo trên các thiết bị đã bật thông báo."), khi bật thì "BÁO TRƯỚC" là list chọn "Khi
   dùng 80%" / "Khi dùng 90%" / "Không báo trước" (chú thích "Luôn báo khi vượt hạn mức. Mỗi hạn mức báo mỗi mốc một
   lần trong tháng."), và "VÍ DỤ" hai thông báo mẫu theo mốc đã chọn, trên hạn mức đầu tiên của người dùng; tắt thì

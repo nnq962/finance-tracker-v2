@@ -15,6 +15,11 @@ export function BudgetProvider({ overview, children }: { overview: BudgetOvervie
   return <BudgetContext.Provider value={overview}>{children}</BudgetContext.Provider>
 }
 
+/** This month's limits from the nearest BudgetProvider, or null outside one. */
+export function useBudgetOverview() {
+  return React.useContext(BudgetContext)
+}
+
 /** The spending being edited, as the month's figures already count it: taken out before adding the amount typed. */
 export type CountedSpending = { groupId?: string; amount: number; month: string }
 

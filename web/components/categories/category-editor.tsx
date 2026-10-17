@@ -5,6 +5,7 @@ import { SaveIcon, Trash2Icon } from "lucide-react"
 
 import { ActionSheet } from "@/components/app/action-sheet"
 import { IconTile } from "@/components/app/icon-tile"
+import { useBudgetOverview } from "@/components/budgets/budget-hint"
 import { PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
 import { ColorPicker } from "@/components/forms/color-picker"
 import { IconPicker, IconPickerScreen } from "@/components/forms/icon-picker"
@@ -15,6 +16,7 @@ import { FieldError } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
 import type { CategoryColorName } from "@/lib/categories/category-colors"
 import type { CategoryGroup, CategoryItem, CategoryType } from "@/lib/categories/types"
+import { formatCompactCurrency } from "@/lib/format-currency"
 import { categoryIconRegistry, type CategoryIconName } from "@/lib/icons/category-icon-registry"
 import { cn } from "@/lib/utils"
 
@@ -69,6 +71,9 @@ export function CategoryEditor({
 
   const noun = kind === "group" ? "nhóm" : "hạng mục"
   const itemCount = group?.items.length ?? 0
+  // A group's limit goes when it is deleted; said in the confirmation where the limits are known.
+  const overview = useBudgetOverview()
+  const groupLimit = kind === "group" && group ? overview?.groups.find((line) => line.groupId === group.id)?.limit ?? null : null
   const caption = kind === "group"
     ? editing
       ? `${itemCount} hạng mục`
@@ -179,7 +184,9 @@ export function CategoryEditor({
           onOpenChange={setConfirmDelete}
           title={
             kind === "group"
-              ? `Xoá nhóm “${group?.name ?? ""}”${itemCount ? ` và ${itemCount} hạng mục bên trong` : ""}? Giao dịch cũ vẫn được giữ.`
+              ? `Xoá nhóm “${group?.name ?? ""}”${itemCount ? ` và ${itemCount} hạng mục bên trong` : ""}?${
+                  groupLimit !== null ? ` Hạn mức ${formatCompactCurrency(groupLimit, 1)}/tháng của nhóm cũng bị xoá.` : ""
+                } Giao dịch cũ vẫn được giữ.`
               : `Xoá hạng mục “${item?.name ?? ""}”? Giao dịch cũ vẫn được giữ.`
           }
           options={[{ value: "delete", label: `Xoá ${noun}`, destructive: true }]}

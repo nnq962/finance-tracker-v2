@@ -18,6 +18,28 @@ import type { DB } from "@/lib/db/types"
 const MAX_GROUPS_PER_TYPE = 100
 const MAX_ITEMS_PER_GROUP = 200
 
+/** A name as compared for duplicates: same letters, whatever the case or how its marks were typed. */
+const nameKey = (name: string) => name.normalize("NFC").toLocaleLowerCase("vi-VN")
+
+/**
+ * Two groups of a type, or two categories in a group, may not share a name
+ * (2026-10-17: picking one when recording, by hand or through the AI, could
+ * not tell them apart). Run inside the caller's transaction, after the lock
+ * that serialises its writes. A rename that keeps the same name passes, so
+ * duplicates from before still save their other changes.
+ */
+function assertNameFree(
+  names: { id: string; name: string }[],
+  name: string,
+  message: string,
+  self?: { id: string; name: string },
+) {
+  if (self && nameKey(self.name) === nameKey(name)) return
+  if (names.some((row) => row.id !== self?.id && nameKey(row.name) === nameKey(name))) {
+    throw new CategoryValidationError(message)
+  }
+}
+
 function compareByOrderThenName<T extends { id: string; name: string; sortOrder: number }>(
   left: T,
   right: T,
@@ -179,6 +201,8 @@ export async function createCategoryGroup(
       )
     }
 
+    assertNameFree(await activeGroupNames(trx, userId, type), values.name, groupTakenMessage(type, values.name))
+
     const { id } = await trx
       .insertInto("categoryGroups")
       .values({ userId, type, ...values, sortOrder: Date.now() })
@@ -189,30 +213,46 @@ export async function createCategoryGroup(
   })
 }
 
-async function updateActiveGroup(
-  userId: string,
-  groupId: string,
-  values: Partial<CategoryFormValues>,
-) {
-  const result = await getDb()
-    .updateTable("categoryGroups")
-    .set(values)
-    .where("id", "=", groupId)
+/** The user's active groups of a type, for the duplicate check. */
+function activeGroupNames(trx: Transaction<DB>, userId: string, type: CategoryType) {
+  return trx
+    .selectFrom("categoryGroups")
+    .select(["id", "name"])
     .where("userId", "=", userId)
+    .where("type", "=", type)
     .where("status", "=", "active")
-    .executeTakeFirst()
-
-  if (result.numUpdatedRows === BigInt(0)) {
-    throw new CategoryValidationError("Nhóm hạng mục không tồn tại.")
-  }
+    .execute()
 }
+
+const groupTakenMessage = (type: CategoryType, name: string) =>
+  `Đã có nhóm ${type === "expense" ? "chi" : "thu"} “${name}”. Đặt tên khác.`
 
 export async function updateCategoryGroup(
   userId: string,
   groupId: string,
   values: CategoryFormValues,
 ) {
-  await updateActiveGroup(userId, groupId, values)
+  await getDb().transaction().execute(async (trx) => {
+    // The same lock as creating a group, so two saves cannot take one name.
+    await trx.selectFrom("users").select("id").where("id", "=", userId).forUpdate().execute()
+
+    const group = await trx
+      .selectFrom("categoryGroups")
+      .select(["id", "name", "type"])
+      .where("id", "=", groupId)
+      .where("userId", "=", userId)
+      .where("status", "=", "active")
+      .executeTakeFirst()
+
+    if (!group) {
+      throw new CategoryValidationError("Nhóm hạng mục không tồn tại.")
+    }
+
+    const type = group.type as CategoryType
+    assertNameFree(await activeGroupNames(trx, userId, type), values.name, groupTakenMessage(type, values.name), group)
+
+    await trx.updateTable("categoryGroups").set(values).where("id", "=", groupId).execute()
+  })
 }
 
 export async function archiveCategoryGroup(userId: string, groupId: string) {
@@ -236,6 +276,14 @@ export async function archiveCategoryGroup(userId: string, groupId: string) {
       .where("userId", "=", userId)
       .where("groupId", "=", groupId)
       .where("status", "=", "active")
+      .execute()
+
+    // Its spending limit goes with it (its alerts with it, by cascade): a
+    // deleted group cannot come back, and the confirmation says so.
+    await trx
+      .deleteFrom("budgets")
+      .where("userId", "=", userId)
+      .where("categoryGroupId", "=", groupId)
       .execute()
   })
 }
@@ -274,6 +322,8 @@ export async function createCategoryItem(
       )
     }
 
+    assertNameFree(await activeItemNames(trx, userId, groupId), values.name, itemTakenMessage(values.name))
+
     const { id } = await trx
       .insertInto("categoryItems")
       .values({
@@ -290,28 +340,61 @@ export async function createCategoryItem(
   })
 }
 
+/** A group's active categories, for the duplicate check. */
+function activeItemNames(trx: Transaction<DB>, userId: string, groupId: string) {
+  return trx
+    .selectFrom("categoryItems")
+    .select(["id", "name"])
+    .where("userId", "=", userId)
+    .where("groupId", "=", groupId)
+    .where("status", "=", "active")
+    .execute()
+}
+
+const itemTakenMessage = (name: string) => `Nhóm này đã có hạng mục “${name}”. Đặt tên khác.`
+
 export async function updateCategoryItem(
   userId: string,
   itemId: string,
   values: CategoryItemFormValues,
 ) {
-  const result = await getDb()
-    .updateTable("categoryItems")
-    .set(values)
-    .where("id", "=", itemId)
-    .where("userId", "=", userId)
-    .where("status", "=", "active")
-    .where((eb) => eb.exists(
-      eb.selectFrom("categoryGroups")
-        .select("categoryGroups.id")
-        .whereRef("categoryGroups.id", "=", "categoryItems.groupId")
-        .where("categoryGroups.status", "=", "active"),
-    ))
-    .executeTakeFirst()
+  await getDb().transaction().execute(async (trx) => {
+    const item = await trx
+      .selectFrom("categoryItems")
+      .select(["id", "name", "groupId"])
+      .where("id", "=", itemId)
+      .where("userId", "=", userId)
+      .where("status", "=", "active")
+      .executeTakeFirst()
 
-  if (result.numUpdatedRows === BigInt(0)) {
-    throw new CategoryValidationError("Hạng mục không tồn tại.")
-  }
+    // Its group locked, as creating a category locks it, so two saves cannot take one name.
+    const group = item
+      ? await trx
+          .selectFrom("categoryGroups")
+          .select("status")
+          .where("id", "=", item.groupId)
+          .where("userId", "=", userId)
+          .forUpdate()
+          .executeTakeFirst()
+      : undefined
+
+    if (!item || group?.status !== "active") {
+      throw new CategoryValidationError("Hạng mục không tồn tại.")
+    }
+
+    assertNameFree(await activeItemNames(trx, userId, item.groupId), values.name, itemTakenMessage(values.name), item)
+
+    const result = await trx
+      .updateTable("categoryItems")
+      .set(values)
+      .where("id", "=", itemId)
+      .where("status", "=", "active")
+      .executeTakeFirst()
+
+    if (result.numUpdatedRows === BigInt(0)) {
+      throw new CategoryValidationError("Hạng mục không tồn tại.")
+    }
+  })
 }
 
 export async function archiveCategoryItem(userId: string, itemId: string) {

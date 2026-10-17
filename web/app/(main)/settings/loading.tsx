@@ -25,6 +25,19 @@ function UsageMeterSkeleton() {
   )
 }
 
+/** A group's footnote under its card: Caption-size lines, 16 high, 16 in from the sides. */
+function FootnoteSkeleton({ lines }: { lines: number }) {
+  return (
+    <div className="px-4">
+      {Array.from({ length: lines }, (_, index) => (
+        <div key={index} className="flex h-4 items-center">
+          <Skeleton className={cn("h-3", index === lines - 1 ? "w-2/3" : "w-full")} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function SettingsLoading() {
   return (
     <Page
@@ -54,16 +67,34 @@ export default function SettingsLoading() {
           <UsageMeterSkeleton />
           <SettingsRowSkeleton description chevron index={1} />
         </SettingsGroupSkeleton>
-        {/* "Chung" and "Thông báo": a value and a chevron on each row. */}
-        <SettingsGroupSkeleton rows={2} trailing="value" chevron />
-        <SettingsGroupSkeleton rows={2} trailing="value" chevron />
-        {/* "Ứng dụng": screens to open. */}
+        {/* "Chung": a value and a chevron on each row. */}
+        <SettingsGroupSkeleton rows={3} trailing="value" chevron />
+        {/* "Thông báo": three rows with a value, "Tin từ Timi" with its switch, the two-line footnote. */}
+        <div className="space-y-2">
+          <SettingsGroupSkeleton>
+            {[0, 1, 2].map((index) => (
+              <SettingsRowSkeleton key={index} index={index} trailing="value" chevron />
+            ))}
+            <SettingsRowSkeleton index={3} />
+          </SettingsGroupSkeleton>
+          <FootnoteSkeleton lines={2} />
+        </div>
+        {/* "Ứng dụng": screens to open. (The admin's group is not guessed at.) */}
         <SettingsGroupSkeleton rows={2} chevron />
-        {/* Signing out, centred, with the version under it. */}
+        {/* Wiping the data, centred, with its footnote; then signing out. */}
         <div className="space-y-2">
           <SettingsGroupSkeleton caption={false} rows={1} align="center" />
-          <div className="flex h-4 items-center justify-center px-4">
-            <Skeleton className="h-3 w-44" />
+          <FootnoteSkeleton lines={1} />
+        </div>
+        <SettingsGroupSkeleton caption={false} rows={1} align="center" />
+        {/* The app at the foot: its icon, its name, its version. */}
+        <div className="flex flex-col items-center gap-2 pt-2 pb-4">
+          <Skeleton className="size-12 rounded-[12px]" />
+          <div className="flex h-7 items-center">
+            <Skeleton className="h-5 w-16" />
+          </div>
+          <div className="flex h-4 items-center">
+            <Skeleton className="h-3 w-32" />
           </div>
         </div>
       </div>

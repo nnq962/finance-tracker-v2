@@ -24,7 +24,7 @@ const levels = [
 ] as const
 
 /**
- * "Thông báo hạn mức" (2026-10-17), from Cài đặt › Thông báo and the end of
+ * "Cảnh báo hạn mức" (2026-10-17), from Cài đặt › Thông báo and the end of
  * the limits sheet: a switch for limit pushes; while on, the early warning
  * (80%, 90%, none; past the limit always) as a pick list, and the pushes it
  * would send, as an example on a limit of `example`. Each change saves at

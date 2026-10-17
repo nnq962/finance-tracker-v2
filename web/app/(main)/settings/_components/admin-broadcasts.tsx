@@ -13,7 +13,7 @@ import { groupCaptionClassName, SettingsGroup, SettingsRow } from "@/components/
 import { TimiIcon } from "@/components/timi-icon"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
@@ -69,6 +69,9 @@ export function AdminBroadcasts({
 }) {
   const [data, setData] = React.useState(initial)
   const [composeOpen, setComposeOpen] = React.useState(false)
+  // A draft with words in it is not dropped by a stray swipe: closing asks first.
+  const [composeDirty, setComposeDirty] = React.useState(false)
+  const [discardOpen, setDiscardOpen] = React.useState(false)
   const [detailId, setDetailId] = React.useState<string | null>(null)
   const detail = data.items.find((item) => item.id === detailId)
 
@@ -139,15 +142,35 @@ export function AdminBroadcasts({
         </Button>
       </PageSheetFooter>
 
-      <PageSheet title="Soạn thông báo" open={composeOpen} onOpenChange={setComposeOpen}>
+      <PageSheet
+        title="Soạn thông báo"
+        open={composeOpen}
+        onOpenChange={(next) => {
+          if (!next && composeDirty) setDiscardOpen(true)
+          else setComposeOpen(next)
+        }}
+      >
         <ComposeForm
           reach={data.reach}
+          onDirtyChange={setComposeDirty}
           onDone={async () => {
+            setComposeDirty(false)
             setComposeOpen(false)
             await reload()
           }}
         />
       </PageSheet>
+      <ActionSheet
+        open={discardOpen}
+        onOpenChange={setDiscardOpen}
+        title="Bỏ thông báo đang soạn? Tiêu đề và nội dung đã gõ sẽ mất."
+        options={[{ value: "discard", label: "Bỏ nháp", destructive: true }]}
+        cancelLabel="Soạn tiếp"
+        onSelect={() => {
+          setComposeDirty(false)
+          setComposeOpen(false)
+        }}
+      />
     </div>
   )
 }
@@ -249,7 +272,19 @@ function BroadcastDetail({
 /** Tomorrow in Vietnam, "YYYY-MM-DD": where a time set for later starts. */
 const tomorrowKey = () => toDateKey(new Date(Date.now() + 86_400_000))
 
-function ComposeForm({ reach, onDone }: { reach: BroadcastScreenData["reach"]; onDone: () => void }) {
+/** How far ahead a broadcast may be set, as the server allows (parseBroadcastInput). */
+const MAX_AHEAD_DAYS = 60
+
+function ComposeForm({
+  reach,
+  onDirtyChange,
+  onDone,
+}: {
+  reach: BroadcastScreenData["reach"]
+  /** Whether anything is typed, so closing can ask before dropping it. */
+  onDirtyChange: (dirty: boolean) => void
+  onDone: () => void
+}) {
   const [title, setTitle] = React.useState("")
   const [body, setBody] = React.useState("")
   const [opens, setOpens] = React.useState<BroadcastOpens>("none")
@@ -259,10 +294,13 @@ function ComposeForm({ reach, onDone }: { reach: BroadcastScreenData["reach"]; o
   const [date, setDate] = React.useState(tomorrowKey)
   const [time, setTime] = React.useState("08:00")
   const [confirm, setConfirm] = React.useState(false)
+  const [whenError, setWhenError] = React.useState<string | null>(null)
   const [testing, setTesting] = React.useState(false)
   const [sending, setSending] = React.useState(false)
   const target = reach[audience]
   const ready = Boolean(title.trim() && body.trim())
+  const dirty = Boolean(title.trim() || body.trim())
+  React.useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange])
   const when = `${time} ${date.slice(8, 10)}/${date.slice(5, 7)}`
   const draft = () => ({
     title,
@@ -272,6 +310,16 @@ function ComposeForm({ reach, onDone }: { reach: BroadcastScreenData["reach"]; o
     audience,
     sendAt: scheduled ? new Date(`${date}T${time}:00+07:00`).toISOString() : null,
   })
+
+  /** A time set for later is checked before the confirmation, as the server checks it: after now, within 60 days. */
+  const review = () => {
+    if (scheduled) {
+      const at = new Date(`${date}T${time}:00+07:00`).getTime()
+      if (Number.isNaN(at) || at <= Date.now()) return setWhenError("Giờ hẹn đã qua, chọn giờ sau bây giờ.")
+      if (at > Date.now() + MAX_AHEAD_DAYS * 86_400_000) return setWhenError(`Chỉ hẹn trong ${MAX_AHEAD_DAYS} ngày tới.`)
+    }
+    setConfirm(true)
+  }
 
   const sendTest = async () => {
     setTesting(true)
@@ -427,21 +475,35 @@ function ComposeForm({ reach, onDone }: { reach: BroadcastScreenData["reach"]; o
           {scheduled ? (
             <FormSection>
               <div className="flex gap-3">
-                <Field>
+                <Field data-invalid={Boolean(whenError) || undefined}>
                   <FieldLabel htmlFor="broadcast-date">Ngày</FieldLabel>
                   <Input
                     id="broadcast-date"
                     type="date"
                     min={toDateKey(new Date())}
                     value={date}
-                    onChange={(event) => setDate(event.target.value)}
+                    aria-invalid={Boolean(whenError) || undefined}
+                    onChange={(event) => {
+                      setDate(event.target.value)
+                      setWhenError(null)
+                    }}
                   />
                 </Field>
-                <Field className="max-w-32">
+                <Field className="max-w-32" data-invalid={Boolean(whenError) || undefined}>
                   <FieldLabel htmlFor="broadcast-time">Giờ</FieldLabel>
-                  <Input id="broadcast-time" type="time" value={time} onChange={(event) => setTime(event.target.value)} />
+                  <Input
+                    id="broadcast-time"
+                    type="time"
+                    value={time}
+                    aria-invalid={Boolean(whenError) || undefined}
+                    onChange={(event) => {
+                      setTime(event.target.value)
+                      setWhenError(null)
+                    }}
+                  />
                 </Field>
               </div>
+              {whenError ? <FieldError className="mt-2">{whenError}</FieldError> : null}
             </FormSection>
           ) : null}
         </div>
@@ -453,7 +515,7 @@ function ComposeForm({ reach, onDone }: { reach: BroadcastScreenData["reach"]; o
             {testing ? <Spinner /> : <SmartphoneIcon />}
             Gửi thử
           </Button>
-          <Button type="button" className="flex-1" disabled={!ready || sending || (scheduled && !(date && time))} onClick={() => setConfirm(true)}>
+          <Button type="button" className="flex-1" disabled={!ready || sending || (scheduled && !(date && time))} onClick={review}>
             {sending ? <Spinner /> : <SendIcon />}
             {scheduled ? `Hẹn gửi ${when}` : `Gửi tới ${target.people} người`}
           </Button>
