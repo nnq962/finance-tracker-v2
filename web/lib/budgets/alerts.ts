@@ -29,14 +29,14 @@ export function budgetPushMessage(
 ) {
   if (level === 100) {
     return {
-      title: name ? `Vượt hạn mức ${name}` : "Vượt hạn mức tháng",
+      title: name ? `Vượt hạn mức ${name}` : "Vượt hạn mức tổng",
       body: `Đã chi ${formatCurrency(line.spent)}, vượt ${formatCurrency(line.spent - line.limit)}.`,
     }
   }
   const percent = Math.min(budgetPercent(line.spent, line.limit), 100)
   const left = line.limit - line.spent
   return {
-    title: name ? `${name} đã dùng ${percent}% hạn mức` : `Đã dùng ${percent}% hạn mức tháng`,
+    title: name ? `${name} đã dùng ${percent}% hạn mức` : `Đã dùng ${percent}% hạn mức tổng`,
     body:
       left > 0
         ? `Còn ${formatCurrency(left)} cho ${days} ngày, khoảng ${formatCurrency(perDay(line.spent, line.limit, days))} mỗi ngày.`

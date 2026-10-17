@@ -35,7 +35,7 @@ export function BudgetMonthLine({ overview, className }: { overview: BudgetOverv
         <GaugeIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         <span className="flex min-w-0 flex-1 flex-col gap-1.5 py-2.5">
           <span className="flex items-baseline justify-between gap-3 text-sm">
-            <span className="truncate">Đã dùng {budgetPercent(total.spent, total.limit)}% hạn mức tháng</span>
+            <span className="truncate">Đã dùng {budgetPercent(total.spent, total.limit)}% hạn mức tổng</span>
             <span className={cn("shrink-0 text-xs text-muted-foreground tabular-nums", over && "text-expense")}>
               {over ? "vượt" : "còn"} {formatCompactCurrency(Math.abs(total.limit - total.spent), 1)}
             </span>

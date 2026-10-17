@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.10.2",
+    date: "2026-10-17",
+    title: "Biểu đồ tròn của hạn mức chạm là xem số",
+    changes: [
+      { kind: "fixed", text: "Chạm vào biểu đồ tròn trong chi tiết hạn mức không còn mở màn khác: hiện tên và số tiền phần đó; chạm các dòng bên dưới mới mở." },
+      { kind: "improved", text: "Hạn mức cả tháng gọi là \"Hạn mức tổng\" ở mọi chỗ: tiêu đề màn chi tiết, dòng ở Giao dịch, form, thông báo." },
+    ],
+  },
+  {
     version: "6.10.1",
     date: "2026-10-17",
     title: "Hạn mức gọn và dễ đọc hơn",

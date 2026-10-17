@@ -111,7 +111,7 @@ async function run() {
     due = await syncBudgetAlerts(userId, { notify: false })
     assert.deepEqual(due.map((d) => [d.budgetId, d.level]).sort(), [[foodId, 100], [totalId, 100]].sort())
     assert.equal(due.find((d) => d.budgetId === foodId).title, 'Vượt hạn mức Ăn uống')
-    assert.equal(due.find((d) => d.budgetId === totalId).title, 'Vượt hạn mức tháng')
+    assert.equal(due.find((d) => d.budgetId === totalId).title, 'Vượt hạn mức tổng')
     assert.match(due.find((d) => d.budgetId === totalId).body, /^Đã chi 650\.000đ, vượt 50\.000đ\.$/)
     // A raised limit warns again from scratch; the levels it already stands at are written down silently.
     await budgets.saveBudget(userId, food, 1_000_000)
@@ -123,7 +123,7 @@ async function run() {
 
     // The 80% message: what is left a day.
     const message = budgetPushMessage(null, { budgetId: 'x', limit: 1_000_000, spent: 800_000, average: 0 }, 80, 10)
-    assert.deepEqual(message, { title: 'Đã dùng 80% hạn mức tháng', body: 'Còn 200.000đ cho 10 ngày, khoảng 20.000đ mỗi ngày.' })
+    assert.deepEqual(message, { title: 'Đã dùng 80% hạn mức tổng', body: 'Còn 200.000đ cho 10 ngày, khoảng 20.000đ mỗi ngày.' })
 
     // Deleting: only the user's own, and its alerts go with it.
     assert.equal(await budgets.deleteBudget(otherId, foodId), null)

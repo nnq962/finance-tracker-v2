@@ -4,7 +4,7 @@ import { ChevronRightIcon } from "lucide-react"
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Label, Pie, PieChart, ReferenceLine, XAxis, YAxis } from "recharts"
 
 import { Money } from "@/components/app/money"
-import { ChartContainer, type ChartConfig } from "@/components/ui/chart"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
 import { budgetPace } from "@/lib/budgets/calculations"
 import { shiftMonthKey } from "@/lib/budgets/months"
 import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
@@ -292,11 +292,14 @@ export type BudgetSplitPart = {
 /**
  * Where a month's spending went (2026-10-17, as a ring at the user's wish,
  * in place of rows with bars): a ring of the parts with the total in its
- * middle, then a row per part (its colour, name, amount and share, a tap to
- * open it), largest first.
+ * middle (a tap on a slice shows its name and amount, as the overview's ring does), then a row per
+ * part (its colour, name, amount and share, a tap to open it), largest first.
  */
 export function BudgetSplit({ parts, total }: { parts: BudgetSplitPart[]; total: number }) {
   const shown = parts.filter((part) => part.amount > 0)
+  // Only what the ring draws: Recharts hands each entry's fields to its
+  // slice, so a part's onClick would make a tap on the ring open it.
+  const slices = shown.map(({ key, name, amount, fill }) => ({ key, name, amount, fill }))
   if (shown.length === 0) return null
   const share = (amount: number) => (total > 0 ? Math.round((amount / total) * 100) : 0)
   return (
@@ -304,8 +307,23 @@ export function BudgetSplit({ parts, total }: { parts: BudgetSplitPart[]; total:
       {/* The rows below say the same for screen readers. */}
       <ChartContainer config={chartConfig} aria-hidden="true" className="mx-auto aspect-square w-40">
         <PieChart>
+          {/* A tap on a slice shows its name and amount, as the overview's ring does; the rows below open it. */}
+          <ChartTooltip
+            content={
+              <ChartTooltipContent
+                hideLabel
+                nameKey="name"
+                formatter={(value, _name, item) => (
+                  <span className="flex w-full items-center justify-between gap-3 whitespace-nowrap">
+                    <span className="text-muted-foreground">{item.payload.name}</span>
+                    <span className="font-medium tabular-nums">{formatCurrency(Number(value))}</span>
+                  </span>
+                )}
+              />
+            }
+          />
           <Pie
-            data={shown}
+            data={slices}
             dataKey="amount"
             nameKey="name"
             innerRadius="72%"
@@ -314,12 +332,12 @@ export function BudgetSplit({ parts, total }: { parts: BudgetSplitPart[]; total:
             endAngle={-270}
             cornerRadius={4}
             stroke="var(--card)"
-            strokeWidth={shown.length > 1 ? 2 : 0}
+            strokeWidth={slices.length > 1 ? 2 : 0}
             // Drawn at once: iOS drops taps while content animates in.
             isAnimationActive={false}
           >
-            {shown.map((part) => (
-              <Cell key={part.key} fill={part.fill} />
+            {slices.map((slice) => (
+              <Cell key={slice.key} fill={slice.fill} />
             ))}
             <Label
               content={({ viewBox }) => {

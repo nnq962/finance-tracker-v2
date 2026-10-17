@@ -78,9 +78,9 @@ export function BudgetsSheet({
           <div className="flex flex-col items-center gap-2 px-6 pt-6 text-center">
             <IconTile icon={GaugeIcon} tone="card" size="lg" />
             <p className="mt-2 text-base font-semibold">Chưa có hạn mức</p>
-            <p className="text-sm text-muted-foreground">Đặt mức chi tối đa mỗi tháng, cho cả tháng hoặc từng nhóm hạng mục.</p>
+            <p className="text-sm text-muted-foreground">Đặt mức chi tối đa mỗi tháng: một hạn mức tổng, hoặc cho từng nhóm hạng mục.</p>
             <Button className="mt-3" onClick={() => edit({ kind: "total" })}>
-              <PlusIcon /> Đặt hạn mức tháng
+              <PlusIcon /> Đặt hạn mức tổng
             </Button>
           </div>
         ) : (
@@ -142,7 +142,7 @@ function BudgetsSheetBody({
   usePageSheetScreen(
     screen
       ? {
-          title: screen.type === "total" ? `Cả tháng ${number}` : past ? `${groupName} · tháng ${number}` : groupName,
+          title: screen.type === "total" ? (past ? `Hạn mức tổng · tháng ${number}` : "Hạn mức tổng") : past ? `${groupName} · tháng ${number}` : groupName,
           onBack: () => setScreen(null),
           // A month gone by is only looked at; limits are changed from this one.
           action: past ? undefined : (
@@ -271,7 +271,7 @@ function ThisMonthList({
         <SettingsGroup>
           <SettingsRow
             media={<IconTile icon={GaugeIcon} tone="neutral" size="sm" />}
-            title="Hạn mức cả tháng"
+            title="Hạn mức tổng"
             description={`Đã chi ${formatCompactCurrency(total.spent, 1)} tháng này`}
             action={<PlusIcon className="size-5 text-muted-foreground" aria-hidden="true" />}
             chevron={false}
@@ -415,7 +415,7 @@ function BudgetForm({ group, line, onDone }: { group?: BudgetGroupLine; line: Bu
   const [amount, setAmount] = React.useState<number | null>(line.limit ?? suggested)
   const [error, setError] = React.useState<string | null>(null)
   const [pending, startTransition] = React.useTransition()
-  const name = group?.name ?? "Cả tháng"
+  const name = group?.name ?? "Hạn mức tổng"
 
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()

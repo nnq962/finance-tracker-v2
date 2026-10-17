@@ -373,7 +373,7 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   khoản (cả nạp/rút hũ, phí chuyển), điều chỉnh số dư, cho vay, trả nợ và lãi vay. Không có tab riêng, mở cùng một
   `PageSheet` "Hạn mức" từ ba chỗ: thẻ "Hạn mức tháng này" ở Tổng quan (dưới nhiệm vụ, chỉ khi đã đặt ít
   nhất một hạn mức: `BudgetTotal` rồi 2–3 nhóm gần chạm hay đã vượt, mỗi nhóm thanh `sm` và "%" hay "Vượt 250k",
-  "Xem tất cả ›"), dòng "Đã dùng 62% hạn mức tháng · còn 4,55tr" dưới thẻ Thu / Chi ở Giao dịch (thẻ trắng
+  "Xem tất cả ›"), dòng "Đã dùng 62% hạn mức tổng · còn 4,55tr" dưới thẻ Thu / Chi ở Giao dịch (thẻ trắng
   bo 16 cao 44+, chỉ ở tháng hiện tại và khi có hạn mức cả tháng), dòng "Hạn mức chi tiêu" ở Cài đặt › Chung
   ("12tr/tháng", "2 nhóm", "Chưa đặt"). `BudgetTotal`: "Còn lại" và số tiền lớn (hay "Vượt hạn mức" đỏ; 2026-10-17 bỏ "Còn được chi"),
   "62% / của 12tr" bên phải, `LimitBar md` màu theo tốc độ chi, dòng "Đang chi nhanh · còn 284k mỗi ngày"
@@ -381,7 +381,7 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   nhanh/chậm; chữ amber khi nhanh; 2026-10-17 bỏ chữ "kế hoạch"). Sheet: thẻ `BudgetTotal`, `NoticeBanner warning`
   "Đang chi nhanh" ("Đã dùng 77% hạn mức khi tháng mới qua 17 ngày.", tính bằng ngày, không bằng %), "THEO NHÓM · N" là
   các `LimitRow` (gần chạm nhất lên đầu), "CHƯA ĐẶT HẠN MỨC" là các nhóm còn lại với "Trung bình 4,12tr/tháng" và
-  dấu +; chưa có hạn mức nào thì một ô icon, một câu và nút "Đặt hạn mức tháng". Sheet sửa: ô icon nhóm `lg`, tên,
+  dấu +; chưa có hạn mức nào thì một ô icon, một câu và nút "Đặt hạn mức tổng". Sheet sửa: ô icon nhóm `lg`, tên,
   "Áp dụng cho mọi tháng", `CurrencyInput hero` bắt đầu từ mức chi trung bình 3 tháng gần nhất làm tròn lên
   (100k từ 1 triệu, dưới đó 50k; chia cho số tháng có chi trong 3 tháng đó), chip gợi ý là số đó, hai dòng
   "Trung bình 3 tháng" / "Đã chi tháng này", chân là Xoá (có hoàn tác) và Lưu. Trong form ghi khoản chi, dưới lưới
@@ -398,14 +398,14 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   "Còn dư …" / "Vượt …", tiêu đề "THEO NHÓM · 3/4 TRONG HẠN MỨC", không có phần chưa đặt hạn mức; tháng
   cũ so với hạn mức hiện tại (chưa lưu hạn mức theo từng tháng). Chạm thẻ cả tháng hay một nhóm mở màn sâu
   (`usePageSheetScreen`, ‹ quay lại, bút chì sửa hạn mức ở bên phải, tháng cũ không có bút chì; tiêu đề "Ăn uống",
-  "Ăn uống · tháng 9", "Cả tháng 10"): thẻ đầu như trên, "CHI THEO NGÀY" (`BudgetDailyChart`: hai số "Đã chi"
+  "Ăn uống · tháng 9", "Hạn mức tổng", "Hạn mức tổng · tháng 9"; 2026-10-17 đổi từ "Cả tháng 10": hạn mức cả tháng gọi là "hạn mức tổng" ở mọi chỗ, cả thông báo đẩy): thẻ đầu như trên, "CHI THEO NGÀY" (`BudgetDailyChart`: hai số "Đã chi"
   (hay "Cả tháng 9") / "Hạn mức"; đường chi luỹ kế màu mực, amber khi đang chi nhanh, đỏ khi vượt, nền mờ cùng
   màu; vạch đỏ mờ là hạn mức; không có đường "đúng kế hoạch" (bỏ 2026-10-17: không ai chi đều như thế); tháng này
   dừng ở hôm nay, tháng cũ chạy tới ngày cuối, đi ngang sau khoản cuối; dưới biểu đồ "Vượt hạn mức từ ngày
   27/09, cả tháng vượt 300k." hay "Cả tháng trong hạn mức, còn dư 350k.", tháng này chỉ khi đã vượt),
   "THEO HẠNG MỤC" (màn nhóm) hay "THEO NHÓM" (màn cả tháng, thêm "Nhóm chưa đặt hạn mức" gom các nhóm không có
   hạn mức, màu xám) là `BudgetSplit` (2026-10-17, thay các dòng có thanh): vòng tròn 160 với tổng ở giữa
-  ("Tổng chi"), dưới là mỗi phần một dòng cao 48: chấm màu, tên (nhóm vượt hạn mức có dòng đỏ "Vượt hạn mức nhóm
+  ("Tổng chi"; chạm một lát hiện tên, số tiền và % như vòng ở Tổng quan, không chuyển màn), dưới là mỗi phần một dòng cao 48: chấm màu, tên (nhóm vượt hạn mức có dòng đỏ "Vượt hạn mức nhóm
   …" dưới tên), số tiền, %, mũi tên; màu nhóm là màu của nhóm, màu hạng mục bắt đầu từ màu nhóm rồi theo bảng màu, "SO VỚI CÁC THÁNG TRƯỚC" (`BudgetMonthsChart`: trung bình các tháng
   trước và hạn mức, bảy cột sáu tháng trước và tháng đang xem, cột vượt đỏ, cột tháng đang xem đậm, vạch hạn mức
   đứt, chú thích "Cột đỏ là tháng vượt hạn mức"), rồi (màn nhóm) ba khoản chi mới nhất theo ngày và "Xem tất cả N giao dịch", mở Giao dịch của tháng đó
