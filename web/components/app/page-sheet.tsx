@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { flushSync } from "react-dom"
 import { ChevronLeftIcon, XIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -165,6 +166,18 @@ export function PageSheet({
   // A deeper screen opened from inside (usePageSheetScreen) takes over the bar.
   const [screen, setScreenState] = React.useState<PageSheetScreen | null>(null)
   const bodyRef = React.useRef<HTMLDivElement>(null)
+  const fadeRef = React.useRef<HTMLDivElement>(null)
+  // A screen change sets the fade at once, without its 200ms ease (2026-10-17):
+  // going back to a scrolled screen from one at its top otherwise showed the
+  // bar bare for a moment, then the fade easing in, a blink.
+  const setFadeNow = React.useCallback((value: boolean) => {
+    const fade = fadeRef.current
+    if (fade) fade.style.transition = "none"
+    flushSync(() => setScrolled(value))
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (fade) fade.style.transition = ""
+    }))
+  }, [])
   // Where each screen was left (2026-10-17: going back, even past several
   // screens, finds the one behind where it was, not at its top). A screen is
   // known by its title, the first by "". `lastTop` follows the user's
@@ -201,6 +214,7 @@ export function PageSheet({
       if (back === -1) {
         // Forward: the screen left behind remembers where it was; the new one opens at its top.
         behind.current.push({ key: move.from, top: move.top })
+        setFadeNow(false)
         body.scrollTo({ top: 0 })
         lastTop.current = 0
         return
@@ -209,6 +223,7 @@ export function PageSheet({
       const top = behind.current[back].top
       behind.current.length = back
       lastTop.current = top
+      setFadeNow(top > 0)
       let tries = 0
       const restore = () => {
         body.scrollTo({ top })
@@ -216,7 +231,7 @@ export function PageSheet({
       }
       restore()
     })
-  }, [])
+  }, [setFadeNow])
   // Closed, it forgets: it opens again at its first screen, at the top.
   React.useEffect(() => {
     if (open !== false) return
@@ -258,6 +273,7 @@ export function PageSheet({
             </div>
           </div>
           <div
+            ref={fadeRef}
             aria-hidden="true"
             className={cn(
               "pointer-events-none absolute inset-x-0 top-0 h-21 opacity-0 transition-opacity duration-200 ease-out",

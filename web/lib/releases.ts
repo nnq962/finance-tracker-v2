@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.5",
+    date: "2026-10-17",
+    title: "Sheet quay lại không nháy header",
+    changes: [
+      { kind: "fixed", text: "Quay lại màn trước trong một sheet, header không còn nháy mất lớp mờ rồi hiện lại khi màn vừa rời chưa cuộn." },
+    ],
+  },
+  {
     version: "6.15.4",
     date: "2026-10-17",
     title: "Vay nợ: mở khoản khác không còn thoáng hiện khoản trước",
