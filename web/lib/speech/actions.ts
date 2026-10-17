@@ -46,15 +46,6 @@ function accountNames(accounts: Account[]): SpokenAccount[] {
     })
 }
 
-/**
- * Which recogniser dictation uses: one on the server (this server's, else
- * Whisper on Groq), or, when there is neither, the browser's own.
- */
-export async function speechEngineAction(): Promise<"server" | "browser"> {
-  await requireSession()
-  return sherpaEnabled() || groqEnabled() ? "server" : "browser"
-}
-
 /** How long dictation waits for this server's recogniser, which answers in well under a second, before Whisper. */
 const SHERPA_TIMEOUT_MS = 5_000
 

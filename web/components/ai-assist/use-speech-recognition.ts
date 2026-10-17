@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { speechEngineAction, transcribeAction } from "@/lib/speech/actions"
+import { transcribeAction } from "@/lib/speech/actions"
 import { normalizeTranscript } from "@/lib/speech/normalize"
 
 // The Web Speech API's recogniser; TypeScript's DOM types lack its constructor.
@@ -71,7 +71,10 @@ export function useSpeechRecognition({ onEnd }: { onEnd: (transcript: string) =>
   const [notice, setNotice] = React.useState<string | null>(null)
   React.useEffect(() => {
     let current = true
-    enginePromise ??= speechEngineAction().catch(() => "browser" as const)
+    // A route, not a Server Action, so asking as the page opens never holds up a tap on a tab.
+    enginePromise ??= fetch("/api/speech-engine", { cache: "no-store" })
+      .then((response) => (response.ok ? (response.json() as Promise<"server" | "browser">) : "browser"))
+      .catch(() => "browser" as const)
     enginePromise.then((value) => {
       if (current) setEngine(value)
     })

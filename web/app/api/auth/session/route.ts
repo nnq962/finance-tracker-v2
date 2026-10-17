@@ -6,29 +6,13 @@ import {
   SESSION_DURATION_MS,
 } from "@/lib/auth/constants"
 import { forgetSessionCheck, getSessionUser } from "@/lib/auth/session"
+import { isCrossOrigin } from "@/lib/http/same-origin"
 import { getFirebaseAdminAuth } from "@/lib/firebase/admin"
 import { initializeUserWorkspace } from "@/lib/onboarding/bootstrap"
 import { closePushSession, openPushSession } from "@/lib/notifications/repository"
 import { PUSH_BROWSER_COOKIE, PUSH_SESSION_COOKIE } from "@/lib/notifications/types"
 
 export const runtime = "nodejs"
-
-function isCrossOrigin(request: Request) {
-  const origin = request.headers.get("origin")
-  if (origin === null) return false
-
-  // request.url carries the server's bind address (e.g. 0.0.0.0:3000) in dev,
-  // in Docker and behind the Cloudflare Tunnel. The Host header keeps the
-  // address the browser actually used, and browsers cannot forge it.
-  const host = request.headers.get("host")
-  if (!host) return true
-
-  try {
-    return new URL(origin).host !== host
-  } catch {
-    return true
-  }
-}
 
 /**
  * Whether this browser still has a valid session, for pages restored from

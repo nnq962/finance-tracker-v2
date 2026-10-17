@@ -2,7 +2,8 @@
 
 import { firebaseApp, firebaseAuth } from "./client"
 import { registerFcmDevice } from "./messaging"
-import { detachPushDeviceAction, getNotificationStateAction, registerPushDeviceAction } from "@/lib/notifications/actions"
+import { detachPushDeviceAction } from "@/lib/notifications/actions"
+import type { NotificationState } from "@/lib/notifications/types"
 
 export const PUSH_DEVICE_CHANGED = "finance-push-device-changed"
 let generation = 0
@@ -24,13 +25,37 @@ function deviceName() {
   return `${os} · ${app}`
 }
 
+type Result<T> = { success: true; data: T } | { success: false; error: string }
+
+/*
+ * The sync runs each time the app opens; it reads and registers through
+ * routes, not Server Actions, which the client sends one at a time with a
+ * navigation waiting behind them (2026-10-17: the first tap on a tab waited
+ * up to 2 s for it on a slow line).
+ */
+async function pushDeviceRequest<T>(init?: RequestInit, uid?: string): Promise<Result<T>> {
+  try {
+    const response = await fetch(init ? "/api/push-device" : `/api/push-device?uid=${encodeURIComponent(uid ?? "")}`, {
+      cache: "no-store",
+      ...init,
+    })
+    return (await response.json()) as Result<T>
+  } catch {
+    return { success: false, error: "Không thể lưu thông báo. Kiểm tra mạng rồi thử lại." }
+  }
+}
+
 function stillCurrent(uid: string, version: number) {
   return generation === version && firebaseAuth.currentUser?.uid === uid
 }
 
 async function persist(fid: string, uid: string, version: number, welcome = false) {
   if (!stillCurrent(uid, version)) throw new Error("Tài khoản đã thay đổi. Đăng ký thiết bị lại.")
-  const result = await registerPushDeviceAction(fid, deviceName(), uid, welcome)
+  const result = await pushDeviceRequest<string>({
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ fid, name: deviceName(), uid, welcome }),
+  })
   if (!result.success) throw new Error(result.error)
   if (!stillCurrent(uid, version)) throw new Error("Phiên đăng ký đã kết thúc.")
   notifyPushDeviceChanged()
@@ -93,7 +118,7 @@ export async function syncAccountPushDevice(uid: string) {
       })
       removeObservers = () => { stopRegistered(); stopUnregistered() }
     }
-    const state = await getNotificationStateAction(uid)
+    const state = await pushDeviceRequest<NotificationState>(undefined, uid)
     if (!stillCurrent(uid, version)) return
     if (!state.success) throw new Error(state.error)
     if (Notification.permission !== "granted") {

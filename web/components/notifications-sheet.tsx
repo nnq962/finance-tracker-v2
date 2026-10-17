@@ -26,7 +26,7 @@ import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { sendAppEvent } from "@/lib/app-events"
 import { formatMomentLabel } from "@/lib/format-date"
-import { getNoticesAction, markNoticesReadAction } from "@/lib/notices/actions"
+import { markNoticesReadAction } from "@/lib/notices/actions"
 import type { Notice, NoticeKind } from "@/lib/notices/types"
 
 /** Each kind's icon and colour: warnings amber, money red or green, the plan's in the AI's lime. */
@@ -61,7 +61,12 @@ let noticesLoad: Promise<Notice[]> | null = null
 function fetchNotices(fresh: boolean) {
   if (!fresh && noticesLoad && Date.now() - noticesAt < NOTICES_FRESH_MS) return noticesLoad
   noticesAt = Date.now()
-  const load = getNoticesAction()
+  // A route, not getNoticesAction: Server Actions go one at a time with a
+  // navigation waiting behind them, and this runs as every page opens.
+  const load = fetch("/api/notices", { cache: "no-store" }).then((response) => {
+    if (!response.ok) throw new Error(String(response.status))
+    return response.json() as Promise<Notice[]>
+  })
   noticesLoad = load
   load.catch(() => {
     if (noticesLoad === load) noticesLoad = null

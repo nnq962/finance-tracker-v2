@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.24",
+    date: "2026-10-17",
+    title: "Chạm tab ngay sau khi mở app không còn phải chờ",
+    changes: [
+      { kind: "fixed", text: "Ngay sau khi mở app, chạm sang tab khác không còn phải chờ tới 2 giây: những việc app tự làm lúc mở (tải thông báo, đồng bộ thiết bị nhận thông báo, hỏi cách nhận giọng nói) không còn chặn việc chuyển trang." },
+    ],
+  },
+  {
     version: "6.15.23",
     date: "2026-10-17",
     title: "Bật bảng ghi tốc độ trong Cài đặt",
