@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.14.0",
+    date: "2026-10-17",
+    title: "Xem giao dịch ngay trong Hạn mức",
+    changes: [
+      { kind: "new", text: "Trong chi tiết hạn mức, \"Xem tất cả giao dịch\", một hạng mục con hay nhóm chưa đặt hạn mức mở danh sách giao dịch ngay trong sheet; chạm một giao dịch để xem, sửa hay xoá, rồi quay lại, không phải sang trang Giao dịch." },
+    ],
+  },
+  {
     version: "6.13.4",
     date: "2026-10-17",
     title: "Thẻ hạn mức ở Tổng quan nói rõ khoản mua bằng hũ",

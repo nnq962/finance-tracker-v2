@@ -445,8 +445,13 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   trước và hạn mức, các cột chỉ từ tháng có giao dịch đầu tiên (tối đa sáu tháng trước và tháng đang xem), cột nhỏ cao
   ít nhất 4px, cột vượt đỏ chỉ từ tháng đặt hạn mức, cột tháng đang xem đậm, vạch hạn mức đứt, chú thích "Cột đỏ: vượt hạn mức. Tháng này tính tới hôm nay."; "Tháng trước" khi
   chỉ có một tháng, "Trung bình N tháng trước" khi nhiều hơn), rồi (màn nhóm) "GIAO DỊCH THÁNG NÀY" (hay "GIAO DỊCH THÁNG 9"): ba khoản chi mới nhất trong một
-  nhóm dòng, mỗi dòng ghi ngày giờ ("04/10, 19:56", "Hôm nay, 12:30"), và "Xem tất cả N giao dịch", mở Giao dịch của tháng đó
-  lọc theo nhóm (`?group=`; chạm một hạng mục cũng mở theo nhóm). Trục số chỉ có 0, nửa hạn mức, hạn mức; khi chi
+  nhóm dòng, mỗi dòng ghi ngày giờ ("04/10, 19:56", "Hôm nay, 12:30"), và "Xem tất cả N giao dịch". Danh sách giao dịch mở ngay trong
+  sheet, là một màn sâu nữa (`BudgetSpendingList`, 2026-10-17: trước đó nhảy sang trang Giao dịch rồi phải quay lại):
+  "Xem tất cả" mở "Giao dịch Ăn uống", chạm một hạng mục ở "Theo hạng mục" mở hạng mục đó ("Ăn trưa"), "Nhóm chưa
+  đặt hạn mức" ở màn tổng và các nhóm chưa đặt hạn mức của tháng cũ mở giao dịch của chúng; chỉ các khoản hạn mức
+  tính (có hạng mục, trong báo cáo, không trả bằng hũ), đầu danh sách "4 giao dịch · 210.000đ", rồi theo ngày (tiêu
+  đề ngày và tổng chi của ngày) bằng `TransactionItem`, chạm mở chi tiết, sửa, xoá như ở trang Giao dịch. ‹ quay
+  về màn trước (các màn xếp chồng). Trang Giao dịch vẫn nhận `?group=` để lọc sẵn theo nhóm. Trục số chỉ có 0, nửa hạn mức, hạn mức; khi chi
   vượt xa thì hạn mức và đỉnh.
 - **Hũ tiết kiệm** (2026-10-14, `budget/_components/savings/`): hũ là một tài khoản loại `savings` (không lãi, để
   dành mua một món), tiền vào ra là chuyển khoản. Trang Tài khoản có nhóm "HŨ TIẾT KIỆM · N" dưới "TÀI KHOẢN CHÍNH · N" (tên cũ "Đang dùng", đổi 2026-10-14):

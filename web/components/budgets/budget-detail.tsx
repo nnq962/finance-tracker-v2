@@ -145,7 +145,8 @@ export function BudgetGroupDetail({
   /** Under the lead card: the hint to change the limit (BudgetAdjustHint), this month only. */
   hint?: React.ReactNode
   /** To the transactions page for the month, filtered to these groups. */
-  onShowTransactions: (groupIds: string[]) => void
+  /** The month's spending in some groups or one category, on a screen of the sheet. */
+  onShowTransactions: (filter: { title: string; groupIds?: string[]; itemId?: string }) => void
 }) {
   return (
     <div className="flex flex-col gap-6">
@@ -173,7 +174,7 @@ export function BudgetGroupDetail({
               name: item.name,
               amount: item.amount,
               fill: itemFills(group.colorName, group.items.length)[index],
-              onClick: () => onShowTransactions([group.groupId]),
+              onClick: () => onShowTransactions({ title: item.name, itemId: item.itemId }),
             }))}
           />
         </ChartCard>
@@ -188,7 +189,7 @@ export function BudgetGroupDetail({
           past={month.past}
         />
       </ChartCard>
-      <LatestSpending group={group} month={month} today={today} onShowAll={() => onShowTransactions([group.groupId])} />
+      <LatestSpending group={group} month={month} today={today} onShowAll={() => onShowTransactions({ title: `Giao dịch ${group.name}`, groupIds: [group.groupId] })} />
     </div>
   )
 }
@@ -208,7 +209,8 @@ export function BudgetTotalDetail({
   /** Under the lead card: the hint to change the limit, this month only. */
   hint?: React.ReactNode
   onGroup: (groupId: string) => void
-  onShowTransactions: (groupIds: string[]) => void
+  /** The month's spending in some groups or one category, on a screen of the sheet. */
+  onShowTransactions: (filter: { title: string; groupIds?: string[]; itemId?: string }) => void
 }) {
   const total = month.total as BudgetMonthLine & { limit: number }
   const limited = month.groups.filter((group) => group.limit !== null && group.spent > 0).sort((a, b) => b.spent - a.spent)
@@ -255,7 +257,8 @@ export function BudgetTotalDetail({
                       name: "Nhóm chưa đặt hạn mức",
                       amount: elsewhere,
                       fill: "var(--chart-neutral)",
-                      onClick: () => onShowTransactions(unlimited.map((group) => group.groupId)),
+                      onClick: () =>
+                        onShowTransactions({ title: "Nhóm chưa đặt hạn mức", groupIds: unlimited.map((group) => group.groupId) }),
                     },
                   ]
                 : []),

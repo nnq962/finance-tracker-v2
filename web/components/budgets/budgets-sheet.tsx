@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { BellRingIcon, ChevronLeftIcon, ChevronRightIcon, GaugeIcon, PencilIcon, PlusIcon, SaveIcon, SparklesIcon, Trash2Icon, ZapIcon } from "lucide-react"
-import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { IconTile } from "@/components/app/icon-tile"
@@ -38,6 +37,7 @@ import { scheduleUndoableDelete } from "@/lib/undoable-delete"
 import { KeptMonths } from "./budget-charts"
 import { BudgetDetailSkeleton, BudgetGroupDetail, BudgetTotalDetail, JarsNote } from "./budget-detail"
 import { BudgetAdjustHint } from "./budget-adjust-hint"
+import { BudgetSpendingList } from "./budget-spending"
 import { BudgetAlertSettingsScreen, budgetAlertsSummary } from "./budget-alert-settings"
 import { BudgetSuggestSheet, canSuggest } from "./budget-suggest"
 import { BudgetResult, BudgetTotal } from "./budget-total"
@@ -51,7 +51,20 @@ function GroupTile({ group, size = "sm" }: { group: BudgetGroupLine; size?: "sm"
 }
 
 /** A detail screen: the whole month's limit, or a group's. */
-type Screen = { type: "total" } | { type: "group"; groupId: string } | { type: "alerts" } | null
+/**
+ * What a screen of the sheet's spending list shows: some groups' or one
+ * category's transactions. Its title differs from the screen it opens from
+ * ("Giao dịch Ăn uống" from "Ăn uống"), as the bar takes a screen's buttons
+ * when its title changes.
+ */
+type SpendingFilter = { title: string; groupIds?: string[]; itemId?: string }
+
+type Screen =
+  | { type: "total" }
+  | { type: "group"; groupId: string }
+  | { type: "alerts" }
+  | ({ type: "spending" } & SpendingFilter)
+  | null
 
 /**
  * Every limit (2026-10-16), opened from the overview's card, the line under
@@ -100,7 +113,7 @@ export function BudgetsSheet({
             )}
           </div>
         ) : (
-          <BudgetsSheetBody overview={overview} onEdit={edit} onClose={() => onOpenChange(false)} />
+          <BudgetsSheetBody overview={overview} onEdit={edit} />
         )}
       </PageSheet>
       {/* Beside the list's sheet, not in it, so its gestures stay its own. */}
@@ -123,17 +136,18 @@ export function BudgetsSheet({
 function BudgetsSheetBody({
   overview,
   onEdit,
-  onClose,
 }: {
   overview: BudgetOverview
   onEdit: (target: Target) => void
-  onClose: () => void
 }) {
-  const router = useRouter()
   const thisMonth = overview.month
   const today = `${thisMonth}-${String(overview.day).padStart(2, "0")}`
   const [month, setMonth] = React.useState(thisMonth)
-  const [screen, setScreen] = React.useState<Screen>(null)
+  // Screens opened one on another (a group, then its transactions): ‹ goes back one.
+  const [stack, setStack] = React.useState<NonNullable<Screen>[]>([])
+  const screen: Screen = stack.at(-1) ?? null
+  const setScreen = React.useCallback((next: Screen) => setStack((current) => (next ? [...current, next] : [])), [])
+  const back = React.useCallback(() => setStack((current) => current.slice(0, -1)), [])
   const [months, setMonths] = React.useState<Record<string, BudgetMonth>>({})
   // Loaded again once a limit or what is spent changes (saved here or elsewhere).
   const version = [overview.total.limit, overview.total.spent, ...overview.groups.map((group) => `${group.limit}:${group.spent}`)].join()
@@ -158,11 +172,13 @@ function BudgetsSheetBody({
 
   usePageSheetScreen(
     screen?.type === "alerts"
-      ? { title: "Thông báo hạn mức", onBack: () => setScreen(null) }
+      ? { title: "Thông báo hạn mức", onBack: back }
+      : screen?.type === "spending"
+      ? { title: past ? `${screen.title} · tháng ${number}` : screen.title, onBack: back }
       : screen
       ? {
           title: screen.type === "total" ? (past ? `Hạn mức tổng · tháng ${number}` : "Hạn mức tổng") : past ? `${groupName} · tháng ${number}` : groupName,
-          onBack: () => setScreen(null),
+          onBack: back,
           // A month gone by is only looked at; limits are changed from this one.
           action: past ? undefined : (
             <Button
@@ -179,12 +195,11 @@ function BudgetsSheetBody({
       : null,
   )
 
-  const showTransactions = (groupIds: string[]) => {
-    onClose()
-    const params = new URLSearchParams()
-    if (month !== thisMonth) params.set("month", month)
-    if (groupIds.length) params.set("group", groupIds.join(","))
-    router.push(`/transactions${params.size ? `?${params}` : ""}`)
+  // In the sheet, on a screen of its own (2026-10-17), not on the transactions page.
+  const showTransactions = (filter: SpendingFilter) => setScreen({ type: "spending", ...filter })
+
+  if (screen?.type === "spending") {
+    return <BudgetSpendingList month={month} filter={screen} today={today} version={version} />
   }
 
   if (screen?.type === "alerts") {
@@ -403,7 +418,7 @@ function PastMonthList({
 }: {
   data?: BudgetMonth
   onOpen: (screen: Screen) => void
-  onShowTransactions: (groupIds: string[]) => void
+  onShowTransactions: (filter: SpendingFilter) => void
 }) {
   if (!data) return <BudgetDetailSkeleton />
   const number = Number(data.month.slice(5))
@@ -470,7 +485,11 @@ function PastMonthList({
               title={group.name}
               description={hasLimit(group) ? `Đặt từ tháng ${Number(group.since!.slice(5))}` : undefined}
               value={<Money amount={group.spent} size="sm" tone="muted" />}
-              onClick={() => (hasLimit(group) ? onOpen({ type: "group", groupId: group.groupId }) : onShowTransactions([group.groupId]))}
+              onClick={() =>
+                hasLimit(group)
+                  ? onOpen({ type: "group", groupId: group.groupId })
+                  : onShowTransactions({ title: `Giao dịch ${group.name}`, groupIds: [group.groupId] })
+              }
             />
           ))}
         </SettingsGroup>

@@ -4,9 +4,13 @@ import { revalidatePath } from "next/cache"
 
 import { requireSession } from "@/lib/auth/session"
 import { syncBudgetAlerts } from "@/lib/budgets/alerts"
+import { getAccounts } from "@/lib/accounts/repository"
+import type { Account } from "@/lib/accounts/types"
 import { getBudgetMonth } from "@/lib/budgets/month"
 import {
   BudgetValidationError,
+  monthStart,
+  shiftMonth,
   deleteBudget,
   dismissBudgetHint,
   saveBudget,
@@ -14,6 +18,10 @@ import {
   setBudgetAlertSettings,
 } from "@/lib/budgets/repository"
 import type { BudgetActionResult, BudgetAlertSettings, BudgetMonth } from "@/lib/budgets/types"
+import { getCategoryGroups } from "@/lib/categories/repository"
+import type { CategoryGroup } from "@/lib/categories/types"
+import { getTransactionsInRange } from "@/lib/transactions/repository"
+import type { Transaction } from "@/lib/transactions/types"
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -126,5 +134,46 @@ export async function saveBudgetAlertSettingsAction(settings: BudgetAlertSetting
     return { success: true }
   } catch (error) {
     return failure(error)
+  }
+}
+
+export type BudgetSpending = { transactions: Transaction[]; accounts: Account[]; categoryGroups: CategoryGroup[] }
+
+/**
+ * A month's spending in some groups or one category, as the limits count it
+ * (with a category, in the figures, not paid from a savings jar), newest
+ * first, for the limits sheet's own list (2026-10-17: no trip to the
+ * transactions page and back); with the accounts and categories its rows
+ * need to open and edit a transaction. Null when it cannot be read.
+ */
+export async function loadBudgetSpendingAction(
+  month: string,
+  filter: { groupIds?: string[]; itemId?: string },
+): Promise<BudgetSpending | null> {
+  const user = await requireSession()
+  try {
+    if (typeof month !== "string" || !/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return null
+    const groupIds = Array.isArray(filter?.groupIds) ? filter.groupIds.filter((id) => typeof id === "string") : []
+    const itemId = typeof filter?.itemId === "string" ? filter.itemId : undefined
+    const [own, accounts, categoryGroups] = await Promise.all([
+      getTransactionsInRange(user.uid, monthStart(month), monthStart(shiftMonth(month, 1))),
+      getAccounts(user.uid),
+      getCategoryGroups(user.uid),
+    ])
+    const jars = new Set(accounts.filter((account) => account.type === "savings").map((account) => account.id))
+    const transactions = own.filter(
+      (transaction) =>
+        transaction.kind === "expense" &&
+        transaction.categoryId &&
+        !transaction.excluded &&
+        !transaction.accountExcluded &&
+        !transaction.adjustment &&
+        !(transaction.accountId && jars.has(transaction.accountId)) &&
+        (itemId ? transaction.categoryId === itemId : groupIds.includes(transaction.categoryGroupId ?? "")),
+    )
+    return { transactions, accounts, categoryGroups }
+  } catch (error) {
+    console.error("Budget spending failed", error)
+    return null
   }
 }
