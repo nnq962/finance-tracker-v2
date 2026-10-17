@@ -32,6 +32,19 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.8",
+    date: "2026-10-17",
+    title: "Sửa trang Tổng quan sau một lượt test",
+    changes: [
+      { kind: "fixed", text: "Biểu đồ thu chi 6 tháng: trục bên trái không còn cắt mất chữ số đầu khi một tháng từ 1 tỷ trở lên, các mốc tròn và ghi tỷ đúng đơn vị; dòng số của tháng đang chọn không còn xuống dòng." },
+      { kind: "fixed", text: "Lịch: ngày chỉ có khoản vay hoặc cho vay mở ra có khoản đó, thay vì \"Chưa có giao dịch\"." },
+      { kind: "fixed", text: "Tài sản ròng ghi cả khoản vay đi từ tài khoản ngoài báo cáo (đã không tính vào \"Cho vay\"), nên con số khớp được với trang Vay nợ; số rất lớn tự thu nhỏ cho vừa một dòng." },
+      { kind: "fixed", text: "Theo hạng mục ghi tên tháng khi lịch đang ở tháng khác, câu trống nói đúng tháng đó, \"Xem tất cả\" mở giao dịch của tháng đó; hạng mục rất nhỏ ghi \"<1%\" thay vì 0%." },
+      { kind: "fixed", text: "Màn chờ có sẵn chỗ cho Nhiệm vụ và Hạn mức, nên lịch không còn bị đẩy xuống khi trang tải xong." },
+      { kind: "improved", text: "Hạn mức vượt quá xa ghi \">999%\"; tiêu đề Nhiệm vụ không còn để chữ \"AI\" một mình trên màn hình hẹp." },
+    ],
+  },
+  {
     version: "6.15.7",
     date: "2026-10-17",
     title: "Danh sách việc còn lại",

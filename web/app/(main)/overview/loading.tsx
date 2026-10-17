@@ -23,20 +23,103 @@ function NetWorthSkeleton() {
         <div className="mt-1.5 flex h-[42.5px] items-center">
           <Skeleton className="h-8 w-56 max-w-full" />
         </div>
-        <div className="mt-0.5 flex h-5 items-center">
+        <div className="mt-1.5 flex h-5 items-center">
           <Skeleton className="h-3.5 w-32" />
         </div>
         <StatGroup separated className="mt-5">
           {[0, 1, 2].map((index) => (
             <Stat
               key={index}
-              value={<Skeleton className="h-3.5 w-12" />}
-              label={<Skeleton className="mt-1.5 h-3 w-14 max-w-full" />}
+              value={
+                <span className="flex h-5 items-center">
+                  <Skeleton className="h-3.5 w-12" />
+                </span>
+              }
+              label={
+                <span className="flex h-4 items-center">
+                  <Skeleton className="h-3 w-14 max-w-full" />
+                </span>
+              }
             />
           ))}
         </StatGroup>
       </CardContent>
     </Card>
+  )
+}
+
+/**
+ * The missions as most show them, folded (2026-10-17: without them and the
+ * limits below, the calendar jumped ~800px down once the page came): the
+ * header's 182px (label, title, caption, button beside the ring), then one
+ * 64px row, Pro's invitation.
+ */
+function MissionsSkeleton() {
+  return (
+    <Card size="lg" className="gap-0 py-0">
+      <div className="flex h-[182px] items-center gap-4 p-6">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex h-5 items-center">
+            <Skeleton className="h-3.5 w-20" />
+          </div>
+          <div className="mt-1.5 flex h-7 items-center">
+            <Skeleton className="h-5 w-40 max-w-full" />
+          </div>
+          <div className="mt-1 flex h-4 items-center">
+            <Skeleton className="h-3 w-32 max-w-full" />
+          </div>
+          <Skeleton className="mt-4 h-11 w-36 rounded-full" />
+        </div>
+        <Skeleton className="size-26 shrink-0 rounded-full" />
+      </div>
+      <div className="flex h-16 items-center gap-3 border-t px-4">
+        <Skeleton className="size-9 shrink-0 rounded-xl" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-3.5 w-28" />
+          <Skeleton className="h-3 w-36" />
+        </div>
+      </div>
+    </Card>
+  )
+}
+
+/**
+ * The month's limits as BudgetOverviewCard shows them: the whole month's
+ * (its name, figure, bar and pace line), then three groups under a line.
+ */
+function BudgetsSkeleton() {
+  return (
+    <SectionSkeleton action={<Skeleton className="h-4 w-20" />}>
+      <Card size="lg">
+        <CardContent>
+          <div className="mb-3 flex h-5 items-center">
+            <Skeleton className="h-3.5 w-24" />
+          </div>
+          <div className="flex h-[52px] items-end justify-between pb-1">
+            <Skeleton className="h-7 w-36" />
+            <Skeleton className="h-4 w-12" />
+          </div>
+          <Skeleton className="mt-3.5 h-2.5 rounded-full" />
+          <div className="mt-2.5 flex h-4 items-center">
+            <Skeleton className="h-3 w-48 max-w-full" />
+          </div>
+          <div className="mt-5 flex h-[37px] items-end border-t border-separator pb-0.5">
+            <Skeleton className="h-3.5 w-20" />
+          </div>
+          <div className="mt-3 flex flex-col gap-4">
+            {[0, 1, 2].map((index) => (
+              <div key={index} className="flex h-9 items-center gap-3">
+                <Skeleton className="size-9 shrink-0 rounded-xl" />
+                <div className="flex-1 space-y-2.5">
+                  <Skeleton className="h-3.5 w-24" />
+                  <Skeleton className="h-2.5 rounded-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </SectionSkeleton>
   )
 }
 
@@ -151,6 +234,8 @@ export default function OverviewLoading() {
         <PageHeaderSkeleton lead tools={["round"]} />
         <OverviewLayout
           netWorth={<NetWorthSkeleton />}
+          missions={<MissionsSkeleton />}
+          budgets={<BudgetsSkeleton />}
           calendar={<CalendarSkeleton />}
           allocation={<CategoriesSkeleton />}
           trend={<TrendSkeleton />}

@@ -24,18 +24,30 @@ export function CategoryBreakdown({
   categoryGroups,
   allocation,
   month,
+  today,
 }: {
   categoryGroups: CategoryGroup[]
   allocation: Record<string, MonthAllocation>
   /** "YYYY-MM", the month chosen above. */
   month: string
+  /** "YYYY-MM-DD" in Vietnam time. */
+  today: string
 }) {
   const [type, setType] = React.useState<CategoryType>("expense")
   const { slices, total } = allocationSlices(categoryGroups, allocation, month, type)
   const typeLabel = type === "expense" ? "chi" : "thu"
+  // Another month than this one is named, so its figures are not taken for
+  // this month's (2026-10-17), and "Xem tất cả" opens that month.
+  const isThisMonth = month === today.slice(0, 7)
+  const [year, monthNumber] = month.split("-").map(Number)
+  const monthLabel = `${monthNumber}${year !== Number(today.slice(0, 4)) ? `, ${year}` : ""}`
 
   return (
-    <Section title="Theo hạng mục" href="/transactions">
+    <Section
+      title="Theo hạng mục"
+      note={isThisMonth ? undefined : `Tháng ${monthLabel}`}
+      href={isThisMonth ? "/transactions" : `/transactions?month=${month}`}
+    >
       <Tabs value={type} onValueChange={(value) => setType(value as CategoryType)}>
         <TabsList className="w-full">
           <TabsTrigger value="expense">Chi tiêu</TabsTrigger>
@@ -112,7 +124,7 @@ export function CategoryBreakdown({
                     <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: slice.fill }} />
                     <span className="min-w-0 flex-1 truncate">{slice.name}</span>
                     <span className="sr-only">{formatCurrency(slice.amount)},</span>
-                    <span className="shrink-0 text-muted-foreground tabular-nums">{slice.share}%</span>
+                    <span className="shrink-0 text-muted-foreground tabular-nums">{slice.shareLabel}</span>
                   </li>
                 ))}
               </ul>
@@ -120,7 +132,7 @@ export function CategoryBreakdown({
           ) : (
             <Empty className="p-4">
               <EmptyHeader>
-                <EmptyDescription>Chưa có khoản {typeLabel} tháng này</EmptyDescription>
+                <EmptyDescription>Chưa có khoản {typeLabel} {isThisMonth ? "tháng này" : `trong tháng ${monthLabel}`}</EmptyDescription>
               </EmptyHeader>
             </Empty>
           )}

@@ -39,7 +39,7 @@ const transactions = [
 const summary = getOverviewSummary(accounts, debts, contacts, transactions, '2026-09-23')
 assert.deepEqual(summary.netWorth, {
   cash: 10_000_000,
-  leftOut: { count: 0, cash: 0 },
+  leftOut: { count: 0, cash: 0, receivable: 0, payable: 0 },
   receivable: 3_000_000,
   payable: 5_000_000,
   total: 8_000_000,
@@ -94,5 +94,19 @@ assert.equal(getTransactionSummary([{ ...repayment, accountExcluded: true }]).in
 // A loan made from an account left out of the figures is left out of the net worth.
 const leftOutLoan = getOverviewSummary([{ id: 'quỹ', balance: 0, status: 'active', excluded: true }], [{ ...debts[1], accountId: 'quỹ' }], contacts, [], '2026-09-23')
 assert.equal(leftOutLoan.netWorth.receivable, 0)
+// …and the card says so, as the debts page still counts it.
+assert.equal(leftOutLoan.netWorth.leftOut.receivable, 3_000_000)
+// A day with a loan alone still opens with it, neither income nor spending.
+assert.deepEqual(summarizeDays([{ id: 'loan-only', source: 'debt', kind: 'expense', amount: -100_000, occurredAt: '2026-09-14T04:00:00.000Z' }]), {
+  '2026-09-14': { income: 0, expense: 0, count: 0 },
+})
+// The categories' shares: a slice too small to round to 1% reads "<1%".
+const { allocationSlices } = require('../app/(main)/overview/_lib/allocation-slices.ts')
+const tiny = allocationSlices([], { '2026-09': { expense: { a: 999_000, b: 1_000 }, income: {} } }, '2026-09', 'expense')
+assert.deepEqual(tiny.slices.map((slice) => slice.shareLabel), ['100%', '<1%'])
+// Far past a limit the share stops at ">999%".
+const { formatBudgetPercent } = require('../lib/budgets/calculations.ts')
+assert.equal(formatBudgetPercent(1_374_650_000, 1_200_000), '>999%')
+assert.equal(formatBudgetPercent(600_000, 1_200_000), '50%')
 
 console.log('Overview summary checks passed.')

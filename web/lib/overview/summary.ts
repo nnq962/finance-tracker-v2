@@ -34,15 +34,19 @@ export function getOverviewSummary(
   const leftOut = {
     count: leftOutAccounts.length,
     cash: leftOutAccounts.reduce((total, account) => total + account.balance, 0),
+    // Loans left out with their account, which the debts page still counts:
+    // the card says so (2026-10-17), so its "Cho vay" reads apart from that page's.
+    receivable: 0,
+    payable: 0,
   }
   // A loan made from or into an account left out of the figures is left out with it.
-  const leftOutIds = new Set(accounts.filter((account) => account.excluded).map((account) => account.id))
+  const leftOutIds = new Set(leftOutAccounts.map((account) => account.id))
   const debtBalances = debts.reduce(
     (totals, debt) => {
-      if (debt.accountId && leftOutIds.has(debt.accountId)) return totals
       const remaining = getPaymentMetrics(debt, today).remainingAmount
-      if (debt.direction === "lent") totals.receivable += remaining
-      else totals.payable += remaining
+      const into = debt.accountId && leftOutIds.has(debt.accountId) ? leftOut : totals
+      if (debt.direction === "lent") into.receivable += remaining
+      else into.payable += remaining
       return totals
     },
     { receivable: 0, payable: 0 },

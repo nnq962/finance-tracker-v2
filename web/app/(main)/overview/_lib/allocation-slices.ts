@@ -31,6 +31,8 @@ export type AllocationSlice = {
   amount: number
   /** Whole percent of the month's total. */
   share: number
+  /** The share as shown: "<1%" for a slice that rounds to nothing (2026-10-17: it read "0%"). */
+  shareLabel: string
   color: CategoryColorName
   fill: string
 }
@@ -53,6 +55,7 @@ export function allocationSlices(
   const visible = ranked.length > MAX_SLICES + 1 ? ranked.slice(0, MAX_SLICES) : ranked
   const restAmount = ranked.slice(visible.length).reduce((sum, [, amount]) => sum + amount, 0)
   const toShare = (amount: number) => (total > 0 ? Math.round((amount / total) * 100) : 0)
+  const toLabel = (amount: number) => (amount > 0 && toShare(amount) === 0 ? "<1%" : `${toShare(amount)}%`)
 
   const slices: AllocationSlice[] = visible.map(([key, amount]) => {
     const group = groupsById.get(key)
@@ -64,6 +67,7 @@ export function allocationSlices(
       name: group?.name ?? system?.name ?? "Chưa phân loại",
       amount,
       share: toShare(amount),
+      shareLabel: toLabel(amount),
       color,
       fill: getCategoryColor(color).chartFill,
     }
@@ -75,6 +79,7 @@ export function allocationSlices(
       name: `Khác (${ranked.length - visible.length} nhóm)`,
       amount: restAmount,
       share: toShare(restAmount),
+      shareLabel: toLabel(restAmount),
       color: OTHER_COLOR,
       fill: getCategoryColor(OTHER_COLOR).chartFill,
     })

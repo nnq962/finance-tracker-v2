@@ -30,9 +30,12 @@ export type MonthAllocation = {
 export function summarizeDays(transactions: Transaction[]) {
   const days: Record<string, DayTotals> = {}
   for (const transaction of forFigures(transactions)) {
-    if (transaction.source) continue
     const key = toDateKey(transaction.occurredAt)
     const day = (days[key] ??= { income: 0, expense: 0, count: 0 })
+    // A loan or repayment still opens its day, whose sheet lists it as the
+    // transactions page does (2026-10-17: a day with a loan alone read
+    // "Chưa có giao dịch"); it is neither income nor spending.
+    if (transaction.source) continue
     // Still a transaction that day, but left out of its sums.
     if (!isLeftOut(transaction)) {
       if (transaction.kind === "income") day.income += Math.abs(transaction.amount)

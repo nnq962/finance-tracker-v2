@@ -185,9 +185,11 @@ export function CashFlowCalendar({
                         "outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/30 active:bg-muted",
                       )}
                       aria-label={
-                        totals
+                        totals?.income || totals?.expense
                           ? `Ngày ${day}: thu ${formatCurrency(totals.income)}, chi ${formatCurrency(totals.expense)}`
-                          : `Ngày ${day}: chưa có giao dịch`
+                          : totals
+                            ? `Ngày ${day}: không có thu chi`
+                            : `Ngày ${day}: chưa có giao dịch`
                       }
                       onClick={() => setOpenDay(key)}
                     >

@@ -31,7 +31,10 @@ export function NetWorth({
     <Card size="lg" variant="inverse" aria-labelledby="net-worth-title" role="region">
       <CardContent>
         <CardLabel id="net-worth-title">Tài sản ròng</CardLabel>
-        <Money amount={data.total} size="xl" tone={data.total < 0 ? "expense" : "default"} className="mt-1.5" />
+        {/* Fits its line, as the accounts page's total: from 10 tỷ it reached the card's edge (2026-10-17). */}
+        <div className="@container mt-1.5">
+          <Money amount={data.total} size="xl" fit tone={data.total < 0 ? "expense" : "default"} />
+        </div>
         {hasMonth ? (
           <p className="mt-1.5 flex items-center text-sm">
             {/* The accent chip for a gain; a loss stays red, a flat month plain. */}
@@ -52,6 +55,8 @@ export function NetWorth({
         {data.leftOut.count > 0 ? (
           <CardLabel as="p" className="mt-1.5">
             {data.leftOut.count} tài khoản ngoài báo cáo · {formatCompactCurrency(data.leftOut.cash, 1)}
+            {data.leftOut.receivable > 0 ? `, cho vay ${formatCompactCurrency(data.leftOut.receivable, 1)}` : null}
+            {data.leftOut.payable > 0 ? `, đang nợ ${formatCompactCurrency(data.leftOut.payable, 1)}` : null}
           </CardLabel>
         ) : null}
         {/* Three share the card's width, so the amounts are shortened; the

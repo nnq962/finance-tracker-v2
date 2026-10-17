@@ -6,7 +6,7 @@ import { Money } from "@/components/app/money"
 import {
   budgetPace,
   budgetPaceLabel,
-  budgetPercent,
+  formatBudgetPercent,
   daysLeft,
   limitTone,
   monthShare,
@@ -36,7 +36,7 @@ export function BudgetTotal({ overview, compact = false }: { overview: BudgetOve
           <Money amount={Math.abs(limit - spent)} size={compact ? "lg" : "xl"} tone={over ? "expense" : "default"} className="mt-1" />
         </span>
         <span className="flex shrink-0 flex-col items-end pb-1">
-          <span className="text-sm font-semibold tabular-nums">{budgetPercent(spent, limit)}%</span>
+          <span className="text-sm font-semibold tabular-nums">{formatBudgetPercent(spent, limit)}</span>
           <span className="text-xs text-muted-foreground tabular-nums">của {formatCompactCurrency(limit, 1)}</span>
         </span>
       </div>
@@ -90,7 +90,7 @@ export function BudgetResult({ spent, limit, label }: { spent: number; limit?: n
           <Money amount={spent} size="xl" className="mt-1" />
         </span>
         <span className="flex shrink-0 flex-col items-end pb-1">
-          <span className="text-sm font-semibold tabular-nums">{budgetPercent(spent, limit)}%</span>
+          <span className="text-sm font-semibold tabular-nums">{formatBudgetPercent(spent, limit)}</span>
           <span className="text-xs text-muted-foreground tabular-nums">của {formatCompactCurrency(limit, 1)}</span>
         </span>
       </div>

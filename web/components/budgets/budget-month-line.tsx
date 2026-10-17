@@ -5,7 +5,7 @@ import { ChevronRightIcon, GaugeIcon } from "lucide-react"
 
 import { LimitBar } from "@/components/app/limit-bar"
 import { Skeleton } from "@/components/ui/skeleton"
-import { budgetPercent, hasLimit, limitTone, monthShare } from "@/lib/budgets/calculations"
+import { formatBudgetPercent, hasLimit, limitTone, monthShare } from "@/lib/budgets/calculations"
 import type { BudgetOverview } from "@/lib/budgets/types"
 import { formatCompactCurrency } from "@/lib/format-currency"
 import { cn } from "@/lib/utils"
@@ -37,7 +37,7 @@ export function BudgetMonthLine({ overview, className }: { overview: BudgetOverv
         <span className="flex min-w-0 flex-1 flex-col gap-1.5 py-2.5">
           <span className="flex items-baseline justify-between gap-3 text-sm">
             {/* On a narrow phone the words take two balanced lines rather than lose "tổng". */}
-            <span className="min-w-0 text-balance">Đã dùng {budgetPercent(total.spent, total.limit)}% hạn mức tổng</span>
+            <span className="min-w-0 text-balance">Đã dùng {formatBudgetPercent(total.spent, total.limit)} hạn mức tổng</span>
             <span className={cn("shrink-0 text-xs text-muted-foreground tabular-nums", over && "text-expense")}>
               {over ? "vượt" : "còn"} {formatCompactCurrency(Math.abs(total.limit - total.spent), 1)}
             </span>

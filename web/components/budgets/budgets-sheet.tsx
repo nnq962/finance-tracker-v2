@@ -18,7 +18,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { deleteBudgetAction, loadBudgetMonthAction, saveBudgetAction } from "@/lib/budgets/actions"
 import {
   budgetPace,
-  budgetPercent,
+  formatBudgetPercent,
   daysLeft,
   groupsByUse,
   hasAnyBudget,
@@ -398,7 +398,7 @@ function ThisMonthList({
 
       {fast ? (
         <NoticeBanner tone="warning" icon={ZapIcon} title="Đang chi nhanh">
-          Đã dùng {budgetPercent(total.spent, total.limit!)}% hạn mức khi tháng mới qua {overview.day} ngày.
+          Đã dùng {formatBudgetPercent(total.spent, total.limit!)} hạn mức khi tháng mới qua {overview.day} ngày.
         </NoticeBanner>
       ) : null}
 

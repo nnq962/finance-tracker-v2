@@ -46,6 +46,12 @@ export function budgetPercent(spent: number, limit: number) {
   return Math.round((spent / limit) * 100)
 }
 
+/** The share as shown: ">999%" far past a limit, where the figure says nothing more (2026-10-17: "114654%"). */
+export function formatBudgetPercent(spent: number, limit: number) {
+  const percent = budgetPercent(spent, limit)
+  return percent > 999 ? ">999%" : `${percent}%`
+}
+
 /** The suggested limit: the average rounded up to a tidy figure (100k from a million, else 50k). */
 export function suggestedLimit(average: number) {
   if (average <= 0) return null

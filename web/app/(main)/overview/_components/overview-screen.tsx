@@ -99,8 +99,8 @@ export function OverviewScreen({
   )
   const trend = React.useMemo(() => <TrendSection cashFlow={cashFlow} />, [cashFlow])
   const categories = React.useMemo(
-    () => <CategoryBreakdown categoryGroups={categoryGroups} allocation={allocation} month={categoriesMonth} />,
-    [categoryGroups, allocation, categoriesMonth],
+    () => <CategoryBreakdown categoryGroups={categoryGroups} allocation={allocation} month={categoriesMonth} today={today} />,
+    [categoryGroups, allocation, categoriesMonth, today],
   )
 
   return (

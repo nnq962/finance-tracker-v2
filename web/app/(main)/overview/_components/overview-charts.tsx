@@ -15,37 +15,60 @@ const cashFlowConfig = {
   expense: { label: "Chi", color: "var(--chart-neutral)" },
 } satisfies ChartConfig
 
-/** The Y axis's width: the month columns that take taps start right after it. */
-const yAxisWidth = 44
-
 type CashFlowMonth = OverviewSummary["cashFlow"]["months"][number]
 
 function compactMoney(value: number) {
-  if (value >= 1_000_000) return `${Number((value / 1_000_000).toFixed(1)).toLocaleString("vi-VN")}tr`
-  if (value >= 1_000) return `${Number((value / 1_000).toFixed(0))}k`
+  const short = (amount: number, unit: string) => `${Number(amount.toFixed(2)).toLocaleString("vi-VN")}${unit}`
+  if (value >= 1_000_000_000) return short(value / 1_000_000_000, "tỷ")
+  if (value >= 1_000_000) return short(value / 1_000_000, "tr")
+  if (value >= 1_000) return short(value / 1_000, "k")
   return String(value)
+}
+
+/**
+ * Five marks from 0, a round step apart (1, 2, 2.5 or 5 times a power of
+ * ten), the top one at or above the largest bar. Set here rather than left
+ * to Recharts, so the axis can be as wide as its longest mark.
+ */
+function axisTicks(months: CashFlowMonth[]) {
+  const top = Math.max(1, ...months.flatMap((month) => [month.income, month.expense]))
+  const raw = top / 4
+  const power = 10 ** Math.floor(Math.log10(raw))
+  const step = [1, 2, 2.5, 5, 10].find((factor) => factor * power >= raw)! * power
+  return [0, 1, 2, 3, 4].map((index) => index * step)
+}
+
+/**
+ * The Y axis's width for its marks (2026-10-17: a fixed 44 cut "1.800tr" to
+ * ".800tr"): about 7px a character of the 12px labels, and room to breathe.
+ * The month columns that take taps start right after it.
+ */
+function axisWidth(ticks: number[]) {
+  return Math.max(32, Math.max(...ticks.map((tick) => compactMoney(tick).length)) * 7 + 10)
 }
 
 /**
  * The selected month's figures, read out above the bars in place of a
  * floating tooltip. The month and the figures always take two lines, so the
- * bars stay put under the finger whatever the amounts' length.
+ * bars stay put under the finger whatever the amounts' length: each figure
+ * has half the width and fits it (from 1 tỷ up they wrapped at 360px,
+ * 2026-10-17).
  */
 function MonthReadout({ month }: { month: CashFlowMonth }) {
   return (
     <div aria-live="polite" aria-atomic className="flex flex-col gap-0.5">
       <p className="font-medium">{month.name}</p>
-      <dl className="flex flex-wrap items-baseline gap-x-3">
-        <div className="flex items-baseline gap-1.5">
+      <dl className="grid grid-cols-2 gap-x-3">
+        <div className="flex min-w-0 items-baseline gap-1.5">
           <dt className="text-xs text-muted-foreground">Thu</dt>
-          <dd>
-            <Money amount={month.income} size="sm" tone={month.income > 0 ? "income" : "default"} />
+          <dd className="@container min-w-0 flex-1">
+            <Money amount={month.income} size="sm" fit tone={month.income > 0 ? "income" : "default"} />
           </dd>
         </div>
-        <div className="flex items-baseline gap-1.5">
+        <div className="flex min-w-0 items-baseline gap-1.5">
           <dt className="text-xs text-muted-foreground">Chi</dt>
-          <dd>
-            <Money amount={month.expense} size="sm" />
+          <dd className="@container min-w-0 flex-1">
+            <Money amount={month.expense} size="sm" fit />
           </dd>
         </div>
       </dl>
@@ -64,6 +87,8 @@ export function CashFlowChart({ data }: { data: OverviewSummary["cashFlow"] }) {
   // The last month is the current one.
   const selectedIndex = found === -1 ? data.months.length - 1 : found
   const selected = data.months[selectedIndex]
+  const ticks = axisTicks(data.months)
+  const yAxisWidth = axisWidth(ticks)
 
   return (
     <div className="flex flex-col gap-4">
@@ -110,6 +135,8 @@ export function CashFlowChart({ data }: { data: OverviewSummary["cashFlow"] }) {
             />
             <YAxis
               interval={0}
+              ticks={ticks}
+              domain={[0, ticks[ticks.length - 1]]}
               // Plain <text>, as on the X axis; 0.355em centres it on y.
               tick={({ payload, x, y, textAnchor, className }) => (
                 <text x={x} y={y} dy="0.355em" textAnchor={textAnchor} className={className}>
