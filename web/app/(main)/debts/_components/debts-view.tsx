@@ -75,11 +75,14 @@ export function DebtsView({
   const [, startNavigation] = React.useTransition()
   const [sheetDebtId, setSheetDebtId] = React.useState<string | null>(null)
   // A link from elsewhere opens its debt (its payments came with the page),
-  // once per link: closed, it stays closed until another one asks.
-  const [openedRequest, setOpenedRequest] = React.useState<string>()
-  if (requestedDebtId !== openedRequest) {
-    setOpenedRequest(requestedDebtId)
-    if (requestedDebtId) setSheetDebtId(requestedDebtId)
+  // when the URL comes to name it. The URL a tap on a row sets is not such a
+  // link: until it lands the URL still names the debt shown before, which
+  // must not open again over the one tapped (2026-10-17).
+  const [seenRequest, setSeenRequest] = React.useState<string>()
+  const [tappedDebtId, setTappedDebtId] = React.useState<string>()
+  if (requestedDebtId !== seenRequest) {
+    setSeenRequest(requestedDebtId)
+    if (requestedDebtId && requestedDebtId !== tappedDebtId) setSheetDebtId(requestedDebtId)
   }
   const selectedDebtId = initialSelectedDebtId ?? debts[0]?.id
   const contactById = new Map(contacts.map((contact) => [contact.id, contact]))
@@ -115,7 +118,7 @@ export function DebtsView({
   function selectDebt(debtId: string) {
     setSheetDebtId(debtId)
     // The URL this navigation sets is not a link to open it again (closed while it loads, it stays closed).
-    setOpenedRequest(debtId)
+    setTappedDebtId(debtId)
 
     if (debtId === selectedDebtId) return
 
