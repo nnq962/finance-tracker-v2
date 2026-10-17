@@ -472,7 +472,7 @@ function LimitSample() {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 rounded-[20px] bg-card p-4">
           <LimitBar value={38} max={100} label="Dưới 80%" />
-          <LimitBar value={86} max={100} tone="near" label="Từ 80%, hay chi nhanh hơn kế hoạch" />
+          <LimitBar value={86} max={100} tone="near" label="Từ 80%, hay đang chi nhanh" />
           <LimitBar value={113} max={100} tone="over" label="Đã vượt" />
           <LimitBar value={62} max={100} tone="near" size="md" label="Cỡ md, cho con số dẫn đầu" />
         </div>

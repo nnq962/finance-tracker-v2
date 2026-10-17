@@ -281,8 +281,8 @@ function ThisMonthList({
       )}
 
       {fast ? (
-        <NoticeBanner tone="warning" icon={ZapIcon} title="Đang chi nhanh hơn kế hoạch">
-          Đã dùng {budgetPercent(total.spent, total.limit!)}% hạn mức khi tháng mới qua {Math.round(share * 100)}%.
+        <NoticeBanner tone="warning" icon={ZapIcon} title="Đang chi nhanh">
+          Đã dùng {budgetPercent(total.spent, total.limit!)}% hạn mức khi tháng mới qua {overview.day} ngày.
         </NoticeBanner>
       ) : null}
 
@@ -310,7 +310,7 @@ function ThisMonthList({
       ) : null}
 
       {unlimited.length > 0 ? (
-        <SettingsGroup title="Chưa đặt hạn mức" footer="Gợi ý là mức chi trung bình 3 tháng gần nhất.">
+        <SettingsGroup title="Chưa đặt hạn mức" footer="Khi đặt, số gợi ý là mức chi trung bình 3 tháng gần nhất.">
           {unlimited.map((group) => (
             <SettingsRow
               key={group.groupId}
@@ -354,7 +354,7 @@ function PastMonthList({ data, onOpen }: { data?: BudgetMonth; onOpen: (screen: 
         </Card>
       ) : null}
       {limited.length > 0 ? (
-        <SettingsGroup title={`Theo nhóm · giữ được ${kept}/${limited.length}`}>
+        <SettingsGroup title={`Theo nhóm · ${kept}/${limited.length} trong hạn mức`}>
           {limited.map((group) => (
             <LimitRow
               key={group.groupId}
@@ -371,8 +371,8 @@ function PastMonthList({ data, onOpen }: { data?: BudgetMonth; onOpen: (screen: 
               tone={limitTone(group.spent, group.limit)}
               caption={
                 group.spent > group.limit
-                  ? `Đã vượt ${formatCompactCurrency(group.spent - group.limit, 1)}`
-                  : `Giữ được · dư ${formatCompactCurrency(group.limit - group.spent, 1)}`
+                  ? `Vượt ${formatCompactCurrency(group.spent - group.limit, 1)}`
+                  : `Còn dư ${formatCompactCurrency(group.limit - group.spent, 1)}`
               }
               onClick={() => onOpen({ type: "group", groupId: group.groupId })}
             />
@@ -458,7 +458,7 @@ function BudgetForm({ group, line, onDone }: { group?: BudgetGroupLine; line: Bu
       <div className="flex flex-col items-center gap-2 pt-2 text-center">
         {group ? <GroupTile group={group} size="lg" /> : <IconTile icon={GaugeIcon} tone="card" size="lg" />}
         <p className="text-base font-semibold">{name}</p>
-        <p className="text-sm text-muted-foreground">Mỗi tháng, tự lặp lại</p>
+        <p className="text-sm text-muted-foreground">Áp dụng cho mọi tháng</p>
       </div>
 
       <div className="flex flex-col items-center gap-2">

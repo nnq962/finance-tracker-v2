@@ -31,9 +31,9 @@ export function budgetPace(spent: number, limit: number, share: number): BudgetP
 }
 
 export const budgetPaceLabel: Record<BudgetPace, string> = {
-  fast: "Chi nhanh hơn kế hoạch",
-  slow: "Chi chậm hơn kế hoạch",
-  even: "Đúng kế hoạch",
+  fast: "Đang chi nhanh",
+  slow: "Đang chi chậm",
+  even: "Chi vừa phải",
 }
 
 /** What is left for each remaining day, down to the thousand. */
@@ -57,7 +57,7 @@ export function suggestedLimit(average: number) {
 export function remainingLabel(spent: number, limit: number, days: number) {
   if (spent > limit) return `Vượt ${formatCompactCurrency(spent - limit, 1)}`
   if (spent === limit) return "Đã dùng hết"
-  return `Còn ${formatCompactCurrency(limit - spent, 1)} · ${formatCompactCurrency(perDay(spent, limit, days))}/ngày`
+  return `Còn ${formatCompactCurrency(limit - spent, 1)} · ${formatCompactCurrency(perDay(spent, limit, days))} mỗi ngày`
 }
 
 export function hasLimit<T extends Pick<BudgetLine, "budgetId" | "limit">>(line: T): line is T & { budgetId: string; limit: number } {

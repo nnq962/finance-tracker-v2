@@ -32,7 +32,7 @@ export function BudgetTotal({ overview, compact = false }: { overview: BudgetOve
     <div className="flex flex-col">
       <div className="flex items-end justify-between gap-3">
         <span className="flex min-w-0 flex-col">
-          <CardLabel as="span">{over ? "Đã vượt hạn mức" : "Còn được chi"}</CardLabel>
+          <CardLabel as="span">{over ? "Vượt hạn mức" : "Còn lại"}</CardLabel>
           <Money amount={Math.abs(limit - spent)} size={compact ? "lg" : "xl"} tone={over ? "expense" : "default"} className="mt-1" />
         </span>
         <span className="flex shrink-0 flex-col items-end pb-1">
@@ -56,7 +56,7 @@ export function BudgetTotal({ overview, compact = false }: { overview: BudgetOve
         ) : (
           <>
             <span className={cn("font-medium", pace === "fast" && "text-warning")}>{budgetPaceLabel[pace]}</span>
-            <span className="tabular-nums"> · còn {formatCompactCurrency(perDay(spent, limit, daysLeft(overview)))}/ngày</span>
+            <span className="tabular-nums"> · còn {formatCompactCurrency(perDay(spent, limit, daysLeft(overview)))} mỗi ngày</span>
           </>
         )}
       </p>
@@ -85,7 +85,7 @@ export function BudgetResult({ spent, limit, label }: { spent: number; limit: nu
       </div>
       <LimitBar value={spent} max={limit} tone={limitTone(spent, limit)} size="md" label="Hạn mức đã dùng" className="mt-4.5" />
       <p className={cn("mt-2.5 text-xs font-medium", over ? "text-expense" : "text-income")}>
-        {over ? `Đã vượt ${formatCompactCurrency(spent - limit, 1)}` : `Giữ được hạn mức · dư ${formatCompactCurrency(limit - spent, 1)}`}
+        {over ? `Vượt hạn mức ${formatCompactCurrency(spent - limit, 1)}` : `Trong hạn mức · còn dư ${formatCompactCurrency(limit - spent, 1)}`}
       </p>
     </div>
   )

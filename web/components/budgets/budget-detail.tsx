@@ -1,20 +1,19 @@
 "use client"
 
 import * as React from "react"
-import { LayersIcon } from "lucide-react"
 
 import { IconTile } from "@/components/app/icon-tile"
-import { LimitRow } from "@/components/app/limit-row"
 import { Money } from "@/components/app/money"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { BudgetMonth, BudgetMonthEntry, BudgetMonthGroup, BudgetMonthLine, BudgetOverview } from "@/lib/budgets/types"
+import { categoryColorOptions, getCategoryColor, type CategoryColorName } from "@/lib/categories/category-colors"
 import { formatCompactCurrency } from "@/lib/format-currency"
 import { formatDayLabel, formatTime, toDateKey } from "@/lib/format-date"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 
-import { BudgetDailyChart, BudgetMonthsChart, KeptMonths } from "./budget-charts"
+import { BudgetDailyChart, BudgetMonthsChart, BudgetSplit, KeptMonths } from "./budget-charts"
 import { BudgetResult, BudgetTotal } from "./budget-total"
 
 /** A month's line as BudgetTotal reads it: the running month's figure and pace. */
@@ -48,27 +47,11 @@ export function BudgetHead({ month, line }: { month: BudgetMonth; line: BudgetMo
   )
 }
 
-type Part = { key: string; media: React.ReactNode; name: string; amount: number; caption: string; onClick: () => void }
-
-/** Where the spending went: each part's amount, its share of the whole and a bar of it, largest first. */
-function Parts({ title, spent, parts }: { title: string; spent: number; parts: Part[] }) {
-  if (parts.length === 0) return null
-  return (
-    <SettingsGroup title={title}>
-      {parts.map((part) => (
-        <LimitRow
-          key={part.key}
-          media={part.media}
-          title={part.name}
-          figure={<span className="font-semibold">{formatCompactCurrency(part.amount, 1)}</span>}
-          value={part.amount}
-          max={spent || 1}
-          caption={`${spent ? Math.round((part.amount / spent) * 100) : 0}% · ${part.caption}`}
-          onClick={part.onClick}
-        />
-      ))}
-    </SettingsGroup>
-  )
+/** Slice colours for a group's categories: the group's own first, then the palette in order (grey last). */
+function itemFills(colorName: CategoryColorName, count: number) {
+  const names = categoryColorOptions.map((option) => option.name).filter((name) => name !== "slate")
+  const start = Math.max(names.indexOf(colorName as (typeof names)[number]), 0)
+  return Array.from({ length: count }, (_, index) => getCategoryColor(names[(start + index) % names.length]).chartFill)
 }
 
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
@@ -142,18 +125,20 @@ export function BudgetGroupDetail({
       <ChartCard title="Chi theo ngày">
         <BudgetDailyChart daily={group.daily} limit={group.limit} month={month.month} gone={month.gone} past={month.past} />
       </ChartCard>
-      <Parts
-        title="Theo hạng mục"
-        spent={group.spent}
-        parts={group.items.map((item) => ({
-          key: item.itemId,
-          media: <IconTile icon={categoryIconRegistry[item.iconName]} tone={group.colorName} size="sm" />,
-          name: item.name,
-          amount: item.amount,
-          caption: `${item.count} giao dịch`,
-          onClick: () => onShowTransactions([group.groupId]),
-        }))}
-      />
+      {group.spent > 0 ? (
+        <ChartCard title="Theo hạng mục">
+          <BudgetSplit
+            total={group.spent}
+            parts={group.items.map((item, index) => ({
+              key: item.itemId,
+              name: item.name,
+              amount: item.amount,
+              fill: itemFills(group.colorName, group.items.length)[index],
+              onClick: () => onShowTransactions([group.groupId]),
+            }))}
+          />
+        </ChartCard>
+      ) : null}
       <ChartCard title="So với các tháng trước">
         <BudgetMonthsChart history={group.history} limit={group.limit} month={month.month} minMonth={month.minMonth} past={month.past} />
       </ChartCard>
@@ -191,33 +176,34 @@ export function BudgetTotalDetail({
       <ChartCard title="Chi theo ngày">
         <BudgetDailyChart daily={total.daily} limit={total.limit} month={month.month} gone={month.gone} past={month.past} />
       </ChartCard>
-      <Parts
-        title="Theo nhóm"
-        spent={total.spent}
-        parts={[
-          ...limited.map((group) => ({
-            key: group.groupId,
-            media: <IconTile icon={categoryIconRegistry[group.iconName]} tone={group.colorName} size="sm" />,
-            name: group.name,
-            amount: group.spent,
-            caption:
-              group.spent > group.limit! ? `vượt hạn mức nhóm ${formatCompactCurrency(group.spent - group.limit!, 1)}` : "tổng chi",
-            onClick: () => onGroup(group.groupId),
-          })),
-          ...(elsewhere > 0
-            ? [
-                {
-                  key: "unlimited",
-                  media: <IconTile icon={LayersIcon} tone="neutral" size="sm" />,
-                  name: "Chưa đặt hạn mức",
-                  amount: elsewhere,
-                  caption: unlimited.filter((group) => group.spent > 0).map((group) => group.name).join(", ") || "nhóm đã ngừng dùng",
-                  onClick: () => onShowTransactions(unlimited.map((group) => group.groupId)),
-                },
-              ]
-            : []),
-        ]}
-      />
+      {total.spent > 0 ? (
+        <ChartCard title="Theo nhóm">
+          <BudgetSplit
+            total={total.spent}
+            parts={[
+              ...limited.map((group) => ({
+                key: group.groupId,
+                name: group.name,
+                amount: group.spent,
+                fill: getCategoryColor(group.colorName).chartFill,
+                over: group.spent > group.limit! ? `Vượt hạn mức nhóm ${formatCompactCurrency(group.spent - group.limit!, 1)}` : undefined,
+                onClick: () => onGroup(group.groupId),
+              })),
+              ...(elsewhere > 0
+                ? [
+                    {
+                      key: "unlimited",
+                      name: "Nhóm chưa đặt hạn mức",
+                      amount: elsewhere,
+                      fill: "var(--chart-neutral)",
+                      onClick: () => onShowTransactions(unlimited.map((group) => group.groupId)),
+                    },
+                  ]
+                : []),
+            ]}
+          />
+        </ChartCard>
+      ) : null}
       <ChartCard title="So với các tháng trước">
         <BudgetMonthsChart history={total.history} limit={total.limit} month={month.month} minMonth={month.minMonth} past={month.past} />
       </ChartCard>

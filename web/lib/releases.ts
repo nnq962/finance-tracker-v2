@@ -32,6 +32,16 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.10.1",
+    date: "2026-10-17",
+    title: "Hạn mức gọn và dễ đọc hơn",
+    changes: [
+      { kind: "improved", text: "Chi theo hạng mục và theo nhóm trong chi tiết hạn mức là biểu đồ tròn, chạm từng phần để xem tiếp." },
+      { kind: "improved", text: "Biểu đồ chi theo ngày bỏ đường \"đúng kế hoạch\", chỉ còn đường chi và vạch hạn mức." },
+      { kind: "improved", text: "Lời văn gọn hơn: \"Còn lại\" thay \"Còn được chi\", \"Đang chi nhanh\" thay \"Chi nhanh hơn kế hoạch\", \"Đã dùng 77% hạn mức khi tháng mới qua 17 ngày\"." },
+    ],
+  },
+  {
     version: "6.10.0",
     date: "2026-10-17",
     title: "Hạn mức chi tiết hơn",

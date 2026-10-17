@@ -112,7 +112,7 @@ async function run() {
     assert.deepEqual(due.map((d) => [d.budgetId, d.level]).sort(), [[foodId, 100], [totalId, 100]].sort())
     assert.equal(due.find((d) => d.budgetId === foodId).title, 'Vượt hạn mức Ăn uống')
     assert.equal(due.find((d) => d.budgetId === totalId).title, 'Vượt hạn mức tháng')
-    assert.match(due.find((d) => d.budgetId === totalId).body, /^Đã chi 650\.000đ, hơn hạn mức 50\.000đ\.$/)
+    assert.match(due.find((d) => d.budgetId === totalId).body, /^Đã chi 650\.000đ, vượt 50\.000đ\.$/)
     // A raised limit warns again from scratch; the levels it already stands at are written down silently.
     await budgets.saveBudget(userId, food, 1_000_000)
     assert.deepEqual(await syncBudgetAlerts(userId, { notify: false, rearm: foodId }), [])
@@ -213,7 +213,7 @@ async function run() {
     assert.equal(calc.suggestedLimit(310_000), 350_000)
     assert.equal(calc.suggestedLimit(0), null)
     assert.equal(calc.remainingLabel(2_250_000, 2_000_000, 16), 'Vượt 250k')
-    assert.equal(calc.remainingLabel(3_420_000, 4_000_000, 16), 'Còn 580k · 36k/ngày')
+    assert.equal(calc.remainingLabel(3_420_000, 4_000_000, 16), 'Còn 580k · 36k mỗi ngày')
 
     console.log('Budget checks passed: what counts as spent, averages, setting and deleting limits, other users, the database checks, alerts once per level, raised limits, a month in detail (by day, by category, six months before, the latest, months gone by to their end), the sums.')
   } finally {

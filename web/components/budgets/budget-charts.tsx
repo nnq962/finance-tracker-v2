@@ -1,6 +1,7 @@
 "use client"
 
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Line, ReferenceLine, XAxis, YAxis } from "recharts"
+import { ChevronRightIcon } from "lucide-react"
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Label, Pie, PieChart, ReferenceLine, XAxis, YAxis } from "recharts"
 
 import { Money } from "@/components/app/money"
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart"
@@ -11,7 +12,6 @@ import { cn } from "@/lib/utils"
 
 const chartConfig = {
   spent: { label: "Đã chi", color: "var(--foreground)" },
-  plan: { label: "Đúng kế hoạch", color: "var(--muted-foreground)" },
 } satisfies ChartConfig
 
 /**
@@ -67,11 +67,11 @@ export function KeptMonths({
   return (
     <div className={cn("flex items-center justify-between gap-3 text-xs text-muted-foreground", className)}>
       <span>
-        Giữ được hạn mức{" "}
+        Trong hạn mức{" "}
         <span className="font-semibold text-foreground tabular-nums">
           {kept}/{tracked.length}
         </span>{" "}
-        tháng trước đó
+        tháng trước
       </span>
       <span className="flex items-center gap-1" aria-hidden="true">
         {months.map((entry) => (
@@ -86,11 +86,11 @@ export function KeptMonths({
 }
 
 /**
- * Spent day by day, added up, against a dashed straight line from nothing
- * to the limit on the month's last day ("đúng kế hoạch"), the limit itself a
- * faint red dashed line. The running month stops at today; a month gone by
- * runs to its last day, flat after its last spending, and says how it ended.
- * The line is the ink, amber while ahead of plan, red once over.
+ * Spent day by day, added up, against the limit as a faint red dashed line
+ * (2026-10-17: the straight "đúng kế hoạch" line went, nobody spends that
+ * evenly). The running month stops at today; a month gone by runs to its
+ * last day, flat after its last spending, and says how it ended. The line is
+ * the ink, amber while spending runs fast for the time gone, red once over.
  */
 export function BudgetDailyChart({
   daily,
@@ -115,10 +115,8 @@ export function BudgetDailyChart({
   const data = added.map((sum, index) => ({
     day: index + 1,
     spent: index < gone ? sum : undefined,
-    plan: Math.round((limit * (index + 1)) / days),
   }))
   const spent = daily.slice(0, gone).reduce((sum, amount) => sum + amount, 0)
-  const planToday = Math.round((limit * gone) / days / 1_000) * 1_000
   const tone =
     spent > limit
       ? "var(--expense)"
@@ -133,7 +131,7 @@ export function BudgetDailyChart({
         <div className="flex flex-col gap-0.5">
           <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <span aria-hidden="true" className="size-2 rounded-full" style={{ background: tone }} />
-            {past ? `Cả tháng ${monthNumber(month)}` : "Đến hôm nay"}
+            {past ? `Cả tháng ${monthNumber(month)}` : "Đã chi"}
           </dt>
           <dd>
             <Money amount={spent} size="md" tone={spent > limit ? "expense" : "default"} />
@@ -141,14 +139,11 @@ export function BudgetDailyChart({
         </div>
         <div className="flex flex-col gap-0.5">
           <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span
-              aria-hidden="true"
-              className={cn("h-0 w-3 border-t-2 border-dashed", past ? "border-expense/60" : "border-muted-foreground")}
-            />
-            {past ? "Hạn mức" : "Kế hoạch đến hôm nay"}
+            <span aria-hidden="true" className="h-0 w-3 border-t-2 border-dashed border-expense/60" />
+            Hạn mức
           </dt>
           <dd>
-            <Money amount={past ? limit : planToday} size="md" tone="muted" />
+            <Money amount={limit} size="md" tone="muted" />
           </dd>
         </div>
       </dl>
@@ -166,7 +161,6 @@ export function BudgetDailyChart({
             tickFormatter={compact}
           />
           <ReferenceLine y={limit} stroke="var(--expense)" strokeOpacity={0.5} strokeDasharray="4 4" />
-          <Line dataKey="plan" stroke="var(--color-plan)" strokeWidth={1.5} strokeDasharray="4 4" dot={false} activeDot={false} isAnimationActive={false} />
           {/* Drawn at once: iOS drops taps while content animates in. */}
           <Area
             dataKey="spent"
@@ -181,15 +175,16 @@ export function BudgetDailyChart({
           />
         </AreaChart>
       </ChartContainer>
-      <p className={cn("text-xs text-muted-foreground", past && "font-medium", past && (spent > limit ? "text-expense" : "text-income"))}>
-        {past
-          ? spent > limit
-            ? `Vượt hạn mức từ ngày ${date(overOn ?? days)}, cuối tháng hơn ${formatCompactCurrency(spent - limit, 1)}.`
-            : `Giữ được hạn mức đến hết ${date(days)}, dư ${formatCompactCurrency(limit - spent, 1)}.`
-          : "Đường đứt là chi đều mỗi ngày tới đúng hạn mức cuối tháng; vạch đỏ mờ là hạn mức."}
-      </p>
+      {spent > limit ? (
+        <p className="text-xs font-medium text-expense">
+          Vượt hạn mức từ ngày {date(overOn ?? days)}
+          {past ? `, cả tháng vượt ${formatCompactCurrency(spent - limit, 1)}` : ""}.
+        </p>
+      ) : past ? (
+        <p className="text-xs font-medium text-income">Cả tháng trong hạn mức, còn dư {formatCompactCurrency(limit - spent, 1)}.</p>
+      ) : null}
       <p className="sr-only">
-        {past ? `Cả tháng ${monthNumber(month)}` : "Đến hôm nay"} đã chi {formatCurrency(spent)}, hạn mức {formatCurrency(limit)}.
+        {past ? `Cả tháng ${monthNumber(month)}` : "Tháng này"} đã chi {formatCurrency(spent)}, hạn mức {formatCurrency(limit)}.
       </p>
     </div>
   )
@@ -264,7 +259,7 @@ export function BudgetMonthsChart({
         </BarChart>
       </ChartContainer>
       <p className="text-xs text-muted-foreground">
-        {past ? `Cột đậm là tháng ${monthNumber(month)}.` : "Cột đậm là tháng này, tới hôm nay."} Cột đỏ là tháng vượt hạn mức.
+        Cột đỏ là tháng vượt hạn mức{past ? "" : "; tháng này tính tới hôm nay"}.
       </p>
       <div className="sr-only">
         <table>
@@ -279,6 +274,92 @@ export function BudgetMonthsChart({
           </tbody>
         </table>
       </div>
+    </div>
+  )
+}
+
+export type BudgetSplitPart = {
+  key: string
+  name: string
+  amount: number
+  /** The slice's colour (a chart fill). */
+  fill: string
+  /** Under the name, in red: how far the part is past its own limit. */
+  over?: string
+  onClick: () => void
+}
+
+/**
+ * Where a month's spending went (2026-10-17, as a ring at the user's wish,
+ * in place of rows with bars): a ring of the parts with the total in its
+ * middle, then a row per part (its colour, name, amount and share, a tap to
+ * open it), largest first.
+ */
+export function BudgetSplit({ parts, total }: { parts: BudgetSplitPart[]; total: number }) {
+  const shown = parts.filter((part) => part.amount > 0)
+  if (shown.length === 0) return null
+  const share = (amount: number) => (total > 0 ? Math.round((amount / total) * 100) : 0)
+  return (
+    <div className="flex flex-col gap-3">
+      {/* The rows below say the same for screen readers. */}
+      <ChartContainer config={chartConfig} aria-hidden="true" className="mx-auto aspect-square w-40">
+        <PieChart>
+          <Pie
+            data={shown}
+            dataKey="amount"
+            nameKey="name"
+            innerRadius="72%"
+            outerRadius="100%"
+            startAngle={90}
+            endAngle={-270}
+            cornerRadius={4}
+            stroke="var(--card)"
+            strokeWidth={shown.length > 1 ? 2 : 0}
+            // Drawn at once: iOS drops taps while content animates in.
+            isAnimationActive={false}
+          >
+            {shown.map((part) => (
+              <Cell key={part.key} fill={part.fill} />
+            ))}
+            <Label
+              content={({ viewBox }) => {
+                if (!viewBox || !("cx" in viewBox)) return null
+                const cy = viewBox.cy ?? 0
+                return (
+                  <text x={viewBox.cx} y={cy} textAnchor="middle" dominantBaseline="middle">
+                    <tspan x={viewBox.cx} y={cy - 7} className="fill-foreground text-base font-semibold">
+                      {formatCompactCurrency(total, 1)}
+                    </tspan>
+                    <tspan x={viewBox.cx} y={cy + 13} className="fill-muted-foreground text-xs">
+                      Tổng chi
+                    </tspan>
+                  </text>
+                )
+              }}
+            />
+          </Pie>
+        </PieChart>
+      </ChartContainer>
+      <ul className="-mx-2 flex flex-col">
+        {shown.map((part) => (
+          <li key={part.key}>
+            <button
+              type="button"
+              onClick={part.onClick}
+              className="flex min-h-12 w-full items-center gap-3 rounded-xl px-2 text-left transition-colors duration-150 hover:bg-muted active:bg-muted"
+            >
+              <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: part.fill }} />
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="truncate text-sm">{part.name}</span>
+                {part.over ? <span className="truncate text-xs text-expense">{part.over}</span> : null}
+              </span>
+              <span className="shrink-0 text-sm font-semibold tabular-nums">{formatCompactCurrency(part.amount, 1)}</span>
+              <span className="w-9 shrink-0 text-right text-xs text-muted-foreground tabular-nums">{share(part.amount)}%</span>
+              <ChevronRightIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
