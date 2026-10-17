@@ -14,7 +14,8 @@ import { CheckIcon, CircleAlertIcon, InfoIcon, Loader2Icon, TriangleAlertIcon } 
  * phones, 400 on wider screens, rounded 20. The status sits in a 32 tile
  * tinted with its meaning colour; the title takes up to two lines, or one
  * above a one-line description, cut with "…"; an action such as Hoàn tác is a
- * primary button rounded 12 (the toast's 20 less the 8 between them). The shadow falls below it only: a wide one reached the top of the
+ * primary button rounded 12, set in from the right edge by 14, as far as
+ * from the top and bottom (2026-10-17). The shadow falls below it only: a wide one reached the top of the
  * screen, and Safari 26 tinted the status bar from it. Sonner keeps the
  * behaviour (stacking, swipe to dismiss, timers) and the slide.
  */
@@ -63,7 +64,7 @@ const Toaster = ({ style, ...props }: ToasterProps) => {
           // lay out the expanded stack, and the content alone is at most 36 high.
           // Stacked behind the front one, only its edge shows, not its words.
           toast:
-            "inset-x-0 mx-auto flex min-h-16 w-full! items-center gap-3 rounded-[20px] bg-card pr-2 pl-5 font-sans text-sm text-card-foreground shadow-toast has-[[data-icon]]:pl-4 dark:bg-secondary [&>*]:transition-opacity [&>*]:duration-400 data-[expanded=false]:data-[front=false]:[&>*]:opacity-0",
+            "inset-x-0 mx-auto flex min-h-16 w-full! items-center gap-3 rounded-[20px] bg-card pr-2 pl-5 font-sans text-sm text-card-foreground shadow-toast has-[[data-icon]]:pl-4 has-[[data-action]]:pr-3.5 dark:bg-secondary [&>*]:transition-opacity [&>*]:duration-400 data-[expanded=false]:data-[front=false]:[&>*]:opacity-0",
           // Sonner's own box around the icon is 16 square, with margins; it
           // also wraps the loading spinner in a layer centred on the nearest
           // positioned box, which was the whole toast.

@@ -136,7 +136,7 @@ component ở đó là cả app đổi theo.
   2026-10-17 sau một ngày thử cao 52): cao 64, rộng hết màn trừ 16 mỗi bên trên điện thoại, 400 trên màn rộng, bo 20. Trạng thái nằm trong ô 32 (bo 10) tô
   nhạt màu ý nghĩa: thành công `income`, lỗi `expense`, cảnh báo `warning`, thông tin `transfer`, đang tải xám;
   tiêu đề đậm tối đa hai dòng, hoặc một dòng trên một dòng mô tả xám, cắt bằng "…", nên toast không bao giờ
-  cao lên; nút Hoàn tác là nút `primary` cao 36 bo 12, đồng tâm với góc 20 của toast. Khi xếp chồng, toast
+  cao lên; nút Hoàn tác là nút `primary` cao 36 bo 12, cách mép phải 14 bằng khoảng cách tới mép trên và dưới. Khi xếp chồng, toast
   phía sau chỉ lộ mép, không lộ chữ. Sonner vẫn lo hiệu ứng trượt, xếp chồng, vuốt để đóng, hẹn giờ. Toast
   luôn ở đầu màn hình, kể cả khi một `PageSheet` đang mở (che nút ✕ trong vài giây; bỏ luật hạ toast xuống dưới
   thanh sheet của 6.15.6); chạm vào toast không đóng sheet.

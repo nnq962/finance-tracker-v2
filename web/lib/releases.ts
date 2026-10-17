@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.17",
+    date: "2026-10-17",
+    title: "Nút Hoàn tác cách mép đều hơn",
+    changes: [
+      { kind: "improved", text: "Trong thông báo nhanh, nút Hoàn tác lùi vào một chút, cách mép phải bằng khoảng cách tới mép trên và dưới." },
+    ],
+  },
+  {
     version: "6.15.16",
     date: "2026-10-17",
     title: "Thông báo nhanh về lại cỡ cũ",
