@@ -208,6 +208,27 @@ async function run() {
     assert.equal(otherMonth.total.spent, 0)
     assert.equal(otherMonth.groups.some((g) => g.groupId === mFood), false)
 
+    // Several at once ("Đặt theo gợi ý"): all or none.
+    const bulkUser = await createUser('budgets_test')
+    const bulkFood = await group(bulkUser, 'Ăn uống')
+    const bulkFun = await group(bulkUser, 'Giải trí')
+    const bulkSalary = await group(bulkUser, 'Lương', 'income')
+    const ids = await budgets.saveBudgets(bulkUser, [{ groupId: null, amount: 5_000_000 }, { groupId: bulkFood, amount: 2_000_000 }, { groupId: bulkFun, amount: 500_000 }])
+    assert.equal(ids.length, 3)
+    assert.equal(await count('SELECT count(*) FROM budgets WHERE user_id = $1', [bulkUser]), 3)
+    // Saved again: changed, not added.
+    await budgets.saveBudgets(bulkUser, [{ groupId: bulkFood, amount: 2_500_000 }])
+    assert.equal(Number((await sql('SELECT amount FROM budgets WHERE category_group_id = $1', [bulkFood])).rows[0].amount), 2_500_000)
+    assert.equal(await count('SELECT count(*) FROM budgets WHERE user_id = $1', [bulkUser]), 3)
+    // One bad entry refuses the lot: an income group, another user's group, a group twice, an amount out of range, nothing.
+    await assert.rejects(() => budgets.saveBudgets(bulkUser, [{ groupId: null, amount: 1 }, { groupId: bulkSalary, amount: 1 }]), /Không tìm thấy nhóm/)
+    await assert.rejects(() => budgets.saveBudgets(bulkUser, [{ groupId: food, amount: 1 }]), /Không tìm thấy nhóm/)
+    await assert.rejects(() => budgets.saveBudgets(bulkUser, [{ groupId: bulkFun, amount: 1 }, { groupId: bulkFun, amount: 2 }]), /không hợp lệ/)
+    await assert.rejects(() => budgets.saveBudgets(bulkUser, [{ groupId: bulkFun, amount: 0 }]), /không hợp lệ/)
+    await assert.rejects(() => budgets.saveBudgets(bulkUser, []), /Chưa có hạn mức/)
+    assert.equal(Number((await sql('SELECT amount FROM budgets WHERE user_id = $1 AND category_group_id IS NULL', [bulkUser])).rows[0].amount), 5_000_000)
+    assert.equal(Number((await sql('SELECT amount FROM budgets WHERE category_group_id = $1', [bulkFun])).rows[0].amount), 500_000)
+
     // A limit judges only from the month it was set in.
     assert.equal(limitJudges(null, '2026-10'), false)
     assert.equal(limitJudges('2026-10', '2026-09'), false)
@@ -230,7 +251,7 @@ async function run() {
     assert.equal(calc.remainingLabel(2_250_000, 2_000_000, 16), 'Vượt 250k')
     assert.equal(calc.remainingLabel(3_420_000, 4_000_000, 16), 'Còn 580k · 36k mỗi ngày')
 
-    console.log('Budget checks passed: what counts as spent, averages, setting and deleting limits, other users, the database checks, alerts once per level, raised limits, a month in detail (by day, by category, six months before, the latest, months gone by to their end), the sums.')
+    console.log('Budget checks passed: what counts as spent, averages, setting and deleting limits, other users, the database checks, alerts once per level, raised limits, several at once, a month in detail (by day, by category, six months before, the latest, months gone by to their end), the sums.')
   } finally {
     await cleanup()
   }

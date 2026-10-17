@@ -250,6 +250,20 @@ export function TransactionForm({
     back()
   }
   const chosenAccount = accounts.find((account) => account.id === cashFlowPick?.accountId)
+  // Editing spending the month's figures already count: the limits hint takes it out before adding the new amount.
+  const savedAccount = accounts.find((account) => account.id === defaultValues?.accountId)
+  const countedBefore =
+    defaultValues?.kind === "expense" &&
+    !defaultValues.excluded &&
+    !defaultValues.accountExcluded &&
+    savedAccount?.type !== "savings" &&
+    defaultValues.categoryGroupId
+      ? {
+          groupId: defaultValues.categoryGroupId,
+          amount: Math.abs(defaultValues.amount),
+          month: getLocalDateTime(defaultValues.occurredAt).date.slice(0, 7),
+        }
+      : undefined
   // Dated before an account was opened: allowed, as older accounts may hold
   // such transactions, but said, as "Số dư ban đầu từ ngày …" no longer holds.
   const occurredAt = new Date(`${when.date}T${when.time}:00+07:00`).getTime()
@@ -366,6 +380,10 @@ export function TransactionForm({
                   <BudgetHint
                     groupId={groups.find((group) => group.items.some((item) => item.id === cashFlowPick?.categoryId))?.id}
                     date={when.date}
+                    amount={amount}
+                    // Limits leave out what is left out of the figures and what a savings jar pays.
+                    counted={!excluded && !chosenAccount?.excluded && chosenAccount?.type !== "savings"}
+                    editing={countedBefore}
                   />
                 ) : null}
               </div>

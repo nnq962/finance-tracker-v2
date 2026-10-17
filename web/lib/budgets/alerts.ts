@@ -52,11 +52,12 @@ export function budgetPushMessage(
  * a raised limit warns again, while whatever it already reached is written
  * down without a push. Returns the pushes due, sent or not.
  */
-export async function syncBudgetAlerts(userId: string, { notify, rearm }: { notify: boolean; rearm?: string }) {
+export async function syncBudgetAlerts(userId: string, { notify, rearm }: { notify: boolean; rearm?: string | string[] }) {
   const overview = await getBudgetOverview(userId)
   const month = `${overview.month}-01`
-  if (rearm) {
-    await getDb().deleteFrom("budgetAlerts").where("budgetId", "=", rearm).where("userId", "=", userId).where("month", "=", month).execute()
+  const rearmed = rearm === undefined ? [] : Array.isArray(rearm) ? rearm : [rearm]
+  if (rearmed.length) {
+    await getDb().deleteFrom("budgetAlerts").where("budgetId", "in", rearmed).where("userId", "=", userId).where("month", "=", month).execute()
   }
 
   const lines = [

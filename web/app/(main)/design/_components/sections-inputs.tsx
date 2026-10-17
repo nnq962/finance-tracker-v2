@@ -19,6 +19,7 @@ import { SegmentedProgress } from "@/components/app/steps"
 import { Stepper } from "@/components/app/stepper"
 import { ReplyView } from "@/components/ai-assistant/answer-view"
 import { BudgetDailyChart, BudgetMonthsChart, KeptMonths } from "@/components/budgets/budget-charts"
+import { BudgetInvite } from "@/components/budgets/budget-suggest"
 import { BudgetResult, BudgetTotal } from "@/components/budgets/budget-total"
 import { DraftsView } from "@/components/ai-assistant/drafts-view"
 import type { Account } from "@/lib/accounts/types"
@@ -461,6 +462,30 @@ const sampleBudgets: BudgetOverview = {
 const sampleHistory = [10_800_000, 12_900_000, 11_200_000, 11_500_000, 12_400_000, 11_600_000, 7_450_000]
 const sampleDaily = Array.from({ length: 31 }, (_, index) => (index < 17 ? [320_000, 0, 180_000, 90_000, 260_000][index % 5] : 0))
 
+/** No limit yet, three months of spending: what the invitation suggests from. */
+const sampleInvite: BudgetOverview = {
+  ...sampleBudgets,
+  total: { budgetId: null, limit: null, spent: 7_450_000, average: 11_280_000, fromJars: 0 },
+  groups: (
+    [
+      ["housing", "Nhà cửa", "house", "emerald", 4_120_000],
+      ["food", "Ăn uống", "utensils", "orange", 3_850_000],
+      ["shopping", "Mua sắm", "shopping-bag", "pink", 1_640_000],
+      ["transport", "Đi lại", "bus", "blue", 820_000],
+    ] as const
+  ).map(([groupId, name, iconName, colorName, average]) => ({
+    groupId,
+    name,
+    iconName,
+    colorName,
+    budgetId: null,
+    limit: null,
+    spent: 0,
+    average,
+    fromJars: 0,
+  })),
+}
+
 function LimitSample() {
   const rows = [
     { name: "Ăn uống", icon: "utensils", tone: "orange", spent: 3_420_000, limit: 4_000_000 },
@@ -485,6 +510,16 @@ function LimitSample() {
         <Card size="lg">
           <CardContent>
             <BudgetResult spent={2_300_000} limit={2_000_000} label="Tháng 9 đã chi" />
+          </CardContent>
+        </Card>
+        <Card size="lg">
+          <CardContent>
+            <BudgetInvite
+              overview={sampleInvite}
+              onSuggest={() => toast("Mở Đặt theo gợi ý")}
+              onOwn={() => toast("Mở đặt hạn mức tổng")}
+              onDismiss={() => toast("Ẩn trên máy này")}
+            />
           </CardContent>
         </Card>
       </div>
@@ -561,7 +596,7 @@ function ProgressSection() {
           </Button>
         </div>
       </Block>
-      <Block label="Hạn mức · LimitBar, LimitRow, BudgetTotal, BudgetResult, KeptMonths, biểu đồ" wide>
+      <Block label="Hạn mức · LimitBar, LimitRow, BudgetTotal, BudgetResult, BudgetInvite, KeptMonths, biểu đồ" wide>
         <LimitSample />
       </Block>
       <Block label="Sóng giọng nói · khi ghi âm">

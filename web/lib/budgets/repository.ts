@@ -140,6 +140,48 @@ export async function saveBudget(userId: string, groupId: string | null, amount:
   return saved.id
 }
 
+/**
+ * Sets several limits at once ("Đặt theo gợi ý"): all of them or none.
+ * Each entry is the whole month's (`groupId` null) or a group's; a group
+ * twice, a group that is not one of the user's active spending groups, or an
+ * amount out of range refuses the lot. Returns the limits' ids.
+ */
+export async function saveBudgets(userId: string, entries: { groupId: string | null; amount: number }[]) {
+  if (entries.length === 0) throw new BudgetValidationError("Chưa có hạn mức nào để lưu.")
+  const keys = entries.map((entry) => entry.groupId ?? "total")
+  if (new Set(keys).size !== keys.length) throw new BudgetValidationError("Hạn mức không hợp lệ.")
+  for (const entry of entries) {
+    if (!Number.isSafeInteger(entry.amount) || entry.amount <= 0 || entry.amount > MAX_MONEY) {
+      throw new BudgetValidationError("Hạn mức không hợp lệ.")
+    }
+  }
+  const groupIds = entries.flatMap((entry) => (entry.groupId ? [entry.groupId] : []))
+  return getDb().transaction().execute(async (trx) => {
+    if (groupIds.length) {
+      const found = await trx
+        .selectFrom("categoryGroups")
+        .select("id")
+        .where("id", "in", groupIds)
+        .where("userId", "=", userId)
+        .where("type", "=", "expense")
+        .where("status", "=", "active")
+        .execute()
+      if (found.length !== groupIds.length) throw new BudgetValidationError("Không tìm thấy nhóm hạng mục. Vui lòng tải lại trang.")
+    }
+    const ids: string[] = []
+    for (const entry of entries) {
+      const saved = await trx
+        .insertInto("budgets")
+        .values({ userId, categoryGroupId: entry.groupId, amount: entry.amount })
+        .onConflict((conflict) => conflict.columns(["userId", "categoryGroupId"]).doUpdateSet({ amount: entry.amount }))
+        .returning("id")
+        .executeTakeFirstOrThrow()
+      ids.push(saved.id)
+    }
+    return ids
+  })
+}
+
 /** Removes a limit; returns what it was, for undoing, or null when it was not the user's. */
 export async function deleteBudget(userId: string, budgetId: string) {
   const deleted = await getDb()

@@ -390,6 +390,18 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   ("Ăn uống đã dùng 86% hạn mức", "Còn 560.000đ cho 16 ngày, khoảng 35.000đ mỗi ngày.") và một lần khi vượt
   ("Vượt hạn mức Ăn uống", "Đã chi 4.150.000đ, vượt 150.000đ."), mỗi tháng; gửi sau khi lưu khoản chi, chỉ
   khi bật thông báo; chạm mở Tổng quan với sheet. Đặt hay sửa hạn mức thì mức đang đứng được ghi lại không báo.
+  **Chưa có hạn mức nào** (2026-10-17, `budget-suggest.tsx`): ở Tổng quan, chỗ của thẻ hạn mức là "Hạn mức chi
+  tiêu" mời đặt (`BudgetInvite`): ô icon, "Đặt mức chi tối đa mỗi tháng", một câu, ✕ "Để sau" (ẩn trên máy này,
+  `localStorage`; vẫn đặt được từ Cài đặt), khung xám tóm tắt gợi ý (hạn mức tổng và ba nhóm chi nhiều nhất, "và N
+  nhóm khác"), hai nút "Tự đặt" (mở form hạn mức tổng) và "✦ Đặt theo gợi ý"; người chưa có chi 3 tháng thì không có
+  khung gợi ý, một nút "Đặt hạn mức". "Đặt theo gợi ý" mở `BudgetSuggestSheet`: một câu giải thích, hạn mức tổng và
+  mỗi nhóm là `SettingsFieldRow` có ô tiền gõ tại chỗ, điền sẵn `suggestedLimit` của trung bình 3 tháng ("Trung bình
+  4,12tr" dưới tên), xoá trống là không đặt ("Không đặt"), chân "Lưu N hạn mức" lưu tất cả cùng lúc (tất cả hoặc
+  không, `saveBudgets`). Sheet Hạn mức khi trống cũng có hai nút đó.
+  **Cảnh báo khi ghi khoản chi** (2026-10-17, "2A", `BudgetHint`): khi số tiền đang gõ làm nhóm của hạng mục đã chọn
+  hay hạn mức tổng vượt, dòng dưới lưới hạng mục thành chữ đỏ đậm có ⚠: "Khoản này làm Ăn uống vượt 110k, hạn mức
+  tổng vượt 90k" (vẫn lưu được, chỉ báo trước); không vượt thì vẫn là "Ăn uống còn 580k tháng này". Không tính khoản
+  ngoài báo cáo hay trả bằng hũ; sửa một khoản chi thì trừ số cũ trước khi cộng số mới.
   **Chi tiết** (2026-10-17, `budget-detail.tsx`, `budget-charts.tsx`, dữ liệu `lib/budgets/month.ts`): sheet tên
   "Hạn mức", đầu nội dung là "Tháng 10" với hai nút tròn ‹ › (như lịch ở Tổng quan; lùi tới tháng có giao dịch
   đầu tiên). Thẻ cả tháng kèm `KeptMonths` dưới vạch kẻ, chỉ tính các tháng từ khi đặt hạn mức (`budgets.created_at`;

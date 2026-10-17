@@ -14,18 +14,75 @@ import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { cn } from "@/lib/utils"
 
 import { BudgetTotal } from "./budget-total"
-import { BudgetsSheet } from "./budgets-sheet"
+import { BudgetInvite, BudgetSuggestSheet } from "./budget-suggest"
+import { BudgetFormSheet, BudgetsSheet } from "./budgets-sheet"
+
+const INVITE_DISMISSED_KEY = "timi:budget-invite-dismissed"
+const inviteListeners = new Set<() => void>()
+
+/** The invitation put away on this device (a per-device convenience: browser storage may be missing). */
+function useInviteDismissed() {
+  return React.useSyncExternalStore(
+    (listener) => {
+      inviteListeners.add(listener)
+      return () => inviteListeners.delete(listener)
+    },
+    () => {
+      try {
+        return localStorage.getItem(INVITE_DISMISSED_KEY) === "1"
+      } catch {
+        return false
+      }
+    },
+    // Shown in the server's page, so the cards below do not move for those who keep it.
+    () => false,
+  )
+}
+
+function dismissInvite() {
+  try {
+    localStorage.setItem(INVITE_DISMISSED_KEY, "1")
+  } catch {
+    // Without storage it shows again next time.
+  }
+  for (const listener of inviteListeners) listener()
+}
 
 /**
  * Tổng quan's "Hạn mức tháng này": the whole month's limit, then the two or
  * three groups closest to (or past) theirs, each a bar; a tap anywhere opens
- * every limit (BudgetsSheet). Nothing while no limit is set: they are set
- * from Cài đặt or the transactions page. `initialOpen`: a push about a limit
- * was tapped.
+ * every limit (BudgetsSheet). With no limit yet (2026-10-17), "Hạn mức chi
+ * tiêu" invites the first (BudgetInvite) until put away on this device.
+ * `initialOpen`: a push about a limit was tapped.
  */
 export function BudgetOverviewCard({ overview, initialOpen = false }: { overview: BudgetOverview; initialOpen?: boolean }) {
   const [open, setOpen] = React.useState(initialOpen)
-  if (!hasAnyBudget(overview)) return <BudgetsSheet overview={overview} open={open} onOpenChange={setOpen} />
+  const [suggestOpen, setSuggestOpen] = React.useState(false)
+  const [ownOpen, setOwnOpen] = React.useState(false)
+  const dismissed = useInviteDismissed()
+  if (!hasAnyBudget(overview)) {
+    return (
+      <>
+        {dismissed ? null : (
+          <Section title="Hạn mức chi tiêu">
+            <Card size="lg">
+              <CardContent>
+                <BudgetInvite
+                  overview={overview}
+                  onSuggest={() => setSuggestOpen(true)}
+                  onOwn={() => setOwnOpen(true)}
+                  onDismiss={dismissInvite}
+                />
+              </CardContent>
+            </Card>
+          </Section>
+        )}
+        <BudgetsSheet overview={overview} open={open} onOpenChange={setOpen} />
+        <BudgetSuggestSheet overview={overview} open={suggestOpen} onOpenChange={setSuggestOpen} />
+        <BudgetFormSheet overview={overview} target={{ kind: "total" }} open={ownOpen} onOpenChange={setOwnOpen} />
+      </>
+    )
+  }
 
   const closest = groupsByUse(overview).slice(0, 3)
   const show = () => setOpen(true)

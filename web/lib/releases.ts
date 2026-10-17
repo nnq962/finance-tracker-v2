@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.11.0",
+    date: "2026-10-17",
+    title: "Đặt hạn mức theo gợi ý, báo trước khi vượt",
+    changes: [
+      { kind: "new", text: "Chưa có hạn mức thì Tổng quan mời đặt: \"Đặt theo gợi ý\" điền sẵn hạn mức tổng và từng nhóm theo mức chi trung bình 3 tháng gần nhất, sửa hay bỏ từng số rồi lưu một lần." },
+      { kind: "new", text: "Khi ghi khoản chi, nếu số tiền làm nhóm hay hạn mức tổng vượt, dòng dưới hạng mục báo đỏ trước khi lưu, ví dụ \"Khoản này làm Ăn uống vượt 50k\"." },
+    ],
+  },
+  {
     version: "6.10.3",
     date: "2026-10-17",
     title: "Hạn mức tính đúng từ tháng đặt",

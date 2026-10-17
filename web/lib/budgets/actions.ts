@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache"
 import { requireSession } from "@/lib/auth/session"
 import { syncBudgetAlerts } from "@/lib/budgets/alerts"
 import { getBudgetMonth } from "@/lib/budgets/month"
-import { BudgetValidationError, deleteBudget, saveBudget } from "@/lib/budgets/repository"
+import { BudgetValidationError, deleteBudget, saveBudget, saveBudgets } from "@/lib/budgets/repository"
 import type { BudgetActionResult, BudgetMonth } from "@/lib/budgets/types"
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -37,6 +37,30 @@ export async function saveBudgetAction(groupId: string | null, amount: number): 
     }
     const budgetId = await saveBudget(user.uid, groupId, Number(amount))
     await syncBudgetAlerts(user.uid, { notify: false, rearm: budgetId })
+    revalidateBudgetPaths()
+    return { success: true }
+  } catch (error) {
+    return failure(error)
+  }
+}
+
+/**
+ * Sets several limits at once, the suggestion reviewed ("Đặt theo gợi ý"):
+ * all or none. Levels already reached are written down without a push.
+ */
+export async function saveBudgetsAction(entries: { groupId: string | null; amount: number }[]): Promise<BudgetActionResult> {
+  const user = await requireSession()
+  try {
+    if (!Array.isArray(entries) || entries.length > 100) throw new BudgetValidationError("Hạn mức không hợp lệ.")
+    const clean = entries.map((entry) => {
+      const groupId = entry?.groupId ?? null
+      if (groupId !== null && (typeof groupId !== "string" || !uuidPattern.test(groupId))) {
+        throw new BudgetValidationError("Không tìm thấy nhóm hạng mục. Vui lòng tải lại trang.")
+      }
+      return { groupId, amount: Number(entry?.amount) }
+    })
+    const ids = await saveBudgets(user.uid, clean)
+    await syncBudgetAlerts(user.uid, { notify: false, rearm: ids })
     revalidateBudgetPaths()
     return { success: true }
   } catch (error) {

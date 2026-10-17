@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronLeftIcon, ChevronRightIcon, GaugeIcon, PencilIcon, PlusIcon, SaveIcon, Trash2Icon, ZapIcon } from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon, GaugeIcon, PencilIcon, PlusIcon, SaveIcon, SparklesIcon, Trash2Icon, ZapIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
@@ -38,10 +38,12 @@ import { scheduleUndoableDelete } from "@/lib/undoable-delete"
 
 import { KeptMonths } from "./budget-charts"
 import { BudgetDetailSkeleton, BudgetGroupDetail, BudgetTotalDetail, JarsNote } from "./budget-detail"
+import { BudgetSuggestSheet, canSuggest } from "./budget-suggest"
 import { BudgetResult, BudgetTotal } from "./budget-total"
 
 /** The limit being set: the whole month's, or a group's. */
-type Target = { kind: "total" } | { kind: "group"; groupId: string }
+export type BudgetTarget = { kind: "total" } | { kind: "group"; groupId: string }
+type Target = BudgetTarget
 
 function GroupTile({ group, size = "sm" }: { group: BudgetGroupLine; size?: "sm" | "lg" }) {
   return <IconTile icon={categoryIconRegistry[group.iconName]} tone={group.colorName} size={size} />
@@ -71,6 +73,7 @@ export function BudgetsSheet({
     setEditing(target)
     setEditOpen(true)
   }, [])
+  const [suggestOpen, setSuggestOpen] = React.useState(false)
 
   return (
     <>
@@ -80,9 +83,20 @@ export function BudgetsSheet({
             <IconTile icon={GaugeIcon} tone="card" size="lg" />
             <p className="mt-2 text-base font-semibold">Chưa có hạn mức</p>
             <p className="text-sm text-muted-foreground">Đặt mức chi tối đa mỗi tháng: một hạn mức tổng, hoặc cho từng nhóm hạng mục.</p>
-            <Button className="mt-3" onClick={() => edit({ kind: "total" })}>
-              <PlusIcon /> Đặt hạn mức tổng
-            </Button>
+            {canSuggest(overview) ? (
+              <div className="mt-3 flex w-full max-w-80 gap-2">
+                <Button variant="secondary" className="flex-1" onClick={() => edit({ kind: "total" })}>
+                  Tự đặt
+                </Button>
+                <Button className="flex-1" onClick={() => setSuggestOpen(true)}>
+                  <SparklesIcon /> Đặt theo gợi ý
+                </Button>
+              </div>
+            ) : (
+              <Button className="mt-3" onClick={() => edit({ kind: "total" })}>
+                <PlusIcon /> Đặt hạn mức tổng
+              </Button>
+            )}
           </div>
         ) : (
           <BudgetsSheetBody overview={overview} onEdit={edit} onClose={() => onOpenChange(false)} />
@@ -90,6 +104,7 @@ export function BudgetsSheet({
       </PageSheet>
       {/* Beside the list's sheet, not in it, so its gestures stay its own. */}
       {editing ? <BudgetFormSheet overview={overview} target={editing} open={editOpen} onOpenChange={setEditOpen} /> : null}
+      <BudgetSuggestSheet overview={overview} open={suggestOpen} onOpenChange={setSuggestOpen} />
     </>
   )
 }
@@ -431,7 +446,7 @@ function PastMonthList({
  * is none yet, that average and this month's spending under it; Delete
  * (with undo) beside Save when it exists.
  */
-function BudgetFormSheet({
+export function BudgetFormSheet({
   overview,
   target,
   open,
