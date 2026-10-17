@@ -84,3 +84,26 @@ export function limitTone(spent: number, limit: number, share?: number): "ok" | 
   if (state !== "ok") return state
   return share !== undefined && budgetPace(spent, limit, share) === "fast" ? "near" : "ok"
 }
+
+/**
+ * The rule between limits (2026-10-17): no group's limit above the whole
+ * month's, as a group cannot spend more than the month allows. The groups
+ * may add up to more (a word in the sheet, not a refusal); without a month
+ * limit there is no rule. Returns why a set of limits breaks it, or null:
+ * `changed` says which was being set, for the wording.
+ */
+export function limitsConflict(
+  total: number | null,
+  groups: { name: string; limit: number }[],
+  changed: "total" | string,
+): string | null {
+  if (total === null) return null
+  const above = groups.filter((group) => group.limit > total).sort((a, b) => b.limit - a.limit)
+  if (above.length === 0) return null
+  if (changed === "total") {
+    const top = above[0]
+    return `Thấp hơn hạn mức ${top.name} ${formatCompactCurrency(top.limit, 1)}. Giảm hạn mức nhóm đó trước, hoặc đặt từ ${formatCompactCurrency(top.limit, 1)}.`
+  }
+  const group = above.find((line) => line.name === changed) ?? above[0]
+  return `Hạn mức ${group.name} không thể lớn hơn hạn mức tổng ${formatCompactCurrency(total, 1)}.`
+}

@@ -106,13 +106,19 @@ export function BudgetOverviewCard({ overview, initialOpen = false }: { overview
           <CardContent>
             {hasLimit(overview.total) ? (
               <>
+                {/* Named, so the month's limit reads apart from the groups' below (2026-10-17). */}
+                <p className="mb-3 text-sm font-semibold">Hạn mức tổng</p>
                 <BudgetTotal overview={overview} compact />
                 {/* As in the sheet: "Theo hạng mục" just below counts what jars paid, the limits do not. */}
                 <JarsNote amount={overview.total.fromJars} className="mt-1.5" />
               </>
             ) : null}
             {closest.length > 0 ? (
-              <ul className={cn("flex flex-col gap-4", hasLimit(overview.total) && "mt-5 border-t border-separator pt-4")}>
+              <>
+              {hasLimit(overview.total) ? (
+                <p className="mt-5 border-t border-separator pt-4 text-sm font-semibold">Theo nhóm</p>
+              ) : null}
+              <ul className={cn("flex flex-col gap-4", hasLimit(overview.total) && "mt-3")}>
                 {closest.map((group) => {
                   // One rule for the colour everywhere: amber from 80% or while running fast for the time gone.
                   const state = limitTone(group.spent, group.limit, monthShare(overview))
@@ -138,6 +144,7 @@ export function BudgetOverviewCard({ overview, initialOpen = false }: { overview
                   )
                 })}
               </ul>
+              </>
             ) : null}
             {/* Without the month's limit, under the groups instead. */}
             {hasLimit(overview.total) ? null : <JarsNote amount={overview.total.fromJars} className="mt-3" />}

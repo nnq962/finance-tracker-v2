@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.0",
+    date: "2026-10-17",
+    title: "Hạn mức tổng rõ ràng, nhóm không vượt tổng",
+    changes: [
+      { kind: "new", text: "Hạn mức của một nhóm không thể lớn hơn hạn mức tổng, và hạn mức tổng không thể hạ dưới một nhóm: form báo ngay khi gõ." },
+      { kind: "improved", text: "Thẻ đầu sheet Hạn mức có tiêu đề \"Hạn mức tổng\" và dòng \"Đã chia cho nhóm\" (báo khi các nhóm cộng lại vượt tổng); danh sách bên dưới là \"Hạn mức theo nhóm\"; thẻ ở Tổng quan cũng ghi rõ." },
+    ],
+  },
+  {
     version: "6.14.2",
     date: "2026-10-17",
     title: "Màn tải Giao dịch có dòng hạn mức",

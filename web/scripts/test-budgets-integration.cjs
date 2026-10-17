@@ -124,7 +124,7 @@ async function run() {
     assert.equal(due.find((d) => d.budgetId === totalId).title, 'Vượt hạn mức tổng')
     assert.match(due.find((d) => d.budgetId === totalId).body, /^Đã chi 650\.000đ, vượt 50\.000đ\.$/)
     // A raised limit warns again from scratch; the levels it already stands at are written down silently.
-    await budgets.saveBudget(userId, food, 1_000_000)
+    await budgets.saveBudget(userId, food, 600_000)
     assert.deepEqual(await syncBudgetAlerts(userId, { notify: false, rearm: foodId }), [])
     assert.equal(await count('SELECT count(*) FROM budget_alerts WHERE budget_id = $1', [foodId]), 0)
     await budgets.saveBudget(userId, food, 500_000)
@@ -270,6 +270,27 @@ async function run() {
     assert.equal(await count('SELECT count(*) FROM budget_alerts WHERE budget_id = $1 AND level = 100', [aId]), 1)
     assert.deepEqual(await syncBudgetAlerts(alertUser, { notify: true }), [])
 
+    // No group's limit above the whole month's; the groups may add up to more; no month limit, no rule.
+    const ruleUser = await createUser('budgets_test')
+    const rFood = await group(ruleUser, 'Ăn uống')
+    const rFun = await group(ruleUser, 'Giải trí')
+    await budgets.saveBudget(ruleUser, rFood, 5_000_000)
+    await budgets.saveBudget(ruleUser, null, 6_000_000)
+    await assert.rejects(() => budgets.saveBudget(ruleUser, rFood, 6_500_000), /Hạn mức Ăn uống không thể lớn hơn hạn mức tổng 6tr/)
+    await budgets.saveBudget(ruleUser, rFood, 6_000_000)
+    await budgets.saveBudget(ruleUser, rFun, 4_000_000)
+    assert.equal(await count('SELECT count(*) FROM budgets WHERE user_id = $1', [ruleUser]), 3, '6tr + 4tr over 6tr is allowed')
+    await assert.rejects(() => budgets.saveBudget(ruleUser, null, 5_000_000), /Thấp hơn hạn mức Ăn uống 6tr/)
+    assert.equal(Number((await sql('SELECT amount FROM budgets WHERE user_id = $1 AND category_group_id IS NULL', [ruleUser])).rows[0].amount), 6_000_000)
+    // Several at once are checked as they will be: lowering a group and the month together passes.
+    await budgets.saveBudgets(ruleUser, [{ groupId: null, amount: 3_000_000 }, { groupId: rFood, amount: 3_000_000 }, { groupId: rFun, amount: 1_000_000 }])
+    await assert.rejects(
+      () => budgets.saveBudgets(ruleUser, [{ groupId: null, amount: 2_000_000 }, { groupId: rFun, amount: 1_000_000 }]),
+      /Ăn uống/,
+    )
+    assert.equal(calc.limitsConflict(null, [{ name: 'Ăn uống', limit: 9 }], 'Ăn uống'), null)
+    assert.equal(calc.limitsConflict(10, [{ name: 'Ăn uống', limit: 10 }], 'Ăn uống'), null)
+
     // Several at once ("Đặt theo gợi ý"): all or none.
     const bulkUser = await createUser('budgets_test')
     const bulkFood = await group(bulkUser, 'Ăn uống')
@@ -313,7 +334,7 @@ async function run() {
     assert.equal(calc.remainingLabel(2_250_000, 2_000_000, 16), 'Vượt 250k')
     assert.equal(calc.remainingLabel(3_420_000, 4_000_000, 16), 'Còn 580k · 36k mỗi ngày')
 
-    console.log('Budget checks passed: what counts as spent, averages, setting and deleting limits, other users, the database checks, alerts once per level, raised limits, several at once, the hint to change a limit, push settings and levels, a month in detail (by day, by category, six months before, the latest, months gone by to their end), the sums.')
+    console.log('Budget checks passed: what counts as spent, averages, setting and deleting limits, other users, the database checks, alerts once per level, raised limits, several at once, no group above the month, the hint to change a limit, push settings and levels, a month in detail (by day, by category, six months before, the latest, months gone by to their end), the sums.')
   } finally {
     await cleanup()
   }

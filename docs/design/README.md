@@ -399,6 +399,16 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   mỗi nhóm là `SettingsFieldRow` có ô tiền gõ tại chỗ, điền sẵn `suggestedLimit` của trung bình 3 tháng ("Trung bình
   4,12tr" dưới tên), xoá trống là không đặt ("Không đặt"), chân "Lưu N hạn mức" lưu tất cả cùng lúc (tất cả hoặc
   không, `saveBudgets`). Sheet Hạn mức khi trống cũng có hai nút đó.
+  **Hạn mức tổng và hạn mức nhóm** (2026-10-17, kiểu "A" người dùng chọn): thẻ đầu sheet có đầu riêng (`TotalHeading`:
+  ô icon đồng hồ, "Hạn mức tổng", "Mọi khoản chi trong tháng", mũi tên), dưới số tiền là dòng phân bổ dưới vạch kẻ
+  ("Đã chia cho nhóm 1,2tr / 1,2tr", amber kèm "Các nhóm cộng lại 1,5tr, nhiều hơn hạn mức tổng 1,2tr." khi vượt);
+  nhóm dòng bên dưới là "HẠN MỨC THEO NHÓM · N"; thẻ ở Tổng quan ghi "Hạn mức tổng" trên số và "Theo nhóm" trên các
+  nhóm. Luật (`limitsConflict`, kiểm cả trong form lẫn server): hạn mức một nhóm không lớn hơn hạn mức tổng ("Hạn mức
+  Ăn uống không thể lớn hơn hạn mức tổng 1,2tr."), hạ hạn mức tổng dưới một nhóm cũng bị chặn ("Thấp hơn hạn mức Đi
+  lại 500k. Giảm hạn mức nhóm đó trước, hoặc đặt từ 500k."); lỗi hiện ngay khi gõ, nút Lưu tắt. Các nhóm cộng lại vượt
+  tổng thì được, chỉ báo mềm; chưa có hạn mức tổng thì không ràng buộc. Form có thêm dòng so sánh: nhóm "Hạn mức tổng ·
+  1,2tr · còn chia được 300k", tổng "Nhóm cao nhất · Đi lại · 500k". Gợi ý chỉnh hạn mức không bao giờ đề nghị một nhóm
+  vượt hạn mức tổng.
   **Gợi ý chỉnh hạn mức** (2026-10-17, `BudgetAdjustHint`): dưới thẻ đầu của màn nhóm và màn tổng (tháng này), khi
   hạn mức đặt từ trước tháng này, có ít nhất 2 tháng chi trong 3 tháng trước, và trung bình vượt hạn mức hơn 20%
   ("Hạn mức có thể quá thấp", amber) hay dưới nửa hạn mức ("quá cao", xanh `transfer`): "3 tháng gần đây bạn chi

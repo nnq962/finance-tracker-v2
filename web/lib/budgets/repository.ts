@@ -3,7 +3,7 @@ import "server-only"
 import { sql } from "kysely"
 
 import { shiftMonthKey } from "@/lib/budgets/months"
-import { suggestedLimit } from "@/lib/budgets/calculations"
+import { limitsConflict, suggestedLimit } from "@/lib/budgets/calculations"
 import type { BudgetAdjust, BudgetAlertSettings, BudgetGroupLine, BudgetOverview } from "@/lib/budgets/types"
 import type { CategoryColorName } from "@/lib/categories/category-colors"
 import { getDb } from "@/lib/db/client"
@@ -108,6 +108,9 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
     if (toDateKey(budget.createdAt).slice(0, 7) >= month || budget.hintDismissedMonth === `${month}-01`) return null
     const to = suggestedLimit(average)
     if (!to || to === budget.amount) return null
+    // A group is never suggested above the whole month's limit (limitsConflict).
+    const monthLimit = budgetOf(null)?.amount
+    if (budget.categoryGroupId !== null && monthLimit !== undefined && to > monthLimit) return null
     if (average > budget.amount * 1.2) return { kind: "low", to }
     if (average < budget.amount * 0.5) return { kind: "high", to }
     return null
@@ -152,28 +155,8 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
  * or changed. Returns the limit's id.
  */
 export async function saveBudget(userId: string, groupId: string | null, amount: number) {
-  if (!Number.isSafeInteger(amount) || amount <= 0 || amount > MAX_MONEY) {
-    throw new BudgetValidationError("Hạn mức không hợp lệ.")
-  }
-  if (groupId) {
-    const group = await getDb()
-      .selectFrom("categoryGroups")
-      .select("id")
-      .where("id", "=", groupId)
-      .where("userId", "=", userId)
-      .where("type", "=", "expense")
-      .where("status", "=", "active")
-      .executeTakeFirst()
-    if (!group) throw new BudgetValidationError("Không tìm thấy nhóm hạng mục. Vui lòng tải lại trang.")
-  }
-
-  const saved = await getDb()
-    .insertInto("budgets")
-    .values({ userId, categoryGroupId: groupId, amount })
-    .onConflict((conflict) => conflict.columns(["userId", "categoryGroupId"]).doUpdateSet({ amount }))
-    .returning("id")
-    .executeTakeFirstOrThrow()
-  return saved.id
+  const [id] = await saveBudgets(userId, [{ groupId, amount }])
+  return id
 }
 
 /**
@@ -193,6 +176,8 @@ export async function saveBudgets(userId: string, entries: { groupId: string | n
   }
   const groupIds = entries.flatMap((entry) => (entry.groupId ? [entry.groupId] : []))
   return getDb().transaction().execute(async (trx) => {
+    // One save at a time per user, so two cannot each pass the rule against the other's old limits.
+    await trx.selectFrom("users").select("id").where("id", "=", userId).forUpdate().execute()
     if (groupIds.length) {
       const found = await trx
         .selectFrom("categoryGroups")
@@ -204,6 +189,32 @@ export async function saveBudgets(userId: string, entries: { groupId: string | n
         .execute()
       if (found.length !== groupIds.length) throw new BudgetValidationError("Không tìm thấy nhóm hạng mục. Vui lòng tải lại trang.")
     }
+    // No group's limit above the whole month's, once these are set (limitsConflict).
+    const current = await trx.selectFrom("budgets").select(["categoryGroupId", "amount"]).where("userId", "=", userId).execute()
+    const names = new Map(
+      (
+        await trx
+          .selectFrom("categoryGroups")
+          .select(["id", "name"])
+          .where("userId", "=", userId)
+          .where("type", "=", "expense")
+          .where("status", "=", "active")
+          .execute()
+      ).map((group) => [group.id, group.name]),
+    )
+    const finalOf = (groupId: string | null) =>
+      entries.find((entry) => entry.groupId === groupId)?.amount ?? current.find((row) => row.categoryGroupId === groupId)?.amount ?? null
+    const groupsAfter = [...new Set([...current.map((row) => row.categoryGroupId), ...groupIds].filter((id): id is string => id !== null))]
+      .filter((id) => names.has(id))
+      .map((id) => ({ name: names.get(id)!, limit: finalOf(id)! }))
+      .filter((group) => group.limit !== null)
+    const changedGroup = entries.find((entry) => entry.groupId !== null)
+    const conflict = limitsConflict(
+      finalOf(null),
+      groupsAfter,
+      entries.some((entry) => entry.groupId === null) && !changedGroup ? "total" : changedGroup ? names.get(changedGroup.groupId!) ?? "" : "total",
+    )
+    if (conflict) throw new BudgetValidationError(conflict)
     const ids: string[] = []
     for (const entry of entries) {
       const saved = await trx

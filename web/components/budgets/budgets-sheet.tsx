@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { BellRingIcon, ChevronLeftIcon, ChevronRightIcon, GaugeIcon, PencilIcon, PlusIcon, SaveIcon, SparklesIcon, Trash2Icon, ZapIcon } from "lucide-react"
+import { BellRingIcon, ChevronLeftIcon, ChevronRightIcon, GaugeIcon, PencilIcon, PlusIcon, SaveIcon, SparklesIcon, Trash2Icon, TriangleAlertIcon, ZapIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { IconTile } from "@/components/app/icon-tile"
@@ -24,6 +24,7 @@ import {
   hasAnyBudget,
   hasLimit,
   limitTone,
+  limitsConflict,
   monthShare,
   remainingLabel,
   suggestedLimit,
@@ -33,6 +34,7 @@ import type { BudgetGroupLine, BudgetLine, BudgetMonth, BudgetMonthLine, BudgetO
 import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { scheduleUndoableDelete } from "@/lib/undoable-delete"
+import { cn } from "@/lib/utils"
 
 import { KeptMonths } from "./budget-charts"
 import { BudgetDetailSkeleton, BudgetGroupDetail, BudgetTotalDetail, JarsNote } from "./budget-detail"
@@ -300,6 +302,52 @@ function KeptLine({
   )
 }
 
+/**
+ * The head of the whole month's card (2026-10-17, "A"), so it reads apart
+ * from the groups' limits below: the gauge tile, "Hạn mức tổng" and what it
+ * covers, a chevron when the card opens its screen.
+ */
+function TotalHeading({ chevron = true }: { chevron?: boolean }) {
+  return (
+    <div className="mb-4 flex items-center gap-3">
+      <IconTile icon={GaugeIcon} tone="neutral" size="sm" />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <p className="text-base font-semibold">Hạn mức tổng</p>
+        <p className="text-xs text-muted-foreground">Mọi khoản chi trong tháng</p>
+      </div>
+      {chevron ? <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" /> : null}
+    </div>
+  )
+}
+
+/**
+ * How much of the whole month's limit the groups' limits take, under a
+ * hairline: "Đã chia cho nhóm 1,2tr / 1,2tr"; amber with a word when they
+ * add up to more (allowed: a group alone is never above it). Nothing without
+ * group limits.
+ */
+function Allocation({ total, groups }: { total: number; groups: number[] }) {
+  if (groups.length === 0) return null
+  const shared = groups.reduce((sum, limit) => sum + limit, 0)
+  const over = shared > total
+  return (
+    <div className="mt-4 flex flex-col gap-1.5 border-t border-separator pt-3.5">
+      <div className="flex items-center justify-between gap-3 text-xs">
+        <span className="text-muted-foreground">Đã chia cho nhóm</span>
+        <span className={cn("font-medium tabular-nums", over && "text-warning")}>
+          {formatCompactCurrency(shared, 1)} / {formatCompactCurrency(total, 1)}
+        </span>
+      </div>
+      {over ? (
+        <p className="flex items-start gap-1.5 text-xs text-warning">
+          <TriangleAlertIcon className="mt-px size-3.5 shrink-0" aria-hidden="true" />
+          Các nhóm cộng lại {formatCompactCurrency(shared, 1)}, nhiều hơn hạn mức tổng {formatCompactCurrency(total, 1)}.
+        </p>
+      ) : null}
+    </div>
+  )
+}
+
 function ThisMonthList({
   overview,
   onOpen,
@@ -326,8 +374,10 @@ function ThisMonthList({
             onClick={() => onOpen({ type: "total" })}
           >
             <CardContent>
+              <TotalHeading />
               <BudgetTotal overview={overview} />
               <JarsNote amount={total.fromJars} className="mt-1.5" />
+              <Allocation total={total.limit} groups={limited.map((group) => group.limit)} />
               {/* From the page's data, so the card does not change once the month's detail loads. */}
               <KeptLine month={overview.month} limit={total.limit} kept={overview.kept} />
             </CardContent>
@@ -353,7 +403,7 @@ function ThisMonthList({
       ) : null}
 
       {limited.length > 0 ? (
-        <SettingsGroup title={`Theo nhóm · ${limited.length}`}>
+        <SettingsGroup title={`Hạn mức theo nhóm · ${limited.length}`}>
           {limited.map((group) => (
             <LimitRow
               key={group.groupId}
@@ -429,6 +479,7 @@ function PastMonthList({
   const totalJudged = judged(data.total)
   const totalCard = (
     <CardContent>
+      <TotalHeading chevron={hasLimit(data.total)} />
       <BudgetResult spent={data.total.spent} limit={totalJudged ? data.total.limit! : undefined} label={`Tháng ${number} đã chi`} />
       <JarsNote amount={data.total.fromJars} className="mt-1.5" />
       <KeptLine month={data.month} limit={data.total.limit} kept={{ history: data.total.history, since: data.total.since, minMonth: data.minMonth }} />
@@ -451,7 +502,7 @@ function PastMonthList({
         <Card size="lg">{totalCard}</Card>
       )}
       {limited.length > 0 ? (
-        <SettingsGroup title={`Theo nhóm · ${kept}/${limited.length} trong hạn mức`}>
+        <SettingsGroup title={`Hạn mức theo nhóm · ${kept}/${limited.length} trong hạn mức`}>
           {limited.map((group) => (
             <LimitRow
               key={group.groupId}
@@ -520,17 +571,39 @@ export function BudgetFormSheet({
   return (
     <PageSheet title={line?.budgetId ? "Sửa hạn mức" : "Đặt hạn mức"} open={open} onOpenChange={onOpenChange}>
       {/* A fresh form each time it opens. */}
-      {open && line ? <BudgetForm group={group} line={line} onDone={() => onOpenChange(false)} /> : null}
+      {open && line ? <BudgetForm overview={overview} group={group} line={line} onDone={() => onOpenChange(false)} /> : null}
     </PageSheet>
   )
 }
 
-function BudgetForm({ group, line, onDone }: { group?: BudgetGroupLine; line: BudgetLine; onDone: () => void }) {
+function BudgetForm({
+  overview,
+  group,
+  line,
+  onDone,
+}: {
+  overview: BudgetOverview
+  group?: BudgetGroupLine
+  line: BudgetLine
+  onDone: () => void
+}) {
   const suggested = suggestedLimit(line.average)
   const [amount, setAmount] = React.useState<number | null>(line.limit ?? suggested)
   const [error, setError] = React.useState<string | null>(null)
   const [pending, startTransition] = React.useTransition()
   const name = group?.name ?? "Hạn mức tổng"
+
+  // The rule between limits, said as the amount is typed (the server says the same): a group not above the month's.
+  const others = overview.groups.filter((other) => other.limit !== null && other.groupId !== group?.groupId)
+  const monthLimit = overview.total.limit
+  const ruleError = !amount
+    ? null
+    : group
+      ? limitsConflict(monthLimit, [{ name: group.name, limit: amount }], group.name)
+      : limitsConflict(amount, others.map((other) => ({ name: other.name, limit: other.limit! })), "total")
+  const shownError = error ?? ruleError
+  const highest = [...others].sort((a, b) => b.limit! - a.limit!)[0]
+  const sharedByOthers = others.reduce((sum, other) => sum + other.limit!, 0)
 
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -587,13 +660,21 @@ function BudgetForm({ group, line, onDone }: { group?: BudgetGroupLine; line: Bu
             setError(null)
           }}
           history={suggested ? [suggested] : []}
-          invalid={Boolean(error)}
+          invalid={Boolean(shownError)}
           required
         />
-        {error ? <FieldError className="text-center">{error}</FieldError> : null}
+        {shownError ? <FieldError className="px-4 text-center">{shownError}</FieldError> : null}
       </div>
 
       <SettingsGroup>
+        {/* What the rule weighs it against: the month's limit and what the other groups leave of it, or the highest group. */}
+        {group && monthLimit !== null ? (
+          <SettingsRow
+            title="Hạn mức tổng"
+            value={`${formatCompactCurrency(monthLimit, 1)} · còn chia được ${formatCompactCurrency(Math.max(monthLimit - sharedByOthers, 0), 1)}`}
+          />
+        ) : null}
+        {!group && highest ? <SettingsRow title="Nhóm cao nhất" value={`${highest.name} · ${formatCompactCurrency(highest.limit!, 1)}`} /> : null}
         <SettingsRow title="Trung bình 3 tháng" value={line.average ? formatCurrency(line.average) : "Chưa có"} />
         <SettingsRow title="Đã chi tháng này" value={formatCurrency(line.spent)} />
       </SettingsGroup>
@@ -605,7 +686,7 @@ function BudgetForm({ group, line, onDone }: { group?: BudgetGroupLine; line: Bu
               <Trash2Icon /> Xoá
             </Button>
           ) : null}
-          <Button type="submit" className="flex-1" disabled={pending}>
+          <Button type="submit" className="flex-1" disabled={pending || Boolean(ruleError)}>
             {pending ? <Spinner /> : <SaveIcon />}
             {pending ? "Đang lưu…" : "Lưu"}
           </Button>
