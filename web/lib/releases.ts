@@ -40,21 +40,6 @@ export const releases: Release[] = [
     ],
   },
   {
-    version: "6.15.6",
-    date: "2026-10-17",
-    title: "Cài đặt: chín chỗ sửa từ một lượt thử trang",
-    changes: [
-      { kind: "fixed", text: "Đổi cảnh báo hạn mức trong sheet Hạn mức, dòng ở Cài đặt › Thông báo cập nhật ngay, không còn ghi mức cũ tới khi tải lại." },
-      { kind: "fixed", text: "Đóng màn mở từ một liên kết (lịch sử phiên bản, nhắc ghi chi tiêu, gói), tải lại trang không còn mở lại màn đó." },
-      { kind: "fixed", text: "Không tạo được hai nhóm cùng tên trong một loại, hay hai hạng mục cùng tên trong một nhóm (không phân biệt hoa thường)." },
-      { kind: "fixed", text: "Xoá nhóm có hạn mức: câu hỏi nói hạn mức cũng bị xoá, và hạn mức được xoá theo nhóm." },
-      { kind: "improved", text: "Dòng cảnh báo trong Cài đặt › Thông báo đổi tên thành Cảnh báo hạn mức, khỏi trùng với dòng Hạn mức chi tiêu." },
-      { kind: "improved", text: "Thông báo ngắn hiện dưới thanh nút của sheet, không che nút Đóng hay Quay lại." },
-      { kind: "improved", text: "Khung chờ của trang Cài đặt khớp với trang thật, không còn nhảy khi tải xong." },
-      { kind: "fixed", text: "Quản trị: hẹn gửi thông báo vào giờ đã qua được báo ngay dưới ô giờ; đóng khi đang soạn dở thì được hỏi trước khi bỏ nháp." },
-    ],
-  },
-  {
     version: "6.15.5",
     date: "2026-10-17",
     title: "Sheet quay lại không nháy header",
