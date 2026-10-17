@@ -239,6 +239,29 @@ function startLogging() {
   }
 }
 
+/** Whether the log is on, for the switch in settings (an installed app has no address bar for ?debug=1). */
+export function isPerfDebugOn() {
+  try {
+    return localStorage.getItem(KEY) === "1"
+  } catch {
+    return false
+  }
+}
+
+/** Turns the log on or off from settings, then reloads so it starts with a page load. */
+export function setPerfDebug(on: boolean) {
+  try {
+    if (on) localStorage.setItem(KEY, "1")
+    else {
+      localStorage.removeItem(KEY)
+      localStorage.removeItem(STORE)
+    }
+  } catch {
+    return
+  }
+  window.location.reload()
+}
+
 export function PerfDebug() {
   const [enabled, setEnabled] = React.useState(false)
   const [, setVersion] = React.useState(0)

@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.23",
+    date: "2026-10-17",
+    title: "Bật bảng ghi tốc độ trong Cài đặt",
+    changes: [
+      { kind: "new", text: "Quản trị viên bật hoặc tắt bảng ghi tốc độ bằng công tắc \"Ghi tốc độ\" trong Cài đặt, vì app đã cài không có thanh địa chỉ để gõ ?debug=1." },
+    ],
+  },
+  {
     version: "6.15.22",
     date: "2026-10-17",
     title: "Công cụ đo tốc độ trên máy",

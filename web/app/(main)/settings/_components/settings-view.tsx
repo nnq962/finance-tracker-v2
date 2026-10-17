@@ -8,6 +8,7 @@ import {
   GaugeIcon,
   HistoryIcon,
   MegaphoneIcon,
+  ActivityIcon,
   MicIcon,
   PaletteIcon,
   ShieldCheckIcon,
@@ -30,6 +31,7 @@ import { TimiIcon } from "@/components/timi-icon"
 import { TimiWordmark } from "@/components/timi-wordmark"
 import { Switch } from "@/components/ui/switch"
 import type { SessionUser } from "@/lib/auth/session"
+import { isPerfDebugOn, setPerfDebug } from "@/components/perf-debug"
 import { setBroadcastsEnabledAction } from "@/lib/broadcasts/actions"
 import type { BroadcastScreenData } from "@/lib/broadcasts/types"
 import type { BudgetOverview } from "@/lib/budgets/types"
@@ -107,6 +109,8 @@ function budgetsSummary(overview: BudgetOverview) {
 }
 
 
+const noSubscribe = () => () => {}
+
 type SettingsViewProps = {
   user: SessionUser
   notifications: NotificationState
@@ -155,6 +159,8 @@ export function SettingsView({
   // Kept once loaded, so the admin screens open again at once.
   const [adminData, setAdminData] = React.useState<AdminData>()
   const [broadcastData, setBroadcastData] = React.useState<BroadcastScreenData>()
+  // Read from this device's storage: off on the server, then what the device says.
+  const speedLog = React.useSyncExternalStore(noSubscribe, isPerfDebugOn, () => false)
   const { choice } = useThemeChoice()
   const { openWelcome } = useWelcome()
   const router = useRouter()
@@ -325,6 +331,12 @@ export function SettingsView({
                   title="Gửi thông báo"
                   value={scheduledCount > 0 ? `${scheduledCount} đã hẹn` : undefined}
                   onClick={() => open("broadcasts")}
+                />
+                {/* The on-screen speed log (?debug=1), which an installed app has no address bar for. */}
+                <SettingsRow
+                  icon={ActivityIcon}
+                  title="Ghi tốc độ"
+                  action={<Switch aria-label="Ghi tốc độ" checked={speedLog} onCheckedChange={setPerfDebug} />}
                 />
                 {/* A tool for checking speech recognition on a device, not for users. */}
                 <SettingsRow
