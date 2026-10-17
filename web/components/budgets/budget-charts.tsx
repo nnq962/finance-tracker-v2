@@ -186,10 +186,13 @@ export function BudgetDailyChart({
           {/* Drawn at once: iOS drops taps while content animates in. */}
           <Area
             dataKey="spent"
-            // Steps, as the sum only moves on a day with spending; a smooth curve rose before it.
-            type="stepAfter"
+            // Smooth (2026-10-17, at the user's wish, after steps looked jagged): monotone, so it never
+            // overshoots or dips below a day's sum; it eases up over the day before a spending.
+            type="monotoneX"
             stroke={tone}
             strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
             fill={tone}
             fillOpacity={0.1}
             dot={false}

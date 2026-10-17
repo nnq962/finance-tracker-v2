@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.13.1",
+    date: "2026-10-17",
+    title: "Đồ thị chi theo ngày mượt hơn",
+    changes: [
+      { kind: "improved", text: "Đường chi theo ngày trong chi tiết hạn mức (cả hạn mức tổng và từng nhóm) là đường cong mượt thay cho bậc thang." },
+    ],
+  },
+  {
     version: "6.13.0",
     date: "2026-10-17",
     title: "Gợi ý chỉnh hạn mức, cài đặt thông báo hạn mức",

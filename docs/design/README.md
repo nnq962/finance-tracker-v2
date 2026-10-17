@@ -433,8 +433,9 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   (`usePageSheetScreen`, ‹ quay lại, bút chì sửa hạn mức ở bên phải, tháng cũ không có bút chì; tiêu đề "Ăn uống",
   "Ăn uống · tháng 9", "Hạn mức tổng", "Hạn mức tổng · tháng 9"; 2026-10-17 đổi từ "Cả tháng 10": hạn mức cả tháng gọi là "hạn mức tổng" ở mọi chỗ, cả thông báo đẩy): thẻ đầu như trên, "CHI THEO NGÀY" (`BudgetDailyChart`: hai số "Đã chi"
   (hay "Cả tháng 9") / "Hạn mức"; đường chi luỹ kế màu mực, amber khi đang chi nhanh, đỏ khi vượt, nền mờ cùng
-  màu; vạch đỏ mờ là hạn mức; không có đường "đúng kế hoạch" (bỏ 2026-10-17: không ai chi đều như thế); đường bậc thang
-  (chỉ bước lên ngày có chi; 2026-10-17 thay đường cong mượt vốn dâng lên trước ngày chi); tháng này dừng ở hôm
+  màu; vạch đỏ mờ là hạn mức; không có đường "đúng kế hoạch" (bỏ 2026-10-17: không ai chi đều như thế); đường cong mượt
+  (`monotoneX`, không vọt quá hay tụt dưới tổng của ngày; thử bậc thang 2026-10-17 rồi quay lại đường cong vì
+  người dùng thấy bậc thang thô); tháng này dừng ở hôm
   nay, tháng cũ chạy tới ngày cuối, đi ngang sau khoản cuối; dưới biểu đồ "Vượt hạn mức từ ngày
   27/09, cả tháng vượt 300k." hay "Cả tháng trong hạn mức, còn dư 350k.", tháng này chỉ khi đã vượt),
   "THEO HẠNG MỤC" (màn nhóm) hay "THEO NHÓM" (màn cả tháng, thêm "Nhóm chưa đặt hạn mức" gom các nhóm không có
