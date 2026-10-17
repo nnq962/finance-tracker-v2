@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.10",
+    date: "2026-10-17",
+    title: "Lịch thu chi ghi số tiền chính xác hơn",
+    changes: [
+      { kind: "fixed", text: "Ô ngày trong lịch ở Tổng quan ghi số triệu kèm một chữ số thập phân (17,6tr), không còn làm tròn thành 18tr." },
+    ],
+  },
+  {
     version: "6.15.9",
     date: "2026-10-17",
     title: "Nút trên sheet không bị dòng che",

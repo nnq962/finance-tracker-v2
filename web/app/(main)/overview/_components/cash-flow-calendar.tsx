@@ -38,6 +38,17 @@ const slide = {
 // the card is wide (32rem and up).
 const amountClassName = "text-[10px] font-medium tabular-nums @lg:text-xs"
 
+/**
+ * A day's amount, short: from a million up always with one decimal (17,6tr,
+ * not 18tr: the shared short form rounds from 10 up to save room, which made
+ * a 17.600.000đ income read 18tr, 2026-10-17); below that in thousands (450k).
+ */
+function formatDayAmount(value: number) {
+  if (value >= 1_000_000_000) return `${Number((value / 1_000_000_000).toFixed(1)).toLocaleString("vi-VN")}tỷ`
+  if (value >= 1_000_000) return `${Number((value / 1_000_000).toFixed(1)).toLocaleString("vi-VN")}tr`
+  return formatCompactCurrency(value)
+}
+
 export function shiftMonth(month: string, offset: number) {
   const [year, monthIndex] = month.split("-").map(Number)
   const date = new Date(Date.UTC(year, monthIndex - 1 + offset, 1))
@@ -161,13 +172,13 @@ export function CashFlowCalendar({
                       </span>
                       {totals?.income ? (
                         <span className={cn(amountClassName, cashFlowColors.income.text)}>
-                          +{formatCompactCurrency(totals.income)}
+                          +{formatDayAmount(totals.income)}
                         </span>
                       ) : null}
                       {/* Spending in grey: the minus says it, and red is kept for warnings. */}
                       {totals?.expense ? (
                         <span className={cn(amountClassName, "text-muted-foreground")}>
-                          −{formatCompactCurrency(totals.expense)}
+                          −{formatDayAmount(totals.expense)}
                         </span>
                       ) : null}
                     </>
