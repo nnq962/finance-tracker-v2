@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.13.0",
+    date: "2026-10-17",
+    title: "Gợi ý chỉnh hạn mức, cài đặt thông báo hạn mức",
+    changes: [
+      { kind: "new", text: "Khi hạn mức lệch xa mức chi mấy tháng gần đây, màn chi tiết gợi ý \"Hạn mức có thể quá thấp\" hay \"quá cao\", đổi nhanh bằng một chạm hoặc để sau tới hết tháng." },
+      { kind: "new", text: "Cài đặt › Thông báo › Hạn mức chi tiêu: bật tắt thông báo hạn mức và chọn báo trước khi dùng 80%, 90% hay chỉ báo khi vượt." },
+    ],
+  },
+  {
     version: "6.12.0",
     date: "2026-10-17",
     title: "Tin từ Timi",

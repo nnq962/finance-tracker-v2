@@ -9,6 +9,16 @@ import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
  * figures, no balance adjustments, no loans or their repayments.
  */
 
+/**
+ * A hint to change a limit (2026-10-17): the average of the last months is
+ * far over it ("low") or under half of it ("high"); `to` is that average
+ * rounded up, as a new limit would be suggested.
+ */
+export type BudgetAdjust = { kind: "low" | "high"; to: number }
+
+/** How the user wants limit pushes: on or off, and the early warning (80%, 90%, or none: only past 100%). */
+export type BudgetAlertSettings = { enabled: boolean; level: 80 | 90 | null }
+
 /** A limit and what it is measured against: this month's spending, and the last three months' average. */
 export type BudgetLine = {
   /** The limit's id; null while none is set. */
@@ -19,6 +29,8 @@ export type BudgetLine = {
   average: number
   /** This month's spending paid from savings jars: not counted, but the other figures count it. */
   fromJars: number
+  /** Whether to suggest changing the limit, unless put off for this month. */
+  adjust: BudgetAdjust | null
 }
 
 export type BudgetGroupLine = BudgetLine & {
@@ -37,6 +49,7 @@ export type BudgetOverview = {
   total: BudgetLine
   /** Every active spending group, in the user's order, with or without a limit. */
   groups: BudgetGroupLine[]
+  alerts: BudgetAlertSettings
 }
 
 export type BudgetActionResult =

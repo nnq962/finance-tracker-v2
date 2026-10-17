@@ -736,6 +736,25 @@ function FeedbackSection() {
         </NoticeBanner>
       </Wide>
       <Wide>
+        <NoticeBanner
+          tone="warning"
+          icon={LightbulbIcon}
+          title="Hạn mức có thể quá thấp"
+          footer={
+            <>
+              <Button size="sm" onClick={() => toast("Đặt 3tr")}>
+                Đặt 3tr
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => toast("Ẩn tới hết tháng")}>
+                Để sau
+              </Button>
+            </>
+          }
+        >
+          Các nút ở một hàng riêng dưới chữ (footer), để chữ dài giữ đủ bề ngang: gợi ý chỉnh hạn mức.
+        </NoticeBanner>
+      </Wide>
+      <Wide>
         <NoticeBanner tone="warning" title="1 khoản quá hạn" onClick={() => toast("Mở khoản quá hạn")}>
           Minh Tuấn · bấm được cả khối (onClick)
         </NoticeBanner>

@@ -1,53 +1,37 @@
 import "server-only"
 
-import { budgetPercent, daysLeft, hasLimit, perDay } from "@/lib/budgets/calculations"
+import { daysLeft, hasLimit } from "@/lib/budgets/calculations"
+import { budgetPushMessage } from "@/lib/budgets/push-message"
 import { getBudgetOverview } from "@/lib/budgets/repository"
 import type { BudgetLine } from "@/lib/budgets/types"
 import { getDb } from "@/lib/db/client"
 import { getFirebaseAdminMessaging } from "@/lib/firebase/admin"
-import { formatCurrency } from "@/lib/format-currency"
 import { PUSH_ICONS } from "@/lib/notifications/types"
 
-type Level = 80 | 100
+type Level = 80 | 90 | 100
+
+export { budgetPushMessage }
 
 /** Where a tap on the push opens: the overview with the limits sheet. */
 export const BUDGET_PUSH_URL = "/overview?screen=budgets"
 
-/** The levels a limit has reached this month: 80% from four fifths, 100% once past it. */
-function reachedLevels(line: BudgetLine & { limit: number }): Level[] {
-  if (line.spent > line.limit) return [80, 100]
-  if (line.spent >= line.limit * 0.8) return [80]
-  return []
-}
-
-/** The push for a limit at a level: past it, how far; near it, what is left a day. */
-export function budgetPushMessage(
-  name: string | null,
-  line: BudgetLine & { limit: number },
-  level: Level,
-  days: number,
-) {
-  if (level === 100) {
-    return {
-      title: name ? `Vượt hạn mức ${name}` : "Vượt hạn mức tổng",
-      body: `Đã chi ${formatCurrency(line.spent)}, vượt ${formatCurrency(line.spent - line.limit)}.`,
-    }
-  }
-  const percent = Math.min(budgetPercent(line.spent, line.limit), 100)
-  const left = line.limit - line.spent
-  return {
-    title: name ? `${name} đã dùng ${percent}% hạn mức` : `Đã dùng ${percent}% hạn mức tổng`,
-    body:
-      left > 0
-        ? `Còn ${formatCurrency(left)} cho ${days} ngày, khoảng ${formatCurrency(perDay(line.spent, line.limit, days))} mỗi ngày.`
-        : "Đã dùng hết hạn mức tháng này.",
-  }
+/**
+ * The levels a limit has reached this month: the early warning the user
+ * chose (80% or 90%; none) once that share is spent, and 100% once past it.
+ */
+export function reachedLevels(line: BudgetLine & { limit: number }, early: 80 | 90 | null): Level[] {
+  const levels: Level[] = []
+  if (early !== null && line.spent >= (line.limit * early) / 100) levels.push(early)
+  if (line.spent > line.limit) levels.push(100)
+  return levels
 }
 
 /**
- * Writes down the levels each of this month's limits has reached and, with
- * `notify`, pushes the ones newly reached (the highest per limit) to the
- * user's linked devices when notifications are on. Each level is pushed once
+ * Writes down the levels each of this month's limits has reached (the early
+ * warning the user chose, and past 100%) and, with `notify`, pushes the ones
+ * newly reached (the highest per limit) to the user's linked devices, unless
+ * the user turned limit pushes off (then they are written down only, so
+ * turning them on later does not push what is past). Each level is pushed once
  * a month; `rearm` (a limit just saved) first forgets that limit's levels, so
  * a raised limit warns again, while whatever it already reached is written
  * down without a push. Returns the pushes due, sent or not.
@@ -64,7 +48,9 @@ export async function syncBudgetAlerts(userId: string, { notify, rearm }: { noti
     { name: null, line: overview.total },
     ...overview.groups.map((group) => ({ name: group.name, line: group as BudgetLine })),
   ].flatMap(({ name, line }) => (hasLimit(line) ? [{ name, line }] : []))
-  const rows = lines.flatMap(({ line }) => reachedLevels(line).map((level) => ({ userId, budgetId: line.budgetId, month, level })))
+  const rows = lines.flatMap(({ line }) =>
+    reachedLevels(line, overview.alerts.level).map((level) => ({ userId, budgetId: line.budgetId, month, level })),
+  )
   if (rows.length === 0) return []
 
   const inserted = await getDb()
@@ -79,23 +65,20 @@ export async function syncBudgetAlerts(userId: string, { notify, rearm }: { noti
     if (levels.length === 0) return []
     return [{ budgetId: line.budgetId, level: Math.max(...levels) as Level, ...budgetPushMessage(name, line, Math.max(...levels) as Level, daysLeft(overview)) }]
   })
-  if (notify && due.length > 0) await sendBudgetPushes(userId, overview.month, due)
+  if (notify && overview.alerts.enabled && due.length > 0) await sendBudgetPushes(userId, overview.month, due)
   return due
 }
 
-/** To every device still linked to the user's signed-in browsers, as the daily reminder goes; only when notifications are on. */
+/**
+ * To every device still linked to the user's signed-in browsers, as the
+ * daily reminder goes. Limit pushes have their own switch (2026-10-17), so
+ * the daily reminder's no longer gates them.
+ */
 async function sendBudgetPushes(
   userId: string,
   month: string,
   pushes: { budgetId: string; level: Level; title: string; body: string }[],
 ) {
-  const settings = await getDb()
-    .selectFrom("notificationSettings")
-    .select("notificationsEnabled")
-    .where("userId", "=", userId)
-    .executeTakeFirst()
-  if (!settings?.notificationsEnabled) return
-
   const devices = await getDb()
     .selectFrom("pushDevices as d")
     .innerJoin("notificationBrowsers as b", "b.id", "d.browserId")

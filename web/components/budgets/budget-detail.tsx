@@ -24,8 +24,9 @@ export function overviewOf(month: BudgetMonth, line: BudgetMonthLine): BudgetOve
     month: month.month,
     day: month.gone,
     daysInMonth: month.days,
-    total: { budgetId: line.budgetId, limit: line.limit, spent: line.spent, average: 0, fromJars: line.fromJars },
+    total: { budgetId: line.budgetId, limit: line.limit, spent: line.spent, average: 0, fromJars: line.fromJars, adjust: null },
     groups: [],
+    alerts: { enabled: true, level: 80 },
   }
 }
 
@@ -134,11 +135,14 @@ export function BudgetGroupDetail({
   month,
   group,
   today,
+  hint,
   onShowTransactions,
 }: {
   month: BudgetMonth
   group: BudgetMonthGroup & { limit: number }
   today: string
+  /** Under the lead card: the hint to change the limit (BudgetAdjustHint), this month only. */
+  hint?: React.ReactNode
   /** To the transactions page for the month, filtered to these groups. */
   onShowTransactions: (groupIds: string[]) => void
 }) {
@@ -149,6 +153,7 @@ export function BudgetGroupDetail({
           <BudgetHead month={month} line={group} />
         </CardContent>
       </Card>
+      {hint}
       <ChartCard title="Chi theo ngày">
         <BudgetDailyChart
           daily={group.daily}
@@ -194,10 +199,13 @@ export function BudgetGroupDetail({
  */
 export function BudgetTotalDetail({
   month,
+  hint,
   onGroup,
   onShowTransactions,
 }: {
   month: BudgetMonth
+  /** Under the lead card: the hint to change the limit, this month only. */
+  hint?: React.ReactNode
   onGroup: (groupId: string) => void
   onShowTransactions: (groupIds: string[]) => void
 }) {
@@ -213,6 +221,7 @@ export function BudgetTotalDetail({
           <BudgetHead month={month} line={total} />
         </CardContent>
       </Card>
+      {hint}
       <ChartCard title="Chi theo ngày">
         <BudgetDailyChart
           daily={total.daily}

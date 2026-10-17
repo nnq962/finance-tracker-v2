@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronLeftIcon, ChevronRightIcon, GaugeIcon, PencilIcon, PlusIcon, SaveIcon, SparklesIcon, Trash2Icon, ZapIcon } from "lucide-react"
+import { BellRingIcon, ChevronLeftIcon, ChevronRightIcon, GaugeIcon, PencilIcon, PlusIcon, SaveIcon, SparklesIcon, Trash2Icon, ZapIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
@@ -38,6 +38,8 @@ import { scheduleUndoableDelete } from "@/lib/undoable-delete"
 
 import { KeptMonths } from "./budget-charts"
 import { BudgetDetailSkeleton, BudgetGroupDetail, BudgetTotalDetail, JarsNote } from "./budget-detail"
+import { BudgetAdjustHint } from "./budget-adjust-hint"
+import { BudgetAlertSettingsScreen, budgetAlertsSummary } from "./budget-alert-settings"
 import { BudgetSuggestSheet, canSuggest } from "./budget-suggest"
 import { BudgetResult, BudgetTotal } from "./budget-total"
 
@@ -50,7 +52,7 @@ function GroupTile({ group, size = "sm" }: { group: BudgetGroupLine; size?: "sm"
 }
 
 /** A detail screen: the whole month's limit, or a group's. */
-type Screen = { type: "total" } | { type: "group"; groupId: string } | null
+type Screen = { type: "total" } | { type: "group"; groupId: string } | { type: "alerts" } | null
 
 /**
  * Every limit (2026-10-16), opened from the overview's card, the line under
@@ -156,7 +158,9 @@ function BudgetsSheetBody({
   const groupName = screen?.type === "group" ? (overview.groups.find((group) => group.groupId === screen.groupId)?.name ?? "Nhóm") : ""
 
   usePageSheetScreen(
-    screen
+    screen?.type === "alerts"
+      ? { title: "Thông báo hạn mức", onBack: () => setScreen(null) }
+      : screen
       ? {
           title: screen.type === "total" ? (past ? `Hạn mức tổng · tháng ${number}` : "Hạn mức tổng") : past ? `${groupName} · tháng ${number}` : groupName,
           onBack: () => setScreen(null),
@@ -184,12 +188,23 @@ function BudgetsSheetBody({
     router.push(`/transactions${params.size ? `?${params}` : ""}`)
   }
 
+  if (screen?.type === "alerts") {
+    const first = overview.groups.find(hasLimit)
+    return (
+      <BudgetAlertSettingsScreen
+        initial={overview.alerts}
+        example={first ? { name: first.name, limit: first.limit! } : undefined}
+      />
+    )
+  }
   if (screen) {
     if (!data) return <BudgetDetailSkeleton />
     if (screen.type === "total" && hasLimit(data.total)) {
       return (
         <BudgetTotalDetail
           month={data}
+          // This month only: whether to change the limit.
+          hint={past ? null : <BudgetAdjustHint name={null} groupId={null} line={overview.total} />}
           onGroup={(groupId) => {
             if (data.groups.some((group) => group.groupId === groupId && group.limit !== null)) setScreen({ type: "group", groupId })
           }}
@@ -198,7 +213,16 @@ function BudgetsSheetBody({
       )
     }
     if (detailGroup && hasLimit(detailGroup)) {
-      return <BudgetGroupDetail month={data} group={detailGroup} today={today} onShowTransactions={showTransactions} />
+      const line = overview.groups.find((group) => group.groupId === detailGroup.groupId)
+      return (
+        <BudgetGroupDetail
+          month={data}
+          group={detailGroup}
+          today={today}
+          hint={past || !line ? null : <BudgetAdjustHint name={line.name} groupId={line.groupId} line={line} />}
+          onShowTransactions={showTransactions}
+        />
+      )
     }
   }
 
@@ -314,7 +338,13 @@ function ThisMonthList({
             <LimitRow
               key={group.groupId}
               media={<GroupTile group={group} />}
-              title={group.name}
+              title={
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <span className="truncate">{group.name}</span>
+                  {/* A hint to change the limit waits in the group's screen. */}
+                  {group.adjust ? <span role="img" aria-label="Có gợi ý chỉnh hạn mức" className="size-1.75 shrink-0 rounded-full bg-warning" /> : null}
+                </span>
+              }
               figure={
                 <>
                   <span className="font-semibold">{formatCompactCurrency(group.spent, 1)}</span>
@@ -347,6 +377,10 @@ function ThisMonthList({
           ))}
         </SettingsGroup>
       ) : null}
+
+      <SettingsGroup>
+        <SettingsRow icon={BellRingIcon} title="Thông báo hạn mức" value={budgetAlertsSummary(overview.alerts)} onClick={() => onOpen({ type: "alerts" })} />
+      </SettingsGroup>
     </>
   )
 }

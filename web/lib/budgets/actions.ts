@@ -5,8 +5,15 @@ import { revalidatePath } from "next/cache"
 import { requireSession } from "@/lib/auth/session"
 import { syncBudgetAlerts } from "@/lib/budgets/alerts"
 import { getBudgetMonth } from "@/lib/budgets/month"
-import { BudgetValidationError, deleteBudget, saveBudget, saveBudgets } from "@/lib/budgets/repository"
-import type { BudgetActionResult, BudgetMonth } from "@/lib/budgets/types"
+import {
+  BudgetValidationError,
+  deleteBudget,
+  dismissBudgetHint,
+  saveBudget,
+  saveBudgets,
+  setBudgetAlertSettings,
+} from "@/lib/budgets/repository"
+import type { BudgetActionResult, BudgetAlertSettings, BudgetMonth } from "@/lib/budgets/types"
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -89,5 +96,35 @@ export async function loadBudgetMonthAction(month: string): Promise<BudgetMonth 
   } catch (error) {
     console.error("Budget month failed", error)
     return null
+  }
+}
+
+/** "Để sau" on the hint to change a limit: hidden for the rest of the month. */
+export async function dismissBudgetHintAction(budgetId: string): Promise<BudgetActionResult> {
+  const user = await requireSession()
+  try {
+    if (typeof budgetId !== "string" || !uuidPattern.test(budgetId)) throw new BudgetValidationError("Hạn mức không hợp lệ.")
+    await dismissBudgetHint(user.uid, budgetId)
+    revalidateBudgetPaths()
+    return { success: true }
+  } catch (error) {
+    return failure(error)
+  }
+}
+
+/**
+ * How limit pushes come: on or off, and the early warning. A new early
+ * warning applies from the next spending; levels already passed this month
+ * are written down without a push.
+ */
+export async function saveBudgetAlertSettingsAction(settings: BudgetAlertSettings): Promise<BudgetActionResult> {
+  const user = await requireSession()
+  try {
+    await setBudgetAlertSettings(user.uid, { enabled: settings?.enabled === true, level: settings?.level ?? null })
+    await syncBudgetAlerts(user.uid, { notify: false })
+    revalidateBudgetPaths()
+    return { success: true }
+  } catch (error) {
+    return failure(error)
   }
 }

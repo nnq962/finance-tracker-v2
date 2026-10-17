@@ -3,7 +3,8 @@ import "server-only"
 import { sql } from "kysely"
 
 import { shiftMonthKey } from "@/lib/budgets/months"
-import type { BudgetGroupLine, BudgetOverview } from "@/lib/budgets/types"
+import { suggestedLimit } from "@/lib/budgets/calculations"
+import type { BudgetAdjust, BudgetAlertSettings, BudgetGroupLine, BudgetOverview } from "@/lib/budgets/types"
 import type { CategoryColorName } from "@/lib/categories/category-colors"
 import { getDb } from "@/lib/db/client"
 import { toDateKey } from "@/lib/format-date"
@@ -60,7 +61,7 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
   const [year, monthIndex] = month.split("-").map(Number)
   const daysInMonth = new Date(Date.UTC(year, monthIndex, 0)).getUTCDate()
 
-  const [groups, budgets, spending, jars] = await Promise.all([
+  const [groups, budgets, spending, jars, alerts] = await Promise.all([
     getDb()
       .selectFrom("categoryGroups")
       .select(["id", "name", "iconName", "colorName"])
@@ -70,13 +71,19 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
       .orderBy("sortOrder")
       .orderBy("createdAt")
       .execute(),
-    getDb().selectFrom("budgets").select(["id", "categoryGroupId", "amount"]).where("userId", "=", userId).execute(),
+    getDb()
+      .selectFrom("budgets")
+      .select(["id", "categoryGroupId", "amount", "createdAt", "hintDismissedMonth"])
+      .where("userId", "=", userId)
+      .execute(),
     spendingByGroupAndMonth(userId, shiftMonth(month, -3), month),
     spendingByGroupAndMonth(userId, month, month, true),
+    getBudgetAlertSettings(userId),
   ])
   const fromJars = (groupId?: string) => jars.filter((row) => !groupId || row.groupId === groupId).reduce((sum, row) => sum + row.spent, 0)
 
-  const pastMonths = new Set(spending.filter((row) => row.month < month).map((row) => row.month)).size || 1
+  const monthsWithData = new Set(spending.filter((row) => row.month < month).map((row) => row.month)).size
+  const pastMonths = monthsWithData || 1
   const sums = (groupId?: string) => {
     let spent = 0
     let past = 0
@@ -88,13 +95,28 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
     return { spent, average: Math.round(past / pastMonths / 1_000) * 1_000 }
   }
   const budgetOf = (groupId: string | null) => budgets.find((budget) => budget.categoryGroupId === groupId)
+  /**
+   * The hint to change a limit: set before this month, at least two months
+   * of spending to go by, not put off this month, and the average more than
+   * 20% over the limit or under half of it.
+   */
+  const adjustOf = (budget: (typeof budgets)[number] | undefined, average: number): BudgetAdjust | null => {
+    if (!budget || monthsWithData < 2) return null
+    if (toDateKey(budget.createdAt).slice(0, 7) >= month || budget.hintDismissedMonth === `${month}-01`) return null
+    const to = suggestedLimit(average)
+    if (!to || to === budget.amount) return null
+    if (average > budget.amount * 1.2) return { kind: "low", to }
+    if (average < budget.amount * 0.5) return { kind: "high", to }
+    return null
+  }
 
   const total = budgetOf(null)
   return {
     month,
     day: Number(today.slice(8, 10)),
     daysInMonth,
-    total: { budgetId: total?.id ?? null, limit: total?.amount ?? null, ...sums(), fromJars: fromJars() },
+    total: { budgetId: total?.id ?? null, limit: total?.amount ?? null, ...sums(), fromJars: fromJars(), adjust: adjustOf(total, sums().average) },
+    alerts,
     groups: groups.map((group): BudgetGroupLine => {
       const budget = budgetOf(group.id)
       return {
@@ -106,6 +128,7 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
         limit: budget?.amount ?? null,
         ...sums(group.id),
         fromJars: fromJars(group.id),
+        adjust: adjustOf(budget, sums(group.id).average),
       }
     }),
   }
@@ -180,6 +203,40 @@ export async function saveBudgets(userId: string, entries: { groupId: string | n
     }
     return ids
   })
+}
+
+/** How the user wants limit pushes; without a settings row, on at 80%. */
+export async function getBudgetAlertSettings(userId: string): Promise<BudgetAlertSettings> {
+  const row = await getDb()
+    .selectFrom("notificationSettings")
+    .select(["budgetAlertsEnabled", "budgetAlertLevel"])
+    .where("userId", "=", userId)
+    .executeTakeFirst()
+  if (!row) return { enabled: true, level: 80 }
+  return { enabled: row.budgetAlertsEnabled, level: row.budgetAlertLevel === 90 ? 90 : row.budgetAlertLevel === 80 ? 80 : null }
+}
+
+/** Sets how limit pushes come; the rest of the user's notification settings stay. */
+export async function setBudgetAlertSettings(userId: string, settings: BudgetAlertSettings) {
+  if (typeof settings.enabled !== "boolean" || ![80, 90, null].includes(settings.level)) {
+    throw new BudgetValidationError("Cài đặt không hợp lệ.")
+  }
+  const values = { budgetAlertsEnabled: settings.enabled, budgetAlertLevel: settings.level }
+  await getDb()
+    .insertInto("notificationSettings")
+    .values({ userId, ...values })
+    .onConflict((conflict) => conflict.column("userId").doUpdateSet(values))
+    .execute()
+}
+
+/** "Để sau" on the hint to change a limit: not suggested again this month. */
+export async function dismissBudgetHint(userId: string, budgetId: string, today = toDateKey(new Date())) {
+  await getDb()
+    .updateTable("budgets")
+    .set({ hintDismissedMonth: `${today.slice(0, 7)}-01` })
+    .where("id", "=", budgetId)
+    .where("userId", "=", userId)
+    .execute()
 }
 
 /** Removes a limit; returns what it was, for undoing, or null when it was not the user's. */

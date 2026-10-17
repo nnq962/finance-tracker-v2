@@ -3,7 +3,7 @@
 const assert = require('node:assert/strict')
 const { sql, createUser, cleanup } = require('./lib/db-harness.cjs')
 const budgets = require('../lib/budgets/repository.ts')
-const { syncBudgetAlerts, budgetPushMessage } = require('../lib/budgets/alerts.ts')
+const { syncBudgetAlerts, budgetPushMessage, reachedLevels } = require('../lib/budgets/alerts.ts')
 const { getBudgetMonth } = require('../lib/budgets/month.ts')
 const calc = require('../lib/budgets/calculations.ts')
 const { limitJudges } = require('../lib/budgets/months.ts')
@@ -72,7 +72,7 @@ async function run() {
     let overview = await budgets.getBudgetOverview(userId)
     assert.equal(overview.month, month)
     // The 1.000.000 paid from the jar is not counted, but said.
-    assert.deepEqual(overview.total, { budgetId: null, limit: null, spent: 500_000, average: 500_000, fromJars: 1_000_000 })
+    assert.deepEqual(overview.total, { budgetId: null, limit: null, spent: 500_000, average: 500_000, fromJars: 1_000_000, adjust: null })
     assert.equal(overview.groups.find((g) => g.groupId === food).fromJars, 1_000_000)
     assert.equal(overview.groups.find((g) => g.groupId === fun).fromJars, 0)
     assert.deepEqual(overview.groups.map((g) => g.name), ['Ăn uống', 'Giải trí'], 'only active spending groups')
@@ -208,6 +208,62 @@ async function run() {
     assert.equal(otherMonth.total.spent, 0)
     assert.equal(otherMonth.groups.some((g) => g.groupId === mFood), false)
 
+    // The hint to change a limit: only for a limit set before this month, with two months to go by.
+    let mOverview = await budgets.getBudgetOverview(monthUser)
+    assert.equal(mOverview.groups.find((g) => g.groupId === mFood).adjust, null, 'set this month: no hint yet')
+    await sql("UPDATE budgets SET created_at = now() - interval '70 days' WHERE category_group_id = $1", [mFood])
+    mOverview = await budgets.getBudgetOverview(monthUser)
+    // 240k and 300k in the two months before: 270k on average, over 200k by more than a fifth.
+    assert.deepEqual(mOverview.groups.find((g) => g.groupId === mFood).adjust, { kind: 'low', to: 300_000 })
+    await budgets.saveBudget(monthUser, mFood, 1_000_000)
+    mOverview = await budgets.getBudgetOverview(monthUser)
+    assert.deepEqual(mOverview.groups.find((g) => g.groupId === mFood).adjust, { kind: 'high', to: 300_000 })
+    await budgets.saveBudget(monthUser, mFood, 300_000)
+    assert.equal((await budgets.getBudgetOverview(monthUser)).groups.find((g) => g.groupId === mFood).adjust, null, 'about right: none')
+    await budgets.saveBudget(monthUser, mFood, 1_000_000)
+    const mFoodId = (await budgets.getBudgetOverview(monthUser)).groups.find((g) => g.groupId === mFood).budgetId
+    // Put off: not this month; another user cannot put it off.
+    await budgets.dismissBudgetHint(otherId, mFoodId)
+    assert.notEqual((await budgets.getBudgetOverview(monthUser)).groups.find((g) => g.groupId === mFood).adjust, null)
+    await budgets.dismissBudgetHint(monthUser, mFoodId)
+    assert.equal((await budgets.getBudgetOverview(monthUser)).groups.find((g) => g.groupId === mFood).adjust, null)
+    await budgets.dismissBudgetHint(monthUser, mFoodId, `${shift(month, 1)}-05`)
+    assert.notEqual((await budgets.getBudgetOverview(monthUser)).groups.find((g) => g.groupId === mFood).adjust, null, 'put off for another month only')
+
+    // Limit pushes: on at 80% without a settings row; the user's choice after.
+    const alertUser = await createUser('budgets_test')
+    assert.deepEqual(await budgets.getBudgetAlertSettings(alertUser), { enabled: true, level: 80 })
+    await budgets.setBudgetAlertSettings(alertUser, { enabled: true, level: 90 })
+    assert.deepEqual(await budgets.getBudgetAlertSettings(alertUser), { enabled: true, level: 90 })
+    await budgets.setBudgetAlertSettings(alertUser, { enabled: false, level: null })
+    assert.deepEqual(await budgets.getBudgetAlertSettings(alertUser), { enabled: false, level: null })
+    assert.deepEqual(await budgets.getBudgetAlertSettings(otherId), { enabled: true, level: 80 })
+    await assert.rejects(() => budgets.setBudgetAlertSettings(alertUser, { enabled: true, level: 70 }), /không hợp lệ/)
+    // The reminder's settings stay as they were.
+    assert.equal((await sql('SELECT notifications_enabled FROM notification_settings WHERE user_id = $1', [alertUser])).rows[0].notifications_enabled, false)
+    assert.deepEqual(reachedLevels({ spent: 85, limit: 100 }, 80), [80])
+    assert.deepEqual(reachedLevels({ spent: 85, limit: 100 }, 90), [])
+    assert.deepEqual(reachedLevels({ spent: 95, limit: 100 }, 90), [90])
+    assert.deepEqual(reachedLevels({ spent: 101, limit: 100 }, 90), [90, 100])
+    assert.deepEqual(reachedLevels({ spent: 95, limit: 100 }, null), [])
+    assert.deepEqual(reachedLevels({ spent: 101, limit: 100 }, null), [100])
+    // At 90%, 86% says nothing; 92% warns at 90.
+    const aBank = await account(alertUser)
+    const aFood = await group(alertUser, 'Ăn uống')
+    const aLunch = await item(alertUser, aFood)
+    await budgets.setBudgetAlertSettings(alertUser, { enabled: true, level: 90 })
+    const aId = await budgets.saveBudget(alertUser, aFood, 100_000)
+    await spend(alertUser, 86_000, aBank, aLunch, month)
+    assert.deepEqual(await syncBudgetAlerts(alertUser, { notify: false }), [])
+    await spend(alertUser, 6_000, aBank, aLunch, month)
+    assert.deepEqual((await syncBudgetAlerts(alertUser, { notify: false })).map((d) => [d.budgetId, d.level]), [[aId, 90]])
+        // Off: written down without a push (notify asked), so turning them on later does not push what is past.
+    await budgets.setBudgetAlertSettings(alertUser, { enabled: false, level: 90 })
+    await spend(alertUser, 20_000, aBank, aLunch, month)
+    assert.deepEqual((await syncBudgetAlerts(alertUser, { notify: true })).map((d) => d.level), [100])
+    assert.equal(await count('SELECT count(*) FROM budget_alerts WHERE budget_id = $1 AND level = 100', [aId]), 1)
+    assert.deepEqual(await syncBudgetAlerts(alertUser, { notify: true }), [])
+
     // Several at once ("Đặt theo gợi ý"): all or none.
     const bulkUser = await createUser('budgets_test')
     const bulkFood = await group(bulkUser, 'Ăn uống')
@@ -251,7 +307,7 @@ async function run() {
     assert.equal(calc.remainingLabel(2_250_000, 2_000_000, 16), 'Vượt 250k')
     assert.equal(calc.remainingLabel(3_420_000, 4_000_000, 16), 'Còn 580k · 36k mỗi ngày')
 
-    console.log('Budget checks passed: what counts as spent, averages, setting and deleting limits, other users, the database checks, alerts once per level, raised limits, several at once, a month in detail (by day, by category, six months before, the latest, months gone by to their end), the sums.')
+    console.log('Budget checks passed: what counts as spent, averages, setting and deleting limits, other users, the database checks, alerts once per level, raised limits, several at once, the hint to change a limit, push settings and levels, a month in detail (by day, by category, six months before, the latest, months gone by to their end), the sums.')
   } finally {
     await cleanup()
   }

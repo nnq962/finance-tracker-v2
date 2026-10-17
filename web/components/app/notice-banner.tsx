@@ -35,6 +35,7 @@ export function NoticeBanner({
   onDismiss,
   onClick,
   action,
+  footer,
   className,
 }: {
   title: React.ReactNode
@@ -46,6 +47,12 @@ export function NoticeBanner({
   onClick?: () => void
   /** A small button at the end, e.g. `<Button size="sm" variant="secondary">`. */
   action?: React.ReactNode
+  /**
+   * Buttons on a row of their own under the text (2026-10-17), when they are
+   * the point of the message and the text is long, so it keeps its width:
+   * the hint to change a limit ("Đặt 3tr", "Để sau").
+   */
+  footer?: React.ReactNode
   className?: string
 }) {
   const onCard = surface === "card"
@@ -99,6 +106,7 @@ export function NoticeBanner({
       <div className="min-w-0 flex-1">
         <p className={titleClassName}>{title}</p>
         {children ? <div className="text-muted-foreground">{children}</div> : null}
+        {footer ? <div className="mt-3 flex flex-wrap gap-2">{footer}</div> : null}
       </div>
       {action ? <div className="shrink-0 self-center">{action}</div> : null}
       {onDismiss ? (

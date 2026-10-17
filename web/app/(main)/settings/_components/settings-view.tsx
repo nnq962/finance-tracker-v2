@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { PageSheet } from "@/components/app/page-sheet"
+import { BudgetAlertSettingsScreen, budgetAlertsSummary } from "@/components/budgets/budget-alert-settings"
 import { BudgetsSheet } from "@/components/budgets/budgets-sheet"
 import { CategoryManagementSheet } from "@/components/categories/category-management-sheet"
 import { PlanOverlay } from "@/components/plans/plan-overlay"
@@ -69,6 +70,9 @@ const screens = {
   },
   devices: {
     title: "Thiết bị nhận thông báo",
+  },
+  budgetAlerts: {
+    title: "Thông báo hạn mức",
   },
   voice: {
     title: "Thử giọng nói",
@@ -135,6 +139,7 @@ export function SettingsView({
   const [reminder, setReminder] = React.useState(notifications.settings)
   const [devices, setDevices] = React.useState(notifications)
   const [news, setNews] = React.useState(notifications.broadcastsEnabled)
+  const [budgetAlerts, setBudgetAlerts] = React.useState(budgets.alerts)
   const [broadcastData, setBroadcastData] = React.useState(broadcasts)
   const { choice } = useThemeChoice()
   const { openWelcome } = useWelcome()
@@ -161,6 +166,16 @@ export function SettingsView({
             onSaved={setReminder}
           />
         )
+      case "budgetAlerts": {
+        const first = budgets.groups.find((group) => group.limit !== null)
+        return (
+          <BudgetAlertSettingsScreen
+            initial={budgetAlerts}
+            example={first ? { name: first.name, limit: first.limit! } : undefined}
+            onChange={setBudgetAlerts}
+          />
+        )
+      }
       case "devices":
         return (
           <NotificationDevices
@@ -243,6 +258,7 @@ export function SettingsView({
             value={reminder.notificationsEnabled ? `Bật · ${reminder.dailyReminderTime}` : "Tắt"}
             onClick={() => open("notifications")}
           />
+          <SettingsRow icon={GaugeIcon} title="Hạn mức chi tiêu" value={budgetAlertsSummary(budgetAlerts)} onClick={() => open("budgetAlerts")} />
           <SettingsRow
             icon={SmartphoneIcon}
             // The group's caption already says THÔNG BÁO; the screen keeps the full name.

@@ -230,7 +230,7 @@ CREATE TABLE public.budget_alerts (
     month date NOT NULL,
     level smallint NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT budget_alerts_level_check CHECK ((level = ANY (ARRAY[80, 100])))
+    CONSTRAINT budget_alerts_level_check CHECK ((level = ANY (ARRAY[80, 90, 100])))
 );
 
 
@@ -246,6 +246,7 @@ CREATE TABLE public.budgets (
     amount bigint NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    hint_dismissed_month date,
     CONSTRAINT budgets_amount_check CHECK (((amount >= 1) AND (amount <= '999999999999999'::bigint))),
     CONSTRAINT budgets_category_type_check CHECK ((category_type = 'expense'::text))
 );
@@ -503,6 +504,9 @@ CREATE TABLE public.notification_settings (
     next_reminder_at timestamp with time zone,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     broadcasts_enabled boolean DEFAULT true NOT NULL,
+    budget_alerts_enabled boolean DEFAULT true NOT NULL,
+    budget_alert_level smallint DEFAULT 80,
+    CONSTRAINT notification_settings_budget_alert_level_check CHECK ((budget_alert_level = ANY (ARRAY[80, 90]))),
     CONSTRAINT notification_settings_check CHECK ((notifications_enabled OR (next_reminder_at IS NULL)))
 );
 
@@ -1560,4 +1564,5 @@ INSERT INTO dbmate.schema_migrations (version) VALUES
     ('20261014000001'),
     ('20261016000001'),
     ('20261016000002'),
-    ('20261017000001');
+    ('20261017000001'),
+    ('20261017000002');

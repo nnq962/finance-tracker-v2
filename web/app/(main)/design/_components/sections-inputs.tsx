@@ -454,8 +454,9 @@ const sampleBudgets: BudgetOverview = {
   month: "2026-10",
   day: 16,
   daysInMonth: 31,
-  total: { budgetId: "total", limit: 12_000_000, spent: 7_450_000, average: 10_900_000, fromJars: 0 },
+  total: { budgetId: "total", limit: 12_000_000, spent: 7_450_000, average: 10_900_000, fromJars: 0, adjust: null },
   groups: [],
+  alerts: { enabled: true, level: 80 },
 }
 
 /** Six months before October and October so far; spending by day in October (17 days gone, ahead of plan). */
@@ -465,7 +466,7 @@ const sampleDaily = Array.from({ length: 31 }, (_, index) => (index < 17 ? [320_
 /** No limit yet, three months of spending: what the invitation suggests from. */
 const sampleInvite: BudgetOverview = {
   ...sampleBudgets,
-  total: { budgetId: null, limit: null, spent: 7_450_000, average: 11_280_000, fromJars: 0 },
+  total: { budgetId: null, limit: null, spent: 7_450_000, average: 11_280_000, fromJars: 0, adjust: null },
   groups: (
     [
       ["housing", "Nhà cửa", "house", "emerald", 4_120_000],
@@ -483,6 +484,7 @@ const sampleInvite: BudgetOverview = {
     spent: 0,
     average,
     fromJars: 0,
+    adjust: null,
   })),
 }
 

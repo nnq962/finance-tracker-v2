@@ -86,6 +86,7 @@ export interface Budgets {
   categoryGroupId: string | null;
   categoryType: Generated<string>;
   createdAt: Generated<Timestamp>;
+  hintDismissedMonth: string | null;
   id: Generated<string>;
   updatedAt: Generated<Timestamp>;
   userId: string;
@@ -231,6 +232,8 @@ export interface NotificationLogs {
 
 export interface NotificationSettings {
   broadcastsEnabled: Generated<boolean>;
+  budgetAlertLevel: Generated<number | null>;
+  budgetAlertsEnabled: Generated<boolean>;
   dailyReminderTime: Generated<string>;
   nextReminderAt: Timestamp | null;
   notificationsEnabled: Generated<boolean>;
