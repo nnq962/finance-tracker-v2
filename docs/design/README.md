@@ -260,7 +260,9 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   mục (biểu đồ tròn, không list), thu và chi theo tháng, sắp đến hạn (cuối trang; từ lg cuối cột trái). Lời mời Pro (gói Free) đi cùng thứ khác
   cho thêm lượt AI: dòng cuối của thẻ nhiệm vụ khi còn nhiệm vụ; nhận hết thì thẻ nhiệm vụ biến
   mất và `PromoBanner` Pro đứng vào chỗ đó, ngay dưới tài sản ròng. Đổi tháng ở lịch (‹ ›)
-  thì lưới ngày trượt ngang theo hướng bấm (tháng sau vào từ phải), hàng thứ đứng yên. Các khối
+  thì lưới ngày trượt ngang theo hướng bấm (tháng sau vào từ phải), hàng thứ đứng yên; hiệu ứng
+  là keyframes CSS (`animate-month-in-*`/`out-*` trong `globals.css`) để trình duyệt tự chạy, và
+  vòng hạng mục đổi tháng sau khi lưới trượt xong. Các khối
   cách nhau 24px.
 - **Trang danh sách** (Giao dịch, Tài khoản, Vay nợ, Cài đặt): đầu trang, thẻ dẫn đầu, rồi các
   `SettingsGroup` có tiêu đề nhóm. Ngày ghi "Hôm nay, 08/10", "Hôm qua, 07/10", rồi "Thứ Ba,

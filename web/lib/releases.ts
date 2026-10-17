@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.11",
+    date: "2026-10-17",
+    title: "Chuyển tháng ở Tổng quan mượt hơn",
+    changes: [
+      { kind: "improved", text: "Lịch thu chi ở Tổng quan trượt sang tháng khác bằng hiệu ứng của trình duyệt, mượt hơn trên iPhone; vòng hạng mục vẽ lại sau khi lịch trượt xong." },
+    ],
+  },
+  {
     version: "6.15.10",
     date: "2026-10-17",
     title: "Lịch thu chi ghi số tiền chính xác hơn",
