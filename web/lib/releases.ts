@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.22",
+    date: "2026-10-17",
+    title: "Công cụ đo tốc độ trên máy",
+    changes: [
+      { kind: "new", text: "Mở app với ?debug=1 để hiện bảng ghi thời gian tải trang, chuyển trang và đăng nhập ngay trên máy, kèm nút copy để gửi đi; ?debug=0 để tắt." },
+    ],
+  },
+  {
     version: "6.15.21",
     date: "2026-10-17",
     title: "Mở lại app và huỷ đăng nhập nhanh hơn",

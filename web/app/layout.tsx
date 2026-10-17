@@ -3,6 +3,7 @@ import { Manrope } from "next/font/google";
 
 import { PreventZoom } from "@/components/prevent-zoom";
 import { ThemeProvider } from "@/components/theme-provider";
+import { PerfDebug } from "@/components/perf-debug";
 import { Toaster } from "@/components/ui/sonner";
 import {
   SITE_DESCRIPTION,
@@ -120,6 +121,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
           <Toaster position="top-center" />
+          {/* Temporary: ?debug=1 shows how pages load on the device (components/perf-debug.tsx). */}
+          <PerfDebug />
         </ThemeProvider>
       </body>
     </html>
