@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { FirebaseError } from "firebase/app"
 import { LoaderCircleIcon, ShieldCheckIcon } from "lucide-react"
 import { toast } from "sonner"
 
@@ -32,13 +33,28 @@ export function LoginForm({ redirectTo = "/overview" }: { redirectTo?: string })
     event.preventDefault()
     setIsLoading(true)
 
+    // Google's window closed with no account picked: the button is free again
+    // at once, and Firebase's own "cancelled" that follows is not said twice.
+    let gaveUp = false
     try {
-      const credential = await signInWithGoogle()
+      const credential = await signInWithGoogle({
+        onGaveUp: () => {
+          gaveUp = true
+          toast.error(getAuthErrorMessage(new FirebaseError("auth/popup-closed-by-user", "")))
+          setIsLoading(false)
+        },
+      })
+      setIsLoading(true)
       await syncServerSession(credential.user)
       // Full navigation: the client router cache may still hold the
       // pre-login redirect of `redirectTo` back to /login (staleTimes).
       window.location.replace(redirectTo)
     } catch (error) {
+      const cancelled =
+        error instanceof FirebaseError &&
+        (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request")
+      // Given up already: the button is free, and a new try may be under way.
+      if (gaveUp && cancelled) return
       toast.error(getAuthErrorMessage(error))
       setIsLoading(false)
     }

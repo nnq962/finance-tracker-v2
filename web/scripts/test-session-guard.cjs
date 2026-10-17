@@ -64,6 +64,7 @@ async function main() {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
   }).outputText, {
     exports, document, window,
+    process: { env: { NEXT_PUBLIC_APP_VERSION: '6.0.0' } },
     Date: { now: () => now },
     async fetch(url, init) {
       fetches.push([url, init])
@@ -132,6 +133,18 @@ async function main() {
   await flush()
   assert.deepEqual(navigations.pop(), ['reload'])
 
+  // A deploy came while away: reload into the new version, still covered.
+  nextResponse = () => ({ status: 200, ok: true, json: async () => ({ uid: 'me', version: '9.9.9' }) })
+  window.dispatch('pageshow', { persisted: true })
+  await flush()
+  assert.deepEqual(navigations.pop(), ['reload'])
+  // The same version: shown again.
+  nextResponse = () => ({ status: 200, ok: true, json: async () => ({ uid: 'me', version: '6.0.0' }) })
+  window.dispatch('pageshow', { persisted: true })
+  await flush()
+  assert.equal(covered(), false)
+  assert.deepEqual(navigations, [])
+
   // Offline: the session cannot be checked, so the page stays usable.
   nextResponse = () => new Error('offline')
   window.dispatch('pageshow', { persisted: true })
@@ -173,7 +186,7 @@ async function main() {
     assert.equal(target.count(type), 0, `${type} listener removed`)
   }
 
-  console.log('Session guard checks passed: quick return, re-check after 1 minute, expired session, back/forward cache, account switch, offline, stale answers, renewing only near expiry and cleanup.')
+  console.log('Session guard checks passed: quick return, re-check after 1 minute, expired session, back/forward cache, account switch, new version after a deploy, offline, stale answers, renewing only near expiry and cleanup.')
 }
 
 main().catch((error) => {

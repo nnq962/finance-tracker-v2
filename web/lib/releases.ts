@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.21",
+    date: "2026-10-17",
+    title: "Mở lại app và huỷ đăng nhập nhanh hơn",
+    changes: [
+      { kind: "fixed", text: "Mở lại app sau khi có bản mới, app tự tải bản mới ngay lúc mở thay vì để lần chuyển trang đầu tiên phải tải lại cả app (màn hình đen vài giây)." },
+      { kind: "fixed", text: "Đóng cửa sổ chọn tài khoản Google, app báo huỷ sau khoảng 3 giây thay vì tới 10 giây." },
+    ],
+  },
+  {
     version: "6.15.20",
     date: "2026-10-17",
     title: "Cài đặt của quản trị viên nhẹ hơn",

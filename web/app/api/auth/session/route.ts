@@ -33,14 +33,16 @@ function isCrossOrigin(request: Request) {
 /**
  * Whether this browser still has a valid session, for pages restored from
  * memory (back/forward cache, a resumed PWA) that never asked the server.
- * Returns only the user id, so the client can spot an account switch.
+ * Returns only the user id, so the client can spot an account switch, and
+ * the app's version, so a page from before a deploy reloads there and then
+ * rather than at its first tap (which Next turns into a full reload).
  */
 export async function GET() {
   const user = await getSessionUser()
   const headers = { "Cache-Control": "no-store" }
 
   return user
-    ? NextResponse.json({ uid: user.uid }, { headers })
+    ? NextResponse.json({ uid: user.uid, version: process.env.NEXT_PUBLIC_APP_VERSION }, { headers })
     : NextResponse.json({ error: "Phiên đăng nhập đã hết hạn." }, { status: 401, headers })
 }
 

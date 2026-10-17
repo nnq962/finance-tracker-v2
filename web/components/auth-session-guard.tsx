@@ -127,9 +127,14 @@ export function AuthSessionGuard({
         if (current !== check) return
         if (response.status === 401) return leaveToLogin()
         if (response.ok) {
-          const { uid } = await response.json() as { uid: string }
+          const { uid, version } = await response.json() as { uid: string; version?: string }
           // Another account signed in elsewhere in this browser.
           if (uid !== initialUid) return window.location.reload()
+          // A deploy came while the app was away (an installed app stays in
+          // memory for days): Next would reload the whole app at the first
+          // tap on a tab, a black screen for seconds mid-use (2026-10-17).
+          // Reload now instead, still covered by the starting screen.
+          if (version && version !== process.env.NEXT_PUBLIC_APP_VERSION) return window.location.reload()
         }
       } catch {
         // Offline: the server cannot be asked, so keep the page usable.
