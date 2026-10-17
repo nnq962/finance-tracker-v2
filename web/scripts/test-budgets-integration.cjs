@@ -74,6 +74,12 @@ async function run() {
     // The 1.000.000 paid from the jar is not counted, but said.
     assert.deepEqual(overview.total, { budgetId: null, limit: null, spent: 500_000, average: 500_000, fromJars: 1_000_000, adjust: null })
     assert.equal(overview.groups.find((g) => g.groupId === food).fromJars, 1_000_000)
+    // The whole month's record of kept months comes with the page: six months before, then this one.
+    assert.deepEqual(overview.kept, {
+      history: [0, 0, 9_000_000, 300_000, 0, 700_000, 500_000],
+      since: null,
+      minMonth: shift(month, -4),
+    })
     assert.equal(overview.groups.find((g) => g.groupId === fun).fromJars, 0)
     assert.deepEqual(overview.groups.map((g) => g.name), ['Ăn uống', 'Giải trí'], 'only active spending groups')
     const foodLine = () => overview.groups.find((g) => g.groupId === food)

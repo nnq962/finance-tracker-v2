@@ -61,7 +61,7 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
   const [year, monthIndex] = month.split("-").map(Number)
   const daysInMonth = new Date(Date.UTC(year, monthIndex, 0)).getUTCDate()
 
-  const [groups, budgets, spending, jars, alerts] = await Promise.all([
+  const [groups, budgets, sixMonths, jars, alerts, first] = await Promise.all([
     getDb()
       .selectFrom("categoryGroups")
       .select(["id", "name", "iconName", "colorName"])
@@ -76,10 +76,13 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
       .select(["id", "categoryGroupId", "amount", "createdAt", "hintDismissedMonth"])
       .where("userId", "=", userId)
       .execute(),
-    spendingByGroupAndMonth(userId, shiftMonth(month, -3), month),
+    // Six months back for the whole month's record of kept months; three for the averages.
+    spendingByGroupAndMonth(userId, shiftMonth(month, -6), month),
     spendingByGroupAndMonth(userId, month, month, true),
     getBudgetAlertSettings(userId),
+    getDb().selectFrom("transactions").select(sql<Date | null>`min(occurred_at)`.as("first")).where("userId", "=", userId).executeTakeFirst(),
   ])
+  const spending = sixMonths.filter((row) => row.month >= shiftMonth(month, -3))
   const fromJars = (groupId?: string) => jars.filter((row) => !groupId || row.groupId === groupId).reduce((sum, row) => sum + row.spent, 0)
 
   const monthsWithData = new Set(spending.filter((row) => row.month < month).map((row) => row.month)).size
@@ -111,12 +114,22 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
   }
 
   const total = budgetOf(null)
+  // The whole month's six months before (oldest first) and this one, read with the page so its
+  // lead card says how they went at once, not after the month's detail loads (2026-10-17).
+  const history = Array.from({ length: 7 }, (_, index) => shiftMonth(month, index - 6)).map((key) =>
+    sixMonths.filter((row) => row.month === key).reduce((sum, row) => sum + row.spent, 0),
+  )
   return {
     month,
     day: Number(today.slice(8, 10)),
     daysInMonth,
     total: { budgetId: total?.id ?? null, limit: total?.amount ?? null, ...sums(), fromJars: fromJars(), adjust: adjustOf(total, sums().average) },
     alerts,
+    kept: {
+      history,
+      since: total ? toDateKey(total.createdAt).slice(0, 7) : null,
+      minMonth: first?.first ? toDateKey(first.first).slice(0, 7) : month,
+    },
     groups: groups.map((group): BudgetGroupLine => {
       const budget = budgetOf(group.id)
       return {

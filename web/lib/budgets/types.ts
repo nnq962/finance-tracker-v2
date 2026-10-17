@@ -50,6 +50,8 @@ export type BudgetOverview = {
   /** Every active spending group, in the user's order, with or without a limit. */
   groups: BudgetGroupLine[]
   alerts: BudgetAlertSettings
+  /** For the whole month's record of kept months (KeptMonths): its six months before and this one, when it was set, the first month with any transaction. */
+  kept: { history: number[]; since: string | null; minMonth: string }
 }
 
 export type BudgetActionResult =

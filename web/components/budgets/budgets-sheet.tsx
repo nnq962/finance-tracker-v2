@@ -15,7 +15,6 @@ import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { FieldError } from "@/components/ui/field"
-import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
 import { deleteBudgetAction, loadBudgetMonthAction, saveBudgetAction } from "@/lib/budgets/actions"
 import {
@@ -257,23 +256,30 @@ function BudgetsSheetBody({
       {past ? (
         <PastMonthList data={data} onOpen={setScreen} onShowTransactions={showTransactions} />
       ) : (
-        <ThisMonthList overview={overview} data={data} onOpen={setScreen} onEdit={onEdit} />
+        <ThisMonthList overview={overview} onOpen={setScreen} onEdit={onEdit} />
       )}
     </>
   )
 }
 
 /** The six months before, under a month's lead figure; a line of its height while they load. */
-function KeptLine({ data, line }: { data?: BudgetMonth; line?: BudgetMonthLine }) {
-  if (!data || !line) return <Skeleton className="mt-4 h-4 w-full" />
-  if (!hasLimit(line)) return null
+function KeptLine({
+  month,
+  limit,
+  kept,
+}: {
+  month: string
+  limit: number | null
+  kept: { history: number[]; since: string | null; minMonth: string }
+}) {
+  if (limit === null) return null
   return (
     <KeptMonths
-      history={line.history}
-      limit={line.limit}
-      month={data.month}
-      minMonth={data.minMonth}
-      since={line.since}
+      history={kept.history}
+      limit={limit}
+      month={month}
+      minMonth={kept.minMonth}
+      since={kept.since}
       className="mt-4 border-t border-separator pt-3.5 empty:hidden"
     />
   )
@@ -281,12 +287,10 @@ function KeptLine({ data, line }: { data?: BudgetMonth; line?: BudgetMonthLine }
 
 function ThisMonthList({
   overview,
-  data,
   onOpen,
   onEdit,
 }: {
   overview: BudgetOverview
-  data?: BudgetMonth
   onOpen: (screen: Screen) => void
   onEdit: (target: Target) => void
 }) {
@@ -309,7 +313,8 @@ function ThisMonthList({
             <CardContent>
               <BudgetTotal overview={overview} />
               <JarsNote amount={total.fromJars} className="mt-1.5" />
-              <KeptLine data={data} line={data?.total} />
+              {/* From the page's data, so the card does not change once the month's detail loads. */}
+              <KeptLine month={overview.month} limit={total.limit} kept={overview.kept} />
             </CardContent>
           </button>
         </Card>
@@ -411,7 +416,7 @@ function PastMonthList({
     <CardContent>
       <BudgetResult spent={data.total.spent} limit={totalJudged ? data.total.limit! : undefined} label={`Tháng ${number} đã chi`} />
       <JarsNote amount={data.total.fromJars} className="mt-1.5" />
-      <KeptLine data={data} line={data.total} />
+      <KeptLine month={data.month} limit={data.total.limit} kept={{ history: data.total.history, since: data.total.since, minMonth: data.minMonth }} />
     </CardContent>
   )
 

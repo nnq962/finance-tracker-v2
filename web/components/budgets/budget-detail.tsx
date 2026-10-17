@@ -27,6 +27,7 @@ export function overviewOf(month: BudgetMonth, line: BudgetMonthLine): BudgetOve
     total: { budgetId: line.budgetId, limit: line.limit, spent: line.spent, average: 0, fromJars: line.fromJars, adjust: null },
     groups: [],
     alerts: { enabled: true, level: 80 },
+    kept: { history: line.history, since: line.since, minMonth: month.minMonth },
   }
 }
 

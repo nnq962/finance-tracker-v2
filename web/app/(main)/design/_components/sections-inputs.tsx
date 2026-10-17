@@ -457,6 +457,7 @@ const sampleBudgets: BudgetOverview = {
   total: { budgetId: "total", limit: 12_000_000, spent: 7_450_000, average: 10_900_000, fromJars: 0, adjust: null },
   groups: [],
   alerts: { enabled: true, level: 80 },
+  kept: { history: [10_800_000, 12_900_000, 11_200_000, 11_500_000, 12_400_000, 11_600_000, 7_450_000], since: "2026-01", minMonth: "2026-01" },
 }
 
 /** Six months before October and October so far; spending by day in October (17 days gone, ahead of plan). */
