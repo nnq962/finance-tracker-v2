@@ -163,16 +163,65 @@ export function PageSheet({
   // A deeper screen opened from inside (usePageSheetScreen) takes over the bar.
   const [screen, setScreenState] = React.useState<PageSheetScreen | null>(null)
   const bodyRef = React.useRef<HTMLDivElement>(null)
-  const firstScreenTop = React.useRef(0)
+  // Where each screen was left (2026-10-17: going back, even past several
+  // screens, finds the one behind where it was, not at its top). A screen is
+  // known by its title, the first by "". `lastTop` follows the user's
+  // scrolling: by the time a new screen is set its content is already on the
+  // page and may have cut the old scroll short.
+  const lastTop = React.useRef(0)
+  const shownKey = React.useRef("")
+  const behind = React.useRef<{ key: string; top: number }[]>([])
+  const pending = React.useRef<{ from: string; top: number; to: string } | null>(null)
   const setScreen = React.useCallback((next: PageSheetScreen | null) => {
-    const body = bodyRef.current
-    setScreenState((current) => {
-      if (body && !current && next) firstScreenTop.current = body.scrollTop
-      return next
+    setScreenState(next)
+    const to = next ? String(next.title) : ""
+    // Moving from one screen to another passes through none (the old one's
+    // cleanup, then the new one): settled once, after the content changed.
+    if (pending.current) {
+      pending.current.to = to
+      return
+    }
+    pending.current = { from: shownKey.current, top: lastTop.current, to }
+    requestAnimationFrame(() => {
+      const move = pending.current
+      pending.current = null
+      const body = bodyRef.current
+      if (!move || move.from === move.to) return
+      shownKey.current = move.to
+      // The sheet closed meanwhile: it opens again at its first screen, at the top.
+      if (!body) {
+        shownKey.current = ""
+        behind.current = []
+        lastTop.current = 0
+        return
+      }
+      const back = behind.current.findIndex((entry) => entry.key === move.to)
+      if (back === -1) {
+        // Forward: the screen left behind remembers where it was; the new one opens at its top.
+        behind.current.push({ key: move.from, top: move.top })
+        body.scrollTo({ top: 0 })
+        lastTop.current = 0
+        return
+      }
+      // Back: where that screen was, once its content is tall enough again (a few frames at most).
+      const top = behind.current[back].top
+      behind.current.length = back
+      lastTop.current = top
+      let tries = 0
+      const restore = () => {
+        body.scrollTo({ top })
+        if (Math.abs(body.scrollTop - top) > 1 && tries++ < 10) requestAnimationFrame(restore)
+      }
+      restore()
     })
-    // After the content has changed: the deeper screen at its top, the first where it was.
-    requestAnimationFrame(() => body?.scrollTo({ top: next ? 0 : firstScreenTop.current }))
   }, [])
+  // Closed, it forgets: it opens again at its first screen, at the top.
+  React.useEffect(() => {
+    if (open !== false) return
+    shownKey.current = ""
+    behind.current = []
+    lastTop.current = 0
+  }, [open])
   const shownTitle = screen ? screen.title : title
   const back = screen ? screen.onBack : onBack
   const surfaceColor = surface === "grouped" ? "var(--background)" : "var(--popover)"
@@ -194,7 +243,11 @@ export function PageSheet({
           <div
             ref={bodyRef}
             data-slot="page-sheet-body"
-            onScroll={(event) => setScrolled(event.currentTarget.scrollTop > 0)}
+            onScroll={(event) => {
+              setScrolled(event.currentTarget.scrollTop > 0)
+              // Not while a screen is changing: the content swap may cut the scroll short.
+              if (!pending.current) lastTop.current = event.currentTarget.scrollTop
+            }}
             className="absolute inset-0 overflow-y-auto"
           >
             <div className={cn("flex min-h-full flex-col px-4 pt-20 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]", className)}>

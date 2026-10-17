@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.14.1",
+    date: "2026-10-17",
+    title: "Sheet nhớ chỗ đã cuộn khi quay lại",
+    changes: [
+      { kind: "fixed", text: "Trong mọi sheet, mở một màn sâu hơn rồi bấm ‹ quay lại thì về đúng chỗ đã cuộn, kể cả khi đi sâu nhiều màn (ví dụ Hạn mức → Ăn uống → giao dịch)." },
+    ],
+  },
+  {
     version: "6.14.0",
     date: "2026-10-17",
     title: "Xem giao dịch ngay trong Hạn mức",
