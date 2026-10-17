@@ -7,6 +7,7 @@ import {
   CircleHelpIcon,
   GaugeIcon,
   HistoryIcon,
+  MegaphoneIcon,
   MicIcon,
   PaletteIcon,
   ShieldCheckIcon,
@@ -15,6 +16,7 @@ import {
   TagsIcon,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 import { PageSheet } from "@/components/app/page-sheet"
 import { BudgetsSheet } from "@/components/budgets/budgets-sheet"
@@ -24,7 +26,10 @@ import { useWelcome } from "@/components/onboarding/welcome"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { TimiIcon } from "@/components/timi-icon"
 import { TimiWordmark } from "@/components/timi-wordmark"
+import { Switch } from "@/components/ui/switch"
 import type { SessionUser } from "@/lib/auth/session"
+import { setBroadcastsEnabledAction } from "@/lib/broadcasts/actions"
+import type { BroadcastScreenData } from "@/lib/broadcasts/types"
 import type { BudgetOverview } from "@/lib/budgets/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatCompactCurrency } from "@/lib/format-currency"
@@ -34,6 +39,7 @@ import type { PaymentOutcome } from "@/lib/plans/payos"
 import { plans, type PlanState } from "@/lib/plans/plans"
 import type { UserDataSummary } from "@/lib/user-data/repository"
 
+import { AdminBroadcasts } from "./admin-broadcasts"
 import { AdminScreen } from "./admin-screen"
 import { AiQuotaGroup } from "./ai-quota-group"
 import { InstallAppRow } from "./install-app-row"
@@ -51,6 +57,9 @@ import { WipeDataGroup } from "./wipe-data"
 const screens = {
   admin: {
     title: "Quản trị",
+  },
+  broadcasts: {
+    title: "Gửi thông báo",
   },
   appearance: {
     title: "Giao diện",
@@ -97,6 +106,8 @@ type SettingsViewProps = {
   paymentOutcome?: PaymentOutcome
   /** Only for admins: every user and the month's takings. */
   adminData?: AdminData
+  /** Only for admins: the notices sent to users and each audience's reach. */
+  broadcasts?: BroadcastScreenData
   /** Opens this screen straight away, e.g. from the missions on the overview, or the plans back from payOS. */
   initialScreen?: Screen | "plan"
 }
@@ -111,6 +122,7 @@ export function SettingsView({
   checkoutEnabled,
   paymentOutcome,
   adminData,
+  broadcasts,
   initialScreen,
 }: SettingsViewProps) {
   const [sheetScreen, setSheetScreen] = React.useState<Screen | null>(
@@ -122,6 +134,8 @@ export function SettingsView({
   // Summaries on the list follow changes made in the screens.
   const [reminder, setReminder] = React.useState(notifications.settings)
   const [devices, setDevices] = React.useState(notifications)
+  const [news, setNews] = React.useState(notifications.broadcastsEnabled)
+  const [broadcastData, setBroadcastData] = React.useState(broadcasts)
   const { choice } = useThemeChoice()
   const { openWelcome } = useWelcome()
   const router = useRouter()
@@ -135,6 +149,8 @@ export function SettingsView({
     switch (screen) {
       case "admin":
         return adminData ? <AdminScreen data={adminData} /> : null
+      case "broadcasts":
+        return broadcastData ? <AdminBroadcasts initial={broadcastData} onChange={setBroadcastData} /> : null
       case "appearance":
         return <ThemeOptions />
       case "notifications":
@@ -161,6 +177,18 @@ export function SettingsView({
         return <ReleaseHistory />
     }
   }
+
+  const toggleNews = async (next: boolean) => {
+    setNews(next)
+    const result = await setBroadcastsEnabledAction(next)
+    if (result.success) {
+      toast.success(next ? "Đã bật Tin từ Timi" : "Đã tắt Tin từ Timi")
+    } else {
+      setNews(!next)
+      toast.error(result.error)
+    }
+  }
+  const scheduledCount = broadcastData?.items.filter((item) => item.status === "scheduled").length ?? 0
 
   const categoryCount = categoryGroups.reduce((total, group) => total + group.items.length, 0)
   const initials = user.name
@@ -205,7 +233,10 @@ export function SettingsView({
           <SettingsRow icon={GaugeIcon} title="Hạn mức chi tiêu" value={budgetsSummary(budgets)} onClick={() => setBudgetsOpen(true)} />
         </SettingsGroup>
 
-        <SettingsGroup title="Thông báo">
+        <SettingsGroup
+          title="Thông báo"
+          footer="Tin từ Timi: tính năng mới, ưu đãi, thông tin quan trọng. Tắt thì tin vẫn hiện trong chuông, chỉ không đẩy tới máy."
+        >
           <SettingsRow
             icon={BellRingIcon}
             title="Nhắc ghi chi tiêu"
@@ -218,6 +249,11 @@ export function SettingsView({
             title="Thiết bị"
             value={devices.devices.length > 0 ? String(devices.devices.length) : "Chưa có"}
             onClick={() => open("devices")}
+          />
+          <SettingsRow
+            icon={MegaphoneIcon}
+            title="Tin từ Timi"
+            action={<Switch aria-label="Tin từ Timi" checked={news} onCheckedChange={(next) => void toggleNews(next)} />}
           />
         </SettingsGroup>
 
@@ -249,6 +285,12 @@ export function SettingsView({
                   title="Người dùng & gói"
                   value={String(adminData.users.length)}
                   onClick={() => open("admin")}
+                />
+                <SettingsRow
+                  icon={MegaphoneIcon}
+                  title="Gửi thông báo"
+                  value={scheduledCount > 0 ? `${scheduledCount} đã hẹn` : undefined}
+                  onClick={() => open("broadcasts")}
                 />
                 {/* A tool for checking speech recognition on a device, not for users. */}
                 <SettingsRow

@@ -1,7 +1,7 @@
 import type { AppEvent } from "@/lib/app-events"
 
 /** What a notice is about, which sets its icon and colour. */
-export type NoticeKind = "debt-due" | "debt-overdue" | "unrecorded" | "missions" | "ai" | "pro" | "negative" | "release"
+export type NoticeKind = "debt-due" | "debt-overdue" | "unrecorded" | "missions" | "ai" | "pro" | "negative" | "release" | "broadcast"
 
 /** An in-app notice, worked out from the user's data (lib/notices/notices.ts). */
 export type Notice = {

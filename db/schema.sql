@@ -23,6 +23,60 @@ CREATE SCHEMA dbmate;
 
 
 --
+-- Name: broadcast_audience(text, timestamp with time zone); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.broadcast_audience(kind text, at timestamp with time zone) RETURNS SETOF text
+    LANGUAGE sql STABLE
+    AS $$
+  SELECT u.id FROM users u
+  WHERE u.created_at <= at
+    AND CASE kind
+      WHEN 'all' THEN true
+      WHEN 'new' THEN u.created_at > at - interval '30 days'
+      WHEN 'pro' THEN EXISTS (
+        SELECT 1 FROM subscriptions s
+        WHERE s.user_id = u.id AND s.revoked_at IS NULL AND s.starts_at <= at AND s.ends_at > at)
+      WHEN 'free' THEN NOT EXISTS (
+        SELECT 1 FROM subscriptions s
+        WHERE s.user_id = u.id AND s.revoked_at IS NULL AND s.starts_at <= at AND s.ends_at > at)
+      ELSE false
+    END
+$$;
+
+
+--
+-- Name: release_broadcast(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.release_broadcast(target uuid) RETURNS boolean
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  b broadcasts;
+BEGIN
+  SELECT * INTO b FROM broadcasts WHERE id = target FOR UPDATE;
+  IF NOT FOUND OR b.status <> 'scheduled' OR b.revoked_at IS NOT NULL OR b.send_at > now() THEN
+    RETURN false;
+  END IF;
+  INSERT INTO broadcast_recipients (broadcast_id, user_id)
+    SELECT target, audience.id FROM broadcast_audience(b.audience, b.send_at) AS audience (id);
+  IF b.push THEN
+    INSERT INTO broadcast_deliveries (broadcast_id, device_id, user_id)
+      SELECT target, d.id, d.user_id
+      FROM push_devices d
+      JOIN notification_browsers nb ON nb.id = d.browser_id AND nb.user_id = d.user_id AND nb.device_id = d.id
+      JOIN broadcast_recipients r ON r.broadcast_id = target AND r.user_id = d.user_id
+      WHERE NOT EXISTS (
+        SELECT 1 FROM notification_settings s WHERE s.user_id = d.user_id AND NOT s.broadcasts_enabled);
+  END IF;
+  UPDATE broadcasts SET status = CASE WHEN b.push THEN 'sending' ELSE 'sent' END WHERE id = target;
+  RETURN true;
+END
+$$;
+
+
+--
 -- Name: set_updated_at(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -101,6 +155,68 @@ CREATE TABLE public.ai_usage (
     count integer DEFAULT 0 NOT NULL,
     CONSTRAINT ai_usage_count_check CHECK ((count >= 0)),
     CONSTRAINT ai_usage_month_check CHECK ((EXTRACT(day FROM month) = (1)::numeric))
+);
+
+
+--
+-- Name: broadcast_deliveries; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.broadcast_deliveries (
+    broadcast_id uuid NOT NULL,
+    device_id text NOT NULL,
+    user_id text NOT NULL,
+    status text DEFAULT 'pending'::text NOT NULL,
+    attempts integer DEFAULT 0 NOT NULL,
+    error_code text,
+    retry_at timestamp with time zone,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT broadcast_deliveries_attempts_check CHECK ((attempts >= 0)),
+    CONSTRAINT broadcast_deliveries_device_id_check CHECK ((device_id ~ '^[0-9a-f]{64}$'::text)),
+    CONSTRAINT broadcast_deliveries_error_code_check CHECK ((char_length(error_code) <= 100)),
+    CONSTRAINT broadcast_deliveries_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'retry'::text, 'sent'::text, 'failed'::text, 'unregistered'::text, 'skipped'::text])))
+);
+
+
+--
+-- Name: broadcast_recipients; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.broadcast_recipients (
+    broadcast_id uuid NOT NULL,
+    user_id text NOT NULL
+);
+
+
+--
+-- Name: broadcasts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.broadcasts (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    title text NOT NULL,
+    body text NOT NULL,
+    opens text NOT NULL,
+    push_url text NOT NULL,
+    in_bell boolean NOT NULL,
+    push boolean NOT NULL,
+    audience text NOT NULL,
+    send_at timestamp with time zone NOT NULL,
+    status text DEFAULT 'scheduled'::text NOT NULL,
+    attempt_id uuid,
+    lease_until timestamp with time zone,
+    revoked_at timestamp with time zone,
+    created_by text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT broadcasts_audience_check CHECK ((audience = ANY (ARRAY['all'::text, 'free'::text, 'pro'::text, 'new'::text]))),
+    CONSTRAINT broadcasts_body_check CHECK (((char_length(body) >= 1) AND (char_length(body) <= 200))),
+    CONSTRAINT broadcasts_check CHECK ((in_bell OR push)),
+    CONSTRAINT broadcasts_check1 CHECK (((attempt_id IS NULL) = (lease_until IS NULL))),
+    CONSTRAINT broadcasts_opens_check CHECK ((opens = ANY (ARRAY['none'::text, 'overview'::text, 'transactions'::text, 'budget'::text, 'debts'::text, 'budgets'::text, 'plans'::text, 'release'::text]))),
+    CONSTRAINT broadcasts_push_url_check CHECK ((push_url ~ '^/[A-Za-z0-9/?=&_-]*$'::text)),
+    CONSTRAINT broadcasts_status_check CHECK ((status = ANY (ARRAY['scheduled'::text, 'sending'::text, 'sent'::text]))),
+    CONSTRAINT broadcasts_title_check CHECK (((char_length(title) >= 1) AND (char_length(title) <= 60)))
 );
 
 
@@ -386,6 +502,7 @@ CREATE TABLE public.notification_settings (
     time_zone text DEFAULT 'Asia/Ho_Chi_Minh'::text NOT NULL,
     next_reminder_at timestamp with time zone,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    broadcasts_enabled boolean DEFAULT true NOT NULL,
     CONSTRAINT notification_settings_check CHECK ((notifications_enabled OR (next_reminder_at IS NULL)))
 );
 
@@ -562,6 +679,30 @@ ALTER TABLE ONLY public.accounts
 
 ALTER TABLE ONLY public.ai_usage
     ADD CONSTRAINT ai_usage_pkey PRIMARY KEY (user_id, month);
+
+
+--
+-- Name: broadcast_deliveries broadcast_deliveries_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.broadcast_deliveries
+    ADD CONSTRAINT broadcast_deliveries_pkey PRIMARY KEY (broadcast_id, device_id);
+
+
+--
+-- Name: broadcast_recipients broadcast_recipients_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.broadcast_recipients
+    ADD CONSTRAINT broadcast_recipients_pkey PRIMARY KEY (broadcast_id, user_id);
+
+
+--
+-- Name: broadcasts broadcasts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.broadcasts
+    ADD CONSTRAINT broadcasts_pkey PRIMARY KEY (id);
 
 
 --
@@ -828,6 +969,20 @@ CREATE INDEX accounts_user_created_idx ON public.accounts USING btree (user_id, 
 
 
 --
+-- Name: broadcast_recipients_user_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX broadcast_recipients_user_idx ON public.broadcast_recipients USING btree (user_id);
+
+
+--
+-- Name: broadcasts_due_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX broadcasts_due_idx ON public.broadcasts USING btree (send_at) WHERE (status <> 'sent'::text);
+
+
+--
 -- Name: budgets_user_group_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -975,6 +1130,13 @@ CREATE TRIGGER accounts_set_updated_at BEFORE UPDATE ON public.accounts FOR EACH
 
 
 --
+-- Name: broadcasts broadcasts_set_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER broadcasts_set_updated_at BEFORE UPDATE ON public.broadcasts FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
 -- Name: budgets budgets_set_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1058,6 +1220,38 @@ ALTER TABLE ONLY public.accounts
 
 ALTER TABLE ONLY public.ai_usage
     ADD CONSTRAINT ai_usage_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: broadcast_deliveries broadcast_deliveries_broadcast_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.broadcast_deliveries
+    ADD CONSTRAINT broadcast_deliveries_broadcast_id_fkey FOREIGN KEY (broadcast_id) REFERENCES public.broadcasts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: broadcast_deliveries broadcast_deliveries_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.broadcast_deliveries
+    ADD CONSTRAINT broadcast_deliveries_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: broadcast_recipients broadcast_recipients_broadcast_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.broadcast_recipients
+    ADD CONSTRAINT broadcast_recipients_broadcast_id_fkey FOREIGN KEY (broadcast_id) REFERENCES public.broadcasts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: broadcast_recipients broadcast_recipients_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.broadcast_recipients
+    ADD CONSTRAINT broadcast_recipients_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -1365,4 +1559,5 @@ INSERT INTO dbmate.schema_migrations (version) VALUES
     ('20261012000003'),
     ('20261014000001'),
     ('20261016000001'),
-    ('20261016000002');
+    ('20261016000002'),
+    ('20261017000001');

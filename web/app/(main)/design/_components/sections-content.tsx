@@ -48,6 +48,7 @@ import { NoticeBanner } from "@/components/app/notice-banner"
 import { PageSheet } from "@/components/app/page-sheet"
 import { PageDots } from "@/components/app/page-dots"
 import { PromoBanner } from "@/components/app/promo-banner"
+import { PushBanner } from "@/components/app/push-banner"
 import { Section } from "@/components/app/section-header"
 import { Stat, StatGroup } from "@/components/app/stat-group"
 import { StepFlow } from "@/components/app/step-flow"
@@ -712,6 +713,13 @@ function FeedbackSection() {
         <NoticeBanner tone="warning" icon={BellRingIcon} title="Sắp đến hạn">
           Hoá đơn điện 520.000đ đến hạn ngày 10/10.
         </NoticeBanner>
+      </Wide>
+      <Wide>
+        <BlockLabel className="px-1">PushBanner · thông báo đẩy như trên màn khoá, để xem trước khi gửi</BlockLabel>
+        <PushBanner
+          title="Hạn mức chi tiêu đã có"
+          body="Đặt hạn mức cho cả tháng hoặc từng nhóm, Timi báo khi sắp vượt."
+        />
       </Wide>
       <Wide>
         <NoticeBanner

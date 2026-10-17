@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.12.0",
+    date: "2026-10-17",
+    title: "Tin từ Timi",
+    changes: [
+      { kind: "new", text: "Tin từ Timi: tính năng mới, ưu đãi và thông tin quan trọng hiện trong chuông thông báo với icon Timi, chạm để mở đúng chỗ." },
+      { kind: "new", text: "Cài đặt › Thông báo có công tắc \"Tin từ Timi\": tắt thì tin vẫn hiện trong chuông, chỉ không đẩy tới máy." },
+    ],
+  },
+  {
     version: "6.11.0",
     date: "2026-10-17",
     title: "Đặt hạn mức theo gợi ý, báo trước khi vượt",

@@ -121,17 +121,19 @@ export async function saveNotificationSettings(uid: string, input: unknown) {
 
 export async function getNotificationState(uid: string, context?: PushContext): Promise<NotificationState> {
   const db = getDb()
-  const [settings, devices, browser] = await Promise.all([
+  const [settings, devices, browser, broadcasts] = await Promise.all([
     getNotificationSettings(uid),
     db.selectFrom("pushDevices").select(["id", "name", "updatedAt"]).where("userId", "=", uid).orderBy("createdAt").execute(),
     context
       ? db.selectFrom("notificationBrowsers").select(["userId", "sessionId", "deviceId"]).where("id", "=", context.browserId).executeTakeFirst()
       : undefined,
+    db.selectFrom("notificationSettings").select("broadcastsEnabled").where("userId", "=", uid).executeTakeFirst(),
   ])
   return {
     settings,
     devices: devices.map((device) => ({ id: device.id, name: device.name, updatedAt: device.updatedAt.toISOString() })),
     currentDeviceId: browser?.userId === uid && browser.sessionId === context?.sessionId ? browser.deviceId : null,
+    broadcastsEnabled: broadcasts?.broadcastsEnabled ?? true,
   }
 }
 

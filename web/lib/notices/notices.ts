@@ -1,6 +1,8 @@
 import "server-only"
 
 import { getAccounts } from "@/lib/accounts/repository"
+import { getBellBroadcasts } from "@/lib/broadcasts/repository"
+import type { BroadcastOpens } from "@/lib/broadcasts/types"
 import { appEvents } from "@/lib/app-events"
 import { getPaymentMetrics } from "@/lib/debts/calculations"
 import { getContacts, getDebts } from "@/lib/debts/repository"
@@ -19,6 +21,8 @@ const DEBT_DAYS = 3
 const PRO_DAYS = 7
 /** How long a new version is announced. */
 const RELEASE_DAYS = 14
+/** How long a broadcast stays in the bell. */
+const BROADCAST_DAYS = 30
 
 const DAY_MS = 86_400_000
 
@@ -28,22 +32,39 @@ const at = (dateKey: string, time: string) => new Date(`${dateKey}T${time}:00+07
 /** Days from one "YYYY-MM-DD" to another. */
 const daysBetween = (from: string, to: string) => Math.round((Date.parse(to) - Date.parse(from)) / DAY_MS)
 
+/** What a tap on a broadcast opens, as the bell does it. */
+function broadcastOpens(opens: BroadcastOpens): Notice["opens"] {
+  switch (opens) {
+    case "none":
+      return undefined
+    case "budgets":
+      return { href: "/overview?screen=budgets" }
+    case "plans":
+      return { event: appEvents.openPlans }
+    case "release":
+      return releases[0] ? { release: releases[0].version } : undefined
+    default:
+      return { href: `/${opens}` }
+  }
+}
+
 const shiftDay = (dateKey: string, days: number) => toDateKey(new Date(Date.parse(`${dateKey}T12:00:00+07:00`) + days * DAY_MS))
 
 /**
  * The user's notices, newest first, worked out from their data as asked for:
  * debts due within three days or overdue, yesterday left unwritten, mission
  * rewards to claim, AI requests running low, Pro ending, accounts below
- * zero, and the latest version that brought something new, for two weeks. Nothing is stored but which
- * have been read (notice_reads), each by a key naming the thing and its
- * moment, so a new moment ("quá hạn" after "sắp đến hạn") is new again.
+ * zero, the latest version that brought something new, for two weeks, and
+ * what the admin sent them (broadcasts), for a month. Broadcasts aside,
+ * nothing is stored but which have been read (notice_reads), each by a key
+ * naming the thing and its moment, so a new moment ("quá hạn" after "sắp đến hạn") is new again.
  */
 export async function getNotices(userId: string): Promise<Notice[]> {
   const today = toDateKey(new Date())
   const yesterday = shiftDay(today, -1)
   const month = today.slice(0, 7)
   const db = getDb()
-  const [debts, contacts, accounts, missions, plan, reads, recorded] = await Promise.all([
+  const [debts, contacts, accounts, missions, plan, reads, recorded, broadcasts] = await Promise.all([
     getDebts(userId),
     getContacts(userId),
     getAccounts(userId),
@@ -58,6 +79,7 @@ export async function getNotices(userId: string): Promise<Notice[]> {
       .where("occurredAt", ">=", new Date(`${yesterday}T00:00:00+07:00`))
       .where("occurredAt", "<", new Date(`${today}T00:00:00+07:00`))
       .executeTakeFirstOrThrow(),
+    getBellBroadcasts(userId, new Date(Date.now() - BROADCAST_DAYS * DAY_MS)),
   ])
   const notices: Omit<Notice, "read">[] = []
   const names = new Map(contacts.map((contact) => [contact.id, contact.name]))
@@ -162,6 +184,18 @@ export async function getNotices(userId: string): Promise<Notice[]> {
       body: latest.title,
       at: at(latest.date, "09:00"),
       opens: { release: latest.version },
+    })
+  }
+
+  // What the admin sent ("Tin từ Timi"), for a month.
+  for (const broadcast of broadcasts) {
+    notices.push({
+      key: `broadcast:${broadcast.id}`,
+      kind: "broadcast",
+      title: broadcast.title,
+      body: broadcast.body,
+      at: broadcast.sendAt.toISOString(),
+      opens: broadcastOpens(broadcast.opens as BroadcastOpens),
     })
   }
 

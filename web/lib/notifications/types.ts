@@ -20,6 +20,8 @@ export type NotificationState = {
   settings: NotificationSettings
   devices: PushDevice[]
   currentDeviceId: string | null
+  /** "Tin từ Timi" pushes: on unless the user turned them off. */
+  broadcastsEnabled: boolean
 }
 
 export const PUSH_BROWSER_COOKIE = "__push_browser"

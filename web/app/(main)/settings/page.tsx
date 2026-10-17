@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 
 import { Page, PageHeader } from "@/components/page"
 import { loadWithSession } from "@/lib/auth/session"
+import { getBroadcastScreenData } from "@/lib/broadcasts/repository"
 import { getBudgetOverview } from "@/lib/budgets/repository"
 import { getCategoryGroups } from "@/lib/categories/repository"
 import { getNotificationState } from "@/lib/notifications/repository"
@@ -27,7 +28,7 @@ export default async function SettingsPage({
   const { screen, order } = await searchParams
   const {
     user,
-    data: [notifications, categoryGroups, planState, adminData, paymentOutcome, dataSummary, budgets],
+    data: [notifications, categoryGroups, planState, adminData, paymentOutcome, dataSummary, budgets, broadcasts],
   } = await loadWithSession(async (user) => {
     // Settled first, so the plan read next already shows it.
     const paymentOutcome = await checkReturningPayment(user.uid, order)
@@ -41,6 +42,7 @@ export default async function SettingsPage({
       paymentOutcome,
       getUserDataSummary(user.uid),
       getBudgetOverview(user.uid),
+      isAdmin(user) ? getBroadcastScreenData() : undefined,
     ])
   })
 
@@ -59,8 +61,13 @@ export default async function SettingsPage({
         checkoutEnabled={getPayOS() !== null}
         paymentOutcome={paymentOutcome}
         adminData={adminData}
+        broadcasts={broadcasts}
         // Deep links: the missions on the overview, and the way back from payOS.
-        initialScreen={screen === "notifications" || screen === "plan" || screen === "releases" ? screen : undefined}
+        initialScreen={
+          screen === "notifications" || screen === "plan" || screen === "releases" || (screen === "broadcasts" && broadcasts)
+            ? screen
+            : undefined
+        }
       />
     </Page>
   )

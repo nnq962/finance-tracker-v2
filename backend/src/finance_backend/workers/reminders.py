@@ -29,6 +29,8 @@ from finance_backend.workers.reminder_messages import daily_message
 LOGGER = logging.getLogger(__name__)
 VIETNAM = ZoneInfo("Asia/Ho_Chi_Minh")
 INTERVAL_SECONDS = 600
+# The admin's broadcasts are looked at every minute.
+BROADCAST_INTERVAL = 60
 LEASE_DURATION = timedelta(minutes=5)
 MAX_ATTEMPTS = 3
 LOG_RETENTION_DAYS = 90
@@ -482,29 +484,43 @@ class ReminderWorker:
 
 
 def run(*, once=False, dry_run=False, limit=100):
+    """Every minute, the admin's broadcasts; every ten (at :00, :10…), the
+    reminders. --once runs both a single time."""
+    from finance_backend.workers.broadcasts import BroadcastWorker
+
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s"
     )
 
     stop = threading.Event()
 
-    def run_pass():
+    def run_pass(reminders_due: bool):
         # A fresh connection per pass survives database restarts.
         with connect(autocommit=True) as conn:
-            ReminderWorker(conn).run_once(dry_run=dry_run, limit=limit, stop=stop)
+            if reminders_due:
+                try:
+                    ReminderWorker(conn).run_once(
+                        dry_run=dry_run, limit=limit, stop=stop
+                    )
+                except Exception as error:
+                    LOGGER.error("Reminder pass failed (%s)", type(error).__name__)
+            BroadcastWorker(conn).run_once(dry_run=dry_run, stop=stop)
 
     if once:
-        run_pass()
+        run_pass(True)
         return
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, lambda *_: stop.set())
+    reminders_due = True
     while not stop.is_set():
         try:
-            run_pass()
+            run_pass(reminders_due)
         except Exception as error:
             LOGGER.error(
-                "Reminder pass failed (%s); check DATABASE_URL and credentials",
+                "Pass failed (%s); check DATABASE_URL and credentials",
                 type(error).__name__,
             )
-        # Align subsequent passes to :00, :10, :20, :30, :40 and :50.
-        stop.wait(INTERVAL_SECONDS - time.time() % INTERVAL_SECONDS)
+        # Align passes to the minute; reminders run in the first minute of
+        # each ten (:00, :10, :20, :30, :40 and :50).
+        stop.wait(BROADCAST_INTERVAL - time.time() % BROADCAST_INTERVAL)
+        reminders_due = time.time() % INTERVAL_SECONDS < BROADCAST_INTERVAL

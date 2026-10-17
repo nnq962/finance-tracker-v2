@@ -8,6 +8,7 @@ import {
   CrownIcon,
   GiftIcon,
   HandCoinsIcon,
+  MegaphoneIcon,
   PencilLineIcon,
   SparklesIcon,
   TrendingDownIcon,
@@ -18,6 +19,7 @@ import { usePathname, useRouter } from "next/navigation"
 import type { IconTileTone } from "@/components/app/icon-tile"
 import { PageSheet, usePageSheetScreen } from "@/components/app/page-sheet"
 import { SettingsGroup, SettingsRow, settingsSeparatorClassName } from "@/components/settings-list"
+import { TimiIcon } from "@/components/timi-icon"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
@@ -37,6 +39,8 @@ const looks: Record<NoticeKind, { icon: LucideIcon; tone: IconTileTone }> = {
   pro: { icon: CrownIcon, tone: "ai" },
   negative: { icon: TrendingDownIcon, tone: "expense" },
   release: { icon: BellIcon, tone: "neutral" },
+  // Shown with Timi's own icon instead, as a phone shows an app's notice.
+  broadcast: { icon: MegaphoneIcon, tone: "neutral" },
 }
 
 /** What a version brought, on a screen of the sheet: new, improved, fixed. */
@@ -71,6 +75,7 @@ function ReleaseScreen({ version, onBack }: { version: string; onBack: () => voi
  * server so every device agrees. A tap marks it read and opens what it is
  * about, closing the sheet (a debt, the add-transaction sheet, the plans, an
  * account), or, for a new version, what it brought on a screen of the sheet.
+ * What the admin sent ("Tin từ Timi") carries Timi's icon.
  * On phones it sits at the top of the overview, a grey round button; on
  * wider screens in the top bar beside the theme switch, bare like it
  * (`variant="ghost"`).
@@ -111,8 +116,9 @@ export function NotificationsButton({ variant = "secondary" }: { variant?: "seco
         {items.map((notice) => (
           <SettingsRow
             key={notice.key}
-            icon={looks[notice.kind].icon}
+            icon={notice.kind === "broadcast" ? undefined : looks[notice.kind].icon}
             tone={looks[notice.kind].tone}
+            media={notice.kind === "broadcast" ? <TimiIcon size={36} className="size-9" /> : undefined}
             title={notice.title}
             description={notice.body}
             // A notice is read here, so its body shows whole.

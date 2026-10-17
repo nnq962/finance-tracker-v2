@@ -38,6 +38,41 @@ export interface AiUsage {
   userId: string;
 }
 
+export interface BroadcastDeliveries {
+  attempts: Generated<number>;
+  broadcastId: string;
+  deviceId: string;
+  errorCode: string | null;
+  retryAt: Timestamp | null;
+  status: Generated<string>;
+  updatedAt: Generated<Timestamp>;
+  userId: string;
+}
+
+export interface BroadcastRecipients {
+  broadcastId: string;
+  userId: string;
+}
+
+export interface Broadcasts {
+  attemptId: string | null;
+  audience: string;
+  body: string;
+  createdAt: Generated<Timestamp>;
+  createdBy: string;
+  id: Generated<string>;
+  inBell: boolean;
+  leaseUntil: Timestamp | null;
+  opens: string;
+  push: boolean;
+  pushUrl: string;
+  revokedAt: Timestamp | null;
+  sendAt: Timestamp;
+  status: Generated<string>;
+  title: string;
+  updatedAt: Generated<Timestamp>;
+}
+
 export interface BudgetAlerts {
   budgetId: string;
   createdAt: Generated<Timestamp>;
@@ -195,6 +230,7 @@ export interface NotificationLogs {
 }
 
 export interface NotificationSettings {
+  broadcastsEnabled: Generated<boolean>;
   dailyReminderTime: Generated<string>;
   nextReminderAt: Timestamp | null;
   notificationsEnabled: Generated<boolean>;
@@ -273,6 +309,9 @@ export interface Users {
 export interface DB {
   accounts: Accounts;
   aiUsage: AiUsage;
+  broadcastDeliveries: BroadcastDeliveries;
+  broadcastRecipients: BroadcastRecipients;
+  broadcasts: Broadcasts;
   budgetAlerts: BudgetAlerts;
   budgets: Budgets;
   categoryGroups: CategoryGroups;

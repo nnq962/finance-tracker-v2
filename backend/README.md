@@ -1,6 +1,6 @@
 # Finance Backend
 
-Backend Python 3.12 dùng uv. Hiện chỉ có **worker nhắc thông báo**; dữ liệu
+Backend Python 3.12 dùng uv. Hiện có **worker nhắc thông báo** (kèm gửi **Tin từ Timi**); dữ liệu
 nằm trong PostgreSQL (schema ở [`db/`](../db/)), Firebase chỉ dùng để gửi
 thông báo đẩy (FCM). Khi cần LLM/STT sẽ thêm service mới tại đây.
 
@@ -13,7 +13,8 @@ src/finance_backend/
 │   ├── postgres.py         # kết nối qua DATABASE_URL
 │   └── firebase.py         # Firebase Admin, chỉ dùng FCM
 └── workers/
-    ├── reminders.py        # worker nhắc thông báo
+    ├── reminders.py        # worker nhắc thông báo (và vòng lặp chạy cả hai)
+    ├── broadcasts.py       # đẩy thông báo admin gửi (Tin từ Timi)
     └── reminder_messages.* # 50 câu nhắc, chọn ngẫu nhiên mỗi ngày
 ```
 
@@ -50,6 +51,22 @@ tục.
 
 Mỗi bước là một transaction có khoá dòng (`FOR UPDATE`). Lịch do server web
 tính khi lưu cài đặt; client không quyết định được giờ gửi.
+
+## Tin từ Timi (thông báo admin gửi)
+
+Admin soạn ở Cài đặt › Quản trị › Gửi thông báo (web ghi vào `broadcasts`). Cùng
+một tiến trình worker, **mỗi phút**:
+
+1. Tin hẹn giờ đã tới: gọi hàm SQL `release_broadcast` (web cũng gọi nó khi gửi
+   ngay), ghi người nhận (`broadcast_recipients`, theo `broadcast_audience`: tất
+   cả, Free, Pro, mới 30 ngày, tính tại giờ gửi) và mỗi thiết bị còn liên kết của
+   người chưa tắt "Tin từ Timi" một dòng `broadcast_deliveries`.
+2. Tin đang gửi: giữ chỗ 5 phút như lời nhắc, đẩy theo đợt 500 máy (`send_each`),
+   ghi kết quả từng máy; lỗi tạm thời thử lại như lời nhắc (tối đa 3 lần), đăng
+   ký FCM hết hạn thì gỡ thiết bị, người vừa tắt "Tin từ Timi" hay máy đã gỡ thì
+   bỏ qua. Tin bị thu hồi thì dừng đẩy phần còn lại.
+
+Lời nhắc hằng ngày vẫn chạy mỗi 10 phút (phút đầu của :00, :10…).
 
 ### Production
 

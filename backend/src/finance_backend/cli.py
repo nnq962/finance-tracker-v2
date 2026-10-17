@@ -5,7 +5,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Timi backend services.")
     commands = parser.add_subparsers(dest="command", required=True)
     reminders = commands.add_parser(
-        "reminders", help="Run the independent reminder worker."
+        "reminders",
+        help="Run the worker: reminders every 10 minutes, broadcasts every minute.",
     )
     reminders.add_argument(
         "--once", action="store_true", help="Run a single pass and exit."
