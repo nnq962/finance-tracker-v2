@@ -3,7 +3,7 @@ import "server-only"
 import { sql } from "kysely"
 
 import { shiftMonthKey } from "@/lib/budgets/months"
-import { limitsConflict, suggestedLimit } from "@/lib/budgets/calculations"
+import { leftToShare, limitsConflict, suggestedLimit } from "@/lib/budgets/calculations"
 import type { BudgetAdjust, BudgetAlertSettings, BudgetGroupLine, BudgetOverview } from "@/lib/budgets/types"
 import type { CategoryColorName } from "@/lib/categories/category-colors"
 import { getDb } from "@/lib/db/client"
@@ -98,6 +98,7 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
     return { spent, average: Math.round(past / pastMonths / 1_000) * 1_000 }
   }
   const budgetOf = (groupId: string | null) => budgets.find((budget) => budget.categoryGroupId === groupId)
+  const activeIds = new Set(groups.map((group) => group.id))
   /**
    * The hint to change a limit: set before this month, at least two months
    * of spending to go by, not put off this month, and the average more than
@@ -108,9 +109,17 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
     if (toDateKey(budget.createdAt).slice(0, 7) >= month || budget.hintDismissedMonth === `${month}-01`) return null
     const to = suggestedLimit(average)
     if (!to || to === budget.amount) return null
-    // A group is never suggested above the whole month's limit (limitsConflict).
+    // A group is never suggested past what the whole month's limit leaves it (limitsConflict).
     const monthLimit = budgetOf(null)?.amount
-    if (budget.categoryGroupId !== null && monthLimit !== undefined && to > monthLimit) return null
+    if (budget.categoryGroupId !== null && monthLimit !== undefined) {
+      const others = budgets.filter((row) => row.categoryGroupId !== null && row.categoryGroupId !== budget.categoryGroupId && activeIds.has(row.categoryGroupId))
+      if (to > leftToShare(monthLimit, others.map((row) => row.amount))) return null
+    }
+    // Nor the month's below what the groups already share.
+    if (budget.categoryGroupId === null) {
+      const shared = budgets.filter((row) => row.categoryGroupId !== null && activeIds.has(row.categoryGroupId)).reduce((sum, row) => sum + row.amount, 0)
+      if (to < shared) return null
+    }
     if (average > budget.amount * 1.2) return { kind: "low", to }
     if (average < budget.amount * 0.5) return { kind: "high", to }
     return null
@@ -212,7 +221,8 @@ export async function saveBudgets(userId: string, entries: { groupId: string | n
     const conflict = limitsConflict(
       finalOf(null),
       groupsAfter,
-      entries.some((entry) => entry.groupId === null) && !changedGroup ? "total" : changedGroup ? names.get(changedGroup.groupId!) ?? "" : "total",
+      // Setting the month's limit too (the suggestion), the month's wording; one group alone, the group's.
+      entries.some((entry) => entry.groupId === null) || !changedGroup ? "total" : (names.get(changedGroup.groupId!) ?? ""),
     )
     if (conflict) throw new BudgetValidationError(conflict)
     const ids: string[] = []

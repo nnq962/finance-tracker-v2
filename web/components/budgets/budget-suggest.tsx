@@ -12,10 +12,20 @@ import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
 import { saveBudgetsAction } from "@/lib/budgets/actions"
-import { suggestedLimit } from "@/lib/budgets/calculations"
+import { limitsConflict, suggestedLimit } from "@/lib/budgets/calculations"
 import type { BudgetOverview } from "@/lib/budgets/types"
 import { formatCompactCurrency } from "@/lib/format-currency"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
+
+/**
+ * The whole month's suggested limit: its average rounded up, and at least
+ * the groups' suggestions together (each rounded up on its own), so they fit
+ * in it (limitsConflict).
+ */
+function suggestedTotal(overview: BudgetOverview) {
+  const shared = overview.groups.reduce((sum, group) => sum + (suggestedLimit(group.average) ?? 0), 0)
+  return Math.max(suggestedLimit(overview.total.average) ?? 0, Math.ceil(shared / 100_000) * 100_000) || null
+}
 
 /** Whether there is anything to suggest from: spending in the last three months. */
 export function canSuggest(overview: BudgetOverview) {
@@ -66,7 +76,7 @@ export function BudgetInvite({
         <ul className="flex flex-col rounded-2xl bg-muted px-3.5 py-1">
           <li className="flex min-h-10 items-center gap-3 text-sm">
             <span className="min-w-0 flex-1 truncate font-medium">Hạn mức tổng</span>
-            <span className="font-semibold tabular-nums">{formatCompactCurrency(suggestedLimit(overview.total.average)!, 1)}</span>
+            <span className="font-semibold tabular-nums">{formatCompactCurrency(suggestedTotal(overview)!, 1)}</span>
           </li>
           {top.map((group) => (
             <li key={group.groupId} className="flex min-h-10 items-center gap-3 border-t border-separator text-sm">
@@ -124,16 +134,20 @@ export function BudgetSuggestSheet({
 }
 
 function SuggestForm({ overview, onDone }: { overview: BudgetOverview; onDone: () => void }) {
-  const [amounts, setAmounts] = React.useState<Record<string, number | null>>(() =>
-    Object.fromEntries([
-      ["total", suggestedLimit(overview.total.average)],
-      ...overview.groups.map((group) => [group.groupId, suggestedLimit(group.average)]),
-    ]),
-  )
+  const [amounts, setAmounts] = React.useState<Record<string, number | null>>(() => {
+    const groups = overview.groups.map((group) => [group.groupId, suggestedLimit(group.average)] as const)
+    return Object.fromEntries([["total", suggestedTotal(overview)], ...groups])
+  })
   const [error, setError] = React.useState<string | null>(null)
   const [pending, startTransition] = React.useTransition()
   const entries = Object.entries(amounts).flatMap(([key, amount]) =>
     amount ? [{ groupId: key === "total" ? null : key, amount }] : [],
+  )
+  // The groups fit in the month's limit (limitsConflict), said as the amounts change.
+  const ruleError = limitsConflict(
+    amounts.total ?? null,
+    overview.groups.flatMap((group) => (amounts[group.groupId] ? [{ name: group.name, limit: amounts[group.groupId]! }] : [])),
+    "total",
   )
   const set = (key: string) => (value: number | null) => {
     setAmounts((current) => ({ ...current, [key]: value }))
@@ -193,9 +207,9 @@ function SuggestForm({ overview, onDone }: { overview: BudgetOverview; onDone: (
           ))}
         </SettingsGroup>
       ) : null}
-      {error ? <FieldError className="px-4">{error}</FieldError> : null}
+      {error ?? ruleError ? <FieldError className="px-4">{error ?? ruleError}</FieldError> : null}
       <PageSheetFooter>
-        <Button type="submit" disabled={pending || entries.length === 0}>
+        <Button type="submit" disabled={pending || entries.length === 0 || Boolean(ruleError)}>
           {pending ? <Spinner /> : <SaveIcon />}
           {pending ? "Đang lưu…" : entries.length ? `Lưu ${entries.length} hạn mức` : "Chưa chọn hạn mức nào"}
         </Button>

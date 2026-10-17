@@ -322,9 +322,9 @@ function TotalHeading({ chevron = true }: { chevron?: boolean }) {
 
 /**
  * How much of the whole month's limit the groups' limits take, under a
- * hairline: "Đã chia cho nhóm 1,2tr / 1,2tr"; amber with a word when they
- * add up to more (allowed: a group alone is never above it). Nothing without
- * group limits.
+ * hairline: "Đã chia cho nhóm 1,2tr / 1,2tr". Since 2026-10-17 they cannot
+ * add up to more (limitsConflict); limits set before that still might, and
+ * then it says so in amber. Nothing without group limits.
  */
 function Allocation({ total, groups }: { total: number; groups: number[] }) {
   if (groups.length === 0) return null
@@ -341,7 +341,7 @@ function Allocation({ total, groups }: { total: number; groups: number[] }) {
       {over ? (
         <p className="flex items-start gap-1.5 text-xs text-warning">
           <TriangleAlertIcon className="mt-px size-3.5 shrink-0" aria-hidden="true" />
-          Các nhóm cộng lại {formatCompactCurrency(shared, 1)}, nhiều hơn hạn mức tổng {formatCompactCurrency(total, 1)}.
+          Các nhóm cộng lại {formatCompactCurrency(shared, 1)}, nhiều hơn hạn mức tổng {formatCompactCurrency(total, 1)}. Giảm hạn mức nhóm cho vừa.
         </p>
       ) : null}
     </div>
@@ -593,16 +593,15 @@ function BudgetForm({
   const [pending, startTransition] = React.useTransition()
   const name = group?.name ?? "Hạn mức tổng"
 
-  // The rule between limits, said as the amount is typed (the server says the same): a group not above the month's.
+  // The rule between limits, said as the amount is typed (the server says the same): the groups fit in the month's.
   const others = overview.groups.filter((other) => other.limit !== null && other.groupId !== group?.groupId)
   const monthLimit = overview.total.limit
   const ruleError = !amount
     ? null
     : group
-      ? limitsConflict(monthLimit, [{ name: group.name, limit: amount }], group.name)
+      ? limitsConflict(monthLimit, [...others.map((other) => ({ name: other.name, limit: other.limit! })), { name: group.name, limit: amount }], group.name)
       : limitsConflict(amount, others.map((other) => ({ name: other.name, limit: other.limit! })), "total")
   const shownError = error ?? ruleError
-  const highest = [...others].sort((a, b) => b.limit! - a.limit!)[0]
   const sharedByOthers = others.reduce((sum, other) => sum + other.limit!, 0)
 
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -667,14 +666,14 @@ function BudgetForm({
       </div>
 
       <SettingsGroup>
-        {/* What the rule weighs it against: the month's limit and what the other groups leave of it, or the highest group. */}
+        {/* What the rule weighs it against: the month's limit and what the other groups leave of it, or what the groups share. */}
         {group && monthLimit !== null ? (
           <SettingsRow
             title="Hạn mức tổng"
             value={`${formatCompactCurrency(monthLimit, 1)} · còn chia được ${formatCompactCurrency(Math.max(monthLimit - sharedByOthers, 0), 1)}`}
           />
         ) : null}
-        {!group && highest ? <SettingsRow title="Nhóm cao nhất" value={`${highest.name} · ${formatCompactCurrency(highest.limit!, 1)}`} /> : null}
+        {!group && others.length > 0 ? <SettingsRow title="Đã chia cho nhóm" value={formatCompactCurrency(sharedByOthers, 1)} /> : null}
         <SettingsRow title="Trung bình 3 tháng" value={line.average ? formatCurrency(line.average) : "Chưa có"} />
         <SettingsRow title="Đã chi tháng này" value={formatCurrency(line.spent)} />
       </SettingsGroup>

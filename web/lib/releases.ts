@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.1",
+    date: "2026-10-17",
+    title: "Hạn mức nhóm cộng lại không vượt hạn mức tổng",
+    changes: [
+      { kind: "improved", text: "Hạn mức các nhóm cộng lại không được vượt hạn mức tổng: đặt một nhóm thì form nói còn chia được bao nhiêu (ví dụ tổng 7tr, hai nhóm 3tr thì nhóm mới tối đa 1tr); hạ hạn mức tổng không được thấp hơn phần đã chia." },
+    ],
+  },
+  {
     version: "6.15.0",
     date: "2026-10-17",
     title: "Hạn mức tổng rõ ràng, nhóm không vượt tổng",

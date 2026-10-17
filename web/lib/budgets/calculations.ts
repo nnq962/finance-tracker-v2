@@ -86,11 +86,13 @@ export function limitTone(spent: number, limit: number, share?: number): "ok" | 
 }
 
 /**
- * The rule between limits (2026-10-17): no group's limit above the whole
- * month's, as a group cannot spend more than the month allows. The groups
- * may add up to more (a word in the sheet, not a refusal); without a month
- * limit there is no rule. Returns why a set of limits breaks it, or null:
- * `changed` says which was being set, for the wording.
+ * The rule between limits (2026-10-17): the groups' limits together fit in
+ * the whole month's, as the month is the ceiling for everything spent (first
+ * only a group alone was held to it, the groups adding up to more with a
+ * word; the user found 3tr + 3tr + 6tr under a 7tr month makes no sense).
+ * Without a month limit there is no rule. `groups` are every group's limit
+ * as it will be; `changed` is the group being set (by name) or "total", for
+ * the wording. Returns why the limits break the rule, or null.
  */
 export function limitsConflict(
   total: number | null,
@@ -98,12 +100,19 @@ export function limitsConflict(
   changed: "total" | string,
 ): string | null {
   if (total === null) return null
-  const above = groups.filter((group) => group.limit > total).sort((a, b) => b.limit - a.limit)
-  if (above.length === 0) return null
+  const shared = groups.reduce((sum, group) => sum + group.limit, 0)
+  if (shared <= total) return null
   if (changed === "total") {
-    const top = above[0]
-    return `Thấp hơn hạn mức ${top.name} ${formatCompactCurrency(top.limit, 1)}. Giảm hạn mức nhóm đó trước, hoặc đặt từ ${formatCompactCurrency(top.limit, 1)}.`
+    return `Các nhóm đã chia ${formatCompactCurrency(shared, 1)}. Hạn mức tổng cần từ ${formatCompactCurrency(shared, 1)}, hoặc giảm hạn mức nhóm trước.`
   }
-  const group = above.find((line) => line.name === changed) ?? above[0]
-  return `Hạn mức ${group.name} không thể lớn hơn hạn mức tổng ${formatCompactCurrency(total, 1)}.`
+  const others = groups.filter((group) => group.name !== changed).reduce((sum, group) => sum + group.limit, 0)
+  const left = total - others
+  return left > 0
+    ? `Hạn mức tổng ${formatCompactCurrency(total, 1)} chỉ còn chia được ${formatCompactCurrency(left, 1)} cho ${changed}.`
+    : `Hạn mức tổng ${formatCompactCurrency(total, 1)} đã chia hết cho các nhóm khác.`
+}
+
+/** What the whole month's limit still leaves for a group, after the other groups' limits: never below 0. */
+export function leftToShare(total: number, otherGroups: number[]) {
+  return Math.max(total - otherGroups.reduce((sum, limit) => sum + limit, 0), 0)
 }
