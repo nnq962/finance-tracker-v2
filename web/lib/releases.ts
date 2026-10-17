@@ -32,6 +32,17 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.18",
+    date: "2026-10-17",
+    title: "Mở app và chuyển trang nhanh hơn",
+    changes: [
+      { kind: "improved", text: "Mỗi trang không còn chờ kiểm tra phiên đăng nhập với Google ở mọi lần mở, nên hiện nhanh hơn khoảng 0,3 giây." },
+      { kind: "improved", text: "Mở app không còn tạo lại phiên đăng nhập mỗi lần; phiên chỉ được gia hạn khi sắp hết." },
+      { kind: "improved", text: "Biểu đồ và ghi chú phát hành tải sau trang, nên Tổng quan, Giao dịch và Cài đặt nhẹ hơn khoảng một phần tư." },
+      { kind: "improved", text: "Chuyển giữa các tab không còn hỏi lại thông báo mỗi lần; kết nối tới máy chủ ổn định hơn." },
+    ],
+  },
+  {
     version: "6.15.17",
     date: "2026-10-17",
     title: "Nút Hoàn tác cách mép đều hơn",

@@ -37,8 +37,8 @@ import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { scheduleUndoableDelete } from "@/lib/undoable-delete"
 import { cn } from "@/lib/utils"
 
-import { KeptMonths } from "./budget-charts"
-import { BudgetDetailSkeleton, BudgetGroupDetail, BudgetTotalDetail, OTHER_ICONS, OTHER_NAMES, UncountedNote } from "./budget-detail"
+import { KeptMonths } from "./kept-months"
+import { BudgetDetailSkeleton, BudgetGroupDetail, BudgetTotalDetail, OTHER_ICONS, OTHER_NAMES, preloadBudgetCharts, UncountedNote } from "./budget-detail"
 import { BudgetAdjustHint } from "./budget-adjust-hint"
 import { BudgetSpendingList } from "./budget-spending"
 import { BudgetAlertSettingsScreen, budgetAlertsSummary } from "./budget-alert-settings"
@@ -91,6 +91,10 @@ export function BudgetsSheet({
     setEditOpen(true)
   }, [])
   const [suggestOpen, setSuggestOpen] = React.useState(false)
+  // A limit's detail draws charts: their code starts loading as the sheet opens.
+  React.useEffect(() => {
+    if (open) preloadBudgetCharts()
+  }, [open])
 
   return (
     <>

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono, Manrope } from "next/font/google";
+import { Manrope } from "next/font/google";
 
 import { PreventZoom } from "@/components/prevent-zoom";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -15,12 +15,6 @@ import "./globals.css";
 
 const manrope = Manrope({
   variable: "--font-sans",
-  subsets: ["latin", "vietnamese"],
-  display: "swap",
-});
-
-const jetBrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
   subsets: ["latin", "vietnamese"],
   display: "swap",
 });
@@ -117,7 +111,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="vi"
       suppressHydrationWarning
-      className={`${manrope.variable} ${jetBrainsMono.variable} h-full font-sans`}
+      className={`${manrope.variable} h-full font-sans`}
     >
       {/* Thin smoothing only in the dark theme, where light text would otherwise spread; on a light
           ground the default keeps strokes full (macOS; iOS ignores both). */}

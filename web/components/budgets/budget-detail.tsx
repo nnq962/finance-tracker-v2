@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import dynamic from "next/dynamic"
 import { ArchiveIcon, ArrowLeftRightIcon, PercentIcon, type LucideIcon } from "lucide-react"
 
 import { IconTile } from "@/components/app/icon-tile"
@@ -17,8 +18,36 @@ import { formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { cn } from "@/lib/utils"
 
-import { BudgetDailyChart, BudgetMonthsChart, BudgetSplit, KeptMonths } from "./budget-charts"
+import { KeptMonths } from "./kept-months"
 import { BudgetResult, BudgetTotal } from "./budget-total"
+
+/**
+ * The charts come with Recharts, loaded once the budgets sheet opens
+ * (preloadBudgetCharts) rather than with every page that has the sheet
+ * (2026-10-17). A grey block of about their height holds the place meanwhile.
+ */
+const loadCharts = () => import("./budget-charts")
+export function preloadBudgetCharts() {
+  void loadCharts()
+}
+const chartPlaceholder = (height: string) => {
+  function ChartPlaceholder() {
+    return <Skeleton className={cn("w-full rounded-2xl", height)} />
+  }
+  return ChartPlaceholder
+}
+const BudgetDailyChart = dynamic(() => loadCharts().then((module) => module.BudgetDailyChart), {
+  ssr: false,
+  loading: chartPlaceholder("h-60"),
+})
+const BudgetMonthsChart = dynamic(() => loadCharts().then((module) => module.BudgetMonthsChart), {
+  ssr: false,
+  loading: chartPlaceholder("h-56"),
+})
+const BudgetSplit = dynamic(() => loadCharts().then((module) => module.BudgetSplit), {
+  ssr: false,
+  loading: chartPlaceholder("h-40"),
+})
 
 /** The whole month's parts outside the groups in use (BudgetMonth.others), named and drawn. */
 export const OTHER_NAMES: Record<BudgetMonthOther["key"], string> = {

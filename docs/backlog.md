@@ -63,6 +63,28 @@ hạn mức, cảnh báo vượt trong form, gợi ý chỉnh hạn mức, cài 
   gọi `after()` của Next.js ngoài phạm vi request khi chạy trong script test; cần sửa test hoặc
   tách phần gửi thông báo bán hàng để test chạy được.
 
+## 6b. Tốc độ: đợt 2 (đợt 1 xong ở 6.15.18)
+
+Từ ba báo cáo `docs/reports/toc-do-*-2026-10-17.md`. Đợt 1 đã làm: tunnel HTTP/2, nhớ kiểm tra thu hồi
+phiên 60 giây, layout không chờ kiểm tra đó, gọn `POST /api/auth/session` và chỉ gia hạn phiên khi còn dưới
+2 ngày, tải lười recharts và ghi chú phát hành, bỏ JetBrains Mono, chuông thông báo không hỏi lại mỗi lần
+chuyển trang.
+
+- **Cloudflare Cache Rule cho `/__/auth/*`** (người dùng làm trong dashboard): Edge TTL 4 giờ, khoá theo
+  query string, để đăng nhập Google không đi qua tunnel.
+- **Firebase popup chỉ ở trang đăng nhập**: `initializeAuth` không kèm `popupRedirectResolver`, truyền
+  `browserPopupRedirectResolver` lúc bấm; khởi tạo trước trên `/login`. Thử trên iOS Safari và PWA.
+- **Tải lười các sheet và trợ lý Timi** (thêm giao dịch, thêm khoản nợ, màn gói, chọn ngân hàng…), nạp
+  ngầm lúc rảnh; thử trên iPhone (iOS mất cú chạm khi nội dung đang hiện ra).
+- **Firebase auth phía trình duyệt nạp sau hydrate** ở các tab chính (`AuthSessionGuard`).
+- **motion và bộ icon hạng mục** (lucide ~100 KB): xem lại sau khi đo trên iPhone.
+- **Logo ngân hàng SVG nặng** (`baoviet-bank.svg` 185 KB…) và lưới chọn tải hết một lần.
+- **Đo thời gian phục vụ thật trên production** (`Server-Timing` hoặc log có ngưỡng).
+- **Gọn `getBudgetOverview`** (~17 truy vấn, đọc lại nợ nhiều lần) và bỏ `getLinkedAccountIds` khỏi
+  `getAccounts`; chỉ đáng làm khi dữ liệu lớn.
+- **Phiên tự quản trong Postgres** (vẫn đăng nhập bằng Google): bỏ hẳn vòng hỏi Google mỗi request, thu hồi
+  có hiệu lực ngay. Việc lớn, chỉ khi cần.
+
 ## 7. Cần thử trên iPhone thật
 
 Những thứ chỉ kiểm được bằng trình duyệt giả lập, chưa thử trên máy thật:

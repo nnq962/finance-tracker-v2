@@ -7,11 +7,14 @@ name: finance-dev-tunnel
 
 services:
   cloudflared:
-    image: cloudflare/cloudflared:latest
-    # The tunnel by id, so only its credentials file is needed.
+    image: cloudflare/cloudflared:2026.10.0
+    # The tunnel by id, so only its credentials file is needed. HTTP/2, not
+    # QUIC, which kept dropping on the home line (see compose.prod.yaml).
     command:
       - tunnel
       - --no-autoupdate
+      - --protocol
+      - http2
       - run
       - --url
       - http://localhost:3000

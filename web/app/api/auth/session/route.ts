@@ -5,7 +5,7 @@ import {
   SESSION_COOKIE_NAME,
   SESSION_DURATION_MS,
 } from "@/lib/auth/constants"
-import { getSessionUser } from "@/lib/auth/session"
+import { forgetSessionCheck, getSessionUser } from "@/lib/auth/session"
 import { getFirebaseAdminAuth } from "@/lib/firebase/admin"
 import { initializeUserWorkspace } from "@/lib/onboarding/bootstrap"
 import { closePushSession, openPushSession } from "@/lib/notifications/repository"
@@ -73,9 +73,11 @@ export async function POST(request: NextRequest) {
 
     if (currentSessionCookie) {
       try {
+        // The signature is enough: the ID token was just checked against
+        // revocation for this same user, which revokes both together.
         const currentSession = await adminAuth.verifySessionCookie(
           currentSessionCookie,
-          true,
+          false,
         )
         isRefreshingCurrentSession = currentSession.uid === decodedIdToken.uid
       } catch {
@@ -96,6 +98,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Google mints the cookie while the workspace is prepared; it is only
+    // handed over once the workspace is ready.
+    const sessionCookiePromise = adminAuth.createSessionCookie(idToken, {
+      expiresIn: SESSION_DURATION_MS,
+    })
+    sessionCookiePromise.catch(() => undefined)
+
     try {
       await initializeUserWorkspace(decodedIdToken.uid)
     } catch (error) {
@@ -109,14 +118,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const sessionCookie = await adminAuth.createSessionCookie(idToken, {
-      expiresIn: SESSION_DURATION_MS,
-    })
-    const pushContext = await openPushSession(
-      decodedIdToken.uid,
-      request.cookies.get(PUSH_BROWSER_COOKIE)?.value,
-      request.cookies.get(PUSH_SESSION_COOKIE)?.value,
-    )
+    const [sessionCookie, pushContext] = await Promise.all([
+      sessionCookiePromise,
+      openPushSession(
+        decodedIdToken.uid,
+        request.cookies.get(PUSH_BROWSER_COOKIE)?.value,
+        request.cookies.get(PUSH_SESSION_COOKIE)?.value,
+      ),
+    ])
     const response = NextResponse.json({ ok: true })
 
     const pushCookieOptions = {
@@ -160,6 +169,8 @@ export async function DELETE(request: NextRequest) {
     console.error("Unable to detach push device during logout", error)
     return NextResponse.json({ error: "Chưa thể gỡ thiết bị thông báo. Kiểm tra mạng rồi đăng xuất lại." }, { status: 503 })
   }
+  const signedOut = request.cookies.get(SESSION_COOKIE_NAME)?.value
+  if (signedOut) forgetSessionCheck(signedOut)
   const response = NextResponse.json({ ok: true })
   response.cookies.set(PUSH_SESSION_COOKIE, "", {
     httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", maxAge: 0, path: "/",

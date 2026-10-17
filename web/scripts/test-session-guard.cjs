@@ -23,8 +23,12 @@ function createTarget() {
 
 async function flush() { for (let i = 0; i < 10; i++) await new Promise((resolve) => setImmediate(resolve)) }
 
+const DAY = 24 * 60 * 60 * 1000
+
 async function main() {
   let now = 0
+  let onToken = null
+  const syncs = []
   let fetches = []
   let nextResponse = () => ({ status: 200, ok: true, json: async () => ({ uid: 'me' }) })
   const navigations = []
@@ -41,14 +45,15 @@ async function main() {
   })
   const cleanups = []
   const mocks = {
-    react: { useEffect(effect) { cleanups.push(effect()) } },
+    react: { useEffect(effect) { cleanups.push(effect()) }, useRef(current) { return { current } } },
+    '@/lib/auth/constants': { SESSION_DURATION_MS: 5 * DAY },
     'react/jsx-runtime': { jsx(type, props) { return { type, props } }, jsxs(type, props) { return { type, props } }, Fragment: 'Fragment' },
     sonner: { toast: { error() {} } },
     '@/lib/firebase/messaging': { pushErrorMessage(error) { return error.message } },
-    'firebase/auth': { onIdTokenChanged() { return () => {} } },
+    'firebase/auth': { onIdTokenChanged(_auth, callback) { onToken = callback; return () => {} } },
     'next/navigation': { useRouter() { return { refresh() {} } } },
     '@/app/loading': { default: 'RootLoading' },
-    '@/lib/firebase/auth': { async clearServerSession() {}, async syncServerSession() {} },
+    '@/lib/firebase/auth': { async clearServerSession() {}, async syncServerSession(user) { syncs.push(user.uid) } },
     '@/lib/firebase/client': { firebaseAuth: { currentUser: { uid: 'me' } } },
     '@/lib/firebase/push-device': { stopPushDeviceSync() {}, async syncAccountPushDevice() {} },
     '@/lib/stale-deploy': { isStaleDeployError() { return false }, showStaleDeployToast() {} },
@@ -72,7 +77,7 @@ async function main() {
     },
   }, { filename })
 
-  exports.AuthSessionGuard({ children: 'app', initialUid: 'me' })
+  exports.AuthSessionGuard({ children: 'app', initialUid: 'me', sessionExpiresAt: 5 * DAY })
   const covered = () => document.documentElement.dataset.sessionCheck === 'pending'
   const hide = () => { document.visibilityState = 'hidden'; document.dispatch('visibilitychange') }
   const show = () => { document.visibilityState = 'visible'; document.dispatch('visibilitychange') }
@@ -145,6 +150,21 @@ async function main() {
   await flush()
   assert.deepEqual(navigations, [], 'A stale 401 must not log the user out')
 
+  // Opening the app with a cookie good for days: no new session is minted.
+  now = 0
+  await onToken({ uid: 'me' })
+  assert.deepEqual(syncs, [], 'A fresh cookie is not renewed on every open')
+  // Two days or less left: renewed, then left alone again.
+  now = 3 * DAY + 1
+  await onToken({ uid: 'me' })
+  assert.deepEqual(syncs, ['me'])
+  now += 60_000
+  await onToken({ uid: 'me' })
+  assert.deepEqual(syncs, ['me'], 'Just renewed: not again')
+  // Another account in this browser always gets its own session.
+  await onToken({ uid: 'someone-else' })
+  assert.deepEqual(syncs, ['me', 'someone-else'])
+
   // Unmounting removes every listener and the cover.
   document.documentElement.dataset.sessionCheck = 'pending'
   cleanups.forEach((cleanup) => cleanup?.())
@@ -153,7 +173,7 @@ async function main() {
     assert.equal(target.count(type), 0, `${type} listener removed`)
   }
 
-  console.log('Session guard checks passed: quick return, re-check after 1 minute, expired session, back/forward cache, account switch, offline, stale answers and cleanup.')
+  console.log('Session guard checks passed: quick return, re-check after 1 minute, expired session, back/forward cache, account switch, offline, stale answers, renewing only near expiry and cleanup.')
 }
 
 main().catch((error) => {

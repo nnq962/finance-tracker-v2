@@ -14,11 +14,12 @@ import {
   TrendingDownIcon,
   type LucideIcon,
 } from "lucide-react"
+import dynamic from "next/dynamic"
 import { usePathname, useRouter } from "next/navigation"
 
 import type { IconTileTone } from "@/components/app/icon-tile"
-import { PageSheet, usePageSheetScreen } from "@/components/app/page-sheet"
-import { SettingsGroup, SettingsRow, settingsSeparatorClassName } from "@/components/settings-list"
+import { PageSheet } from "@/components/app/page-sheet"
+import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { TimiIcon } from "@/components/timi-icon"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -27,7 +28,6 @@ import { sendAppEvent } from "@/lib/app-events"
 import { formatMomentLabel } from "@/lib/format-date"
 import { getNoticesAction, markNoticesReadAction } from "@/lib/notices/actions"
 import type { Notice, NoticeKind } from "@/lib/notices/types"
-import { changeKindLabels, releases, type ChangeKind } from "@/lib/releases"
 
 /** Each kind's icon and colour: warnings amber, money red or green, the plan's in the AI's lime. */
 const looks: Record<NoticeKind, { icon: LucideIcon; tone: IconTileTone }> = {
@@ -43,28 +43,35 @@ const looks: Record<NoticeKind, { icon: LucideIcon; tone: IconTileTone }> = {
   broadcast: { icon: MegaphoneIcon, tone: "neutral" },
 }
 
-/** What a version brought, on a screen of the sheet: new, improved, fixed. */
-function ReleaseScreen({ version, onBack }: { version: string; onBack: () => void }) {
-  const release = releases.find((item) => item.version === version)
-  usePageSheetScreen({ title: `Bản ${version}`, onBack })
-  if (!release) return null
-  return (
-    <div className="space-y-6">
-      <p className="px-4 text-sm text-muted-foreground">{release.title}</p>
-      {(["new", "improved", "fixed"] as ChangeKind[]).map((kind) => {
-        const changes = release.changes.filter((change) => change.kind === kind)
-        return changes.length > 0 ? (
-          <SettingsGroup key={kind} title={changeKindLabels[kind]}>
-            {changes.map((change) => (
-              <li key={change.text} className={`${settingsSeparatorClassName()} px-4 py-3.5 text-sm`}>
-                {change.text}
-              </li>
-            ))}
-          </SettingsGroup>
-        ) : null
-      })}
-    </div>
-  )
+// What a version brought: the release notes (lib/releases.ts, which grows
+// with every version) load when the sheet opens, not with every page.
+const loadReleaseScreen = () => import("./release-screen")
+const ReleaseScreen = dynamic(() => loadReleaseScreen().then((module) => module.ReleaseScreen), { ssr: false })
+
+/*
+ * The notices, shared by the bells on the page (a phone's and the desktop
+ * bar's) and kept for a minute: changing pages asked the server again each
+ * time, while the new page was being made (2026-10-17). Opening the sheet,
+ * coming back to the app or reading a notice asks again.
+ */
+const NOTICES_FRESH_MS = 60_000
+let noticesAt = 0
+let noticesLoad: Promise<Notice[]> | null = null
+
+function fetchNotices(fresh: boolean) {
+  if (!fresh && noticesLoad && Date.now() - noticesAt < NOTICES_FRESH_MS) return noticesLoad
+  noticesAt = Date.now()
+  const load = getNoticesAction()
+  noticesLoad = load
+  load.catch(() => {
+    if (noticesLoad === load) noticesLoad = null
+  })
+  return load
+}
+
+/** Notices just read: the next bell to load asks the server, which has them read. */
+function forgetNotices() {
+  noticesAt = 0
 }
 
 /**
@@ -87,15 +94,24 @@ export function NotificationsButton({ variant = "secondary" }: { variant?: "seco
   const [notices, setNotices] = React.useState<Notice[]>([])
   const [release, setRelease] = React.useState<string | null>(null)
   // Worked out from the user's data on the server: loaded as the page shows
-  // the bell, and again each time the sheet opens.
-  const load = React.useCallback(() => {
-    void getNoticesAction().then(setNotices)
+  // the bell (shared and kept a minute, see fetchNotices), and afresh each
+  // time the sheet opens or the app comes back to the front.
+  const load = React.useCallback((fresh = false) => {
+    void fetchNotices(fresh).then(setNotices, () => undefined)
   }, [])
-  React.useEffect(load, [load, pathname])
+  React.useEffect(() => load(), [load, pathname])
+  React.useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible") load()
+    }
+    document.addEventListener("visibilitychange", onVisible)
+    return () => document.removeEventListener("visibilitychange", onVisible)
+  }, [load])
   const unread = notices.filter((notice) => !notice.read).length
   const markRead = (keys: string[]) => {
     if (keys.length === 0) return
     setNotices((current) => current.map((notice) => (keys.includes(notice.key) ? { ...notice, read: true } : notice)))
+    forgetNotices()
     void markNoticesReadAction(keys)
   }
   const openNotice = (notice: Notice) => {
@@ -141,7 +157,10 @@ export function NotificationsButton({ variant = "secondary" }: { variant?: "seco
       onOpenChange={(next) => {
         setOpen(next)
         setRelease(null)
-        if (next) load()
+        if (next) {
+          load(true)
+          void loadReleaseScreen()
+        }
       }}
       trigger={
         <Button

@@ -17,7 +17,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { isDevSessionUser, requireSession } from "@/lib/auth/session"
+import { isDevSessionUser, requireSignedSession } from "@/lib/auth/session"
 import { needsOnboarding } from "@/lib/onboarding/repository"
 
 export const metadata: Metadata = {
@@ -31,12 +31,14 @@ export const metadata: Metadata = {
 }
 
 export default async function MainLayout({ children }: { children: ReactNode }) {
-  const user = await requireSession()
+  // The cookie's signature only: the shell and the loading screens go out at
+  // once; every page's data still waits for the revocation check (loadWithSession).
+  const { user, expiresAt } = await requireSignedSession()
   // A failed read only skips the welcome; it never blocks the app.
   const firstRun = await needsOnboarding(user.uid).catch(() => false)
 
   return (
-    <AuthSessionGuard initialUid={user.uid} devSession={isDevSessionUser(user)}>
+    <AuthSessionGuard initialUid={user.uid} sessionExpiresAt={expiresAt} devSession={isDevSessionUser(user)}>
       <PushMessageListener />
       <TooltipProvider>
         <WelcomeProvider firstRun={firstRun}>

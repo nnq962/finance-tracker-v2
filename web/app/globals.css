@@ -10,7 +10,6 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
-  --font-mono: var(--font-jetbrains-mono);
   --font-heading: var(--font-sans);
   /* Manrope draws thin: every weight a step heavier (it is variable). */
   --font-weight-normal: 500;

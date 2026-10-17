@@ -7,6 +7,7 @@ import { onIdTokenChanged } from "firebase/auth"
 import { useRouter } from "next/navigation"
 
 import RootLoading from "@/app/loading"
+import { SESSION_DURATION_MS } from "@/lib/auth/constants"
 import { clearServerSession, syncServerSession } from "@/lib/firebase/auth"
 import { firebaseAuth } from "@/lib/firebase/client"
 import { stopPushDeviceSync, syncAccountPushDevice } from "@/lib/firebase/push-device"
@@ -15,6 +16,12 @@ import { isStaleDeployError, showStaleDeployToast } from "@/lib/stale-deploy"
 // Back within this long after hiding the page: show it again without asking
 // the server. Longer, the session may have ended meanwhile.
 const RECHECK_AFTER_MS = 60_000
+
+// The session cookie lasts 5 days and is renewed whenever the app opens with
+// less than this left, so it keeps sliding while the app is used every few
+// days. Renewing on every open cost a heavy request (two checks with Google,
+// a new cookie, two writes) each time the app started (2026-10-17).
+const RENEW_WITHIN_MS = 2 * 24 * 60 * 60 * 1000
 
 // The sync runs by itself whenever the window regains focus, so after a deploy
 // it is the first call to meet the new server: offer the reload, not an error.
@@ -42,14 +49,22 @@ function leaveToLogin() {
 export function AuthSessionGuard({
   children,
   initialUid,
+  sessionExpiresAt,
   devSession = false,
 }: {
   children: React.ReactNode
   initialUid: string
+  /** When the server's session cookie runs out (ms since the epoch), read from its signature. */
+  sessionExpiresAt: number
   /** The dev server's user from /api/dev/login: no Firebase account to follow. */
   devSession?: boolean
 }) {
   const router = useRouter()
+  // A ref, so a refreshed layout passing a later time does not restart the listeners.
+  const sessionUntil = React.useRef(sessionExpiresAt)
+  React.useEffect(() => {
+    sessionUntil.current = Math.max(sessionUntil.current, sessionExpiresAt)
+  }, [sessionExpiresAt])
 
   React.useEffect(() => {
     if (devSession) return
@@ -67,8 +82,17 @@ export function AuthSessionGuard({
         return
       }
 
+      // The same account with a cookie good for a while yet: nothing to renew.
+      if (user.uid === initialUid && sessionUntil.current - Date.now() > RENEW_WITHIN_MS) {
+        void syncAccountPushDevice(user.uid).catch((error) => {
+          if (active && firebaseAuth.currentUser?.uid === user.uid) reportPushSyncError(error)
+        })
+        return
+      }
+
       try {
         await syncServerSession(user)
+        sessionUntil.current = Date.now() + SESSION_DURATION_MS
         if (active && firebaseAuth.currentUser?.uid === user.uid) {
           if (user.uid !== initialUid) router.refresh()
           void syncAccountPushDevice(user.uid).catch((error) => {
