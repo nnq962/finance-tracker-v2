@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.15.15",
+    date: "2026-10-17",
+    title: "Thông báo nhanh kiểu mới",
+    changes: [
+      { kind: "improved", text: "Thông báo nhanh (Đã lưu, Hoàn tác…) là thẻ trắng nhỏ gọn hơn, có ô biểu tượng màu và nổi rõ trên trang; ở theme tối là thẻ xám nổi." },
+      { kind: "improved", text: "Thông báo lại hiện ở đầu màn hình cả khi một sheet đang mở, như trước bản 6.15.6." },
+    ],
+  },
+  {
     version: "6.15.14",
     date: "2026-10-17",
     title: "Chi tiết khoản nợ mở ngay khi chạm",

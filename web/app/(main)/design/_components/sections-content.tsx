@@ -785,6 +785,12 @@ function FeedbackSection() {
           </Button>
           <Button
             variant="secondary"
+            onClick={() => toast.warning("Ăn uống đã dùng 90% hạn mức", { description: "Còn 120.000đ đến hết tháng" })}
+          >
+            Toast cảnh báo
+          </Button>
+          <Button
+            variant="secondary"
             onClick={() => {
               const id = toast.loading("Đang kết nối thiết bị…")
               window.setTimeout(() => toast.success("Đã bật thông báo.", { id }), 1500)

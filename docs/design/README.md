@@ -130,14 +130,16 @@ component ở đó là cả app đổi theo.
   tối qua nó), và sheet bỏ `will-change` của vaul. Sheet ngắn và hộp thoại không tới mép trên nên thanh có thể đổi sang
   màu trang đã phủ tối sau khi lớp phủ hiện xong. Phần tử `fixed` mới chạm mép trên cũng đặt nền ở
   `::before`, trừ khi nó cố ý mang màu cho thanh.
-- **Toast (Sonner, `components/ui/sonner.tsx`):** đảo đen kiểu Dynamic Island (chọn 2026-10-09,
-  thay viên thuốc rộng vừa chữ), giữa phía trên, ngược màu trang (token `island`): đen ở theme sáng, trắng ở theme tối. Mọi loại
-  cùng một cỡ: cao 64, rộng hết màn trừ 16 mỗi bên trên điện thoại, 400 trên màn rộng, bo 20 như thẻ thông báo iOS (2026-10-09, từ viên thuốc 52 × 320). Glyph trần theo màu ý nghĩa
-  (thành công `island-accent`: xanh chanh trên đen, xanh chanh đậm trên trắng; lỗi `expense`, cảnh báo `warning`, thông tin `transfer`, đang tải
-  trắng mờ); tiêu đề tối đa hai dòng, hoặc một dòng trên một dòng mô tả, cắt bằng "…", nên
-  toast không bao giờ cao lên; nút Hoàn tác là chữ `island-accent` ở cuối. Sonner vẫn lo xếp chồng,
-  vuốt để đóng, hẹn giờ. Khi một `PageSheet` đang mở, toast hạ xuống ngay dưới thanh ✕/tiêu đề của sheet (68 dưới
-  safe-area; từ `sm` là 6dvh + 68) để không che nút Đóng hay Quay lại (2026-10-17, `globals.css`).
+- **Toast (Sonner, `components/ui/sonner.tsx`):** thẻ trắng ở giữa phía trên (2026-10-17, thay đảo đen
+  của 2026-10-09): nền `card` ở theme sáng, xám nổi `secondary` (#2c2c2e) ở theme tối, nổi khỏi trang bằng
+  viền mảnh và bóng `shadow-toast` (chỉ đổ xuống, không chạm thanh trạng thái). Mọi loại cùng một cỡ: cao 52,
+  rộng hết màn trừ 16 mỗi bên trên điện thoại, 360 trên màn rộng, bo 16. Trạng thái nằm trong ô 32 (bo 10) tô
+  nhạt màu ý nghĩa: thành công `income`, lỗi `expense`, cảnh báo `warning`, thông tin `transfer`, đang tải xám;
+  tiêu đề đậm tối đa hai dòng, hoặc một dòng trên một dòng mô tả xám, cắt bằng "…", nên toast không bao giờ
+  cao lên; nút Hoàn tác là nút `primary` nhỏ (cao 32) bo 8, đồng tâm với góc 16 của toast. Khi xếp chồng, toast
+  phía sau chỉ lộ mép, không lộ chữ. Sonner vẫn lo hiệu ứng trượt, xếp chồng, vuốt để đóng, hẹn giờ. Toast
+  luôn ở đầu màn hình, kể cả khi một `PageSheet` đang mở (che nút ✕ trong vài giây; bỏ luật hạ toast xuống dưới
+  thanh sheet của 6.15.6); chạm vào toast không đóng sheet.
 - **Dialog, AlertDialog:** bo 20. Chỉ để xác nhận hoặc nhập rất ngắn; nút huỷ màu xám.
 - **DropdownMenu, Select, Combobox (danh sách):** bo 20, dòng cao 40.
 
