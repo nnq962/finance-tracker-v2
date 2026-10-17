@@ -305,7 +305,7 @@ export function BudgetMonthsChart({
         </BarChart>
       </ChartContainer>
       <p className="text-xs text-muted-foreground">
-        Cột đỏ là tháng vượt hạn mức (từ khi đặt){past ? "" : "; tháng này tính tới hôm nay"}.
+        {past ? "Cột đỏ: vượt hạn mức." : "Cột đỏ: vượt hạn mức. Tháng này tính tới hôm nay."}
       </p>
       <div className="sr-only">
         <table>

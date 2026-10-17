@@ -373,7 +373,7 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   trong báo cáo (giao dịch và tài khoản không "Ngoài báo cáo"), không trả bằng hũ tiết kiệm; không tính chuyển
   khoản (cả nạp/rút hũ, phí chuyển), điều chỉnh số dư, cho vay, trả nợ và lãi vay. Không có tab riêng, mở cùng một
   `PageSheet` "Hạn mức" từ ba chỗ: thẻ "Hạn mức tháng này" ở Tổng quan (dưới nhiệm vụ, chỉ khi đã đặt ít
-  nhất một hạn mức: `BudgetTotal` rồi 2–3 nhóm gần chạm hay đã vượt, mỗi nhóm thanh `sm` và "%" hay "Vượt 250k",
+  nhất một hạn mức: `BudgetTotal` và `JarsNote` khi có, rồi 2–3 nhóm gần chạm hay đã vượt, mỗi nhóm thanh `sm` và "%" hay "Vượt 250k",
   "Xem tất cả ›"), dòng "Đã dùng 62% hạn mức tổng · còn 4,55tr" dưới thẻ Thu / Chi ở Giao dịch (thẻ trắng
   bo 16 cao 44+, chỉ ở tháng hiện tại và khi có hạn mức cả tháng), dòng "Hạn mức chi tiêu" ở Cài đặt › Chung
   ("12tr/tháng", "2 nhóm", "Chưa đặt"). `BudgetTotal`: "Còn lại" và số tiền lớn (hay "Vượt hạn mức" đỏ; 2026-10-17 bỏ "Còn được chi"),
@@ -443,7 +443,7 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   ("Tổng chi"; chạm một lát hiện tên, số tiền và % như vòng ở Tổng quan, không chuyển màn), dưới là mỗi phần một dòng cao 48: chấm màu, tên (nhóm vượt hạn mức có dòng đỏ "Vượt hạn mức nhóm
   …" dưới tên), số tiền, %, mũi tên; màu nhóm là màu của nhóm, màu hạng mục bắt đầu từ màu nhóm rồi theo bảng màu, "SO VỚI CÁC THÁNG TRƯỚC" (`BudgetMonthsChart`: trung bình các tháng
   trước và hạn mức, các cột chỉ từ tháng có giao dịch đầu tiên (tối đa sáu tháng trước và tháng đang xem), cột nhỏ cao
-  ít nhất 4px, cột vượt đỏ chỉ từ tháng đặt hạn mức, cột tháng đang xem đậm, vạch hạn mức đứt; "Tháng trước" khi
+  ít nhất 4px, cột vượt đỏ chỉ từ tháng đặt hạn mức, cột tháng đang xem đậm, vạch hạn mức đứt, chú thích "Cột đỏ: vượt hạn mức. Tháng này tính tới hôm nay."; "Tháng trước" khi
   chỉ có một tháng, "Trung bình N tháng trước" khi nhiều hơn), rồi (màn nhóm) "GIAO DỊCH THÁNG NÀY" (hay "GIAO DỊCH THÁNG 9"): ba khoản chi mới nhất trong một
   nhóm dòng, mỗi dòng ghi ngày giờ ("04/10, 19:56", "Hôm nay, 12:30"), và "Xem tất cả N giao dịch", mở Giao dịch của tháng đó
   lọc theo nhóm (`?group=`; chạm một hạng mục cũng mở theo nhóm). Trục số chỉ có 0, nửa hạn mức, hạn mức; khi chi

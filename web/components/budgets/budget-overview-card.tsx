@@ -13,6 +13,7 @@ import { formatCompactCurrency } from "@/lib/format-currency"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { cn } from "@/lib/utils"
 
+import { JarsNote } from "./budget-detail"
 import { BudgetTotal } from "./budget-total"
 import { BudgetInvite, BudgetSuggestSheet } from "./budget-suggest"
 import { BudgetFormSheet, BudgetsSheet } from "./budgets-sheet"
@@ -103,7 +104,13 @@ export function BudgetOverviewCard({ overview, initialOpen = false }: { overview
       <Card size="lg" asChild>
         <button type="button" onClick={show} className="w-full text-left transition-transform duration-150 active:scale-[0.98] motion-reduce:active:scale-100">
           <CardContent>
-            {hasLimit(overview.total) ? <BudgetTotal overview={overview} compact /> : null}
+            {hasLimit(overview.total) ? (
+              <>
+                <BudgetTotal overview={overview} compact />
+                {/* As in the sheet: "Theo hạng mục" just below counts what jars paid, the limits do not. */}
+                <JarsNote amount={overview.total.fromJars} className="mt-1.5" />
+              </>
+            ) : null}
             {closest.length > 0 ? (
               <ul className={cn("flex flex-col gap-4", hasLimit(overview.total) && "mt-5 border-t border-separator pt-4")}>
                 {closest.map((group) => {
@@ -132,6 +139,8 @@ export function BudgetOverviewCard({ overview, initialOpen = false }: { overview
                 })}
               </ul>
             ) : null}
+            {/* Without the month's limit, under the groups instead. */}
+            {hasLimit(overview.total) ? null : <JarsNote amount={overview.total.fromJars} className="mt-3" />}
           </CardContent>
         </button>
       </Card>
