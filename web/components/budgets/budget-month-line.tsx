@@ -4,6 +4,7 @@ import * as React from "react"
 import { ChevronRightIcon, GaugeIcon } from "lucide-react"
 
 import { LimitBar } from "@/components/app/limit-bar"
+import { Skeleton } from "@/components/ui/skeleton"
 import { budgetPercent, hasLimit, limitTone, monthShare } from "@/lib/budgets/calculations"
 import type { BudgetOverview } from "@/lib/budgets/types"
 import { formatCompactCurrency } from "@/lib/format-currency"
@@ -46,5 +47,26 @@ export function BudgetMonthLine({ overview, className }: { overview: BudgetOverv
       </button>
       <BudgetsSheet overview={overview} open={open} onOpenChange={setOpen} />
     </>
+  )
+}
+
+/**
+ * The line's footprint for the transactions page's loading screen (2026-10-17):
+ * the card, the icon, the words and what is left, the bar, the chevron, so
+ * nothing moves down when the page arrives.
+ */
+export function BudgetMonthLineSkeleton({ className }: { className?: string }) {
+  return (
+    <div className={cn("flex min-h-11 w-full items-center gap-3 rounded-2xl bg-card px-4 shadow-card", className)}>
+      <Skeleton className="size-4 shrink-0 rounded-full" />
+      <span className="flex min-w-0 flex-1 flex-col gap-1.5 py-2.5">
+        <span className="flex h-5 items-center justify-between gap-3">
+          <Skeleton className="h-3.5 w-44" />
+          <Skeleton className="h-3 w-14" />
+        </span>
+        <Skeleton className="h-1.5 w-full rounded-full" />
+      </span>
+      <Skeleton className="size-4 shrink-0 rounded-full" />
+    </div>
   )
 }

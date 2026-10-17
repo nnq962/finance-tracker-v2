@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.14.2",
+    date: "2026-10-17",
+    title: "Màn tải Giao dịch có dòng hạn mức",
+    changes: [
+      { kind: "improved", text: "Khi trang Giao dịch đang tải, dòng hạn mức tổng đã có khung chờ cùng kích thước, nên nội dung không bị đẩy xuống khi tải xong." },
+    ],
+  },
+  {
     version: "6.14.1",
     date: "2026-10-17",
     title: "Sheet nhớ chỗ đã cuộn khi quay lại",

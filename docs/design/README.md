@@ -375,7 +375,7 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   `PageSheet` "Hạn mức" từ ba chỗ: thẻ "Hạn mức tháng này" ở Tổng quan (dưới nhiệm vụ, chỉ khi đã đặt ít
   nhất một hạn mức: `BudgetTotal` và `JarsNote` khi có, rồi 2–3 nhóm gần chạm hay đã vượt, mỗi nhóm thanh `sm` và "%" hay "Vượt 250k",
   "Xem tất cả ›"), dòng "Đã dùng 62% hạn mức tổng · còn 4,55tr" dưới thẻ Thu / Chi ở Giao dịch (thẻ trắng
-  bo 16 cao 44+, chỉ ở tháng hiện tại và khi có hạn mức cả tháng), dòng "Hạn mức chi tiêu" ở Cài đặt › Chung
+  bo 16 cao 44+, chỉ ở tháng hiện tại và khi có hạn mức cả tháng; màn tải của Giao dịch có `BudgetMonthLineSkeleton` cùng kích thước nên trang không bị đẩy xuống khi dữ liệu về, 2026-10-17), dòng "Hạn mức chi tiêu" ở Cài đặt › Chung
   ("12tr/tháng", "2 nhóm", "Chưa đặt"). `BudgetTotal`: "Còn lại" và số tiền lớn (hay "Vượt hạn mức" đỏ; 2026-10-17 bỏ "Còn được chi"),
   "62% / của 12tr" bên phải, `LimitBar md` màu theo tốc độ chi, dòng "Đang chi nhanh · còn 284k mỗi ngày"
   ("Chi vừa phải", "Chi ít hơn dự kiến"; tốc độ: % đã chi so với % tháng đã qua tính cả hôm nay, lệch quá 10 điểm là
