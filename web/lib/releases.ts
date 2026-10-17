@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.9.1",
+    date: "2026-10-17",
+    title: "Sheet chọn tháng gọn trên máy tính",
+    changes: [
+      { kind: "improved", text: "Trên máy tính, sheet chọn tháng (và các sheet kéo từ dưới lên) rộng vừa phải và nằm giữa, không trải hết màn hình." },
+    ],
+  },
+  {
     version: "6.9.0",
     date: "2026-10-16",
     title: "Hạn mức chi tiêu",
