@@ -32,7 +32,7 @@ export function budgetPace(spent: number, limit: number, share: number): BudgetP
 
 export const budgetPaceLabel: Record<BudgetPace, string> = {
   fast: "Đang chi nhanh",
-  slow: "Đang chi chậm",
+  slow: "Chi ít hơn dự kiến",
   even: "Chi vừa phải",
 }
 

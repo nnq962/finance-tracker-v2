@@ -453,7 +453,7 @@ const sampleBudgets: BudgetOverview = {
   month: "2026-10",
   day: 16,
   daysInMonth: 31,
-  total: { budgetId: "total", limit: 12_000_000, spent: 7_450_000, average: 10_900_000 },
+  total: { budgetId: "total", limit: 12_000_000, spent: 7_450_000, average: 10_900_000, fromJars: 0 },
   groups: [],
 }
 
@@ -479,7 +479,7 @@ function LimitSample() {
         <Card size="lg">
           <CardContent>
             <BudgetTotal overview={sampleBudgets} />
-            <KeptMonths history={sampleHistory} limit={12_000_000} month="2026-10" minMonth="2026-01" className="mt-4 border-t border-separator pt-3.5" />
+            <KeptMonths history={sampleHistory} limit={12_000_000} month="2026-10" minMonth="2026-01" since="2026-01" className="mt-4 border-t border-separator pt-3.5" />
           </CardContent>
         </Card>
         <Card size="lg">
@@ -495,7 +495,7 @@ function LimitSample() {
       </Card>
       <Card size="lg">
         <CardContent>
-          <BudgetMonthsChart history={sampleHistory} limit={12_000_000} month="2026-10" minMonth="2026-01" past={false} />
+          <BudgetMonthsChart history={sampleHistory} limit={12_000_000} month="2026-10" minMonth="2026-01" since="2026-01" past={false} />
         </CardContent>
       </Card>
       <SettingsGroup title="Theo nhóm · 3">

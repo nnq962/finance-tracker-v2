@@ -17,6 +17,8 @@ export type BudgetLine = {
   spent: number
   /** Average spending a month over the last three months that had any, the suggested limit's base. */
   average: number
+  /** This month's spending paid from savings jars: not counted, but the other figures count it. */
+  fromJars: number
 }
 
 export type BudgetGroupLine = BudgetLine & {
@@ -70,6 +72,10 @@ export type BudgetMonthLine = {
   history: number[]
   /** Spent on each day of the month, the 1st first; days after today are 0. */
   daily: number[]
+  /** "YYYY-MM" the limit was set in: months before it had none, so they are not judged. Null without a limit. */
+  since: string | null
+  /** The month's spending paid from savings jars: not counted, but the other figures count it. */
+  fromJars: number
 }
 
 export type BudgetMonthGroup = BudgetMonthLine & {

@@ -44,7 +44,7 @@ export async function getBudgetMonth(userId: string, month: string, today = toDa
   const days = new Date(Date.UTC(year, monthIndex, 0)).getUTCDate()
   const past = month < thisMonth
 
-  const [groups, budgets, months, byDay, recent, first] = await Promise.all([
+  const [groups, budgets, months, byDay, recent, first, jars] = await Promise.all([
     getDb()
       .selectFrom("categoryGroups")
       .select(["id", "name", "iconName", "colorName"])
@@ -54,7 +54,7 @@ export async function getBudgetMonth(userId: string, month: string, today = toDa
       .orderBy("sortOrder")
       .orderBy("createdAt")
       .execute(),
-    getDb().selectFrom("budgets").select(["id", "categoryGroupId", "amount"]).where("userId", "=", userId).execute(),
+    getDb().selectFrom("budgets").select(["id", "categoryGroupId", "amount", "createdAt"]).where("userId", "=", userId).execute(),
     spendingByGroupAndMonth(userId, shiftMonth(month, -6), month),
     countedSpending(userId, month)
       .select([
@@ -93,6 +93,7 @@ export async function getBudgetMonth(userId: string, month: string, today = toDa
       .select(sql<Date | null>`min(occurred_at)`.as("first"))
       .where("userId", "=", userId)
       .executeTakeFirst(),
+    spendingByGroupAndMonth(userId, month, month, true),
   ])
 
   const monthKeys = Array.from({ length: 7 }, (_, index) => shiftMonth(month, index - 6))
@@ -103,7 +104,15 @@ export async function getBudgetMonth(userId: string, month: string, today = toDa
     )
     const daily = Array.from({ length: days }, () => 0)
     for (const row of byDay) if (groupId === null || row.groupId === groupId) daily[row.day - 1] += row.amount
-    return { budgetId: budget?.id ?? null, limit: budget?.amount ?? null, spent: history[6], history, daily }
+    return {
+      budgetId: budget?.id ?? null,
+      limit: budget?.amount ?? null,
+      spent: history[6],
+      history,
+      daily,
+      since: budget ? toDateKey(budget.createdAt).slice(0, 7) : null,
+      fromJars: jars.filter((row) => groupId === null || row.groupId === groupId).reduce((sum, row) => sum + row.spent, 0),
+    }
   }
 
   return {

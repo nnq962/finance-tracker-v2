@@ -6,6 +6,7 @@ const budgets = require('../lib/budgets/repository.ts')
 const { syncBudgetAlerts, budgetPushMessage } = require('../lib/budgets/alerts.ts')
 const { getBudgetMonth } = require('../lib/budgets/month.ts')
 const calc = require('../lib/budgets/calculations.ts')
+const { limitJudges } = require('../lib/budgets/months.ts')
 const { toDateKey } = require('../lib/format-date.ts')
 
 const count = async (text, params) => Number((await sql(text, params)).rows[0].count)
@@ -70,7 +71,10 @@ async function run() {
 
     let overview = await budgets.getBudgetOverview(userId)
     assert.equal(overview.month, month)
-    assert.deepEqual(overview.total, { budgetId: null, limit: null, spent: 500_000, average: 500_000 })
+    // The 1.000.000 paid from the jar is not counted, but said.
+    assert.deepEqual(overview.total, { budgetId: null, limit: null, spent: 500_000, average: 500_000, fromJars: 1_000_000 })
+    assert.equal(overview.groups.find((g) => g.groupId === food).fromJars, 1_000_000)
+    assert.equal(overview.groups.find((g) => g.groupId === fun).fromJars, 0)
     assert.deepEqual(overview.groups.map((g) => g.name), ['Ăn uống', 'Giải trí'], 'only active spending groups')
     const foodLine = () => overview.groups.find((g) => g.groupId === food)
     assert.equal(foodLine().spent, 300_000)
@@ -176,6 +180,11 @@ async function run() {
     assert.equal(september.minMonth, shift(month, -8))
     const sFood = september.groups.find((g) => g.groupId === mFood)
     assert.equal(sFood.limit, 200_000)
+    // Set this month: it did not judge September.
+    assert.equal(sFood.since, month)
+    assert.equal(september.total.since, null)
+    assert.equal(sFood.fromJars, 999_000)
+    assert.equal(september.total.fromJars, 999_000)
     assert.equal(sFood.spent, 240_000)
     assert.deepEqual(sFood.daily.slice(0, 6), [150_000, 0, 50_000, 0, 40_000, 0])
     assert.deepEqual(sFood.items.map((i) => [i.amount, i.count]), [[150_000, 2], [90_000, 3]])
@@ -198,6 +207,12 @@ async function run() {
     const otherMonth = await getBudgetMonth(otherId, last)
     assert.equal(otherMonth.total.spent, 0)
     assert.equal(otherMonth.groups.some((g) => g.groupId === mFood), false)
+
+    // A limit judges only from the month it was set in.
+    assert.equal(limitJudges(null, '2026-10'), false)
+    assert.equal(limitJudges('2026-10', '2026-09'), false)
+    assert.equal(limitJudges('2026-10', '2026-10'), true)
+    assert.equal(limitJudges('2026-09', '2026-10'), true)
 
     // The sums the rows show.
     assert.equal(calc.budgetState(79, 100), 'ok')

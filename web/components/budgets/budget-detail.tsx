@@ -7,11 +7,13 @@ import { Money } from "@/components/app/money"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { BudgetMonth, BudgetMonthEntry, BudgetMonthGroup, BudgetMonthLine, BudgetOverview } from "@/lib/budgets/types"
+import { limitJudges } from "@/lib/budgets/months"
+import type { BudgetMonth, BudgetMonthGroup, BudgetMonthLine, BudgetOverview } from "@/lib/budgets/types"
 import { categoryColorOptions, getCategoryColor, type CategoryColorName } from "@/lib/categories/category-colors"
 import { formatCompactCurrency } from "@/lib/format-currency"
-import { formatDayLabel, formatTime, toDateKey } from "@/lib/format-date"
+import { formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
+import { cn } from "@/lib/utils"
 
 import { BudgetDailyChart, BudgetMonthsChart, BudgetSplit, KeptMonths } from "./budget-charts"
 import { BudgetResult, BudgetTotal } from "./budget-total"
@@ -22,25 +24,44 @@ export function overviewOf(month: BudgetMonth, line: BudgetMonthLine): BudgetOve
     month: month.month,
     day: month.gone,
     daysInMonth: month.days,
-    total: { budgetId: line.budgetId, limit: line.limit, spent: line.spent, average: 0 },
+    total: { budgetId: line.budgetId, limit: line.limit, spent: line.spent, average: 0, fromJars: line.fromJars },
     groups: [],
   }
 }
 
-/** The lead card of a month's limit: the running month's figure and pace, or how a month gone by ended; then the six months before. */
+/** Under a limit's figure: what was paid from savings jars, which it leaves out though the other pages count it. */
+export function JarsNote({ amount, className }: { amount: number; className?: string }) {
+  if (amount <= 0) return null
+  return (
+    <p className={cn("text-xs text-muted-foreground", className)}>
+      Không tính {formatCompactCurrency(amount, 1)} mua bằng hũ tiết kiệm
+    </p>
+  )
+}
+
+/**
+ * The lead card of a month's limit: the running month's figure and pace, or
+ * how a month gone by ended (a month before the limit was set only says what
+ * was spent); what was paid from jars; then the months before.
+ */
 export function BudgetHead({ month, line }: { month: BudgetMonth; line: BudgetMonthLine & { limit: number } }) {
+  const label = `Tháng ${Number(month.month.slice(5))} đã chi`
   return (
     <>
-      {month.past ? (
-        <BudgetResult spent={line.spent} limit={line.limit} label={`Tháng ${Number(month.month.slice(5))} đã chi`} />
-      ) : (
+      {!month.past ? (
         <BudgetTotal overview={overviewOf(month, line)} />
+      ) : limitJudges(line.since, month.month) ? (
+        <BudgetResult spent={line.spent} limit={line.limit} label={label} />
+      ) : (
+        <BudgetResult spent={line.spent} label={label} />
       )}
+      <JarsNote amount={line.fromJars} className="mt-1.5" />
       <KeptMonths
         history={line.history}
         limit={line.limit}
         month={month.month}
         minMonth={month.minMonth}
+        since={line.since}
         className="mt-4 border-t border-separator pt-3.5 empty:hidden"
       />
     </>
@@ -64,37 +85,43 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
   )
 }
 
-/** The group's latest spendings by day, then a row to all of them on the transactions page. */
-function LatestSpending({ group, today, onShowAll }: { group: BudgetMonthGroup; today: string; onShowAll: () => void }) {
+/** "Hôm nay, 12:30" or "04/10, 19:56": a row's day and time in a list without day captions. */
+function whenLabel(occurredAt: string, today: string) {
+  const day = toDateKey(occurredAt)
+  return `${day === today ? "Hôm nay" : formatShortDate(day)}, ${formatTime(occurredAt)}`
+}
+
+/** The month's latest spendings in the group under one caption, each with its day and time, then a row to all of them. */
+function LatestSpending({
+  group,
+  month,
+  today,
+  onShowAll,
+}: {
+  group: BudgetMonthGroup
+  month: BudgetMonth
+  today: string
+  onShowAll: () => void
+}) {
   if (group.recent.length === 0) return null
-  const days = new Map<string, BudgetMonthEntry[]>()
-  for (const entry of group.recent) {
-    const day = toDateKey(entry.occurredAt)
-    days.set(day, [...(days.get(day) ?? []), entry])
-  }
-  const keys = [...days.keys()]
   return (
-    <>
-      {keys.map((day, index) => (
-        <SettingsGroup key={day} title={formatDayLabel(day, today)}>
-          {days.get(day)!.map((entry) => (
-            <SettingsRow
-              key={entry.id}
-              media={<IconTile icon={categoryIconRegistry[entry.iconName]} tone={group.colorName} size="sm" />}
-              title={entry.itemName}
-              description={entry.accountName}
-              action={
-                <span className="flex flex-col items-end">
-                  <Money amount={-entry.amount} size="sm" />
-                  <span className="text-xs text-muted-foreground">{formatTime(entry.occurredAt)}</span>
-                </span>
-              }
-            />
-          ))}
-          {index === keys.length - 1 ? <SettingsRow title={`Xem tất cả ${group.count} giao dịch`} onClick={onShowAll} /> : null}
-        </SettingsGroup>
+    <SettingsGroup title={month.past ? `Giao dịch tháng ${Number(month.month.slice(5))}` : "Giao dịch tháng này"}>
+      {group.recent.map((entry) => (
+        <SettingsRow
+          key={entry.id}
+          media={<IconTile icon={categoryIconRegistry[entry.iconName]} tone={group.colorName} size="sm" />}
+          title={entry.itemName}
+          description={entry.accountName}
+          action={
+            <span className="flex flex-col items-end">
+              <Money amount={-entry.amount} size="sm" />
+              <span className="text-xs text-muted-foreground">{whenLabel(entry.occurredAt, today)}</span>
+            </span>
+          }
+        />
       ))}
-    </>
+      <SettingsRow title={`Xem tất cả ${group.count} giao dịch`} onClick={onShowAll} />
+    </SettingsGroup>
   )
 }
 
@@ -123,7 +150,13 @@ export function BudgetGroupDetail({
         </CardContent>
       </Card>
       <ChartCard title="Chi theo ngày">
-        <BudgetDailyChart daily={group.daily} limit={group.limit} month={month.month} gone={month.gone} past={month.past} />
+        <BudgetDailyChart
+          daily={group.daily}
+          limit={limitJudges(group.since, month.month) ? group.limit : null}
+          month={month.month}
+          gone={month.gone}
+          past={month.past}
+        />
       </ChartCard>
       {group.spent > 0 ? (
         <ChartCard title="Theo hạng mục">
@@ -140,9 +173,16 @@ export function BudgetGroupDetail({
         </ChartCard>
       ) : null}
       <ChartCard title="So với các tháng trước">
-        <BudgetMonthsChart history={group.history} limit={group.limit} month={month.month} minMonth={month.minMonth} past={month.past} />
+        <BudgetMonthsChart
+          history={group.history}
+          limit={group.limit}
+          month={month.month}
+          minMonth={month.minMonth}
+          since={group.since}
+          past={month.past}
+        />
       </ChartCard>
-      <LatestSpending group={group} today={today} onShowAll={() => onShowTransactions([group.groupId])} />
+      <LatestSpending group={group} month={month} today={today} onShowAll={() => onShowTransactions([group.groupId])} />
     </div>
   )
 }
@@ -174,7 +214,13 @@ export function BudgetTotalDetail({
         </CardContent>
       </Card>
       <ChartCard title="Chi theo ngày">
-        <BudgetDailyChart daily={total.daily} limit={total.limit} month={month.month} gone={month.gone} past={month.past} />
+        <BudgetDailyChart
+          daily={total.daily}
+          limit={limitJudges(total.since, month.month) ? total.limit : null}
+          month={month.month}
+          gone={month.gone}
+          past={month.past}
+        />
       </ChartCard>
       {total.spent > 0 ? (
         <ChartCard title="Theo nhóm">
@@ -186,7 +232,10 @@ export function BudgetTotalDetail({
                 name: group.name,
                 amount: group.spent,
                 fill: getCategoryColor(group.colorName).chartFill,
-                over: group.spent > group.limit! ? `Vượt hạn mức nhóm ${formatCompactCurrency(group.spent - group.limit!, 1)}` : undefined,
+                over:
+                  limitJudges(group.since, month.month) && group.spent > group.limit!
+                    ? `Vượt hạn mức nhóm ${formatCompactCurrency(group.spent - group.limit!, 1)}`
+                    : undefined,
                 onClick: () => onGroup(group.groupId),
               })),
               ...(elsewhere > 0
@@ -205,7 +254,14 @@ export function BudgetTotalDetail({
         </ChartCard>
       ) : null}
       <ChartCard title="So với các tháng trước">
-        <BudgetMonthsChart history={total.history} limit={total.limit} month={month.month} minMonth={month.minMonth} past={month.past} />
+        <BudgetMonthsChart
+          history={total.history}
+          limit={total.limit}
+          month={month.month}
+          minMonth={month.minMonth}
+          since={total.since}
+          past={month.past}
+        />
       </ChartCard>
     </div>
   )

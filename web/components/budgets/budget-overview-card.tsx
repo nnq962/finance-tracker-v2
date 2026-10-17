@@ -7,7 +7,7 @@ import { IconTile } from "@/components/app/icon-tile"
 import { LimitBar } from "@/components/app/limit-bar"
 import { Section } from "@/components/app/section-header"
 import { Card, CardContent } from "@/components/ui/card"
-import { budgetPercent, budgetState, groupsByUse, hasAnyBudget, hasLimit, limitTone } from "@/lib/budgets/calculations"
+import { budgetPercent, groupsByUse, hasAnyBudget, hasLimit, limitTone, monthShare } from "@/lib/budgets/calculations"
 import type { BudgetOverview } from "@/lib/budgets/types"
 import { formatCompactCurrency } from "@/lib/format-currency"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
@@ -50,7 +50,8 @@ export function BudgetOverviewCard({ overview, initialOpen = false }: { overview
             {closest.length > 0 ? (
               <ul className={cn("flex flex-col gap-4", hasLimit(overview.total) && "mt-5 border-t border-separator pt-4")}>
                 {closest.map((group) => {
-                  const state = budgetState(group.spent, group.limit)
+                  // One rule for the colour everywhere: amber from 80% or while running fast for the time gone.
+                  const state = limitTone(group.spent, group.limit, monthShare(overview))
                   return (
                     <li key={group.groupId} className="flex items-center gap-3">
                       <IconTile icon={categoryIconRegistry[group.iconName]} tone={group.colorName} size="sm" />
@@ -67,7 +68,7 @@ export function BudgetOverviewCard({ overview, initialOpen = false }: { overview
                             {state === "over" ? `Vượt ${formatCompactCurrency(group.spent - group.limit, 1)}` : `${budgetPercent(group.spent, group.limit)}%`}
                           </span>
                         </span>
-                        <LimitBar value={group.spent} max={group.limit} tone={limitTone(group.spent, group.limit)} label={`${group.name} đã dùng`} />
+                        <LimitBar value={group.spent} max={group.limit} tone={state} label={`${group.name} đã dùng`} />
                       </span>
                     </li>
                   )

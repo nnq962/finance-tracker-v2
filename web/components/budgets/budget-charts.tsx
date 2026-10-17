@@ -6,7 +6,7 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Label, Pie, PieCha
 import { Money } from "@/components/app/money"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
 import { budgetPace } from "@/lib/budgets/calculations"
-import { shiftMonthKey } from "@/lib/budgets/months"
+import { limitJudges, shiftMonthKey } from "@/lib/budgets/months"
 import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
 import { cn } from "@/lib/utils"
 
@@ -33,24 +33,31 @@ function compact(value: number) {
 
 const monthNumber = (month: string) => Number(month.slice(5))
 
-/** The six months before `month`, oldest first, and whether each is tracked (on or after the first transaction). */
-function monthsBefore(month: string, minMonth: string) {
+/**
+ * The six months before `month`, oldest first: whether each had any
+ * transaction yet (`tracked`), and whether the limit, set in `since`, was
+ * there to keep (`judged`).
+ */
+function monthsBefore(month: string, minMonth: string, since: string | null) {
   return Array.from({ length: 6 }, (_, index) => {
     const key = shiftMonthKey(month, index - 6)
-    return { key, tracked: key >= minMonth }
+    return { key, tracked: key >= minMonth, judged: key >= minMonth && limitJudges(since, key) }
   })
 }
 
 /**
- * How many of the six months before stayed within the limit, then a dot for
- * each, oldest first: green kept, red over, grey before the user had any
- * transaction (not counted). Nothing while none of them is tracked.
+ * How the months before went against the limit, counting only those it was
+ * set for (2026-10-17: not the months before it existed): "Tháng trước:
+ * trong hạn mức" for one, else "3/4 tháng gần đây trong hạn mức" and a dot
+ * for each, oldest first, green kept, red over. Nothing when no month before
+ * had the limit.
  */
 export function KeptMonths({
   history,
   limit,
   month,
   minMonth,
+  since,
   className,
 }: {
   /** The six months before, then the month itself (BudgetMonthLine). */
@@ -58,29 +65,37 @@ export function KeptMonths({
   limit: number
   month: string
   minMonth: string
+  /** "YYYY-MM" the limit was set in. */
+  since: string | null
   className?: string
 }) {
-  const months = monthsBefore(month, minMonth).map((entry, index) => ({ ...entry, spent: history[index] }))
-  const tracked = months.filter((entry) => entry.tracked)
-  if (tracked.length === 0) return null
-  const kept = tracked.filter((entry) => entry.spent <= limit).length
+  const judged = monthsBefore(month, minMonth, since)
+    .map((entry, index) => ({ ...entry, spent: history[index] }))
+    .filter((entry) => entry.judged)
+  if (judged.length === 0) return null
+  const kept = judged.filter((entry) => entry.spent <= limit).length
   return (
     <div className={cn("flex items-center justify-between gap-3 text-xs text-muted-foreground", className)}>
-      <span>
-        Trong hạn mức{" "}
-        <span className="font-semibold text-foreground tabular-nums">
-          {kept}/{tracked.length}
-        </span>{" "}
-        tháng trước
-      </span>
-      <span className="flex items-center gap-1" aria-hidden="true">
-        {months.map((entry) => (
-          <span
-            key={entry.key}
-            className={cn("size-2 rounded-full", !entry.tracked ? "bg-muted" : entry.spent <= limit ? "bg-income" : "bg-expense")}
-          />
-        ))}
-      </span>
+      {judged.length === 1 ? (
+        <span>
+          Tháng trước:{" "}
+          <span className={cn("font-medium", kept ? "text-income" : "text-expense")}>{kept ? "trong hạn mức" : "vượt hạn mức"}</span>
+        </span>
+      ) : (
+        <span>
+          <span className="font-semibold text-foreground tabular-nums">
+            {kept}/{judged.length}
+          </span>{" "}
+          tháng gần đây trong hạn mức
+        </span>
+      )}
+      {judged.length > 1 ? (
+        <span className="flex items-center gap-1" aria-hidden="true">
+          {judged.map((entry) => (
+            <span key={entry.key} className={cn("size-2 rounded-full", entry.spent <= limit ? "bg-income" : "bg-expense")} />
+          ))}
+        </span>
+      ) : null}
     </div>
   )
 }
@@ -100,7 +115,8 @@ export function BudgetDailyChart({
   past,
 }: {
   daily: number[]
-  limit: number
+  /** Null for a month before the limit was set: the spending alone. */
+  limit: number | null
   /** "YYYY-MM". */
   month: string
   /** Days gone: up to today, or all of a month gone by. */
@@ -110,7 +126,7 @@ export function BudgetDailyChart({
   const days = daily.length
   const added = daily.reduce<number[]>((sums, amount) => [...sums, (sums.at(-1) ?? 0) + amount], [])
   const running = added.at(-1) ?? 0
-  const overIndex = added.findIndex((sum) => sum > limit)
+  const overIndex = limit === null ? -1 : added.findIndex((sum) => sum > limit)
   const overOn = overIndex === -1 ? null : overIndex + 1
   const data = added.map((sum, index) => ({
     day: index + 1,
@@ -118,11 +134,13 @@ export function BudgetDailyChart({
   }))
   const spent = daily.slice(0, gone).reduce((sum, amount) => sum + amount, 0)
   const tone =
-    spent > limit
-      ? "var(--expense)"
-      : !past && budgetPace(spent, limit, gone / days) === "fast"
-        ? "var(--warning)"
-        : "var(--color-spent)"
+    limit === null
+      ? "var(--color-spent)"
+      : spent > limit
+        ? "var(--expense)"
+        : !past && budgetPace(spent, limit, gone / days) === "fast"
+          ? "var(--warning)"
+          : "var(--color-spent)"
   const date = (day: number) => `${String(day).padStart(2, "0")}/${month.slice(5)}`
 
   return (
@@ -134,16 +152,20 @@ export function BudgetDailyChart({
             {past ? `Cả tháng ${monthNumber(month)}` : "Đã chi"}
           </dt>
           <dd>
-            <Money amount={spent} size="md" tone={spent > limit ? "expense" : "default"} />
+            <Money amount={spent} size="md" tone={limit !== null && spent > limit ? "expense" : "default"} />
           </dd>
         </div>
         <div className="flex flex-col gap-0.5">
           <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span aria-hidden="true" className="h-0 w-3 border-t-2 border-dashed border-expense/60" />
+            {limit !== null ? <span aria-hidden="true" className="h-0 w-3 border-t-2 border-dashed border-expense/60" /> : null}
             Hạn mức
           </dt>
           <dd>
-            <Money amount={limit} size="md" tone="muted" />
+            {limit === null ? (
+              <span className="text-base text-muted-foreground">Chưa đặt</span>
+            ) : (
+              <Money amount={limit} size="md" tone="muted" />
+            )}
           </dd>
         </div>
       </dl>
@@ -156,15 +178,16 @@ export function BudgetDailyChart({
             tickLine={false}
             axisLine={false}
             interval={0}
-            ticks={limitTicks(limit, running)}
-            domain={[0, Math.max(limit, running) * 1.08]}
+            ticks={limitTicks(limit ?? running, running)}
+            domain={[0, Math.max(limit ?? 0, running, 1) * 1.08]}
             tickFormatter={compact}
           />
-          <ReferenceLine y={limit} stroke="var(--expense)" strokeOpacity={0.5} strokeDasharray="4 4" />
+          {limit !== null ? <ReferenceLine y={limit} stroke="var(--expense)" strokeOpacity={0.5} strokeDasharray="4 4" /> : null}
           {/* Drawn at once: iOS drops taps while content animates in. */}
           <Area
             dataKey="spent"
-            type="monotone"
+            // Steps, as the sum only moves on a day with spending; a smooth curve rose before it.
+            type="stepAfter"
             stroke={tone}
             strokeWidth={2}
             fill={tone}
@@ -175,7 +198,7 @@ export function BudgetDailyChart({
           />
         </AreaChart>
       </ChartContainer>
-      {spent > limit ? (
+      {limit === null ? null : spent > limit ? (
         <p className="text-xs font-medium text-expense">
           Vượt hạn mức từ ngày {date(overOn ?? days)}
           {past ? `, cả tháng vượt ${formatCompactCurrency(spent - limit, 1)}` : ""}.
@@ -184,7 +207,8 @@ export function BudgetDailyChart({
         <p className="text-xs font-medium text-income">Cả tháng trong hạn mức, còn dư {formatCompactCurrency(limit - spent, 1)}.</p>
       ) : null}
       <p className="sr-only">
-        {past ? `Cả tháng ${monthNumber(month)}` : "Tháng này"} đã chi {formatCurrency(spent)}, hạn mức {formatCurrency(limit)}.
+        {past ? `Cả tháng ${monthNumber(month)}` : "Tháng này"} đã chi {formatCurrency(spent)}
+        {limit === null ? ", chưa đặt hạn mức." : `, hạn mức ${formatCurrency(limit)}.`}
       </p>
     </div>
   )
@@ -200,32 +224,33 @@ export function BudgetMonthsChart({
   limit,
   month,
   minMonth,
+  since,
   past,
 }: {
   history: number[]
   limit: number
   month: string
   minMonth: string
+  /** "YYYY-MM" the limit was set in: months before it are never red. */
+  since: string | null
   past: boolean
 }) {
-  const before = monthsBefore(month, minMonth)
-  const tracked = before.map((entry, index) => ({ ...entry, spent: history[index] })).filter((entry) => entry.tracked)
-  const average = tracked.length ? Math.round(tracked.reduce((sum, entry) => sum + entry.spent, 0) / tracked.length / 1_000) * 1_000 : 0
-  const data = [...before.map((entry) => entry.key), month].map((key, index) => ({
-    key,
-    label: `T${monthNumber(key)}`,
-    spent: history[index],
-    now: index === 6,
-  }))
+  // Only from the first month with any transaction: empty columns before it read as missing data.
+  const data = [...monthsBefore(month, minMonth, since), { key: month, tracked: true, judged: limitJudges(since, month) }]
+    .map((entry, index) => ({ ...entry, label: `T${monthNumber(entry.key)}`, spent: history[index], now: index === 6 }))
+    .filter((entry) => entry.tracked)
+  const before = data.filter((entry) => !entry.now)
+  const average = before.length ? Math.round(before.reduce((sum, entry) => sum + entry.spent, 0) / before.length / 1_000) * 1_000 : 0
+  const top = Math.max(...data.map((entry) => entry.spent))
 
   return (
     <div className="flex flex-col gap-3">
       <dl className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-0.5">
           <dt className="text-xs text-muted-foreground">
-            {tracked.length ? `Trung bình ${tracked.length} tháng trước` : "Các tháng trước"}
+            {before.length > 1 ? `Trung bình ${before.length} tháng trước` : "Tháng trước"}
           </dt>
-          <dd>{tracked.length ? <Money amount={average} size="md" /> : <span className="text-base text-muted-foreground">Chưa có</span>}</dd>
+          <dd>{before.length ? <Money amount={average} size="md" /> : <span className="text-base text-muted-foreground">Chưa có</span>}</dd>
         </div>
         <div className="flex flex-col gap-0.5">
           <dt className="text-xs text-muted-foreground">Hạn mức</dt>
@@ -243,23 +268,30 @@ export function BudgetMonthsChart({
             tickLine={false}
             axisLine={false}
             interval={0}
-            ticks={limitTicks(limit, Math.max(...data.map((entry) => entry.spent))).filter((tick) => tick !== limit / 2)}
+            ticks={limitTicks(limit, top).filter((tick) => tick !== limit / 2)}
             tickFormatter={compact}
-            domain={[0, Math.max(limit, ...data.map((entry) => entry.spent)) * 1.1]}
+            domain={[0, Math.max(limit, top) * 1.1]}
           />
           <ReferenceLine y={limit} stroke="var(--foreground)" strokeOpacity={0.45} strokeDasharray="4 4" />
-          <Bar dataKey="spent" radius={[6, 6, 2, 2]} maxBarSize={28} isAnimationActive={false}>
+          {/* A small month next to a large one still shows: at least 4px. */}
+          <Bar dataKey="spent" radius={[6, 6, 2, 2]} maxBarSize={28} minPointSize={4} isAnimationActive={false}>
             {data.map((entry) => (
               <Cell
                 key={entry.key}
-                fill={entry.spent > limit ? "var(--expense)" : entry.now ? "var(--foreground)" : "var(--chart-neutral)"}
+                fill={
+                  entry.judged && entry.spent > limit
+                    ? "var(--expense)"
+                    : entry.now
+                      ? "var(--foreground)"
+                      : "var(--chart-neutral)"
+                }
               />
             ))}
           </Bar>
         </BarChart>
       </ChartContainer>
       <p className="text-xs text-muted-foreground">
-        Cột đỏ là tháng vượt hạn mức{past ? "" : "; tháng này tính tới hôm nay"}.
+        Cột đỏ là tháng vượt hạn mức (từ khi đặt){past ? "" : "; tháng này tính tới hôm nay"}.
       </p>
       <div className="sr-only">
         <table>

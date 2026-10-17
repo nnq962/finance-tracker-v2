@@ -28,8 +28,10 @@ const monthOf = sql<string>`to_char(t.occurred_at AT TIME ZONE 'Asia/Ho_Chi_Minh
  * carry none, and no balance adjustments), not left out themselves nor by
  * their account, and not paid from a savings jar (that money was set aside
  * for it). Transfers and loan repayments are other kinds or other tables.
+ * `fromJars`: instead only what was paid from a savings jar, which limits
+ * leave out but the other figures count, so the sheet can say so.
  */
-export async function spendingByGroupAndMonth(userId: string, from: string, to: string) {
+export async function spendingByGroupAndMonth(userId: string, from: string, to: string, fromJars = false) {
   return getDb()
     .selectFrom("transactions as t")
     .innerJoin("accounts as a", "a.id", "t.accountId")
@@ -40,7 +42,7 @@ export async function spendingByGroupAndMonth(userId: string, from: string, to: 
     .where("t.adjustment", "=", false)
     .where("t.excluded", "=", false)
     .where("a.excluded", "=", false)
-    .where("a.type", "<>", "savings")
+    .where("a.type", fromJars ? "=" : "<>", "savings")
     .where("t.occurredAt", ">=", monthStart(from))
     .where("t.occurredAt", "<", monthStart(shiftMonth(to, 1)))
     .groupBy(["c.groupId", monthOf])
@@ -58,7 +60,7 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
   const [year, monthIndex] = month.split("-").map(Number)
   const daysInMonth = new Date(Date.UTC(year, monthIndex, 0)).getUTCDate()
 
-  const [groups, budgets, spending] = await Promise.all([
+  const [groups, budgets, spending, jars] = await Promise.all([
     getDb()
       .selectFrom("categoryGroups")
       .select(["id", "name", "iconName", "colorName"])
@@ -70,7 +72,9 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
       .execute(),
     getDb().selectFrom("budgets").select(["id", "categoryGroupId", "amount"]).where("userId", "=", userId).execute(),
     spendingByGroupAndMonth(userId, shiftMonth(month, -3), month),
+    spendingByGroupAndMonth(userId, month, month, true),
   ])
+  const fromJars = (groupId?: string) => jars.filter((row) => !groupId || row.groupId === groupId).reduce((sum, row) => sum + row.spent, 0)
 
   const pastMonths = new Set(spending.filter((row) => row.month < month).map((row) => row.month)).size || 1
   const sums = (groupId?: string) => {
@@ -90,7 +94,7 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
     month,
     day: Number(today.slice(8, 10)),
     daysInMonth,
-    total: { budgetId: total?.id ?? null, limit: total?.amount ?? null, ...sums() },
+    total: { budgetId: total?.id ?? null, limit: total?.amount ?? null, ...sums(), fromJars: fromJars() },
     groups: groups.map((group): BudgetGroupLine => {
       const budget = budgetOf(group.id)
       return {
@@ -101,6 +105,7 @@ export async function getBudgetOverview(userId: string, today = toDateKey(new Da
         budgetId: budget?.id ?? null,
         limit: budget?.amount ?? null,
         ...sums(group.id),
+        fromJars: fromJars(group.id),
       }
     }),
   }

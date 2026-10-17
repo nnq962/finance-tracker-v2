@@ -67,9 +67,20 @@ export function BudgetTotal({ overview, compact = false }: { overview: BudgetOve
 /**
  * How a month gone by ended, in the place of BudgetTotal: what was spent
  * large, the share of the limit, the bar, then kept (green, what was left)
- * or over (red, by how much).
+ * or over (red, by how much). Without `limit` (a month before it was set):
+ * what was spent, and "Chưa đặt hạn mức trong tháng này".
  */
-export function BudgetResult({ spent, limit, label }: { spent: number; limit: number; label: string }) {
+export function BudgetResult({ spent, limit, label }: { spent: number; limit?: number; label: string }) {
+  // A month before the limit was set: what was spent, and that there was no limit.
+  if (limit === undefined) {
+    return (
+      <div className="flex flex-col">
+        <CardLabel as="span">{label}</CardLabel>
+        <Money amount={spent} size="xl" className="mt-1" />
+        <p className="mt-2.5 text-xs text-muted-foreground">Chưa đặt hạn mức trong tháng này</p>
+      </div>
+    )
+  }
   const over = spent > limit
   return (
     <div className="flex flex-col">

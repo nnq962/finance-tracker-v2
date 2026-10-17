@@ -32,6 +32,18 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.10.3",
+    date: "2026-10-17",
+    title: "Hạn mức tính đúng từ tháng đặt",
+    changes: [
+      { kind: "fixed", text: "Tháng trước khi đặt hạn mức không còn bị tính là vượt: chỉ ghi số đã chi và \"Chưa đặt hạn mức trong tháng này\"; thành tích chỉ đếm từ tháng đặt." },
+      { kind: "fixed", text: "Xem tháng cũ liệt kê cả các nhóm chưa đặt hạn mức kèm số đã chi, để các phần cộng đủ tổng." },
+      { kind: "fixed", text: "Màu thanh hạn mức giống nhau ở mọi nơi (cam khi từ 80% hay đang chi nhanh so với số ngày đã qua)." },
+      { kind: "improved", text: "Ghi rõ \"Không tính … mua bằng hũ tiết kiệm\" khi có, vì các trang khác vẫn tính khoản này." },
+      { kind: "improved", text: "Biểu đồ chi theo ngày là bậc thang; biểu đồ các tháng chỉ hiện tháng có dữ liệu, cột nhỏ vẫn nhìn thấy; danh sách giao dịch có tiêu đề \"Giao dịch tháng này\"; câu chữ rõ hơn (\"3/4 tháng gần đây trong hạn mức\", \"Chi ít hơn dự kiến\")." },
+    ],
+  },
+  {
     version: "6.10.2",
     date: "2026-10-17",
     title: "Biểu đồ tròn của hạn mức chạm là xem số",

@@ -7,6 +7,7 @@ import { toast } from "sonner"
 
 import { IconTile } from "@/components/app/icon-tile"
 import { LimitRow } from "@/components/app/limit-row"
+import { Money } from "@/components/app/money"
 import { NoticeBanner } from "@/components/app/notice-banner"
 import { PageSheet, PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
 import { CurrencyInput } from "@/components/forms/currency-input"
@@ -29,14 +30,14 @@ import {
   remainingLabel,
   suggestedLimit,
 } from "@/lib/budgets/calculations"
-import { shiftMonthKey } from "@/lib/budgets/months"
+import { limitJudges, shiftMonthKey } from "@/lib/budgets/months"
 import type { BudgetGroupLine, BudgetLine, BudgetMonth, BudgetMonthLine, BudgetOverview } from "@/lib/budgets/types"
 import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { scheduleUndoableDelete } from "@/lib/undoable-delete"
 
 import { KeptMonths } from "./budget-charts"
-import { BudgetDetailSkeleton, BudgetGroupDetail, BudgetTotalDetail } from "./budget-detail"
+import { BudgetDetailSkeleton, BudgetGroupDetail, BudgetTotalDetail, JarsNote } from "./budget-detail"
 import { BudgetResult, BudgetTotal } from "./budget-total"
 
 /** The limit being set: the whole month's, or a group's. */
@@ -214,7 +215,11 @@ function BudgetsSheetBody({
           </Button>
         </span>
       </div>
-      {past ? <PastMonthList data={data} onOpen={setScreen} /> : <ThisMonthList overview={overview} data={data} onOpen={setScreen} onEdit={onEdit} />}
+      {past ? (
+        <PastMonthList data={data} onOpen={setScreen} onShowTransactions={showTransactions} />
+      ) : (
+        <ThisMonthList overview={overview} data={data} onOpen={setScreen} onEdit={onEdit} />
+      )}
     </>
   )
 }
@@ -229,6 +234,7 @@ function KeptLine({ data, line }: { data?: BudgetMonth; line?: BudgetMonthLine }
       limit={line.limit}
       month={data.month}
       minMonth={data.minMonth}
+      since={line.since}
       className="mt-4 border-t border-separator pt-3.5 empty:hidden"
     />
   )
@@ -263,6 +269,7 @@ function ThisMonthList({
           >
             <CardContent>
               <BudgetTotal overview={overview} />
+              <JarsNote amount={total.fromJars} className="mt-1.5" />
               <KeptLine data={data} line={data?.total} />
             </CardContent>
           </button>
@@ -301,7 +308,8 @@ function ThisMonthList({
               }
               value={group.spent}
               max={group.limit}
-              tone={limitTone(group.spent, group.limit)}
+              // The same colour as everywhere else: amber from 80% or while running fast for the time gone.
+              tone={limitTone(group.spent, group.limit, share)}
               caption={remainingLabel(group.spent, group.limit, days)}
               onClick={() => onOpen({ type: "group", groupId: group.groupId })}
             />
@@ -328,14 +336,35 @@ function ThisMonthList({
   )
 }
 
-/** A month gone by: how the whole month and each group with a limit ended. */
-function PastMonthList({ data, onOpen }: { data?: BudgetMonth; onOpen: (screen: Screen) => void }) {
+/**
+ * A month gone by: how the whole month and each group with a limit ended;
+ * then every other group with what it spent, so the parts add up to the
+ * whole. A limit set after that month did not judge it: its group is listed
+ * with the others, and the whole month's card only says what was spent.
+ */
+function PastMonthList({
+  data,
+  onOpen,
+  onShowTransactions,
+}: {
+  data?: BudgetMonth
+  onOpen: (screen: Screen) => void
+  onShowTransactions: (groupIds: string[]) => void
+}) {
   if (!data) return <BudgetDetailSkeleton />
   const number = Number(data.month.slice(5))
-  const limited = data.groups
-    .filter(hasLimit)
-    .sort((a, b) => b.spent / b.limit - a.spent / a.limit)
-  const kept = limited.filter((group) => group.spent <= group.limit).length
+  const judged = (line: BudgetMonthLine) => hasLimit(line) && limitJudges(line.since, data.month)
+  const limited = data.groups.filter(judged).sort((a, b) => b.spent / b.limit! - a.spent / a.limit!)
+  const others = data.groups.filter((group) => !judged(group) && group.spent > 0).sort((a, b) => b.spent - a.spent)
+  const kept = limited.filter((group) => group.spent <= group.limit!).length
+  const totalJudged = judged(data.total)
+  const totalCard = (
+    <CardContent>
+      <BudgetResult spent={data.total.spent} limit={totalJudged ? data.total.limit! : undefined} label={`Tháng ${number} đã chi`} />
+      <JarsNote amount={data.total.fromJars} className="mt-1.5" />
+      <KeptLine data={data} line={data.total} />
+    </CardContent>
+  )
 
   return (
     <>
@@ -346,13 +375,12 @@ function PastMonthList({ data, onOpen }: { data?: BudgetMonth; onOpen: (screen: 
             className="w-full text-left transition-transform duration-150 active:scale-[0.98] motion-reduce:active:scale-100"
             onClick={() => onOpen({ type: "total" })}
           >
-            <CardContent>
-              <BudgetResult spent={data.total.spent} limit={data.total.limit} label={`Tháng ${number} đã chi`} />
-              <KeptLine data={data} line={data.total} />
-            </CardContent>
+            {totalCard}
           </button>
         </Card>
-      ) : null}
+      ) : (
+        <Card size="lg">{totalCard}</Card>
+      )}
       {limited.length > 0 ? (
         <SettingsGroup title={`Theo nhóm · ${kept}/${limited.length} trong hạn mức`}>
           {limited.map((group) => (
@@ -363,18 +391,32 @@ function PastMonthList({ data, onOpen }: { data?: BudgetMonth; onOpen: (screen: 
               figure={
                 <>
                   <span className="font-semibold">{formatCompactCurrency(group.spent, 1)}</span>
-                  <span className="text-muted-foreground"> / {formatCompactCurrency(group.limit, 1)}</span>
+                  <span className="text-muted-foreground"> / {formatCompactCurrency(group.limit!, 1)}</span>
                 </>
               }
               value={group.spent}
-              max={group.limit}
-              tone={limitTone(group.spent, group.limit)}
+              max={group.limit!}
+              tone={limitTone(group.spent, group.limit!)}
               caption={
-                group.spent > group.limit
-                  ? `Vượt ${formatCompactCurrency(group.spent - group.limit, 1)}`
-                  : `Còn dư ${formatCompactCurrency(group.limit - group.spent, 1)}`
+                group.spent > group.limit!
+                  ? `Vượt ${formatCompactCurrency(group.spent - group.limit!, 1)}`
+                  : `Còn dư ${formatCompactCurrency(group.limit! - group.spent, 1)}`
               }
               onClick={() => onOpen({ type: "group", groupId: group.groupId })}
+            />
+          ))}
+        </SettingsGroup>
+      ) : null}
+      {others.length > 0 ? (
+        <SettingsGroup title="Chưa đặt hạn mức">
+          {others.map((group) => (
+            <SettingsRow
+              key={group.groupId}
+              media={<IconTile icon={categoryIconRegistry[group.iconName]} tone={group.colorName} size="sm" />}
+              title={group.name}
+              description={hasLimit(group) ? `Đặt từ tháng ${Number(group.since!.slice(5))}` : undefined}
+              value={<Money amount={group.spent} size="sm" tone="muted" />}
+              onClick={() => (hasLimit(group) ? onOpen({ type: "group", groupId: group.groupId }) : onShowTransactions([group.groupId]))}
             />
           ))}
         </SettingsGroup>

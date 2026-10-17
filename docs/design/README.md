@@ -377,7 +377,7 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   bo 16 cao 44+, chỉ ở tháng hiện tại và khi có hạn mức cả tháng), dòng "Hạn mức chi tiêu" ở Cài đặt › Chung
   ("12tr/tháng", "2 nhóm", "Chưa đặt"). `BudgetTotal`: "Còn lại" và số tiền lớn (hay "Vượt hạn mức" đỏ; 2026-10-17 bỏ "Còn được chi"),
   "62% / của 12tr" bên phải, `LimitBar md` màu theo tốc độ chi, dòng "Đang chi nhanh · còn 284k mỗi ngày"
-  ("Chi vừa phải", "Đang chi chậm"; tốc độ: % đã chi so với % tháng đã qua tính cả hôm nay, lệch quá 10 điểm là
+  ("Chi vừa phải", "Chi ít hơn dự kiến"; tốc độ: % đã chi so với % tháng đã qua tính cả hôm nay, lệch quá 10 điểm là
   nhanh/chậm; chữ amber khi nhanh; 2026-10-17 bỏ chữ "kế hoạch"). Sheet: thẻ `BudgetTotal`, `NoticeBanner warning`
   "Đang chi nhanh" ("Đã dùng 77% hạn mức khi tháng mới qua 17 ngày.", tính bằng ngày, không bằng %), "THEO NHÓM · N" là
   các `LimitRow` (gần chạm nhất lên đầu), "CHƯA ĐẶT HẠN MỨC" là các nhóm còn lại với "Trung bình 4,12tr/tháng" và
@@ -392,23 +392,33 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   khi bật thông báo; chạm mở Tổng quan với sheet. Đặt hay sửa hạn mức thì mức đang đứng được ghi lại không báo.
   **Chi tiết** (2026-10-17, `budget-detail.tsx`, `budget-charts.tsx`, dữ liệu `lib/budgets/month.ts`): sheet tên
   "Hạn mức", đầu nội dung là "Tháng 10" với hai nút tròn ‹ › (như lịch ở Tổng quan; lùi tới tháng có giao dịch
-  đầu tiên). Thẻ cả tháng kèm `KeptMonths` dưới vạch kẻ: "Trong hạn mức 4/6 tháng trước" và sáu chấm
-  (xanh giữ, đỏ vượt, xám là tháng trước khi có giao dịch, không tính). Tháng đã qua: thẻ là `BudgetResult`
+  đầu tiên). Thẻ cả tháng kèm `KeptMonths` dưới vạch kẻ, chỉ tính các tháng từ khi đặt hạn mức (`budgets.created_at`;
+  2026-10-17, trước đó hạn mức bị áp ngược cho các tháng chưa có nó): "3/4 tháng gần đây trong hạn mức" và mỗi
+  tháng một chấm (xanh giữ, đỏ vượt), một tháng thì "Tháng trước: trong hạn mức / vượt hạn mức", chưa tháng nào
+  thì không hiện. Dưới số tiền, khi có, "Không tính 450k mua bằng hũ tiết kiệm" (`JarsNote`; các trang khác vẫn
+  tính khoản này, nên số ở đây nhỏ hơn). Tháng đã qua: thẻ là `BudgetResult`
   ("Tháng 9 đã chi", số lớn, %, thanh, "Trong hạn mức · còn dư 400k" xanh hay "Vượt hạn mức 300k" đỏ), dòng nhóm ghi
-  "Còn dư …" / "Vượt …", tiêu đề "THEO NHÓM · 3/4 TRONG HẠN MỨC", không có phần chưa đặt hạn mức; tháng
-  cũ so với hạn mức hiện tại (chưa lưu hạn mức theo từng tháng). Chạm thẻ cả tháng hay một nhóm mở màn sâu
+  "Còn dư …" / "Vượt …", tiêu đề "THEO NHÓM · 3/4 TRONG HẠN MỨC", rồi "CHƯA ĐẶT HẠN MỨC" là các nhóm khác có chi trong
+  tháng đó (số tiền bên phải; nhóm đặt hạn mức sau tháng đó ghi "Đặt từ tháng 10"), để các phần cộng đủ tổng. Tháng
+  trước khi đặt hạn mức không bị chấm: thẻ chỉ ghi "Tháng 9 đã chi" và "Chưa đặt hạn mức trong tháng này", biểu
+  đồ ngày không có vạch hạn mức ("Hạn mức · Chưa đặt"). Tháng cũ so với số hạn mức hiện tại (chưa lưu số theo
+  từng tháng). Màu thanh một quy tắc ở mọi nơi (`limitTone`): mực, amber từ 80% hay khi đang chi nhanh so với
+  số ngày đã qua (tháng này), đỏ khi vượt. Chạm thẻ cả tháng hay một nhóm mở màn sâu
   (`usePageSheetScreen`, ‹ quay lại, bút chì sửa hạn mức ở bên phải, tháng cũ không có bút chì; tiêu đề "Ăn uống",
   "Ăn uống · tháng 9", "Hạn mức tổng", "Hạn mức tổng · tháng 9"; 2026-10-17 đổi từ "Cả tháng 10": hạn mức cả tháng gọi là "hạn mức tổng" ở mọi chỗ, cả thông báo đẩy): thẻ đầu như trên, "CHI THEO NGÀY" (`BudgetDailyChart`: hai số "Đã chi"
   (hay "Cả tháng 9") / "Hạn mức"; đường chi luỹ kế màu mực, amber khi đang chi nhanh, đỏ khi vượt, nền mờ cùng
-  màu; vạch đỏ mờ là hạn mức; không có đường "đúng kế hoạch" (bỏ 2026-10-17: không ai chi đều như thế); tháng này
-  dừng ở hôm nay, tháng cũ chạy tới ngày cuối, đi ngang sau khoản cuối; dưới biểu đồ "Vượt hạn mức từ ngày
+  màu; vạch đỏ mờ là hạn mức; không có đường "đúng kế hoạch" (bỏ 2026-10-17: không ai chi đều như thế); đường bậc thang
+  (chỉ bước lên ngày có chi; 2026-10-17 thay đường cong mượt vốn dâng lên trước ngày chi); tháng này dừng ở hôm
+  nay, tháng cũ chạy tới ngày cuối, đi ngang sau khoản cuối; dưới biểu đồ "Vượt hạn mức từ ngày
   27/09, cả tháng vượt 300k." hay "Cả tháng trong hạn mức, còn dư 350k.", tháng này chỉ khi đã vượt),
   "THEO HẠNG MỤC" (màn nhóm) hay "THEO NHÓM" (màn cả tháng, thêm "Nhóm chưa đặt hạn mức" gom các nhóm không có
   hạn mức, màu xám) là `BudgetSplit` (2026-10-17, thay các dòng có thanh): vòng tròn 160 với tổng ở giữa
   ("Tổng chi"; chạm một lát hiện tên, số tiền và % như vòng ở Tổng quan, không chuyển màn), dưới là mỗi phần một dòng cao 48: chấm màu, tên (nhóm vượt hạn mức có dòng đỏ "Vượt hạn mức nhóm
   …" dưới tên), số tiền, %, mũi tên; màu nhóm là màu của nhóm, màu hạng mục bắt đầu từ màu nhóm rồi theo bảng màu, "SO VỚI CÁC THÁNG TRƯỚC" (`BudgetMonthsChart`: trung bình các tháng
-  trước và hạn mức, bảy cột sáu tháng trước và tháng đang xem, cột vượt đỏ, cột tháng đang xem đậm, vạch hạn mức
-  đứt, chú thích "Cột đỏ là tháng vượt hạn mức"), rồi (màn nhóm) ba khoản chi mới nhất theo ngày và "Xem tất cả N giao dịch", mở Giao dịch của tháng đó
+  trước và hạn mức, các cột chỉ từ tháng có giao dịch đầu tiên (tối đa sáu tháng trước và tháng đang xem), cột nhỏ cao
+  ít nhất 4px, cột vượt đỏ chỉ từ tháng đặt hạn mức, cột tháng đang xem đậm, vạch hạn mức đứt; "Tháng trước" khi
+  chỉ có một tháng, "Trung bình N tháng trước" khi nhiều hơn), rồi (màn nhóm) "GIAO DỊCH THÁNG NÀY" (hay "GIAO DỊCH THÁNG 9"): ba khoản chi mới nhất trong một
+  nhóm dòng, mỗi dòng ghi ngày giờ ("04/10, 19:56", "Hôm nay, 12:30"), và "Xem tất cả N giao dịch", mở Giao dịch của tháng đó
   lọc theo nhóm (`?group=`; chạm một hạng mục cũng mở theo nhóm). Trục số chỉ có 0, nửa hạn mức, hạn mức; khi chi
   vượt xa thì hạn mức và đỉnh.
 - **Hũ tiết kiệm** (2026-10-14, `budget/_components/savings/`): hũ là một tài khoản loại `savings` (không lãi, để

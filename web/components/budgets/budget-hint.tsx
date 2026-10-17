@@ -3,7 +3,7 @@
 import * as React from "react"
 import { GaugeIcon } from "lucide-react"
 
-import { budgetState, hasLimit } from "@/lib/budgets/calculations"
+import { hasLimit, limitTone, monthShare } from "@/lib/budgets/calculations"
 import type { BudgetOverview } from "@/lib/budgets/types"
 import { formatCompactCurrency } from "@/lib/format-currency"
 import { cn } from "@/lib/utils"
@@ -26,7 +26,7 @@ export function BudgetHint({ groupId, date }: { groupId?: string; date: string }
   const group = overview?.groups.find((line) => line.groupId === groupId)
   if (!overview || !group || !hasLimit(group) || date.slice(0, 7) !== overview.month) return null
 
-  const state = budgetState(group.spent, group.limit)
+  const state = limitTone(group.spent, group.limit, monthShare(overview))
   return (
     <p className={cn("flex items-center gap-1.5 px-4 text-xs text-muted-foreground", state === "near" && "text-warning", state === "over" && "text-expense")}>
       <GaugeIcon className="size-3.5 shrink-0" aria-hidden="true" />
