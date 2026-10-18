@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.16.3",
+    date: "2026-10-18",
+    title: "Theo dõi lỗi gọn hơn trên máy chủ",
+    changes: [
+      { kind: "fixed", text: "Phần theo dõi lỗi trên máy chủ chỉ ghi lỗi, không còn theo từng yêu cầu mạng." },
+    ],
+  },
+  {
     version: "6.16.2",
     date: "2026-10-18",
     title: "Cập nhật danh sách việc còn lại",
