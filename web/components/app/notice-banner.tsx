@@ -56,7 +56,7 @@ export function NoticeBanner({
   className?: string
 }) {
   const onCard = surface === "card"
-  const surfaceClassName = onCard ? "bg-card" : tones[tone].surface
+  const surfaceClassName = onCard ? "bg-card shadow-card" : tones[tone].surface
   const titleClassName = cn("font-medium", onCard && tones[tone].text)
 
   if (onClick) {

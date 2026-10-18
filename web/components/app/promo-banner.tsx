@@ -30,7 +30,7 @@ export function PromoBanner({
       data-slot="promo-banner"
       onClick={onClick}
       className={cn(
-        "pressable flex w-full items-center gap-4 rounded-[20px] bg-card p-4 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+        "pressable flex w-full items-center gap-4 rounded-[20px] bg-card p-4 text-left shadow-card outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
         className,
       )}
     >

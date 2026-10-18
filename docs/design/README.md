@@ -18,9 +18,9 @@ component ở đó là cả app đổi theo.
 
 ## Nguyên tắc
 
-1. **Thẻ mềm trên nền xám.** Nền xám rất nhạt, hơi lạnh (`#f7f7f8`, đổi 2026-10-16 vì kem ấm `#f5f4f0` trông vàng; trước nữa `#f2f2f1`); `muted`, rãnh `track` và đường kẻ `separator` cùng sắc đó, đậm dần; thẻ trắng
-   bo 20, không viền; theme sáng có bóng rất mờ sát thẻ (`shadow-card` = token `--card-shadow`: `0 1px 2px` và `0 1px 3px` đen 4%, 2026-10-16, vì nền mới gần trắng; thẻ `inverse` và theme tối không bóng), còn lại tách khỏi nền nhờ chênh màu. Xám trên thẻ là thang `neutral` của
-   Tailwind (không ngả xanh). Theme tối theo iOS (2026-10-16): nền đen `#000`, thẻ `#1c1c1e`, ô mờ / thẻ đen nổi `#2c2c2e`, đường kẻ `#38383a` (trước là `#0a0a0a` / `#171717`).
+1. **Thẻ trắng có viền trên nền trắng.** Theme sáng nền trắng (2026-10-18, chọn phương án "B · Thẻ viền" trong mockup; trước là xám rất nhạt `#f7f7f8`, trước nữa kem ấm `#f5f4f0` và `#f2f2f1`); thẻ trắng
+   bo 20, tách khỏi nền nhờ viền mảnh và bóng mềm đổ xuống (`shadow-card` = token `--card-shadow`: viền 1px đen 6%, `0 1px 3px` đen 4%, `0 6px 16px -6px` đen 8%; thẻ `inverse` và theme tối không bóng). Thứ gì trắng nằm thẳng trên trang (nút `outline`, `PromoBanner`, `NoticeBanner surface="card"`, `Item outline`) cũng mang `shadow-card`. Ô nhập, chip, rãnh segmented là xám nhạt `neutral-100` cả trên trang lẫn trên thẻ. Xám trên thẻ là thang `neutral` của
+   Tailwind (không ngả xanh); `muted` và đường kẻ `separator` hơi lạnh. Theme tối theo iOS (2026-10-16), không đổi: nền đen `#000`, thẻ `#1c1c1e`, ô mờ / thẻ đen nổi `#2c2c2e`, đường kẻ `#38383a` (trước là `#0a0a0a` / `#171717`).
 2. **Một khuôn trang** (2026-10-08). Mọi trang mở đầu giống nhau: một hàng gọn, tên trang bên
    trái, công cụ bên phải (`PageHeader`); rồi một thẻ dẫn đầu, rồi các nhóm. Học một trang là đoán
    được các trang khác. Xem "Khuôn trang" bên dưới.
@@ -59,12 +59,12 @@ component ở đó là cả app đổi theo.
 | Bo góc | 32 đầu sheet đáy · 28 đầu sheet `bottom` · 24 thẻ lớn (`size="lg"`), action sheet · 20 thẻ, nhóm danh sách, hộp thoại, menu · 16 thẻ nhỏ, banner, ô icon lớn, ô OTP · 12 ô nhập, select, ô tháng · 10 ô icon trong dòng · tròn cho nút, chip, badge, công tắc (đổi 2026-10-07: thẻ từ 28 xuống 20, ô nhập từ viên thuốc 48 xuống 44 bo 12, như list của app Claude) |
 | Chiều cao điều khiển | Nút: L 56 · M 44 (mặc định) · S 36 · nút nổi chính 60 (`size="fab"`) · ô nhập, select, thanh tìm kiếm 44, cùng cao với nút mặc định · segmented 44 (lựa chọn 36) · nút tròn icon 44 · công tắc 52×32 |
 | Khoảng cách | Bội của 4. Lề trang 16 (24 từ md) · giữa các phần của trang và các nhóm list 24 (32 từ md; `Page` và layout trang tự lo) · tiêu đề → nội dung 8 · các thứ trong một phần 12 (thẻ cạnh thẻ, segmented → list) · đệm thẻ 16 `sm`, 20, 24 `lg`. Tiêu đề luôn gần nội dung của nó hơn phần phía trên: với `Section` thấy ~16 dưới tiêu đề, ~32 trên |
-| Bóng | Thẻ không bóng; chỉ lớp nổi (menu, sheet, hộp thoại, tab bar, nút nổi) có bóng |
+| Bóng | Thẻ ở theme sáng có viền mảnh và bóng mềm `shadow-card` (2026-10-18), không có ở theme tối; lớp nổi (menu, sheet, hộp thoại, tab bar, nút nổi) có bóng riêng, rõ hơn |
 | Chuyển động | 150–250ms ease-out; chỉ báo trượt (segmented, công tắc) nảy nhẹ ~450ms. Dùng CSS transition trên `translate`/`opacity` hoặc `motion` cho chiều cao, không dùng layout animation hay transition `grid-template-rows` (giật trên iOS Safari). Khi `prefers-reduced-motion`, rút còn 150ms ease-out, không nảy, thay vì tắt hẳn |
 
 ## Component (`components/ui`, đã may lại)
 
-- **Button:** viên thuốc. Kiểu `default` (đen; hover là một lớp phủ sáng 15% hiện dần chứ không đổi màu nền: nền đổi màu cạnh sóng âm vẽ lại mỗi khung hình bị nháy trên Chrome, 2026-10-11), `secondary` (xám), `outline` (nền màu thẻ, không viền: trắng trên nền sáng, xám nổi trên nền tối; bỏ viền 2026-10-09),
+- **Button:** viên thuốc. Kiểu `default` (đen; hover là một lớp phủ sáng 15% hiện dần chứ không đổi màu nền: nền đổi màu cạnh sóng âm vẽ lại mỗi khung hình bị nháy trên Chrome, 2026-10-11), `secondary` (xám), `outline` (nền màu thẻ: trắng có viền mảnh và bóng `shadow-card` trên nền sáng (2026-10-18), xám nổi trên nền tối; bỏ viền 2026-10-09),
   `ghost`, `destructive` (đỏ đặc `destructive-fill`, chữ trắng), `link`. Cỡ: `lg` 56 · mặc định 44 · `sm` 36
   (thêm `xs` 32); `icon` 44, `icon-sm` 36, `icon-xs` 32, `icon-lg` 48, `fab` 60. Icon trong nút
   18px; nút tắt mờ còn 35%.
@@ -81,12 +81,12 @@ component ở đó là cả app đổi theo.
   `--control-radius`, `--control-px` (mặc định 44, 12, 16). `CurrencyInput` (mọi ô số tiền): bàn phím số, nhóm hàng nghìn khi gõ (1.250.000), trong ô chỉ có con số (nhãn đã nói là tiền; không icon, không "đ"); khi đã có số thì nút ✕ ở cuối xoá nhanh, giữ bàn phím; ô có thể âm (`onNegativeChange`) có nút +/− ở đầu. `variant="hero"`: số tiền chính của màn (sheet thêm giao dịch): số 40 đậm ở giữa, không khung, dấu `sign` (− chi, + thu) trước và "đ" mờ sau, ô rộng đúng bằng số nhờ một bản sao vô hình của chữ cùng ô lưới (không ước lượng, nên Safari không cuộn số lệch sau khi gõ), chữ nhỏ dần khi số dài (40 → 30 → 22); khi có số, nút ⊗ xám nhỏ ở mép phải hàng (vùng chạm 44, không đặt sau "đ" để số không lệch tâm) xoá về 0 và giữ bàn phím, gợi ý canh giữa; `tone="income"` tô xanh. Hero có thể âm (`onNegativeChange`, số dư tài khoản): không có nút +/− mà dấu do nơi dùng đặt (công tắc "Số dư âm"), số hiện "−" và màu `expense`, ô ẩn gửi số có dấu. Dưới ô luôn có chip gợi ý (`suggestions`, mặc định bật, `false` để tắt): gõ 3 thì 3.000đ, 30.000đ, 300.000đ…; truyền `history` (số tiền cũ, mới nhất trước) thì ô trống gợi ý các số hay dùng và số cũ khớp chữ số lên trước. Gợi ý theo số đã gõ, không theo số vừa chọn, nên chọn một chip thì hàng đứng yên và chip đó được tô; form đặt lại giá trị (mở lại sheet) thì gợi ý cũng xoá. `variant="inline"`: số tiền gõ tại chỗ trên dòng (`SettingsFieldRow`), như `InlineInput` có "đ" liền sau số; không gợi ý, không ✕. Lỗi dưới một cặp ô (Từ / Đến) cách ô 8px như lỗi dưới một ô. `InputGroup variant="search"`: ô tìm kiếm đứng riêng (trang Giao dịch), tròn như nút
   và không đổi nền, không viền khi focus.
 - **Màu ô nhập theo bề mặt** (token `field`, `track` và utility `surface-grouped` / `surface-plain`
-  trong `globals.css`): trên nền xám (trang, sheet) ô nhập, chip, nút phụ màu trắng; trên thẻ
-  trắng chúng màu xám. Thẻ tự đặt `surface-plain`, khung trang và sheet đặt `surface-grouped`. Trong `SelectContent`, các `SelectItem` luôn nằm trong
+  trong `globals.css`): theme sáng ô nhập, chip, nút phụ xám nhạt cả trên trang, sheet (nền trắng từ 2026-10-18; trước là nền xám với ô trắng) lẫn trên thẻ trắng; theme tối trên nền đen
+  chúng màu thẻ, trên thẻ trắng 6%. Thẻ tự đặt `surface-plain`, khung trang và sheet đặt `surface-grouped`. Trong `SelectContent`, các `SelectItem` luôn nằm trong
   `SelectGroup` (kèm `SelectLabel` nếu nhóm có tên), như shadcn hướng dẫn; danh sách tài khoản
   dùng `AccountSelectGroups`.
 - **Tabs:** segmented control kiểu iOS, viên thuốc cao 44 (lựa chọn 36; đổi 2026-10-09 từ 52): viên trắng có bóng nhẹ
-  trượt trên rãnh xám (`track`; trên nền xám của trang là một bậc xám đậm hơn nền), lựa chọn đang
+  trượt trên rãnh xám (`track`, xám nhạt cả trên trang lẫn trên thẻ), lựa chọn đang
   chọn chữ đậm. Theme tối: viên xám sáng trên rãnh màu thẻ. Dùng cho 2–4 chế độ cùng loại (Chi/Thu/Chuyển). `variant="line"`: tab gạch chân,
   vạch trượt theo.
 - **ToggleGroup / Toggle:** chip viên thuốc xám chữ thường (không đậm), chip đang chọn màu đen;
@@ -99,8 +99,8 @@ component ở đó là cả app đổi theo.
 - **Slider:** rãnh dày 8, núm trắng; hai giá trị là khoảng; `formatValue` hiện bong bóng giá trị
   khi kéo.
 - **Accordion:** câu hỏi chữ 14, dòng cao từ 56, nút + trong vòng xám xoay thành × khi mở.
-- **Progress:** thanh dày 8, màu mực (trắng ở theme tối) trên rãnh xám, kể cả lượt AI ở Cài đặt (2026-10-09: bỏ `tone="ai"`). **Empty:** icon mảnh trong ô 80 bo 20 nền `field` theo bề mặt (trắng trên nền xám của trang, sheet; xám trên thẻ trắng), tiêu đề 16. Đồng hồ lượt AI ghi "Còn N/M", nên thanh đầy là chưa dùng.
-- **Skeleton:** nền theo bề mặt (`track`): đậm hơn nền xám của trang, xám rất nhạt trên thẻ trắng, sáng 15% trên thẻ dẫn đầu. Không truyền `bg-*` ở nơi dùng. Ngừng nhấp nháy khi giảm chuyển động.
+- **Progress:** thanh dày 8, màu mực (trắng ở theme tối) trên rãnh xám, kể cả lượt AI ở Cài đặt (2026-10-09: bỏ `tone="ai"`). **Empty:** icon mảnh trong ô 80 bo 20 nền `field` theo bề mặt (xám nhạt ở theme sáng, trên trang lẫn thẻ; màu thẻ trên nền đen), tiêu đề 16. Đồng hồ lượt AI ghi "Còn N/M", nên thanh đầy là chưa dùng.
+- **Skeleton:** nền theo bề mặt (`track`): xám rất nhạt trên trang và thẻ trắng, sáng 15% trên thẻ dẫn đầu. Không truyền `bg-*` ở nơi dùng. Ngừng nhấp nháy khi giảm chuyển động.
 - **Badge:** viên thuốc cao 24 có chấm màu ở đầu; kiểu màu ý nghĩa `income`, `expense`,
   `transfer`, `ai`, `warning`. `count` là số trên vai icon như trên icon app (chuông thông báo):
   viên tròn 18, chữ 10 đậm, màu mực của app (đen; trắng ở theme tối), không đỏ vì đỏ dành cho
@@ -111,8 +111,7 @@ component ở đó là cả app đổi theo.
     (đổi 2026-10-08: mọi sheet của app chuyển sang `PageSheet`).
   - `variant="screen"`: một màn hình đẩy từ phải, phủ cả điện thoại; chỉ còn màn chào mừng lần
     đầu dùng, kèm `SheetNavHeader`.
-  - `variant="bottom"`: thẻ trồi từ đáy, bo 28, có thanh kéo, nền xám để nhóm dòng trắng nổi
-    lên. Dùng cho lựa chọn ngắn và hành động.
+  - `variant="bottom"`: thẻ trồi từ đáy, bo 28, có thanh kéo, nền trang (trắng ở theme sáng) với nhóm dòng là thẻ viền. Dùng cho lựa chọn ngắn và hành động.
 - **Drawer mặc định (sheet đáy):** như half sheet của mockup: sát hai mép, đầu bo 32, thanh kéo
   40×6 `neutral-200`, nội dung căn trái.
 - **Drawer `variant="page"` (page sheet iOS):** trồi lên tới ngay dưới status bar, đầu bo 28, kéo
@@ -541,7 +540,7 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   hình bỏ qua; dưới là tiêu đề 24 và một câu. Màn AI ghi số lượt của gói Free. Màn cuối "Bắt đầu"; lần đầu thì
   mở tiếp "Thêm tài khoản".
 - **Hướng dẫn cài trên iPhone** (`IosInstallSheet`, `components/pwa-install-button.tsx`, 2026-10-09; mở từ
-  "Cài ứng dụng" ở Cài đặt, nhiệm vụ ở Tổng quan, trang giới thiệu): sheet đáy nền xám, không ✕ (kéo
+  "Cài ứng dụng" ở Cài đặt, nhiệm vụ ở Tổng quan, trang giới thiệu): sheet đáy nền trang, không ✕ (kéo
   xuống hay "Đã hiểu" để đóng); icon app, "Cài Timi", "N bước để mở như một ứng dụng"; rồi
   từng bước như onboarding: thẻ trắng vẽ nhỏ đúng màn hình của bước (thanh dưới Safari với ••• và
   menu Chia sẻ, danh sách chia sẻ, màn Thêm vào MH chính), chỗ cần chạm viền xanh `transfer`, vòng sáng
@@ -573,19 +572,19 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
 - **Desktop:** phần tử trong cột bám (rail) không co lại (`*:shrink-0`); rail cao hơn cửa sổ thì tự
   cuộn. Tài khoản: rail lùi xuống 32 để thẻ dẫn đầu thẳng với thẻ list; cả trang tối đa 64rem
   (68rem từ xl, `budgetPageClassName`), nên nút ở đầu trang thẳng mép phải với list. Thanh bên: "Timi" kèm "Beta" chữ mờ trên cùng dòng.
-- **Màn gói** (duyệt 2026-10-07, theo màn "Get more Claude"): page sheet nền xám, tiêu đề lớn giữa
+- **Màn gói** (duyệt 2026-10-07, theo màn "Get more Claude"): page sheet nền trang, tiêu đề lớn giữa
   ("Nâng cấp Timi" / "Bạn đang dùng Pro"); thẻ Pro trước với `ChoiceTiles tone="ai"`
   chọn kỳ (mặc định theo năm), nút `lg` rộng hết, ghi chú nhỏ, rồi đường kẻ và "Mọi thứ của gói
   Free, thêm:"; thẻ Free gọn hơn; cuối là dòng payOS và câu hỏi thường gặp (`Accordion` trong
   `SettingsGroup`). Kết quả thanh toán: đã trả, huỷ, hết hạn là toast một lần (đã trả kèm nút "Ghi khoản chi"), rồi `order` rời khỏi URL; đang chờ xác nhận và trả thiếu là `NoticeBanner` ở đầu, vì vẫn còn đúng tới khi được xử lý. Lúc đang chờ, sheet hỏi lại payOS mỗi 5 giây trong 2 phút (khi app đang hiện); tiền về thì banner thành toast "Đã nâng cấp Pro". Nút nâng cấp mở **sheet thanh toán**
-  (`CheckoutSheet`, sheet đáy nền xám, 2026-10-09): ô `IconTile ai` lớn, "Nâng cấp Pro" / "Gia hạn Pro", "300 lượt AI
+  (`CheckoutSheet`, sheet đáy nền trang, 2026-10-09): ô `IconTile ai` lớn, "Nâng cấp Pro" / "Gia hạn Pro", "300 lượt AI
   mỗi tháng"; biên lai là nhóm dòng: "Gói Pro · 1 năm  249.000đ", "Mã giảm giá" gõ tại chỗ (`SettingsFieldRow`,
   chữ in hoa, "Áp dụng" ở cuối dòng sáng khi đã gõ; mã sai báo đỏ dưới nhóm). Áp được thì dòng mã thành
   `Chip tone="income"` chỉ ghi mã ("SALE20 ×", không kèm phần trăm) và thêm dòng "Giảm 20%  −50.000đ" xanh;
   "Tổng thanh toán" đậm ở thẻ riêng; nút "Thanh toán 199.000đ" rộng hết và dòng nhỏ "Bảo mật qua payOS · quét QR,
   mọi ngân hàng". Mã làm tổng về 0 thì nút là "Nhận Pro miễn phí", không qua payOS. Xác nhận ở Quản trị (thu hồi
   Pro, xoá mã) cũng là `ActionSheet` đỏ.
-- **Form:** `PageSheet` nền xám; các trường gom trong một `FormSection` (thẻ trắng, ô nhập
+- **Form:** `PageSheet` nền trang; các trường gom trong một `FormSection` (thẻ trắng, ô nhập
   xám bên trong), dòng chọn và công tắc trong `SettingsGroup`; form `flex flex-1 flex-col`, nút
   lưu cỡ thường rộng hết trong `PageSheetFooter` cuối form, nổi ở đáy sheet (bóng mềm như nút tròn ở thanh trên, ngay trên dải thanh vuốt; nội dung cuộn dưới nó mờ dần tới tận mép dưới). Không bọc một ô lẻ
   trong thẻ riêng. Nút ✕ là cách huỷ, không cần nút "Huỷ"; màn con trong sheet (sửa hạng mục)

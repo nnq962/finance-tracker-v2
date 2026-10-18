@@ -5,7 +5,7 @@ Bảng màu cho thiết kế lại (10/2026), theo mockup đã duyệt (xem [`RE
 
 ## Tinh thần
 
-- **Nền xám nhạt, thẻ trắng không viền, không bóng.** Thẻ tách khỏi nền nhờ chênh màu.
+- **Nền trắng, thẻ trắng có viền mảnh và bóng mềm** (2026-10-18; trước là nền xám nhạt, thẻ trắng tách nhờ chênh màu).
 - **Một màu nhấn: gần đen** (trắng ở theme tối) cho nút chính, chip đang chọn, công tắc bật,
   thanh tiến độ. Mỗi màn chỉ một khối đen lớn: thẻ dẫn đầu (`inverse`).
 - **Màu ý nghĩa dùng ít:** chỉ tô số tiền vào, icon, badge; đỏ chỉ để cảnh báo. Ô icon dùng
@@ -18,7 +18,7 @@ Bảng màu cho thiết kế lại (10/2026), theo mockup đã duyệt (xem [`RE
 
 | Token | Sáng | Tối | Dùng cho |
 |---|---|---|---|
-| `background` | `#f2f2f1` | `#0a0a0a` | Nền trang ("Canvas" của mockup) |
+| `background` | `#ffffff` (2026-10-18; trước `#f7f7f8`, `#f2f2f1`) | `#000000` | Nền trang ("Canvas" của mockup) |
 | `card` | `#ffffff` | `#171717` | Thẻ |
 | `inverse` | `#171717` | `#262626` | Thẻ dẫn đầu (`Card variant="inverse"`): đen ở theme sáng, xám nổi ở theme tối, không phải khối trắng; chữ `inverse-foreground` trắng |
 | `popover` | `#ffffff` | `#171717` | Sheet, menu, hộp thoại |
@@ -27,7 +27,7 @@ Bảng màu cho thiết kế lại (10/2026), theo mockup đã duyệt (xem [`RE
 | `muted-foreground` | `#858585` | `#929292` | Chữ phụ, như secondary label của iOS (đổi 2026-10-07 từ `#a3a3a3` / `#737373`) |
 | `border` | `#f5f5f5` | `#262626` | Đường kẻ mảnh giữa các dòng |
 | `input` | `#e5e5e5` | trắng 15% | Công tắc tắt |
-| `field`, `track` | `#f5f5f5` trên thẻ trắng; trên nền xám `field` trắng, `track` một bậc xám đậm hơn nền (`oklch(0.922 …)`) | trắng 6% trên thẻ, `card` trên nền đen | Nền ô nhập, chip, nút phụ (`field`) và rãnh segmented, thanh trượt (`track`), đổi theo bề mặt (`surface-plain` / `surface-grouped`) |
+| `field`, `track` | `#f5f5f5`, trên thẻ trắng lẫn trên trang (nền trắng từ 2026-10-18) | trắng 6% trên thẻ, `card` trên nền đen | Nền ô nhập, chip, nút phụ (`field`) và rãnh segmented, thanh trượt (`track`), đổi theo bề mặt (`surface-plain` / `surface-grouped`) |
 | `ring` | `#a3a3a3` | `#737373` | Viền focus |
 | `income` | emerald-600 `#059669` | emerald-400 | Tiền vào ("Success") |
 | `expense`, `destructive` | rose-600 `#e11d48` | rose-400 | Tiền ra, xoá, lỗi ("Danger") |
@@ -40,9 +40,9 @@ Bảng màu cho thiết kế lại (10/2026), theo mockup đã duyệt (xem [`RE
 
 ## Chỉnh trong `components/ui` (chỉ màu)
 
-- `Card`: bỏ bóng và viền ring.
+- `Card`: bỏ viền ring; theme sáng có `shadow-card` (viền mảnh 1px đen 6% và bóng mềm đổ xuống, 2026-10-18), theme tối không.
 - `Tabs` (segmented): viên đang chọn là `bg-card` có bóng nhẹ trên rãnh `track`; tối là trắng 15%.
 - `ToggleGroup` / `Toggle`: mục đang chọn màu `primary` (chip đen).
-- `Button outline`, `Item outline`: nền `bg-card` để nổi trên nền trang.
+- `Button outline`, `Item outline`: nền `bg-card` và `shadow-card` để nổi trên nền trang trắng.
 - `Switch`: núm `bg-card`.
-- Màu thanh trạng thái PWA: `#f2f2f1` / `#0a0a0a`, cố định; sheet toàn màn hình cùng màu nền nên không cần đổi.
+- Màu thanh trạng thái PWA: `#ffffff` / `#000000`, cố định; sheet toàn màn hình cùng màu nền nên không cần đổi.
