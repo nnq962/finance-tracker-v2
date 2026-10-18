@@ -24,9 +24,10 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
         // Solid red, white text (2026-10-16): the pale red tint of before read
-        // faded in both themes beside Save; the veil darkens it on hover.
+        // faded in both themes beside Save; the veil darkens it on hover. The
+        // fill is its own token, deeper in the dark theme (2026-10-18).
         destructive:
-          "relative isolate bg-destructive text-destructive-foreground after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:bg-black/10 after:opacity-0 after:transition-opacity after:duration-150 hover:after:opacity-100 focus-visible:border-destructive/40 focus-visible:ring-destructive/30 motion-reduce:after:transition-none",
+          "relative isolate bg-destructive-fill text-destructive-foreground after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:bg-black/10 after:opacity-0 after:transition-opacity after:duration-150 hover:after:opacity-100 focus-visible:border-destructive/40 focus-visible:ring-destructive/30 motion-reduce:after:transition-none",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

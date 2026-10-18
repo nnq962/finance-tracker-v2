@@ -63,6 +63,7 @@ const colors = [
   ["ai-on-primary", "Icon AI trên nút chính", "bg-ai-on-primary"],
   ["warning", "Nhắc nhở", "bg-warning"],
   ["destructive", "Xoá, lỗi", "bg-destructive"],
+  ["destructive-fill", "Nền nút Xoá", "bg-destructive-fill"],
   ["muted", "Nền phụ", "bg-muted"],
   ["border", "Viền", "bg-border"],
   ["separator", "Kẻ giữa dòng list", "bg-separator"],

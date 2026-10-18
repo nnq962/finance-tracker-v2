@@ -53,8 +53,7 @@ hạn mức, cảnh báo vượt trong form, gợi ý chỉnh hạn mức, cài 
 
 ## 5. Giao diện
 
-- **Nút Xoá đỏ ở theme tối:** chữ trắng trên nền đỏ sáng có độ tương phản hơi thấp; có thể dùng một
-  tông đỏ đậm hơn cho nền nút ở theme tối.
+- ~~Nút Xoá đỏ ở theme tối~~ (6.17.4: token `destructive-fill` `#cf4040`, tương phản 4,69).
 
 ## 6. Kỹ thuật
 

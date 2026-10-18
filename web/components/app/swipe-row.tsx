@@ -37,7 +37,7 @@ export function SwipeRow({
 
   return (
     <div data-slot="swipe-row" className={cn("relative overflow-hidden", className)}>
-      <motion.div aria-hidden="true" style={{ opacity: actionOpacity }} className="absolute inset-0 bg-destructive" />
+      <motion.div aria-hidden="true" style={{ opacity: actionOpacity }} className="absolute inset-0 bg-destructive-fill" />
       <motion.button
         type="button"
         onClick={onAction}

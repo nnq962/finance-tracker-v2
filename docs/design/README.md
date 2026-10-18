@@ -29,7 +29,7 @@ component ở đó là cả app đổi theo.
    mời Pro đều sáng.
 4. **Chữ rõ thứ bậc.** Số tiền của thẻ dẫn đầu là chữ lớn nhất màn; tên trang 24, số tiền và
    tiêu đề đậm 600, chữ thường 400.
-5. **Màu dịu, có ý nghĩa.** `income` tiền vào (xanh lá biển `#2e8b57`), `expense` tiền ra (đỏ dịu `#d9534f`; đổi 2026-10-10, `destructive` của nút xoá và lỗi dùng cùng màu), `transfer`
+5. **Màu dịu, có ý nghĩa.** `income` tiền vào (xanh lá biển `#2e8b57`), `expense` tiền ra (đỏ dịu `#d9534f`; đổi 2026-10-10, `destructive` của chữ xoá và lỗi dùng cùng màu; nền đỏ đặc dưới chữ trắng (nút Xoá, ô xoá khi vuốt dòng) là `destructive-fill`, ở theme sáng cùng màu, ở theme tối đậm hơn `#cf4040` để chữ trắng đọc được, 2026-10-18), `transfer`
    chuyển khoản (sky), `ai` AI và Pro, cũng là điểm nhấn duy nhất của app (xanh chanh `#d4f25a`, 2026-10-09: chỉ làm nền với chữ mực `ai-foreground`, hoặc nằm trên màu đen: chip con số ở thẻ dẫn đầu, tab đang mở, nhãn Pro; chữ và icon màu AI trên nền sáng dùng `ai-strong`, xanh chanh đậm; theme tối `ai-strong` chính là xanh chanh; icon AI trên nút `primary` (nút ✦ cạnh thanh tab, "Hỏi AI") dùng `ai-on-primary`: xanh chanh trên nút đen, theme tối nút trắng thì xanh chanh đậm của logo `#7FA300`), `warning` nhắc nhở (amber). Ô icon dùng màu
    đó (hay màu hạng mục) đã làm dịu về xám, icon màu mực (`tile-tinted`), để list không thành cầu
    vồng. Số tiền: chỉ tiền vào có màu; tiền chi, chuyển khoản để màu chữ thường. Đỏ chỉ để cảnh
@@ -43,7 +43,7 @@ component ở đó là cả app đổi theo.
    dịch, chi tiết tài khoản): dòng "Xoá …" đỏ ở cuối nội dung, như cuối trang Cài đặt iOS. Sheet
    chi tiết có nút hành động ở chân (chi tiết khoản nợ, "Ghi nhận thu"): không đặt xoá ở cuối mà
    đưa vào sheet sửa (bút chì), như Danh bạ iOS. Sheet sửa / form có nút Lưu ở chân: xoá là nút
-   "🗑 Xoá" có chữ `Button variant="destructive"` rộng 120 (`w-30 px-0`; đỏ đặc `destructive`, chữ trắng `destructive-foreground`, 2026-10-16, trước là nền đỏ nhạt nhìn mờ) đứng bên trái nút
+   "🗑 Xoá" có chữ `Button variant="destructive"` rộng 120 (`w-30 px-0`; đỏ đặc `destructive-fill`, chữ trắng `destructive-foreground`, 2026-10-16, trước là nền đỏ nhạt nhìn mờ) đứng bên trái nút
    Lưu trên cùng hàng, cả hai cỡ thường cao 44, Lưu giãn hết phần còn lại (2026-10-16: nút tròn chỉ có icon khó bấm;
    thử cao 56 thì to quá). Xoá luôn có hoàn tác, không hộp xác nhận. Ngoại lệ duy nhất là "Xoá toàn bộ dữ
    liệu" ở Cài đặt: không hoàn tác được nên phải gõ XOÁ (xem Cài đặt bên dưới).
@@ -65,7 +65,7 @@ component ở đó là cả app đổi theo.
 ## Component (`components/ui`, đã may lại)
 
 - **Button:** viên thuốc. Kiểu `default` (đen; hover là một lớp phủ sáng 15% hiện dần chứ không đổi màu nền: nền đổi màu cạnh sóng âm vẽ lại mỗi khung hình bị nháy trên Chrome, 2026-10-11), `secondary` (xám), `outline` (nền màu thẻ, không viền: trắng trên nền sáng, xám nổi trên nền tối; bỏ viền 2026-10-09),
-  `ghost`, `destructive` (đỏ nhạt), `link`. Cỡ: `lg` 56 · mặc định 44 · `sm` 36
+  `ghost`, `destructive` (đỏ đặc `destructive-fill`, chữ trắng), `link`. Cỡ: `lg` 56 · mặc định 44 · `sm` 36
   (thêm `xs` 32); `icon` 44, `icon-sm` 36, `icon-xs` 32, `icon-lg` 48, `fab` 60. Icon trong nút
   18px; nút tắt mờ còn 35%.
 - **Card:** bo 20, đệm 20 · `size="lg"` (bo 24, đệm 24) cho thẻ chính của trang ·
