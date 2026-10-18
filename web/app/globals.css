@@ -103,8 +103,8 @@
  */
 :root,
 .light {
-  /* A very light, barely cool grey (#f7f7f8, 2026-10-16; was a warm #f5f4f0 that read yellow). */
-  --background: oklch(0.976 0.002 286);
+  /* iOS's grouped grey (#f2f2f7, 2026-10-18), so white cards stand off it; was #f7f7f8 (2026-10-16), before that a warm #f5f4f0 that read yellow. */
+  --background: oklch(0.962 0.006 286);
   --foreground: oklch(0.205 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.205 0 0);
@@ -133,7 +133,7 @@
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.962 0.002 286);
+  --muted: oklch(0.94 0.004 286);
   /* Secondary text (descriptions, times, captions): iOS's secondary label, not the paler neutral-400. */
   --muted-foreground: oklch(0.617 0 0);
   --accent: oklch(0.97 0 0);
@@ -148,7 +148,7 @@
   --destructive-fill: oklch(0.619 0.1694 25);
   --border: oklch(0.97 0 0);
   /* Hairline between rows of a list, the page's grey a step darker, clearer than --border on a white card. */
-  --separator: oklch(0.93 0.003 286);
+  --separator: oklch(0.905 0.004 286);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.588 0.212 288);
@@ -196,11 +196,10 @@
    * than the page, so the segmented control's white thumb shows on it.
    */
   /*
-   * White cards lifted a hair off the light grey page (2026-10-16): a very faint
-   * close shadow, as the page and the card are nearly the same light. None in
-   * the dark theme, where the card is already lighter than the page.
+   * White cards stand off the page by colour alone, as iOS grouped screens
+   * (2026-10-18; a faint shadow lifted them off the lighter #f7f7f8 before).
    */
-  --card-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 1px 3px rgb(0 0 0 / 0.04);
+  --card-shadow: none;
   /*
    * A toast lifted clear of the page (2026-10-17): a hairline edge and a
    * shadow that falls below it only, never up to the status bar (Safari 26
@@ -213,7 +212,7 @@
   --field-plain: oklch(0.97 0 0);
   --field-grouped: var(--card);
   --track-plain: oklch(0.97 0 0);
-  --track-grouped: oklch(0.93 0.003 286);
+  --track-grouped: oklch(0.905 0.004 286);
   --field: var(--field-plain);
   --track: var(--track-plain);
 }

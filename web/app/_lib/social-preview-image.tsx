@@ -13,7 +13,7 @@ export const socialPreviewContentType = "image/png"
 
 // The app's colours, written out: an image cannot read the CSS variables.
 const color = {
-  canvas: "#f7f7f8",
+  canvas: "#f2f2f7",
   ink: "#171717",
   muted: "#858585",
   lime: "#d4f25a",

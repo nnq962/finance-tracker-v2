@@ -7,7 +7,7 @@ import { useTheme } from "next-themes"
 // background token as hex. Screen sheets share the page's grey, so the
 // status bar never has to change while one slides in.
 const APP_BACKGROUND = {
-  light: "#f7f7f8",
+  light: "#f2f2f7",
   dark: "#000000",
 } as const
 

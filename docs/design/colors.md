@@ -18,7 +18,7 @@ Bảng màu cho thiết kế lại (10/2026), theo mockup đã duyệt (xem [`RE
 
 | Token | Sáng | Tối | Dùng cho |
 |---|---|---|---|
-| `background` | `#f2f2f1` | `#0a0a0a` | Nền trang ("Canvas" của mockup) |
+| `background` | `#f2f2f7` (xám nhóm của iOS, 2026-10-18) | `#000000` | Nền trang |
 | `card` | `#ffffff` | `#171717` | Thẻ |
 | `inverse` | `#171717` | `#262626` | Thẻ dẫn đầu (`Card variant="inverse"`): đen ở theme sáng, xám nổi ở theme tối, không phải khối trắng; chữ `inverse-foreground` trắng |
 | `popover` | `#ffffff` | `#171717` | Sheet, menu, hộp thoại |

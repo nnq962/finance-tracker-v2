@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.21.2",
+    date: "2026-10-18",
+    title: "Thẻ trắng nổi hơn trên theme sáng",
+    changes: [
+      { kind: "improved", text: "Nền trang theme sáng đổi sang xám nhóm của iOS (#f2f2f7), đậm hơn #f7f7f8 một bậc, nên thẻ trắng tách rõ khỏi nền mà không cần bóng; ô icon, đường kẻ, rãnh segmented, thanh trạng thái và ảnh chia sẻ đổi theo. Theme tối không đổi." },
+    ],
+  },
+  {
     version: "6.21.1",
     date: "2026-10-18",
     title: "Tin báo quản trị đến đều hơn",

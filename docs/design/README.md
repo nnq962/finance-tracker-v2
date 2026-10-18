@@ -18,8 +18,8 @@ component ở đó là cả app đổi theo.
 
 ## Nguyên tắc
 
-1. **Thẻ mềm trên nền xám.** Nền xám rất nhạt, hơi lạnh (`#f7f7f8`, đổi 2026-10-16 vì kem ấm `#f5f4f0` trông vàng; trước nữa `#f2f2f1`); `muted`, rãnh `track` và đường kẻ `separator` cùng sắc đó, đậm dần; thẻ trắng
-   bo 20, không viền; theme sáng có bóng rất mờ sát thẻ (`shadow-card` = token `--card-shadow`: `0 1px 2px` và `0 1px 3px` đen 4%, 2026-10-16, vì nền mới gần trắng; thẻ `inverse` và theme tối không bóng), còn lại tách khỏi nền nhờ chênh màu. Xám trên thẻ là thang `neutral` của
+1. **Thẻ mềm trên nền xám.** Nền xám nhóm của iOS, hơi lạnh (`#f2f2f7`, đổi 2026-10-18 vì `#f7f7f8` quá sát thẻ trắng; trước nữa kem ấm `#f5f4f0` trông vàng, rồi `#f2f2f1`); `muted`, rãnh `track` và đường kẻ `separator` cùng sắc đó, đậm dần; thẻ trắng
+   bo 20, không viền, không bóng (`--card-shadow: none`; từ 6.17 đến 6.21 thẻ có bóng rất mờ vì nền gần trắng), tách khỏi nền nhờ chênh màu. Xám trên thẻ là thang `neutral` của
    Tailwind (không ngả xanh). Theme tối theo iOS (2026-10-16): nền đen `#000`, thẻ `#1c1c1e`, ô mờ / thẻ đen nổi `#2c2c2e`, đường kẻ `#38383a` (trước là `#0a0a0a` / `#171717`).
 2. **Một khuôn trang** (2026-10-08). Mọi trang mở đầu giống nhau: một hàng gọn, tên trang bên
    trái, công cụ bên phải (`PageHeader`); rồi một thẻ dẫn đầu, rồi các nhóm. Học một trang là đoán
