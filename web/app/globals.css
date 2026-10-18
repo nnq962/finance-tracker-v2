@@ -64,6 +64,7 @@
   --color-warning: var(--warning);
   --color-field: var(--field);
   --color-track: var(--track);
+  --color-segment: var(--segment);
   --color-separator: var(--separator);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -189,11 +190,12 @@
   --warning: oklch(0.769 0.188 70.08);
   /*
    * Fills that depend on the surface below (see the surface-* utilities):
-   * field for inputs, chips and secondary buttons, track for the segmented
-   * control and slider rails. On a white card both are the mockup's
-   * neutral-100 (#f5f5f5), barely grey. On the grey page or a grey sheet a
-   * field turns white, as in iOS grouped screens, and a track a shade darker
-   * than the page, so the segmented control's white thumb shows on it.
+   * field for inputs, chips and secondary buttons, track for skeletons,
+   * slider rails and the icon toggle group. On a white card both are the
+   * mockup's neutral-100 (#f5f5f5), barely grey. On the grey page or a grey
+   * sheet a field turns white, as in iOS grouped screens, and a track a shade
+   * darker than the page. (The segmented control has its own rail, segment,
+   * below.)
    */
   /*
    * White cards stand off the page by colour alone, as iOS grouped screens
@@ -213,8 +215,17 @@
   --field-grouped: var(--card);
   --track-plain: oklch(0.97 0 0);
   --track-grouped: oklch(0.905 0.004 286);
+  /*
+   * The segmented control's rail (2026-10-19, option B of the segmented
+   * mockup): a white card on the grey page, the light grey on a white card;
+   * the chosen segment is the ink pill with white text, as the chosen chip.
+   * Its own token, as the grey track still carries skeletons and sliders.
+   */
+  --segment-plain: oklch(0.97 0 0);
+  --segment-grouped: var(--card);
   --field: var(--field-plain);
   --track: var(--track-plain);
+  --segment: var(--segment-plain);
 }
 
 .dark {
@@ -284,6 +295,8 @@
   --track-plain: oklch(1 0 0 / 0.06);
   /* On the dark page, a card's grey: lighter than the page, darker than the thumb. */
   --track-grouped: var(--card);
+  --segment-plain: oklch(1 0 0 / 0.06);
+  --segment-grouped: var(--card);
 }
 
 /* What a grey or a white surface sets for the fields on it. */
@@ -352,11 +365,13 @@
 @utility surface-grouped {
   --field: var(--field-grouped);
   --track: var(--track-grouped);
+  --segment: var(--segment-grouped);
 }
 
 @utility surface-plain {
   --field: var(--field-plain);
   --track: var(--track-plain);
+  --segment: var(--segment-plain);
 }
 
 /*

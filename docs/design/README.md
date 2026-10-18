@@ -91,9 +91,11 @@ component ở đó là cả app đổi theo.
   trắng chúng màu xám. Thẻ tự đặt `surface-plain`, khung trang và sheet đặt `surface-grouped`. Trong `SelectContent`, các `SelectItem` luôn nằm trong
   `SelectGroup` (kèm `SelectLabel` nếu nhóm có tên), như shadcn hướng dẫn; danh sách tài khoản
   dùng `AccountSelectGroups`.
-- **Tabs:** segmented control kiểu iOS, viên thuốc cao 44 (lựa chọn 36; đổi 2026-10-09 từ 52): viên trắng có bóng nhẹ
-  trượt trên rãnh xám (`track`; trên nền xám của trang là một bậc xám đậm hơn nền), lựa chọn đang
-  chọn chữ đậm. Theme tối: viên xám sáng trên rãnh màu thẻ. Dùng cho 2–4 chế độ cùng loại (Chi/Thu/Chuyển). `variant="line"`: tab gạch chân,
+- **Tabs:** segmented control, viên thuốc cao 44 (lựa chọn 36; đổi 2026-10-09 từ 52). Từ 2026-10-19 (mẫu B của mockup
+  segmented): lựa chọn đang chọn là viên đen chữ trắng, đậm, như chip đang chọn, trượt trên rãnh `segment`: trắng (màu thẻ)
+  trên nền xám của trang hay sheet, xám nhạt `#f5f5f5` trong thẻ trắng. Theme tối: viên trắng chữ đen trên rãnh màu thẻ
+  (trắng 6% trong thẻ). Rãnh có token riêng vì `track` vẫn là nền của skeleton, thanh trượt và toggle group icon. Trước đó:
+  viên trắng có bóng nhẹ trên rãnh xám `track`. Dùng cho 2–4 chế độ cùng loại (Chi/Thu/Chuyển). `variant="line"`: tab gạch chân,
   vạch trượt theo.
 - **ToggleGroup / Toggle:** chip viên thuốc xám chữ thường (không đậm), chip đang chọn màu đen;
   `variant="outline"` là chip trắng có viền; `variant="segmented"` là vài lựa chọn icon trên rãnh

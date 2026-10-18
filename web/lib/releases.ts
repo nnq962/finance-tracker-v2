@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.21.4",
+    date: "2026-10-19",
+    title: "Segmented control: viên đen trên rãnh trắng",
+    changes: [
+      { kind: "improved", text: "Segmented control (Chi tiêu / Thu nhập, Chi tiền / Thu tiền / Chuyển khoản…) đổi kiểu: lựa chọn đang chọn là viên đen chữ trắng như chip đang chọn, rãnh trắng trên nền xám và xám nhạt trong thẻ trắng, thay cho rãnh xám đậm với viên trắng. Theme tối: viên trắng chữ đen." },
+    ],
+  },
+  {
     version: "6.21.3",
     date: "2026-10-19",
     title: "Thẻ Hạn mức tháng này ở Tổng quan gọn hơn",

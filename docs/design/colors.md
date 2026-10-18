@@ -27,7 +27,7 @@ Bảng màu cho thiết kế lại (10/2026), theo mockup đã duyệt (xem [`RE
 | `muted-foreground` | `#858585` | `#929292` | Chữ phụ, như secondary label của iOS (đổi 2026-10-07 từ `#a3a3a3` / `#737373`) |
 | `border` | `#f5f5f5` | `#262626` | Đường kẻ mảnh giữa các dòng |
 | `input` | `#e5e5e5` | trắng 15% | Công tắc tắt |
-| `field`, `track` | `#f5f5f5` trên thẻ trắng; trên nền xám `field` trắng, `track` một bậc xám đậm hơn nền (`oklch(0.922 …)`) | trắng 6% trên thẻ, `card` trên nền đen | Nền ô nhập, chip, nút phụ (`field`) và rãnh segmented, thanh trượt (`track`), đổi theo bề mặt (`surface-plain` / `surface-grouped`) |
+| `field`, `track`, `segment` | `#f5f5f5` trên thẻ trắng; trên nền xám `field` và `segment` trắng, `track` một bậc xám đậm hơn nền (`oklch(0.905 …)`) | trắng 6% trên thẻ, `card` trên nền đen | Nền ô nhập, chip, nút phụ (`field`); skeleton, thanh trượt, toggle group icon (`track`); rãnh segmented (`segment`, 2026-10-19, viên đen chữ trắng trên đó); đổi theo bề mặt (`surface-plain` / `surface-grouped`) |
 | `ring` | `#a3a3a3` | `#737373` | Viền focus |
 | `income` | emerald-600 `#059669` | emerald-400 | Tiền vào ("Success") |
 | `expense`, `destructive` | rose-600 `#e11d48` | rose-400 | Tiền ra, xoá, lỗi ("Danger") |

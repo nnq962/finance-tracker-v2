@@ -45,8 +45,10 @@ const tabsListVariants = cva(
   {
     variants: {
       variant: {
-        // A segmented control, as in iOS: a white thumb slides on a grey track.
-        default: "rounded-full bg-track p-1 group-data-horizontal/tabs:h-11",
+        // A segmented control: the ink pill slides on a white rail (grey on a
+        // white card), its text white, as the chosen chip (2026-10-19; a white
+        // thumb on a grey track before).
+        default: "rounded-full bg-segment p-1 group-data-horizontal/tabs:h-11",
         // Tabs over content: a short bar slides under the chosen one.
         line: "rounded-none border-b bg-transparent group-data-horizontal/tabs:h-11",
       },
@@ -104,7 +106,7 @@ function TabsList({
         <span
           aria-hidden="true"
           data-slot="tabs-indicator"
-          className="absolute top-1 bottom-1 left-0 rounded-full bg-card shadow-[0_1px_4px_rgb(0_0_0/0.12)] transition-[translate,width] duration-[450ms] ease-[cubic-bezier(.34,1.3,.64,1)] will-change-transform group-data-[variant=line]/tabs-list:top-auto group-data-[variant=line]/tabs-list:-bottom-px group-data-[variant=line]/tabs-list:h-0.5 group-data-[variant=line]/tabs-list:bg-foreground group-data-[variant=line]/tabs-list:shadow-none motion-reduce:duration-150 motion-reduce:ease-out dark:bg-foreground/15 dark:group-data-[variant=line]/tabs-list:bg-foreground"
+          className="absolute top-1 bottom-1 left-0 rounded-full bg-primary transition-[translate,width] duration-[450ms] ease-[cubic-bezier(.34,1.3,.64,1)] will-change-transform group-data-[variant=line]/tabs-list:top-auto group-data-[variant=line]/tabs-list:-bottom-px group-data-[variant=line]/tabs-list:h-0.5 group-data-[variant=line]/tabs-list:bg-foreground motion-reduce:duration-150 motion-reduce:ease-out"
           style={{ width: box.width, translate: `${box.x}px 0` }}
         />
       ) : null}
@@ -123,8 +125,10 @@ function TabsTrigger({
       className={cn(
         "relative inline-flex h-full flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-medium whitespace-nowrap text-foreground/60 transition-colors duration-200 outline-none group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         "data-active:font-semibold data-active:text-foreground group-data-[variant=line]/tabs-list:rounded-none",
+        // On the ink pill the chosen segment's text is white.
+        "[[data-slot=tabs-list][data-variant=default]>&]:data-active:text-primary-foreground",
         // Before the indicator is measured (first paint), the chosen trigger fills itself.
-        "[[data-slot=tabs-list][data-variant=default]:not([data-ready])>&]:data-active:bg-card dark:[[data-slot=tabs-list][data-variant=default]:not([data-ready])>&]:data-active:bg-foreground/15",
+        "[[data-slot=tabs-list][data-variant=default]:not([data-ready])>&]:data-active:bg-primary",
         className
       )}
       {...props}
