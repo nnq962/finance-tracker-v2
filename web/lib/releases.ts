@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.16.1",
+    date: "2026-10-18",
+    title: "Trang 404 và màn lỗi mới",
+    changes: [
+      { kind: "improved", text: "Mở một đường dẫn không còn tồn tại, Timi hiện trang riêng với nút về Tổng quan hoặc quay lại." },
+      { kind: "improved", text: "Khi một trang không tải được, thẻ báo lỗi mới có nút Thử lại và cho biết dữ liệu của bạn không bị ảnh hưởng; nếu cả app gặp sự cố, có nút Tải lại." },
+    ],
+  },
+  {
     version: "6.16.0",
     date: "2026-10-18",
     title: "An toàn hơn và theo dõi lỗi",

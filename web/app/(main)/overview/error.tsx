@@ -1,18 +1,15 @@
 "use client"
 
-import { Page } from "@/components/page"
-import { Button } from "@/components/ui/button"
+import { ErrorCard } from "@/components/app/status-screen"
+import { Page, PageHeader } from "@/components/page"
 import { useReportError } from "@/lib/sentry/report"
 
 export default function OverviewError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   useReportError(error)
   return (
     <Page>
-      <div className="space-y-4" role="alert">
-        <h2 className="text-base font-medium">Không thể tải tổng quan tài chính</h2>
-        <p className="text-sm text-muted-foreground">Vui lòng kiểm tra kết nối và thử lại.</p>
-        <Button onClick={() => retry()}>Thử lại</Button>
-      </div>
+      <PageHeader title="Tổng quan" />
+      <ErrorCard title="Không tải được Tổng quan" onRetry={retry} />
     </Page>
   )
 }

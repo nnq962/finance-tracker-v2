@@ -1,36 +1,15 @@
 "use client"
 
-import { RotateCcwIcon } from "lucide-react"
-
-import { Page } from "@/components/page"
-import { Button } from "@/components/ui/button"
+import { ErrorCard } from "@/components/app/status-screen"
+import { Page, PageHeader } from "@/components/page"
 import { useReportError } from "@/lib/sentry/report"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 
 export default function AccountsError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   useReportError(error)
   return (
     <Page>
-      <Card>
-        <CardHeader>
-          <CardTitle>Không thể tải tài khoản</CardTitle>
-          <CardDescription>
-            Đã có lỗi khi kết nối dữ liệu. Vui lòng thử lại.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button onClick={() => retry()}>
-            <RotateCcwIcon />
-            Thử lại
-          </Button>
-        </CardContent>
-      </Card>
+      <PageHeader title="Tài khoản" />
+      <ErrorCard title="Không tải được tài khoản" onRetry={retry} />
     </Page>
   )
 }

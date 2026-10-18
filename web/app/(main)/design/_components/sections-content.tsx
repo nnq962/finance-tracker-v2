@@ -30,6 +30,7 @@ import {
   UtensilsCrossedIcon,
   WalletCardsIcon,
 } from "lucide-react"
+import Link from "next/link"
 import { toast } from "sonner"
 
 import { ContactAvatar } from "@/app/(main)/debts/_components/contact-avatar"
@@ -51,6 +52,7 @@ import { PromoBanner } from "@/components/app/promo-banner"
 import { PushBanner } from "@/components/app/push-banner"
 import { Section } from "@/components/app/section-header"
 import { Stat, StatGroup } from "@/components/app/stat-group"
+import { ErrorCard } from "@/components/app/status-screen"
 import { StepFlow } from "@/components/app/step-flow"
 import { Stepper } from "@/components/app/stepper"
 import { Steps } from "@/components/app/steps"
@@ -759,6 +761,14 @@ function FeedbackSection() {
           Minh Tuấn · bấm được cả khối (onClick)
         </NoticeBanner>
       </Wide>
+      <Block label="ErrorCard · trang không tải được (error.tsx); StatusScreen là màn riêng: trang 404 và app gặp sự cố" wide>
+        <div className="flex flex-col gap-3">
+          <ErrorCard title="Không tải được Tổng quan" onRetry={() => toast("Thử lại")} />
+          <Button variant="secondary" asChild>
+            <Link href="/khong-co-trang-nay">Mở trang 404 (StatusScreen)</Link>
+          </Button>
+        </div>
+      </Block>
       <Block label="Mở thử" wide>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
           <Button
