@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.18.0",
+    date: "2026-10-18",
+    title: "Trên máy tính, sheet trượt vào từ bên phải",
+    changes: [
+      { kind: "improved", text: "Trên máy tính, các sheet (chi tiết giao dịch, form, hạn mức…) là panel nổi bên phải, trượt vào từ mép phải; đóng bằng ✕, Esc hay bấm ra ngoài. Trên điện thoại giữ như cũ." },
+    ],
+  },
+  {
     version: "6.17.4",
     date: "2026-10-18",
     title: "Nút Xoá dễ đọc hơn ở theme tối",
