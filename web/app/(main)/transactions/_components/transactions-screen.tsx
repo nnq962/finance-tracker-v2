@@ -9,7 +9,6 @@ import { Collapse } from "@/components/app/collapse"
 import { FloatingActions } from "@/components/app/floating-actions"
 import { MonthSelect } from "@/components/app/month-select"
 import { BudgetProvider } from "@/components/budgets/budget-hint"
-import { BudgetMonthLine } from "@/components/budgets/budget-month-line"
 import { PageHeader } from "@/components/page"
 import { Button } from "@/components/ui/button"
 import { appEvents, listenToAppEvent } from "@/lib/app-events"
@@ -290,11 +289,8 @@ export function TransactionsScreen({
       <TransactionsLayout
         listOnly={searching}
         summary={
-          <div className={cn("flex flex-col gap-3", loadingClassName)}>
-            <MonthSummary transactions={summaryTransactions} />
-            {/* The limit is this month's: the line shows only there. */}
-            {shownMonth === thisMonth ? <BudgetMonthLine overview={budgets} /> : null}
-          </div>
+          // The limit is this month's: the card says it only there.
+          <MonthSummary transactions={summaryTransactions} budgets={shownMonth === thisMonth ? budgets : null} className={loadingClassName} />
         }
         filters={
           <TransactionFilterPanel

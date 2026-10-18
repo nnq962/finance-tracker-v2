@@ -1,6 +1,4 @@
 import { FloatingActionsSkeleton } from "@/components/app/floating-actions"
-import { FlowTilesSkeleton } from "@/components/app/flow-tiles"
-import { BudgetMonthLineSkeleton } from "@/components/budgets/budget-month-line"
 import { Page, PageHeaderSkeleton } from "@/components/page"
 import { SettingsGroupSkeleton } from "@/components/settings-list"
 import { Card, CardContent } from "@/components/ui/card"
@@ -8,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
 import { TransactionsLayout } from "./_components/transactions-layout"
+import { MonthSummarySkeleton } from "./_components/month-summary"
 
 /**
  * The desktop filter panel's fields, in order: the kind's five chips, the
@@ -66,13 +65,7 @@ export default function TransactionsLoading() {
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
         <PageHeaderSkeleton title="Giao dịch" tools={["pill"]} accessory={1} actions={["w-24 lg:w-52", "w-12 lg:w-44"]} />
         <TransactionsLayout
-          summary={
-            // As the page lays them out: the Thu / Chi tiles, then the month limit's line.
-            <div className="flex flex-col gap-3">
-              <FlowTilesSkeleton variant="lead" />
-              <BudgetMonthLineSkeleton />
-            </div>
-          }
+          summary={<MonthSummarySkeleton />}
           filters={<FilterPanelSkeleton />}
         >
           {/* The round search field, and on phones the chip row: the filter

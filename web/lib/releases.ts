@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.21.5",
+    date: "2026-10-19",
+    title: "Giao dịch: Thu, Chi và hạn mức trong một thẻ",
+    changes: [
+      { kind: "improved", text: "Đầu trang Giao dịch gộp hai ô Thu / Chi và thẻ hạn mức thành một thẻ trắng: Thu và Chi hai cột với số giao dịch, dưới là \"Đã dùng … hạn mức tổng · còn …\" với thanh (chỉ tháng hiện tại khi có hạn mức); chạm thẻ mở sheet Hạn mức. Thấp hơn khoảng 40pt. Ghi chú khoản mua bằng hũ chỉ còn trong sheet." },
+    ],
+  },
+  {
     version: "6.21.4",
     date: "2026-10-19",
     title: "Segmented control: viên đen trên rãnh trắng",
