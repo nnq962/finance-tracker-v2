@@ -63,25 +63,23 @@ hạn mức, cảnh báo vượt trong form, gợi ý chỉnh hạn mức, cài 
   gọi `after()` của Next.js ngoài phạm vi request khi chạy trong script test; cần sửa test hoặc
   tách phần gửi thông báo bán hàng để test chạy được.
 
-## 6b. Tốc độ: đợt 2 (đợt 1 xong ở 6.15.18)
+## 6b. Tốc độ
 
-Từ ba báo cáo `docs/reports/toc-do-*-2026-10-17.md`. Đợt 1 đã làm: tunnel HTTP/2, nhớ kiểm tra thu hồi
-phiên 60 giây, layout không chờ kiểm tra đó, gọn `POST /api/auth/session` và chỉ gia hạn phiên khi còn dưới
-2 ngày, tải lười recharts và ghi chú phát hành, bỏ JetBrains Mono, chuông thông báo không hỏi lại mỗi lần
-chuyển trang.
+Từ ba báo cáo `docs/reports/toc-do-*-2026-10-17.md` và bảng ghi tốc độ trên máy (Cài đặt › Quản trị ›
+"Ghi tốc độ", hoặc `?debug=1`; giữ lại làm công cụ đo). Đã làm (6.15.18–6.15.25): tunnel HTTP/2, nhớ kiểm tra
+thu hồi phiên 60 giây và layout không chờ, gọn tạo phiên, tải lười biểu đồ, sheet, trợ lý và ghi chú phát
+hành, Firebase popup chỉ ở `/login`, logo ngân hàng nhẹ, log `[slow]`, Cài đặt của admin tải dữ liệu quản trị
+khi mở, mở lại app sau deploy thì tải bản mới ngay, huỷ đăng nhập Google sau 3 giây, việc nền lúc mở app đi qua
+API thay vì Server Action (không chặn chuyển trang), thanh bên desktop tải trước khung chờ. Trên Cloudflare
+(người dùng làm): Cache Rule cho `/__/auth/*`, tắt HTTP/3.
 
-- **Cloudflare Cache Rule cho `/__/auth/*`** (người dùng làm trong dashboard): Edge TTL 4 giờ, khoá theo
-  query string, để đăng nhập Google không đi qua tunnel.
-- ~~Firebase popup chỉ ở trang đăng nhập~~ (6.15.19, `lib/firebase/google-popup.ts`). **Còn thử trên iPhone**:
-  bấm "Tiếp tục với Google" ở Safari và ở PWA phải mở popup ngay, không báo bị chặn.
-- ~~Tải lười các sheet và trợ lý Timi~~ (6.15.19: trợ lý, form giao dịch, khoản nợ, tài khoản, màn gói;
-  `lib/preload-when-idle.ts`). **Còn thử trên iPhone**: lần mở đầu mỗi sheet không trắng, cú chạm đầu
-  trong sheet không bị nuốt.
+- **iPhone đứng 3–11 giây khi tắt hẳn rồi mở lại app nhiều lần** (wifi nhà; desktop cùng wifi không bị;
+  `/cdn-cgi/rum` cũng đứng nên là đường tới Cloudflare). Còn thử bằng 4G để biết do mạng nhà hay do iOS.
+  Nếu do mạng nhà: khởi động lại router, xem QoS/chống DoS; hoặc đặt một VPS ở Việt Nam làm cổng vào.
+- **Lỗi React #418** (lệch nội dung server và trình duyệt) thấy một lần trong Console của Chrome trên Mac;
+  dev không tái hiện được. Thử lại trong cửa sổ ẩn danh để loại trừ extension.
 - **Firebase auth phía trình duyệt nạp sau hydrate** ở các tab chính (`AuthSessionGuard`).
 - **motion và bộ icon hạng mục** (lucide ~100 KB): xem lại sau khi đo trên iPhone.
-- ~~Logo ngân hàng SVG nặng~~ (6.15.19: svgo, BaoViet/PG/Bắc Á sang WebP, danh sách chọn tải lười).
-- ~~Đo thời gian phục vụ thật~~ (6.15.19: log `[slow]` từ 300 ms, `lib/slow-log.ts`; xem bằng
-  `docker compose logs web | grep '\[slow\]'`, đổi ngưỡng bằng `SLOW_LOG_MS`). Đọc log sau vài ngày.
 - **Gọn `getBudgetOverview`** (~17 truy vấn, đọc lại nợ nhiều lần) và bỏ `getLinkedAccountIds` khỏi
   `getAccounts`; chỉ đáng làm khi dữ liệu lớn.
 - **Phiên tự quản trong Postgres** (vẫn đăng nhập bằng Google): bỏ hẳn vòng hỏi Google mỗi request, thu hồi
@@ -96,6 +94,11 @@ Những thứ chỉ kiểm được bằng trình duyệt giả lập, chưa th�
 - Thông báo đẩy của hạn mức (80%/90%/vượt) và "Tin từ Timi" của admin.
 - Header sheet không còn nháy khi quay lại màn trước (6.15.5).
 - Sheet chọn tháng và các sheet đáy trên máy tính (6.9.1) và trên iPad nếu có.
+- Đăng nhập Google ở Safari và ở PWA: popup mở ngay, không báo bị chặn; đóng cửa sổ chọn tài khoản thì
+  khoảng 3 giây sau báo huỷ (6.15.19, 6.15.21).
+- Lần đầu mở mỗi sheet (form giao dịch, khoản nợ, tài khoản, màn gói, trợ lý) không trắng và cú chạm đầu
+  trong sheet không bị nuốt (6.15.19).
+- Mở lại app sau một lần deploy: màn "Đang khởi động" rồi vào bản mới, không đen màn khi chạm tab (6.15.21).
 
 ## 8. Đang chờ người dùng quyết
 
