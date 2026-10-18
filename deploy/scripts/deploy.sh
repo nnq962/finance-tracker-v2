@@ -74,6 +74,10 @@ start worker finance-backend
 start stt finance-stt
 "${compose[@]}" up -d --wait --remove-orphans "${services[@]}"
 docker image prune -f >/dev/null
+# Build cache not used for 3 days: every deploy adds some, and it had grown
+# to 45 GB on the home server's disk (2026-10-18). Recent layers stay, so the
+# next build is still quick.
+docker builder prune -f --filter until=72h >/dev/null
 
 # The model lives in the finance-ollama volume; fetch it only when missing.
 model="${OLLAMA_MODEL:-gemma4:e4b}"

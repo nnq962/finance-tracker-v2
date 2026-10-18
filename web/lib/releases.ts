@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.17.2",
+    date: "2026-10-18",
+    title: "Server tự dọn bộ nhớ đệm khi cập nhật",
+    changes: [
+      { kind: "improved", text: "Mỗi lần cập nhật, server tự dọn phần bộ nhớ đệm cũ không còn dùng, để ổ đĩa không đầy dần." },
+    ],
+  },
+  {
     version: "6.17.1",
     date: "2026-10-18",
     title: "Doanh thu trong bot Telegram tính đúng",
