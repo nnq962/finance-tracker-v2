@@ -20,14 +20,21 @@ export function noticeSale(orderCode: number) {
     try {
       const payment = await getDb()
         .selectFrom("payments")
-        .select(["userId", "period", "amount", "discount"])
-        .where("orderCode", "=", orderCode)
+        .leftJoin("subscriptions", "subscriptions.id", "payments.subscriptionId")
+        .select(["payments.userId", "payments.period", "payments.amount", "payments.discount", "subscriptions.amount as received"])
+        .where("payments.orderCode", "=", orderCode)
         .executeTakeFirst()
       if (!payment) return
       const auth = getFirebaseAdminAuth()
       const buyer = await auth.getUser(payment.userId).catch(() => undefined)
-      // The admin's Telegram as well as their devices (2026-10-18).
-      noticeSaleToOps({ email: buyer?.email, period: payment.period, amount: payment.amount, discount: payment.discount })
+      // The admin's Telegram as well as their devices (2026-10-18), with what
+      // payOS says came in, as the takings count it.
+      noticeSaleToOps({
+        email: buyer?.email,
+        period: payment.period,
+        amount: payment.received ?? payment.amount,
+        discount: payment.discount,
+      })
 
       const emails = adminEmails()
       if (emails.length === 0) return

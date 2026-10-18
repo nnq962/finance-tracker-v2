@@ -6,13 +6,13 @@ import { sql } from "kysely"
 import { getDb } from "@/lib/db/client"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatShortDate, toDateKey } from "@/lib/format-date"
+import { getMonthTakings } from "@/lib/plans/repository"
 
 import { serverErrorsToday } from "./errors"
 
 const VN = "Asia/Ho_Chi_Minh"
-// The start of today and of this month in Vietnam time, as timestamps.
+// The start of today in Vietnam time, as a timestamp.
 const dayStart = sql<Date>`(date_trunc('day', now() at time zone ${VN}) at time zone ${VN})`
-const monthStart = sql<Date>`(date_trunc('month', now() at time zone ${VN}) at time zone ${VN})`
 
 const count = (value: unknown) => Number(value ?? 0)
 
@@ -43,18 +43,17 @@ export async function buildOpsSummary() {
       .select([sql<number>`count(*)`.as("rows"), sql<number>`count(distinct user_id)`.as("people")])
       .where(sql<boolean>`created_at >= ${dayStart}`)
       .executeTakeFirst(),
+    // Takings as the admin screen counts them (getMonthTakings): what each Pro
+    // grant brought in (payOS's amount received, or a grant by hand with its
+    // amount), revoked ones left out. An order's price is not what came in
+    // (2026-10-18: a test order at 29.000đ had received nothing).
     db
-      .selectFrom("payments")
-      .select([sql<number>`count(*)`.as("n"), sql<number>`coalesce(sum(amount), 0)`.as("sum")])
-      .where("status", "=", "paid")
-      .where(sql<boolean>`paid_at >= ${dayStart}`)
+      .selectFrom("subscriptions")
+      .select([sql<number>`count(*) filter (where amount > 0)`.as("n"), sql<number>`coalesce(sum(amount), 0)`.as("sum")])
+      .where("revokedAt", "is", null)
+      .where(sql<boolean>`created_at >= ${dayStart}`)
       .executeTakeFirst(),
-    db
-      .selectFrom("payments")
-      .select(sql<number>`coalesce(sum(amount), 0)`.as("sum"))
-      .where("status", "=", "paid")
-      .where(sql<boolean>`paid_at >= ${monthStart}`)
-      .executeTakeFirst(),
+    getMonthTakings().then((takings) => ({ sum: takings.total })),
     db
       .selectFrom("subscriptions")
       .select(sql<number>`count(distinct user_id)`.as("n"))
@@ -80,7 +79,8 @@ export async function buildOpsSummary() {
     `📊 <b>Timi hôm nay (${date})</b>`,
     `👤 Người dùng: ${count(users?.total)} (+${count(users?.today)} mới)`,
     `✍️ Hoạt động: ${count(activity?.people)} người ghi ${count(activity?.rows)} giao dịch`,
-    `💰 Pro: ${count(paidToday?.n)} lượt mua hôm nay${count(paidToday?.n) ? ` (${formatCurrency(count(paidToday?.sum))})` : ""} · tháng này ${formatCurrency(count(paidMonth?.sum))} · đang dùng ${count(proNow?.n)}`,
+    `💰 Doanh thu: hôm nay ${formatCurrency(count(paidToday?.sum))} (${count(paidToday?.n)} lượt) · tháng này ${formatCurrency(count(paidMonth?.sum))}`,
+    `👑 Đang dùng Pro: ${count(proNow?.n)} người`,
     `🎟 Mã giảm giá dùng hôm nay: ${count(coupons?.n)}`,
     `🤖 Lượt AI tháng này: ${count(ai?.n)}`,
     `${errors ? "⚠️" : "✅"} Lỗi server hôm nay: ${errors}`,
