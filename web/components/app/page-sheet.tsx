@@ -3,7 +3,7 @@
 import * as React from "react"
 import { createPortal, flushSync } from "react-dom"
 import { ChevronLeftIcon, XIcon } from "lucide-react"
-import { motion, useMotionValue, useReducedMotion } from "motion/react"
+import { motion, useReducedMotion } from "motion/react"
 
 import { Button } from "@/components/ui/button"
 import { Drawer, DrawerClose, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
@@ -207,6 +207,7 @@ function PaneFrame({
   place,
   enter,
   bodyRef,
+  followers,
   onLeft,
   surfaceColor,
   children,
@@ -215,25 +216,40 @@ function PaneFrame({
   /** Slides in from the right when it first shows; the sheet's first screen does not. */
   enter: boolean
   bodyRef: React.RefObject<HTMLDivElement | null>
+  /** Called by the sheet right as it scrolls for a screen change, in the same frame. */
+  followers: React.RefObject<Set<() => void>>
   onLeft?: () => void
   surfaceColor: string
   children: React.ReactNode
 }) {
   const reduced = useReducedMotion()
   const frameRef = React.useRef<HTMLDivElement>(null)
-  const y = useMotionValue(0)
+  const innerRef = React.useRef<HTMLDivElement>(null)
   const outgoing = place !== "top"
+  // Moving out, its content stays where it was while the scroller moves to the
+  // next screen's place: offset straight on the element, in the same frame as
+  // the scroll (a scroll event comes a frame late, and the content jumped).
   React.useLayoutEffect(() => {
     const body = bodyRef.current
+    const inner = innerRef.current
+    if (!inner) return
     if (!outgoing || !body) {
-      y.set(0)
+      inner.style.transform = ""
       return
     }
     const from = body.scrollTop
-    const follow = () => y.set(body.scrollTop - from)
+    const follow = () => {
+      const offset = body.scrollTop - from
+      inner.style.transform = offset ? `translateY(${offset}px)` : ""
+    }
+    const list = followers.current
+    list.add(follow)
     body.addEventListener("scroll", follow, { passive: true })
-    return () => body.removeEventListener("scroll", follow)
-  }, [outgoing, bodyRef, y])
+    return () => {
+      list.delete(follow)
+      body.removeEventListener("scroll", follow)
+    }
+  }, [outgoing, bodyRef, followers])
   // Back on top (or newly pushed): focus comes with it, as the screen it left is hidden.
   const wasTop = React.useRef(place === "top")
   React.useEffect(() => {
@@ -242,29 +258,34 @@ function PaneFrame({
     wasTop.current = place === "top"
   }, [place])
 
+  // A whole transform rather than x, so the browser runs the slide itself
+  // (2026-10-18): driven frame by frame from script it stuttered on iPhones
+  // while the next screen's content was being built.
   const transition = { duration: reduced ? 0 : pushSeconds, ease: pushEase }
   const target =
     place === "top"
-      ? { x: 0, display: "flex" }
+      ? { transform: "translateX(0%)", display: "flex" }
       : place === "covered"
-        ? { x: "-110%", transitionEnd: { display: "none" } }
-        : { x: place === "leaving-on" ? "-110%" : "110%" }
+        ? { transform: "translateX(-110%)", transitionEnd: { display: "none" } }
+        : { transform: place === "leaving-on" ? "translateX(-110%)" : "translateX(110%)" }
 
   return (
     <motion.div
       ref={frameRef}
       tabIndex={-1}
       inert={outgoing}
-      initial={enter ? { x: "110%" } : false}
+      initial={enter ? { transform: "translateX(110%)" } : false}
       animate={target}
       transition={transition}
       onAnimationComplete={() => {
         if (place === "leaving-back" || place === "leaving-on") onLeft?.()
       }}
       className="col-start-1 row-start-1 flex min-w-0 flex-col outline-none"
-      style={{ y, "--page-sheet-surface": surfaceColor } as React.ComponentProps<typeof motion.div>["style"]}
+      style={{ "--page-sheet-surface": surfaceColor } as React.CSSProperties}
     >
-      {children}
+      <div ref={innerRef} className="flex flex-1 flex-col">
+        {children}
+      </div>
     </motion.div>
   )
 }
@@ -407,6 +428,32 @@ function RootSheet({
   // the time a new screen shows its content is already on the page and may
   // have cut the old scroll short.
   const lastTop = React.useRef(0)
+  // The screens moving out, told as the scroller moves (PaneFrame).
+  const followers = React.useRef(new Set<() => void>())
+  const scrollBody = React.useCallback((body: HTMLElement, top: number) => {
+    body.scrollTo({ top })
+    for (const follow of followers.current) follow()
+  }, [])
+  // The fade under the bar stays through the push (2026-10-18): going deeper
+  // from a scrolled screen, the scroller is back at its top at once and the
+  // fade went with it, leaving the old content bare under the bar as it slid
+  // away. It goes, easing out, once the push is over.
+  const fadeHold = React.useRef<{ until: number; timer?: ReturnType<typeof setTimeout> }>({ until: 0 })
+  const reduced = useReducedMotion()
+  const holdFade = React.useCallback(
+    (body: HTMLElement) => {
+      const hold = fadeHold.current
+      clearTimeout(hold.timer)
+      if (reduced) return setFadeNow(body.scrollTop > 0)
+      hold.until = performance.now() + pushSeconds * 1000
+      hold.timer = setTimeout(() => {
+        hold.until = 0
+        setScrolled(body.scrollTop > 0)
+      }, pushSeconds * 1000)
+    },
+    [reduced, setFadeNow],
+  )
+  React.useEffect(() => () => clearTimeout(fadeHold.current.timer), [])
   const shownKey = React.useRef(activeKey)
   const behind = React.useRef<{ key: string; top: number }[]>([])
   const pending = React.useRef(false)
@@ -430,8 +477,8 @@ function RootSheet({
       if (back === -1) {
         // Forward: the screen left behind remembers where it was; the new one opens at its top.
         behind.current.push({ key: from, top: fromTop })
-        setFadeNow(false)
-        body.scrollTo({ top: 0 })
+        holdFade(body)
+        scrollBody(body, 0)
         lastTop.current = 0
         return
       }
@@ -439,15 +486,17 @@ function RootSheet({
       const top = behind.current[back].top
       behind.current.length = back
       lastTop.current = top
-      setFadeNow(top > 0)
+      // Back to a scrolled screen: the fade at once; to one at its top: held through the push.
+      if (top > 0) setFadeNow(true)
+      else holdFade(body)
       let tries = 0
       const restore = () => {
-        body.scrollTo({ top })
+        scrollBody(body, top)
         if (Math.abs(body.scrollTop - top) > 1 && tries++ < 10) requestAnimationFrame(restore)
       }
       restore()
     })
-  }, [activeKey, setFadeNow])
+  }, [activeKey, setFadeNow, holdFade, scrollBody])
   // Closed, it forgets: it opens again at its first screen, at the top.
   React.useEffect(() => {
     if (open !== false) return
@@ -491,14 +540,14 @@ function RootSheet({
               ref={bodyRef}
               data-slot="page-sheet-body"
               onScroll={(event) => {
-                setScrolled(event.currentTarget.scrollTop > 0)
+                if (performance.now() >= fadeHold.current.until) setScrolled(event.currentTarget.scrollTop > 0)
                 // Not while a screen is changing: the content swap may cut the scroll short.
                 if (!pending.current) lastTop.current = event.currentTarget.scrollTop
               }}
               className="absolute inset-0 overflow-x-hidden overflow-y-auto"
             >
               <div className="grid min-h-full grid-cols-1 grid-rows-1">
-                <PaneFrame place={top ? "covered" : "top"} enter={false} bodyRef={bodyRef} surfaceColor={ownSurface}>
+                <PaneFrame place={top ? "covered" : "top"} enter={false} bodyRef={bodyRef} followers={followers} surfaceColor={ownSurface}>
                   <div className={cn(contentClassName, className)}>
                     <PaneSurfaceContext value={surface}>{children}</PaneSurfaceContext>
                     {footer ? <PageSheetFooter>{footer}</PageSheetFooter> : null}
@@ -510,6 +559,7 @@ function RootSheet({
                     place={!entry.closing ? (entry === top ? "top" : "covered") : top && top.seq > entry.seq ? "leaving-on" : "leaving-back"}
                     enter
                     bodyRef={bodyRef}
+                    followers={followers}
                     onLeft={() => remove(entry.id)}
                     surfaceColor={infos[entry.id]?.surfaceColor ?? ownSurface}
                   >

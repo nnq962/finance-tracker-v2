@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.19.2",
+    date: "2026-10-18",
+    title: "Chuyển màn trong sheet mượt hơn",
+    changes: [
+      { kind: "fixed", text: "Hiệu ứng trượt khi chuyển màn trong sheet chạy mượt hơn trên iPhone." },
+      { kind: "fixed", text: "Lớp mờ dưới thanh trên của sheet không còn tắt đột ngột khi chuyển sang màn khác lúc đang cuộn." },
+    ],
+  },
+  {
     version: "6.19.1",
     date: "2026-10-18",
     title: "Màn sâu trong sheet cũng trượt sang",
