@@ -52,6 +52,7 @@ export function JarSheet({
   onEdit,
   onMove,
   onBought,
+  children,
 }: {
   jar: Account
   /** Its latest moves, newest first. */
@@ -61,6 +62,8 @@ export function JarSheet({
   onEdit: () => void
   onMove: (way: "in" | "out") => void
   onBought: () => void
+  /** Sheets opened from it (put in, take out, bought, edit): pushed into it, ‹ back to it. */
+  children?: React.ReactNode
 }) {
   const router = useRouter()
   const today = toDateKey(new Date())
@@ -151,6 +154,7 @@ export function JarSheet({
           <SettingsRow title="Xem tất cả" onClick={() => router.push(`/transactions?account=${encodeURIComponent(jar.id)}`)} />
         </SettingsGroup>
       ) : null}
+      {children}
     </PageSheet>
   )
 }

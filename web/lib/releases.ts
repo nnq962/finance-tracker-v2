@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.19.0",
+    date: "2026-10-18",
+    title: "Mở từ trong sheet: trượt sang, không chồng lên",
+    changes: [
+      { kind: "improved", text: "Mở một thứ từ trong sheet (sửa tài khoản, chi tiết giao dịch trong tài khoản hay lịch, sửa và thu khoản nợ, sửa hũ, gợi ý hạn mức, quản lý hạng mục, thêm người) giờ trượt sang ngay trong sheet đó, có nút ‹ để quay lại, thay vì mở thêm một sheet chồng lên." },
+      { kind: "improved", text: "Trên máy tính, phím Esc lùi một màn; ở màn đầu thì đóng sheet." },
+    ],
+  },
+  {
     version: "6.18.0",
     date: "2026-10-18",
     title: "Trên máy tính, sheet trượt vào từ bên phải",

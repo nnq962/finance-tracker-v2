@@ -133,16 +133,16 @@ export function JarList({
       ) : null}
 
       {shown ? (
-        <>
-          <JarSheet
-            jar={shown}
-            transactions={recentTransactions[shown.id] ?? []}
-            open={found !== undefined}
-            onOpenChange={(open) => !open && setOpenId(null)}
-            onEdit={() => setForm({ open: true, mode: "edit" })}
-            onMove={(way) => setMove({ open: true, way })}
-            onBought={() => setBuying(true)}
-          />
+        <JarSheet
+          jar={shown}
+          transactions={recentTransactions[shown.id] ?? []}
+          open={found !== undefined}
+          onOpenChange={(open) => !open && setOpenId(null)}
+          onEdit={() => setForm({ open: true, mode: "edit" })}
+          onMove={(way) => setMove({ open: true, way })}
+          onBought={() => setBuying(true)}
+        >
+          {/* Pushed into the jar's sheet, ‹ back to it (2026-10-18). */}
           <MoveJarSheet
             jar={shown}
             way={move.way}
@@ -160,13 +160,18 @@ export function JarList({
             onOpenChange={setBuying}
             onDone={() => setOpenId(null)}
           />
-        </>
+          <JarFormSheet
+            jar={shown}
+            open={form.open && form.mode === "edit"}
+            onOpenChange={(open) => setForm((current) => ({ ...current, open }))}
+            onDeleted={() => setOpenId(null)}
+          />
+        </JarSheet>
       ) : null}
+      {/* A new jar: a sheet of its own. */}
       <JarFormSheet
-        jar={form.mode === "edit" ? shown : undefined}
-        open={form.open}
+        open={form.open && form.mode === "new"}
         onOpenChange={(open) => setForm((current) => ({ ...current, open }))}
-        onDeleted={() => setOpenId(null)}
       />
     </>
   )

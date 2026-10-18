@@ -132,8 +132,9 @@ export function AccountSheet({
             <SettingsRow title="Chưa có giao dịch" />
           )}
         </SettingsGroup>
+        {/* Pushed into the account's sheet, ‹ back to it (2026-10-18). */}
+        <EditAccountSheet account={shown} open={editOpen} onOpenChange={setEditOpen} onDeleted={() => onOpenChange(false)} />
       </PageSheet>
-      <EditAccountSheet account={shown} open={editOpen} onOpenChange={setEditOpen} onDeleted={() => onOpenChange(false)} />
     </>
   )
 }

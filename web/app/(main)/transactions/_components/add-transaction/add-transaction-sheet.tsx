@@ -84,14 +84,15 @@ export function AddTransactionSheet({
             <NeedAccountState />
           </div>
         )}
+        {/* Pushed into this sheet, ‹ back to the form as it was left (2026-10-18). */}
+        <CategoryManagementSheet
+          key={kind}
+          groups={categoryGroups}
+          initialType={kind === "income" ? "income" : "expense"}
+          open={categoryManagementOpen}
+          onOpenChange={setCategoryManagementOpen}
+        />
       </PageSheet>
-      <CategoryManagementSheet
-        key={kind}
-        groups={categoryGroups}
-        initialType={kind === "income" ? "income" : "expense"}
-        open={categoryManagementOpen}
-        onOpenChange={setCategoryManagementOpen}
-      />
     </>
   )
 }

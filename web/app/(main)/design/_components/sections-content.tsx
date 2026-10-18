@@ -1092,7 +1092,9 @@ function PageSheetFormSample() {
 // Long enough to scroll, so the rows show how they fade into the bar.
 const recentLunches = ["05/10", "04/10", "03/10", "02/10", "01/10", "30/09"]
 
+/** The pencil opens a PageSheet inside this one: it is pushed in from the right, ‹ back (2026-10-18). */
 function PageSheetDetailSample() {
+  const [editing, setEditing] = React.useState(false)
   return (
     <PageSheet
       title="Chi tiết giao dịch"
@@ -1100,7 +1102,7 @@ function PageSheetDetailSample() {
       className="space-y-6"
       trigger={<Button variant="secondary">PageSheet · chi tiết</Button>}
       action={
-        <Button type="button" variant="secondary" size="icon" aria-label="Sửa">
+        <Button type="button" variant="secondary" size="icon" aria-label="Sửa" onClick={() => setEditing(true)}>
           <PencilIcon />
         </Button>
       }
@@ -1131,6 +1133,21 @@ function PageSheetDetailSample() {
         <SettingsRow icon={CopyIcon} title="Nhân bản" onClick={() => toast("Nhân bản")} />
         <SettingsRow title="Xoá giao dịch" destructive onClick={() => toast("Xoá")} />
       </SettingsGroup>
+      <PageSheet
+        title="Chỉnh sửa giao dịch"
+        surface="plain"
+        className="space-y-6"
+        open={editing}
+        onOpenChange={setEditing}
+        footer={
+          <Button className="w-full" onClick={() => setEditing(false)}>
+            Lưu thay đổi
+          </Button>
+        }
+      >
+        <KindTabs />
+        <TransactionFields idPrefix="ds-push" />
+      </PageSheet>
     </PageSheet>
   )
 }

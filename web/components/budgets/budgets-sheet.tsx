@@ -122,10 +122,10 @@ export function BudgetsSheet({
         ) : (
           <BudgetsSheetBody overview={overview} onEdit={edit} />
         )}
+        {/* In the list's sheet: they are pushed into it, ‹ back to the list (2026-10-18). */}
+        {editing ? <BudgetFormSheet overview={overview} target={editing} open={editOpen} onOpenChange={setEditOpen} /> : null}
+        <BudgetSuggestSheet overview={overview} open={suggestOpen} onOpenChange={setSuggestOpen} />
       </PageSheet>
-      {/* Beside the list's sheet, not in it, so its gestures stay its own. */}
-      {editing ? <BudgetFormSheet overview={overview} target={editing} open={editOpen} onOpenChange={setEditOpen} /> : null}
-      <BudgetSuggestSheet overview={overview} open={suggestOpen} onOpenChange={setSuggestOpen} />
     </>
   )
 }
