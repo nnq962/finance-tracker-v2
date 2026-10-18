@@ -5,7 +5,7 @@ import { PlusIcon, SaveIcon, Trash2Icon } from "lucide-react"
 import { toast } from "sonner"
 
 import { AccountLogo } from "@/components/account-logo"
-import { PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
+import { PageSheetFooter, PageSheetScreen } from "@/components/app/page-sheet"
 import { BudgetHint } from "@/components/budgets/budget-hint"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { TimeRows } from "@/components/forms/time-rows"
@@ -196,14 +196,6 @@ export function TransactionForm({
 
   const [screen, setScreen] = React.useState<Screen | null>(null)
   const back = () => setScreen(null)
-  usePageSheetScreen(
-    screen === null
-      ? null
-      : {
-          title: screen.type === "category" ? "Hạng mục" : screen.field === "toAccountId" ? "Đến tài khoản" : screen.field === "fromAccountId" ? "Từ tài khoản" : "Tài khoản",
-          onBack: back,
-        },
-  )
 
   const cashFlowKind = kind === "transfer" ? undefined : kind
   const cashFlowPick = cashFlowKind ? picks[cashFlowKind] : undefined
@@ -327,8 +319,8 @@ export function TransactionForm({
       <input type="hidden" name="kind" value={kind} />
       {isCreating ? <input type="hidden" name="requestId" value={requestId} /> : null}
 
-      {/* The deeper screens; the first stays mounted under them, so nothing typed is lost. */}
-      {screen?.type === "category" ? (
+      {/* The deeper screens, pushed over the first, which stays mounted under them so nothing typed is lost. */}
+      <PageSheetScreen open={screen?.type === "category"} title="Hạng mục" onBack={back}>
         <CategoryPicker
           groups={groups}
           retired={retired}
@@ -340,16 +332,22 @@ export function TransactionForm({
           }}
           onManage={onManageCategories}
         />
-      ) : null}
-      {screen?.type === "account" ? (
-        <AccountPicker
-          accounts={pickableAccounts(screen.field)}
-          value={accountValue(screen.field)}
-          onPick={(id) => pickAccount(screen.field, id)}
-        />
-      ) : null}
+      </PageSheetScreen>
+      <PageSheetScreen
+        open={screen?.type === "account"}
+        title={screen?.type === "account" ? (screen.field === "toAccountId" ? "Đến tài khoản" : screen.field === "fromAccountId" ? "Từ tài khoản" : "Tài khoản") : null}
+        onBack={back}
+      >
+        {screen?.type === "account" ? (
+          <AccountPicker
+            accounts={pickableAccounts(screen.field)}
+            value={accountValue(screen.field)}
+            onPick={(id) => pickAccount(screen.field, id)}
+          />
+        ) : null}
+      </PageSheetScreen>
 
-      <div className={cn("flex flex-col gap-6 pb-4", screen && "hidden")}>
+      <div className="flex flex-col gap-6 pb-4">
         {header}
         <div className="flex flex-col items-center gap-2">
           <FieldLabel htmlFor="transaction-amount" className="sr-only">
@@ -536,24 +534,22 @@ export function TransactionForm({
         ) : null}
       </div>
 
-      {screen ? null : (
-        <PageSheetFooter>
-          {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
-          {/* Back is in the header; deleting beside saving, as tall as it, as in the account's editor. */}
-          <div className="flex items-center gap-2">
-            {onDelete ? (
-              <Button type="button" variant="destructive" className="w-30 px-0" aria-label="Xoá giao dịch" disabled={isPending} onClick={onDelete}>
-                <Trash2Icon />
-                Xoá
-              </Button>
-            ) : null}
-            <Button type="submit" className="flex-1" disabled={isPending || blocked}>
-              {isPending ? <Spinner /> : <SaveIcon />}
-              {isPending ? "Đang lưu…" : submitLabel}
+      <PageSheetFooter>
+        {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
+        {/* Back is in the header; deleting beside saving, as tall as it, as in the account's editor. */}
+        <div className="flex items-center gap-2">
+          {onDelete ? (
+            <Button type="button" variant="destructive" className="w-30 px-0" aria-label="Xoá giao dịch" disabled={isPending} onClick={onDelete}>
+              <Trash2Icon />
+              Xoá
             </Button>
-          </div>
-        </PageSheetFooter>
-      )}
+          ) : null}
+          <Button type="submit" className="flex-1" disabled={isPending || blocked}>
+            {isPending ? <Spinner /> : <SaveIcon />}
+            {isPending ? "Đang lưu…" : submitLabel}
+          </Button>
+        </div>
+      </PageSheetFooter>
     </form>
   )
 }

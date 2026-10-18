@@ -4,7 +4,7 @@ import * as React from "react"
 import { EyeOffIcon, LockIcon, SaveIcon, Trash2Icon } from "lucide-react"
 import { toast } from "sonner"
 
-import { PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
+import { PageSheetFooter, PageSheetScreen } from "@/components/app/page-sheet"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { TimeRows } from "@/components/forms/time-rows"
 import { SettingsGroup, SettingsRow, settingsSeparatorClassName } from "@/components/settings-list"
@@ -130,7 +130,6 @@ export function AccountForm({
   // The whole list of banks or wallets, as a deeper screen of the sheet.
   const [picking, setPicking] = React.useState(false)
   const back = () => setPicking(false)
-  usePageSheetScreen(picking && institutions ? { title: `Chọn ${institutionLabel.toLowerCase()}`, onBack: back } : null)
 
   const pickInstitution = (id: string) => {
     setInstitutionId(id)
@@ -227,19 +226,21 @@ export function AccountForm({
       {expectedBalance === undefined ? null : <input type="hidden" name="expectedBalance" value={expectedBalance} />}
 
       {/* The deeper screen; the first stays mounted under it, so nothing typed is lost. */}
-      {picking && institutions ? (
-        <InstitutionPicker
-          kind={accountType === "bank" ? "bank" : "e-wallet"}
-          institutions={institutions}
-          value={institutionId}
-          onPick={(id) => {
-            pickInstitution(id)
-            back()
-          }}
-        />
-      ) : null}
+      <PageSheetScreen open={picking && Boolean(institutions)} title={`Chọn ${institutionLabel.toLowerCase()}`} onBack={back}>
+        {institutions ? (
+          <InstitutionPicker
+            kind={accountType === "bank" ? "bank" : "e-wallet"}
+            institutions={institutions}
+            value={institutionId}
+            onPick={(id) => {
+              pickInstitution(id)
+              back()
+            }}
+          />
+        ) : null}
+      </PageSheetScreen>
 
-      <div className={cn("flex flex-col gap-6 pb-4", picking && "hidden")}>
+      <div className="flex flex-col gap-6 pb-4">
         {/* Locked (the switch on), the fields are only shown; the switch after them still works. */}
         <fieldset disabled={lockOn} className={cn("flex min-w-0 flex-col gap-6", lockOn && "opacity-50")}>
           <Tabs
@@ -410,24 +411,22 @@ export function AccountForm({
         ) : null}
       </div>
 
-      {picking ? null : (
-        <PageSheetFooter>
-          {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
-          {/* Back is in the header; deleting beside saving, as tall as it, as in the category editor. */}
-          <div className="flex items-center gap-2">
-            {onDelete ? (
-              <Button type="button" variant="destructive" className="w-30 px-0" aria-label="Xoá tài khoản" disabled={isPending} onClick={onDelete}>
-                <Trash2Icon />
-                Xoá
-              </Button>
-            ) : null}
-            <Button type="submit" className="flex-1" disabled={isPending || (lockOn && lock?.locked)}>
-              {isPending ? <Spinner /> : <SaveIcon />}
-              {isPending ? "Đang lưu…" : submitLabel}
+      <PageSheetFooter>
+        {errorMessage ? <FieldError>{errorMessage}</FieldError> : null}
+        {/* Back is in the header; deleting beside saving, as tall as it, as in the category editor. */}
+        <div className="flex items-center gap-2">
+          {onDelete ? (
+            <Button type="button" variant="destructive" className="w-30 px-0" aria-label="Xoá tài khoản" disabled={isPending} onClick={onDelete}>
+              <Trash2Icon />
+              Xoá
             </Button>
-          </div>
-        </PageSheetFooter>
-      )}
+          ) : null}
+          <Button type="submit" className="flex-1" disabled={isPending || (lockOn && lock?.locked)}>
+            {isPending ? <Spinner /> : <SaveIcon />}
+            {isPending ? "Đang lưu…" : submitLabel}
+          </Button>
+        </div>
+      </PageSheetFooter>
     </form>
   )
 }

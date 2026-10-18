@@ -5,7 +5,7 @@ import { CheckIcon, CircleCheckIcon, Trash2Icon } from "lucide-react"
 import { toast } from "sonner"
 
 import { AccountLogo } from "@/components/account-logo"
-import { PageSheet, PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
+import { PageSheet, PageSheetFooter, PageSheetScreen } from "@/components/app/page-sheet"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { TimeRows } from "@/components/forms/time-rows"
 import { SettingsGroup, SettingsRow, settingsSeparatorClassName } from "@/components/settings-list"
@@ -140,7 +140,6 @@ function PaymentForm({
   const account = eligibleAccounts.find((item) => item.id === accountId)
 
   const [picking, setPicking] = React.useState(false)
-  usePageSheetScreen(picking ? { title: collecting ? "Vào tài khoản" : "Trả từ", onBack: () => setPicking(false) } : null)
 
   const fitNote = (area: HTMLTextAreaElement) => {
     area.style.height = "auto"
@@ -201,7 +200,7 @@ function PaymentForm({
         }
       }}
     >
-      {picking ? (
+      <PageSheetScreen open={picking} title={collecting ? "Vào tài khoản" : "Trả từ"} onBack={() => setPicking(false)}>
         <AccountPicker
           accounts={eligibleAccounts}
           value={accountId}
@@ -211,9 +210,9 @@ function PaymentForm({
             setPicking(false)
           }}
         />
-      ) : null}
+      </PageSheetScreen>
 
-      <fieldset disabled={pending} className={cn("flex min-w-0 flex-col gap-6 pb-4", picking && "hidden")}>
+      <fieldset disabled={pending} className="flex min-w-0 flex-col gap-6 pb-4">
         {/* Who pays whom, over the amount, as payment apps show the person above it; what is left is on "Toàn bộ". */}
         <div className="flex flex-col items-center gap-3">
           <div className="flex flex-col items-center pt-2 text-center">
@@ -340,34 +339,32 @@ function PaymentForm({
 
       </fieldset>
 
-      {picking ? null : (
-        <PageSheetFooter>
-          {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
-          {/* Deleting sits beside saving, as tall as it (with an undo, so the two side by side are safe). */}
-          <div className="flex items-center gap-2">
-            {payment && onDelete ? (
-              <Button
-                type="button"
-                variant="destructive"
-                className="w-30 px-0"
-                aria-label={collecting ? "Xoá lần thu này" : "Xoá lần trả này"}
-                disabled={pending}
-                onClick={() => {
-                  onDone()
-                  onDelete()
-                }}
-              >
-                <Trash2Icon />
-                Xoá
-              </Button>
-            ) : null}
-            <Button type="submit" className="flex-1" disabled={pending}>
-              <CheckIcon />
-              {pending ? "Đang lưu…" : payment ? "Lưu thay đổi" : collecting ? "Xác nhận đã thu" : "Xác nhận đã trả"}
+      <PageSheetFooter>
+        {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
+        {/* Deleting sits beside saving, as tall as it (with an undo, so the two side by side are safe). */}
+        <div className="flex items-center gap-2">
+          {payment && onDelete ? (
+            <Button
+              type="button"
+              variant="destructive"
+              className="w-30 px-0"
+              aria-label={collecting ? "Xoá lần thu này" : "Xoá lần trả này"}
+              disabled={pending}
+              onClick={() => {
+                onDone()
+                onDelete()
+              }}
+            >
+              <Trash2Icon />
+              Xoá
             </Button>
-          </div>
-        </PageSheetFooter>
-      )}
+          ) : null}
+          <Button type="submit" className="flex-1" disabled={pending}>
+            <CheckIcon />
+            {pending ? "Đang lưu…" : payment ? "Lưu thay đổi" : collecting ? "Xác nhận đã thu" : "Xác nhận đã trả"}
+          </Button>
+        </div>
+      </PageSheetFooter>
     </form>
   )
 }

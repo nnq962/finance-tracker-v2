@@ -61,48 +61,6 @@ export function PageSheetFooter({ className, style, ...props }: React.ComponentP
   )
 }
 
-type PageSheetScreen = {
-  title: React.ReactNode
-  onBack: () => void
-  /**
-   * On the right of the bar, in place of the sheet's own action, e.g. a
-   * pencil to edit what the screen shows. Taken when the screen opens or its
-   * title changes, so its handlers should only call stable setters.
-   */
-  action?: React.ReactNode
-}
-
-const PageSheetScreenContext = React.createContext<((screen: PageSheetScreen | null) => void) | null>(null)
-
-/**
- * A screen deeper than the sheet's first, opened by something inside it (a
- * form's "pick a category" list): while `screen` is set, the bar shows its
- * title and a ‹ that calls its `onBack`, and the content opens at its top;
- * back on the first screen, the bar is the sheet's own again and the content
- * is where it was left. The sheet's action and footer are hidden meanwhile;
- * the screen may bring its own action. The caller shows the deeper screen's
- * content itself.
- */
-export function usePageSheetScreen(screen: PageSheetScreen | null) {
-  const setScreen = React.useContext(PageSheetScreenContext)
-  // The latest onBack, without re-registering the screen on every render.
-  const onBack = React.useRef(screen?.onBack)
-  React.useEffect(() => {
-    onBack.current = screen?.onBack
-  })
-  const title = screen?.title ?? null
-  const open = screen !== null
-  const action = React.useRef(screen?.action)
-  React.useEffect(() => {
-    action.current = screen?.action
-  })
-  React.useEffect(() => {
-    if (!setScreen || !open) return
-    setScreen({ title, onBack: () => onBack.current?.(), action: action.current })
-    return () => setScreen(null)
-  }, [setScreen, open, title])
-}
-
 type PageSheetProps = {
   title: React.ReactNode
   hideTitle?: boolean
@@ -141,11 +99,12 @@ type PageSheetProps = {
  * bare form. `footer` (or a PageSheetFooter last in the content), e.g. a
  * Save button, floats over the end of the content, which scrolls under it.
  *
- * Inside the sheet, a screen deeper than the first (an editor opened from a
- * list) passes `onBack`: the round button on the left turns into ‹ and goes
- * back instead of closing. `disabled` holds the sheet while it saves. The
- * sheet does not focus its first field on opening, so the keyboard waits
- * for a tap, as in the app's other sheets.
+ * A screen deeper than the first (an editor opened from a list, a form's
+ * list to pick from) is a PageSheetScreen, pushed in as below. `onBack`
+ * turns the round button on the left into ‹ that goes back instead of
+ * closing. `disabled` holds the sheet while it saves. The sheet does not
+ * focus its first field on opening, so the keyboard waits for a tap, as in
+ * the app's other sheets.
  *
  * A PageSheet opened from inside another (an account's editor from its
  * sheet, a transaction from an account's list) is not a second sheet over
@@ -158,12 +117,60 @@ export function PageSheet(props: PageSheetProps) {
   return host ? <PaneSheet host={host} {...props} /> : <RootSheet {...props} />
 }
 
+type PageSheetScreenProps = {
+  /** Shown: pushed into the sheet over the screen it sits in. */
+  open: boolean
+  title: React.ReactNode
+  onBack: () => void
+  /** On the right of the bar, e.g. a pencil to edit what the screen shows. */
+  action?: React.ReactNode
+  /** The surface of the screen it opens from, unless given. */
+  surface?: "plain" | "grouped"
+  /** Its own, as a PageSheet's: the one of the screen under it slides away with that screen. */
+  footer?: React.ReactNode
+  /** While saving: ‹ cannot leave. */
+  disabled?: boolean
+  className?: string
+  children: React.ReactNode
+}
+
+/**
+ * A screen deeper than the one it sits in, opened by something there (a
+ * form's "pick a category" list): while `open`, it is pushed into the sheet
+ * as a PageSheet opened inside it is (2026-10-18), sliding in from the right
+ * with its title and a ‹ that calls `onBack`, at its top; back, it slides
+ * away and the screen under it is where it was left, with what was typed.
+ * Put it next to that screen's content, which stays mounted under it; what
+ * it shows last stays while it slides away, so its content may derive from
+ * state that `onBack` clears. Closing the sheet leaves it as it is.
+ */
+export function PageSheetScreen({ open, title, onBack, action, surface, footer, disabled, className, children }: PageSheetScreenProps) {
+  const host = React.useContext(PaneHostContext)
+  const under = React.useContext(PaneSurfaceContext)
+  if (!host) return open ? children : null
+  return (
+    <PaneSheet
+      host={host}
+      screen
+      open={open}
+      onBack={onBack}
+      title={title}
+      action={action}
+      surface={surface ?? under}
+      footer={footer}
+      disabled={disabled}
+      className={className}
+    >
+      {children}
+    </PaneSheet>
+  )
+}
+
 /* ---------- Screens pushed into an open sheet ---------- */
 
 type PaneEntry = { id: string; seq: number; closing: boolean }
 /** What the sheet needs to know of a pushed screen to draw the fade and keep its place. */
 type PaneInfo = {
-  screenKey: string
   behindTitle: boolean
   surfaceColor: string
 }
@@ -181,6 +188,8 @@ type PaneHost = {
 }
 
 const PaneHostContext = React.createContext<PaneHost | null>(null)
+/** The surface of the screen a component sits in, which a PageSheetScreen opened from it keeps. */
+const PaneSurfaceContext = React.createContext<"plain" | "grouped">("grouped")
 
 /** The push: both screens move together, 110% clearing each one's side padding (approved 2026-10-18). */
 const pushEase = [0.32, 0.72, 0, 1] as const
@@ -306,8 +315,6 @@ function RootSheet({
 }: PageSheetProps) {
   // The fade shows once the content has moved, so nothing at rest sits in it.
   const [scrolled, setScrolled] = React.useState(false)
-  // A deeper screen opened from inside (usePageSheetScreen) takes over the bar.
-  const [screen, setScreen] = React.useState<PageSheetScreen | null>(null)
   const bodyRef = React.useRef<HTMLDivElement>(null)
   const fadeRef = React.useRef<HTMLDivElement>(null)
 
@@ -336,7 +343,7 @@ function RootSheet({
   const setInfo = React.useCallback((id: string, info: PaneInfo) => {
     setInfos((current) => {
       const known = current[id]
-      if (known && known.screenKey === info.screenKey && known.behindTitle === info.behindTitle && known.surfaceColor === info.surfaceColor)
+      if (known && known.behindTitle === info.behindTitle && known.surfaceColor === info.surfaceColor)
         return current
       return { ...current, [id]: info }
     })
@@ -369,9 +376,9 @@ function RootSheet({
   const topInfo = top ? infos[top.id] : undefined
   const ownSurface = surface === "grouped" ? "var(--background)" : "var(--popover)"
   const surfaceColor = topInfo?.surfaceColor ?? ownSurface
-  const behindTitle = topInfo ? topInfo.behindTitle : !hideTitle || Boolean(screen)
+  const behindTitle = topInfo ? topInfo.behindTitle : !hideTitle
   // The screen shown: where the sheet keeps its place when going deeper and back.
-  const activeKey = top ? `${top.id}|${topInfo?.screenKey ?? ""}` : `root|${screen ? String(screen.title) : ""}`
+  const activeKey = top ? top.id : "root"
 
   // Closing the sheet closes what was pushed into it: it opens again on its first screen.
   const closePushed = React.useCallback(() => {
@@ -444,13 +451,10 @@ function RootSheet({
   // Closed, it forgets: it opens again at its first screen, at the top.
   React.useEffect(() => {
     if (open !== false) return
-    shownKey.current = "root|"
+    shownKey.current = "root"
     behind.current = []
     lastTop.current = 0
   }, [open])
-
-  const shownTitle = screen ? screen.title : title
-  const back = screen ? screen.onBack : onBack
 
   return (
     <Drawer
@@ -470,7 +474,7 @@ function RootSheet({
         onCloseAutoFocus={onCloseAutoFocus}
         onEscapeKeyDown={(event) => {
           // Esc goes back a screen where there is one to go back to (2026-10-18), else closes the sheet.
-          const escapeBack = top ? handlers.current[top.id]?.back : back
+          const escapeBack = top ? handlers.current[top.id]?.back : onBack
           if (!escapeBack) return
           event.preventDefault()
           escapeBack()
@@ -496,8 +500,8 @@ function RootSheet({
               <div className="grid min-h-full grid-cols-1 grid-rows-1">
                 <PaneFrame place={top ? "covered" : "top"} enter={false} bodyRef={bodyRef} surfaceColor={ownSurface}>
                   <div className={cn(contentClassName, className)}>
-                    <PageSheetScreenContext value={setScreen}>{children}</PageSheetScreenContext>
-                    {footer && !screen ? <PageSheetFooter>{footer}</PageSheetFooter> : null}
+                    <PaneSurfaceContext value={surface}>{children}</PaneSurfaceContext>
+                    {footer ? <PageSheetFooter>{footer}</PageSheetFooter> : null}
                   </div>
                 </PaneFrame>
                 {entries.map((entry) => (
@@ -531,8 +535,8 @@ function RootSheet({
               <div className={barLayerClassName(!top)} inert={Boolean(top)}>
                 <SheetBar
                   left={
-                    back ? (
-                      <Button type="button" variant="secondary" size="icon" aria-label={backLabel} disabled={disabled} onClick={back}>
+                    onBack ? (
+                      <Button type="button" variant="secondary" size="icon" aria-label={backLabel} disabled={disabled} onClick={onBack}>
                         <ChevronLeftIcon />
                       </Button>
                     ) : (
@@ -543,8 +547,8 @@ function RootSheet({
                       </DrawerClose>
                     )
                   }
-                  title={<DrawerTitle className={cn(titleClassName, hideTitle && !screen && "sr-only")}>{shownTitle}</DrawerTitle>}
-                  action={screen ? (screen.action ?? null) : action}
+                  title={<DrawerTitle className={cn(titleClassName, hideTitle && "sr-only")}>{title}</DrawerTitle>}
+                  action={action}
                 />
               </div>
               {entries.map((entry) => (
@@ -578,7 +582,8 @@ function PaneSheet({
   disabled = false,
   className,
   children,
-}: PageSheetProps & { host: PaneHost }) {
+  screen = false,
+}: PageSheetProps & { host: PaneHost; screen?: boolean }) {
   const id = React.useId()
   const [ownOpen, setOwnOpen] = React.useState(false)
   const open = openProp ?? ownOpen
@@ -589,7 +594,6 @@ function PaneSheet({
     },
     [openProp, onOpenChange],
   )
-  const [screen, setScreen] = React.useState<PageSheetScreen | null>(null)
   const { open: push, close: pop, setInfo, setHandlers } = host
 
   React.useLayoutEffect(() => {
@@ -598,16 +602,16 @@ function PaneSheet({
   }, [open, id, push, pop])
   React.useLayoutEffect(() => () => pop(id), [id, pop])
 
-  const screenKey = screen ? String(screen.title) : ""
-  const behindTitle = !hideTitle || Boolean(screen)
+  const behindTitle = !hideTitle
   const surfaceColor = surface === "grouped" ? "var(--background)" : "var(--popover)"
   React.useLayoutEffect(() => {
-    setInfo(id, { screenKey, behindTitle, surfaceColor })
-  }, [id, setInfo, screenKey, behindTitle, surfaceColor])
+    setInfo(id, { behindTitle, surfaceColor })
+  }, [id, setInfo, behindTitle, surfaceColor])
 
-  const back = screen ? screen.onBack : (onBack ?? (() => setOpen(false)))
+  const back = onBack ?? (() => setOpen(false))
   React.useEffect(() => {
-    setHandlers(id, { back, close: () => setOpen(false) })
+    // A screen of the sheet's own stays as it is while the sheet closes; its content then goes with the sheet.
+    setHandlers(id, { back, close: screen ? () => {} : () => setOpen(false) })
   })
   React.useEffect(() => () => setHandlers(id, undefined), [id, setHandlers])
 
@@ -635,8 +639,8 @@ function PaneSheet({
       {slots?.content
         ? createPortal(
             <div className={cn(contentClassName, className)}>
-              <PageSheetScreenContext value={setScreen}>{kept.children}</PageSheetScreenContext>
-              {kept.footer && !screen ? <PageSheetFooter>{kept.footer}</PageSheetFooter> : null}
+              <PaneSurfaceContext value={surface}>{kept.children}</PaneSurfaceContext>
+              {kept.footer ? <PageSheetFooter>{kept.footer}</PageSheetFooter> : null}
             </div>,
             slots.content,
           )
@@ -650,11 +654,11 @@ function PaneSheet({
                 </Button>
               }
               title={
-                <h2 className={cn(titleClassName, "font-heading font-semibold text-foreground", hideTitle && !screen && "sr-only")}>
-                  {screen ? screen.title : kept.title}
+                <h2 className={cn(titleClassName, "font-heading font-semibold text-foreground", hideTitle && "sr-only")}>
+                  {kept.title}
                 </h2>
               }
-              action={screen ? (screen.action ?? null) : kept.action}
+              action={kept.action}
             />,
             slots.bar,
           )

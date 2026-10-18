@@ -1,14 +1,20 @@
 "use client"
 
-import { usePageSheetScreen } from "@/components/app/page-sheet"
+import { PageSheetScreen } from "@/components/app/page-sheet"
 import { SettingsGroup, settingsSeparatorClassName } from "@/components/settings-list"
 import { changeKindLabels, releases, type ChangeKind } from "@/lib/releases"
 
-/** What a version brought, on a screen of the sheet: new, improved, fixed. */
-export function ReleaseScreen({ version, onBack }: { version: string; onBack: () => void }) {
+/** What a version brought, on a screen pushed into the sheet: new, improved, fixed. */
+export function ReleaseScreen({ version, onBack }: { version: string | null; onBack: () => void }) {
   const release = releases.find((item) => item.version === version)
-  usePageSheetScreen({ title: `Bản ${version}`, onBack })
-  if (!release) return null
+  return (
+    <PageSheetScreen open={Boolean(release)} title={`Bản ${version}`} onBack={onBack}>
+      {release ? <ReleaseChanges release={release} /> : null}
+    </PageSheetScreen>
+  )
+}
+
+function ReleaseChanges({ release }: { release: (typeof releases)[number] }) {
   return (
     <div className="space-y-6">
       <p className="px-4 text-sm text-muted-foreground">{release.title}</p>

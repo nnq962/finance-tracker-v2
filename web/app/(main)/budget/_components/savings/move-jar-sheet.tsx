@@ -6,7 +6,7 @@ import { toast } from "sonner"
 
 import { AccountLogo } from "@/components/account-logo"
 import { NoticeBanner } from "@/components/app/notice-banner"
-import { PageSheet, PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
+import { PageSheet, PageSheetFooter, PageSheetScreen } from "@/components/app/page-sheet"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { TimeRows } from "@/components/forms/time-rows"
 import { SettingsGroup, SettingsRow, settingsSeparatorClassName } from "@/components/settings-list"
@@ -63,7 +63,6 @@ function MoveForm({ jar, way, accounts, onDone }: { jar: Account; way: "in" | "o
   const [accountId, setAccountId] = React.useState(() => [...choices].sort((left, right) => right.balance - left.balance)[0]?.id ?? "")
   const [when, setWhen] = React.useState(getCurrentLocalDateTime)
   const [picking, setPicking] = React.useState(false)
-  usePageSheetScreen(picking ? { title: "Chọn tài khoản", onBack: () => setPicking(false) } : null)
 
   const left = amountLeft(jar)
   const monthly = monthlyAmount(jar, today)
@@ -112,7 +111,7 @@ function MoveForm({ jar, way, accounts, onDone }: { jar: Account; way: "in" | "o
       <input type="hidden" name="requestId" value={requestId} />
       <input type="hidden" name="accountId" value={accountId} />
 
-      {picking ? (
+      <PageSheetScreen open={picking} title="Chọn tài khoản" onBack={() => setPicking(false)}>
         <AccountPicker
           accounts={choices}
           value={accountId}
@@ -122,9 +121,9 @@ function MoveForm({ jar, way, accounts, onDone }: { jar: Account; way: "in" | "o
             setPicking(false)
           }}
         />
-      ) : null}
+      </PageSheetScreen>
 
-      <div className={cn("flex flex-col gap-6 pb-4", picking && "hidden")}>
+      <div className="flex flex-col gap-6 pb-4">
         {/* Every account locked (or none yet): nothing to move the money from or to. */}
         {choices.length === 0 ? (
           <NoticeBanner tone="warning" icon={WalletCardsIcon} title="Không có tài khoản nào khả dụng">
@@ -201,15 +200,13 @@ function MoveForm({ jar, way, accounts, onDone }: { jar: Account; way: "in" | "o
         </SettingsGroup>
       </div>
 
-      {picking ? null : (
-        <PageSheetFooter>
-          {error ? <FieldError>{error}</FieldError> : null}
-          <Button type="submit" className="w-full" disabled={pending || choices.length === 0}>
-            {pending ? <Spinner /> : null}
-            {pending ? "Đang lưu…" : way === "in" ? "Nạp vào hũ" : "Rút ra"}
-          </Button>
-        </PageSheetFooter>
-      )}
+      <PageSheetFooter>
+        {error ? <FieldError>{error}</FieldError> : null}
+        <Button type="submit" className="w-full" disabled={pending || choices.length === 0}>
+          {pending ? <Spinner /> : null}
+          {pending ? "Đang lưu…" : way === "in" ? "Nạp vào hũ" : "Rút ra"}
+        </Button>
+      </PageSheetFooter>
     </form>
   )
 }

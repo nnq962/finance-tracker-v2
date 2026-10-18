@@ -15,7 +15,7 @@ import {
 
 import { FlowTiles } from "@/components/app/flow-tiles"
 import { Money } from "@/components/app/money"
-import { PageSheet, usePageSheetScreen } from "@/components/app/page-sheet"
+import { PageSheet, PageSheetScreen } from "@/components/app/page-sheet"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
@@ -257,19 +257,6 @@ function ContactsBody({
   const person = contacts.find((contact) => contact.id === personId)
   const debtsOf = (contactId: string) => debts.filter((debt) => debt.contactId === contactId)
   const back = () => setPersonId(null)
-  usePageSheetScreen(
-    person
-      ? {
-          title: person.name,
-          onBack: back,
-          action: (
-            <Button type="button" variant="secondary" size="icon" aria-label={`Sửa ${person.name}`} onClick={() => setEditingId(person.id)}>
-              <PencilIcon />
-            </Button>
-          ),
-        }
-      : null,
-  )
 
   const key = searchKey(query)
   const typed = key(query.trim())
@@ -283,20 +270,33 @@ function ContactsBody({
 
   return (
     <>
-      {person ? (
-        <ContactScreen
-          contact={person}
-          debts={debtsOf(person.id)}
-          onOpenDebt={onOpenDebt}
-          onNewDebt={() => onNewDebt(person.id)}
-          onDelete={() => {
-            back()
-            onDelete(person.id)
-          }}
-        />
-      ) : null}
+      <PageSheetScreen
+        open={Boolean(person)}
+        title={person?.name}
+        onBack={back}
+        action={
+          person ? (
+            <Button type="button" variant="secondary" size="icon" aria-label={`Sửa ${person.name}`} onClick={() => setEditingId(person.id)}>
+              <PencilIcon />
+            </Button>
+          ) : null
+        }
+      >
+        {person ? (
+          <ContactScreen
+            contact={person}
+            debts={debtsOf(person.id)}
+            onOpenDebt={onOpenDebt}
+            onNewDebt={() => onNewDebt(person.id)}
+            onDelete={() => {
+              back()
+              onDelete(person.id)
+            }}
+          />
+        ) : null}
+      </PageSheetScreen>
 
-      <div className={cn("flex flex-col gap-6 pb-4", person && "hidden")}>
+      <div className="flex flex-col gap-6 pb-4">
         {contacts.length === 0 ? (
           <Empty>
             <EmptyHeader>

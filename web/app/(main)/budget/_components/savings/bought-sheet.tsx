@@ -8,7 +8,7 @@ import { AccountLogo } from "@/components/account-logo"
 import { NoticeBanner } from "@/components/app/notice-banner"
 import { IconTile } from "@/components/app/icon-tile"
 import { Money } from "@/components/app/money"
-import { PageSheet, PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
+import { PageSheet, PageSheetFooter, PageSheetScreen } from "@/components/app/page-sheet"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { TimeRows } from "@/components/forms/time-rows"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
@@ -23,7 +23,6 @@ import { formatDate, toDateKey } from "@/lib/format-date"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { randomId } from "@/lib/random-id"
 import { guessBoughtCategory } from "@/lib/savings/bought-category"
-import { cn } from "@/lib/utils"
 
 import { AccountPicker } from "../../../transactions/_components/add-transaction/fields/account-fields"
 import { CategoryPicker } from "../../../transactions/_components/add-transaction/fields/category-fields"
@@ -98,9 +97,6 @@ function BoughtForm({
   const [accountId, setAccountId] = React.useState(() => [...choices].sort((left, right) => right.balance - left.balance)[0]?.id ?? "")
   const [when, setWhen] = React.useState(getCurrentLocalDateTime)
   const [picking, setPicking] = React.useState<"category" | "account" | null>(null)
-  usePageSheetScreen(
-    picking ? { title: picking === "category" ? "Chọn hạng mục" : "Chọn tài khoản", onBack: () => setPicking(null) } : null,
-  )
 
   const category = items.find((item) => item.id === categoryId)
   const account = choices.find((item) => item.id === accountId)
@@ -139,7 +135,7 @@ function BoughtForm({
       <input type="hidden" name="categoryId" value={categoryId} />
       {rest !== 0 ? <input type="hidden" name="otherAccountId" value={accountId} /> : null}
 
-      {picking === "category" ? (
+      <PageSheetScreen open={picking === "category"} title="Chọn hạng mục" onBack={() => setPicking(null)}>
         <CategoryPicker
           groups={groups}
           value={categoryId}
@@ -148,8 +144,8 @@ function BoughtForm({
             setPicking(null)
           }}
         />
-      ) : null}
-      {picking === "account" ? (
+      </PageSheetScreen>
+      <PageSheetScreen open={picking === "account"} title="Chọn tài khoản" onBack={() => setPicking(null)}>
         <AccountPicker
           accounts={choices}
           value={accountId}
@@ -158,9 +154,9 @@ function BoughtForm({
             setPicking(null)
           }}
         />
-      ) : null}
+      </PageSheetScreen>
 
-      <div className={cn("flex flex-col gap-6 pb-4", picking && "hidden")}>
+      <div className="flex flex-col gap-6 pb-4">
         <div className="flex flex-col items-center gap-2">
           <label htmlFor="jar-price" className="text-xs text-muted-foreground">
             Giá mua
@@ -223,15 +219,13 @@ function BoughtForm({
         ) : null}
       </div>
 
-      {picking ? null : (
-        <PageSheetFooter>
-          {error ? <FieldError>{error}</FieldError> : null}
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? <Spinner /> : null}
-            {pending ? "Đang lưu…" : "Ghi khoản chi"}
-          </Button>
-        </PageSheetFooter>
-      )}
+      <PageSheetFooter>
+        {error ? <FieldError>{error}</FieldError> : null}
+        <Button type="submit" className="w-full" disabled={pending}>
+          {pending ? <Spinner /> : null}
+          {pending ? "Đang lưu…" : "Ghi khoản chi"}
+        </Button>
+      </PageSheetFooter>
     </form>
   )
 }

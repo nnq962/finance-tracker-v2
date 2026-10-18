@@ -5,7 +5,7 @@ import { ChevronDownIcon, SaveIcon, Trash2Icon, UserPlusIcon, UsersIcon } from "
 
 import { AccountLogo } from "@/components/account-logo"
 import { Collapse } from "@/components/app/collapse"
-import { PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
+import { PageSheetFooter, PageSheetScreen } from "@/components/app/page-sheet"
 import { gridChoices, PickGrid } from "@/components/app/pick-grid"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { TimeRows } from "@/components/forms/time-rows"
@@ -254,7 +254,6 @@ export function DebtForm({
 
   const [screen, setScreen] = React.useState<"contact" | "account" | null>(null)
   const back = () => setScreen(null)
-  usePageSheetScreen(screen ? { title: screen === "contact" ? "Chọn người" : lent ? "Tiền ra từ" : "Tiền vào", onBack: back } : null)
 
   const fitNote = (area: HTMLTextAreaElement) => {
     area.style.height = "auto"
@@ -326,7 +325,7 @@ export function DebtForm({
         }}
       >
         {/* The deeper screens; the first stays mounted under them, so nothing typed is lost. */}
-        {screen === "contact" ? (
+        <PageSheetScreen open={screen === "contact"} title="Chọn người" onBack={back}>
           <ContactPicker
             contacts={contacts}
             value={contactId}
@@ -337,8 +336,8 @@ export function DebtForm({
             }}
             onAdd={onAddContact ? () => setAddingContact(true) : undefined}
           />
-        ) : null}
-        {screen === "account" ? (
+        </PageSheetScreen>
+        <PageSheetScreen open={screen === "account"} title={lent ? "Tiền ra từ" : "Tiền vào"} onBack={back}>
           <AccountPicker
             accounts={activeAccounts}
             value={accountId}
@@ -348,9 +347,9 @@ export function DebtForm({
               back()
             }}
           />
-        ) : null}
+        </PageSheetScreen>
 
-        <fieldset disabled={pending} className={cn("flex min-w-0 flex-col gap-6 pb-4", screen && "hidden")}>
+        <fieldset disabled={pending} className="flex min-w-0 flex-col gap-6 pb-4">
           <div className="flex flex-col gap-2">
             <Tabs value={direction} onValueChange={(value) => setDirection(value as DebtDirection)} className="w-full">
               <TabsList className="w-full" aria-label="Loại khoản nợ">
@@ -537,24 +536,22 @@ export function DebtForm({
           </div>
         </fieldset>
 
-        {screen ? null : (
-          <PageSheetFooter>
-            {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
-            {/* Deleting sits beside saving, as tall as it (with an undo, so the two side by side are safe). */}
-            <div className="flex items-center gap-2">
-              {debt && onDelete ? (
-                <Button type="button" variant="destructive" className="w-30 px-0" aria-label="Xoá khoản nợ" disabled={pending} onClick={onDelete}>
-                  <Trash2Icon />
-                Xoá
-                </Button>
-              ) : null}
-              <Button type="submit" className="flex-1" disabled={pending || (!isOpening && activeAccounts.length === 0)}>
-                <SaveIcon />
-                {pending ? "Đang lưu…" : debt ? "Lưu thay đổi" : "Lưu khoản nợ"}
+        <PageSheetFooter>
+          {errorMessage ? <FieldError role="alert">{errorMessage}</FieldError> : null}
+          {/* Deleting sits beside saving, as tall as it (with an undo, so the two side by side are safe). */}
+          <div className="flex items-center gap-2">
+            {debt && onDelete ? (
+              <Button type="button" variant="destructive" className="w-30 px-0" aria-label="Xoá khoản nợ" disabled={pending} onClick={onDelete}>
+                <Trash2Icon />
+              Xoá
               </Button>
-            </div>
-          </PageSheetFooter>
-        )}
+            ) : null}
+            <Button type="submit" className="flex-1" disabled={pending || (!isOpening && activeAccounts.length === 0)}>
+              <SaveIcon />
+              {pending ? "Đang lưu…" : debt ? "Lưu thay đổi" : "Lưu khoản nợ"}
+            </Button>
+          </div>
+        </PageSheetFooter>
 
       </form>
       {/* Stacked over this sheet, outside the form (a portal still passes React's submit up). The new person is picked once saved. */}

@@ -5,7 +5,7 @@ import { CoinsIcon, EyeOffIcon, TagIcon, WalletCardsIcon } from "lucide-react"
 
 import { Collapse } from "@/components/app/collapse"
 import { FormSection } from "@/components/app/form-section"
-import { PageSheet } from "@/components/app/page-sheet"
+import { PageSheet, PageSheetScreen } from "@/components/app/page-sheet"
 import { AccountLogo } from "@/components/account-logo"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
@@ -67,12 +67,6 @@ export function TransactionFilterSheet({
   onReset: () => void
 }) {
   const [screen, setScreen] = React.useState<Screen>("filters")
-  const bodyRef = React.useRef<HTMLDivElement>(null)
-  // Each screen opens at its top.
-  const go = (next: Screen) => {
-    setScreen(next)
-    bodyRef.current?.closest("[data-slot=page-sheet-body]")?.scrollTo({ top: 0 })
-  }
 
   // Active accounts first; archived ones still have their old transactions.
   const sortedAccounts = [...accounts].sort(
@@ -106,12 +100,12 @@ export function TransactionFilterSheet({
     amount: "Số tiền",
   }
   // "Bỏ chọn" on a pick list that has something picked.
-  const clearPicks =
-    screen === "accounts" && accountIds.length > 0
-      ? () => change({ accountIds: [] })
-      : screen === "categories" && categoryGroupIds.length > 0
-        ? () => change({ categoryGroupIds: [] })
-        : undefined
+  const clearPicks = (clear: (() => void) | undefined) =>
+    clear ? (
+      <Button type="button" variant="secondary" onClick={clear}>
+        Bỏ chọn
+      </Button>
+    ) : null
 
   // Opened again, it starts from its first screen; every way of closing goes through here.
   const changeOpen = (next: boolean) => {
@@ -122,79 +116,72 @@ export function TransactionFilterSheet({
     }
   }
 
+  // On every screen: what the filters leave is in reach from each.
+  const footer = (
+    // Xoá lọc only when there is something to clear: cleared, it narrows
+    // away as Xem widens to the full width, and slides back in when a
+    // filter is picked again.
+    <div className="flex">
+      <div
+        inert={!hasFilters}
+        className={cn(
+          "min-w-0 overflow-hidden transition-[flex-basis,margin,opacity] duration-300 ease-out motion-reduce:transition-none",
+          hasFilters ? "mr-2 basis-1/3" : "mr-0 basis-0 opacity-0",
+        )}
+      >
+        <Button type="button" variant="secondary" className="w-full whitespace-nowrap"
+          onClick={() => {
+            onReset()
+            // Cleared, the amount is "Bất kỳ" again, not a range being typed.
+            setCustomOpen(false)
+          }}
+        >
+          Xoá lọc
+        </Button>
+      </div>
+      <Button type="button" className="min-w-0 flex-1" onClick={() => changeOpen(false)}>
+        Xem {transactionCount} giao dịch
+      </Button>
+    </div>
+  )
+  const back = () => setScreen("filters")
+
   return (
     <PageSheet
-      title={titles[screen]}
+      title={titles.filters}
       open={open}
       onOpenChange={changeOpen}
-      onBack={screen === "filters" ? undefined : () => go("filters")}
-      action={
-        clearPicks ? (
-          <Button type="button" variant="secondary" onClick={clearPicks}>
-            Bỏ chọn
-          </Button>
-        ) : null
-      }
-      footer={
-        // Xoá lọc only when there is something to clear: cleared, it narrows
-        // away as Xem widens to the full width, and slides back in when a
-        // filter is picked again.
-        <div className="flex">
-          <div
-            inert={!hasFilters}
-            className={cn(
-              "min-w-0 overflow-hidden transition-[flex-basis,margin,opacity] duration-300 ease-out motion-reduce:transition-none",
-              hasFilters ? "mr-2 basis-1/3" : "mr-0 basis-0 opacity-0",
-            )}
-          >
-            <Button type="button" variant="secondary" className="w-full whitespace-nowrap"
-              onClick={() => {
-                onReset()
-                // Cleared, the amount is "Bất kỳ" again, not a range being typed.
-                setCustomOpen(false)
-              }}
-            >
-              Xoá lọc
-            </Button>
-          </div>
-          <Button type="button" className="min-w-0 flex-1" onClick={() => changeOpen(false)}>
-            Xem {transactionCount} giao dịch
-          </Button>
-        </div>
-      }
+      footer={footer}
     >
-      <div ref={bodyRef} className="space-y-6">
-
-        {screen === "filters" ? (
-          <SettingsGroup>
+      <div className="space-y-6">
+        <SettingsGroup>
+          <SettingsRow
+            icon={WalletCardsIcon}
+            tone="blue"
+            title="Tài khoản"
+            value={pickSummary(accountNames, "tài khoản")}
+            onClick={() => setScreen("accounts")}
+          />
+          {showCategories ? (
             <SettingsRow
-              icon={WalletCardsIcon}
-              tone="blue"
-              title="Tài khoản"
-              value={pickSummary(accountNames, "tài khoản")}
-              onClick={() => go("accounts")}
+              icon={TagIcon}
+              tone="orange"
+              title="Hạng mục"
+              value={pickSummary(categoryNames, "hạng mục")}
+              onClick={() => setScreen("categories")}
             />
-            {showCategories ? (
-              <SettingsRow
-                icon={TagIcon}
-                tone="orange"
-                title="Hạng mục"
-                value={pickSummary(categoryNames, "hạng mục")}
-                onClick={() => go("categories")}
-              />
-            ) : null}
-            <SettingsRow
-              icon={CoinsIcon}
-              tone="emerald"
-              title="Số tiền"
-              value={amountSummary(searchFilters)}
-              onClick={() => go("amount")}
-            />
-          </SettingsGroup>
-        ) : null}
+          ) : null}
+          <SettingsRow
+            icon={CoinsIcon}
+            tone="emerald"
+            title="Số tiền"
+            value={amountSummary(searchFilters)}
+            onClick={() => setScreen("amount")}
+          />
+        </SettingsGroup>
 
         {/* Income and spending only: transfers and loans are never in the figures. */}
-        {screen === "filters" && (filter === "all" || filter === "expense" || filter === "income") ? (
+        {filter === "all" || filter === "expense" || filter === "income" ? (
           <SettingsGroup>
             <SettingsRow
               icon={EyeOffIcon}
@@ -211,91 +198,101 @@ export function TransactionFilterSheet({
             />
           </SettingsGroup>
         ) : null}
+      </div>
 
-        {screen === "accounts" ? (
-          <SettingsGroup>
-            {sortedAccounts.map((account) => (
+      <PageSheetScreen
+        open={screen === "accounts"}
+        title={titles.accounts}
+        onBack={back}
+        action={clearPicks(accountIds.length > 0 ? () => change({ accountIds: [] }) : undefined)}
+        footer={footer}
+      >
+        <SettingsGroup>
+          {sortedAccounts.map((account) => (
+            <SettingsRow
+              key={account.id}
+              media={<AccountLogo account={account} />}
+              title={account.name}
+              description={account.status === "archived" ? "Đã khoá" : undefined}
+              checked={accountIds.includes(account.id)}
+              onClick={() => change({ accountIds: toggle(accountIds, account.id) })}
+            />
+          ))}
+        </SettingsGroup>
+      </PageSheetScreen>
+
+      <PageSheetScreen
+        open={screen === "categories"}
+        title={titles.categories}
+        onBack={back}
+        action={clearPicks(categoryGroupIds.length > 0 ? () => change({ categoryGroupIds: [] }) : undefined)}
+        footer={footer}
+        className="gap-6"
+      >
+        {categorySides.map((side) => (
+          <SettingsGroup key={side.type} title={side.label}>
+            {side.groups.map((group) => (
               <SettingsRow
-                key={account.id}
-                media={<AccountLogo account={account} />}
-                title={account.name}
-                description={account.status === "archived" ? "Đã khoá" : undefined}
-                checked={accountIds.includes(account.id)}
-                onClick={() => change({ accountIds: toggle(accountIds, account.id) })}
+                key={group.id}
+                icon={categoryIconRegistry[group.iconName]}
+                tone={group.colorName}
+                title={group.name}
+                checked={categoryGroupIds.includes(group.id)}
+                onClick={() => change({ categoryGroupIds: toggle(categoryGroupIds, group.id) })}
               />
             ))}
           </SettingsGroup>
-        ) : null}
+        ))}
+      </PageSheetScreen>
 
-        {screen === "categories"
-          ? categorySides.map((side) => (
-              <SettingsGroup key={side.type} title={side.label}>
-                {side.groups.map((group) => (
-                  <SettingsRow
-                    key={group.id}
-                    icon={categoryIconRegistry[group.iconName]}
-                    tone={group.colorName}
-                    title={group.name}
-                    checked={categoryGroupIds.includes(group.id)}
-                    onClick={() => change({ categoryGroupIds: toggle(categoryGroupIds, group.id) })}
+      <PageSheetScreen open={screen === "amount"} title={titles.amount} onBack={back} footer={footer} className="gap-6">
+        <SettingsGroup>
+          {amountPresets.map((option) => (
+            <SettingsRow
+              key={option.key}
+              title={option.label}
+              checked={!custom && preset?.key === option.key}
+              onClick={() => {
+                setCustomOpen(false)
+                change({ minAmount: option.min, maxAmount: option.max })
+              }}
+            />          ))}
+          <SettingsRow title="Tuỳ chỉnh" checked={custom} onClick={() => setCustomOpen(true)} />
+        </SettingsGroup>
+        {/* The range typed, sliding open under Tuỳ chỉnh. */}
+        <Collapse open={custom} className="-mt-6 data-[state=open]:mt-0">
+          <FormSection>
+            {/* One above the other, so each field and its suggestions have the full width. */}
+            <FieldGroup className="gap-2">
+              <div className="flex flex-col gap-5">
+                <Field data-invalid={amountRangeReversed || undefined}>
+                  <FieldLabel htmlFor="transaction-sheet-min-amount">Từ</FieldLabel>
+                  <CurrencyInput
+                    id="transaction-sheet-min-amount"
+                    name="minAmount"
+                    value={minAmount}
+                    onValueChange={(value) => change({ minAmount: value })}
+                    placeholder="0"
+                    invalid={amountRangeReversed}
                   />
-                ))}
-              </SettingsGroup>
-            ))
-          : null}
-
-        {screen === "amount" ? (
-          <>
-            <SettingsGroup>
-              {amountPresets.map((option) => (
-                <SettingsRow
-                  key={option.key}
-                  title={option.label}
-                  checked={!custom && preset?.key === option.key}
-                  onClick={() => {
-                    setCustomOpen(false)
-                    change({ minAmount: option.min, maxAmount: option.max })
-                  }}
-                />
-              ))}
-              <SettingsRow title="Tuỳ chỉnh" checked={custom} onClick={() => setCustomOpen(true)} />
-            </SettingsGroup>
-            {/* The range typed, sliding open under Tuỳ chỉnh. */}
-            <Collapse open={custom} className="-mt-6 data-[state=open]:mt-0">
-              <FormSection>
-                {/* One above the other, so each field and its suggestions have the full width. */}
-                <FieldGroup className="gap-2">
-                  <div className="flex flex-col gap-5">
-                    <Field data-invalid={amountRangeReversed || undefined}>
-                      <FieldLabel htmlFor="transaction-sheet-min-amount">Từ</FieldLabel>
-                      <CurrencyInput
-                        id="transaction-sheet-min-amount"
-                        name="minAmount"
-                        value={minAmount}
-                        onValueChange={(value) => change({ minAmount: value })}
-                        placeholder="0"
-                        invalid={amountRangeReversed}
-                      />
-                    </Field>
-                    <Field data-invalid={amountRangeReversed || undefined}>
-                      <FieldLabel htmlFor="transaction-sheet-max-amount">Đến</FieldLabel>
-                      <CurrencyInput
-                        id="transaction-sheet-max-amount"
-                        name="maxAmount"
-                        value={maxAmount}
-                        onValueChange={(value) => change({ maxAmount: value })}
-                        placeholder="Không giới hạn"
-                        invalid={amountRangeReversed}
-                      />
-                    </Field>
-                  </div>
-                  {amountRangeReversed ? <FieldError>Số tiền đến phải lớn hơn số tiền từ.</FieldError> : null}
-                </FieldGroup>
-              </FormSection>
-            </Collapse>
-          </>
-        ) : null}
-      </div>
+                </Field>
+                <Field data-invalid={amountRangeReversed || undefined}>
+                  <FieldLabel htmlFor="transaction-sheet-max-amount">Đến</FieldLabel>
+                  <CurrencyInput
+                    id="transaction-sheet-max-amount"
+                    name="maxAmount"
+                    value={maxAmount}
+                    onValueChange={(value) => change({ maxAmount: value })}
+                    placeholder="Không giới hạn"
+                    invalid={amountRangeReversed}
+                  />
+                </Field>
+              </div>
+              {amountRangeReversed ? <FieldError>Số tiền đến phải lớn hơn số tiền từ.</FieldError> : null}
+            </FieldGroup>
+          </FormSection>
+        </Collapse>
+      </PageSheetScreen>
     </PageSheet>
   )
 }

@@ -8,7 +8,7 @@ import { IconTile } from "@/components/app/icon-tile"
 import { LimitRow } from "@/components/app/limit-row"
 import { Money } from "@/components/app/money"
 import { NoticeBanner } from "@/components/app/notice-banner"
-import { PageSheet, PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
+import { PageSheet, PageSheetFooter, PageSheetScreen } from "@/components/app/page-sheet"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
@@ -150,11 +150,15 @@ function BudgetsSheetBody({
   const thisMonth = overview.month
   const today = `${thisMonth}-${String(overview.day).padStart(2, "0")}`
   const [month, setMonth] = React.useState(thisMonth)
-  // Screens opened one on another (a group, then its transactions): ‹ goes back one.
-  const [stack, setStack] = React.useState<NonNullable<Screen>[]>([])
-  const screen: Screen = stack.at(-1) ?? null
-  const setScreen = React.useCallback((next: Screen) => setStack((current) => (next ? [...current, next] : [])), [])
-  const back = React.useCallback(() => setStack((current) => current.slice(0, -1)), [])
+  // Screens opened one on another (a group, then its transactions): ‹ goes back one. One
+  // gone back from stays listed until another opens in its place, so it slides away as it was.
+  const [screens, setScreens] = React.useState<{ opened: NonNullable<Screen>[]; depth: number }>({ opened: [], depth: 0 })
+  const setScreen = React.useCallback(
+    (next: Screen) =>
+      setScreens(({ opened, depth }) => (next ? { opened: [...opened.slice(0, depth), next], depth: depth + 1 } : { opened, depth: 0 })),
+    [],
+  )
+  const back = React.useCallback(() => setScreens((current) => ({ ...current, depth: Math.max(current.depth - 1, 0) })), [])
   const [months, setMonths] = React.useState<Record<string, BudgetMonth>>({})
   // Loaded again once a limit or what is spent changes (saved here or elsewhere).
   const version = [overview.total.limit, overview.total.spent, ...overview.groups.map((group) => `${group.limit}:${group.spent}`)].join()
@@ -174,53 +178,43 @@ function BudgetsSheetBody({
 
   const past = month < thisMonth
   const number = Number(month.slice(5))
-  const detailGroup = screen?.type === "group" ? data?.groups.find((group) => group.groupId === screen.groupId) : undefined
-  const groupName = screen?.type === "group" ? (overview.groups.find((group) => group.groupId === screen.groupId)?.name ?? "Nhóm") : ""
-
-  usePageSheetScreen(
-    screen?.type === "alerts"
-      ? { title: "Cảnh báo hạn mức", onBack: back }
-      : screen?.type === "spending"
-      ? { title: past ? `${screen.title} · tháng ${number}` : screen.title, onBack: back }
-      : screen
-      ? {
-          title: screen.type === "total" ? (past ? `Hạn mức tổng · tháng ${number}` : "Hạn mức tổng") : past ? `${groupName} · tháng ${number}` : groupName,
-          onBack: back,
-          // A month gone by is only looked at; limits are changed from this one.
-          action: past ? undefined : (
-            <Button
-              type="button"
-              variant="secondary"
-              size="icon"
-              aria-label="Sửa hạn mức"
-              onClick={() => onEdit(screen.type === "total" ? { kind: "total" } : { kind: "group", groupId: screen.groupId })}
-            >
-              <PencilIcon />
-            </Button>
-          ),
-        }
-      : null,
-  )
 
   // In the sheet, on a screen of its own (2026-10-17), not on the transactions page.
   const showTransactions = (filter: SpendingFilter) => setScreen({ type: "spending", ...filter })
 
-  if (screen?.type === "spending") {
-    return <BudgetSpendingList month={month} filter={screen} today={today} version={version} />
+  const titleOf = (screen: NonNullable<Screen>) => {
+    if (screen.type === "alerts") return "Cảnh báo hạn mức"
+    if (screen.type === "spending") return past ? `${screen.title} · tháng ${number}` : screen.title
+    const name = screen.type === "total" ? "Hạn mức tổng" : (overview.groups.find((group) => group.groupId === screen.groupId)?.name ?? "Nhóm")
+    return past ? `${name} · tháng ${number}` : name
   }
-
-  if (screen?.type === "alerts") {
-    const first = overview.groups.find(hasLimit)
-    return (
-      <BudgetAlertSettingsScreen
-        initial={overview.alerts}
-        example={first ? { name: first.name, limit: first.limit! } : undefined}
-      />
+  // A month gone by is only looked at; limits are changed from this one.
+  const actionOf = (screen: NonNullable<Screen>) =>
+    past || (screen.type !== "total" && screen.type !== "group") ? null : (
+      <Button
+        type="button"
+        variant="secondary"
+        size="icon"
+        aria-label="Sửa hạn mức"
+        onClick={() => onEdit(screen.type === "total" ? { kind: "total" } : { kind: "group", groupId: screen.groupId })}
+      >
+        <PencilIcon />
+      </Button>
     )
-  }
-  if (screen) {
+  const contentOf = (screen: NonNullable<Screen>) => {
+    if (screen.type === "spending") return <BudgetSpendingList month={month} filter={screen} today={today} version={version} />
+    if (screen.type === "alerts") {
+      const first = overview.groups.find(hasLimit)
+      return (
+        <BudgetAlertSettingsScreen
+          initial={overview.alerts}
+          example={first ? { name: first.name, limit: first.limit! } : undefined}
+        />
+      )
+    }
     if (!data) return <BudgetDetailSkeleton />
-    if (screen.type === "total" && hasLimit(data.total)) {
+    if (screen.type === "total") {
+      if (!hasLimit(data.total)) return null
       return (
         <BudgetTotalDetail
           month={data}
@@ -233,18 +227,18 @@ function BudgetsSheetBody({
         />
       )
     }
-    if (detailGroup && hasLimit(detailGroup)) {
-      const line = overview.groups.find((group) => group.groupId === detailGroup.groupId)
-      return (
-        <BudgetGroupDetail
-          month={data}
-          group={detailGroup}
-          today={today}
-          hint={past || !line ? null : <BudgetAdjustHint name={line.name} groupId={line.groupId} line={line} />}
-          onShowTransactions={showTransactions}
-        />
-      )
-    }
+    const detailGroup = data.groups.find((group) => group.groupId === screen.groupId)
+    if (!detailGroup || !hasLimit(detailGroup)) return null
+    const line = overview.groups.find((group) => group.groupId === detailGroup.groupId)
+    return (
+      <BudgetGroupDetail
+        month={data}
+        group={detailGroup}
+        today={today}
+        hint={past || !line ? null : <BudgetAdjustHint name={line.name} groupId={line.groupId} line={line} />}
+        onShowTransactions={showTransactions}
+      />
+    )
   }
 
   const changeMonth = (by: number) => {
@@ -280,6 +274,18 @@ function BudgetsSheetBody({
       ) : (
         <ThisMonthList overview={overview} onOpen={setScreen} onEdit={onEdit} />
       )}
+      {screens.opened.map((screen, index) => (
+        <PageSheetScreen
+          key={`${index}:${JSON.stringify(screen)}`}
+          open={index < screens.depth}
+          title={titleOf(screen)}
+          action={actionOf(screen)}
+          onBack={back}
+          className="gap-6"
+        >
+          {contentOf(screen)}
+        </PageSheetScreen>
+      ))}
     </>
   )
 }

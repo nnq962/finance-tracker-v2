@@ -161,8 +161,9 @@ export function NotificationsButton({ variant = "secondary" }: { variant?: "seco
       open={open}
       onOpenChange={(next) => {
         setOpen(next)
-        setRelease(null)
         if (next) {
+          // Here, not on closing: a version's screen stays as the sheet goes down.
+          setRelease(null)
           load(true)
           void loadReleaseScreen()
         }
@@ -199,9 +200,8 @@ export function NotificationsButton({ variant = "secondary" }: { variant?: "seco
         ) : null
       }
     >
-      {release ? (
-        <ReleaseScreen version={release} onBack={() => setRelease(null)} />
-      ) : notices.length > 0 ? (
+      <ReleaseScreen version={release} onBack={() => setRelease(null)} />
+      {notices.length > 0 ? (
         <>
           {group("Mới", notices.filter((notice) => !notice.read))}
           {group("Đã xem", notices.filter((notice) => notice.read))}

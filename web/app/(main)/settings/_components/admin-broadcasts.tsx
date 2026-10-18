@@ -6,7 +6,7 @@ import { toast } from "sonner"
 
 import { ActionSheet } from "@/components/app/action-sheet"
 import { FormSection } from "@/components/app/form-section"
-import { PageSheet, PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
+import { PageSheet, PageSheetFooter, PageSheetScreen } from "@/components/app/page-sheet"
 import { PushBanner } from "@/components/app/push-banner"
 import { RequiredMark } from "@/components/forms/required-mark"
 import { groupCaptionClassName, SettingsGroup, SettingsRow } from "@/components/settings-list"
@@ -138,20 +138,6 @@ function BroadcastsScreen({
     }
   }, [fresh, onChange])
 
-  if (detail) {
-    return (
-      <BroadcastDetail
-        item={detail}
-        reach={data.reach[detail.audience]}
-        onBack={() => setDetailId(null)}
-        onRevoked={async () => {
-          setDetailId(null)
-          await reload()
-        }}
-      />
-    )
-  }
-
   const row = (item: BroadcastItem) => (
     <SettingsRow
       key={item.id}
@@ -169,6 +155,23 @@ function BroadcastsScreen({
 
   return (
     <div className="flex flex-1 flex-col">
+      <PageSheetScreen
+        open={Boolean(detail)}
+        title={detail?.status === "scheduled" ? "Đã hẹn gửi" : "Đã gửi"}
+        onBack={() => setDetailId(null)}
+      >
+        {detail ? (
+          <BroadcastDetail
+            item={detail}
+            reach={data.reach[detail.audience]}
+            onRevoked={async () => {
+              setDetailId(null)
+              await reload()
+            }}
+          />
+        ) : null}
+      </PageSheetScreen>
+
       <div className="space-y-6 pb-4">
         {scheduled.length > 0 ? <SettingsGroup title="Đã hẹn">{scheduled.map(row)}</SettingsGroup> : null}
         <SettingsGroup title="Đã gửi">
@@ -218,16 +221,13 @@ function BroadcastsScreen({
 function BroadcastDetail({
   item,
   reach,
-  onBack,
   onRevoked,
 }: {
   item: BroadcastItem
   /** Its audience now, for one still set for later. */
   reach: BroadcastScreenData["reach"][BroadcastAudience]
-  onBack: () => void
   onRevoked: () => void
 }) {
-  usePageSheetScreen({ title: item.status === "scheduled" ? "Đã hẹn gửi" : "Đã gửi", onBack })
   const [confirm, setConfirm] = React.useState(false)
   const scheduled = item.status === "scheduled"
   const pushes = item.channel !== "bell"

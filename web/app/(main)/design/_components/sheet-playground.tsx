@@ -18,7 +18,7 @@ import { FormSection } from "@/components/app/form-section"
 import { IconTile } from "@/components/app/icon-tile"
 import { Money } from "@/components/app/money"
 import { NoticeBanner } from "@/components/app/notice-banner"
-import { PageSheet } from "@/components/app/page-sheet"
+import { PageSheet, PageSheetScreen } from "@/components/app/page-sheet"
 import { SettingsGroup, SettingsRow, settingsSeparatorClassName } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -32,6 +32,7 @@ type TitleStyle = "bar" | "large"
 type Surface = "plain" | "grouped"
 
 const history = ["05/10", "04/10", "03/10", "02/10", "01/10", "30/09", "29/09", "28/09"]
+const accounts = ["Tiền mặt", "Ví MoMo", "Vietcombank", "Techcombank"]
 
 /**
  * One PageSheet with every part a sheet in the app uses, to review its
@@ -48,6 +49,8 @@ export function PageSheetPlayground() {
   const [withFooter, setWithFooter] = React.useState(true)
   const [kind, setKind] = React.useState("expense")
   const [reminder, setReminder] = React.useState(true)
+  const [account, setAccount] = React.useState("Ví MoMo")
+  const [picking, setPicking] = React.useState(false)
 
   return (
     <PageSheet
@@ -165,7 +168,8 @@ export function PageSheetPlayground() {
 
       {/* Rows that open something or switch something, as in the detail sheets. */}
       <SettingsGroup title="Chi tiết">
-        <SettingsRow icon={WalletCardsIcon} tone="blue" title="Tài khoản" value="Ví MoMo" onClick={() => toast("Chọn tài khoản")} />
+        {/* A deeper screen (PageSheetScreen): pushed in from the right, ‹ back to where this one was. */}
+        <SettingsRow icon={WalletCardsIcon} tone="blue" title="Tài khoản" value={account} onClick={() => setPicking(true)} />
         <SettingsRow icon={TagIcon} tone="orange" title="Hạng mục" value="Ăn uống" onClick={() => toast("Chọn hạng mục")} />
         <SettingsRow icon={CalendarDaysIcon} tone="cyan" title="Thời gian" value="06/10 · 12:04" chevron={false} />
         <SettingsRow
@@ -194,6 +198,24 @@ export function PageSheetPlayground() {
       <SettingsGroup>
         <SettingsRow title="Xoá khoản chi" destructive onClick={() => toast("Xoá")} />
       </SettingsGroup>
+
+      <PageSheetScreen open={picking} title="Tài khoản" onBack={() => setPicking(false)}>
+        <SettingsGroup>
+          {accounts.map((name) => (
+            <SettingsRow
+              key={name}
+              icon={WalletCardsIcon}
+              tone="blue"
+              title={name}
+              checked={name === account}
+              onClick={() => {
+                setAccount(name)
+                setPicking(false)
+              }}
+            />
+          ))}
+        </SettingsGroup>
+      </PageSheetScreen>
     </PageSheet>
   )
 }

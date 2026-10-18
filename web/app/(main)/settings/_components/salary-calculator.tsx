@@ -13,7 +13,7 @@ import {
 } from "lucide-react"
 
 import { Money } from "@/components/app/money"
-import { PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
+import { PageSheetFooter, PageSheetScreen } from "@/components/app/page-sheet"
 import { Stepper } from "@/components/app/stepper"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { InlineInput } from "@/components/forms/inline-input"
@@ -174,8 +174,6 @@ export function SalaryCalculator() {
   const update = <Key extends keyof Draft>(key: Key, value: Draft[Key]) =>
     setDraft((current) => ({ ...current, [key]: value }))
 
-  usePageSheetScreen(payslipOpen ? { title: "Bảng lương", onBack: () => setPayslipOpen(false) } : null)
-
   React.useEffect(() => {
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(draft))
@@ -201,10 +199,12 @@ export function SalaryCalculator() {
 
   return (
     <div className="flex flex-1 flex-col">
-      {payslipOpen ? <Payslip input={input} result={result} /> : null}
+      <PageSheetScreen open={payslipOpen} title="Bảng lương" onBack={() => setPayslipOpen(false)}>
+        <Payslip input={input} result={result} />
+      </PageSheetScreen>
 
-      {/* Hidden, not removed, while the payslip shows: the fields keep their focus and scroll. */}
-      <div hidden={payslipOpen} className="space-y-6">
+      {/* Kept, not removed, under the payslip: the fields keep what was typed and where they were scrolled. */}
+      <div className="space-y-6">
         <div className="flex flex-col items-center gap-2 pt-2">
           <FieldLabel htmlFor="salary-base" className="text-xs font-normal text-muted-foreground">
             Lương gross mỗi tháng
@@ -411,18 +411,16 @@ export function SalaryCalculator() {
         ) : null}
       </div>
 
-      {payslipOpen ? null : (
-        <PageSheetFooter>
-          {/* The answer, in reach whatever is being changed; it opens how it is reached. */}
-          <Button type="button" className="justify-between" onClick={() => setPayslipOpen(true)}>
-            <span>Thực nhận</span>
-            <span className="flex items-center gap-1 tabular-nums">
-              {formatCurrency(result.netIncome)}
-              <ChevronRightIcon aria-hidden="true" />
-            </span>
-          </Button>
-        </PageSheetFooter>
-      )}
+      <PageSheetFooter>
+        {/* The answer, in reach whatever is being changed; it opens how it is reached. */}
+        <Button type="button" className="justify-between" onClick={() => setPayslipOpen(true)}>
+          <span>Thực nhận</span>
+          <span className="flex items-center gap-1 tabular-nums">
+            {formatCurrency(result.netIncome)}
+            <ChevronRightIcon aria-hidden="true" />
+          </span>
+        </Button>
+      </PageSheetFooter>
     </div>
   )
 }

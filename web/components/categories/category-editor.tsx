@@ -6,7 +6,7 @@ import { SaveIcon, Trash2Icon } from "lucide-react"
 import { ActionSheet } from "@/components/app/action-sheet"
 import { IconTile } from "@/components/app/icon-tile"
 import { useBudgetOverview } from "@/components/budgets/budget-hint"
-import { PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
+import { PageSheetFooter, PageSheetScreen } from "@/components/app/page-sheet"
 import { ColorPicker } from "@/components/forms/color-picker"
 import { IconPicker, IconPickerScreen } from "@/components/forms/icon-picker"
 import { InlineInput } from "@/components/forms/inline-input"
@@ -67,8 +67,6 @@ export function CategoryEditor({
   const [allIcons, setAllIcons] = React.useState(false)
   const [confirmDelete, setConfirmDelete] = React.useState(false)
 
-  usePageSheetScreen(allIcons ? { title: "Biểu tượng", onBack: () => setAllIcons(false) } : null)
-
   const noun = kind === "group" ? "nhóm" : "hạng mục"
   const itemCount = group?.items.length ?? 0
   // A group's limit goes when it is deleted; said in the confirmation where the limits are known.
@@ -95,7 +93,7 @@ export function CategoryEditor({
 
   return (
     <>
-      {allIcons ? (
+      <PageSheetScreen open={allIcons} title="Biểu tượng" onBack={() => setAllIcons(false)}>
         <IconPickerScreen
           value={iconName}
           color={colorName}
@@ -104,9 +102,9 @@ export function CategoryEditor({
             setAllIcons(false)
           }}
         />
-      ) : null}
-      {/* Hidden, not removed, under every icon: the grid keeps its order. */}
-      <form hidden={allIcons} className="flex flex-1 flex-col" onSubmit={submit}>
+      </PageSheetScreen>
+      {/* Kept, not removed, under every icon: the grid keeps its order. */}
+      <form className="flex flex-1 flex-col" onSubmit={submit}>
         <fieldset disabled={pending} className="flex min-w-0 flex-col gap-6 pb-4">
           {/* What it will look like, following each choice. The name is not
               repeated here: it is typed on the row below, and a name here

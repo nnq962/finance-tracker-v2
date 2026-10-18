@@ -6,7 +6,7 @@ import { toast } from "sonner"
 
 import { ActionSheet } from "@/components/app/action-sheet"
 import { MonthPickerSheet } from "@/components/app/month-picker-sheet"
-import { PageSheet, PageSheetFooter, usePageSheetScreen } from "@/components/app/page-sheet"
+import { PageSheet, PageSheetFooter, PageSheetScreen } from "@/components/app/page-sheet"
 import { ColorPicker } from "@/components/forms/color-picker"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { IconPicker, IconPickerScreen } from "@/components/forms/icon-picker"
@@ -91,7 +91,6 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
   const [pickingMonth, setPickingMonth] = React.useState(false)
   const [allIcons, setAllIcons] = React.useState(false)
   const [confirmDelete, setConfirmDelete] = React.useState(false)
-  usePageSheetScreen(allIcons ? { title: "Biểu tượng", onBack: () => setAllIcons(false) } : null)
 
   // What is still needed spread over the months to the due one, as the jar's sheet will say.
   const monthly =
@@ -148,7 +147,7 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
       {withDue ? <input type="hidden" name="dueMonth" value={dueMonth} /> : null}
 
       {/* The deeper screen; the first stays mounted under it, so nothing typed is lost. */}
-      {allIcons ? (
+      <PageSheetScreen open={allIcons} title="Biểu tượng" onBack={() => setAllIcons(false)}>
         <IconPickerScreen
           value={icon}
           color={color}
@@ -157,7 +156,7 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
             setAllIcons(false)
           }}
         />
-      ) : null}
+      </PageSheetScreen>
 
       {done ? (
         // Bought: its goal is what it was, only its name changes (and it can be deleted).
@@ -176,7 +175,7 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
           </SettingsGroup>
         </div>
       ) : (
-        <div className={cn("flex flex-col gap-6 pb-4", allIcons && "hidden")}>
+        <div className="flex flex-col gap-6 pb-4">
           {/* What it will look like, following each choice. */}
           <div className="flex justify-center pt-2">
             <JarRing jar={{ balance: jar?.balance ?? 0, goal: { target: target ?? 0, icon, color } }} size="lead" />
@@ -254,24 +253,22 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
         </div>
       )}
 
-      {allIcons ? null : (
-        <PageSheetFooter>
-          {error ? <FieldError>{error}</FieldError> : null}
-          {/* Deleting beside saving, as tall as it, as in the account's editor. */}
-          <div className="flex items-center gap-2">
-            {jar ? (
-              <Button type="button" variant="destructive" className="w-30 px-0" aria-label="Xoá hũ" disabled={pending} onClick={() => setConfirmDelete(true)}>
-                <Trash2Icon />
-                Xoá
-              </Button>
-            ) : null}
-            <Button type="submit" className="flex-1" disabled={pending}>
-              {pending ? <Spinner /> : jar ? <SaveIcon /> : null}
-              {pending ? "Đang lưu…" : jar ? "Lưu thay đổi" : "Tạo hũ"}
+      <PageSheetFooter>
+        {error ? <FieldError>{error}</FieldError> : null}
+        {/* Deleting beside saving, as tall as it, as in the account's editor. */}
+        <div className="flex items-center gap-2">
+          {jar ? (
+            <Button type="button" variant="destructive" className="w-30 px-0" aria-label="Xoá hũ" disabled={pending} onClick={() => setConfirmDelete(true)}>
+              <Trash2Icon />
+              Xoá
             </Button>
-          </div>
-        </PageSheetFooter>
-      )}
+          ) : null}
+          <Button type="submit" className="flex-1" disabled={pending}>
+            {pending ? <Spinner /> : jar ? <SaveIcon /> : null}
+            {pending ? "Đang lưu…" : jar ? "Lưu thay đổi" : "Tạo hũ"}
+          </Button>
+        </div>
+      </PageSheetFooter>
 
       <MonthPickerSheet
         open={pickingMonth}

@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.19.1",
+    date: "2026-10-18",
+    title: "Màn sâu trong sheet cũng trượt sang",
+    changes: [
+      { kind: "improved", text: "Các màn sâu trong sheet (chọn hạng mục, tài khoản, ngân hàng, biểu tượng, người; chi tiết hạn mức và giao dịch của nó; một người trong Danh bạ; bảng lương; một phiên bản; bộ lọc giao dịch; sửa hạng mục) giờ trượt vào từ phải như sheet mở trong sheet, thay vì đổi ngay. Những gì đã nhập vẫn còn khi quay lại." },
+    ],
+  },
+  {
     version: "6.19.0",
     date: "2026-10-18",
     title: "Mở từ trong sheet: trượt sang, không chồng lên",
