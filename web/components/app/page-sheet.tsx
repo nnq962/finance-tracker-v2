@@ -193,7 +193,7 @@ const PaneSurfaceContext = React.createContext<"plain" | "grouped">("grouped")
 
 /** The push: both screens move together, 110% clearing each one's side padding (approved 2026-10-18). */
 const pushEase = [0.32, 0.72, 0, 1] as const
-const pushSeconds = 0.35
+const pushSeconds = 0.5
 
 type PanePlace = "top" | "covered" | "leaving-back" | "leaving-on"
 
