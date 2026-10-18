@@ -386,7 +386,9 @@ Chuyển động chỉ dùng opacity và transform (CSS, không `motion`, không
   trong báo cáo (giao dịch và tài khoản không "Ngoài báo cáo"), không trả bằng hũ tiết kiệm; không tính chuyển
   khoản (cả nạp/rút hũ, phí chuyển), điều chỉnh số dư, cho vay, trả nợ và lãi vay. Không có tab riêng, mở cùng một
   `PageSheet` "Hạn mức" từ ba chỗ: thẻ "Hạn mức tháng này" ở Tổng quan (dưới nhiệm vụ, chỉ khi đã đặt ít
-  nhất một hạn mức: `BudgetTotal` và `JarsNote` khi có, rồi 2–3 nhóm gần chạm hay đã vượt, mỗi nhóm thanh `sm` và "%" hay "Vượt 250k",
+  nhất một hạn mức; làm gọn 2026-10-19, thẻ cỡ thường: `BudgetTotal compact` khi có hạn mức tổng (số còn lại cỡ `lg`, thanh `md`, dòng nhịp chi; không
+  còn chữ "Hạn mức tổng", vạch chia, chữ "Theo nhóm" và ghi chú hũ, phần đó chỉ còn trong sheet), rồi 2–3 nhóm gần chạm hay đã vượt, mỗi nhóm
+  một dòng 20: ô icon `xs`, tên rộng 84, thanh `sm`, "%" hay "+250k" đỏ khi vượt (cột 40 không đủ cho chữ "Vượt"); cao khoảng 284 thay vì 465,
   "Xem tất cả ›"), dòng "Đã dùng 62% hạn mức tổng · còn 4,55tr" dưới thẻ Thu / Chi ở Giao dịch (thẻ trắng
   bo 16 cao 44+, chỉ ở tháng hiện tại và khi có hạn mức cả tháng; màn tải của Giao dịch có `BudgetMonthLineSkeleton` cùng kích thước nên trang không bị đẩy xuống khi dữ liệu về, 2026-10-17), dòng "Hạn mức chi tiêu" ở Cài đặt › Chung
   ("12tr/tháng", "2 nhóm", "Chưa đặt"). `BudgetTotal`: "Còn lại" và số tiền lớn (hay "Vượt hạn mức" đỏ; 2026-10-17 bỏ "Còn được chi"),

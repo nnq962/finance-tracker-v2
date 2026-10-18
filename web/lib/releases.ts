@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.21.3",
+    date: "2026-10-19",
+    title: "Thẻ Hạn mức tháng này ở Tổng quan gọn hơn",
+    changes: [
+      { kind: "improved", text: "Thẻ Hạn mức tháng này ở Tổng quan thấp đi gần 40%: số còn lại cỡ vừa, bỏ chữ \"Hạn mức tổng\", vạch chia và \"Theo nhóm\"; mỗi nhóm một dòng với ô icon nhỏ, tên, thanh và phần trăm (\"+250k\" đỏ khi vượt). Ghi chú khoản mua bằng hũ chỉ còn trong sheet Hạn mức." },
+    ],
+  },
+  {
     version: "6.21.2",
     date: "2026-10-18",
     title: "Thẻ trắng nổi hơn trên theme sáng",

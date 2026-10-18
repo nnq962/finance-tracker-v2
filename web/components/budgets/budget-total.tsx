@@ -22,6 +22,8 @@ import { cn } from "@/lib/utils"
  * with it: what is left to spend large, the share used and of how much on
  * the right, the plain bar (amber when spending runs ahead of the month),
  * then the pace and what is left a day. Past the limit, how far instead.
+ * `compact` (Tổng quan's card, 2026-10-19): the figure a size down and
+ * everything a step closer.
  */
 export function BudgetTotal({ overview, compact = false }: { overview: BudgetOverview; compact?: boolean }) {
   const { spent, limit } = overview.total
@@ -34,9 +36,9 @@ export function BudgetTotal({ overview, compact = false }: { overview: BudgetOve
       <div className="flex items-end justify-between gap-3">
         <span className="flex min-w-0 flex-col">
           <CardLabel as="span">{over ? "Vượt hạn mức" : "Còn lại"}</CardLabel>
-          <Money amount={Math.abs(limit - spent)} size={compact ? "lg" : "xl"} tone={over ? "expense" : "default"} className="mt-1" />
+          <Money amount={Math.abs(limit - spent)} size={compact ? "lg" : "xl"} tone={over ? "expense" : "default"} className={compact ? "mt-0.5" : "mt-1"} />
         </span>
-        <span className="flex shrink-0 flex-col items-end pb-1">
+        <span className={cn("flex shrink-0 flex-col items-end", compact ? "pb-0.5" : "pb-1")}>
           <span className="text-sm font-semibold tabular-nums">{formatBudgetPercent(spent, limit)}</span>
           <span className="text-xs text-muted-foreground tabular-nums">của {formatCompactCurrency(limit, 1)}</span>
         </span>
@@ -47,9 +49,9 @@ export function BudgetTotal({ overview, compact = false }: { overview: BudgetOve
         tone={limitTone(spent, limit, monthShare(overview), nearLevel(overview.alerts))}
         size="md"
         label="Hạn mức tháng đã dùng"
-        className={compact ? "mt-3.5" : "mt-4.5"}
+        className={compact ? "mt-3" : "mt-4.5"}
       />
-      <p className="mt-2.5 text-xs text-muted-foreground">
+      <p className={cn("text-xs text-muted-foreground", compact ? "mt-2" : "mt-2.5")}>
         {over ? (
           <span className="tabular-nums">
             Đã chi {formatCompactCurrency(spent, 1)} / {formatCompactCurrency(limit, 1)}

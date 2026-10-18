@@ -84,36 +84,29 @@ function MissionsSkeleton() {
 }
 
 /**
- * The month's limits as BudgetOverviewCard shows them: the whole month's
- * (its name, figure, bar and pace line), then three groups under a line.
+ * The month's limits as BudgetOverviewCard shows them (2026-10-19): the
+ * whole month's figure, bar and pace line, then three groups one line each.
  */
 function BudgetsSkeleton() {
   return (
     <SectionSkeleton action={<Skeleton className="h-4 w-20" />}>
-      <Card size="lg">
+      <Card>
         <CardContent>
-          <div className="mb-3 flex h-5 items-center">
-            <Skeleton className="h-3.5 w-24" />
-          </div>
-          <div className="flex h-[52px] items-end justify-between pb-1">
-            <Skeleton className="h-7 w-36" />
+          <div className="flex h-[50px] items-end justify-between pb-0.5">
+            <Skeleton className="h-6 w-36" />
             <Skeleton className="h-4 w-12" />
           </div>
-          <Skeleton className="mt-3.5 h-2.5 rounded-full" />
-          <div className="mt-2.5 flex h-4 items-center">
+          <Skeleton className="mt-3 h-2.5 rounded-full" />
+          <div className="mt-2 flex h-4 items-center">
             <Skeleton className="h-3 w-48 max-w-full" />
           </div>
-          <div className="mt-5 flex h-[37px] items-end border-t border-separator pb-0.5">
-            <Skeleton className="h-3.5 w-20" />
-          </div>
-          <div className="mt-3 flex flex-col gap-4">
+          <div className="mt-4 flex flex-col gap-2.5">
             {[0, 1, 2].map((index) => (
-              <div key={index} className="flex h-9 items-center gap-3">
-                <Skeleton className="size-9 shrink-0 rounded-xl" />
-                <div className="flex-1 space-y-2.5">
-                  <Skeleton className="h-3.5 w-24" />
-                  <Skeleton className="h-2.5 rounded-full" />
-                </div>
+              <div key={index} className="flex h-5 items-center gap-2.5">
+                <Skeleton className="size-5 shrink-0 rounded-[6px]" />
+                <Skeleton className="h-3.5 w-20" />
+                <Skeleton className="h-1.5 flex-1 rounded-full" />
+                <Skeleton className="h-3 w-8" />
               </div>
             ))}
           </div>
