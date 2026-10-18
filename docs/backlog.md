@@ -47,10 +47,9 @@ hạn mức, cảnh báo vượt trong form, gợi ý chỉnh hạn mức, cài 
 
 ## 4. Hũ tiết kiệm
 
-- **Hạng mục mặc định khi "Đã mua":** đang lấy hạng mục đầu tiên của nhóm "Mua sắm" (ví dụ mua xe
-  máy lại ra "Quần áo"); cân nhắc để trống cho người dùng chọn, hoặc đoán theo biểu tượng của hũ.
-- **Gợi ý biểu tượng theo tên hũ:** dạy thêm các từ hay gặp ("du lịch" → máy bay, "cưới" → tim,
-  "học" → mũ tốt nghiệp…), vì gợi ý hiện chỉ khớp theo từ trong tên biểu tượng.
+- ~~Hạng mục mặc định khi "Đã mua"~~ (6.17.3: đoán theo biểu tượng và tên hũ, không chắc thì để trống,
+  `lib/savings/bought-category.ts`).
+- ~~Gợi ý biểu tượng theo tên~~ (6.17.3: bảng từ khoá `lib/icons/icon-keywords.ts`, cho cả hạng mục).
 
 ## 5. Giao diện
 
@@ -59,9 +58,7 @@ hạn mức, cảnh báo vượt trong form, gợi ý chỉnh hạn mức, cài 
 
 ## 6. Kỹ thuật
 
-- **Test thanh toán lỗi sẵn:** `web/scripts/test-payments-integration.cjs` báo lỗi vì webhook PayOS
-  gọi `after()` của Next.js ngoài phạm vi request khi chạy trong script test; cần sửa test hoặc
-  tách phần gửi thông báo bán hàng để test chạy được.
+- ~~Test thanh toán lỗi sẵn~~ (6.17.3: `noticeSale` chạy ở nền khi không có request).
 
 ## 6b. Tốc độ
 

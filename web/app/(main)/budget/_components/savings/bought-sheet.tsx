@@ -22,6 +22,7 @@ import { formatCurrency } from "@/lib/format-currency"
 import { formatDate, toDateKey } from "@/lib/format-date"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { randomId } from "@/lib/random-id"
+import { guessBoughtCategory } from "@/lib/savings/bought-category"
 import { cn } from "@/lib/utils"
 
 import { AccountPicker } from "../../../transactions/_components/add-transaction/fields/account-fields"
@@ -92,10 +93,8 @@ function BoughtForm({
   const [requestId] = React.useState(() => randomId())
   const [error, setError] = React.useState<string | null>(null)
   const [price, setPrice] = React.useState<number | null>(jar.goal?.target ?? null)
-  // Shopping to start with, when the user has such a category.
-  const [categoryId, setCategoryId] = React.useState(
-    () => items.find((item) => /mua sắm/i.test(item.name))?.id ?? groups.find((group) => /mua sắm/i.test(group.name))?.items[0]?.id ?? "",
-  )
+  // What the jar was for, guessed from its icon and name; shopping otherwise.
+  const [categoryId, setCategoryId] = React.useState(() => guessBoughtCategory(jar, groups))
   const [accountId, setAccountId] = React.useState(() => [...choices].sort((left, right) => right.balance - left.balance)[0]?.id ?? "")
   const [when, setWhen] = React.useState(getCurrentLocalDateTime)
   const [picking, setPicking] = React.useState<"category" | "account" | null>(null)

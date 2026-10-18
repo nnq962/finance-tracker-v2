@@ -4,7 +4,11 @@ import { sentryDsn, sentryOptions } from "@/lib/sentry/options"
 
 /** Error tracking on the server (lib/sentry/options.ts): on only with a DSN. */
 export async function register() {
-  if (!sentryDsn || process.env.NEXT_RUNTIME !== "nodejs") return
+  if (process.env.NEXT_RUNTIME !== "nodejs") return
+  // Says on Telegram when the watcher on the other machine goes quiet.
+  const { startWatchdog } = await import("@/lib/ops/watchdog")
+  startWatchdog()
+  if (!sentryDsn) return
   const Sentry = await import("@sentry/nextjs")
   Sentry.init({
     ...sentryOptions,

@@ -32,6 +32,17 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.17.3",
+    date: "2026-10-18",
+    title: "Hũ đoán đúng hơn, bot canh gác được canh lại",
+    changes: [
+      { kind: "improved", text: "Khi bấm \"Đã mua\" ở một hũ, hạng mục được chọn sẵn theo biểu tượng và tên hũ (ví dụ iPhone → Đồ công nghệ); không chắc thì để bạn tự chọn thay vì chọn bừa." },
+      { kind: "improved", text: "Gợi ý biểu tượng hiểu các từ hay gặp: du lịch, cưới, học phí, xe máy, ô tô, điện thoại, quỹ khẩn cấp…, gõ có dấu hay không dấu đều được." },
+      { kind: "new", text: "Quản trị viên được báo qua Telegram khi bot canh gác im lặng hơn 10 phút." },
+      { kind: "fixed", text: "Ghi nhận thanh toán payOS không còn có thể báo lỗi sau khi đã cấp Pro." },
+    ],
+  },
+  {
     version: "6.17.2",
     date: "2026-10-18",
     title: "Server tự dọn bộ nhớ đệm khi cập nhật",

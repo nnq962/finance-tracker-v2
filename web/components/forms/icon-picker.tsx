@@ -12,18 +12,12 @@ import {
   categoryIconRegistry,
   type CategoryIconName,
 } from "@/lib/icons/category-icon-registry"
+import { suggestIcons, wordsOf } from "@/lib/icons/suggest-icons"
 import { searchKey } from "@/lib/search-text"
 import { cn } from "@/lib/utils"
 
 /** How many icons the quick grid shows: two rows of six, the last cell opening every icon. */
 const QUICK_COUNT = 11
-
-// Words that say nothing about an icon ("Cà phê và trà sữa").
-const fillerWords = new Set(["va", "và", "cua", "của", "cho", "cac", "các", "nhung", "những", "voi", "với", "la", "là", "o", "ở"])
-
-/** The words of `text` as `key` compares them, without the filler ones. */
-const wordsOf = (text: string, key: (value: string) => string) =>
-  key(text).split(/[\s,.;:()/&+-]+/).filter((word) => word && !fillerWords.has(word))
 
 /**
  * Whether every word typed starts a word of `label`, as the app's searches
@@ -32,22 +26,6 @@ const wordsOf = (text: string, key: (value: string) => string) =>
 function labelMatches(label: string, typed: string[], key: (value: string) => string) {
   const labelWords = wordsOf(label, key)
   return typed.every((word) => labelWords.some((labelWord) => labelWord.startsWith(word)))
-}
-
-/**
- * The icons whose names share words with `name` ("Cà phê sáng" → Cà phê),
- * those sharing most first. Accents count when the name has them, so
- * "sữa" (milk) does not bring up "sửa" (repairs).
- */
-export function suggestIcons(name: string): CategoryIconName[] {
-  const key = searchKey(name)
-  const typed = new Set(wordsOf(name, key).filter((word) => word.length > 1))
-  if (typed.size === 0) return []
-  return categoryIconOptions
-    .map((option) => ({ name: option.name, score: wordsOf(option.label, key).filter((word) => typed.has(word)).length }))
-    .filter((option) => option.score > 0)
-    .sort((left, right) => right.score - left.score)
-    .map((option) => option.name)
 }
 
 const cellClassName =
