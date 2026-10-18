@@ -109,6 +109,9 @@ function SettingsGroup({
             // scrolls on its own sets --sticky-caption-top and, for a band like
             // the phone's, --sticky-caption-pad (the transactions list).
             "sticky top-[env(safe-area-inset-top,0px)] z-10 bg-background/90 pb-2 backdrop-blur-md max-md:-mx-(--main-content-px) max-md:-mt-3 max-md:min-h-11 max-md:px-[calc(var(--main-content-px)+--spacing(4))] max-md:pt-3 md:top-[var(--sticky-caption-top,4rem)] md:-mt-[var(--sticky-caption-pad,0px)] md:pt-[var(--sticky-caption-pad,0px)]",
+          // The card's hairline sits 1px outside it: stop a pixel short of
+          // the card so the band does not paint over its top edge.
+          stickyCaption && !plain && "pb-[7px]",
         )}
       >
         {title ? (
@@ -125,7 +128,7 @@ function SettingsGroup({
         children
       ) : (
         // Rows carry their own padding, so the card only frames them.
-        <Card size={size} className="gap-0 py-0">
+        <Card size={size} className={cn("gap-0 py-0", stickyCaption && "mt-px")}>
           {header}
           <ul className={listClassName}>
             {children}
