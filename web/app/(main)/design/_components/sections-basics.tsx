@@ -54,6 +54,7 @@ const colors = [
   ["primary", "Màu nhấn", "bg-primary"],
   ["background", "Nền trang", "bg-background ring-1 ring-border ring-inset"],
   ["card", "Thẻ", "bg-card shadow-card"],
+  ["sidebar", "Thanh bên desktop", "bg-sidebar ring-1 ring-sidebar-border ring-inset"],
   ["muted-foreground", "Chữ phụ", "bg-muted-foreground"],
   ["income", "Tiền vào", "bg-income"],
   ["expense", "Tiền ra", "bg-expense"],

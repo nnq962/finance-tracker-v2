@@ -19,7 +19,7 @@ component ở đó là cả app đổi theo.
 ## Nguyên tắc
 
 1. **Thẻ trắng có viền trên nền trắng.** Theme sáng nền trắng (2026-10-18, chọn phương án "B · Thẻ viền" trong mockup; trước là xám rất nhạt `#f7f7f8`, trước nữa kem ấm `#f5f4f0` và `#f2f2f1`); thẻ trắng
-   bo 20, tách khỏi nền nhờ viền mảnh và bóng mềm đổ xuống (`shadow-card` = token `--card-shadow`: viền 1px đen 6%, `0 1px 3px` đen 4%, `0 6px 16px -6px` đen 8%; thẻ `inverse` và theme tối không bóng). Thứ gì trắng nằm thẳng trên trang (nút `outline`, `PromoBanner`, `NoticeBanner surface="card"`, `Item outline`) cũng mang `shadow-card`. Ô nhập, chip, rãnh segmented là xám nhạt `neutral-100` cả trên trang lẫn trên thẻ. Xám trên thẻ là thang `neutral` của
+   bo 20, tách khỏi nền nhờ viền mảnh và bóng mềm đổ xuống (`shadow-card` = token `--card-shadow`: viền 1px đen 6%, `0 1px 3px` đen 4%, `0 6px 16px -6px` đen 8%; thẻ `inverse` và theme tối không bóng). Thứ gì trắng nằm thẳng trên trang (nút `outline`, `PromoBanner`, `NoticeBanner surface="card"`, `Item outline`) cũng mang `shadow-card`. Ô nhập, chip, rãnh segmented là xám nhạt `neutral-100` cả trên trang lẫn trên thẻ. Thanh bên desktop giữ xám của nền cũ (`sidebar` `#f7f7f8`, 2026-10-18), dòng đang chọn và rê chuột xám đậm một bậc (`sidebar-accent`), cạnh trang trắng; theme tối không đổi. Xám trên thẻ là thang `neutral` của
    Tailwind (không ngả xanh); `muted` và đường kẻ `separator` hơi lạnh. Theme tối theo iOS (2026-10-16), không đổi: nền đen `#000`, thẻ `#1c1c1e`, ô mờ / thẻ đen nổi `#2c2c2e`, đường kẻ `#38383a` (trước là `#0a0a0a` / `#171717`).
 2. **Một khuôn trang** (2026-10-08). Mọi trang mở đầu giống nhau: một hàng gọn, tên trang bên
    trái, công cụ bên phải (`PageHeader`); rồi một thẻ dẫn đầu, rồi các nhóm. Học một trang là đoán

@@ -146,13 +146,18 @@
    */
   --chart-neutral: oklch(0.617 0 0);
   --radius: 0.625rem;
-  --sidebar: oklch(1 0 0);
+  /*
+   * The desktop sidebar keeps the grey the page had before 2026-10-18
+   * (#f7f7f8), beside the white page; its chosen and hovered rows a step
+   * darker (the separator's grey).
+   */
+  --sidebar: oklch(0.976 0.002 286);
   --sidebar-foreground: oklch(0.205 0 0);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent: oklch(0.93 0.003 286);
   --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.97 0 0);
+  --sidebar-border: oklch(0.93 0.003 286);
   --sidebar-ring: oklch(0.708 0 0);
   /* Meaning, not decoration: money in, money out, transfers, AI and Pro, warnings. */
   /* Sea green (#2e8b57) and a soft red (#d9534f), 2026-10-10. */
