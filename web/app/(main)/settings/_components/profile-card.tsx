@@ -6,9 +6,10 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 
 /**
- * The person at the top of Settings, as the page's lead card: on the dark,
- * a soft lime glow behind a lime-ringed avatar, the name and email, the
- * plan's label at the end. Not a button: the plan opens from Lượt AI below.
+ * The person at the top of Settings, as the page's lead card: on the pastel
+ * card (2026-10-18, was the dark one with a lime glow), a ringed avatar, the
+ * name and email, the plan's label at the end. Not a button: the plan opens
+ * from Lượt AI below.
  */
 export function ProfileCard({
   name,
@@ -26,12 +27,7 @@ export function ProfileCard({
   planLabel: string
 }) {
   return (
-    <Card size="lg" variant="inverse" discs={false}>
-      {/* A radial gradient, not a blurred disc: Safari lets a blur spill past the card's rounded corners. */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-28 -left-24 -z-10 size-72 bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--ai)_22%,transparent),transparent)]"
-      />
+    <Card size="lg" variant="pastel">
       <CardContent className="flex items-center gap-4">
         <Avatar size="xl" className="ring-4 ring-ai/25">
           <AvatarImage src={avatar} alt={name} />
@@ -48,7 +44,7 @@ export function ProfileCard({
             </CardLabel>
           ) : null}
         </span>
-        <Badge variant={isPro ? "ai" : "inverse"}>{planLabel}</Badge>
+        <Badge variant={isPro ? "ai" : "soft"}>{planLabel}</Badge>
       </CardContent>
     </Card>
   )

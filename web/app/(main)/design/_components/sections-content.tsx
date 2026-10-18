@@ -277,6 +277,23 @@ function CardSection() {
           </div>
         </CardContent>
       </Card>
+      <Card size="lg" variant="pastel">
+        <CardContent>
+          <div className="flex items-center justify-between gap-3">
+            <CardLabel as="p">Tổng số dư · Card pastel</CardLabel>
+            <Badge variant="soft">Badge soft</Badge>
+          </div>
+          <Money amount={56_453_000} size="xl" className="mt-1.5" />
+          <ul className="mt-5 flex flex-col rounded-2xl bg-pastel-tile px-4 shadow-[inset_0_0_0_1px_var(--pastel-tile-edge)]">
+            <li className="flex min-h-12 items-center justify-between text-sm">
+              Ngân hàng <Money amount={56_480_000} size="sm" />
+            </li>
+            <li className="flex min-h-12 items-center justify-between border-t border-foreground/8 text-sm">
+              Tiền mặt <Money amount={-620_000} size="sm" tone="expense" />
+            </li>
+          </ul>
+        </CardContent>
+      </Card>
       <Card size="lg">
         <CardContent>
           <CardLabel as="p">Tài sản ròng · Card lg</CardLabel>

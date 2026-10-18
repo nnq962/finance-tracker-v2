@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.21.0",
+    date: "2026-10-18",
+    title: "Thẻ Tổng số dư và thẻ người dùng mang nền pastel",
+    changes: [
+      { kind: "improved", text: "Thẻ Tổng số dư ở Tài khoản và thẻ người dùng ở Cài đặt có nền pastel: lime, bạc hà và xanh trời hoà vào nhau, nhẹ nhàng hơn thẻ đen; theme tối là cùng kiểu, đậm hơn." },
+    ],
+  },
+  {
     version: "6.20.3",
     date: "2026-10-18",
     title: "Quay lại nền xám",

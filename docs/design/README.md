@@ -72,6 +72,12 @@ component ở đó là cả app đổi theo.
   `size="sm"` (bo 16, đệm 16). Nhãn trong thẻ (`CardLabel`): chữ thường 14px màu phụ, như "Tài
   sản ròng". `variant="inverse"`: thẻ dẫn đầu cho một con số như số dư, mỗi trang một thẻ: đen ở
   theme sáng, xám nổi (`neutral-800`) ở theme tối, không bao giờ là khối trắng (token `inverse`).
+  `variant="pastel"` (2026-10-18): thẻ dẫn đầu nhẹ hơn, cho Tổng số dư (Tài khoản) và thẻ người dùng
+  (Cài đặt): các đốm lime, bạc hà, xanh trời hoà trên nền trắng (`bg-pastel`, token `--pastel-*`),
+  chữ mực, viền mảnh và bóng mềm (`shadow-pastel`); theme tối là cùng kiểu đốm, đậm, trên xám thẻ,
+  không bóng. Ô bên trong trắng mờ 55% có viền mảnh (`bg-pastel-tile`, `--pastel-tile-edge`); nhãn
+  phụ màu `muted-foreground`; chữ "Free" dùng `Badge variant="soft"`; avatar `accent` trong thẻ này
+  là nền mực chữ lime (theme sáng). Tài sản ròng ở Tổng quan vẫn là `inverse`.
   `asChild`: thẻ là phần tử con, như một nút cho thẻ bấm cả khối (thẻ Thu / Chi ở Giao
   dịch, đang chọn thì `inverse`).
 - **Input, Textarea, InputGroup, Select, Combobox:** chữ 16px (để iOS không phóng to). Cao 44 và
@@ -224,8 +230,8 @@ Mọi trang tab theo cùng một thứ tự, như các thiết kế app trên Fi
 
 1. **Đầu trang** (`PageHeader`): một hàng gọn, tên trang bên trái, công cụ bên phải; cuộn cùng
    trang. Trên điện thoại luôn hiện (không ẩn vì "thanh tab đã gọi tên trang").
-2. **Thẻ dẫn đầu:** con số quan trọng nhất của trang, `Card variant="inverse"` (Tổng quan, Tài
-   khoản): đen, hai vòng tròn trắng mờ (10%, 5%) tràn ra góc phải cho có chiều sâu; `StatGroup` trong nó là các ô trắng mờ 10% bo 16 cách nhau 8 thay cho cột chia vạch; thay đổi trong tháng là chip (`ai` khi tăng, `expense` khi giảm) hoặc `FlowTiles` (Giao dịch, Vay nợ).
+2. **Thẻ dẫn đầu:** con số quan trọng nhất của trang, `Card variant="inverse"` (Tổng quan;
+   Tài khoản và thẻ người dùng ở Cài đặt dùng `pastel` từ 2026-10-18): đen, hai vòng tròn trắng mờ (10%, 5%) tràn ra góc phải cho có chiều sâu; `StatGroup` trong nó là các ô trắng mờ 10% bo 16 cách nhau 8 thay cho cột chia vạch; thay đổi trong tháng là chip (`ai` khi tăng, `expense` khi giảm) hoặc `FlowTiles` (Giao dịch, Vay nợ).
 3. **Các nhóm:** `Section` (tiêu đề đậm 20) cho nội dung chính của trang bảng tin, `SettingsGroup`
    (nhãn nhỏ in hoa) cho nhóm ngày, nhóm cài đặt, các phần của một list. Không có kiểu tiêu đề
    thứ ba.

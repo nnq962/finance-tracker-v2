@@ -7,6 +7,7 @@
 @theme inline {
   --shadow-card: var(--card-shadow);
   --shadow-toast: var(--toast-shadow);
+  --shadow-pastel: var(--pastel-shadow);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
@@ -50,6 +51,9 @@
   --color-card: var(--card);
   --color-inverse: var(--inverse);
   --color-inverse-foreground: var(--inverse-foreground);
+  --color-pastel-tile: var(--pastel-tile);
+  --color-pastel-tile-edge: var(--pastel-tile-edge);
+  --color-pastel-base: var(--pastel-base);
   --color-income: var(--income);
   --color-expense: var(--expense);
   --color-transfer: var(--transfer);
@@ -111,6 +115,18 @@
    */
   --inverse: oklch(0.205 0 0);
   --inverse-foreground: oklch(1 0 0);
+  /*
+   * A pastel lead card (Card variant="pastel", 2026-10-18: the total balance
+   * and the profile): lime, mint and sky blending on white; its tiles a
+   * frosted white with a hairline, the card edged as a raised one.
+   */
+  --pastel-lime: color-mix(in oklab, var(--ai) 55%, white);
+  --pastel-mint: oklch(0.926 0.045 173.6);
+  --pastel-sky: oklch(0.91 0.044 256.8);
+  --pastel-base: oklch(1 0 0);
+  --pastel-tile: oklch(1 0 0 / 0.55);
+  --pastel-tile-edge: oklch(0 0 0 / 0.05);
+  --pastel-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.06), 0 10px 30px -18px rgb(0 0 0 / 0.25);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.205 0 0);
   --primary: oklch(0.205 0 0);
@@ -213,6 +229,14 @@
   --card-foreground: oklch(1 0 0);
   --inverse: oklch(0.294 0.0036 286.2);
   --inverse-foreground: oklch(1 0 0);
+  /* The pastel card in the dark: the same blend, deep, on the card grey; no shadow. */
+  --pastel-lime: color-mix(in oklab, var(--ai) 28%, oklch(0.227 0.0038 286.1));
+  --pastel-mint: oklch(0.333 0.0402 177.8);
+  --pastel-sky: oklch(0.293 0.0481 260.8);
+  --pastel-base: oklch(0.227 0.0038 286.1);
+  --pastel-tile: oklch(1 0 0 / 0.07);
+  --pastel-tile-edge: transparent;
+  --pastel-shadow: none;
   --popover: oklch(0.227 0.0038 286.1);
   --popover-foreground: oklch(1 0 0);
   --primary: oklch(1 0 0);
@@ -315,6 +339,15 @@
     animation: none;
     color: var(--muted-foreground);
   }
+}
+
+/* The pastel lead card's background (Card variant="pastel"). */
+@utility bg-pastel {
+  background:
+    radial-gradient(60% 80% at 0% 0%, var(--pastel-lime), transparent 70%),
+    radial-gradient(55% 70% at 100% 10%, var(--pastel-mint), transparent 70%),
+    radial-gradient(60% 80% at 80% 100%, var(--pastel-sky), transparent 70%),
+    var(--pastel-base);
 }
 
 @utility surface-grouped {

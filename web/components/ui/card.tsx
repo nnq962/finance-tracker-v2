@@ -14,8 +14,10 @@ function Card({
   /**
    * inverse: black (a raised grey in the dark theme), for the one card a page
    * leads with, like a balance; two soft discs off its top right corner give it depth.
+   * pastel: lime, mint and sky blending on white (deep on the card grey in the
+   * dark), dark text, for a softer lead card: the total balance, the profile.
    */
-  variant?: "default" | "inverse"
+  variant?: "default" | "inverse" | "pastel"
   /** An inverse card's two discs; off for a lead card with its own decoration. */
   discs?: boolean
   /** The card is its child, e.g. a button for a card that is tapped as a whole. */
@@ -30,7 +32,7 @@ function Card({
       data-variant={variant}
       data-discs={variant === "inverse" && discs}
       className={cn(
-        "group/card surface-plain flex flex-col shadow-card data-[variant=inverse]:shadow-none gap-(--card-spacing) overflow-hidden rounded-[20px] bg-card py-(--card-spacing) text-sm text-card-foreground [--card-spacing:--spacing(5)] has-[>img:first-child]:pt-0 data-[size=sm]:rounded-[16px] data-[size=sm]:[--card-spacing:--spacing(4)] data-[size=lg]:rounded-[24px] data-[size=lg]:[--card-spacing:--spacing(6)] *:[img:first-child]:rounded-t-[20px] *:[img:last-child]:rounded-b-[20px] data-[variant=inverse]:bg-inverse data-[variant=inverse]:text-inverse-foreground",
+        "group/card surface-plain flex flex-col shadow-card data-[variant=inverse]:shadow-none gap-(--card-spacing) overflow-hidden rounded-[20px] bg-card py-(--card-spacing) text-sm text-card-foreground [--card-spacing:--spacing(5)] has-[>img:first-child]:pt-0 data-[size=sm]:rounded-[16px] data-[size=sm]:[--card-spacing:--spacing(4)] data-[size=lg]:rounded-[24px] data-[size=lg]:[--card-spacing:--spacing(6)] *:[img:first-child]:rounded-t-[20px] *:[img:last-child]:rounded-b-[20px] data-[variant=inverse]:bg-inverse data-[variant=inverse]:text-inverse-foreground data-[variant=pastel]:relative data-[variant=pastel]:isolate data-[variant=pastel]:bg-pastel data-[variant=pastel]:shadow-pastel",
         "data-[variant=inverse]:relative data-[variant=inverse]:isolate data-[discs=true]:before:pointer-events-none data-[discs=true]:before:absolute data-[discs=true]:before:-top-16 data-[discs=true]:before:-right-14 data-[discs=true]:before:-z-10 data-[discs=true]:before:size-48 data-[discs=true]:before:rounded-full data-[discs=true]:before:bg-inverse-foreground/10 data-[discs=true]:after:pointer-events-none data-[discs=true]:after:absolute data-[discs=true]:after:-right-4 data-[discs=true]:after:-bottom-20 data-[discs=true]:after:-z-10 data-[discs=true]:after:size-40 data-[discs=true]:after:rounded-full data-[discs=true]:after:bg-inverse-foreground/5",
         className
       )}

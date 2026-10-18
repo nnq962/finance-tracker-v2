@@ -25,6 +25,8 @@ const badgeVariants = cva(
         ai: "bg-ai text-ai-foreground",
         // On a dark lead card, e.g. the plan's label on the profile.
         inverse: "bg-inverse-foreground/15 text-inverse-foreground",
+        // On a pastel lead card, e.g. the plan's label on the profile.
+        soft: "bg-foreground/8 text-foreground dark:bg-foreground/10",
         warning: "bg-warning/15 text-warning",
         // A count on an icon's shoulder (unread, pending), as on an app icon:
         // in the app's ink, not red (red is for warnings), ringed in the
