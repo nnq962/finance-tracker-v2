@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.19.4",
+    date: "2026-10-18",
+    title: "Tin báo quản trị đúng hơn",
+    changes: [
+      { kind: "fixed", text: "Bot Telegram của quản trị không còn báo nhầm “Bot canh gác im lặng” 10 phút sau mỗi lần khởi động lại server." },
+      { kind: "fixed", text: "Bản tóm tắt buổi tối đếm đúng số lỗi server trong ngày (trước luôn là 0)." },
+    ],
+  },
+  {
     version: "6.19.3",
     date: "2026-10-18",
     title: "Chuyển màn trong sheet chậm lại một chút",

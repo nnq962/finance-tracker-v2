@@ -1,5 +1,7 @@
 import "server-only"
 
+import { serverState } from "@/lib/server-state"
+
 /*
  * How long serving really takes on the home server (2026-10-17): a step
  * slower than SLOW_LOG_MS (300 by default, 0 logs every one) writes one line,
@@ -22,11 +24,12 @@ export function logIfSlow(what: string, ms: number, detail?: string) {
  * at most once every 30 minutes (2026-10-18).
  */
 const VERY_SLOW_MS = 3000
-let quietUntil = 0
+// One for the server, not one per page's bundle.
+const quiet = serverState("slow-notice", () => ({ until: 0 }))
 
 function noticeVerySlow(what: string, ms: number, detail?: string) {
-  if (Date.now() < quietUntil) return
-  quietUntil = Date.now() + 30 * 60 * 1000
+  if (Date.now() < quiet.until) return
+  quiet.until = Date.now() + 30 * 60 * 1000
   void import("@/lib/ops/telegram").then(({ escapeHtml, notifyOps }) =>
     notifyOps(`🐢 <b>Server chậm</b>: ${escapeHtml(what)} mất ${(ms / 1000).toFixed(1)} giây${detail ? ` (${escapeHtml(detail)})` : ""}`),
   )

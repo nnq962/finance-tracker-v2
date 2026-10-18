@@ -1,5 +1,7 @@
 import "server-only"
 
+import { serverState } from "@/lib/server-state"
+
 import { notifyOps, opsEnabled } from "./telegram"
 
 /*
@@ -11,24 +13,23 @@ import { notifyOps, opsEnabled } from "./telegram"
  */
 const SILENT_AFTER_MS = 10 * 60 * 1000
 
-let lastSeen = Date.now()
-let silent = false
-let started = false
+// One for the server: the health route hears the watcher, instrumentation runs the clock.
+const state = serverState("watchdog", () => ({ lastSeen: Date.now(), silent: false, started: false }))
 
 export function sawWatcher() {
-  lastSeen = Date.now()
-  if (silent) {
-    silent = false
+  state.lastSeen = Date.now()
+  if (state.silent) {
+    state.silent = false
     notifyOps("👀 Bot canh gác đã liên lạc lại.", { silent: true })
   }
 }
 
 export function startWatchdog() {
-  if (started) return
-  started = true
+  if (state.started) return
+  state.started = true
   setInterval(() => {
-    if (!opsEnabled() || silent || Date.now() - lastSeen < SILENT_AFTER_MS) return
-    silent = true
+    if (!opsEnabled() || state.silent || Date.now() - state.lastSeen < SILENT_AFTER_MS) return
+    state.silent = true
     notifyOps(
       "👀 <b>Bot canh gác im lặng hơn 10 phút</b>\nMáy ubuntu có thể đã tắt hoặc mất mạng. Timi vẫn chạy, nhưng nếu Timi sập lúc này sẽ không có tin báo từ bot (UptimeRobot vẫn canh).",
     )
