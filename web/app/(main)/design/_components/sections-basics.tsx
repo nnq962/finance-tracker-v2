@@ -41,7 +41,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Block, CatalogSection, Wide } from "./catalog-kit"
 
 const principles = [
-  ["Thẻ viền trên nền trắng", "Thẻ trắng bo tròn, viền mảnh và bóng mềm trên nền trắng; theme tối thẻ xám trên nền đen."],
+  ["Thẻ mềm trên nền xám", "Thẻ trắng bo tròn, không viền, không bóng; tách khỏi nền nhờ chênh màu."],
   ["Một khuôn trang", "Tên trang gọn bên trái, công cụ bên phải; rồi một thẻ dẫn đầu và các nhóm."],
   ["Một mảng đen", "Gần đen cho thẻ dẫn đầu, nút chính, chip đang chọn, công tắc bật; mỗi màn một khối đen."],
   ["Chữ rõ thứ bậc", "Số tiền dẫn đầu lớn nhất, tên trang 24; chữ thường 14px, phụ 12px."],
@@ -53,8 +53,7 @@ const principles = [
 const colors = [
   ["primary", "Màu nhấn", "bg-primary"],
   ["background", "Nền trang", "bg-background ring-1 ring-border ring-inset"],
-  ["card", "Thẻ", "bg-card shadow-card"],
-  ["sidebar", "Thanh bên desktop", "bg-sidebar ring-1 ring-sidebar-border ring-inset"],
+  ["card", "Thẻ", "bg-card ring-1 ring-border ring-inset"],
   ["muted-foreground", "Chữ phụ", "bg-muted-foreground"],
   ["income", "Tiền vào", "bg-income"],
   ["expense", "Tiền ra", "bg-expense"],

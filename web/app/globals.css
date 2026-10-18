@@ -91,16 +91,16 @@
 
 /*
  * Colours after the approved Figma Make mockup (see docs/design/colors.md):
- * Tailwind's neutral greys on a white page (2026-10-18; grey #f7f7f8 before),
- * white cards edged by a hairline and a soft shadow, neutral-900 as the one
- * strong colour, and meaning colours used sparingly. Dark: a black page (#000) and #1c1c1e cards, as iOS (2026-10-16; was #0a0a0a / #171717).
+ * Tailwind's neutral greys on a warm off-white page (#f2f2f1), white,
+ * borderless cards, neutral-900 as the one strong colour, and meaning
+ * colours used sparingly. Dark: a black page (#000) and #1c1c1e cards, as iOS (2026-10-16; was #0a0a0a / #171717).
  * `.light` brings the light colours back inside a dark page, as `.dark` does
  * the other way, e.g. the theme picker's light preview.
  */
 :root,
 .light {
-  /* White (2026-10-18); was a very light grey #f7f7f8, before that a warm #f5f4f0. */
-  --background: oklch(1 0 0);
+  /* A very light, barely cool grey (#f7f7f8, 2026-10-16; was a warm #f5f4f0 that read yellow). */
+  --background: oklch(0.976 0.002 286);
   --foreground: oklch(0.205 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.205 0 0);
@@ -131,7 +131,7 @@
      text colour too light under white (2026-10-18). */
   --destructive-fill: oklch(0.619 0.1694 25);
   --border: oklch(0.97 0 0);
-  /* Hairline between rows of a list, a light cool grey, clearer than --border on a white card. */
+  /* Hairline between rows of a list, the page's grey a step darker, clearer than --border on a white card. */
   --separator: oklch(0.93 0.003 286);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -146,18 +146,13 @@
    */
   --chart-neutral: oklch(0.617 0 0);
   --radius: 0.625rem;
-  /*
-   * The desktop sidebar keeps the grey the page had before 2026-10-18
-   * (#f7f7f8), beside the white page; its chosen and hovered rows a step
-   * darker (the separator's grey).
-   */
-  --sidebar: oklch(0.976 0.002 286);
+  --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.205 0 0);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.93 0.003 286);
+  --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.93 0.003 286);
+  --sidebar-border: oklch(0.97 0 0);
   --sidebar-ring: oklch(0.708 0 0);
   /* Meaning, not decoration: money in, money out, transfers, AI and Pro, warnings. */
   /* Sea green (#2e8b57) and a soft red (#d9534f), 2026-10-10. */
@@ -180,16 +175,16 @@
    * Fills that depend on the surface below (see the surface-* utilities):
    * field for inputs, chips and secondary buttons, track for the segmented
    * control and slider rails. On a white card both are the mockup's
-   * neutral-100 (#f5f5f5), barely grey. The light page is white too
-   * (2026-10-18), so there they are the same grey; on the dark theme's black
-   * page a field takes the card's grey.
+   * neutral-100 (#f5f5f5), barely grey. On the grey page or a grey sheet a
+   * field turns white, as in iOS grouped screens, and a track a shade darker
+   * than the page, so the segmented control's white thumb shows on it.
    */
   /*
-   * White cards on the white page (2026-10-18): a hairline edge and a soft
-   * shadow falling below. None in the dark theme, where the card is already
-   * lighter than the page.
+   * White cards lifted a hair off the light grey page (2026-10-16): a very faint
+   * close shadow, as the page and the card are nearly the same light. None in
+   * the dark theme, where the card is already lighter than the page.
    */
-  --card-shadow: 0 0 0 1px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.04), 0 6px 16px -6px rgb(0 0 0 / 0.08);
+  --card-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 1px 3px rgb(0 0 0 / 0.04);
   /*
    * A toast lifted clear of the page (2026-10-17): a hairline edge and a
    * shadow that falls below it only, never up to the status bar (Safari 26
@@ -200,9 +195,9 @@
     0 12px 28px -10px rgb(0 0 0 / 0.28),
     0 3px 8px -2px rgb(0 0 0 / 0.08);
   --field-plain: oklch(0.97 0 0);
-  --field-grouped: oklch(0.97 0 0);
+  --field-grouped: var(--card);
   --track-plain: oklch(0.97 0 0);
-  --track-grouped: oklch(0.97 0 0);
+  --track-grouped: oklch(0.93 0.003 286);
   --field: var(--field-plain);
   --track: var(--track-plain);
 }
@@ -265,7 +260,6 @@
   --field-plain: oklch(1 0 0 / 0.06);
   --track-plain: oklch(1 0 0 / 0.06);
   /* On the dark page, a card's grey: lighter than the page, darker than the thumb. */
-  --field-grouped: var(--card);
   --track-grouped: var(--card);
 }
 

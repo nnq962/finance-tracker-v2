@@ -18,7 +18,7 @@ const buttonVariants = cva(
         default:
           "relative isolate bg-primary text-primary-foreground after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:bg-primary-foreground/15 after:opacity-0 after:transition-opacity after:duration-150 hover:after:opacity-100 motion-reduce:after:transition-none",
         outline:
-          "bg-card shadow-card hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
+          "bg-card hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
         secondary:
           "bg-field text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--field),var(--foreground)_5%)] aria-expanded:bg-field aria-expanded:text-secondary-foreground",
         ghost:
