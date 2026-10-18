@@ -23,6 +23,11 @@ services:
       DATABASE_URL: postgres://finance_app:${APP_DB_PASSWORD}@postgres:5432/finance
       NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}
       NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+      # The admin's Telegram bot (web/lib/ops), and the secret the watcher
+      # on the other machine uses for /api/ops/summary; empty leaves both off.
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      OPS_SECRET: ${OPS_SECRET:-}
       GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase-admin.json
       # The AI assistant's model, the one deploy.sh pulls.
       OLLAMA_URL: http://ollama:11434

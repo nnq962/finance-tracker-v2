@@ -32,6 +32,17 @@ async function run() {
     assert.equal(await count('SELECT count(*) FROM category_groups WHERE user_id = $1', [userId]), 1)
     assert.ok((await sql('SELECT categories_initialized_at FROM users WHERE id = $1', [userId])).rows[0].categories_initialized_at)
 
+    // Only the call that creates the user's row says it is new (the admin's bot announces it).
+    const firstId = `category_test_${Date.now()}_first`
+    try {
+      assert.deepEqual(await categories.ensureDefaultCategories(firstId), { isNew: true })
+      assert.deepEqual(await categories.ensureDefaultCategories(firstId), { isNew: false })
+      const together = await Promise.all([1, 2].map((n) => categories.ensureDefaultCategories(`${firstId}_${n}`)))
+      assert.ok(together.every((result) => result.isNew))
+    } finally {
+      await sql("DELETE FROM users WHERE id LIKE $1", [`${firstId}%`])
+    }
+
     // A new user gets every default once, even with concurrent first sign-ins.
     const newUserId = await createUser('category_test')
     await Promise.all([1, 2, 3].map(() => categories.ensureDefaultCategories(newUserId)))

@@ -89,13 +89,16 @@ export async function insertDefaultCategories(trx: Transaction<DB>, userId: stri
  * Safe to call on every sign-in: the user row is locked while it checks, so
  * concurrent first logins create the defaults once.
  */
-export async function ensureDefaultCategories(userId: string) {
-  await getDb().transaction().execute(async (trx) => {
-    await trx
+export async function ensureDefaultCategories(userId: string): Promise<{ isNew: boolean }> {
+  return getDb().transaction().execute(async (trx) => {
+    // A row back only when this call created the user (the admin's bot says so).
+    const created = await trx
       .insertInto("users")
       .values({ id: userId })
       .onConflict((conflict) => conflict.column("id").doNothing())
-      .execute()
+      .returning("id")
+      .executeTakeFirst()
+    const isNew = Boolean(created)
 
     const user = await trx
       .selectFrom("users")
@@ -104,7 +107,7 @@ export async function ensureDefaultCategories(userId: string) {
       .forUpdate()
       .executeTakeFirstOrThrow()
 
-    if (user.categoriesInitializedAt) return
+    if (user.categoriesInitializedAt) return { isNew }
 
     const existing = await trx
       .selectFrom("categoryGroups")
@@ -120,6 +123,7 @@ export async function ensureDefaultCategories(userId: string) {
       .set({ categoriesInitializedAt: new Date() })
       .where("id", "=", userId)
       .execute()
+    return { isNew }
   })
 }
 

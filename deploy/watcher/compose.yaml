@@ -1,0 +1,18 @@
+# Timi's watcher, for a machine other than the home server (see README.md).
+#   cp .env.example .env   # fill it in
+#   docker compose up -d --build
+services:
+  watcher:
+    build: .
+    env_file: .env
+    environment:
+      TZ: Asia/Ho_Chi_Minh
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 128m
+    logging:
+      options:
+        max-size: "5m"
+        max-file: "2"

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 
 import { findBalanceMismatches, type BalanceMismatch } from "@/lib/accounts/reconcile"
 import { requireSession } from "@/lib/auth/session"
+import { noticeCouponGrant } from "@/lib/ops/events"
 import { requireAdmin } from "@/lib/plans/admin"
 import { getAdminData, type AdminData } from "@/lib/plans/admin-data"
 import {
@@ -144,6 +145,7 @@ export async function startProCheckoutAction(
       // Nothing (or next to nothing) left to pay: Pro at once, without payOS.
       if (priceWithCoupon(period, coupon.percentOff).amount < MIN_CHECKOUT_AMOUNT) {
         await grantWithCoupon(user.uid, period, couponCode)
+        noticeCouponGrant(user.email, period, coupon.code, coupon.percentOff)
         revalidatePath("/settings")
         revalidatePath("/overview")
         revalidatePath("/transactions")

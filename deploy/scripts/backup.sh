@@ -17,6 +17,9 @@ if [[ -f "$env_file" ]]; then
   source "$env_file"
   set +a
 fi
+# shellcheck source=notify.sh
+source "$root/deploy/scripts/notify.sh"
+trap 'telegram "❌ <b>Backup thất bại</b> ở lệnh: <code>${BASH_COMMAND:0:120}</code>"' ERR
 
 backup_dir="${BACKUP_DIR:-$root/deploy/backups}"
 keep="${BACKUP_KEEP:-14}"
@@ -41,3 +44,11 @@ if [[ -n "${BACKUP_REMOTE:-}" ]]; then
   echo "Copied to $BACKUP_REMOTE (kept ${remote_days} days)"
 fi
 echo "[$(date -Is)] Backup done"
+copied="${BACKUP_REMOTE:+, đã chép lên Drive}"
+telegram "💾 Backup xong: $(du -h "$file" | cut -f1)${copied}" silent
+
+# The disk the dumps and Docker share: a word before it fills up.
+used="$(df -P "$backup_dir" | awk 'NR==2 {print $5}' | tr -d %)"
+if (( used >= 90 )); then
+  telegram "🚨 <b>Ổ đĩa server đã dùng ${used}%</b>. Dọn bớt (ví dụ <code>docker builder prune</code>) trước khi đầy."
+fi

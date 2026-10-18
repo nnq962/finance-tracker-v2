@@ -5,6 +5,7 @@ import { after } from "next/server"
 import { getDb } from "@/lib/db/client"
 import { getFirebaseAdminAuth, getFirebaseAdminMessaging } from "@/lib/firebase/admin"
 import { formatCurrency } from "@/lib/format-currency"
+import { noticeSaleToOps } from "@/lib/ops/events"
 import { PUSH_ICONS } from "@/lib/notifications/types"
 import { adminEmails } from "@/lib/plans/admin"
 import { proPrices, type PlanPeriod } from "@/lib/plans/plans"
@@ -19,17 +20,18 @@ export function noticeSale(orderCode: number) {
     try {
       const payment = await getDb()
         .selectFrom("payments")
-        .select(["userId", "period", "amount"])
+        .select(["userId", "period", "amount", "discount"])
         .where("orderCode", "=", orderCode)
         .executeTakeFirst()
-      const emails = adminEmails()
-      if (!payment || emails.length === 0) return
-
+      if (!payment) return
       const auth = getFirebaseAdminAuth()
-      const [{ users: admins }, buyer] = await Promise.all([
-        auth.getUsers(emails.map((email) => ({ email }))),
-        auth.getUser(payment.userId).catch(() => undefined),
-      ])
+      const buyer = await auth.getUser(payment.userId).catch(() => undefined)
+      // The admin's Telegram as well as their devices (2026-10-18).
+      noticeSaleToOps({ email: buyer?.email, period: payment.period, amount: payment.amount, discount: payment.discount })
+
+      const emails = adminEmails()
+      if (emails.length === 0) return
+      const { users: admins } = await auth.getUsers(emails.map((email) => ({ email })))
       const adminIds = admins.filter((admin) => admin.emailVerified).map((admin) => admin.uid)
       if (adminIds.length === 0) return
       const devices = await getDb().selectFrom("pushDevices").select("fid").where("userId", "in", adminIds).execute()

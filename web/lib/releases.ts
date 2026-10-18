@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.17.0",
+    date: "2026-10-18",
+    title: "Bot Telegram cho quản trị viên",
+    changes: [
+      { kind: "new", text: "Quản trị viên nhận tin qua Telegram: Timi không vào được hay đã chạy lại, người dùng mới, mua Pro, mã giảm giá, deploy, backup, lỗi server, server chậm, và tóm tắt mỗi tối." },
+    ],
+  },
+  {
     version: "6.16.3",
     date: "2026-10-18",
     title: "Theo dõi lỗi gọn hơn trên máy chủ",

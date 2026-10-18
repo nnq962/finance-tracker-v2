@@ -15,9 +15,17 @@ export async function register() {
   })
 }
 
-/** Errors Next caught while serving a page, a route or a Server Action. */
+/**
+ * Errors Next caught while serving a page, a route or a Server Action: to
+ * the admin's Telegram (batched, lib/ops/errors.ts) and to Sentry.
+ */
 export const onRequestError: Instrumentation.onRequestError = async (...args) => {
-  if (!sentryDsn || process.env.NEXT_RUNTIME !== "nodejs") return
+  if (process.env.NEXT_RUNTIME !== "nodejs") return
+  const [error, request, context] = args
+  const { reportServerError } = await import("@/lib/ops/errors")
+  // The path without its query (a month, a search).
+  reportServerError(error, `${request.method} ${request.path.split("?")[0]} · ${context.routeType}`)
+  if (!sentryDsn) return
   const Sentry = await import("@sentry/nextjs")
   Sentry.captureRequestError(...args)
 }

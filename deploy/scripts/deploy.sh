@@ -17,6 +17,9 @@ set -a
 # shellcheck disable=SC1090
 source "$env_file"
 set +a
+# shellcheck source=notify.sh
+source "$root/deploy/scripts/notify.sh"
+trap 'telegram "❌ <b>Deploy thất bại</b> ở lệnh: <code>${BASH_COMMAND:0:120}</code>"' ERR
 
 compose=(docker compose
   --project-directory "$root/deploy"
@@ -80,3 +83,5 @@ if ! "${compose[@]}" exec -T ollama ollama show "$model" >/dev/null 2>&1; then
 fi
 
 echo "==> Deployed. Local check: http://127.0.0.1:${WEB_PORT:-3010}"
+version="$(grep -m1 '"version"' "$root/web/package.json" | cut -d'"' -f4)"
+telegram "🚀 <b>Đã deploy Timi</b> bản ${version} (${NEXT_DEPLOYMENT_ID})" silent

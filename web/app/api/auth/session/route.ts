@@ -9,6 +9,7 @@ import { forgetSessionCheck, getSessionUser } from "@/lib/auth/session"
 import { isCrossOrigin } from "@/lib/http/same-origin"
 import { getFirebaseAdminAuth } from "@/lib/firebase/admin"
 import { initializeUserWorkspace } from "@/lib/onboarding/bootstrap"
+import { noticeNewUser } from "@/lib/ops/events"
 import { closePushSession, openPushSession } from "@/lib/notifications/repository"
 import { PUSH_BROWSER_COOKIE, PUSH_SESSION_COOKIE } from "@/lib/notifications/types"
 
@@ -92,7 +93,8 @@ export async function POST(request: NextRequest) {
     sessionCookiePromise.catch(() => undefined)
 
     try {
-      await initializeUserWorkspace(decodedIdToken.uid)
+      const { isNew } = await initializeUserWorkspace(decodedIdToken.uid)
+      if (isNew) noticeNewUser(decodedIdToken.email ?? decodedIdToken.uid)
     } catch (error) {
       console.error("Unable to initialize user workspace", error)
       return NextResponse.json(
