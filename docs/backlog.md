@@ -15,16 +15,16 @@ người lạ dùng hoặc bán Pro rộng hơn thì nên làm sớm ít nhất 
 2. **Xoá tài khoản và xuất dữ liệu.** Xoá toàn bộ dữ liệu đã có (6.8.0); còn thiếu xoá hẳn tài khoản
    đăng nhập và xuất dữ liệu ra file (CSV/Excel).
 3. **Liên hệ, hỗ trợ:** email theo tên miền, câu hỏi thường gặp, góp ý ngay trong app.
-4. **Trang 404 và trang lỗi** mang thương hiệu Timi (`not-found.tsx`, `global-error.tsx`); hiện
-   dùng trang mặc định của Next.js.
-5. **Header bảo mật** trên production trong `next.config.ts`: HSTS, CSP, chống nhúng iframe,
-   `nosniff`, `Referrer-Policy`.
+4. ~~Trang 404 và trang lỗi~~ (6.16.1, `StatusScreen`, `ErrorCard`).
+5. ~~Header bảo mật~~ (6.16.0: HSTS, chống nhúng, `nosniff`, `Referrer-Policy`, `Permissions-Policy`).
+   Còn lại: CSP giới hạn script (cần nonce cho mọi script).
 6. **Trang giới thiệu:** bảng giá Free/Pro, câu hỏi thường gặp, trang công khai "Có gì mới" lấy từ
    `web/lib/releases.ts`.
 7. **Email cho gói Pro:** hoá đơn khi mua, nhắc trước khi hết hạn.
-8. **Theo dõi lỗi** (Sentry hoặc GlitchTip tự cài).
-9. **Theo dõi app còn sống** (Uptime Kuma).
-10. **Thống kê truy cập** tôn trọng riêng tư (Umami hoặc Plausible).
+8. **Theo dõi lỗi:** Sentry đã cài (6.16.0) nhưng tắt; người dùng tạo project trên sentry.io rồi điền
+   `NEXT_PUBLIC_SENTRY_DSN` vào `deploy/.env` và deploy lại. Sau này có thể thêm tải source map lên Sentry.
+9. **Theo dõi app còn sống:** đường dẫn `/api/health` đã có (6.16.0); người dùng tạo monitor trên UptimeRobot.
+10. ~~Thống kê truy cập~~: dùng Cloudflare Web Analytics có sẵn (2026-10-18).
 
 ## 2. Phần còn dở của lộ trình "giống app" (`docs/mobile-app-plan.md`)
 
