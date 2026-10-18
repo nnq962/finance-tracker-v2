@@ -14,12 +14,15 @@ services:
         NEXT_PUBLIC_FIREBASE_APP_ID: ${NEXT_PUBLIC_FIREBASE_APP_ID:-}
         NEXT_PUBLIC_FIREBASE_VAPID_KEY: ${NEXT_PUBLIC_FIREBASE_VAPID_KEY:-}
         NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
+        # Sentry error tracking; empty leaves it off (web/lib/sentry/options.ts).
+        NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
         # Set by deploy.sh to the commit being built.
         NEXT_DEPLOYMENT_ID: ${NEXT_DEPLOYMENT_ID:-}
     image: finance-web
     environment:
       DATABASE_URL: postgres://finance_app:${APP_DB_PASSWORD}@postgres:5432/finance
       NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}
+      NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
       GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase-admin.json
       # The AI assistant's model, the one deploy.sh pulls.
       OLLAMA_URL: http://ollama:11434

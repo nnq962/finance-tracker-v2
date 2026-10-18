@@ -4,6 +4,7 @@ import { RotateCcwIcon } from "lucide-react"
 
 import { Page } from "@/components/page"
 import { Button } from "@/components/ui/button"
+import { useReportError } from "@/lib/sentry/report"
 import {
   Card,
   CardContent,
@@ -12,7 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-export default function TransactionsError({ retry }: { retry: () => void }) {
+export default function TransactionsError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
+  useReportError(error)
   return (
     <Page>
       <Card>

@@ -2,8 +2,10 @@
 
 import { Page } from "@/components/page"
 import { Button } from "@/components/ui/button"
+import { useReportError } from "@/lib/sentry/report"
 
-export default function OverviewError({ retry }: { retry: () => void }) {
+export default function OverviewError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
+  useReportError(error)
   return (
     <Page>
       <div className="space-y-4" role="alert">

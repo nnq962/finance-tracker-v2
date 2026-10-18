@@ -32,6 +32,16 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.16.0",
+    date: "2026-10-18",
+    title: "An toàn hơn và theo dõi lỗi",
+    changes: [
+      { kind: "improved", text: "Trang luôn chạy qua HTTPS và không thể bị trang khác nhúng vào; trình duyệt chỉ cho Timi dùng micro, không dùng camera hay vị trí." },
+      { kind: "new", text: "Lỗi xảy ra trong app được ghi lại để sửa nhanh hơn, không kèm dữ liệu tài chính hay thông tin cá nhân." },
+      { kind: "new", text: "Có đường dẫn kiểm tra app còn hoạt động, để được báo ngay khi Timi không vào được." },
+    ],
+  },
+  {
     version: "6.15.26",
     date: "2026-10-18",
     title: "Cập nhật danh sách việc còn lại",
