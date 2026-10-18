@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.19.6",
+    date: "2026-10-18",
+    title: "Máy chủ ra Internet bằng đường ổn định hơn",
+    changes: [
+      { kind: "improved", text: "Máy chủ của Timi chuyển sang đường Internet không đổi IP giữa chừng, nên ít bị gián đoạn hơn." },
+    ],
+  },
+  {
     version: "6.19.5",
     date: "2026-10-18",
     title: "Tunnel tự nối lại nhanh hơn khi mạng nhà chập chờn",

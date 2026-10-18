@@ -147,6 +147,17 @@ Tailscale mất DERP. Mạng wifi (`wlo1`, ra Internet bằng `101.96.119.2`) kh
 bị như vậy. Deploy không gây ra lỗi này; deploy chỉ hay rơi đúng vào lúc mạng
 đang chập chờn.
 
+Từ 2026-10-18 máy ra Internet bằng wifi (route metric 50, đường dây 100 làm
+dự phòng: wifi mất hẳn thì tự đi dây). Đặt bằng:
+
+```sh
+sudo nmcli connection modify "Neo Robotics" ipv4.route-metric 50 ipv6.route-metric 50
+sudo nmcli device reapply wlo1
+```
+
+Muốn quay lại đi dây: đặt lại `-1` cho hai giá trị trên rồi `reapply`. Đổi
+đường làm các kết nối đang mở đứt một lần (tunnel rớt khoảng 2 phút lúc đổi).
+
 Để mỗi đợt chỉ tốn ít thời gian nhất:
 
 - `cloudflared` bỏ kết nối chết sau khoảng 25 giây thay vì 15 phút
