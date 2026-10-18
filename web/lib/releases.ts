@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.21.1",
+    date: "2026-10-18",
+    title: "Tin báo quản trị đến đều hơn",
+    changes: [
+      { kind: "fixed", text: "Tin báo Telegram của quản trị không còn bị rơi khoảng một phần ba khi máy chủ đi mạng wifi." },
+      { kind: "improved", text: "Bot canh gác thử lại khi không gọi được tới Cloudflare và chỉ báo sau ba phút liền, nên bớt báo nhầm lúc mạng của máy canh gác chập chờn." },
+    ],
+  },
+  {
     version: "6.21.0",
     date: "2026-10-18",
     title: "Thẻ Tổng số dư và thẻ người dùng mang nền pastel",

@@ -20,6 +20,11 @@ services:
         NEXT_DEPLOYMENT_ID: ${NEXT_DEPLOYMENT_ID:-}
     image: finance-web
     environment:
+      # Node tries each address of a host for 250 ms, then the next: Telegram's
+      # IPv4 answers in about 250 ms over the home line and the IPv6 one is
+      # unreachable here, so about a third of the admin's notices failed
+      # (ETIMEDOUT, 2026-10-18). Each try may take 2.5 s.
+      NODE_OPTIONS: --network-family-autoselection-attempt-timeout=2500
       DATABASE_URL: postgres://finance_app:${APP_DB_PASSWORD}@postgres:5432/finance
       NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}
       NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}

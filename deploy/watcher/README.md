@@ -11,7 +11,7 @@ Chạy trên một máy khác server nhà (máy `finance-dev`, 2026-10-18), báo
 | 530 / lỗi 1033 | Cloudflare mất server nhà: mất điện, mất mạng, hoặc cloudflared dừng |
 | Không gọi được | Kiểm tra mạng của chính máy này trước, để không báo nhầm |
 
-Hai lần lỗi liền thì báo, lỗi kéo dài thì nhắc mỗi 30 phút, chạy lại thì báo đã lỗi bao lâu. Lúc
+Trang lỗi của Cloudflare (530, 502…) hai phút liền thì báo. Không có phản hồi nào (không gọi được tới Cloudflare, quá 15 giây) thì phút đó thử lại thêm hai lần, cách 5 giây, và ba phút liền như vậy mới báo (2026-10-18: đường mạng của máy canh gác tới Cloudflare hay mất gói vào buổi tối, trong khi Timi vẫn chạy). Lỗi kéo dài thì nhắc mỗi 30 phút, chạy lại thì báo đã lỗi bao lâu. Lúc
 `SUMMARY_AT` (mặc định 21:00) gọi `/api/ops/summary` để Timi gửi tóm tắt ngày. Trong chat: `/status`,
 `/summary`, `/help`. Chỉ trả lời chat của admin (`TELEGRAM_CHAT_ID`).
 

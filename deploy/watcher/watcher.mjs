@@ -19,6 +19,13 @@ const OPS_SECRET = env("OPS_SECRET", "")
 const SUMMARY_AT = env("SUMMARY_AT", "21:00")
 const CHECK_EVERY_MS = Number(env("CHECK_EVERY_SECONDS", "60")) * 1000
 const FAIL_AFTER = Number(env("FAIL_AFTER", "2"))
+// No answer at all (network, timeout) is often this machine's own path to
+// Cloudflare losing packets in the evening (2026-10-18: 23% lost to Timi's
+// Cloudflare address while Google and 1.1.1.1 lost none), not Timi: such a
+// minute is tried twice more, and only NET_FAIL_AFTER of them in a row count.
+const NET_FAIL_AFTER = Number(env("NET_FAIL_AFTER", "3"))
+const NET_RETRIES = 2
+const NET_RETRY_PAUSE_MS = 5000
 const SLOW_MS = Number(env("SLOW_MS", "3000"))
 const SLOW_AFTER = Number(env("SLOW_AFTER", "3"))
 const REMIND_EVERY_MS = 30 * 60 * 1000
@@ -100,8 +107,21 @@ async function ownLineWorks() {
 
 const state = { down: false, since: 0, kind: "", fails: 0, slow: 0, slowWarned: false, lastReminder: 0, last: null, summaryDay: "" }
 
+const noAnswer = (result) => result.kind === "network" || result.kind === "timeout"
+
+/** A minute's look: a check, tried again (twice) while it gets no answer at all. */
+async function look() {
+  let result = await check()
+  for (let attempt = 1; attempt <= NET_RETRIES && noAnswer(result); attempt += 1) {
+    log("no answer, trying again:", result.kind, `${attempt}/${NET_RETRIES}`)
+    await new Promise((resolve) => setTimeout(resolve, NET_RETRY_PAUSE_MS))
+    result = await check()
+  }
+  return result
+}
+
 async function tick() {
-  const result = await check()
+  const result = await look()
   state.last = { ...result, at: new Date() }
 
   if (result.kind === "ok") {
@@ -127,15 +147,17 @@ async function tick() {
   }
 
   // A failure: first make sure it is not this machine that lost its line.
-  if ((result.kind === "network" || result.kind === "timeout") && !(await ownLineWorks())) {
+  if (noAnswer(result) && !(await ownLineWorks())) {
     log("own line down, not counting:", result.kind)
     return
   }
   state.fails += 1
-  log("failed:", result.kind, result.code, `${state.fails}/${FAIL_AFTER}`)
-  if (!state.down && state.fails >= FAIL_AFTER) {
+  // An error page from Cloudflare (530, 502…) is sure: FAIL_AFTER minutes; no answer: NET_FAIL_AFTER.
+  const failAfter = noAnswer(result) ? NET_FAIL_AFTER : FAIL_AFTER
+  log("failed:", result.kind, result.code, `${state.fails}/${failAfter}`)
+  if (!state.down && state.fails >= failAfter) {
     state.down = true
-    state.since = Date.now() - (FAIL_AFTER - 1) * CHECK_EVERY_MS
+    state.since = Date.now() - (failAfter - 1) * CHECK_EVERY_MS
     state.kind = result.kind
     state.lastReminder = Date.now()
     await send(`🔴 <b>Timi không vào được</b>\n${escape(reasonOf(result))}\nTừ khoảng ${clock(new Date(state.since))}.`)

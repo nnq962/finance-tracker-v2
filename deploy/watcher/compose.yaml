@@ -7,6 +7,9 @@ services:
     env_file: .env
     environment:
       TZ: Asia/Ho_Chi_Minh
+      # Each address of a host gets 2.5 s, not Node's 250 ms: far hosts
+      # (Telegram) took longer and the fallback IPv6 is unreachable here.
+      NODE_OPTIONS: --network-family-autoselection-attempt-timeout=2500
     restart: unless-stopped
     read_only: true
     cap_drop: [ALL]
