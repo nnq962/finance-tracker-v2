@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.19.5",
+    date: "2026-10-18",
+    title: "Tunnel tự nối lại nhanh hơn khi mạng nhà chập chờn",
+    changes: [
+      { kind: "fixed", text: "Khi mạng nhà đổi đường Internet, Timi chỉ mất kết nối khoảng nửa phút tới một, hai phút thay vì tới 10 phút: tunnel bỏ kết nối chết sớm hơn và tự khởi động lại khi cần." },
+      { kind: "fixed", text: "Deploy không còn treo nhiều phút ở bước tải mã mới khi mạng chập chờn: quá 2 phút thì dừng và báo lỗi." },
+    ],
+  },
+  {
     version: "6.19.4",
     date: "2026-10-18",
     title: "Tin báo quản trị đúng hơn",

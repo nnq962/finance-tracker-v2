@@ -135,6 +135,32 @@ Có hai cách, chọn một:
 **B. Dùng tunnel `cloudflared` đã có sẵn trên máy**: thêm public hostname
 `timi.nnqlab.dev` → `http://127.0.0.1:3010`, để trống `CLOUDFLARE_TUNNEL_TOKEN`.
 
+### Mạng dây của máy nhà đổi đường Internet
+
+Router của mạng dây (`enp4s0`, cổng `10.70.22.1`) chia tải qua nhiều đường
+Internet: IP public thường là `42.112.211.205`, nhưng có lúc nó chuyển kết nối
+sang `42.116.6.153`, `1.55.241.30`, `103.19.220.179`. Có ngày chuyện này xảy ra
+vài lần, cả lúc nửa đêm không ai deploy, mỗi đợt từ vài giây tới khoảng 10 phút
+(2026-10-18: 13:40–13:50 và 17:05–17:20 giờ VN). Mỗi lần chuyển, mọi kết nối
+TCP đang mở ra ngoài đều chết: tunnel trả 530 (lỗi 1033), `git pull` treo,
+Tailscale mất DERP. Mạng wifi (`wlo1`, ra Internet bằng `101.96.119.2`) không
+bị như vậy. Deploy không gây ra lỗi này; deploy chỉ hay rơi đúng vào lúc mạng
+đang chập chờn.
+
+Để mỗi đợt chỉ tốn ít thời gian nhất:
+
+- `cloudflared` bỏ kết nối chết sau khoảng 25 giây thay vì 15 phút
+  (`net.ipv4.tcp_retries2` trong `compose.prod.yaml`).
+- `deploy.sh` dừng `git pull` sau 2 phút và báo lỗi qua Telegram.
+- Cron chạy `scripts/tunnel-watchdog.sh` mỗi phút: tunnel trả 530 mà app trên
+  máy và đường Internet vẫn chạy thì khởi động lại `cloudflared`, rồi báo
+  Telegram (không kêu chuông).
+
+```sh
+crontab -e   # thêm dòng:
+* * * * * /home/quyetnn/apps/finance-tracker/deploy/scripts/tunnel-watchdog.sh >>/home/quyetnn/apps/finance-tracker/deploy/backups/tunnel-watchdog.log 2>&1
+```
+
 ## Tunnel cho dev server (thử trên điện thoại)
 
 Mỗi máy dev có tunnel và tên miền riêng, trỏ vào dev server của máy đó (`npm run dev`,

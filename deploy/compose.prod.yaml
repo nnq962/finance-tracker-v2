@@ -186,6 +186,12 @@ services:
     read_only: true
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
+    # The home line's router moves connections between its Internet lines (the
+    # public IP changes, 2026-10-18). A connection caught with data in flight
+    # then retransmits for ~15 minutes before failing; give up after ~25 s so
+    # cloudflared dials again. scripts/tunnel-watchdog.sh covers the rest.
+    sysctls:
+      net.ipv4.tcp_retries2: 6
 
 
 volumes:
