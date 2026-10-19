@@ -6,9 +6,14 @@ const firebaseProjectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 const nextConfig: NextConfig = {
   // Self-contained server for the Docker image (see Dockerfile).
   output: "standalone",
-  // The dev server's LAN address, and this machine's dev tunnel
-  // (DEV_TUNNEL_HOST, deploy/scripts/dev-tunnel.sh).
-  allowedDevOrigins: ["192.168.2.100", ...(process.env.DEV_TUNNEL_HOST ? [process.env.DEV_TUNNEL_HOST] : [])],
+  // The dev server's LAN addresses (DEV_LAN_HOSTS, the same list the dev
+  // sign-in accepts) and this machine's dev tunnel (DEV_TUNNEL_HOST,
+  // deploy/scripts/dev-tunnel.sh).
+  allowedDevOrigins: [
+    "192.168.2.100",
+    ...(process.env.DEV_LAN_HOSTS ?? "").split(",").map((host) => host.trim()).filter(Boolean),
+    ...(process.env.DEV_TUNNEL_HOST ? [process.env.DEV_TUNNEL_HOST] : []),
+  ],
   experimental: {
     staleTimes: {
       dynamic: 300,
