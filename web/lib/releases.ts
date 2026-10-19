@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.24.3",
+    date: "2026-10-19",
+    title: "Thanh tab trong suốt như kính",
+    changes: [
+      { kind: "improved", text: "Thanh tab trên điện thoại là kính rõ: nền 35% trên nhoè nhẹ 6px, cuộn tới đâu thấy danh sách lộ qua thanh tới đó, icon vẫn tách khỏi nền nhờ nhoè. Mức chọn từ trang thử trên dev server; trang thử và phần đọc mức đã gỡ." },
+    ],
+  },
+  {
     version: "6.24.2",
     date: "2026-10-20",
     title: "Công cụ dev: thử độ trong suốt của thanh tab",

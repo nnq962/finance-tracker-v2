@@ -8,10 +8,8 @@ import {
   type TouchEvent,
   useEffect,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
   useTransition,
 } from "react"
 import { cn } from "cn"
@@ -307,21 +305,6 @@ export function MobileBottomNav() {
       })
     }
   }, [activeIndex, bar.width])
-  // Dev only (2026-10-20): the glass mockup at /zz-preview/glass sets a
-  // translucency level in localStorage and the real bar shows it here.
-  const glass = useSyncExternalStore(
-    () => () => {},
-    () => {
-      if (process.env.NODE_ENV === "production") return null
-      try {
-        return localStorage.getItem("zz-tab-glass")
-      } catch {
-        return null
-      }
-    },
-    () => null,
-  )
-  const glassLevel = useMemo(() => (glass ? (JSON.parse(glass) as { alpha: number; blur: number }) : null), [glass])
   const barOutline = bar.width ? smoothCapsule(bar.width, bar.height) : ""
   // The 1px white rim just outside the bar, as the glass edge catches the light.
   const barRim = bar.width ? smoothCapsule(bar.width + 1, bar.height + 1) : ""
@@ -354,15 +337,13 @@ export function MobileBottomNav() {
           aria-hidden="true"
           className="absolute inset-px -z-20 rounded-full shadow-[0_8px_40px_rgb(0_0_0/0.12),0_8px_15px_rgb(0_0_0/0.02)] dark:shadow-[0_8px_40px_rgb(0_0_0/0.5)]"
         />
+        {/* Clear glass (chosen 2026-10-19 from the translucency mockup): the
+            bar at 35% over a 6px blur, so the list reads through it as it
+            scrolls under, while the light blur keeps the icons apart from it. */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 -z-10 rounded-full bg-tab-bar backdrop-blur-xl backdrop-saturate-150"
-          style={{
-            ...(barOutline ? { clipPath: `path("${barOutline}")`, borderRadius: 0 } : undefined),
-            ...(glassLevel
-              ? { background: `color-mix(in oklab, var(--tab-bar) ${Math.round(glassLevel.alpha * 100)}%, transparent)`, backdropFilter: `blur(${glassLevel.blur}px) saturate(1.6)`, WebkitBackdropFilter: `blur(${glassLevel.blur}px) saturate(1.6)` }
-              : undefined),
-          }}
+          className="absolute inset-0 -z-10 rounded-full bg-tab-bar backdrop-blur-[6px] backdrop-saturate-160"
+          style={barOutline ? { clipPath: `path("${barOutline}")`, borderRadius: 0 } : undefined}
         />
         {barRim ? (
           <svg aria-hidden="true" className="pointer-events-none absolute -inset-px size-[calc(100%+2px)]" viewBox={`0 0 ${bar.width + 2} ${bar.height + 2}`}>
