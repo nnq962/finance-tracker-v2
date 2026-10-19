@@ -179,7 +179,7 @@ export function NotificationsButton({ variant = "secondary" }: { variant?: "seco
           <BellIcon />
           {unread > 0 ? (
             // On the bell's shoulder, from just right of its centre, so a wider "9+" grows outwards.
-            <Badge variant="count" aria-hidden="true" className="absolute top-1 left-[calc(50%+4px)]">
+            <Badge variant="count" aria-hidden="true" className="absolute top-0.5 left-[calc(50%+4px)]">
               {unread > 9 ? "9+" : unread}
             </Badge>
           ) : null}
