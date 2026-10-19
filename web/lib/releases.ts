@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.22.4",
+    date: "2026-10-19",
+    title: "Chip tháng âm và thanh hạn mức vượt cùng tông đỏ",
+    changes: [
+      { kind: "fixed", text: "Trên thẻ dẫn đầu, chip tháng lỗ ở Tài sản ròng và phần tô khi vượt hạn mức dùng cùng tông đỏ hợp nền như số âm (6.22.3)." },
+    ],
+  },
+  {
     version: "6.22.3",
     date: "2026-10-19",
     title: "Chữ đỏ rõ hơn trên thẻ dẫn đầu",

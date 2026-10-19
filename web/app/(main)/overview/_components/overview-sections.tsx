@@ -41,7 +41,7 @@ export function NetWorth({
             <span
               className={cn(
                 "rounded-full px-2 py-0.5 text-xs font-bold tabular-nums",
-                monthNet > 0 ? "bg-ai text-ai-foreground" : monthNet < 0 ? "bg-expense text-destructive-foreground" : "bg-inverse-foreground/10",
+                monthNet > 0 ? "bg-ai text-ai-foreground" : monthNet < 0 ? "bg-expense-on-inverse text-white" : "bg-inverse-foreground/10",
               )}
             >
               {monthNet > 0 ? "+" : monthNet < 0 ? "−" : ""}

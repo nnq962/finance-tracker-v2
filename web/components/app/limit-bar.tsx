@@ -6,7 +6,7 @@ export type LimitTone = "ok" | "near" | "over"
 const fillClassName: Record<LimitTone, string> = {
   ok: "bg-primary group-data-[variant=inverse]/card:bg-inverse-foreground",
   near: "bg-warning",
-  over: "bg-expense",
+  over: "bg-expense group-data-[variant=inverse]/card:bg-expense-on-inverse",
 }
 
 /**
@@ -14,7 +14,8 @@ const fillClassName: Record<LimitTone, string> = {
  * (chosen 2026-10-16 over marks for "today"): the fill in the ink, amber or
  * red by `tone`, full once past the limit, on the grey rail; no marks.
  * `size`: `sm` 6 high (rows), `md` 10 (a lead figure). On an inverse card the
- * rail and the ok fill take the card's text colour (2026-10-19).
+ * rail and the ok fill take the card's text colour, and the over fill the
+ * card's red, expense-on-inverse (2026-10-19).
  */
 export function LimitBar({
   value,
