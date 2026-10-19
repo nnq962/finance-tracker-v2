@@ -350,11 +350,12 @@ export function MobileBottomNav() {
             <path d={barRim} transform="translate(0.5 0.5)" fill="none" stroke="#fff" strokeWidth="1" className="opacity-100 dark:opacity-15" />
           </svg>
         ) : null}
+        {/* The pill is glass on glass, as iOS 26 layers them: a tint with a blur of its own over the bar's, so the page shows through both. */}
         {pill.width ? (
           <div
             aria-hidden="true"
             className={cn(
-              "absolute top-1 left-0 bg-tab-pill transition-[transform,opacity] duration-350 ease-[cubic-bezier(0.22,0.61,0.36,1)] will-change-transform motion-reduce:duration-150",
+              "absolute top-1 left-0 bg-tab-pill backdrop-blur-[6px] transition-[transform,opacity] duration-350 ease-[cubic-bezier(0.22,0.61,0.36,1)] will-change-transform motion-reduce:duration-150",
               activeIndex < 0 && "opacity-0",
             )}
             style={{

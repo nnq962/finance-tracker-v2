@@ -32,6 +32,12 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.25.1",
+    date: "2026-10-19",
+    title: "Viên chọn tab cũng là kính",
+    changes: [{ kind: "improved", text: "Viên đánh dấu tab đang mở trên thanh tab không còn là màu xám đặc: giờ là lớp kính mờ thứ hai chồng lên thanh kính, có nhoè riêng, như iOS 26 xếp hai lớp kính; nội dung cuộn phía dưới lộ qua cả hai lớp." }],
+  },
+  {
     version: "6.25.0",
     date: "2026-10-19",
     title: "Thẻ dẫn đầu là thẻ thường",

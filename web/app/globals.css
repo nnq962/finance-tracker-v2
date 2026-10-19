@@ -196,9 +196,9 @@
   /* The AI's mark on a primary button (the ✦ tab, Hỏi AI): the lime on the ink. */
   --ai-on-primary: oklch(0.911 0.1775 119.6);
   --warning: oklch(0.769 0.188 70.08);
-  /* The phone's tab bar after Apple's iOS 26 kit (2026-10-20): the bar #f7f7f7 at 35% over a light blur (the "clear glass" level chosen 2026-10-19: the page reads through it, the icons still stand off it), the chosen tab's pill #e6e6e6 (#ededed on plus-darker), the chosen tab in iOS blue. */
+  /* The phone's tab bar after Apple's iOS 26 kit (2026-10-20): the bar #f7f7f7 at 35% over a light blur (the "clear glass" level chosen 2026-10-19: the page reads through it, the icons still stand off it), the chosen tab's pill a second glass on it: ink at 7%, the kit's #e6e6e6 on #f7f7f7 as a tint (2026-10-19 night, was the solid grey), the chosen tab in iOS blue. */
   --tab-bar: rgb(247 247 247 / 0.35);
-  --tab-pill: #e6e6e6;
+  --tab-pill: rgb(0 0 0 / 0.07);
   --tab-active: #0088ff;
   /*
    * Fills that depend on the surface below (see the surface-* utilities):
