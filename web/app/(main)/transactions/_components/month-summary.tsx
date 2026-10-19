@@ -20,7 +20,8 @@ import type { Transaction } from "../_types/transaction"
 
 /**
  * The page's lead card (one card since 2026-10-19, option A of the giao-dich
- * mockup; two tiles and a separate line before): the month's money in and
+ * mockup; two tiles and a separate line before; on the pastel card, lime
+ * behind Thu and sky behind Chi, from the same day): the month's money in and
  * money out as two columns, figures only (the kind chips above the list
  * narrow it), then, this month and with a month limit set, a hairline and
  * how much of the limit is used with the plain bar; a tap on the card opens
@@ -65,7 +66,7 @@ export function MonthSummary({
 
   if (!limitLine) {
     return (
-      <Card className={className}>
+      <Card variant="pastel" blend="flow" discs={false} className={className}>
         <CardContent>{figures}</CardContent>
       </Card>
     )
@@ -76,7 +77,7 @@ export function MonthSummary({
 
   return (
     <>
-      <Card asChild className={className}>
+      <Card variant="pastel" blend="flow" discs={false} asChild className={className}>
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -111,7 +112,7 @@ export function MonthSummary({
  */
 export function MonthSummarySkeleton({ className }: { className?: string }) {
   return (
-    <Card className={className}>
+    <Card variant="pastel" blend="flow" discs={false} className={className}>
       <CardContent>
         <div className="grid grid-cols-2 gap-3">
           {[0, 1].map((index) => (

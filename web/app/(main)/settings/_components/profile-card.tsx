@@ -27,7 +27,7 @@ export function ProfileCard({
   planLabel: string
 }) {
   return (
-    <Card size="lg" variant="pastel">
+    <Card size="lg" variant="pastel" blend="profile" discs={false}>
       <CardContent className="flex items-center gap-4">
         <Avatar size="xl" className="ring-4 ring-ai/25">
           <AvatarImage src={avatar} alt={name} />

@@ -277,10 +277,10 @@ function CardSection() {
           </div>
         </CardContent>
       </Card>
-      <Card size="lg" variant="pastel">
+      <Card size="lg" variant="pastel" blend="balance" discs={false}>
         <CardContent>
           <div className="flex items-center justify-between gap-3">
-            <CardLabel as="p">Tổng số dư · Card pastel</CardLabel>
+            <CardLabel as="p">Tổng số dư · Card pastel blend=&quot;balance&quot; (net · balance · flow · debts · profile)</CardLabel>
             <Badge variant="soft">Badge soft</Badge>
           </div>
           <Money amount={56_453_000} size="xl" className="mt-1.5" />

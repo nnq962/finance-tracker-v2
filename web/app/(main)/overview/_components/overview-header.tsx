@@ -1,6 +1,7 @@
 
 import { NotificationsButton } from "@/components/notifications-sheet"
 import { PageHeader } from "@/components/page"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { TimiIcon } from "@/components/timi-icon"
 import { TimiWordmark } from "@/components/timi-wordmark"
 import { Badge } from "@/components/ui/badge"
@@ -9,8 +10,10 @@ import type { PlanState } from "@/lib/plans/plans"
 /**
  * The top of the overview, as an app opens (2026-10-13): Timi's icon and
  * name, the greeting by the hour under it ("Pro" beside the name on Pro),
- * and the notifications bell. On wider screens the sidebar already shows
- * the logo and the top bar the bell, so the greeting alone is the title.
+ * then the light / dark switch and the notifications bell (the switch since
+ * 2026-10-19, so the theme is a tap away on a phone). On wider screens the
+ * sidebar already shows the logo and the top bar the bell and the switch, so
+ * the greeting alone is the title.
  * The bar's title stays for screen readers.
  */
 export function OverviewHeader({
@@ -38,7 +41,12 @@ export function OverviewHeader({
           </span>
         </div>
       }
-      tools={<div className="md:hidden"><NotificationsButton /></div>}
+      tools={
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle size="icon" variant="secondary" />
+          <NotificationsButton />
+        </div>
+      }
     />
   )
 }

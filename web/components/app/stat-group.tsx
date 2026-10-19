@@ -23,8 +23,8 @@ export function StatGroup({
     <div
       data-slot="stat-group"
       className={cn(
-        "grid auto-cols-fr grid-flow-col divide-x group-data-[variant=inverse]/card:gap-2 group-data-[variant=inverse]/card:divide-x-0",
-        separated && "border-t pt-5 group-data-[variant=inverse]/card:border-t-0 group-data-[variant=inverse]/card:pt-0",
+        "grid auto-cols-fr grid-flow-col divide-x group-data-[variant=inverse]/card:gap-2 group-data-[variant=inverse]/card:divide-x-0 group-data-[variant=pastel]/card:gap-2 group-data-[variant=pastel]/card:divide-x-0",
+        separated && "border-t pt-5 group-data-[variant=inverse]/card:border-t-0 group-data-[variant=inverse]/card:pt-0 group-data-[variant=pastel]/card:border-t-0 group-data-[variant=pastel]/card:pt-0",
         className,
       )}
     >
@@ -59,7 +59,7 @@ export function Stat({ value, label, href, onClick, title }: StatProps) {
     </>
   )
   const className =
-    "flex min-h-11 min-w-0 flex-col justify-center text-left not-first:pl-4 group-data-[variant=inverse]/card:rounded-2xl group-data-[variant=inverse]/card:bg-inverse-foreground/10 group-data-[variant=inverse]/card:p-3 group-data-[variant=inverse]/card:not-first:pl-3"
+    "flex min-h-11 min-w-0 flex-col justify-center text-left not-first:pl-4 group-data-[variant=inverse]/card:rounded-2xl group-data-[variant=inverse]/card:bg-inverse-foreground/10 group-data-[variant=inverse]/card:p-3 group-data-[variant=inverse]/card:not-first:pl-3 group-data-[variant=pastel]/card:rounded-2xl group-data-[variant=pastel]/card:bg-pastel-tile group-data-[variant=pastel]/card:shadow-[inset_0_0_0_1px_var(--pastel-tile-edge)] group-data-[variant=pastel]/card:p-3 group-data-[variant=pastel]/card:not-first:pl-3"
 
   const pressable = {
     title,

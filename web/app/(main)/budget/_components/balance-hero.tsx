@@ -17,8 +17,8 @@ const accountTypeIcons: Record<AccountType, LucideIcon> = {
 
 /**
  * The total of the accounts counted in the figures (archived ones too), the one figure this page leads with, on the
- * pastel card (2026-10-18, was the dark inverse one), so it is not the
- * overview's net worth again. Beside it, the kinds held, overlapped like cards in a wallet;
+ * pastel card (2026-10-18, was the dark inverse one; mint-led from the top
+ * right since 2026-10-19), so it is not the overview's net worth again. Beside it, the kinds held, overlapped like cards in a wallet;
  * below it, when the money sits in more than one kind, each kind's full
  * balance on its own line, a negative one in red (a share bar could not show it).
  */
@@ -35,7 +35,7 @@ export function BalanceHero({ summary, accounts }: { summary: BalanceSummary; ac
     }))
 
   return (
-    <Card size="lg" variant="pastel">
+    <Card size="lg" variant="pastel" blend="balance" discs={false}>
       <CardContent>
         <div className="flex items-start justify-between gap-3">
           {/* The figure fits its column on one line (from 100 triệu up it wrapped mid-number beside the icons, 2026-10-16). */}

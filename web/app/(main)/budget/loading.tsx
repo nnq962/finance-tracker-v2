@@ -12,7 +12,7 @@ import { BudgetLayout } from "./_components/budget-layout"
  */
 function BalanceHeroSkeleton() {
   return (
-    <Card size="lg" variant="inverse" discs={false}>
+    <Card size="lg" variant="pastel" blend="balance" discs={false}>
       <CardContent>
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 flex-1 flex-col gap-1">

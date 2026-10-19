@@ -353,12 +353,49 @@
   }
 }
 
-/* The pastel lead card's background (Card variant="pastel"). */
+/*
+ * The pastel lead cards' backgrounds (Card variant="pastel", blend=…): the
+ * same three hues on every page, each card leading with its own and lit
+ * from its own corner (2026-10-19, the Pastel family of the the-dan-dau
+ * mockup), so the five read as one family without being alike.
+ */
+/* The profile (Cài đặt): lime top left, mint top right, sky bottom right. */
 @utility bg-pastel {
   background:
     radial-gradient(60% 80% at 0% 0%, var(--pastel-lime), transparent 70%),
     radial-gradient(55% 70% at 100% 10%, var(--pastel-mint), transparent 70%),
     radial-gradient(60% 80% at 80% 100%, var(--pastel-sky), transparent 70%),
+    var(--pastel-base);
+}
+/* Tài sản ròng: lime leads wide from the top left, mint at the right edge, sky in the bottom corner. */
+@utility bg-pastel-net {
+  background:
+    radial-gradient(70% 90% at 0% 0%, var(--pastel-lime), transparent 70%),
+    radial-gradient(50% 60% at 100% 45%, var(--pastel-mint), transparent 70%),
+    radial-gradient(45% 55% at 90% 100%, var(--pastel-sky), transparent 70%),
+    var(--pastel-base);
+}
+/* Tổng số dư: mint leads from the top right, where the account kinds sit; lime low left; sky under. */
+@utility bg-pastel-balance {
+  background:
+    radial-gradient(60% 75% at 100% 0%, var(--pastel-mint), transparent 70%),
+    radial-gradient(45% 60% at 0% 100%, var(--pastel-lime), transparent 70%),
+    radial-gradient(50% 50% at 55% 110%, var(--pastel-sky), transparent 70%),
+    var(--pastel-base);
+}
+/* Giao dịch: lime behind Thu on the left, sky behind Chi on the right, meeting in the middle. */
+@utility bg-pastel-flow {
+  background:
+    radial-gradient(55% 130% at 0% 50%, var(--pastel-lime), transparent 70%),
+    radial-gradient(55% 130% at 100% 50%, var(--pastel-sky), transparent 70%),
+    var(--pastel-base);
+}
+/* Vay nợ: sky rises from below, under the ring; lime and mint small at the two top corners. */
+@utility bg-pastel-debts {
+  background:
+    radial-gradient(80% 70% at 50% 110%, var(--pastel-sky), transparent 70%),
+    radial-gradient(40% 50% at 0% 0%, var(--pastel-lime), transparent 70%),
+    radial-gradient(40% 50% at 100% 0%, var(--pastel-mint), transparent 70%),
     var(--pastel-base);
 }
 

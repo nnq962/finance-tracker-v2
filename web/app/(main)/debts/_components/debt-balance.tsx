@@ -38,7 +38,8 @@ function balanceNote(net: number, total: number) {
 
 /**
  * The debts page's lead card: a half ring weighs what is owed to you (green)
- * against what you owe (ink). On phones the balance sits inside it, the two
+ * against what you owe (ink), on the pastel card with sky rising under the
+ * ring (2026-10-19). On phones the balance sits inside it, the two
  * figures under its ends and a line says which way it leans. From lg up the
  * card lies across the page (chosen 2026-10-09): the ring on the left, the
  * balance, owed to you and owed by you as three figures on the right.
@@ -59,7 +60,7 @@ export function DebtBalance({
   const total = lent + borrowed
   const net = lent - borrowed
   return (
-    <Card size="lg" role="region" aria-label="Cần thu và cần trả">
+    <Card size="lg" variant="pastel" blend="debts" discs={false} role="region" aria-label="Cần thu và cần trả">
       <CardContent className="flex flex-col items-center lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-center lg:gap-10">
         <div className="relative w-full max-w-64">
           <svg viewBox="0 0 200 110" className="w-full" aria-hidden="true">
@@ -108,7 +109,7 @@ export function DebtBalance({
             <Money amount={borrowed} size="md" fit />
           </div>
         </div>
-        <span className="mt-4 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground lg:hidden">
+        <span className="mt-4 rounded-full bg-pastel-tile px-3 py-1 text-xs font-medium text-muted-foreground shadow-[inset_0_0_0_1px_var(--pastel-tile-edge)] lg:hidden">
           {balanceNote(net, total)}
         </span>
       </CardContent>
@@ -119,7 +120,7 @@ export function DebtBalance({
 /** Same footprint as DebtBalance, for loading states. */
 export function DebtBalanceSkeleton() {
   return (
-    <Card size="lg" aria-hidden="true">
+    <Card size="lg" variant="pastel" blend="debts" discs={false} aria-hidden="true">
       <CardContent className="flex flex-col items-center lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-center lg:gap-10">
         <div className="relative w-full max-w-64">
           <svg viewBox="0 0 200 110" className="w-full">

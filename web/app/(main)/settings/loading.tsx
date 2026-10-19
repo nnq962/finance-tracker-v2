@@ -51,7 +51,7 @@ export default function SettingsLoading() {
       {/* The groups of SettingsView, in its one capped column. */}
       <div aria-hidden="true" className="grid gap-6 md:gap-8">
         {/* The profile card: the 48 avatar, name and email, the plan's label. */}
-        <Card size="lg" variant="inverse" discs={false}>
+        <Card size="lg" variant="pastel" blend="profile" discs={false}>
           <CardContent className="flex items-center gap-4">
             <Skeleton className="size-12 rounded-full" />
             <div className="flex flex-1 flex-col gap-2">

@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.22.0",
+    date: "2026-10-19",
+    title: "Năm thẻ dẫn đầu một dải màu, nút đổi theme ở Tổng quan",
+    changes: [
+      { kind: "new", text: "Trên điện thoại, Tổng quan có nút đổi giao diện sáng / tối cạnh chuông thông báo." },
+      { kind: "improved", text: "Thẻ dẫn đầu của cả năm trang (Tài sản ròng, Tổng số dư, Thu / Chi ở Giao dịch, Cần thu / Cần trả, thẻ người dùng) cùng một họ pastel: ba màu xanh chanh, bạc hà, xanh trời, mỗi thẻ một màu dẫn và một góc sáng riêng. Tài sản ròng không còn là thẻ đen. Theme tối: cùng dải màu, trầm, trên nền thẻ xám." },
+    ],
+  },
+  {
     version: "6.21.5",
     date: "2026-10-19",
     title: "Giao dịch: Thu, Chi và hạn mức trong một thẻ",
