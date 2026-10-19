@@ -48,6 +48,7 @@ export default function SettingsLoading() {
     >
       <div className="md:hidden">
         <ScreenHeader title="Cài đặt" backLabel="Về Tổng quan" />
+        <div data-hide-tab-bar="page" hidden />
       </div>
       <div className="max-md:hidden">
         <PageHeaderSkeleton title="Cài đặt" />

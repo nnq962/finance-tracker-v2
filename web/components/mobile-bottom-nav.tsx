@@ -313,9 +313,10 @@ export function MobileBottomNav() {
     // Icons on a capsule across the screen, floating over the page;
     // the shell reserves its height in --tab-bar-space so the end of a page
     // can scroll above it. A screen that takes the whole height for a while
-    // (searching) slides it off the bottom by rendering an element with
-    // data-hide-tab-bar; it turns invisible once out of view, so it leaves the
-    // tab order too, and slides back when that element goes.
+    // (searching, the assistant, Settings as a pushed screen) slides it off
+    // the bottom by rendering an element with data-hide-tab-bar; it turns
+    // invisible once out of view, so it leaves the tab order too, and slides
+    // back when that element goes.
     <nav
       aria-label="Điều hướng chính trên di động"
       className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex items-center justify-center px-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)-0.75rem))] transition-[translate,visibility] duration-300 ease-out motion-reduce:transition-none md:hidden [body:has([data-hide-tab-bar])_&]:invisible [body:has([data-hide-tab-bar])_&]:translate-y-full"

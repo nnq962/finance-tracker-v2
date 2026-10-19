@@ -53,6 +53,8 @@ export default async function SettingsPage({
           of the accessibility tree, so one h1 remains. */}
       <div className="md:hidden">
         <ScreenHeader title="Cài đặt" backLabel="Về Tổng quan" />
+        {/* The tab bar slides away while Settings is open and back when it closes (2026-10-19), as a pushed screen on iOS. */}
+        <div data-hide-tab-bar="page" hidden />
       </div>
       <div className="max-md:hidden">
         <PageHeader title="Cài đặt" />

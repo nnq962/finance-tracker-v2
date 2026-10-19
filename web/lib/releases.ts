@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.27.0",
+    date: "2026-10-19",
+    title: "Thanh tab trượt đi khi mở Cài đặt",
+    changes: [
+      { kind: "new", text: "Trên điện thoại, mở Cài đặt thì thanh tab trượt xuống khỏi màn hình, quay lại thì trượt lên, như một màn đẩy vào trên iOS. Cuối trang Cài đặt không còn chừa chỗ cho thanh tab." },
+    ],
+  },
+  {
     version: "6.26.3",
     date: "2026-10-19",
     title: "Nút quay lại sát mép, avatar hết xanh chanh",
