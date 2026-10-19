@@ -6,7 +6,6 @@ import dynamic from "next/dynamic"
 import { BotIcon } from "@/components/app/bot-icon"
 import { Button } from "@/components/ui/button"
 import { preloadWhenIdle } from "@/lib/preload-when-idle"
-import { cn } from "@/lib/utils"
 
 /*
  * The assistant itself (its frame, answers, drafts and speech) loads apart
