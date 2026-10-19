@@ -56,7 +56,7 @@ export default function SettingsLoading() {
       {/* The groups of SettingsView, in its one capped column. */}
       <div aria-hidden="true" className="grid gap-6 md:gap-8">
         {/* The person (ProfileHeader): the 96 avatar, the name on a 36 line, the email on a 20 one, the plan's label. */}
-        <div className="flex flex-col items-center px-4 max-md:-mt-2">
+        <div className="flex flex-col items-center px-4 max-md:-mt-6">
           <Skeleton className="size-24 rounded-full" />
           <div className="mt-3.5 flex h-9 items-center">
             <Skeleton className="h-6 w-44" />

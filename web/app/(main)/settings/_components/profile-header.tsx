@@ -25,10 +25,11 @@ export function ProfileHeader({
   isPro: boolean
   planLabel: string
 }) {
-  // On phones it sits 24 under the back button (the page's 24 less the bar's
-  // 8 of padding), not the page's full step.
+  // On phones it sits 8 under the back button (the bar's own padding; the
+  // page's 24 step is taken back), not a full step away: 24 read as too far
+  // from the top, 2026-10-19.
   return (
-    <section aria-label="Tài khoản" className="flex flex-col items-center px-4 text-center max-md:-mt-2">
+    <section aria-label="Tài khoản" className="flex flex-col items-center px-4 text-center max-md:-mt-6">
       <Avatar size="2xl">
         <AvatarImage src={avatar} alt={name} />
         <AvatarFallback>{initials}</AvatarFallback>
