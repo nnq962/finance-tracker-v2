@@ -32,6 +32,12 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.26.1",
+    date: "2026-10-19",
+    title: "Hồ sơ ở Cài đặt gọn hơn",
+    changes: [{ kind: "improved", text: "Ảnh đại diện đầu trang Cài đặt nhỏ lại (96 thay vì 112) và cả khối hồ sơ nhích lên sát thanh đầu màn, bớt khoảng trống phía trên." }],
+  },
+  {
     version: "6.26.0",
     date: "2026-10-19",
     title: "Cài đặt mở ra như màn tài khoản của iOS",

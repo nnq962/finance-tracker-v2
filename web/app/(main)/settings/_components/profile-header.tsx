@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge"
  * The person at the top of Settings, as iOS's Apple Account screen shows
  * them (option G of the profile mockup, 2026-10-19; a card with a 48 avatar,
  * the name over a truncated email and the plan's label before): no card, the
- * 112 avatar centred on the page, the name 28 bold, the email 15 grey
+ * 96 avatar centred on the page (112 at first, the user wanted it smaller
+ * and nearer the top), the name 28 bold, the email 15 grey
  * wrapping wherever it must, the plan's label under it. No Pro tick by the
  * name (the user found it Facebook-like); the plan opens from Lượt AI below.
  */
@@ -24,8 +25,10 @@ export function ProfileHeader({
   isPro: boolean
   planLabel: string
 }) {
+  // On phones it sits 24 under the back button (the page's 24 less the bar's
+  // 8 of padding), not the page's full step.
   return (
-    <section aria-label="Tài khoản" className="flex flex-col items-center px-4 pt-2 text-center">
+    <section aria-label="Tài khoản" className="flex flex-col items-center px-4 text-center max-md:-mt-2">
       <Avatar size="2xl">
         <AvatarImage src={avatar} alt={name} />
         <AvatarFallback>{initials}</AvatarFallback>
