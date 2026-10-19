@@ -58,6 +58,7 @@ import { Stepper } from "@/components/app/stepper"
 import { Steps } from "@/components/app/steps"
 import { CurrencyInput } from "@/components/forms/currency-input"
 import { InlineInput } from "@/components/forms/inline-input"
+import { ScreenHeader } from "@/components/app/screen-header"
 import { PageHeader } from "@/components/page"
 import { SettingsFieldRow, SettingsGroup, SettingsGroupSkeleton, SettingsRow } from "@/components/settings-list"
 import { SheetNavHeader } from "@/components/sheet-nav-header"
@@ -681,6 +682,9 @@ function NavSection() {
             </Button>
           }
         />
+      </Block>
+      <Block label="Đầu màn đẩy vào (ScreenHeader) · nút back tròn có bóng, tên ở giữa, như thanh của sheet (Cài đặt từ Tổng quan)" wide>
+        <ScreenHeader title="Cài đặt" />
       </Block>
       <Block label="Thanh tab" wide>
         <p className="text-sm text-muted-foreground">

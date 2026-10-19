@@ -11,14 +11,15 @@ function Avatar({
   size = "default",
   ...props
 }: React.ComponentProps<typeof AvatarPrimitive.Root> & {
-  size?: "default" | "sm" | "lg" | "xl"
+  /** 2xl (112, 2026-10-19): the person at the top of Settings, as Apple Account shows them. */
+  size?: "default" | "sm" | "lg" | "xl" | "2xl"
 }) {
   return (
     <AvatarPrimitive.Root
       data-slot="avatar"
       data-size={size}
       className={cn(
-        "group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=xl]:size-12 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
+        "group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=xl]:size-12 data-[size=2xl]:size-28 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
         className
       )}
       {...props}
@@ -60,7 +61,7 @@ function AvatarFallback({
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
       className={cn(
-        "flex size-full items-center justify-center rounded-full text-sm group-data-[size=sm]/avatar:text-xs group-data-[size=xl]/avatar:text-lg",
+        "flex size-full items-center justify-center rounded-full text-sm group-data-[size=sm]/avatar:text-xs group-data-[size=xl]/avatar:text-lg group-data-[size=2xl]/avatar:text-4xl group-data-[size=2xl]/avatar:font-semibold",
         accent
           ? "bg-ai font-semibold text-ai-foreground group-data-[variant=pastel]/card:bg-foreground group-data-[variant=pastel]/card:text-ai dark:group-data-[variant=pastel]/card:bg-ai dark:group-data-[variant=pastel]/card:text-ai-foreground"
           : colorKey
@@ -83,6 +84,7 @@ function AvatarBadge({ className, ...props }: React.ComponentProps<"span">) {
         "group-data-[size=default]/avatar:size-2.5 group-data-[size=default]/avatar:[&>svg]:size-2",
         "group-data-[size=lg]/avatar:size-3 group-data-[size=lg]/avatar:[&>svg]:size-2",
         "group-data-[size=xl]/avatar:size-3.5 group-data-[size=xl]/avatar:[&>svg]:size-2.5",
+        "group-data-[size=2xl]/avatar:size-6 group-data-[size=2xl]/avatar:[&>svg]:size-4",
         className
       )}
       {...props}

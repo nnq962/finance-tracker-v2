@@ -49,7 +49,7 @@ import { AiQuotaGroup } from "./ai-quota-group"
 import { InstallAppRow } from "./install-app-row"
 import { NotificationDevices } from "./notification-devices"
 import { NotificationPreferences } from "./notification-preferences"
-import { ProfileCard } from "./profile-card"
+import { ProfileHeader } from "./profile-header"
 import { ReleaseHistory } from "./release-history"
 import { SalaryCalculator } from "./salary-calculator"
 import { SignOutRow } from "./sign-out-row"
@@ -243,8 +243,8 @@ export function SettingsView({
           keep their order down to signing out. From md up the page caps it
           and centres it, title and all (settingsPageClassName). */}
       <div className="grid gap-6 md:gap-8">
-        {/* The person first, as the page's lead card; the plan opens from Lượt AI below. */}
-        <ProfileCard
+        {/* The person first, as Apple Account opens; the plan opens from Lượt AI below. */}
+        <ProfileHeader
           name={user.name}
           email={user.email || undefined}
           avatar={user.avatar}

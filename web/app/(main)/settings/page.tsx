@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 
+import { ScreenHeader } from "@/components/app/screen-header"
 import { Page, PageHeader } from "@/components/page"
 import { loadWithSession } from "@/lib/auth/session"
 import { getBudgetOverview } from "@/lib/budgets/repository"
@@ -47,7 +48,15 @@ export default async function SettingsPage({
 
   return (
     <Page className={settingsPageClassName}>
-      <PageHeader title="Cài đặt" />
+      {/* On phones Settings is pushed in from the overview's avatar (2026-10-19): the sheet-like bar
+          with a back button. From md it is a sidebar page like the others. A hidden header is out
+          of the accessibility tree, so one h1 remains. */}
+      <div className="md:hidden">
+        <ScreenHeader title="Cài đặt" backLabel="Về Tổng quan" />
+      </div>
+      <div className="max-md:hidden">
+        <PageHeader title="Cài đặt" />
+      </div>
 
       <SettingsView
         key={user.uid}

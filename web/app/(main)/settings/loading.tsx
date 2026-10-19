@@ -1,6 +1,6 @@
+import { ScreenHeader } from "@/components/app/screen-header"
 import { Page, PageHeaderSkeleton } from "@/components/page"
 import { SettingsGroupSkeleton, SettingsRowSkeleton, settingsSeparatorClassName } from "@/components/settings-list"
-import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
@@ -46,21 +46,26 @@ export default function SettingsLoading() {
       aria-label="Đang tải cài đặt"
       aria-busy="true"
     >
-      <PageHeaderSkeleton title="Cài đặt" />
+      <div className="md:hidden">
+        <ScreenHeader title="Cài đặt" backLabel="Về Tổng quan" />
+      </div>
+      <div className="max-md:hidden">
+        <PageHeaderSkeleton title="Cài đặt" />
+      </div>
 
       {/* The groups of SettingsView, in its one capped column. */}
       <div aria-hidden="true" className="grid gap-6 md:gap-8">
-        {/* The profile card: the 48 avatar, name and email, the plan's label. */}
-        <Card size="lg">
-          <CardContent className="flex items-center gap-4">
-            <Skeleton className="size-12 rounded-full" />
-            <div className="flex flex-1 flex-col gap-2">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-3.5 w-40 max-w-full" />
-            </div>
-            <Skeleton className="h-6 w-12 rounded-full" />
-          </CardContent>
-        </Card>
+        {/* The person (ProfileHeader): the 112 avatar, the name on a 36 line, the email on a 20 one, the plan's label. */}
+        <div className="flex flex-col items-center px-4 pt-2">
+          <Skeleton className="size-28 rounded-full" />
+          <div className="mt-3.5 flex h-9 items-center">
+            <Skeleton className="h-6 w-44" />
+          </div>
+          <div className="mt-0.5 flex h-5 items-center">
+            <Skeleton className="h-3.5 w-36" />
+          </div>
+          <Skeleton className="mt-3 h-6 w-12 rounded-full" />
+        </div>
         {/* "Lượt AI": this month's requests, the credits from missions, then the row to the plan. */}
         <SettingsGroupSkeleton>
           <UsageMeterSkeleton />

@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.26.0",
+    date: "2026-10-19",
+    title: "Cài đặt mở ra như màn tài khoản của iOS",
+    changes: [
+      { kind: "improved", text: "Trên điện thoại, Cài đặt có nút quay lại tròn ở góc trên và tên màn ở giữa, như một màn đẩy vào từ Tổng quan (thanh giống thanh của các sheet)." },
+      { kind: "improved", text: "Hồ sơ đầu trang Cài đặt không còn là thẻ: ảnh đại diện 112 ở giữa, tên to, email đầy đủ xuống dòng khi dài (trước bị cắt bằng dấu ba chấm), nhãn gói bên dưới. Bỏ dấu tick Pro cạnh tên." },
+    ],
+  },
+  {
     version: "6.25.1",
     date: "2026-10-19",
     title: "Viên chọn tab cũng là kính",
