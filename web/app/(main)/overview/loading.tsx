@@ -15,7 +15,7 @@ import { OverviewLayout } from "./_components/overview-layout"
  */
 function NetWorthSkeleton() {
   return (
-    <Card size="lg" variant="inverse" discs={false}>
+    <Card size="lg">
       <CardContent>
         <div className="flex h-5 items-center">
           <Skeleton className="h-3.5 w-24" />
@@ -26,7 +26,7 @@ function NetWorthSkeleton() {
         <div className="mt-1.5 flex h-5 items-center">
           <Skeleton className="h-3.5 w-32" />
         </div>
-        <StatGroup separated className="mt-5">
+        <StatGroup tiles className="mt-5">
           {[0, 1, 2].map((index) => (
             <Stat
               key={index}

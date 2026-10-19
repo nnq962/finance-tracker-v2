@@ -6,25 +6,30 @@ import { cn } from "@/lib/utils"
 /**
  * Two to four figures side by side, split by thin lines: the figure above,
  * a small grey label below, e.g. the parts of a total. Each can open a page.
- * `separated`: a line above too, set off from the lead figure over it. On an
- * inverse card each figure sits in its own translucent tile instead, with no
- * lines, and the labels turn light.
+ * `separated`: a line above too, set off from the lead figure over it.
+ * `tiles` (2026-10-19, the lead card on the plain surface): each figure sits
+ * in its own `track` tile instead, 8 apart, with no lines. On an inverse or
+ * pastel card the tiles are translucent and the labels turn light.
  */
 export function StatGroup({
   separated = false,
+  tiles = false,
   className,
   children,
 }: {
   separated?: boolean
+  tiles?: boolean
   className?: string
   children: React.ReactNode
 }) {
   return (
     <div
       data-slot="stat-group"
+      data-tiles={tiles}
       className={cn(
-        "grid auto-cols-fr grid-flow-col divide-x group-data-[variant=inverse]/card:gap-2 group-data-[variant=inverse]/card:divide-x-0 group-data-[variant=pastel]/card:gap-2 group-data-[variant=pastel]/card:divide-x-0",
-        separated && "border-t pt-5 group-data-[variant=inverse]/card:border-t-0 group-data-[variant=inverse]/card:pt-0 group-data-[variant=pastel]/card:border-t-0 group-data-[variant=pastel]/card:pt-0",
+        "group/stats grid auto-cols-fr grid-flow-col divide-x group-data-[variant=inverse]/card:gap-2 group-data-[variant=inverse]/card:divide-x-0 group-data-[variant=pastel]/card:gap-2 group-data-[variant=pastel]/card:divide-x-0",
+        tiles && "gap-2 divide-x-0",
+        separated && !tiles && "border-t pt-5 group-data-[variant=inverse]/card:border-t-0 group-data-[variant=inverse]/card:pt-0 group-data-[variant=pastel]/card:border-t-0 group-data-[variant=pastel]/card:pt-0",
         className,
       )}
     >
@@ -59,7 +64,7 @@ export function Stat({ value, label, href, onClick, title }: StatProps) {
     </>
   )
   const className =
-    "flex min-h-11 min-w-0 flex-col justify-center text-left not-first:pl-4 group-data-[variant=inverse]/card:rounded-2xl group-data-[variant=inverse]/card:bg-inverse-foreground/10 group-data-[variant=inverse]/card:p-3 group-data-[variant=inverse]/card:not-first:pl-3 group-data-[variant=pastel]/card:rounded-2xl group-data-[variant=pastel]/card:bg-pastel-tile group-data-[variant=pastel]/card:shadow-[inset_0_0_0_1px_var(--pastel-tile-edge)] group-data-[variant=pastel]/card:p-3 group-data-[variant=pastel]/card:not-first:pl-3"
+    "flex min-h-11 min-w-0 flex-col justify-center text-left not-first:pl-4 group-data-[tiles=true]/stats:rounded-2xl group-data-[tiles=true]/stats:bg-track group-data-[tiles=true]/stats:p-3 group-data-[tiles=true]/stats:not-first:pl-3 group-data-[variant=inverse]/card:rounded-2xl group-data-[variant=inverse]/card:bg-inverse-foreground/10 group-data-[variant=inverse]/card:p-3 group-data-[variant=inverse]/card:not-first:pl-3 group-data-[variant=pastel]/card:rounded-2xl group-data-[variant=pastel]/card:bg-pastel-tile group-data-[variant=pastel]/card:shadow-[inset_0_0_0_1px_var(--pastel-tile-edge)] group-data-[variant=pastel]/card:p-3 group-data-[variant=pastel]/card:not-first:pl-3"
 
   const pressable = {
     title,

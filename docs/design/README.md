@@ -24,9 +24,10 @@ component ở đó là cả app đổi theo.
 2. **Một khuôn trang** (2026-10-08). Mọi trang mở đầu giống nhau: một hàng gọn, tên trang bên
    trái, công cụ bên phải (`PageHeader`); rồi một thẻ dẫn đầu, rồi các nhóm. Học một trang là đoán
    được các trang khác. Xem "Khuôn trang" bên dưới.
-3. **Một mảng đen.** `neutral-900` cho thẻ dẫn đầu (`Card variant="inverse"`), nút chính, nút nổi,
-   chip đang chọn, công tắc bật. Mỗi màn chỉ một khối đen lớn: thanh tab, segmented control, lời
-   mời Pro đều sáng.
+3. **Một mảng đen.** `neutral-900` cho nút chính, nút nổi, chip đang chọn, công tắc bật (tới
+   2026-10-19 cả thẻ dẫn đầu, `Card variant="inverse"`; từ tối hôm đó thẻ dẫn đầu là thẻ thường,
+   xem "Khuôn trang"). Mỗi màn chỉ một khối đen lớn: thanh tab, segmented control, lời mời Pro
+   đều sáng.
 4. **Chữ rõ thứ bậc.** Số tiền của thẻ dẫn đầu là chữ lớn nhất màn; tên trang 24, số tiền và
    tiêu đề đậm 600, chữ thường 400.
 5. **Màu dịu, có ý nghĩa.** `income` tiền vào (xanh lá biển `#2e8b57`), `expense` tiền ra (đỏ dịu `#d9534f`; đổi 2026-10-10, `destructive` của chữ xoá và lỗi dùng cùng màu; nền đỏ đặc dưới chữ trắng (nút Xoá, ô xoá khi vuốt dòng) là `destructive-fill`, ở theme sáng cùng màu, ở theme tối đậm hơn `#cf4040` để chữ trắng đọc được, 2026-10-18), `transfer`
@@ -70,14 +71,15 @@ component ở đó là cả app đổi theo.
   18px; nút tắt mờ còn 35%.
 - **Card:** bo 20, đệm 20 · `size="lg"` (bo 24, đệm 24) cho thẻ chính của trang ·
   `size="sm"` (bo 16, đệm 16). Nhãn trong thẻ (`CardLabel`): chữ thường 14px màu phụ, như "Tài
-  sản ròng". `variant="inverse"`: thẻ dẫn đầu cho một con số như số dư, mỗi trang một thẻ: đen ở
-  theme sáng, xám nổi (`neutral-800`) ở theme tối, không bao giờ là khối trắng (token `inverse`).
+  sản ròng". `variant="inverse"`: thẻ đen (theme tối: trắng chữ mực, token `inverse`) cho trang
+  giới thiệu, đăng nhập và màn chào; là thẻ dẫn đầu của mọi trang từ 2026-10-09 tới tối 2026-10-19
+  (ngày cuối: theme tối trắng, người dùng thấy loá), nay thẻ dẫn đầu là `Card` thường.
   `variant="pastel"` (2026-10-18): các đốm lime, bạc hà, xanh trời hoà trên nền trắng (token `--pastel-*`), chữ mực, viền mảnh và bóng mềm (`shadow-pastel`);
   theme tối cùng kiểu đốm, đậm, trên xám thẻ. `blend` chọn bố cục đốm (`net`, `balance`, `flow`, `debts`, `profile`, mỗi cái một utility `bg-pastel-*`).
   **Không còn trang nào dùng** (2026-10-19): cả năm thẻ dẫn đầu thử họ pastel trong 6.22.0, người dùng thấy loè loẹt và chọn thẻ `inverse` cho tất cả
   (6.22.1); giữ lại trong catalog. Ô bên trong trắng mờ 55% có viền mảnh (`bg-pastel-tile`, `--pastel-tile-edge`); `StatGroup` trên thẻ pastel là các ô đó như trên `inverse`
   phụ màu `muted-foreground`; chữ "Free" dùng `Badge variant="soft"`; avatar `accent` trong thẻ này
-  là nền mực chữ lime (theme sáng). Tài sản ròng ở Tổng quan vẫn là `inverse`.
+  là nền mực chữ lime (theme sáng). Từ tối 2026-10-19 không thẻ dẫn đầu nào là `inverse` hay `pastel`.
   `asChild`: thẻ là phần tử con, như một nút cho thẻ bấm cả khối (thẻ Thu / Chi ở Giao
   dịch, đang chọn thì `inverse`).
 - **Input, Textarea, InputGroup, Select, Combobox:** chữ 16px (để iOS không phóng to). Cao 44 và
@@ -162,7 +164,7 @@ component ở đó là cả app đổi theo.
 | `Money` | Mọi số tiền: chữ số đều, "đ" viết liền sau số (55.103.000đ); ở cỡ lớn (`lg`, `xl`) "đ" nhỏ hơn và mờ 50% như mockup; cỡ `sm` 14 / `md` 16 / `lg` 20 / `xl` 34, màu theo `tone` (`muted` cho số không được tính, như số dư tài khoản "Không tính vào báo cáo"). Số âm luôn viết bằng dấu trừ "−", không phải gạch nối, cả ở `formatCurrency` và `formatCompactCurrency`. `fit`: cho ô hẹp có độ rộng cố định (FlowTiles): số luôn một dòng, co theo `@container` gần nhất từ cỡ của nó xuống 3/4 (lg: 20 → 15), vẫn không vừa thì viết gọn (+125tr, −1,25tỷ); luôn chỉ một dạng hiện, số đầy đủ cho trình đọc màn hình và tooltip. Trình duyệt không có `round()` hay `cqi` (iOS 15, Chromium cũ) thì chỉ hiện số đầy đủ. Manrope có chữ số đều (`tnum`), nên các chữ số của số tiền rộng bằng nhau |
 | `IconTile` | Icon trên ô vuông bo góc nền nhạt (như mockup); màu hạng mục hoặc màu ý nghĩa, làm dịu về xám với icon màu mực (`tile-tinted`, 2026-10-08). Dòng không mang ý nghĩa màu (Cài đặt) dùng `neutral` mặc định: ô xám, icon mực (2026-10-09); màu chỉ khi là dữ liệu (hạng mục, tài khoản) hay ý nghĩa (Pro `ai`). Cỡ `xs` 20 (bo 6) đứng trước giá trị ở cuối dòng, ngang `AccountLogo xs`; Cỡ `sm` 36 (mọi dòng list, qua `SettingsRow`), `md` 40 (bo 10), `lg` 48 (bo 16; đầu thẻ, đầu sheet); `shape="circle"` chỉ cho chữ cái, khuôn mặt. Tông `card` (2026-10-12): ô trắng viền mảnh, thay `neutral` ở chỗ ô có thể nằm trên nền xám (dòng trong list `bg-field`, ô đang chọn của lưới), nơi ô xám biến mất. `badge`: một chữ ngắn ở góc trên phải như trên icon app ("Mới" cho hạng mục sẽ được tạo), nền xanh chanh `ai`, viền màu thẻ, chỉ nhô ra 6px để không chạm chữ bên cạnh hay bên dưới; dùng trên ô `card` hoặc ô màu hạng mục, không trên ô `ai` (khó đọc) |
 | `DeltaBadge` | % thay đổi so với kỳ trước, dạng chữ nhỏ có mũi tên ("↘ 93%") như mockup, không nền; xanh khi tốt, đỏ khi xấu |
-| `StatGroup` + `Stat` | 2–4 chỉ số chia cột bằng vạch mảnh (trên thẻ dẫn đầu: mỗi chỉ số một ô trắng mờ, không vạch); `href` cho cột mở trang (link thật, bấm được cả khi JS chưa tải xong), `onClick` cho việc tại chỗ |
+| `StatGroup` + `Stat` | 2–4 chỉ số chia cột bằng vạch mảnh; `tiles` (thẻ dẫn đầu, 2026-10-19): mỗi chỉ số một ô `track` bo 16 cách 8, không vạch (trên thẻ `inverse` / `pastel` ô trắng mờ); `href` cho cột mở trang (link thật, bấm được cả khi JS chưa tải xong), `onClick` cho việc tại chỗ |
 | `BotIcon` | Gương mặt của Timi (2026-10-11, theo Bot của lucide-animated): SVG như icon Lucide (đặt trong nút, ô icon như mọi icon), hai mắt chớp bằng CSS (co thành chấm rồi mở): `hover` khi rê/chạm nút chứa nó (`group/button`), `once` khi hiện ra, `loop` chớp đôi thỉnh thoảng khi đang nghĩ. Dùng cho mọi chỗ là trợ lý (nút cạnh thanh tab, Hỏi AI, nhãn Timi, dòng đang nghĩ); ✦ `Sparkles` vẫn là ký hiệu của gói Pro và lượt AI. Giảm chuyển động: mắt đứng yên |
 | `VoiceWave` | Giọng nói khi đang ghi âm, như app Ghi âm của iPhone (chọn 2026-10-11): thanh mảnh 3px màu mực, đủ số thanh lấp kín bề ngang, trôi đều từ phải sang trái theo từng khung hình (không nhảy từng nấc); mỗi thanh là mức âm thanh của một lúc (70ms), thanh mới nhất mọc ra ở mép phải và cao thấp theo giọng lúc đó; phía trái mờ dần (mask, đặt trên nền nào cũng được); vẽ trong khung riêng (`contain: paint`) để không kéo nút bên cạnh vẽ lại theo. `level` là hàm trả mức 0–1, đọc mỗi khung hình; thanh được vẽ thẳng lên trang, không qua React. Trong trợ lý AI nó thay dòng "Đang nghe…" khi ghi âm gửi lên máy chủ. Giảm chuyển động: thanh đứng yên, cả hàng chỉ sáng lên theo giọng |
 | `ProgressRing` | Tiến độ dạng vòng mảnh có số ở giữa. Mỗi lần vòng hiện ra (tải trang hay mở từ thanh tab), cung vẽ trống rồi quét từ 12 giờ tới giá trị trong 0,9 giây (dừng chậm dần); đổi giá trị thì cung chạy tiếp tới giá trị mới. Giảm chuyển động: hiện ngay |
@@ -232,8 +234,14 @@ Mọi trang tab theo cùng một thứ tự, như các thiết kế app trên Fi
 
 1. **Đầu trang** (`PageHeader`): một hàng gọn, tên trang bên trái, công cụ bên phải; cuộn cùng
    trang. Trên điện thoại luôn hiện (không ẩn vì "thanh tab đã gọi tên trang").
-2. **Thẻ dẫn đầu:** con số quan trọng nhất của trang, `Card variant="inverse"` (Tổng quan;
-   từ 2026-10-19 **mọi** thẻ dẫn đầu là `inverse` **phẳng**: không vòng tròn (`discs` mặc định tắt, trang giới thiệu, đăng nhập và màn chào bật lại), thẻ người dùng không còn quầng xanh chanh và viền avatar; theme tối thẻ **trắng** chữ đen như nút chính, không còn xám nổi): đen, hai vòng tròn trắng mờ (10%, 5%) tràn ra góc phải cho có chiều sâu; `StatGroup` trong nó là các ô trắng mờ 10% bo 16 cách nhau 8 thay cho cột chia vạch; thay đổi trong tháng là chip (`ai` khi tăng, `expense` khi giảm) hoặc `FlowTiles` (Giao dịch, Vay nợ).
+2. **Thẻ dẫn đầu:** con số quan trọng nhất của trang, trên `Card size="lg"` **thường** (trắng,
+   theme tối xám thẻ) từ tối 2026-10-19 (mẫu E của mockup thẻ dẫn đầu, sau một ngày thẻ `inverse`
+   đen / trắng, người dùng thấy theme tối loá, và một ngày pastel): thẻ không khác thẻ thường về
+   chất liệu, chỉ dẫn đầu bằng con số lớn nhất màn và bố cục; các ô bên trong (`StatGroup tiles`,
+   danh sách loại tài khoản, ô icon) là `track`; chữ phụ `muted-foreground`, vạch `separator`; thay
+   đổi trong tháng là chip mực chữ xanh chanh (`primary` + `ai-on-primary`) khi tăng, `expense` khi
+   giảm; tiền vào màu `income`, đỏ là `expense` thường. `inverse` (đen, hai vòng tròn trắng mờ 10% và
+   5% tràn ra góc phải khi `discs`) chỉ còn ở trang giới thiệu, đăng nhập, màn chào và catalog.
 3. **Các nhóm:** `Section` (tiêu đề đậm 20) cho nội dung chính của trang bảng tin, `SettingsGroup`
    (nhãn nhỏ in hoa) cho nhóm ngày, nhóm cài đặt, các phần của một list. Không có kiểu tiêu đề
    thứ ba.
@@ -241,18 +249,18 @@ Mọi trang tab theo cùng một thứ tự, như các thiết kế app trên Fi
 
 | Trang | Bên trái | Bên phải (điện thoại) | Thẻ dẫn đầu |
 |---|---|---|---|
-| Tổng quan | icon app, tên Timi, lời chào | nút sáng/tối, chuông, avatar mở Cài đặt (2026-10-20) | Tài sản ròng: đen, hai vòng tròn, chip tháng này, ba ô trắng mờ |
+| Tổng quan | icon app, tên Timi, lời chào | nút sáng/tối, chuông, avatar mở Cài đặt (2026-10-20) | Tài sản ròng: thẻ trắng, chip tháng này (mực chữ xanh chanh), ba ô `track` (`StatGroup tiles`) |
 | Giao dịch | Giao dịch | tháng (viên thuốc), AI | Một thẻ trắng (`MonthSummary`, 2026-10-19, mẫu A của mockup giao-dich; trước là hai ô `FlowTiles variant="lead"` và một thẻ hạn mức riêng): Thu và Chi hai cột (ô icon `xs`, nhãn, số `lg` có dấu, Thu màu tiền vào, số giao dịch), rồi ở tháng hiện tại khi có hạn mức tổng: vạch `separator`, "Đã dùng 29% hạn mức tổng · còn 850k", thanh `LimitBar sm` và mũi tên; chạm cả thẻ mở sheet Hạn mức (ghi chú hũ chỉ còn ở đó). Cao khoảng 175 thay vì 212 |
-| Tài khoản | Tài khoản | | Tổng số dư: đen không vòng tròn (`discs={false}`), các loại đang có chồng như thẻ trong ví ở góc, mỗi loại một dòng với số đầy đủ, âm thì đỏ (`BalanceHero`). Từ lg (2026-10-09): thẻ trải hết chiều ngang, dưới là lưới thẻ tài khoản 2 cột (3 từ xl; `AccountCard`: logo, tên và loại · ngân hàng ở trên, số dư ở chân, cao bằng thẻ bên cạnh, bấm mở sheet chi tiết; vào / ra tháng này bỏ 2026-10-16; `AddCard` cao tối thiểu 144 nên hàng thẻ tài khoản gọn). Điện thoại: dòng tài khoản chỉ có tên (loại để logo nói, 2026-10-16), dưới tên chỉ còn "Ngoài báo cáo" khi có; "Đã khoá" vẫn là list gập, rộng tối đa 2xl. Điện thoại (2026-10-14): không có nút + nổi trên thanh tab; thêm tài khoản ở dòng cuối "Tài khoản chính" ("Thêm tài khoản", như "Thêm hũ"), chưa có tài khoản thì nút trong khung trống. Không còn nút ở đầu trang: từ lg, hũ cũng là thẻ cùng cỡ thẻ tài khoản (`JarCard`: vòng, tên, kế hoạch; "Đã có … / 15tr"; Mục tiêu và Mỗi tháng nên nạp dưới vạch), ô cuối mỗi lưới là thẻ viền nét đứt `AddCard` ("Thêm tài khoản", "Thêm hũ") |
+| Tài khoản | Tài khoản | | Tổng số dư: thẻ trắng, các loại đang có chồng như thẻ trong ví ở góc (ô đầu xanh chanh, các ô sau `track`, viền `card`), danh sách loại trong ô `track`, mỗi loại một dòng với số đầy đủ, âm thì đỏ (`BalanceHero`). Từ lg (2026-10-09): thẻ trải hết chiều ngang, dưới là lưới thẻ tài khoản 2 cột (3 từ xl; `AccountCard`: logo, tên và loại · ngân hàng ở trên, số dư ở chân, cao bằng thẻ bên cạnh, bấm mở sheet chi tiết; vào / ra tháng này bỏ 2026-10-16; `AddCard` cao tối thiểu 144 nên hàng thẻ tài khoản gọn). Điện thoại: dòng tài khoản chỉ có tên (loại để logo nói, 2026-10-16), dưới tên chỉ còn "Ngoài báo cáo" khi có; "Đã khoá" vẫn là list gập, rộng tối đa 2xl. Điện thoại (2026-10-14): không có nút + nổi trên thanh tab; thêm tài khoản ở dòng cuối "Tài khoản chính" ("Thêm tài khoản", như "Thêm hũ"), chưa có tài khoản thì nút trong khung trống. Không còn nút ở đầu trang: từ lg, hũ cũng là thẻ cùng cỡ thẻ tài khoản (`JarCard`: vòng, tên, kế hoạch; "Đã có … / 15tr"; Mục tiêu và Mỗi tháng nên nạp dưới vạch), ô cuối mỗi lưới là thẻ viền nét đứt `AddCard` ("Thêm tài khoản", "Thêm hũ") |
 | Vay nợ | Vay nợ | người liên hệ | Cần thu / Cần trả: thẻ trắng, nửa vòng tròn xanh (cần thu) và mực (cần trả), số ròng ở giữa, một dòng nói nghiêng về bên nào (`DebtBalance`). Từ lg (2026-10-09): thẻ nằm ngang, nửa vòng bên trái, Ròng · Cần thu · Cần trả là ba con số bên phải; dưới là dải quá hạn rồi hai cột Cần thu | Cần trả (bên trống vẫn giữ cột với dòng "Không có khoản nào"); không còn khung chi tiết bên cạnh, khoản nợ mở sheet chi tiết như trên điện thoại |
-| Cài đặt | Cài đặt | | Hồ sơ: đen, quầng xanh chanh mờ sau avatar xanh chanh (`AvatarFallback accent`), nhãn gói `Badge inverse` / `ai` (`ProfileCard`) ; từ md cả trang (tiêu đề và các nhóm) là một cột rộng 2xl nằm giữa màn (2026-10-10); cuối trang sau Đăng xuất là icon app 48, tên Timi và "Phiên bản … · Beta", như phần Giới thiệu của app iOS (2026-10-13) |
+| Cài đặt | Cài đặt | | Hồ sơ: thẻ trắng, avatar xanh chanh (`AvatarFallback accent`), nhãn gói `Badge soft` / `ai`, dấu Pro `ai-strong` (`ProfileCard`) ; từ md cả trang (tiêu đề và các nhóm) là một cột rộng 2xl nằm giữa màn (2026-10-10); cuối trang sau Đăng xuất là icon app 48, tên Timi và "Phiên bản … · Beta", như phần Giới thiệu của app iOS (2026-10-13) |
 
-Mỗi trang một kiểu thẻ dẫn đầu (2026-10-09), cùng bộ màu mực, xanh chanh, màu tiền vào, để Tài sản ròng và Tổng số dư không còn giống nhau.
+Mỗi trang một bố cục thẻ dẫn đầu (2026-10-09), cùng chất liệu thẻ thường và bộ màu mực, xanh chanh, màu tiền vào, để Tài sản ròng và Tổng số dư không còn giống nhau.
 
 Trước khi báo xong một màn mới, kiểm tra:
 
 - Có đầu trang (`PageHeader`) trên điện thoại chưa?
-- Chỉ một thẻ dẫn đầu (đen hoặc kiểu riêng của trang) và tối đa một nút nổi?
+- Chỉ một thẻ dẫn đầu (thẻ thường, dẫn bằng con số lớn) và tối đa một nút nổi?
 - Tiêu đề nhóm thuộc một trong hai kiểu?
 - Đỏ chỉ dùng cho cảnh báo?
 - Nút nổi có đè thứ không cuộn được không? Số tiền dài nhất có ngắt dòng không? (ô hẹp: dùng `Money fit`)

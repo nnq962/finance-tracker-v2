@@ -13,10 +13,12 @@ function Card({
 }: React.ComponentProps<"div"> & {
   size?: "default" | "sm" | "lg"
   /**
-   * inverse: black (a raised grey in the dark theme), for the one card a page
-   * leads with, like a balance; two soft discs off its top right corner give it depth.
+   * default: the plain card, white (grey in the dark theme); since 2026-10-19
+   * evening also every page's lead card, which leads by its figure's size.
+   * inverse: black (white in the dark theme), the landing, login and welcome
+   * cards; two soft discs off its top right corner give it depth.
    * pastel: lime, mint and sky blending on white (deep on the card grey in the
-   * dark), dark text: every page's lead card since 2026-10-19.
+   * dark), dark text: the lead cards for a day on 2026-10-19, now the catalog only.
    */
   variant?: "default" | "inverse" | "pastel"
   /**

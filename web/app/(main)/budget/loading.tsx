@@ -12,7 +12,7 @@ import { BudgetLayout } from "./_components/budget-layout"
  */
 function BalanceHeroSkeleton() {
   return (
-    <Card size="lg" variant="inverse" discs={false}>
+    <Card size="lg">
       <CardContent>
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -25,7 +25,7 @@ function BalanceHeroSkeleton() {
           </div>
           <Skeleton className="mt-1 h-9 w-20 rounded-full" />
         </div>
-        <div className="mt-5 flex flex-col rounded-2xl bg-inverse-foreground/[0.07] px-4">
+        <div className="mt-5 flex flex-col rounded-2xl bg-track px-4">
           {[0, 1, 2].map((index) => (
             <div key={index} className="flex h-12 items-center gap-3">
               <Skeleton className="size-4 rounded" />

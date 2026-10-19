@@ -27,8 +27,11 @@ export function NetWorth({
   const monthNet = month.income - month.expense
   const hasMonth = month.income > 0 || month.expense > 0
 
+  // The plain card since 2026-10-19 evening (option E of the lead-card
+  // mockup, after a day of black / white): the figure leads by size, the
+  // three parts in track tiles.
   return (
-    <Card size="lg" variant="inverse" discs={false} aria-labelledby="net-worth-title" role="region">
+    <Card size="lg" aria-labelledby="net-worth-title" role="region">
       <CardContent>
         <CardLabel id="net-worth-title">Tài sản ròng</CardLabel>
         {/* Fits its line, as the accounts page's total: from 10 tỷ it reached the card's edge (2026-10-17). */}
@@ -37,11 +40,11 @@ export function NetWorth({
         </div>
         {hasMonth ? (
           <p className="mt-1.5 flex items-center text-sm">
-            {/* The accent chip for a gain; a loss stays red, a flat month plain. */}
+            {/* A gain on the ink chip in lime, as the primary button carries the AI mark; a loss red; a flat month plain. */}
             <span
               className={cn(
                 "rounded-full px-2 py-0.5 text-xs font-bold tabular-nums",
-                monthNet > 0 ? "bg-ai text-ai-foreground" : monthNet < 0 ? "bg-expense-on-inverse text-white" : "bg-inverse-foreground/10",
+                monthNet > 0 ? "bg-primary text-ai-on-primary" : monthNet < 0 ? "bg-expense text-white" : "bg-track",
               )}
             >
               {monthNet > 0 ? "+" : monthNet < 0 ? "−" : ""}
@@ -61,7 +64,7 @@ export function NetWorth({
         ) : null}
         {/* Three share the card's width, so the amounts are shortened; the
             full ones are in the tooltip and the accessible name. */}
-        <StatGroup separated className="mt-5">
+        <StatGroup tiles className="mt-5">
           {(
             [
               ["Tài khoản", data.cash, "/budget"],

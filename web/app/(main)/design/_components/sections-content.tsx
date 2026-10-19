@@ -296,13 +296,13 @@ function CardSection() {
       </Card>
       <Card size="lg">
         <CardContent>
-          <CardLabel as="p">Tài sản ròng · Card lg</CardLabel>
+          <CardLabel as="p">Tài sản ròng · Card lg, thẻ dẫn đầu (StatGroup tiles)</CardLabel>
           <Money amount={55_103_000} size="xl" className="mt-1.5" />
           <p className="mt-0.5 text-sm">
             <span className="font-medium text-income">+17,6tr</span>
             <span className="ml-1.5 text-muted-foreground">thu chi tháng này</span>
           </p>
-          <StatGroup className="mt-5">
+          <StatGroup tiles className="mt-5">
             <Stat value="55,1tr" label="Tài khoản" onClick={() => toast("Mở Ngân sách")} />
             <Stat value="2,5tr" label="Cho vay" onClick={() => toast("Mở Vay nợ")} />
             <Stat value="1,2tr" label="Đang nợ" onClick={() => toast("Mở Vay nợ")} />

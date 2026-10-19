@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.25.0",
+    date: "2026-10-19",
+    title: "Thẻ dẫn đầu là thẻ thường",
+    changes: [
+      { kind: "improved", text: "Năm thẻ dẫn đầu (Tài sản ròng, Tổng số dư, Thu và Chi ở Giao dịch, Cần thu và Cần trả, hồ sơ) không còn đen ở theme sáng và trắng loá ở theme tối: giờ là thẻ trắng như mọi thẻ khác (theme tối xám thẻ), dẫn đầu bằng con số lớn. Các ô bên trong xám rất nhạt, tiền vào màu xanh tiền vào, nhãn tăng trong tháng là ô mực chữ xanh chanh." },
+    ],
+  },
+  {
     version: "6.24.3",
     date: "2026-10-19",
     title: "Thanh tab trong suốt như kính",
