@@ -305,6 +305,18 @@ export function MobileBottomNav() {
       })
     }
   }, [activeIndex, bar.width])
+  // Dev only (2026-10-20): the glass mockup at /zz-preview/glass sets a
+  // translucency level in localStorage and the real bar shows it here.
+  const [glass, setGlass] = useState<{ alpha: number; blur: number } | null>(null)
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return
+    try {
+      const raw = localStorage.getItem("zz-tab-glass")
+      if (raw) setGlass(JSON.parse(raw))
+    } catch {
+      // no storage, no preview
+    }
+  }, [])
   const barOutline = bar.width ? smoothCapsule(bar.width, bar.height) : ""
   // The 1px white rim just outside the bar, as the glass edge catches the light.
   const barRim = bar.width ? smoothCapsule(bar.width + 1, bar.height + 1) : ""
@@ -340,7 +352,12 @@ export function MobileBottomNav() {
         <div
           aria-hidden="true"
           className="absolute inset-0 -z-10 rounded-full bg-tab-bar backdrop-blur-xl backdrop-saturate-150"
-          style={barOutline ? { clipPath: `path("${barOutline}")`, borderRadius: 0 } : undefined}
+          style={{
+            ...(barOutline ? { clipPath: `path("${barOutline}")`, borderRadius: 0 } : undefined),
+            ...(glass
+              ? { background: `color-mix(in oklab, var(--tab-bar) ${Math.round(glass.alpha * 100)}%, transparent)`, backdropFilter: `blur(${glass.blur}px) saturate(1.6)`, WebkitBackdropFilter: `blur(${glass.blur}px) saturate(1.6)` }
+              : undefined),
+          }}
         />
         {barRim ? (
           <svg aria-hidden="true" className="pointer-events-none absolute -inset-px size-[calc(100%+2px)]" viewBox={`0 0 ${bar.width + 2} ${bar.height + 2}`}>
