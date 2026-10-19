@@ -8,8 +8,10 @@ import {
   type TouchEvent,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   useTransition,
 } from "react"
 import { cn } from "cn"
@@ -307,16 +309,19 @@ export function MobileBottomNav() {
   }, [activeIndex, bar.width])
   // Dev only (2026-10-20): the glass mockup at /zz-preview/glass sets a
   // translucency level in localStorage and the real bar shows it here.
-  const [glass, setGlass] = useState<{ alpha: number; blur: number } | null>(null)
-  useEffect(() => {
-    if (process.env.NODE_ENV === "production") return
-    try {
-      const raw = localStorage.getItem("zz-tab-glass")
-      if (raw) setGlass(JSON.parse(raw))
-    } catch {
-      // no storage, no preview
-    }
-  }, [])
+  const glass = useSyncExternalStore(
+    () => () => {},
+    () => {
+      if (process.env.NODE_ENV === "production") return null
+      try {
+        return localStorage.getItem("zz-tab-glass")
+      } catch {
+        return null
+      }
+    },
+    () => null,
+  )
+  const glassLevel = useMemo(() => (glass ? (JSON.parse(glass) as { alpha: number; blur: number }) : null), [glass])
   const barOutline = bar.width ? smoothCapsule(bar.width, bar.height) : ""
   // The 1px white rim just outside the bar, as the glass edge catches the light.
   const barRim = bar.width ? smoothCapsule(bar.width + 1, bar.height + 1) : ""
@@ -354,8 +359,8 @@ export function MobileBottomNav() {
           className="absolute inset-0 -z-10 rounded-full bg-tab-bar backdrop-blur-xl backdrop-saturate-150"
           style={{
             ...(barOutline ? { clipPath: `path("${barOutline}")`, borderRadius: 0 } : undefined),
-            ...(glass
-              ? { background: `color-mix(in oklab, var(--tab-bar) ${Math.round(glass.alpha * 100)}%, transparent)`, backdropFilter: `blur(${glass.blur}px) saturate(1.6)`, WebkitBackdropFilter: `blur(${glass.blur}px) saturate(1.6)` }
+            ...(glassLevel
+              ? { background: `color-mix(in oklab, var(--tab-bar) ${Math.round(glassLevel.alpha * 100)}%, transparent)`, backdropFilter: `blur(${glassLevel.blur}px) saturate(1.6)`, WebkitBackdropFilter: `blur(${glassLevel.blur}px) saturate(1.6)` }
               : undefined),
           }}
         />
