@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.24.0",
+    date: "2026-10-20",
+    title: "Thanh tab theo đúng kit iOS 26 của Apple",
+    changes: [
+      { kind: "improved", text: "Thanh tab trên điện thoại dựng lại theo file thiết kế iOS 26 của Apple: viên cao 62, nền xám rất nhạt nhoè nền với viền trắng mảnh và bóng mềm, viên của tab đang mở xám #E6E6E6 cao 54 rộng hơn ô 4, tab đang mở màu xanh iOS, icon đặc (Phosphor Fill) trên tên; ô Timi dùng ngôi sao bốn cánh." },
+    ],
+  },
+  {
     version: "6.23.0",
     date: "2026-10-20",
     title: "Thanh tab mới: bốn trang có tên và Timi",

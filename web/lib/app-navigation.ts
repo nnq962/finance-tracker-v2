@@ -1,3 +1,5 @@
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react"
+import { ArrowsLeftRight, Handshake, SquaresFour, Wallet } from "@phosphor-icons/react/dist/ssr"
 import {
   ArrowLeftRightIcon,
   HandshakeIcon,
@@ -10,7 +12,10 @@ export type AppNavigationItem = {
   title: string
   mobileTitle: string
   url: string
+  /** The sidebar's line icon (Lucide). */
   icon: LucideIcon
+  /** The phone tab bar's filled glyph (Phosphor Fill, 2026-10-20), as iOS fills its tab icons. */
+  tabIcon: PhosphorIcon
 }
 
 export const appNavigationItems: AppNavigationItem[] = [
@@ -19,18 +24,21 @@ export const appNavigationItems: AppNavigationItem[] = [
     mobileTitle: "Tổng quan",
     url: "/overview",
     icon: LayoutDashboardIcon,
+    tabIcon: SquaresFour,
   },
   {
     title: "Tài khoản",
     mobileTitle: "Tài khoản",
     url: "/budget",
     icon: WalletCardsIcon,
+    tabIcon: Wallet,
   },
   {
     title: "Giao dịch",
     mobileTitle: "Giao dịch",
     url: "/transactions",
     icon: ArrowLeftRightIcon,
+    tabIcon: ArrowsLeftRight,
   },
   {
     title: "Vay nợ",
@@ -38,6 +46,7 @@ export const appNavigationItems: AppNavigationItem[] = [
     url: "/debts",
     // A deal between two people: read at a glance on the icon-only tab bar.
     icon: HandshakeIcon,
+    tabIcon: Handshake,
   },
 ]
 

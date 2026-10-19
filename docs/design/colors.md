@@ -31,6 +31,7 @@ Bảng màu cho thiết kế lại (10/2026), theo mockup đã duyệt (xem [`RE
 | `ring` | `#a3a3a3` | `#737373` | Viền focus |
 | `income` | emerald-600 `#059669` | emerald-400 | Tiền vào ("Success") |
 | `expense`, `destructive` | `#d9534f` | `oklch(0.7 0.15 25)` | Tiền ra, xoá, lỗi ("Danger") |
+| `tab-bar`, `tab-pill`, `tab-active` | `#F7F7F7` 92% · `#E6E6E6` · `#0088FF` | thẻ 95% · mực 13% · `#2B8FF5` | Thanh tab điện thoại (2026-10-20, theo kit iOS 26): nền thanh, viên của tab đang mở, màu tab đang mở |
 | `expense-on-inverse` | `oklch(0.72 0.17 25)` (đỏ sáng) | `oklch(0.58 0.19 25)` (đỏ đậm) | Chữ đỏ trên thẻ dẫn đầu `inverse` (2026-10-19): đỏ của theme đối diện, vì đỏ thường chỉ 4,5:1 trên đen và 3:1 trên trắng; `Money tone="expense"` tự đổi trong thẻ `inverse` |
 | `transfer` | sky-600 `#0284c7` | sky-400 | Chuyển khoản ("Info") |
 | `ai` | xanh ngọc, `oklch(0.6 0.115 195)` | `oklch(0.76 0.12 192)` | AI và gói Pro (đổi từ tím ngày 2026-10-07) |

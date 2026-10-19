@@ -14,8 +14,9 @@ import {
 } from "react"
 import { cn } from "cn"
 
+import { RiBardFill } from "@remixicon/react"
+
 import { useOpenAssistant } from "@/components/ai-assistant/assistant"
-import { BotIcon } from "@/components/app/bot-icon"
 import { appNavigationItems, menuUrlFor } from "@/lib/app-navigation"
 import { smoothCapsule } from "@/lib/smooth-capsule"
 
@@ -27,6 +28,15 @@ import { smoothCapsule } from "@/lib/smooth-capsule"
 const mobileNavigationItems = appNavigationItems
 /** The slots on the bar: the pages, then Timi. */
 const slotCount = mobileNavigationItems.length + 1
+/** Apple's kit: the pill is 54 tall and 2 wider than its tab on each side. */
+const PILL_HEIGHT = 54
+const PILL_EXTRA = 4
+/** Phosphor's wallet and handshake read smaller than the others at 26 in the 28 box. */
+const GLYPH_SIZE: Record<string, number> = { "/budget": 28, "/debts": 28 }
+/** A tab: the 28 icon box over its name (10/700, −0.1 tracking), 1 apart, centred in the bar as the kit's button (padding 6 and 7). */
+const tabClassName =
+  "flex h-full min-w-0 touch-manipulation flex-col items-center justify-center gap-px rounded-full outline-none select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] focus-visible:ring-3 focus-visible:ring-ring/50"
+const labelClassName = "text-[10px] leading-3 font-bold tracking-[-0.1px] whitespace-nowrap"
 
 const tabUrls = new Set(mobileNavigationItems.map((item) => item.url))
 
@@ -285,20 +295,19 @@ export function MobileBottomNav() {
     const tab = tabRefs.current[Math.max(activeIndex, 0)]
     const element = barRef.current
     if (tab && element) {
-      // Measured from the bar: each tab sits in an item of its own.
+      // The pill is the tab's slot plus 2 each side and 54 tall, 4 inside the
+      // bar, as Apple's kit draws it (_Tab Bar Button 72 wide, its pill 76×54).
       const box = tab.getBoundingClientRect()
       setPill({
-        x: Math.round(box.left - element.getBoundingClientRect().left),
-        width: Math.round(box.width),
-        height: Math.round(box.height),
+        x: Math.round(box.left - element.getBoundingClientRect().left) - PILL_EXTRA / 2,
+        width: Math.round(box.width) + PILL_EXTRA,
+        height: PILL_HEIGHT,
       })
     }
   }, [activeIndex, bar.width])
   const barOutline = bar.width ? smoothCapsule(bar.width, bar.height) : ""
-  // The edge's line, half a pixel in all round, so the whole 1px stroke lies
-  // inside the bar: on the outline itself, its outer half was cut off along
-  // the straight edges and not on the bends, which looked thicker.
-  const barEdge = bar.width ? smoothCapsule(bar.width - 1, bar.height - 1) : ""
+  // The 1px white rim just outside the bar, as the glass edge catches the light.
+  const barRim = bar.width ? smoothCapsule(bar.width + 1, bar.height + 1) : ""
 
   return (
     // Icons on a capsule across the screen, floating over the page;
@@ -318,39 +327,31 @@ export function MobileBottomNav() {
           The capsule, its edge and the pill are layers of their own behind
           the icons: with the blur on the list itself, Safari redrew the icons
           as the pill slid and they shook. */}
-      <div ref={barRef} className="pointer-events-auto relative isolate h-15 min-w-0 max-w-md flex-1">
-        {/* The shadow on a plain capsule: blurred this wide, the ends' shape does
-            not show in it. A pixel inside the bar all round: the continuous ends
-            start bending before a round end does, so just off the straight edge
-            they lie up to 0.7px inside it, and there a full-size capsule, which
-            paints no shadow within itself, left a bright sliver at all four
-            joins in the light theme. */}
+      <div ref={barRef} className="pointer-events-auto relative isolate h-[62px] min-w-0 max-w-md flex-1">
+        {/* Apple's kit: one wide soft shadow (8 down, blurred 40, 12%) and a
+            close one (8 down, blurred 15, 2%), on a plain capsule a pixel
+            inside the bar: blurred this wide the ends' shape does not show, and
+            a full-size one left a bright sliver at the joins of the continuous
+            ends in the light theme. */}
         <div
           aria-hidden="true"
-          className="absolute inset-px -z-20 rounded-full shadow-[0_14px_44px_rgb(0_0_0/0.16),0_2px_8px_rgb(0_0_0/0.06)] dark:shadow-[0_14px_44px_rgb(0_0_0/0.5)]"
+          className="absolute inset-px -z-20 rounded-full shadow-[0_8px_40px_rgb(0_0_0/0.12),0_8px_15px_rgb(0_0_0/0.02)] dark:shadow-[0_8px_40px_rgb(0_0_0/0.5)]"
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 -z-10 rounded-full bg-card/95 backdrop-blur-xl backdrop-saturate-150"
+          className="absolute inset-0 -z-10 rounded-full bg-tab-bar backdrop-blur-xl backdrop-saturate-150"
           style={barOutline ? { clipPath: `path("${barOutline}")`, borderRadius: 0 } : undefined}
         />
-        {barOutline ? (
-          <svg aria-hidden="true" className="pointer-events-none absolute inset-0 size-full" viewBox={`0 0 ${bar.width} ${bar.height}`}>
-            <path
-              d={barEdge}
-              transform="translate(0.5 0.5)"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1"
-              className="text-foreground/5 dark:text-foreground/10"
-            />
+        {barRim ? (
+          <svg aria-hidden="true" className="pointer-events-none absolute -inset-px size-[calc(100%+2px)]" viewBox={`0 0 ${bar.width + 2} ${bar.height + 2}`}>
+            <path d={barRim} transform="translate(0.5 0.5)" fill="none" stroke="#fff" strokeWidth="1" className="opacity-100 dark:opacity-15" />
           </svg>
         ) : null}
         {pill.width ? (
           <div
             aria-hidden="true"
             className={cn(
-              "absolute top-1 left-0 bg-foreground/8 transition-[transform,opacity] duration-350 ease-[cubic-bezier(0.22,0.61,0.36,1)] will-change-transform motion-reduce:duration-150 dark:bg-foreground/13",
+              "absolute top-1 left-0 bg-tab-pill transition-[transform,opacity] duration-350 ease-[cubic-bezier(0.22,0.61,0.36,1)] will-change-transform motion-reduce:duration-150",
               activeIndex < 0 && "opacity-0",
             )}
             style={{
@@ -361,13 +362,14 @@ export function MobileBottomNav() {
             }}
           />
         ) : null}
+      {/* The slots inset from the bar by 6, so the first and last pill (the slot + 2 each side) land 4 from the ends. */}
       <ul
         style={{ gridTemplateColumns: `repeat(${slotCount}, minmax(0, 1fr))` } as CSSProperties}
-        className="relative grid h-full p-1"
+        className="relative grid h-full px-1.5"
       >
         {mobileNavigationItems.map((item, index) => {
           const isActive = menuUrlFor(activePathname) === item.url
-          const Icon = item.icon
+          const Icon = item.tabIcon
 
           return (
             <li key={item.url} className="relative min-w-0">
@@ -409,32 +411,27 @@ export function MobileBottomNav() {
                 onClick={(event) => navigateTo(event, item.url)}
                 aria-current={pathname === item.url ? "page" : undefined}
                 className={cn(
-                  "flex h-13 min-w-0 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-full outline-none select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] focus-visible:ring-3 focus-visible:ring-ring/50",
-                  // The others a step dimmer, as iOS names them; the open one in full ink.
-                  isActive ? "text-foreground" : "text-foreground/62",
+                  tabClassName,
+                  // The chosen tab in iOS blue, the others in full ink, as the kit (Accents/Blue).
+                  isActive ? "text-tab-active" : "text-foreground",
                 )}
               >
-                {/* On a layer of its own, so the pill sliding past does not shake it. */}
-                <Icon
-                  className="size-[22px] shrink-0 [backface-visibility:hidden] [transform:translateZ(0)]"
-                  strokeWidth={isActive ? 2.2 : 1.75}
-                  aria-hidden="true"
-                />
-                <span className={cn("text-[10px] leading-3 font-bold whitespace-nowrap", isActive && "font-extrabold")}>{item.mobileTitle}</span>
+                {/* On a layer of its own, so the pill sliding past does not shake it; every glyph in the same 28 box so the row lines up. */}
+                <span className="flex size-7 shrink-0 items-center justify-center [backface-visibility:hidden] [transform:translateZ(0)]">
+                  <Icon size={GLYPH_SIZE[item.url] ?? 26} weight="fill" aria-hidden="true" />
+                </span>
+                <span className={labelClassName}>{item.mobileTitle}</span>
               </Link>
             </li>
           )
         })}
-        {/* Timi, the fifth slot: an action, not a page, so it never takes the pill. */}
+        {/* Timi, the fifth slot: an action, not a page, so it never takes the pill; the four-point star (Remix Bard) chosen 2026-10-20. */}
         <li className="relative min-w-0">
-          <button
-            type="button"
-            onClick={openAssistant}
-            aria-label="Hỏi Timi, trợ lý AI"
-            className="group/button flex h-13 w-full min-w-0 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-full text-foreground/62 outline-none select-none [-webkit-tap-highlight-color:transparent] active:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            <BotIcon className="size-[22px] shrink-0 [backface-visibility:hidden] [transform:translateZ(0)]" aria-hidden="true" />
-            <span className="text-[10px] leading-3 font-bold whitespace-nowrap">Timi</span>
+          <button type="button" onClick={openAssistant} aria-label="Hỏi Timi, trợ lý AI" className={cn(tabClassName, "w-full text-foreground active:opacity-60")}>
+            <span className="flex size-7 shrink-0 items-center justify-center [backface-visibility:hidden] [transform:translateZ(0)]">
+              <RiBardFill size={26} aria-hidden="true" />
+            </span>
+            <span className={labelClassName}>Timi</span>
           </button>
         </li>
       </ul>

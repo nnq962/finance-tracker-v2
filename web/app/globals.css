@@ -66,6 +66,9 @@
   --color-field: var(--field);
   --color-track: var(--track);
   --color-segment: var(--segment);
+  --color-tab-bar: var(--tab-bar);
+  --color-tab-pill: var(--tab-pill);
+  --color-tab-active: var(--tab-active);
   --color-separator: var(--separator);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -193,6 +196,10 @@
   /* The AI's mark on a primary button (the ✦ tab, Hỏi AI): the lime on the ink. */
   --ai-on-primary: oklch(0.911 0.1775 119.6);
   --warning: oklch(0.769 0.188 70.08);
+  /* The phone's tab bar after Apple's iOS 26 kit (2026-10-20): the bar #f7f7f7 over a blur, the chosen tab's pill #e6e6e6 (#ededed on plus-darker), the chosen tab in iOS blue. */
+  --tab-bar: rgb(247 247 247 / 0.92);
+  --tab-pill: #e6e6e6;
+  --tab-active: #0088ff;
   /*
    * Fills that depend on the surface below (see the surface-* utilities):
    * field for inputs, chips and secondary buttons, track for skeletons,
@@ -295,6 +302,9 @@
   --ai-strong: oklch(0.911 0.1775 119.6);
   /* The primary turns white here: the logo's deep lime (#7FA300), as the lime fades on white. */
   --ai-on-primary: oklch(0.664 0.1647 123.9);
+  --tab-bar: color-mix(in oklab, var(--card) 95%, transparent);
+  --tab-pill: color-mix(in oklab, var(--foreground) 13%, transparent);
+  --tab-active: #2b8ff5;
   --warning: oklch(0.828 0.189 84.429);
   /* On a dark card, white at 6%, as in the mockup. */
   --field-plain: oklch(1 0 0 / 0.06);
