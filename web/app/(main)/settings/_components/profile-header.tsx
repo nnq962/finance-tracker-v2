@@ -32,7 +32,7 @@ export function ProfileHeader({
     <section aria-label="Tài khoản" className="flex flex-col items-center px-4 text-center max-md:-mt-6">
       <Avatar size="2xl">
         <AvatarImage src={avatar} alt={name} />
-        <AvatarFallback>{initials}</AvatarFallback>
+        <AvatarFallback inverse>{initials}</AvatarFallback>
       </Avatar>
       <p className="mt-3.5 max-w-full text-[28px] leading-9 font-bold tracking-tight">{name}</p>
       {email ? <p className="mt-0.5 max-w-full text-[15px] leading-5 text-muted-foreground [overflow-wrap:anywhere]">{email}</p> : null}

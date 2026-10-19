@@ -47,22 +47,28 @@ function AvatarFallback({
   className,
   colorKey,
   accent = false,
+  inverse = false,
   ...props
 }: React.ComponentProps<typeof AvatarPrimitive.Fallback> & {
   /** A person's id: their initials then sit on their own toned-down colour, as a contact's do, instead of grey. */
   colorKey?: string
   /**
-   * On the accent lime, ink letters: the person on a lead card (Settings). On a
-   * pastel card, ink with lime letters in the light theme, as lime would fade into it.
+   * On the accent lime, ink letters: the person on a lead card (Settings
+   * until 2026-10-19). On a pastel card, ink with lime letters in the light
+   * theme, as lime would fade into it.
    */
   accent?: boolean
+  /** The user's own initials (overview header, Settings; 2026-10-20): black with white letters, white with black in the dark theme (token `inverse`). */
+  inverse?: boolean
 }) {
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
       className={cn(
         "flex size-full items-center justify-center rounded-full text-sm group-data-[size=sm]/avatar:text-xs group-data-[size=xl]/avatar:text-lg group-data-[size=2xl]/avatar:text-3xl group-data-[size=2xl]/avatar:font-semibold",
-        accent
+        inverse
+          ? "bg-inverse font-semibold text-inverse-foreground"
+          : accent
           ? "bg-ai font-semibold text-ai-foreground group-data-[variant=pastel]/card:bg-foreground group-data-[variant=pastel]/card:text-ai dark:group-data-[variant=pastel]/card:bg-ai dark:group-data-[variant=pastel]/card:text-ai-foreground"
           : colorKey
             ? cn("tile-tinted font-medium", personTileClassName(colorKey))

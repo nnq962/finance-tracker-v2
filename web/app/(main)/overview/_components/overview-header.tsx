@@ -57,10 +57,10 @@ export function OverviewHeader({
             aria-label="Cài đặt"
             className="flex size-11 shrink-0 items-center justify-center rounded-full outline-none transition-transform duration-150 select-none active:scale-95 focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none"
           >
-            {/* The initials on the plain grey, as on Settings (2026-10-19: the user does not want the lime here). */}
+            {/* The initials in ink (white in the dark theme), as on Settings; the user wanted neither lime nor grey here (2026-10-20). */}
             <Avatar size="lg">
               <AvatarImage src={user.avatar} alt="" />
-              <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+              <AvatarFallback inverse>{getInitials(user.name)}</AvatarFallback>
             </Avatar>
           </Link>
         </div>

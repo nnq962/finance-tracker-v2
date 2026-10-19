@@ -32,6 +32,12 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.27.1",
+    date: "2026-10-20",
+    title: "Chữ tắt của bạn đen trắng",
+    changes: [{ kind: "improved", text: "Avatar chữ tắt của bạn ở Tổng quan và Cài đặt: nền đen chữ trắng, theme tối nền trắng chữ đen, thay cho nền xám mờ." }],
+  },
+  {
     version: "6.27.0",
     date: "2026-10-19",
     title: "Thanh tab trượt đi khi mở Cài đặt",
