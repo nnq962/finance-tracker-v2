@@ -45,24 +45,6 @@ export function AssistantProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** The way in beside the tab bar, as iOS 26 sets a lone action (Search) beside it: Timi's face, blinking when pressed. */
-export function AssistantTabButton({ className }: { className?: string }) {
-  const open = useOpenAssistant()
-  return (
-    <button
-      type="button"
-      onClick={open}
-      aria-label="Hỏi Timi, trợ lý AI"
-      className={cn(
-        "group/button pointer-events-auto flex size-15 shrink-0 touch-manipulation items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_14px_44px_rgb(0_0_0/0.2),0_2px_8px_rgb(0_0_0/0.08)] outline-none transition-transform duration-150 select-none [-webkit-tap-highlight-color:transparent] focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-95 motion-reduce:transition-none dark:shadow-[0_14px_44px_rgb(0_0_0/0.5)]",
-        className,
-      )}
-    >
-      <BotIcon className="size-6 text-ai-on-primary" />
-    </button>
-  )
-}
-
 /** The way in on a computer, in the header. */
 export function AssistantHeaderButton() {
   const open = useOpenAssistant()

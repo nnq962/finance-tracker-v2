@@ -13,16 +13,20 @@ import {
   useTransition,
 } from "react"
 import { cn } from "cn"
-import { SettingsIcon } from "lucide-react"
 
-import { AssistantTabButton } from "@/components/ai-assistant/assistant"
+import { useOpenAssistant } from "@/components/ai-assistant/assistant"
+import { BotIcon } from "@/components/app/bot-icon"
 import { appNavigationItems, menuUrlFor } from "@/lib/app-navigation"
 import { smoothCapsule } from "@/lib/smooth-capsule"
 
-const mobileNavigationItems = [
-  ...appNavigationItems,
-  { title: "Cài đặt", mobileTitle: "Cài đặt", url: "/settings", icon: SettingsIcon },
-]
+/**
+ * The four pages on the bar (2026-10-20, option D of the nav mockup): Settings
+ * left it for the avatar at the top of Tổng quan, and Timi took the fifth
+ * slot. On /settings no tab is lit, as under a pushed screen.
+ */
+const mobileNavigationItems = appNavigationItems
+/** The slots on the bar: the pages, then Timi. */
+const slotCount = mobileNavigationItems.length + 1
 
 const tabUrls = new Set(mobileNavigationItems.map((item) => item.url))
 
@@ -63,6 +67,7 @@ function isTouchOnItem(event: TouchEvent<HTMLElement>) {
 export function MobileBottomNav() {
   const pathname = usePathname()
   const router = useRouter()
+  const openAssistant = useOpenAssistant()
   const [visualPathname, setVisualPathname] = useState(pathname)
   const [isNavigationPending, startNavigation] = useTransition()
   const latestRequestedPathnameRef = useRef(pathname)
@@ -304,13 +309,15 @@ export function MobileBottomNav() {
     // tab order too, and slides back when that element goes.
     <nav
       aria-label="Điều hướng chính trên di động"
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex items-center justify-center gap-3 px-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)-0.75rem))] transition-[translate,visibility] duration-300 ease-out motion-reduce:transition-none md:hidden [body:has([data-hide-tab-bar])_&]:invisible [body:has([data-hide-tab-bar])_&]:translate-y-full"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex items-center justify-center px-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)-0.75rem))] transition-[translate,visibility] duration-300 ease-out motion-reduce:transition-none md:hidden [body:has([data-hide-tab-bar])_&]:invisible [body:has([data-hide-tab-bar])_&]:translate-y-full"
     >
       {/* iOS 26's tab bar (2026-10-11): a white capsule with continuous ends,
           raised by a wide soft shadow, the current tab on a grey pill nearly
-          as tall, icons in ink. The capsule, its edge and the pill are layers
-          of their own behind the icons: with the blur on the list itself,
-          Safari redrew the icons as the pill slid and they shook. */}
+          as tall, icons in ink over their names (named since 2026-10-20, with
+          four pages and Timi as the fifth slot the capsule spans the width).
+          The capsule, its edge and the pill are layers of their own behind
+          the icons: with the blur on the list itself, Safari redrew the icons
+          as the pill slid and they shook. */}
       <div ref={barRef} className="pointer-events-auto relative isolate h-15 min-w-0 max-w-md flex-1">
         {/* The shadow on a plain capsule: blurred this wide, the ends' shape does
             not show in it. A pixel inside the bar all round: the continuous ends
@@ -355,7 +362,7 @@ export function MobileBottomNav() {
           />
         ) : null}
       <ul
-        style={{ gridTemplateColumns: `repeat(${mobileNavigationItems.length}, minmax(0, 1fr))` } as CSSProperties}
+        style={{ gridTemplateColumns: `repeat(${slotCount}, minmax(0, 1fr))` } as CSSProperties}
         className="relative grid h-full p-1"
       >
         {mobileNavigationItems.map((item, index) => {
@@ -402,24 +409,36 @@ export function MobileBottomNav() {
                 onClick={(event) => navigateTo(event, item.url)}
                 aria-current={pathname === item.url ? "page" : undefined}
                 className={cn(
-                  "flex h-13 min-w-0 touch-manipulation items-center justify-center rounded-full text-foreground outline-none select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] focus-visible:ring-3 focus-visible:ring-ring/50",
+                  "flex h-13 min-w-0 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-full outline-none select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] focus-visible:ring-3 focus-visible:ring-ring/50",
+                  // The others a step dimmer, as iOS names them; the open one in full ink.
+                  isActive ? "text-foreground" : "text-foreground/62",
                 )}
               >
                 {/* On a layer of its own, so the pill sliding past does not shake it. */}
                 <Icon
-                  className="size-6 shrink-0 [backface-visibility:hidden] [transform:translateZ(0)]"
-                  strokeWidth={isActive ? 2.4 : 1.75}
+                  className="size-[22px] shrink-0 [backface-visibility:hidden] [transform:translateZ(0)]"
+                  strokeWidth={isActive ? 2.2 : 1.75}
                   aria-hidden="true"
                 />
-                {/* Icons alone on screen; the name is still each tab's accessible name. */}
-                <span className="sr-only">{item.mobileTitle}</span>
+                <span className={cn("text-[10px] leading-3 font-bold whitespace-nowrap", isActive && "font-extrabold")}>{item.mobileTitle}</span>
               </Link>
             </li>
           )
         })}
+        {/* Timi, the fifth slot: an action, not a page, so it never takes the pill. */}
+        <li className="relative min-w-0">
+          <button
+            type="button"
+            onClick={openAssistant}
+            aria-label="Hỏi Timi, trợ lý AI"
+            className="group/button flex h-13 w-full min-w-0 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-full text-foreground/62 outline-none select-none [-webkit-tap-highlight-color:transparent] active:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <BotIcon className="size-[22px] shrink-0 [backface-visibility:hidden] [transform:translateZ(0)]" aria-hidden="true" />
+            <span className="text-[10px] leading-3 font-bold whitespace-nowrap">Timi</span>
+          </button>
+        </li>
       </ul>
       </div>
-      <AssistantTabButton />
     </nav>
   )
 }

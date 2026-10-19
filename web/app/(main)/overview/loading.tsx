@@ -224,7 +224,7 @@ export default function OverviewLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <PageHeaderSkeleton lead tools={["round"]} />
+        <PageHeaderSkeleton lead tools={["round", "round", "round"]} />
         <OverviewLayout
           netWorth={<NetWorthSkeleton />}
           missions={<MissionsSkeleton />}

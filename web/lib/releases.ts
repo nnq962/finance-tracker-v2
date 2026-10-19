@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.23.0",
+    date: "2026-10-20",
+    title: "Thanh tab mới: bốn trang có tên và Timi",
+    changes: [
+      { kind: "new", text: "Thanh tab trên điện thoại là một viên trải hết bề ngang với tên dưới icon: Tổng quan, Tài khoản, Giao dịch, Vay nợ và Timi ở ô cuối (chạm mở trợ lý). Không còn nút tròn đen rời." },
+      { kind: "improved", text: "Cài đặt rời thanh tab: mở từ ảnh đại diện ở đầu trang Tổng quan, cạnh chuông, như App Store đặt tài khoản." },
+    ],
+  },
+  {
     version: "6.22.4",
     date: "2026-10-19",
     title: "Chip tháng âm và thanh hạn mức vượt cùng tông đỏ",
