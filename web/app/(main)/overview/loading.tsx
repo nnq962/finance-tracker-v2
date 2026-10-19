@@ -15,7 +15,7 @@ import { OverviewLayout } from "./_components/overview-layout"
  */
 function NetWorthSkeleton() {
   return (
-    <Card size="lg" variant="inverse">
+    <Card size="lg" variant="inverse" discs={false}>
       <CardContent>
         <div className="flex h-5 items-center">
           <Skeleton className="h-3.5 w-24" />

@@ -233,7 +233,7 @@ Mọi trang tab theo cùng một thứ tự, như các thiết kế app trên Fi
 1. **Đầu trang** (`PageHeader`): một hàng gọn, tên trang bên trái, công cụ bên phải; cuộn cùng
    trang. Trên điện thoại luôn hiện (không ẩn vì "thanh tab đã gọi tên trang").
 2. **Thẻ dẫn đầu:** con số quan trọng nhất của trang, `Card variant="inverse"` (Tổng quan;
-   từ 2026-10-19 **mọi** thẻ dẫn đầu là `inverse`: Tài sản ròng có hai vòng tròn, Tổng số dư, Thu / Chi ở Giao dịch, Cần thu / Cần trả và thẻ người dùng không vòng tròn; theme tối thẻ **trắng** chữ đen như nút chính, không còn xám nổi): đen, hai vòng tròn trắng mờ (10%, 5%) tràn ra góc phải cho có chiều sâu; `StatGroup` trong nó là các ô trắng mờ 10% bo 16 cách nhau 8 thay cho cột chia vạch; thay đổi trong tháng là chip (`ai` khi tăng, `expense` khi giảm) hoặc `FlowTiles` (Giao dịch, Vay nợ).
+   từ 2026-10-19 **mọi** thẻ dẫn đầu là `inverse` **phẳng**: không vòng tròn (`discs` mặc định tắt, trang giới thiệu, đăng nhập và màn chào bật lại), thẻ người dùng không còn quầng xanh chanh và viền avatar; theme tối thẻ **trắng** chữ đen như nút chính, không còn xám nổi): đen, hai vòng tròn trắng mờ (10%, 5%) tràn ra góc phải cho có chiều sâu; `StatGroup` trong nó là các ô trắng mờ 10% bo 16 cách nhau 8 thay cho cột chia vạch; thay đổi trong tháng là chip (`ai` khi tăng, `expense` khi giảm) hoặc `FlowTiles` (Giao dịch, Vay nợ).
 3. **Các nhóm:** `Section` (tiêu đề đậm 20) cho nội dung chính của trang bảng tin, `SettingsGroup`
    (nhãn nhỏ in hoa) cho nhóm ngày, nhóm cài đặt, các phần của một list. Không có kiểu tiêu đề
    thứ ba.

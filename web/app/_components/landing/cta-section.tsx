@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card"
 export function CtaSection() {
   return (
     <section aria-labelledby="cta-title" className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:pb-24">
-      <Card variant="inverse" className="items-center rounded-[32px] px-6 py-14 text-center sm:py-20">
+      <Card variant="inverse" discs className="items-center rounded-[32px] px-6 py-14 text-center sm:py-20">
         <span className="rounded-full bg-ai px-3 py-1 text-xs font-semibold text-ai-foreground">Miễn phí để bắt đầu</span>
         <h2 id="cta-title" className="max-w-2xl text-3xl font-semibold tracking-tight text-balance sm:text-5xl">
           Ghi khoản đầu tiên hôm nay.

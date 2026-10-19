@@ -28,7 +28,7 @@ export function NetWorth({
   const hasMonth = month.income > 0 || month.expense > 0
 
   return (
-    <Card size="lg" variant="inverse" aria-labelledby="net-worth-title" role="region">
+    <Card size="lg" variant="inverse" discs={false} aria-labelledby="net-worth-title" role="region">
       <CardContent>
         <CardLabel id="net-worth-title">Tài sản ròng</CardLabel>
         {/* Fits its line, as the accounts page's total: from 10 tỷ it reached the card's edge (2026-10-17). */}

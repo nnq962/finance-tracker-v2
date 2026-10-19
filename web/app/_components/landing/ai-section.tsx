@@ -23,7 +23,7 @@ function Blank({ children }: { children: React.ReactNode }) {
 export function AiSection() {
   return (
     <section aria-labelledby="ai-title" className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:py-24">
-      <Card id="ai" variant="inverse" className="scroll-mt-6 rounded-[32px] p-6 sm:p-10 lg:p-14">
+      <Card id="ai" variant="inverse" discs className="scroll-mt-6 rounded-[32px] p-6 sm:p-10 lg:p-14">
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
           <div className="flex flex-col gap-8">
             <SectionHeading id="ai-title" label="AI ghi giúp" title="Nói một câu, giao dịch tự điền." align="start" tone="inverse">

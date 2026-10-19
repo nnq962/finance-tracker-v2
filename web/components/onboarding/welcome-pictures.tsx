@@ -51,7 +51,7 @@ export function AccountsPicture() {
 
   return (
     <div className="flex w-full flex-col gap-3">
-      <Card variant="inverse">
+      <Card variant="inverse" discs>
         <CardContent>
           <CardLabel as="p">Tài sản ròng</CardLabel>
           <Money amount={55_103_000} size="xl" className="mt-1.5" />

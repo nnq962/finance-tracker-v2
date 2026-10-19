@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils"
 export function LoginCollage({ className }: { className?: string }) {
   return (
     <div aria-hidden="true" inert className={cn("pointer-events-none relative mx-auto h-[19rem] w-full max-w-[22rem] select-none", className)}>
-      <Card variant="inverse" size="lg" className="absolute inset-x-2 top-0 -rotate-3 shadow-[0_20px_50px_rgb(0_0_0/0.18)]">
+      <Card variant="inverse" discs size="lg" className="absolute inset-x-2 top-0 -rotate-3 shadow-[0_20px_50px_rgb(0_0_0/0.18)]">
         <CardContent>
           <CardLabel>Tài sản ròng</CardLabel>
           <Money amount={55_103_000} size="xl" className="mt-1.5" />

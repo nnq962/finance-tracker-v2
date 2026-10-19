@@ -7,7 +7,7 @@ function Card({
   size = "default",
   variant = "default",
   blend = "profile",
-  discs = true,
+  discs = false,
   asChild = false,
   ...props
 }: React.ComponentProps<"div"> & {
@@ -25,7 +25,7 @@ function Card({
    * Tổng số dư; flow: Giao dịch; debts: Vay nợ; profile: the person (default).
    */
   blend?: "net" | "balance" | "flow" | "debts" | "profile"
-  /** An inverse or pastel card's two discs; off for a lead card with its own decoration. Only Tài sản ròng keeps them. */
+  /** Two soft discs off an inverse or pastel card's top right corner; off by default since 2026-10-19 (every lead card is flat); the landing and login still turn them on. */
   discs?: boolean
   /** The card is its child, e.g. a button for a card that is tapped as a whole. */
   asChild?: boolean

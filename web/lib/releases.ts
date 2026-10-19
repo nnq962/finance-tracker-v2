@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.22.2",
+    date: "2026-10-19",
+    title: "Thẻ dẫn đầu phẳng hẳn",
+    changes: [
+      { kind: "improved", text: "Tài sản ròng bỏ hai vòng tròn mờ; thẻ người dùng bỏ quầng xanh chanh và viền quanh avatar. Cả năm thẻ dẫn đầu giờ cùng một kiểu phẳng." },
+    ],
+  },
+  {
     version: "6.22.1",
     date: "2026-10-19",
     title: "Thẻ dẫn đầu về một màu: đen ở theme sáng, trắng ở theme tối",
