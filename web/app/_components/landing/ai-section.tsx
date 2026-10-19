@@ -47,11 +47,11 @@ export function AiSection() {
           {/* What it looks like: what you say, then the sentence AI fills. */}
           <div aria-hidden="true" className="flex flex-col gap-3">
             <div className="flex items-center gap-3 self-end rounded-[24px] rounded-br-md bg-inverse-foreground/10 px-4 py-3 text-sm sm:text-base">
-              <MicIcon className="size-4 shrink-0 text-ai" />
+              <MicIcon className="size-4 shrink-0 text-ai-on-primary" />
               Hôm qua uống trà sữa lúc 4h chiều 80 cành bằng tiền mặt
             </div>
             <div className="flex items-center gap-2 px-1 text-xs text-inverse-foreground/60">
-              <SparklesIcon className="size-3.5 text-ai" />
+              <SparklesIcon className="size-3.5 text-ai-on-primary" />
               AI đã điền, kiểm tra rồi lưu
             </div>
             <div className="surface-plain flex flex-col gap-5 rounded-[24px] bg-card p-5 text-card-foreground sm:p-6">

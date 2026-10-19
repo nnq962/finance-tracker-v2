@@ -110,9 +110,11 @@
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.205 0 0);
   /*
-   * The one card a page leads with (Card variant="inverse"): black on the
-   * light page; on the dark page a raised grey, as iOS raises surfaces in
-   * dark mode, never a white slab.
+   * The card every page leads with (Card variant="inverse"): black on the
+   * light page, white on the black one (2026-10-19, the user's choice after a
+   * day on the pastel family: the lead card is the one strong block, and in
+   * the dark theme that is white, as the primary button; a raised grey
+   * before).
    */
   --inverse: oklch(0.205 0 0);
   --inverse-foreground: oklch(1 0 0);
@@ -237,8 +239,8 @@
   --foreground: oklch(1 0 0);
   --card: oklch(0.227 0.0038 286.1);
   --card-foreground: oklch(1 0 0);
-  --inverse: oklch(0.294 0.0036 286.2);
-  --inverse-foreground: oklch(1 0 0);
+  --inverse: oklch(1 0 0);
+  --inverse-foreground: oklch(0.205 0 0);
   /* The pastel card in the dark: the same blend, deep, on the card grey; no shadow. */
   --pastel-lime: color-mix(in oklab, var(--ai) 28%, oklch(0.227 0.0038 286.1));
   --pastel-mint: oklch(0.333 0.0402 177.8);

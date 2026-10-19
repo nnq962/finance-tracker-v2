@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 export type LimitTone = "ok" | "near" | "over"
 
 const fillClassName: Record<LimitTone, string> = {
-  ok: "bg-primary",
+  ok: "bg-primary group-data-[variant=inverse]/card:bg-inverse-foreground",
   near: "bg-warning",
   over: "bg-expense",
 }
@@ -13,7 +13,8 @@ const fillClassName: Record<LimitTone, string> = {
  * Spent against a limit as a plain bar, as iOS Screen Time draws a limit
  * (chosen 2026-10-16 over marks for "today"): the fill in the ink, amber or
  * red by `tone`, full once past the limit, on the grey rail; no marks.
- * `size`: `sm` 6 high (rows), `md` 10 (a lead figure).
+ * `size`: `sm` 6 high (rows), `md` 10 (a lead figure). On an inverse card the
+ * rail and the ok fill take the card's text colour (2026-10-19).
  */
 export function LimitBar({
   value,
@@ -39,7 +40,7 @@ export function LimitBar({
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={max > 0 ? Math.round((value / max) * 100) : 0}
-      className={cn("relative block w-full overflow-hidden rounded-full bg-muted", size === "md" ? "h-2.5" : "h-1.5", className)}
+      className={cn("relative block w-full overflow-hidden rounded-full bg-muted group-data-[variant=inverse]/card:bg-inverse-foreground/15", size === "md" ? "h-2.5" : "h-1.5", className)}
     >
       <span
         className={cn(

@@ -5,7 +5,6 @@ import { summarizeFigures } from "@/lib/transactions/types"
 import { ArrowDownLeftIcon, ArrowUpRightIcon, ChevronRightIcon } from "lucide-react"
 
 import { CardLabel } from "@/components/app/card-label"
-import { IconTile } from "@/components/app/icon-tile"
 import { LimitBar } from "@/components/app/limit-bar"
 import { Money } from "@/components/app/money"
 import { BudgetsSheet } from "@/components/budgets/budgets-sheet"
@@ -20,8 +19,8 @@ import type { Transaction } from "../_types/transaction"
 
 /**
  * The page's lead card (one card since 2026-10-19, option A of the giao-dich
- * mockup; two tiles and a separate line before; on the pastel card, lime
- * behind Thu and sky behind Chi, from the same day): the month's money in and
+ * mockup; two tiles and a separate line before; the inverse card, black /
+ * white, since the same evening): the month's money in and
  * money out as two columns, figures only (the kind chips above the list
  * narrow it), then, this month and with a month limit set, a hairline and
  * how much of the limit is used with the plain bar; a tap on the card opens
@@ -54,11 +53,16 @@ export function MonthSummary({
         // A container, so the amount fits its column and never breaks across lines.
         <span key={side.label} className="@container flex min-w-0 flex-col">
           <span className="flex items-center gap-2">
-            <IconTile icon={side.icon} tone={side.tone} size="xs" />
+            {/* The arrow in a small frosted tile, money in lime as on the old lead tile. */}
+            <span aria-hidden="true" className={cn("flex size-5 items-center justify-center rounded-[6px] bg-inverse-foreground/10 [&_svg]:size-3", side.tone === "income" && "text-ai-on-primary")}>
+              <side.icon />
+            </span>
             <CardLabel as="span">{side.label}</CardLabel>
           </span>
-          <Money amount={side.amount} sign={side.amount === 0 ? "never" : "always"} size="lg" fit tone={side.tone === "income" ? "income" : "default"} className="mt-1.5" />
-          <span className="mt-0.5 text-xs text-muted-foreground">{side.count} giao dịch</span>
+          <span className={cn("mt-1.5 flex min-w-0", side.tone === "income" && "text-ai-on-primary")}>
+            <Money amount={side.amount} sign={side.amount === 0 ? "never" : "always"} size="lg" fit />
+          </span>
+          <span className="mt-0.5 text-xs text-inverse-foreground/60">{side.count} giao dịch</span>
         </span>
       ))}
     </div>
@@ -66,7 +70,7 @@ export function MonthSummary({
 
   if (!limitLine) {
     return (
-      <Card variant="pastel" blend="flow" discs={false} className={className}>
+      <Card variant="inverse" discs={false} className={className}>
         <CardContent>{figures}</CardContent>
       </Card>
     )
@@ -77,7 +81,7 @@ export function MonthSummary({
 
   return (
     <>
-      <Card variant="pastel" blend="flow" discs={false} asChild className={className}>
+      <Card variant="inverse" discs={false} asChild className={className}>
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -85,18 +89,18 @@ export function MonthSummary({
         >
           <CardContent>
             {figures}
-            <div className="mt-4 border-t border-separator pt-3.5" />
+            <div className="mt-4 border-t border-inverse-foreground/15 pt-3.5" />
             <div className="flex items-center gap-3">
               <span className="flex min-w-0 flex-1 flex-col gap-1.5">
                 <span className="flex items-baseline justify-between gap-3 text-sm">
                   <span className="min-w-0 text-balance">Đã dùng {formatBudgetPercent(spent, limit)} hạn mức tổng</span>
-                  <span className={cn("shrink-0 text-xs text-muted-foreground tabular-nums", over && "text-expense")}>
+                  <span className={cn("shrink-0 text-xs text-inverse-foreground/60 tabular-nums", over && "text-expense")}>
                     {over ? "vượt" : "còn"} {formatCompactCurrency(Math.abs(limit - spent), 1)}
                   </span>
                 </span>
                 <LimitBar value={spent} max={limit} tone={limitTone(spent, limit, monthShare(overview), nearLevel(overview.alerts))} label="Hạn mức tháng đã dùng" />
               </span>
-              <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <ChevronRightIcon className="size-4 shrink-0 text-inverse-foreground/60" aria-hidden="true" />
             </div>
           </CardContent>
         </button>
@@ -112,7 +116,7 @@ export function MonthSummary({
  */
 export function MonthSummarySkeleton({ className }: { className?: string }) {
   return (
-    <Card variant="pastel" blend="flow" discs={false} className={className}>
+    <Card variant="inverse" discs={false} className={className}>
       <CardContent>
         <div className="grid grid-cols-2 gap-3">
           {[0, 1].map((index) => (
@@ -130,7 +134,7 @@ export function MonthSummarySkeleton({ className }: { className?: string }) {
             </div>
           ))}
         </div>
-        <div className="mt-4 border-t border-separator pt-3.5" />
+        <div className="mt-4 border-t border-inverse-foreground/15 pt-3.5" />
         <div className="flex items-center gap-3">
           <span className="flex min-w-0 flex-1 flex-col gap-1.5">
             <span className="flex h-5 items-center justify-between gap-3">

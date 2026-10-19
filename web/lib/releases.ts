@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.22.1",
+    date: "2026-10-19",
+    title: "Thẻ dẫn đầu về một màu: đen ở theme sáng, trắng ở theme tối",
+    changes: [
+      { kind: "improved", text: "Cả năm thẻ dẫn đầu (Tài sản ròng, Tổng số dư, Thu / Chi ở Giao dịch, Cần thu / Cần trả, thẻ người dùng) bỏ nền pastel loè loẹt của 6.22.0: theme sáng thẻ đen chữ trắng, theme tối thẻ trắng chữ đen như nút chính (trước là xám nổi). Tài sản ròng giữ hai vòng tròn, thẻ người dùng giữ quầng xanh chanh." },
+    ],
+  },
+  {
     version: "6.22.0",
     date: "2026-10-19",
     title: "Năm thẻ dẫn đầu một dải màu, nút đổi theme ở Tổng quan",

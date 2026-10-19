@@ -20,7 +20,7 @@ Bảng màu cho thiết kế lại (10/2026), theo mockup đã duyệt (xem [`RE
 |---|---|---|---|
 | `background` | `#f2f2f7` (xám nhóm của iOS, 2026-10-18) | `#000000` | Nền trang |
 | `card` | `#ffffff` | `#171717` | Thẻ |
-| `inverse` | `#171717` | `#262626` | Thẻ đen (`Card variant="inverse"`; tới 2026-10-19 là thẻ dẫn đầu, nay thẻ dẫn đầu là `pastel`): đen ở theme sáng, xám nổi ở theme tối, không phải khối trắng; chữ `inverse-foreground` trắng |
+| `inverse` | `#171717` | `#ffffff` | Thẻ dẫn đầu của mọi trang (`Card variant="inverse"`, 2026-10-19): đen ở theme sáng, trắng ở theme tối (trước là xám nổi `#262626`), xám nổi ở theme tối, không phải khối trắng; chữ `inverse-foreground` trắng |
 | `popover` | `#ffffff` | `#171717` | Sheet, menu, hộp thoại |
 | `foreground`, `primary` | `#171717` | `#ffffff` | Chữ chính, màu nhấn duy nhất (`neutral-900`) |
 | `secondary` / `muted` / `accent` | `#f5f5f5` | `#262626` | Skeleton, nền khi nhấn, ô tab đang chọn |
