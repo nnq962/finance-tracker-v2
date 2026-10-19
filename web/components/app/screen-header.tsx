@@ -10,10 +10,12 @@ import { Button } from "@/components/ui/button"
  * The bar of a screen pushed in from another page, as Settings is from the
  * overview's avatar (2026-10-19, after iOS's Apple Account screen): the same
  * bar the app's sheets open with (PageSheet's SheetBar), so a pushed screen
- * and a sheet read as one kind of thing. 68 high with 16 above and 8 below,
- * the round back button on the left raised by the bar's soft shadow, the
- * title 16 semibold centred, an empty cell on the right to keep it centred.
- * Back goes where the user came from, else to `fallbackHref`.
+ * and a sheet read as one kind of thing: the round back button on the left
+ * raised by the bar's soft shadow, the title 16 semibold centred, an empty
+ * cell on the right to keep it centred, 8 below. No padding above: the shell
+ * already keeps the page 16 under the safe area, where the sheet's bar has
+ * its own 16 (so the button sits 16 from the top, 2026-10-19). Back goes
+ * where the user came from, else to `fallbackHref`.
  */
 export function ScreenHeader({
   title,
@@ -29,7 +31,7 @@ export function ScreenHeader({
   const router = useRouter()
 
   return (
-    <header data-slot="screen-header" className="grid h-17 grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2 pt-4 pb-2">
+    <header data-slot="screen-header" className="grid h-13 grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2 pb-2">
       <Button
         type="button"
         variant="secondary"

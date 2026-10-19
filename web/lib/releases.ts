@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.26.3",
+    date: "2026-10-19",
+    title: "Nút quay lại sát mép, avatar hết xanh chanh",
+    changes: [
+      { kind: "fixed", text: "Nút quay lại ở Cài đặt cách mép trên 16 (trước 32 vì cộng dồn đệm của khung và của thanh)." },
+      { kind: "improved", text: "Avatar ở đầu trang Tổng quan (mở Cài đặt) không còn nền xanh chanh: chữ tắt trên nền xám như ở Cài đặt." },
+    ],
+  },
+  {
     version: "6.26.2",
     date: "2026-10-19",
     title: "Hồ sơ ở Cài đặt sát thanh đầu màn hơn",
