@@ -17,7 +17,7 @@ const moneyVariants = cva("inline-flex min-w-0 font-semibold tabular-nums [overf
     tone: {
       default: "",
       income: "text-income",
-      expense: "text-expense",
+      expense: "text-expense group-data-[variant=inverse]/card:text-expense-on-inverse",
       transfer: "text-transfer",
       // Figures that no longer count, e.g. an archived account's balance.
       muted: "text-muted-foreground",

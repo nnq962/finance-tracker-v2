@@ -94,7 +94,7 @@ export function MonthSummary({
               <span className="flex min-w-0 flex-1 flex-col gap-1.5">
                 <span className="flex items-baseline justify-between gap-3 text-sm">
                   <span className="min-w-0 text-balance">Đã dùng {formatBudgetPercent(spent, limit)} hạn mức tổng</span>
-                  <span className={cn("shrink-0 text-xs text-inverse-foreground/60 tabular-nums", over && "text-expense")}>
+                  <span className={cn("shrink-0 text-xs text-inverse-foreground/60 tabular-nums", over && "font-semibold text-expense-on-inverse")}>
                     {over ? "vượt" : "còn"} {formatCompactCurrency(Math.abs(limit - spent), 1)}
                   </span>
                 </span>
