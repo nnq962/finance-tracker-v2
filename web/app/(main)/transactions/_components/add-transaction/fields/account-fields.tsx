@@ -86,7 +86,7 @@ function TransferSide({
         <span className={cn("size-9 rounded-[10px] border-2 border-dashed", invalid ? "border-destructive/60" : "border-border")} />
       )}
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={cn("w-full truncate text-sm font-medium", !account && (invalid ? "text-destructive" : "text-muted-foreground"))}>
+      <span className={cn("w-full truncate text-sm font-medium", !account && (invalid ? "text-destructive-text" : "text-muted-foreground"))}>
         {account?.name ?? "Chọn tài khoản"}
       </span>
     </button>

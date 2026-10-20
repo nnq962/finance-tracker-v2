@@ -55,14 +55,14 @@ export function PickGrid({
   error?: string
 }) {
   const cellClassName =
-    "pressable flex min-w-0 flex-col items-center gap-1.5 rounded-2xl py-2 text-center outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+    "pressable flex min-w-0 flex-col items-center gap-1.5 rounded-[12px] py-2 text-center outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
 
   return (
     <section aria-labelledby={`${id}-caption`} className="flex flex-col gap-2">
-      <h3 id={`${id}-caption`} className={cn("px-4", groupCaptionClassName, error && "text-destructive")}>
+      <h3 id={`${id}-caption`} className={cn("px-4", groupCaptionClassName, error && "text-destructive-text")}>
         {caption}
       </h3>
-      <div className={cn("grid grid-cols-4 gap-1 rounded-[20px] bg-card p-2", error && "ring-2 ring-destructive/60")}>
+      <div className={cn("grid grid-cols-4 gap-1 rounded-[20px] bg-card p-2 shadow-card", error && "ring-2 ring-destructive/60")}>
         {items.map((item, index) => (
           <button
             key={item.id}

@@ -81,7 +81,7 @@ function Row({ row }: { row: AnswerRow }) {
       <span className="min-w-0 flex-1">
         <span className="block truncate font-medium">{row.name}</span>
         {row.sub ? (
-          <span className={cn("block truncate text-xs", row.subTone === "late" ? "text-destructive" : "text-muted-foreground")}>
+          <span className={cn("block truncate text-xs", row.subTone === "late" ? "text-destructive-text" : "text-muted-foreground")}>
             {row.sub}
           </span>
         ) : null}

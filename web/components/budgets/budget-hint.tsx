@@ -80,7 +80,7 @@ export function BudgetHint({
   if (!group || !hasLimit(group)) return null
   const state = limitTone(groupBefore, group.limit, monthShare(overview), nearLevel(overview.alerts))
   return (
-    <p className={cn("flex items-center gap-1.5 px-4 text-xs text-muted-foreground", state === "near" && "text-warning", state === "over" && "text-expense")}>
+    <p className={cn("flex items-center gap-1.5 px-4 text-xs text-muted-foreground", state === "near" && "text-warning-text", state === "over" && "text-expense")}>
       <GaugeIcon className="size-3.5 shrink-0" aria-hidden="true" />
       {group.name} · {remainingLabel(groupBefore, group.limit, daysLeft(overview))}
     </p>

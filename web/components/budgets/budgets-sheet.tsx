@@ -345,12 +345,12 @@ function Allocation({ total, groups }: { total: number; groups: number[] }) {
     <div className="mt-4 flex flex-col gap-1.5 border-t border-separator pt-3.5">
       <div className="flex items-center justify-between gap-3 text-xs">
         <span className="text-muted-foreground">Đã chia cho nhóm</span>
-        <span className={cn("font-medium tabular-nums", over && "text-warning")}>
+        <span className={cn("font-medium tabular-nums", over && "text-warning-text")}>
           {formatCompactCurrency(shared, 1)} / {formatCompactCurrency(total, 1)}
         </span>
       </div>
       {over ? (
-        <p className="flex items-start gap-1.5 text-xs text-warning">
+        <p className="flex items-start gap-1.5 text-xs text-warning-text">
           <TriangleAlertIcon className="mt-px size-3.5 shrink-0" aria-hidden="true" />
           Các nhóm cộng lại {formatCompactCurrency(shared, 1)}, nhiều hơn hạn mức tổng {formatCompactCurrency(total, 1)}. Giảm hạn mức nhóm cho vừa.
         </p>

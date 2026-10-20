@@ -58,7 +58,7 @@ import type { CategoryColorName } from "@/lib/categories/category-colors"
 import { categoryIconRegistry, type CategoryIconName } from "@/lib/icons/category-icon-registry"
 import { formatCompactCurrency } from "@/lib/format-currency"
 
-import { Block, CatalogSection, Wide } from "./catalog-kit"
+import { Block, BlockLabel, CatalogSection, Wide } from "./catalog-kit"
 
 const sortOptions = [
   { value: "newest", label: "Mới nhất" },
@@ -169,7 +169,7 @@ function InputSection() {
       <Block label="Màn tìm (Collapse): khối trên thu gọn, Huỷ trượt ra khi chạm ô tìm">
         <div className="flex flex-col">
           <Collapse open={!searching}>
-            <div className="mb-3 rounded-2xl bg-card p-4 text-sm text-muted-foreground">Đầu trang và thẻ tổng</div>
+            <div className="mb-3 rounded-[16px] bg-muted p-4 text-sm text-muted-foreground">Đầu trang và thẻ tổng</div>
           </Collapse>
           <div className="flex items-center">
             <InputGroup className="min-w-0 flex-1">
@@ -280,7 +280,8 @@ function InputSection() {
           </Button>
         </div>
       </Block>
-      <Block label="Thời gian trong nhóm dòng · TimeRows (chip ngày; quickDays=false thì không)">
+      <Wide>
+        <BlockLabel className="px-1">Thời gian trong nhóm dòng · TimeRows (chip ngày; quickDays=false thì không)</BlockLabel>
         <SettingsGroup>
           <TimeRows
             idPrefix="ds-time"
@@ -303,7 +304,7 @@ function InputSection() {
             invalid={false}
           />
         </SettingsGroup>
-      </Block>
+      </Wide>
       <Block label="Mã OTP" wide>
         <OtpInput value={code} onValueChange={setCode} />
         <p className="mt-3 text-center text-xs text-muted-foreground">
@@ -385,7 +386,7 @@ function SelectSection() {
         </WheelPickerGroup>
       </Block>
       <Block label="Màu và biểu tượng hạng mục (ColorPicker, IconPicker gợi ý theo tên)">
-        <div className="flex flex-col gap-3 rounded-[24px] bg-background p-3">
+        <div className="flex flex-col gap-3">
           <ColorPicker value={categoryColor} onValueChange={setCategoryColor} />
           <IconPicker
             value={categoryIcon}
@@ -498,9 +499,9 @@ function LimitSample() {
     { name: "Đi lại", icon: "bus", tone: "blue", spent: 380_000, limit: 1_000_000 },
   ] as const
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-4 md:grid-cols-2 md:items-start">
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 rounded-[20px] bg-card p-4">
+        <div className="flex flex-col gap-3 rounded-[20px] bg-card p-4 shadow-card surface-plain">
           <LimitBar value={38} max={100} label="Dưới mốc báo sớm (80%)" />
           <LimitBar value={86} max={100} tone="near" label="Từ mốc báo sớm (80% hay 90%), hay đang chi nhanh" />
           <LimitBar value={113} max={100} tone="over" label="Đã vượt" />
@@ -603,9 +604,11 @@ function ProgressSection() {
           </Button>
         </div>
       </Block>
-      <Block label="Hạn mức · LimitBar, LimitRow, BudgetTotal, BudgetResult, BudgetInvite, KeptMonths, biểu đồ" wide>
+      {/* Its cards sit on the page, not in a block's card (2026-10-21). */}
+      <Wide>
+        <BlockLabel className="px-1">Hạn mức · LimitBar, LimitRow, BudgetTotal, BudgetResult, BudgetInvite, KeptMonths, biểu đồ</BlockLabel>
         <LimitSample />
-      </Block>
+      </Wide>
       <Block label="Sóng giọng nói · khi ghi âm">
         <VoiceWaveSample />
       </Block>

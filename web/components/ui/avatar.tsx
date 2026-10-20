@@ -65,7 +65,7 @@ function AvatarFallback({
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
       className={cn(
-        "flex size-full items-center justify-center rounded-full text-sm group-data-[size=sm]/avatar:text-xs group-data-[size=xl]/avatar:text-lg group-data-[size=2xl]/avatar:text-3xl group-data-[size=2xl]/avatar:font-semibold",
+        "flex size-full items-center justify-center rounded-full text-sm group-data-[size=default]/avatar:text-xs group-data-[size=lg]/avatar:text-[15px] group-data-[size=sm]/avatar:text-xs group-data-[size=xl]/avatar:text-lg group-data-[size=2xl]/avatar:text-3xl group-data-[size=2xl]/avatar:font-semibold",
         inverse
           ? "bg-inverse font-semibold text-inverse-foreground"
           : accent

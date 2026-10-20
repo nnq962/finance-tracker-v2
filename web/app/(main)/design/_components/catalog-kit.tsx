@@ -23,15 +23,15 @@ export const catalogSections = [
 
 export type CatalogSectionId = (typeof catalogSections)[number][0]
 
-/** One numbered part of the catalogue: "01", its title, a line on when to use it, then the samples. */
+/** One part of the catalogue: its title, a line on when to use it, then the samples (no section numbers since 2026-10-21; the order carries no meaning). */
 export function CatalogSection({ id, children }: { id: CatalogSectionId; children: React.ReactNode }) {
   const index = catalogSections.findIndex(([sectionId]) => sectionId === id)
   const [, title, note] = catalogSections[index]
 
   return (
     <section id={id} aria-labelledby={`${id}-title`} className="min-w-0 scroll-mt-20 md:scroll-mt-36">
-      <div className="mb-3 flex items-baseline gap-3 px-1 pt-6">
-        <span className="text-xs text-muted-foreground tabular-nums">{String(index + 1).padStart(2, "0")}</span>
+      {/* In line with the cards' content (24 in) rather than hanging past their edge. */}
+      <div className="mb-3 flex items-baseline gap-3 px-6 pt-6">
         <div className="min-w-0">
           <h2 id={`${id}-title`} className="text-xl font-semibold tracking-tight">
             {title}

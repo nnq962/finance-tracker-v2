@@ -469,7 +469,7 @@ export function TransactionForm({
                 id="transaction-account"
                 title="Tài khoản"
                 value={
-                  <span className={cn("flex min-w-0 items-center gap-2", errors.accountId && "text-destructive")}>
+                  <span className={cn("flex min-w-0 items-center gap-2", errors.accountId && "text-destructive-text")}>
                     {chosenAccount ? <AccountLogo account={chosenAccount} size="xs" /> : null}
                     <span className="min-w-0 truncate">{chosenAccount?.name ?? "Chọn tài khoản"}</span>
                   </span>

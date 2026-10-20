@@ -42,7 +42,7 @@ const Toaster = ({ style, ...props }: ToasterProps) => {
           </span>
         ),
         warning: (
-          <span className={`${tile} bg-warning/18 text-warning`}>
+          <span className={`${tile} bg-warning/18 text-warning-text`}>
             <TriangleAlertIcon strokeWidth={2.5} />
           </span>
         ),

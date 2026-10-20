@@ -17,8 +17,10 @@ const buttonVariants = cva(
         // the compositor's.
         default:
           "relative isolate bg-primary text-primary-foreground after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:bg-primary-foreground/15 after:opacity-0 after:transition-opacity after:duration-150 hover:after:opacity-100 motion-reduce:after:transition-none",
+        // A hairline inside the edge (2026-10-21): without it outline read as
+        // ghost and link, three variants alike.
         outline:
-          "bg-card hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
+          "bg-card shadow-[inset_0_0_0_1px_var(--separator)] dark:shadow-[inset_0_0_0_1px_oklch(1_0_0/0.14)] hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
         secondary:
           "bg-field text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--field),var(--foreground)_5%)] aria-expanded:bg-field aria-expanded:text-secondary-foreground",
         ghost:
@@ -34,13 +36,14 @@ const buttonVariants = cva(
         // Three sizes: L 56, M 44 (default, the height of a field), S 36.
         default:
           "h-11 gap-2 px-5 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
-        xs: "h-8 gap-1 px-3 text-xs has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5 [&_svg:not([class*='size-'])]:size-3.5",
+        // xs and the small icon sizes stretch their touch area to 44 with an invisible margin, as sm does.
+        xs: "relative h-8 gap-1 px-3 text-xs after:absolute after:inset-x-0 after:-inset-y-1.5 has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5 [&_svg:not([class*='size-'])]:size-3.5",
         // 36 tall, its touch area stretched to 44 by an invisible margin.
         sm: "relative h-9 gap-1.5 px-4 after:absolute after:inset-x-0 after:-inset-y-1 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
         lg: "h-14 gap-2 px-7 text-base has-data-[icon=inline-end]:pr-6 has-data-[icon=inline-start]:pl-6",
         icon: "size-11 [&_svg:not([class*='size-'])]:size-5",
-        "icon-xs": "size-8 [&_svg:not([class*='size-'])]:size-3.5",
-        "icon-sm": "size-9",
+        "icon-xs": "relative size-8 after:absolute after:-inset-1.5 [&_svg:not([class*='size-'])]:size-3.5",
+        "icon-sm": "relative size-9 after:absolute after:-inset-1",
         "icon-lg": "size-12 [&_svg:not([class*='size-'])]:size-5",
         // A page's main action floating above the tab bar on phones.
         fab: "size-[60px] [&_svg:not([class*='size-'])]:size-6",

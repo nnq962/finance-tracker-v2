@@ -8,7 +8,7 @@ import { TimiIcon } from "@/components/timi-icon"
  */
 export function PushBanner({ title, body, time = "bây giờ" }: { title: string; body: string; time?: string }) {
   return (
-    <div className="flex gap-3 rounded-2xl bg-card p-3 shadow-sm">
+    <div className="flex gap-3 rounded-[20px] bg-card p-3 shadow-card">
       <TimiIcon size={36} className="size-9 rounded-lg" />
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-2">

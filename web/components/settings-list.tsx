@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils"
  */
 export function settingsSeparatorClassName(hasMedia?: boolean) {
   return cn(
-    "relative before:absolute before:top-0 before:right-4 before:left-4 before:h-px before:bg-separator has-[[data-slot=item-media]]:before:left-16",
+    "relative before:absolute before:top-0 before:right-4 before:left-4 before:z-2 before:h-px before:bg-separator has-[[data-slot=item-media]]:before:left-16",
     // No divider above the first row showing: the first row, or one with only
     // folded-away rows (SettingsRow `collapsed`) before it.
     "[&:not(:not([data-collapsed])~*)]:before:hidden",
@@ -121,6 +121,9 @@ function SettingsGroup({
           // Its background only while pinned: scrolling with the page, a
           // filled band would cut the cards' shadows above and below it.
           stickyCaption && "transition-[background-color] duration-150 data-stuck:bg-background/90 data-stuck:backdrop-blur-md",
+          // A dashboard card's rows sit 24 in: its caption lines up with them (2026-10-21).
+          size === "lg" && "px-6",
+          size === "lg" && stickyCaption && "max-md:px-[calc(var(--main-content-px)+--spacing(6))]",
         )}
       >
         {title ? (
@@ -146,7 +149,7 @@ function SettingsGroup({
         </Card>
       )}
       {footer ? (
-        <p className={cn("px-4 text-xs text-muted-foreground", stickyCaption && "mt-2")}>
+        <p className={cn("px-4 text-xs text-muted-foreground", size === "lg" && "px-6", stickyCaption && "mt-2")}>
           {footer}
         </p>
       ) : null}
@@ -256,7 +259,7 @@ const rowClassName = "min-h-16 gap-3 py-3 group-data-[size=lg]/card:px-6"
 // its own (drawn at its top) and reaching a pixel down over the next row's,
 // which before showed under the grey while the one above did not.
 const pressableRow =
-  "relative text-left transition-[color,background-color,box-shadow] duration-150 hover:z-1 hover:bg-muted active:z-1 active:bg-muted disabled:pointer-events-none disabled:opacity-50 md:data-[active=true]:z-1 md:data-[active=true]:bg-muted [li:not(:last-child)>&]:hover:shadow-[0_1px_0_var(--muted)] [li:not(:last-child)>&]:active:shadow-[0_1px_0_var(--muted)] md:[li:not(:last-child)>&]:data-[active=true]:shadow-[0_1px_0_var(--muted)]"
+  "relative text-left transition-[color,background-color,box-shadow] duration-150 hover:z-3 hover:bg-muted active:z-3 active:bg-muted disabled:pointer-events-none disabled:opacity-50 md:data-[active=true]:z-3 md:data-[active=true]:bg-muted [li:not(:last-child)>&]:hover:shadow-[0_1px_0_var(--muted)] [li:not(:last-child)>&]:active:shadow-[0_1px_0_var(--muted)] md:[li:not(:last-child)>&]:data-[active=true]:shadow-[0_1px_0_var(--muted)]"
 
 function SettingsRow({
   id,
@@ -299,7 +302,7 @@ function SettingsRow({
         </ItemMedia>
       ) : null}
       <ItemContent className={cn("gap-0.5", destructive && "items-center")}>
-        <ItemTitle className={cn(destructive && "text-destructive", unread && "font-semibold", muted && "text-muted-foreground")}>
+        <ItemTitle className={cn(destructive && "text-destructive-text", unread && "font-semibold", muted && "text-muted-foreground")}>
           {unread && !hasMedia ? unreadDot("mr-1.5 inline-block size-2 shrink-0") : null}
           {title}
           {unread ? <span className="sr-only">, chưa đọc</span> : null}
@@ -410,7 +413,7 @@ function SettingsFieldRow({
   const Label = htmlFor ? "label" : "span"
   return (
     <RowItem collapsed={collapsed}>
-      <div className="flex min-h-16 items-center gap-3 px-4 py-3">
+      <div className="flex min-h-16 items-center gap-3 px-4 py-3 group-data-[size=lg]/card:px-6">
         {icon ? (
           <span data-slot="item-media" className="flex shrink-0">
             <IconTile icon={icon} tone={tone} size="sm" />
@@ -418,7 +421,7 @@ function SettingsFieldRow({
         ) : null}
         {/* The control keeps its width (a field at least 64), the label gives way. */}
         <Label htmlFor={htmlFor} className="flex min-w-0 shrink flex-col gap-0.5">
-          <span className={cn("text-sm font-medium", invalid && "text-destructive")}>{title}</span>
+          <span className={cn("text-sm font-medium", invalid && "text-destructive-text")}>{title}</span>
           {/* Clamped rather than truncated: a long description gives way instead of widening the card. */}
           {description ? <span className="line-clamp-1 text-xs text-muted-foreground">{description}</span> : null}
         </Label>
@@ -466,7 +469,7 @@ function SettingsRowSkeleton({
 }: SettingsRowSkeletonProps) {
   if (align === "center") {
     return (
-      <div className={cn("flex min-h-16 items-center justify-center border border-transparent px-4 py-3", settingsSeparatorClassName(false))}>
+      <div className={cn("flex min-h-16 items-center justify-center border border-transparent px-4 py-3 group-data-[size=lg]/card:px-6", settingsSeparatorClassName(false))}>
         <Skeleton className="h-3.5 w-20" />
       </div>
     )
@@ -474,7 +477,7 @@ function SettingsRowSkeleton({
 
   return (
     // Item's transparent 1px border included, so everything lands where the row's does.
-    <div className={cn("flex min-h-16 items-center gap-3 border border-transparent px-4 py-3", settingsSeparatorClassName(media !== "none"))}>
+    <div className={cn("flex min-h-16 items-center gap-3 border border-transparent px-4 py-3 group-data-[size=lg]/card:px-6", settingsSeparatorClassName(media !== "none"))}>
       {media === "none" ? null : (
         <Skeleton
           className={cn(

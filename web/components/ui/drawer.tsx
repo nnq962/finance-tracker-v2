@@ -72,7 +72,7 @@ function DrawerOverlay({
       // took the veil's, so the bar turned white under every overlay. It
       // skips pseudo-elements.
       className={cn(
-        "fixed inset-0 z-50 before:absolute before:inset-0 before:bg-black/50 data-[state=closed]:pointer-events-none! data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 z-50 before:absolute before:inset-0 before:bg-black/40 data-[state=closed]:pointer-events-none! data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}
@@ -84,7 +84,7 @@ function DrawerOverlay({
 // dimmed page and covers the whole screen, the status bar too, and is dragged
 // down to close. Safari 26 tints the status bar from a fixed element at the
 // screen's top edge, so once the sheet is up the bar takes the sheet's colour
-// (the page's grey for a grouped sheet, so the bar does not change). From 640px,
+// (white, as the page, so the bar does not change). From 640px,
 // a panel with rounded top corners, below the top. The grabber
 // floats over the content, which may scroll up to the sheet's top edge
 // (PageSheet). Clipped rather than hidden where it can be: a hidden box can
@@ -123,8 +123,9 @@ function DrawerContent({
 }: React.ComponentProps<typeof DrawerPrimitive.Content> & {
   variant?: "default" | "page"
   /**
-   * grouped: the page's grey, its controls and groups of rows white, as every
-   * sheet in the app (a short bottom sheet such as the month picker too);
+   * grouped: the sheet ground (white in light, as the page, since 2026-10-21),
+   * its groups of rows lifted cards and its fields light grey, as every sheet
+   * in the app (a short bottom sheet such as the month picker too);
    * plain: white, for a page sheet that is one bare form.
    */
   surface?: "plain" | "grouped"
@@ -132,14 +133,10 @@ function DrawerContent({
   if (variant === "page") {
     return (
       <DrawerPortal data-slot="drawer-portal">
-        {/* Kept off the screen's top edge on phones. Safari 26 takes the
-            status bar's colour once, at some moment while the sheet slides
-            in, from a fixed element at the top: when that was this
-            see-through layer it showed the dimmed page through it, and the
-            bar stayed darker than the sheet most times. Off the edge, it
-            meets only the sheet or the page, both the same grey. The thin
-            band left undimmed is covered once the sheet is up. */}
-        <DrawerOverlay className="max-sm:top-[max(env(safe-area-inset-top,0px),0.5rem)] md:before:bg-black/20" />
+        {/* The whole screen, status bar band too (2026-10-21): page and sheet
+            are both white now, so the band once left undimmed to keep the
+            bar's colour (Safari 26) is gone. */}
+        <DrawerOverlay className="md:before:bg-black/20" />
         <DrawerPrimitive.Content
           data-slot="drawer-content"
           data-variant="page"
@@ -165,14 +162,14 @@ function DrawerContent({
         data-slot="drawer-content"
         className={cn(
           "group/drawer-content fixed z-50 flex h-auto flex-col bg-transparent p-4 text-sm before:absolute before:inset-2 before:-z-10 before:rounded-[28px] before:bg-popover before:shadow-xl data-[vaul-drawer-direction=bottom]:inset-x-0 data-[vaul-drawer-direction=bottom]:bottom-0 data-[vaul-drawer-direction=bottom]:sm:inset-x-auto data-[vaul-drawer-direction=bottom]:sm:left-1/2 data-[vaul-drawer-direction=bottom]:sm:w-full data-[vaul-drawer-direction=bottom]:sm:max-w-lg data-[vaul-drawer-direction=bottom]:sm:-translate-x-1/2 data-[vaul-drawer-direction=bottom]:mt-24 data-[vaul-drawer-direction=bottom]:max-h-[80vh] data-[vaul-drawer-direction=bottom]:rounded-t-[32px] data-[vaul-drawer-direction=bottom]:bg-popover data-[vaul-drawer-direction=bottom]:p-0 data-[vaul-drawer-direction=bottom]:pb-[env(safe-area-inset-bottom,0px)] data-[vaul-drawer-direction=bottom]:shadow-xl data-[vaul-drawer-direction=bottom]:before:hidden data-[vaul-drawer-direction=left]:inset-y-0 data-[vaul-drawer-direction=left]:left-0 data-[vaul-drawer-direction=left]:w-3/4 data-[vaul-drawer-direction=right]:inset-y-0 data-[vaul-drawer-direction=right]:right-0 data-[vaul-drawer-direction=right]:w-3/4 data-[vaul-drawer-direction=top]:inset-x-0 data-[vaul-drawer-direction=top]:top-0 data-[vaul-drawer-direction=top]:mb-24 data-[vaul-drawer-direction=top]:max-h-[80vh] data-[vaul-drawer-direction=left]:sm:max-w-sm data-[vaul-drawer-direction=right]:sm:max-w-sm",
-          // After the base, so the grey wins over its white.
+          // After the base, so the sheet ground wins over the popover.
           surface === "grouped" && "surface-sheet data-[vaul-drawer-direction=bottom]:bg-background",
           className
         )}
         {...props}
         onInteractOutside={keepOpenForToasts(onInteractOutside)}
       >
-        <div className="mx-auto mt-3 hidden h-1.5 w-10 shrink-0 rounded-full bg-input group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
+        <div className="mx-auto mt-3 hidden h-1 w-9 shrink-0 rounded-full bg-muted-foreground/30 group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
         {/* Content taller than the sheet's cap scrolls rather than being cut
             off (vaul tells a scroll from a drag to close). Inside, not on the
             sheet: vaul's ::after, which fills the gap under a sheet dragged up,

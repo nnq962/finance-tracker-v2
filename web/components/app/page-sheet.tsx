@@ -54,7 +54,7 @@ export function PageSheetFooter({ className, style, ...props }: React.ComponentP
   return (
     <div
       data-slot="page-sheet-footer"
-      className={cn("sticky bottom-0 z-10 -mx-4 mt-auto -mb-[calc(1rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-2 px-4 pt-8 pb-[max(1rem,env(safe-area-inset-bottom,0px))] [&_[data-slot=button]]:shadow-[0_4px_16px_rgb(0_0_0/0.12)] [&>[data-slot=field-error]]:rounded-xl [&>[data-slot=field-error]]:bg-(--page-sheet-surface) [&>[data-slot=field-error]]:px-3 [&>[data-slot=field-error]]:py-2", className)}
+      className={cn("sticky bottom-0 z-10 -mx-4 mt-auto -mb-[calc(1rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-2 px-4 pt-8 pb-[max(1rem,env(safe-area-inset-bottom,0px))] [&_[data-slot=button]]:shadow-float [&>[data-slot=field-error]]:rounded-xl [&>[data-slot=field-error]]:bg-(--page-sheet-surface) [&>[data-slot=field-error]]:px-3 [&>[data-slot=field-error]]:py-2", className)}
       style={{ backgroundImage: footerFade, ...style }}
       {...props}
     />
@@ -302,7 +302,7 @@ const contentClassName = "flex flex-1 flex-col px-4 pt-20 pb-[calc(1rem+env(safe
  */
 function SheetBar({ left, title, action }: { left: React.ReactNode; title: React.ReactNode; action: React.ReactNode }) {
   return (
-    <div className="grid h-17 grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2 px-4 pt-4 pb-2 [&_[data-variant=secondary]]:shadow-[0_4px_16px_rgb(0_0_0/0.1)]">
+    <div className="grid h-17 grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2 px-4 pt-4 pb-2 [&_[data-variant=secondary]]:shadow-float">
       {left}
       {/* Its own cell even when hidden (sr-only takes it out of the grid), so the action stays on the right. */}
       <div className="min-w-0">{title}</div>

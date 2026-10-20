@@ -286,7 +286,7 @@ export function DraftsView({
                   )}
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-medium">{name}</span>
-                    <span className={cn("block truncate text-xs", problem ? "text-destructive" : "text-muted-foreground")}>
+                    <span className={cn("block truncate text-xs", problem ? "text-destructive-text" : "text-muted-foreground")}>
                       {sub}
                     </span>
                   </span>

@@ -34,9 +34,10 @@ export function BudgetTotal({ overview, compact = false }: { overview: BudgetOve
   return (
     <div className="flex flex-col">
       <div className="flex items-end justify-between gap-3">
-        <span className="flex min-w-0 flex-col">
+        {/* A container, so the figure shrinks to its line on a narrow phone rather than breaking mid-number (2026-10-21). */}
+        <span className="@container flex min-w-0 flex-1 flex-col">
           <CardLabel as="span">{over ? "Vượt hạn mức" : "Còn lại"}</CardLabel>
-          <Money amount={Math.abs(limit - spent)} size={compact ? "lg" : "xl"} tone={over ? "expense" : "default"} className={compact ? "mt-0.5" : "mt-1"} />
+          <Money amount={Math.abs(limit - spent)} size={compact ? "lg" : "xl"} fit tone={over ? "expense" : "default"} className={compact ? "mt-0.5" : "mt-1"} />
         </span>
         <span className={cn("flex shrink-0 flex-col items-end", compact ? "pb-0.5" : "pb-1")}>
           {/* "đã dùng", so the share is not read as what is left (2026-10-20). */}
@@ -59,7 +60,7 @@ export function BudgetTotal({ overview, compact = false }: { overview: BudgetOve
           </span>
         ) : (
           <>
-            <span className={cn("font-medium", pace === "fast" && "text-warning")}>{budgetPaceLabel[pace]}</span>
+            <span className={cn("font-medium", pace === "fast" && "text-warning-text")}>{budgetPaceLabel[pace]}</span>
             <span className="tabular-nums"> · còn {formatCompactCurrency(perDay(spent, limit, daysLeft(overview)))} mỗi ngày</span>
           </>
         )}
@@ -89,9 +90,9 @@ export function BudgetResult({ spent, limit, label, near }: { spent: number; lim
   return (
     <div className="flex flex-col">
       <div className="flex items-end justify-between gap-3">
-        <span className="flex min-w-0 flex-col">
+        <span className="@container flex min-w-0 flex-1 flex-col">
           <CardLabel as="span">{label}</CardLabel>
-          <Money amount={spent} size="xl" className="mt-1" />
+          <Money amount={spent} size="xl" fit className="mt-1" />
         </span>
         <span className="flex shrink-0 flex-col items-end pb-1">
           <span className="text-sm font-semibold tabular-nums">{formatBudgetPercent(spent, limit)}</span>

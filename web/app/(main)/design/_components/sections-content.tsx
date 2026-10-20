@@ -80,15 +80,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
   Drawer,
   DrawerClose,
   DrawerContent,
@@ -166,16 +157,6 @@ function CardSection() {
 
   return (
     <CatalogSection id="card">
-      <Wide>
-        <BlockLabel className="px-1">Thẻ dẫn đầu hai chiều tiền (FlowTiles variant=&quot;lead&quot;): vào trên xanh chanh, ra trên đen, như đầu trang Giao dịch</BlockLabel>
-        <FlowTiles
-          variant="lead"
-          tiles={[
-            { value: "in", label: "Thu", amount: 18_000_000, caption: "1 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
-            { value: "out", label: "Chi", amount: 5_152_000, caption: "16 giao dịch", icon: ArrowUpRightIcon, tone: "expense" },
-          ]}
-        />
-      </Wide>
       <Wide>
         <BlockLabel className="px-1">Hai chiều tiền, chỉ hiển thị số (FlowTiles không có onValueChange), như sheet một ngày</BlockLabel>
         <FlowTiles
@@ -688,8 +669,9 @@ function NavSection() {
       </Block>
       <Block label="Thanh tab" wide>
         <p className="text-sm text-muted-foreground">
-          Thanh tab nổi ở đáy màn hình (MobileBottomNav: viên thuốc trắng kiểu iOS 26, tab đang mở trên viên xám nhạt) là
-          khung của app; xem trực tiếp ở các trang chính. Đầu trang cuộn cùng trang; Tổng quan đặt avatar,
+          Thanh tab nổi ở đáy màn hình (MobileBottomNav, kiểu iOS 26): một viên kính trong 35% có mờ nền, năm ô (Tổng quan,
+          Tài khoản, Giao dịch, Vay nợ, Timi), icon Phosphor đặc, nhãn 10/700; tab đang mở xanh #0088ff trên viên kính nhỏ;
+          trượt khuất khi mở Cài đặt. Là khung của app; xem trực tiếp ở các trang chính trên điện thoại. Đầu trang cuộn cùng trang; Tổng quan đặt avatar,
           lời chào và tên vào chỗ tên trang. Tabs dạng gạch chân ở mục Toggle group.
         </p>
       </Block>
@@ -782,14 +764,16 @@ function FeedbackSection() {
           Minh Tuấn · bấm được cả khối (onClick)
         </NoticeBanner>
       </Wide>
-      <Block label="ErrorCard · trang không tải được (error.tsx); StatusScreen là màn riêng: trang 404 và app gặp sự cố" wide>
+      {/* The card itself, not inside a block's card (2026-10-21). */}
+      <Wide>
+        <BlockLabel className="px-1">ErrorCard · trang không tải được (error.tsx); StatusScreen là màn riêng: trang 404 và app gặp sự cố</BlockLabel>
         <div className="flex flex-col gap-3">
           <ErrorCard title="Không tải được Tổng quan" onRetry={() => toast("Thử lại")} />
           <Button variant="secondary" asChild>
             <Link href="/khong-co-trang-nay">Mở trang 404 (StatusScreen)</Link>
           </Button>
         </div>
-      </Block>
+      </Wide>
       <Block label="Mở thử" wide>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
           <Button
@@ -849,7 +833,7 @@ function FeedbackSection() {
             </AlertDialogTrigger>
             <AlertDialogContent size="sm">
               <AlertDialogHeader>
-                <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20">
+                <AlertDialogMedia className="bg-destructive/10 text-destructive-text dark:bg-destructive/20">
                   <Trash2Icon />
                 </AlertDialogMedia>
                 <AlertDialogTitle>Xoá giao dịch?</AlertDialogTitle>
@@ -870,7 +854,7 @@ function FeedbackSection() {
             </DrawerTrigger>
             <DrawerContent>
               <DrawerHeader>
-                <DrawerTitle className="text-xl">Chia sẻ báo cáo</DrawerTitle>
+                <DrawerTitle>Chia sẻ báo cáo</DrawerTitle>
                 <DrawerDescription>Tháng 10 · 24 giao dịch</DrawerDescription>
               </DrawerHeader>
               <div className="grid grid-cols-4 gap-3 px-4">
@@ -915,13 +899,17 @@ function FeedbackSection() {
           <PageSheetFormSample />
           <PageSheetDetailSample />
 
-          <Sheet>
-            <SheetTrigger asChild>
+          {/* A short bottom sheet that drags (Drawer, vaul), not the old Sheet variant="bottom" whose grabber could not be dragged (2026-10-21). */}
+          <Drawer>
+            <DrawerTrigger asChild>
               <Button variant="secondary">Sheet đáy</Button>
-            </SheetTrigger>
-            <SheetContent variant="bottom" showCloseButton={false} aria-describedby={undefined}>
-              <SheetNavHeader title="Ăn trưa" backLabel="Đóng" />
-              <div className="space-y-2 px-4 pb-4">
+            </DrawerTrigger>
+            <DrawerContent surface="grouped">
+              <DrawerHeader>
+                <DrawerTitle>Ăn trưa</DrawerTitle>
+                <DrawerDescription className="sr-only">Việc với giao dịch này</DrawerDescription>
+              </DrawerHeader>
+              <div className="space-y-4 px-4 pb-4">
                 <SettingsGroup>
                   <SettingsRow icon={PencilIcon} title="Sửa" chevron={false} onClick={() => toast("Sửa")} />
                   <SettingsRow icon={CopyIcon} title="Nhân bản" chevron={false} onClick={() => toast("Nhân bản")} />
@@ -930,24 +918,20 @@ function FeedbackSection() {
                   <SettingsRow title="Xoá giao dịch" destructive onClick={() => toast("Xoá")} />
                 </SettingsGroup>
               </div>
-            </SheetContent>
-          </Sheet>
+            </DrawerContent>
+          </Drawer>
 
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="secondary">Hộp thoại</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Đổi tên tài khoản</DialogTitle>
-                <DialogDescription>Tên hiện ở danh sách tài khoản và giao dịch.</DialogDescription>
-              </DialogHeader>
-              <Input defaultValue="Ví MoMo" aria-label="Tên tài khoản" />
-              <DialogFooter>
-                <Button>Lưu</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          {/* A short form is a page sheet too, not a centred dialog: the keyboard stays down until the field is tapped (2026-10-21). */}
+          <PageSheet
+            title="Đổi tên tài khoản"
+            surface="plain"
+            className="space-y-2"
+            trigger={<Button variant="secondary">Đổi tên (sheet)</Button>}
+            footer={<Button className="w-full">Lưu</Button>}
+          >
+            <Input defaultValue="Ví MoMo" aria-label="Tên tài khoản" />
+            <p className="px-1 text-xs text-muted-foreground">Tên hiện ở danh sách tài khoản và giao dịch.</p>
+          </PageSheet>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -1056,7 +1040,7 @@ function ScreenSheetSample() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="secondary">Màn hình (chỉ màn chào mừng)</Button>
+        <Button variant="secondary">Màn chào mừng</Button>
       </SheetTrigger>
       <SheetContent
         variant="screen"

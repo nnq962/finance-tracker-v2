@@ -100,7 +100,7 @@ function DueRows({
         id="debt-due-row"
         title="Hẹn trả"
         value={
-          <span className={cn("flex items-center gap-1", value && "text-foreground", invalid && "text-destructive")}>
+          <span className={cn("flex items-center gap-1", value && "text-foreground", invalid && "text-destructive-text")}>
             {value ? formatDate(value) : "Không hẹn"}
             <ChevronDownIcon
               aria-hidden="true"
@@ -430,7 +430,7 @@ export function DebtForm({
                 id="debt-account"
                 title={lent ? "Tiền ra từ" : "Tiền vào"}
                 value={
-                  <span className={cn("flex min-w-0 items-center gap-2", errors.accountId && "text-destructive")}>
+                  <span className={cn("flex min-w-0 items-center gap-2", errors.accountId && "text-destructive-text")}>
                     {account ? <AccountLogo account={account} size="xs" /> : null}
                     <span className="min-w-0 truncate">
                       {account?.name ?? (activeAccounts.length === 0 ? "Chưa có tài khoản" : "Chọn tài khoản")}
@@ -495,7 +495,7 @@ export function DebtForm({
               />
               {hasInterest ? (
                 <li className={cn("flex min-h-16 items-center gap-3 px-4 py-3", settingsSeparatorClassName())}>
-                  <label htmlFor="debt-interest-rate" className={cn("shrink-0 text-sm font-medium", errors.interestRate && "text-destructive")}>
+                  <label htmlFor="debt-interest-rate" className={cn("shrink-0 text-sm font-medium", errors.interestRate && "text-destructive-text")}>
                     Lãi suất
                   </label>
                   <span className="flex min-w-0 flex-1 items-center justify-end gap-1 text-sm">

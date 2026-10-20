@@ -64,7 +64,7 @@ export function Stat({ value, label, href, onClick, title }: StatProps) {
     </>
   )
   const className =
-    "flex min-h-11 min-w-0 flex-col justify-center text-left not-first:pl-4 group-data-[tiles=true]/stats:rounded-2xl group-data-[tiles=true]/stats:bg-track group-data-[tiles=true]/stats:p-3 group-data-[tiles=true]/stats:not-first:pl-3 group-data-[variant=inverse]/card:rounded-2xl group-data-[variant=inverse]/card:bg-inverse-foreground/10 group-data-[variant=inverse]/card:p-3 group-data-[variant=inverse]/card:not-first:pl-3 group-data-[variant=pastel]/card:rounded-2xl group-data-[variant=pastel]/card:bg-pastel-tile group-data-[variant=pastel]/card:shadow-[inset_0_0_0_1px_var(--pastel-tile-edge)] group-data-[variant=pastel]/card:p-3 group-data-[variant=pastel]/card:not-first:pl-3"
+    "flex min-h-11 min-w-0 flex-col justify-center text-left not-first:pl-4 group-data-[tiles=true]/stats:rounded-[16px] group-data-[tiles=true]/stats:bg-track group-data-[tiles=true]/stats:p-3 group-data-[tiles=true]/stats:not-first:pl-3 group-data-[variant=inverse]/card:rounded-[16px] group-data-[variant=inverse]/card:bg-inverse-foreground/10 group-data-[variant=inverse]/card:p-3 group-data-[variant=inverse]/card:not-first:pl-3 group-data-[variant=pastel]/card:rounded-[16px] group-data-[variant=pastel]/card:bg-pastel-tile group-data-[variant=pastel]/card:shadow-[inset_0_0_0_1px_var(--pastel-tile-edge)] group-data-[variant=pastel]/card:p-3 group-data-[variant=pastel]/card:not-first:pl-3"
 
   const pressable = {
     title,

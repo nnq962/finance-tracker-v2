@@ -285,7 +285,7 @@ function PaymentForm({
               id="payment-account"
               title={collecting ? "Vào tài khoản" : "Trả từ"}
               value={
-                <span className={cn("flex min-w-0 items-center gap-2", errors.accountId && "text-destructive")}>
+                <span className={cn("flex min-w-0 items-center gap-2", errors.accountId && "text-destructive-text")}>
                   {account ? <AccountLogo account={account} size="xs" /> : null}
                   <span className="min-w-0 truncate">
                     {account?.name ?? (eligibleAccounts.length === 0 ? "Chưa có tài khoản" : "Chọn tài khoản")}

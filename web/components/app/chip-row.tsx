@@ -18,7 +18,7 @@ export function ChipRow({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="chip-row"
       className={cn(
-        "-mx-(--main-content-px) -my-1 flex min-w-0 scroll-px-(--main-content-px) items-center gap-2 overflow-x-auto px-(--main-content-px) py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        "-mx-(--chip-row-bleed,var(--main-content-px)) -my-1 flex min-w-0 scroll-px-(--chip-row-bleed,var(--main-content-px)) items-center gap-2 overflow-x-auto px-(--chip-row-bleed,var(--main-content-px)) py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
         className,
       )}
       {...props}

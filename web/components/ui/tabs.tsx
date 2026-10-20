@@ -54,7 +54,7 @@ const tabsListVariants = cva(
         // thumb with a soft shadow on the grey rail, the chosen text in ink.
         segmented: "rounded-full bg-segment p-1 group-data-horizontal/tabs:h-11",
         // Tabs over content: a short bar slides under the chosen one.
-        line: "rounded-none border-b bg-transparent group-data-horizontal/tabs:h-11",
+        line: "rounded-none border-b border-separator bg-transparent group-data-horizontal/tabs:h-11",
       },
     },
     defaultVariants: {
@@ -127,8 +127,9 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "relative inline-flex h-full flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-medium whitespace-nowrap text-foreground/60 transition-colors duration-150 ease-out outline-none group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "data-active:font-semibold data-active:text-foreground group-data-[variant=line]/tabs-list:rounded-none",
+        "relative inline-flex h-full flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-semibold whitespace-nowrap text-foreground/60 transition-colors duration-150 ease-out outline-none group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        // One weight chosen or not (2026-10-21): bolding the chosen label moved the words while the pill slid.
+        "data-active:text-foreground group-data-[variant=line]/tabs-list:rounded-none",
         // On the ink pill the chosen segment's text is white.
         "[[data-slot=tabs-list][data-variant=default]>&]:data-active:text-primary-foreground",
         // Before the indicator is measured (first paint), the chosen trigger fills itself.

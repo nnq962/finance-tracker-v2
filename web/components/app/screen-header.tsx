@@ -37,7 +37,7 @@ export function ScreenHeader({
         variant="secondary"
         size="icon"
         aria-label={backLabel}
-        className="shadow-[0_4px_16px_rgb(0_0_0/0.1)]"
+        className="shadow-float"
         onClick={() => (window.history.length > 1 ? router.back() : router.push(fallbackHref))}
       >
         <ChevronLeftIcon />

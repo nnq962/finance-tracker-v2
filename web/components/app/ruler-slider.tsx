@@ -57,7 +57,7 @@ export function RulerSlider({
         onValueChange(Math.min(max, Math.max(min, value + step)))
       }}
       className={cn(
-        "relative h-16 cursor-grab touch-none rounded-xl outline-none select-none [mask-image:linear-gradient(90deg,transparent,black_15%,black_85%,transparent)] focus-visible:ring-[3px] focus-visible:ring-ring/50 active:cursor-grabbing",
+        "relative h-16 cursor-grab touch-none rounded-xl outline-none select-none [mask-image:linear-gradient(90deg,transparent,black_15%,black_85%,transparent)] focus-visible:ring-2 focus-visible:ring-primary active:cursor-grabbing",
         className,
       )}
     >
@@ -75,7 +75,7 @@ export function RulerSlider({
       </div>
       <span
         aria-hidden="true"
-        className="absolute bottom-1.5 h-10 w-1 -translate-x-1/2 rounded-full bg-warning shadow-[0_0_0_3px_color-mix(in_oklch,var(--warning)_20%,transparent)]"
+        className="absolute bottom-1.5 h-10 w-1 -translate-x-1/2 rounded-full bg-primary shadow-[0_0_0_3px_color-mix(in_oklch,var(--primary)_15%,transparent)]"
         style={{ left: `${percent}%` }}
       />
     </div>

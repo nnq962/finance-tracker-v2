@@ -66,7 +66,7 @@ export function WheelPicker({
         scroller.current?.scrollTo({ top: next * ITEM_HEIGHT, behavior: "smooth" })
       }}
       className={cn(
-        "relative h-[200px] flex-1 snap-y snap-mandatory overflow-y-auto overscroll-contain rounded-xl py-20 outline-none [mask-image:linear-gradient(transparent,black_35%,black_65%,transparent)] focus-visible:ring-[3px] focus-visible:ring-ring/50",
+        "relative h-[200px] flex-1 snap-y snap-mandatory overflow-y-auto overscroll-contain rounded-xl py-20 outline-none [mask-image:linear-gradient(transparent,black_35%,black_65%,transparent)] focus-visible:ring-2 focus-visible:ring-primary",
         className,
       )}
     >

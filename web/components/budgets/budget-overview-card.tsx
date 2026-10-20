@@ -122,7 +122,7 @@ export function BudgetOverviewCard({ overview, initialOpen = false }: { overview
                       <span
                         className={cn(
                           "w-10 shrink-0 text-right text-xs font-medium text-muted-foreground tabular-nums",
-                          state === "near" && "font-semibold text-warning",
+                          state === "near" && "font-semibold text-warning-text",
                           state === "over" && "font-semibold text-expense",
                         )}
                       >

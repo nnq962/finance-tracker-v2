@@ -55,7 +55,7 @@ const fieldVariants = cva(
   // Controls take their size from --control-h, --control-px and
   // --control-radius: 44px tall like a button, with 12px corners, in a
   // form field as on a lone search bar.
-  "group/field flex w-full gap-3 data-[invalid=true]:text-destructive",
+  "group/field flex w-full gap-3 data-[invalid=true]:text-destructive-text data-[invalid=true]:[&_input]:text-foreground data-[invalid=true]:[&_textarea]:text-foreground",
   {
     variants: {
       orientation: {
@@ -219,7 +219,7 @@ function FieldError({
     <div
       role="alert"
       data-slot="field-error"
-      className={cn("text-xs font-normal text-destructive", className)}
+      className={cn("text-xs font-normal text-destructive-text", className)}
       {...props}
     >
       {content}

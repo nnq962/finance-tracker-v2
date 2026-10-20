@@ -32,6 +32,18 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.32.0",
+    date: "2026-10-21",
+    title: "Sheet trắng và rà soát toàn bộ thiết kế",
+    changes: [
+      { kind: "improved", text: "Theme sáng: mọi sheet nền trắng như trang, các nhóm dòng trong sheet nổi bằng bóng; lớp phủ tối phủ kín cả màn, không còn dải hở dưới thanh trạng thái." },
+      { kind: "improved", text: "Chữ cam và chữ đỏ (cảnh báo, lỗi nhập) đậm hơn cho dễ đọc trên nền trắng; viền ô chọn và ô tích rõ hơn; viền focus bàn phím rõ trên thanh trượt, thước, bánh xe chọn và ô tiền." },
+      { kind: "improved", text: "Nút nhỏ, chip lọc, dòng chọn, sao đánh giá có vùng chạm đủ 44px; mọi nút lún cùng một mức; công tắc, chấm trang, ô chọn chuyển động gọn hơn, không nảy quá đà." },
+      { kind: "improved", text: "Bo góc đồng bộ: ô con trong thẻ 16, banner 20; thẻ và banner trắng đều có bóng; nhóm trong thẻ lớn thẳng lề 24 cả tiêu đề, dòng nhập và chú thích." },
+      { kind: "fixed", text: "Nút kiểu viền trông giống hệt nút trong suốt; dòng vuốt để xoá mất vạch ngăn; số tiền hạn mức bị ngắt dòng giữa số trên điện thoại; bóng thẻ trong băng chuyền bị cắt." },
+    ],
+  },
+  {
     version: "6.31.2",
     date: "2026-10-21",
     title: "Bóng thẻ không còn bị cắt",

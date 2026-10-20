@@ -64,7 +64,7 @@ export function ChoiceTiles<T extends string>({
           key={option.value}
           value={option.value}
           className={cn(
-            "group/choice pressable flex min-h-30 min-w-0 flex-col rounded-2xl border-[1.5px] border-foreground/10 p-3.5 pb-4 text-left outline-none transition-colors duration-150 focus-visible:ring-3 focus-visible:ring-ring/30",
+            "group/choice pressable flex min-h-30 min-w-0 flex-col rounded-[16px] border-[1.5px] border-foreground/10 p-3.5 pb-4 text-left outline-none transition-[scale,border-color,background-color] duration-150 focus-visible:ring-3 focus-visible:ring-ring/30",
             tones[tone].tile,
           )}
         >
@@ -76,7 +76,7 @@ export function ChoiceTiles<T extends string>({
                 tones[tone].radio,
               )}
             >
-              <span className="size-2 scale-0 rounded-full bg-primary-foreground transition-transform duration-300 ease-[cubic-bezier(.34,1.4,.64,1)] group-aria-checked/choice:scale-100 motion-reduce:duration-150 motion-reduce:ease-out" />
+              <span className="size-2 scale-0 rounded-full bg-primary-foreground transition-transform duration-150 ease-out group-aria-checked/choice:scale-100 motion-reduce:duration-150 motion-reduce:ease-out" />
             </span>
             {option.badge ? <Badge variant={tones[tone].badge}>{option.badge}</Badge> : null}
           </span>

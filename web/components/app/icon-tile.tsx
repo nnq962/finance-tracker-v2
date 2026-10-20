@@ -19,7 +19,7 @@ const iconTileVariants = cva(
       },
       // rounded: the mockup's tile, a soft square; circle is kept for faces and initials.
       shape: {
-        rounded: "rounded-[10px] data-[size=lg]:rounded-2xl data-[size=xs]:rounded-[6px]",
+        rounded: "rounded-[10px] data-[size=lg]:rounded-[16px] data-[size=xs]:rounded-[6px]",
         circle: "rounded-full",
       },
     },

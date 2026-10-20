@@ -97,7 +97,7 @@ export function TimeRows({
         id={`${idPrefix}-date-row`}
         title={title}
         value={
-          <span className={cn("flex items-center gap-1", invalid && "text-destructive")}>
+          <span className={cn("flex items-center gap-1", invalid && "text-destructive-text")}>
             {timeLabel(date, time, today)}
             <ChevronDownIcon
               aria-hidden="true"

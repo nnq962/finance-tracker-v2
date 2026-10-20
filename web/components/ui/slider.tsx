@@ -61,7 +61,7 @@ function Slider({
         <SliderPrimitive.Thumb
           key={index}
           data-slot="slider-thumb"
-          className="group/thumb relative grid size-7 place-items-center rounded-full bg-card shadow-[0_2px_8px_rgb(0_0_0/0.16),0_0_0_0.5px_rgb(0_0_0/0.06)] transition-transform duration-200 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 active:scale-110 motion-reduce:duration-150 motion-reduce:ease-out dark:bg-foreground"
+          className="group/thumb relative grid size-7 place-items-center rounded-full bg-card shadow-[0_2px_8px_rgb(0_0_0/0.16),0_0_0_0.5px_rgb(0_0_0/0.06)] transition-transform duration-200 outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-110 motion-reduce:duration-150 motion-reduce:ease-out dark:bg-foreground"
         >
           <span aria-hidden="true" className="size-2 rounded-full bg-foreground dark:bg-card" />
           {formatValue ? (

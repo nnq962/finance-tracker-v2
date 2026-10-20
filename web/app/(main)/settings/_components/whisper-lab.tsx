@@ -220,7 +220,7 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
             <FieldLabel>Văn bản nhận được</FieldLabel>
             <Card size="sm">
               <CardContent>
-                <p>{run.error ? <span className="text-destructive">{run.error}</span> : run.text || "—"}</p>
+                <p>{run.error ? <span className="text-destructive-text">{run.error}</span> : run.text || "—"}</p>
               </CardContent>
             </Card>
           </Field>

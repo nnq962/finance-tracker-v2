@@ -45,7 +45,7 @@ export function Chip({
           aria-label={`${removeLabel} ${typeof children === "string" ? children : ""}`.trim()}
           onClick={onRemove}
           className={cn(
-            "relative grid size-6 shrink-0 place-items-center rounded-full after:absolute after:-inset-2 active:bg-foreground/10",
+            "relative grid size-6 shrink-0 place-items-center rounded-full after:absolute after:-inset-2.5 active:bg-foreground/10",
             tone === "income" ? "text-income" : "text-muted-foreground",
           )}
         >

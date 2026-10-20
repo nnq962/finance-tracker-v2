@@ -64,7 +64,7 @@ export function ActionSheet({
                 }}
                 className={cn(
                   "flex h-14 w-full items-center justify-center gap-2 border-t text-base transition-colors active:bg-muted",
-                  option.destructive && "text-destructive",
+                  option.destructive && "text-destructive-text",
                 )}
               >
                 {option.label}

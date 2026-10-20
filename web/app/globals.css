@@ -6,6 +6,7 @@
 
 @theme inline {
   --shadow-card: var(--card-shadow);
+  --shadow-float: var(--float-shadow);
   --shadow-toast: var(--toast-shadow);
   --shadow-pastel: var(--pastel-shadow);
   --color-background: var(--background);
@@ -65,6 +66,8 @@
   --color-ai-strong: var(--ai-strong);
   --color-ai-on-primary: var(--ai-on-primary);
   --color-warning: var(--warning);
+  --color-warning-text: var(--warning-text);
+  --color-destructive-text: var(--destructive-text);
   --color-field: var(--field);
   --color-track: var(--track);
   --color-segment: var(--segment);
@@ -112,12 +115,13 @@
 .light {
   /*
    * A white page (2026-10-20), its white cards lifted by Apple's shadow
-   * (--card-shadow). Was iOS's grouped grey #f2f2f7 (2026-10-18), #f7f7f8
-   * before, and first a warm #f5f4f0 that read yellow. Sheets keep that grey
-   * (--sheet), so their white form sections stand off it.
+   * (--card-shadow); sheets white too (2026-10-21), so the status bar stays
+   * white under a full-screen sheet and its groups lift the same way. Was
+   * iOS's grouped grey #f2f2f7 (2026-10-18), #f7f7f8 before, and first a warm
+   * #f5f4f0 that read yellow.
    */
   --background: oklch(1 0 0);
-  --sheet: oklch(0.962 0.006 286);
+  --sheet: oklch(1 0 0);
   --foreground: oklch(0.205 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.205 0 0);
@@ -207,6 +211,9 @@
   /* The AI's mark on a primary button (the ✦ tab, Hỏi AI): the lime on the ink. */
   --ai-on-primary: oklch(0.911 0.1775 119.6);
   --warning: oklch(0.769 0.188 70.08);
+  /* Amber and red as text on white (2026-10-21): the fills are about 2:1 and 4:1 there; these reach 4.5:1. Fills keep warning / destructive. */
+  --warning-text: oklch(0.56 0.13 62);
+  --destructive-text: oklch(0.56 0.19 25);
   /* The phone's tab bar after Apple's iOS 26 kit (2026-10-20): the bar #f7f7f7 at 35% over a light blur (the "clear glass" level chosen 2026-10-19: the page reads through it, the icons still stand off it), the chosen tab's pill a second glass on it: ink at 7%, the kit's #e6e6e6 on #f7f7f7 as a tint (2026-10-19 night, was the solid grey), the chosen tab in iOS blue. */
   --tab-bar: rgb(247 247 247 / 0.35);
   --tab-pill: rgb(0 0 0 / 0.07);
@@ -226,6 +233,8 @@
    * No hairline ring, which read as a border.
    */
   --card-shadow: 0 8px 40px rgb(0 0 0 / 0.12);
+  /* Round buttons floating over content (a sheet's ✕ and ✎, the pushed screen's back): one token, was three copies (2026-10-21). */
+  --float-shadow: 0 4px 16px rgb(0 0 0 / 0.1);
   /*
    * A toast lifted clear of the page (2026-10-17): a hairline edge and a
    * shadow that falls below it only, never up to the status bar (Safari 26
@@ -236,12 +245,12 @@
     0 12px 28px -10px rgb(0 0 0 / 0.28),
     0 3px 8px -2px rgb(0 0 0 / 0.08);
   --field-plain: oklch(0.97 0 0);
-  /* On the white page a field, a track and the segmented rail are light greys; on a sheet's grey, as before. */
+  /* On the white page and the white sheets a field, a track and the segmented rail are light greys. */
   --field-grouped: oklch(0.965 0.002 286);
-  --field-sheet: var(--card);
+  --field-sheet: var(--field-grouped);
   --track-plain: oklch(0.97 0 0);
   --track-grouped: oklch(0.945 0.003 286);
-  --track-sheet: oklch(0.905 0.004 286);
+  --track-sheet: var(--track-grouped);
   /*
    * The segmented control's rail (2026-10-19, option B of the segmented
    * mockup): a white card on the grey page, the light grey on a white card;
@@ -250,7 +259,7 @@
    */
   --segment-plain: oklch(0.97 0 0);
   --segment-grouped: oklch(0.955 0.003 286);
-  --segment-sheet: var(--card);
+  --segment-sheet: var(--segment-grouped);
   --field: var(--field-plain);
   --track: var(--track-plain);
   --segment: var(--segment-plain);
@@ -259,6 +268,7 @@
 .dark {
   /* Apple's same menu shadow in the dark (Figma kit): lost on the black page, where the card's lighter grey lifts it; no edge highlight. */
   --card-shadow: 0 8px 40px rgb(0 0 0 / 0.12);
+  --float-shadow: 0 4px 16px rgb(0 0 0 / 0.4);
   /* On the black page the raised grey toast takes a lighter edge and a deeper shadow. */
   --toast-shadow: 0 0 0 0.5px oklch(1 0 0 / 0.12), 0 12px 28px -10px rgb(0 0 0 / 0.7);
   /* iOS dark grouped (2026-10-16): a black page (#000), cards #1c1c1e, raised fills #2c2c2e, lines #38383a. */
@@ -325,6 +335,8 @@
   --tab-pill: color-mix(in oklab, var(--foreground) 13%, transparent);
   --tab-active: #2b8ff5;
   --warning: oklch(0.828 0.189 84.429);
+  --warning-text: var(--warning);
+  --destructive-text: var(--destructive);
   /* On a dark card, white at 6%, as in the mockup. */
   --field-plain: oklch(1 0 0 / 0.06);
   --track-plain: oklch(1 0 0 / 0.06);
@@ -438,7 +450,7 @@
     var(--pastel-base);
 }
 
-/* A sheet's grey ground and what sits on it; --background follows, for what paints the ground (sticky captions, the sheet's own fill). */
+/* A sheet's ground and what sits on it (white in light since 2026-10-21, as the page); --background follows, for what paints the ground (sticky captions, the sheet's own fill). */
 @utility surface-sheet {
   --background: var(--sheet);
   --field: var(--field-sheet);

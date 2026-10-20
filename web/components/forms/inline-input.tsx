@@ -17,7 +17,7 @@ export function InlineInput({ unit, value, ...props }: React.ComponentProps<"inp
         type="text"
         autoComplete="off"
         value={value}
-        className="w-0 min-w-16 flex-1 bg-transparent text-right tabular-nums outline-none placeholder:text-muted-foreground aria-invalid:text-destructive"
+        className="w-0 min-w-16 flex-1 bg-transparent text-right tabular-nums outline-none placeholder:text-muted-foreground aria-invalid:text-destructive-text"
         {...props}
       />
       {unit ? (

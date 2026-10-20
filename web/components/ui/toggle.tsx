@@ -16,14 +16,17 @@ const toggleVariants = cva(
         // A filled grey chip; the chosen one turns dark.
         default: "bg-field text-foreground",
         outline: "border border-border bg-card hover:bg-muted",
-        // Inside a ToggleGroup of the same variant: the chosen option white on the grey track.
+        // Inside a ToggleGroup of the same variant: the chosen option white on
+        // the grey rail, as Tabs variant="segmented" (pill, 44 tall, the same
+        // thumb shadow; 2026-10-21).
         segmented:
-          "flex-1 rounded-xl bg-transparent text-muted-foreground hover:bg-transparent data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-sm data-[state=on]:hover:bg-card data-[state=on]:hover:text-foreground dark:data-[state=on]:bg-foreground/15",
+          "h-9! flex-1 rounded-full bg-transparent text-muted-foreground hover:bg-transparent data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-[0_1px_3px_rgb(0_0_0/0.12),0_1px_1px_rgb(0_0_0/0.04)] data-[state=on]:hover:bg-card data-[state=on]:hover:text-foreground dark:data-[state=on]:bg-foreground/20",
       },
       size: {
+        // 40 and 36 tall, their touch area stretched to 44 with an invisible margin (2026-10-21).
         default:
-          "h-10 min-w-10 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
-        sm: "h-9 min-w-9 px-3.5 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
+          "relative h-10 min-w-10 px-4 after:absolute after:inset-x-0 after:-inset-y-0.5 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
+        sm: "relative h-9 min-w-9 px-3.5 after:absolute after:inset-x-0 after:-inset-y-1 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
         lg: "h-11 min-w-11 px-4 has-data-[icon=inline-end]:pr-3.5 has-data-[icon=inline-start]:pl-3.5",
       },
     },

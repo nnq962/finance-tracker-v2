@@ -22,7 +22,7 @@ function InputGroup({
       data-variant={variant}
       role="group"
       className={cn(
-        "group/input-group relative flex h-[var(--control-h,2.75rem)] w-full min-w-0 items-center border border-transparent bg-field transition-[color,background-color,box-shadow] duration-200 outline-none in-data-[slot=combobox-content]:focus-within:border-inherit in-data-[slot=combobox-content]:focus-within:ring-0 has-[[data-slot][aria-invalid=true]]:ring-2 has-[[data-slot][aria-invalid=true]]:ring-destructive has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5",
+        "group/input-group relative flex h-[var(--control-h,2.75rem)] w-full min-w-0 items-center border border-transparent bg-field has-[[data-slot=input-group-control]:disabled]:opacity-50 transition-[color,background-color,box-shadow] duration-200 outline-none in-data-[slot=combobox-content]:focus-within:border-inherit in-data-[slot=combobox-content]:focus-within:ring-0 has-[[data-slot][aria-invalid=true]]:ring-2 has-[[data-slot][aria-invalid=true]]:ring-destructive has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5",
         variant === "search"
           ? "rounded-full"
           : "rounded-[var(--control-radius,0.75rem)] has-[[data-slot=input-group-control]:focus-visible]:bg-card has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-primary",
@@ -81,7 +81,7 @@ const inputGroupButtonVariants = cva(
   {
     variants: {
       size: {
-        xs: "h-6 gap-1 rounded-xl px-1.5 [&>svg:not([class*='size-'])]:size-3.5",
+        xs: "relative h-6 gap-1 rounded-xl px-1.5 after:absolute after:inset-x-0 after:-inset-y-2.5 [&>svg:not([class*='size-'])]:size-3.5",
         sm: "",
         // 24px to see, 44px to tap.
         "icon-xs": "relative size-6 rounded-xl p-0 after:absolute after:-inset-2.5 has-[>svg]:p-0",

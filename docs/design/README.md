@@ -20,7 +20,7 @@ component ở đó là cả app đổi theo.
 
 1. **Thẻ trắng nổi trên nền trắng** (2026-10-20). Trang trắng; thẻ trắng bo 20 (24 ở trang tổng hợp), không viền, nổi nhờ
    bóng menu trong kit iOS 26 của Apple (`--card-shadow: 0 8px 40px` đen 12%, như tab bar; không vòng viền mảnh, vì trông như
-   viền; theme tối dùng cùng bóng đó, thẻ `#1c1c1e` trên nền đen tự nổi). Sheet giữ nền xám nhóm của iOS (`--sheet` `#f2f2f7`, utility `surface-sheet`) để các nhóm trắng trong form nổi lên.
+   viền; theme tối dùng cùng bóng đó, thẻ `#1c1c1e` trên nền đen tự nổi). Sheet cũng trắng từ 2026-10-21 (`--sheet`, utility `surface-sheet`): nhóm dòng và thẻ trong sheet nổi bằng cùng bóng, ô nhập xám nhạt như trên trang; trước đó sheet giữ xám `#f2f2f7`.
    Trước đó trang là `#f2f2f7` với thẻ không bóng (2026-10-18), `#f7f7f8` thẻ bóng rất mờ (6.17–6.21), kem ấm `#f5f4f0`.
    `muted`, rãnh `track` và đường kẻ `separator` cùng sắc xám lạnh, đậm dần. Xám trên thẻ là thang `neutral` của
    Tailwind (không ngả xanh). Theme tối theo iOS (2026-10-16): nền đen `#000`, thẻ `#1c1c1e`, ô mờ / thẻ đen nổi `#2c2c2e`, đường kẻ `#38383a` (trước là `#0a0a0a` / `#171717`).
@@ -134,16 +134,25 @@ component ở đó là cả app đổi theo.
   trên lớp phủ nhạt hơn (đen 20%), không có thanh kéo và không kéo để đóng (đóng bằng ✕, Esc hay bấm ra
   ngoài); thanh trên giữ như điện thoại. Sheet mở chồng lên sheet nằm đúng chỗ panel trước. Không dùng
   thẳng: dùng qua khối `PageSheet`.
+- **Soát catalog 2026-10-21 (Impeccable + Make Interfaces Feel Better):** nút `outline` có viền mảnh bên trong (`separator`);
+  token chữ `warning-text` / `destructive-text` (đủ 4,5:1 trên nền trắng) cho mọi chữ cam, đỏ, còn `warning` / `destructive` cho nền;
+  nút `xs`, `icon-sm`, `icon-xs`, chip `Toggle` 40/36, nút ✕ trên chip, `InputGroupButton xs` kéo vùng chạm tới 44 bằng `after:`;
+  `SelectItem` cao 44, bo 14; segmented icon (`ToggleGroup variant="segmented"`) cùng dáng viên thuốc 44 với Tabs; chữ tab một độ đậm;
+  công tắc 400ms nảy nhẹ, màu nền 200ms; ô con trong thẻ bo 16 (`StatGroup`, `ChoiceTiles`, `IconTile lg`); `PickGrid` ô bo 12;
+  banner bo 20 và thẻ trắng có bóng (`PromoBanner`, `NoticeBanner` trên thẻ, `PushBanner`, `PickGrid`); `Carousel` chừa chỗ cho bóng;
+  vạch ngăn list nằm trên nền dòng (dòng vuốt để xoá không còn mất vạch); nhóm `lg` (thẻ trang tổng hợp): dòng nhập, skeleton, tiêu đề
+  nhóm và chú thích đều lề 24; `ChipRow` trong thẻ chạy tới mép thẻ (`--chip-row-bleed`); bóng nút nổi là token `--float-shadow`;
+  viền checkbox, radio `foreground/35`; focus của thanh trượt, thước, bánh xe, ô tiền, stepper, sao là viền mực 2px.
 - **Status bar:** màu cố định bằng màu nền trang (`components/pwa-theme-color.tsx`). Web không
   đổi được màu status bar mượt theo chuyển động: Safari 26 bỏ qua `theme-color`, tô thanh theo
   `background-color`/`backdrop-filter` của phần tử `fixed` sát mép trên, và chỉ lấy màu mới khi
   hiệu ứng đã xong (đã thử trên iPhone 2026-10-09: đổi màu từng khung hình, mỗi giây, kèm cuộn 1px
   đều không tới thanh). Nên lớp phủ tối (Drawer, Sheet, Dialog, AlertDialog) đặt lớp tối (không blur từ 2026-10-09: blur dưới lớp đang hiện dần chỉ hiện khi hiện xong, nên trang tối rồi mới nhoè; như drawer gốc của shadcn, đen 50%) ở
   `::before`, không ở chính lớp `fixed` (không thì thanh chuyển trắng), và `PageSheet` phủ kín
-  màn hình trên điện thoại: khi sheet lên hết, thanh lấy màu của sheet, mà nền `grouped` trùng màu
-  trang nên thanh không đổi. Safari lấy màu vào một lúc bất kỳ khi sheet đang chạy, nên lớp phủ của
-  sheet này cách mép trên 8px (không thì Safari hay lấy trúng lớp phủ trong suốt và thấy trang đã
-  tối qua nó), và sheet bỏ `will-change` của vaul. Sheet ngắn và hộp thoại không tới mép trên nên thanh có thể đổi sang
+  màn hình trên điện thoại: khi sheet lên hết, thanh lấy màu của sheet, mà sheet trắng trùng màu
+  trang nên thanh không đổi. Từ 2026-10-21 lớp phủ (đen 40% ở mọi sheet và hộp thoại) phủ kín cả
+  màn, kể cả dải dưới status bar: dải 8px để trống trước đây (để Safari không lấy trúng lớp phủ)
+  không cần nữa khi trang và sheet cùng trắng. Sheet bỏ `will-change` của vaul. Sheet ngắn và hộp thoại không tới mép trên nên thanh có thể đổi sang
   màu trang đã phủ tối sau khi lớp phủ hiện xong. Phần tử `fixed` mới chạm mép trên cũng đặt nền ở
   `::before`, trừ khi nó cố ý mang màu cho thanh.
 - **Toast (Sonner, `components/ui/sonner.tsx`):** thẻ trắng ở giữa phía trên (2026-10-17, thay đảo đen
@@ -188,16 +197,16 @@ component ở đó là cả app đổi theo.
 | `SettingsGroup plain` | Nhóm giữ tiêu đề, chú thích và nút Hiện/Thu gọn nhưng không bọc thẻ danh sách, cho một nhóm gồm thẻ (2026-10-12: tài khoản đã khoá trên desktop là thẻ cùng cỡ với tài khoản đang dùng). Tài khoản không tính vào báo cáo vẫn ở nhóm Đang dùng: dòng phụ mở đầu "Ngoài báo cáo", số dư xám; trên thẻ desktop nhãn "Số dư · Ngoài báo cáo" (2026-10-12: đổi từ "Không tính", nghe thiếu chuyên nghiệp; công tắc "Không tính vào báo cáo" như MISA, nhãn ngắn "Ngoài báo cáo") |
 | `MonthPickerSheet` | Chọn tháng từ sheet đáy: năm với ‹ ›, lưới 12 tháng, tháng chưa tới mờ đi (`min` cho tháng phía trước như hạn của hũ tiết kiệm: tháng đã qua mờ đi, "Tháng hiện tại" chọn `min`), nút "Tháng hiện tại" (cỡ thường, đen). Từ `sm` mọi sheet đáy (`DrawerContent` hướng bottom) rộng tối đa 512 và căn giữa như `PageSheet`, không trải hết màn máy tính (2026-10-17). Nền xám như mọi sheet (`DrawerContent surface="grouped"`, nay dùng được cả cho sheet đáy ngắn), ô tháng trắng; action sheet thì vẫn là khối trắng nổi trên lớp phủ như iOS |
 | `MonthSelect` | Tháng đang xem dạng nút viên thuốc "Tháng 10, 2026 ▾", chạm mở `MonthPickerSheet`; tới tháng nào cũng hai chạm. Một cách đổi tháng duy nhất cho trang có tháng, không kèm mũi tên ‹ ›. `size="bar"`: cao 44 và gọn ("Tháng 10", năm khác thì "Tháng 10/2025") cho đầu trang |
-| `Stepper` | Đếm từng bước bằng − / + (số người, số tháng) |
+| `Stepper` | Đếm từng bước bằng − / + (số người, số tháng); nút lún 0.96, viền focus mực; số không phóng to mỗi lần bấm |
 | `OtpInput` | Mã một lần trong các ô riêng; tự nhảy ô, dán được cả mã |
 | `WheelPicker` + `WheelPickerGroup` | Bánh xe cuộn kiểu iOS để chọn giờ, phút. Trong một nhóm dòng thì mở tại chỗ như iOS: dòng ghi giờ "20:00 ⌄" (như `TimeRows`), chạm thì bánh xe trượt mở ngay dưới (`Collapse`), dải chọn thụt 16 như lề dòng; dòng mờ và bánh xe gập khi không đổi được (giờ "Nhắc ghi chi tiêu" khi tắt nhắc) |
 | `DateStrip` | Một tuần ngày nằm ngang để chọn một ngày; chấm đánh dấu ngày có việc |
-| `RulerSlider` | Thước vạch kéo để chọn giá trị, kim màu `warning` |
-| `Rating` | Sao 1–5 |
+| `RulerSlider` | Thước vạch kéo để chọn giá trị, kim màu mực `primary` (2026-10-21; cam để dành cho "sắp chạm hạn mức") |
+| `Rating` | Sao 1–5; mỗi sao chạm 44, sao trống `muted-foreground`, lún 0.96 |
 | `SegmentedProgress` | Tiến độ chia đoạn: các bước của một luồng, độ mạnh mật khẩu |
 | `StepFlow` | Đi từng bước như onboarding hay hướng dẫn (`components/app/step-flow.tsx`, 2026-10-09): các bước vuốt ngang và bắt từng bước, `PageDots` dưới (chạm để tới), rồi chân: ‹ co giãn vào từ bước hai như "Xoá lọc" ở Bộ lọc (nút chính nhường chỗ), nút chính "Tiếp" mờ đi rồi `doneLabel` hiện lên ở bước cuối và gọi `onDone`. `step` do nơi dùng giữ (về bước đầu mỗi lần mở, ẩn "Bỏ qua" ở bước cuối); bấm nút thì bước đổi ngay, cuộn trong lúc trượt không đổi lại bước (tránh nút co rồi giãn, nhãn nháy), chỉ ngón tay mới đổi. Cho `className="flex-1"` trong một cột thì mỗi bước cao hết chỗ. Dùng cho hướng dẫn cài trên iPhone và màn giới thiệu |
 | `Steps` | Các bước có tên nối bằng đường kẻ: xong có ✓, đang làm có viền |
-| `PageDots` | Chỉ báo trang; chấm hiện tại kéo dài thành vạch |
+| `PageDots` | Chỉ báo trang; chấm hiện tại kéo dài thành vạch (300ms, không nảy); chấm khác `foreground/25`, cách 12, vùng chạm cao 40 |
 | `Carousel` | Thẻ vuốt ngang, bắt từng thẻ, kèm `PageDots` |
 | `SwipeRow` | Vuốt trái để lộ một hành động (mặc định Xoá); dùng qua `SettingsRow swipeAction` để dòng vuốt giống mọi dòng khác |
 | `PageSheetScreen` | Màn sâu hơn trong một `PageSheet`, mở từ bên trong (danh sách hạng mục, danh sách tài khoản của form giao dịch, chi tiết một hạn mức, một người trong Danh bạ, bảng lương): `<PageSheetScreen open title onBack>` đặt cạnh nội dung của màn đang có, bọc nội dung màn sâu. Từ 2026-10-18 màn sâu được đẩy vào như sheet mở trong sheet (thay cho hook `usePageSheetScreen`, trước đó đổi ngay): trượt vào từ phải, màn cũ bị đẩy ra hẳn bên trái, cùng 0,5 giây ease iOS, mỗi màn lệch 110%; giảm chuyển động thì đổi ngay không trượt. Thanh của nó có ‹ gọi `onBack` và tiêu đề hiện dần; nút phải riêng (`action`, như bút chì sửa một người trong Danh bạ hay sửa hạn mức) và chân riêng (`footer`, như "Xem N giao dịch" ở mọi màn của Bộ lọc) nếu cần; `disabled` khoá ‹ khi đang lưu. Màn dưới vẫn giữ (ẩn sau khi trượt ra) nên những gì đã nhập còn nguyên, chân của nó trượt đi cùng nó; mỗi màn nhớ chỗ đã cuộn, kể cả khi đi sâu nhiều màn rồi quay lại từng bước; màn sâu mở ở đầu. Lúc trượt ra, màn sâu giữ nội dung đã hiện lần cuối, nên nội dung có thể lấy từ state mà `onBack` xoá. Esc lùi một màn. Đóng sheet thì màn sâu đứng yên, đi cùng sheet; mở lại thì về màn đầu. Nền mặc định theo màn mở nó. Màn sâu lồng màn sâu được (Quản lý hạng mục → sửa hạng mục → Biểu tượng; hạn mức → nhóm → giao dịch). Phải đặt trong cây của sheet; ngoài sheet chỉ hiện nội dung khi `open` |
@@ -213,7 +222,7 @@ component ở đó là cả app đổi theo.
 | `PickGrid` | Chọn một thứ bằng lưới ô (`components/app/pick-grid.tsx`), như app tiền chọn hạng mục hay ngân hàng: 4 cột trên thẻ trắng dưới tiêu đề nhóm, 7 lựa chọn hay gặp nhất (`gridChoices`: thứ đang chọn luôn có mặt, thay ô cuối nếu cần), ô đang chọn nền xám viền đậm, ô cuối "Tất cả" mở danh sách đủ ở màn sâu (`PageSheetScreen`). Mỗi ô: ô 36 (`IconTile` hay `AccountLogo`) và tên tối đa hai dòng (hạng mục), hoặc một dòng cắt bằng "…" khi dài (`labelLines={1}`: ngân hàng, ví). Lỗi: khung đỏ và dòng lỗi dưới. `tileShape="circle"` cho người (ô "Tất cả" cũng tròn), `allIcon` / `allLabel` đổi ô cuối, `gridChoices(…, count)` cho số ô (3: một hàng). Dùng cho hạng mục (form giao dịch), ngân hàng, ví (form tài khoản) và người (form khoản nợ) |
 | `TimeRows` | Thời điểm trong một nhóm dòng (`components/forms/time-rows.tsx`; không truyền `time` thì chỉ chọn ngày, như ngày vay; `min` cho ngày sớm nhất): dòng "Thời gian … Hôm nay, 20:02 ▾" (`title` đổi được, như "Bắt đầu từ"), chip Hôm nay · Hôm qua · Hôm kia dưới dòng (xuống dòng thay vì tràn trên màn rất hẹp; `quickDays={false}` để bỏ, cho thứ ít khi ghi ngay lúc xảy ra), chạm dòng mở ô ngày và giờ của máy; cách chip và ô 8px (không chip: ô cách dòng trên và đường kẻ dưới 8px), không kẻ giữa. Từ năm 2000 tới hôm nay, gửi `date` và `time` |
 | `ChoiceTiles` | Vài ô cạnh nhau, chọn một, như bảng giá: vòng radio ở đầu, chip đối diện (ngắn, như "Giảm 28%"), rồi con số và một dòng mô tả. Radio group bên dưới (phím mũi tên, trình đọc màn hình). `tone="ai"` tô ô đang chọn màu `ai` (kỳ thanh toán Pro); mặc định viền đen |
-| `FlowTiles` | `variant="lead"`: hai ô bo 24 cách 8 (thẻ dẫn đầu Giao dịch tới 2026-10-19, nay còn ở trang giới thiệu và catalog), Thu nền `ai` chữ mực, Chi nền `inverse` (2026-10-12: Thu / Chi), mũi tên trong vòng 32 ở góc, chỉ số. Mặc định: tiền theo hai chiều (sheet một ngày, danh bạ) là hai nửa của một thẻ, chia bằng vạch mảnh thụt 16 trên dưới (như Figma). Mỗi nửa là `@container`, số tiền dùng `Money fit` nên không bao giờ ngắt giữa số: ô icon, nhãn, số tiền `lg` có dấu (chỉ tiền vào có màu) và ghi chú; không có `onValueChange` thì thẻ chỉ hiển thị số, như ở Giao dịch (lọc bằng hàng chip) và Vay nợ (danh sách đã chia sẵn Cần thu / Cần trả); có thì chạm một nửa để danh sách chỉ còn chiều đó (nửa đó nền xám, nửa kia mờ đi), chạm lại để bỏ, hiện chưa trang nào dùng. `FlowTilesSkeleton` cho màn tải |
+| `FlowTiles` | (`variant="lead"` ô xanh chanh và ô đen đã bỏ 2026-10-21, trái với quyết định thẻ dẫn đầu trơn.) Mặc định: tiền theo hai chiều (sheet một ngày, danh bạ) là hai nửa của một thẻ, chia bằng vạch mảnh thụt 16 trên dưới (như Figma). Mỗi nửa là `@container`, số tiền dùng `Money fit` nên không bao giờ ngắt giữa số: ô icon, nhãn, số tiền `lg` có dấu (chỉ tiền vào có màu) và ghi chú; không có `onValueChange` thì thẻ chỉ hiển thị số, như ở Giao dịch (lọc bằng hàng chip) và Vay nợ (danh sách đã chia sẵn Cần thu / Cần trả); có thì chạm một nửa để danh sách chỉ còn chiều đó (nửa đó nền xám, nửa kia mờ đi), chạm lại để bỏ, hiện chưa trang nào dùng. `FlowTilesSkeleton` cho màn tải |
 
 Danh sách nằm ở `components/settings-list.tsx`. `SettingsGroup` là nhóm dòng trong một thẻ
 (`size="lg"` cho trang dạng bảng tin), tiêu đề nhóm là nhãn 12 in hoa giãn chữ như list nhóm của

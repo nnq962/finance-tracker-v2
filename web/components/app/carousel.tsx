@@ -31,6 +31,7 @@ export function Carousel({
     <div role="region" aria-roledescription="carousel" aria-label={label} className={className}>
       <div
         ref={scroller}
+        // Room above and below for the cards' shadow, which a scroller clips (2026-10-21).
         onScroll={(event) => {
           const element = event.currentTarget
           const first = element.children[0] as HTMLElement | undefined
@@ -38,7 +39,7 @@ export function Carousel({
           const step = first.offsetWidth + 12
           setIndex(Math.min(items.length - 1, Math.round(element.scrollLeft / step)))
         }}
-        className="-mx-(--main-content-px) flex snap-x snap-mandatory gap-3 overflow-x-auto px-(--main-content-px) overscroll-x-contain sm:mx-0 sm:px-0"
+        className="-mx-(--main-content-px) -mt-8 -mb-12 flex snap-x snap-mandatory gap-3 overflow-x-auto px-(--main-content-px) pt-8 pb-12 overscroll-x-contain sm:mx-0 sm:px-0"
       >
         {items.map((item, itemIndex) => (
           <div

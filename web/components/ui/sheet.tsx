@@ -78,8 +78,9 @@ function SheetContent({
   side?: "top" | "right" | "bottom" | "left"
   variant?: keyof typeof sheetVariantClassName
   /**
-   * grouped: the page's grey, with white fields and groups of rows on it, so
-   * the status bar above a sheet filling the phone keeps the page's colour.
+   * grouped: the sheet ground (white in light, as the page), its groups of
+   * rows lifted cards, so the status bar above a sheet filling the phone
+   * keeps the page's colour.
    * plain: white, with grey fields. Screen and bottom sheets are grouped by
    * default.
    */
@@ -105,10 +106,6 @@ function SheetContent({
         )}
         {...props}
       >
-        {variant === "bottom" ? (
-          // The grabber: a cue that the sheet sits over the page.
-          <span aria-hidden="true" className="mx-auto mt-2 h-1 w-9 shrink-0 rounded-full bg-muted-foreground/30" />
-        ) : null}
         {children}
         {showCloseButton && (
           <SheetPrimitive.Close data-slot="sheet-close" asChild>

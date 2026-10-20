@@ -11,7 +11,7 @@ const tones = {
   neutral: { surface: "bg-muted", icon: "text-foreground", text: "", tile: "neutral" },
   info: { surface: "bg-transfer/10 dark:bg-transfer/15", icon: "text-transfer", text: "text-transfer", tile: "transfer" },
   income: { surface: "bg-income/10 dark:bg-income/15", icon: "text-income", text: "text-income", tile: "income" },
-  warning: { surface: "bg-warning/15", icon: "text-warning", text: "text-warning", tile: "warning" },
+  warning: { surface: "bg-warning/15", icon: "text-warning-text", text: "text-warning-text", tile: "warning" },
   expense: { surface: "bg-expense/10 dark:bg-expense/15", icon: "text-expense", text: "text-expense", tile: "expense" },
   ai: { surface: "bg-ai/20 dark:bg-ai/15", icon: "text-ai-strong", text: "text-ai-strong", tile: "ai" },
 } as const satisfies Record<string, { surface: string; icon: string; text: string; tile: IconTileTone }>
@@ -56,7 +56,7 @@ export function NoticeBanner({
   className?: string
 }) {
   const onCard = surface === "card"
-  const surfaceClassName = onCard ? "bg-card" : tones[tone].surface
+  const surfaceClassName = onCard ? "bg-card shadow-card" : tones[tone].surface
   const titleClassName = cn("font-medium", onCard && tones[tone].text)
 
   if (onClick) {
@@ -68,7 +68,7 @@ export function NoticeBanner({
         className={cn(
           "pressable flex w-full items-center gap-3 text-left text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30",
           // On a card it has the list row's size and rounding.
-          onCard ? "min-h-16 rounded-[20px] px-4 py-3" : "rounded-2xl p-4",
+          onCard ? "min-h-16 rounded-[20px] px-4 py-3" : "rounded-[20px] p-4",
           surfaceClassName,
           className,
         )}
@@ -93,7 +93,7 @@ export function NoticeBanner({
       data-slot="notice-banner"
       className={cn(
         "flex gap-3 text-sm",
-        onCard ? "min-h-16 items-center rounded-[20px] px-4 py-3" : "items-start rounded-2xl p-4",
+        onCard ? "min-h-16 items-center rounded-[20px] px-4 py-3" : "items-start rounded-[20px] p-4",
         surfaceClassName,
         className,
       )}

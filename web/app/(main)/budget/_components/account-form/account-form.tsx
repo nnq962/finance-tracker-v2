@@ -308,7 +308,7 @@ export function AccountForm({
             <SettingsGroup>
               {/* The name typed in place, at the row's end, as iOS settings do. */}
               <li className={cn("flex min-h-16 items-center gap-3 px-4 py-3", settingsSeparatorClassName())}>
-                <label htmlFor="account-name" className={cn("shrink-0 text-sm font-medium", errors.name && "text-destructive")}>
+                <label htmlFor="account-name" className={cn("shrink-0 text-sm font-medium", errors.name && "text-destructive-text")}>
                   Tên
                 </label>
                 <input

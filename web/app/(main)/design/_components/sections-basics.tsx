@@ -41,9 +41,9 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Block, CatalogSection, Wide } from "./catalog-kit"
 
 const principles = [
-  ["Thẻ mềm trên nền xám", "Thẻ trắng bo tròn, không viền, không bóng; tách khỏi nền nhờ chênh màu."],
+  ["Thẻ trắng nổi trên nền trắng", "Thẻ trắng bo tròn, không viền, nổi nhờ bóng mềm như menu iOS (0 8 40, đen 12%); trang và sheet đều trắng."],
   ["Một khuôn trang", "Tên trang gọn bên trái, công cụ bên phải; rồi một thẻ dẫn đầu và các nhóm."],
-  ["Một mảng đen", "Gần đen cho thẻ dẫn đầu, nút chính, chip đang chọn, công tắc bật; mỗi màn một khối đen."],
+  ["Một mảng đen", "Màu mực cho nút chính, chip và segment đang chọn, công tắc bật; thẻ dẫn đầu là thẻ trắng như mọi thẻ, dẫn bằng cỡ số."],
   ["Chữ rõ thứ bậc", "Số tiền dẫn đầu lớn nhất, tên trang 24; chữ thường 14px, phụ 12px."],
   ["Màu dịu, có ý nghĩa", "Ô icon pastel ngả xám; xanh lá là tiền vào; đỏ chỉ để cảnh báo (quá hạn, số âm)."],
   ["Vừa ngón tay", "Mọi thứ bấm được cao từ 44px; mọi nút là viên thuốc; chạm thì hơi lún."],
@@ -134,7 +134,7 @@ function FoundationSection() {
         </ol>
       </Block>
       <Block label="Màu · chạm để sao chép token" wide>
-        <div className="grid grid-cols-4 gap-x-3 gap-y-4 md:grid-cols-6">
+        <div className="grid grid-cols-3 gap-x-3 gap-y-4 md:grid-cols-6">
           {colors.map(([token, usage, swatch]) => (
             <button
               key={token}
@@ -146,8 +146,8 @@ function FoundationSection() {
               className="min-w-0 text-left"
             >
               <span className={`pressable block aspect-square rounded-2xl ${swatch}`} />
-              <span className="mt-1.5 block truncate text-xs font-medium">{token}</span>
-              <span className="block truncate text-[10px] text-muted-foreground">{usage}</span>
+              <span className="mt-1.5 block text-xs font-medium break-words">{token}</span>
+              <span className="block text-[11px] text-muted-foreground">{usage}</span>
             </button>
           ))}
         </div>
@@ -397,7 +397,7 @@ function ChipSection() {
             AI
           </Badge>
           <Badge variant="secondary">+5</Badge>
-          <Badge variant="outline">Free</Badge>
+          <Badge variant="soft">Free</Badge>
         </div>
         <div className="mt-3 flex flex-wrap gap-1.5">
           <DeltaBadge current={80} previous={100} goodWhen="down" comparedTo="tháng trước" />
@@ -434,8 +434,8 @@ function SegmentedSection() {
               <TabsTrigger value="year">Năm</TabsTrigger>
             </TabsList>
           </Tabs>
-          {/* variant="segmented": iOS's light control, inside a card over data (Tổng quan's categories). */}
-          <div className="rounded-[24px] bg-card p-4 shadow-card surface-plain">
+          {/* variant="segmented": iOS's light control, inside a card over data (Tổng quan's categories); the block is that card. */}
+          <div>
             <Tabs value={kind} onValueChange={setKind}>
               <TabsList variant="segmented" className="w-full">
                 <TabsTrigger value="expense">Chi tiêu</TabsTrigger>

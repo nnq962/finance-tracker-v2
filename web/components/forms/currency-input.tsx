@@ -169,7 +169,7 @@ export function CurrencyInput({
               // Smaller as the number grows, so hundreds of billions still fit a phone's width.
               shown.length > 15 ? "text-[22px]" : shown.length > 11 ? "text-[30px]" : "text-[40px]",
               invalid
-                ? "text-destructive"
+                ? "text-destructive-text"
                 : value && (tone === "income" || tone === "expense" || minus)
                   ? tone === "income" && !minus ? "text-income" : "text-expense"
                   : undefined,
@@ -223,7 +223,7 @@ export function CurrencyInput({
                 emit(null, true)
                 inputRef.current?.focus()
               }}
-              className="absolute top-1/2 right-0 grid size-11 -translate-y-1/2 place-items-center rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/30 active:opacity-60"
+              className="absolute top-1/2 right-0 grid size-11 -translate-y-1/2 place-items-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary active:opacity-60"
             >
               <span className="grid size-6 place-items-center rounded-full bg-muted-foreground/15 text-muted-foreground">
                 <XIcon className="size-3.5" aria-hidden="true" />

@@ -54,7 +54,6 @@ export function FeaturesSection() {
         </Cell>
         <Cell title="Giao dịch" line="Thu chi của tháng, lọc theo tài khoản và hạng mục.">
           <FlowTiles
-            variant="lead"
             tiles={[
               { value: "in", label: "Thu", amount: 18_000_000, caption: "1 giao dịch", icon: ArrowDownLeftIcon, tone: "income" },
               { value: "out", label: "Chi", amount: 5_152_000, caption: "16 giao dịch", icon: ArrowUpRightIcon, tone: "expense" },

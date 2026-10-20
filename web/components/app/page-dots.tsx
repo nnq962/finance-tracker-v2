@@ -19,12 +19,12 @@ export function PageDots({
 }) {
   const dot = (index: number) =>
     cn(
-      "h-2 rounded-full transition-[width,background-color] duration-500 ease-[cubic-bezier(.34,1.4,.64,1)] motion-reduce:duration-150 motion-reduce:ease-out",
-      index === value ? "w-6 bg-primary" : "w-2 bg-input",
+      "h-2 rounded-full transition-[width,background-color] duration-300 ease-[cubic-bezier(.32,.72,0,1)] motion-reduce:duration-150 motion-reduce:ease-out",
+      index === value ? "w-6 bg-primary" : "w-2 bg-foreground/25",
     )
 
   return (
-    <div className={cn("flex items-center gap-1.5", className)}>
+    <div className={cn("flex items-center gap-3", className)}>
       {Array.from({ length: count }, (_, index) =>
         onValueChange ? (
           <button
@@ -33,7 +33,7 @@ export function PageDots({
             aria-label={`Trang ${index + 1}`}
             aria-current={index === value || undefined}
             onClick={() => onValueChange(index)}
-            className={cn(dot(index), "relative after:absolute after:-inset-2")}
+            className={cn(dot(index), "relative after:absolute after:-inset-x-1.5 after:-inset-y-4")}
           />
         ) : (
           <span key={index} aria-hidden="true" className={dot(index)} />

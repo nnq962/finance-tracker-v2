@@ -67,7 +67,6 @@ export function OtpInput({
           }}
           className={cn(
             "h-14 w-full min-w-0 rounded-2xl bg-field text-center text-xl font-medium tabular-nums caret-primary outline-none transition-[background-color,box-shadow] duration-150 focus:bg-card focus:ring-2 focus:ring-primary aria-invalid:ring-2 aria-invalid:ring-destructive",
-            digit && "motion-safe:animate-in motion-safe:zoom-in-90",
           )}
         />
       ))}
