@@ -26,12 +26,11 @@ import type { UserDataSummary } from "@/lib/user-data/repository"
 const formatCount = (count: number) => count.toLocaleString("vi-VN")
 
 /**
- * "Xoá toàn bộ dữ liệu" in its own group above signing out, and the sheet
- * that says what goes and what stays. Nothing to undo, so the user types
+ * The sheet behind "Xoá toàn bộ dữ liệu" (in the Dữ liệu group since
+ * 2026-10-20): what goes and what stays. Nothing to undo, so the user types
  * XOÁ first; then the app starts over with the welcome.
  */
-export function WipeDataGroup({ summary }: { summary: UserDataSummary }) {
-  const [open, setOpen] = React.useState(false)
+export function WipeDataSheet({ summary, open, onOpenChange }: { summary: UserDataSummary; open: boolean; onOpenChange: (open: boolean) => void }) {
   const [word, setWord] = React.useState("")
   const [error, setError] = React.useState<string | null>(null)
   const [pending, setPending] = React.useState(false)
@@ -62,16 +61,12 @@ export function WipeDataGroup({ summary }: { summary: UserDataSummary }) {
 
   return (
     <>
-      <SettingsGroup footer="Tài khoản đăng nhập và gói Pro vẫn được giữ.">
-        <SettingsRow destructive title="Xoá toàn bộ dữ liệu" onClick={() => setOpen(true)} />
-      </SettingsGroup>
-
       <PageSheet
         title="Xoá dữ liệu"
         open={open}
         onOpenChange={(next) => {
           if (pending) return
-          setOpen(next)
+          onOpenChange(next)
           if (!next) {
             setWord("")
             setError(null)

@@ -55,7 +55,7 @@ import { SalaryCalculator } from "./salary-calculator"
 import { SignOutRow } from "./sign-out-row"
 import { ThemeOptions, themeOptions, useThemeChoice } from "./theme-options"
 import { VoiceLab } from "./voice-lab"
-import { WipeDataGroup } from "./wipe-data"
+import { DataGroup } from "./data-group"
 
 /** Screens opened from the list, in a sheet that slides in from the side. */
 const screens = {
@@ -359,7 +359,11 @@ export function SettingsView({
         ) : null}
 
         {/* Wiping the data alone above signing out, so neither is hit for the other. */}
-        <WipeDataGroup summary={dataSummary} />
+        <DataGroup
+          summary={dataSummary}
+          email={user.email || undefined}
+          proEndsAt={planState.proEndsAt ?? null}
+        />
 
         {/* Signing out last and alone, as in native settings. */}
         <SettingsGroup>

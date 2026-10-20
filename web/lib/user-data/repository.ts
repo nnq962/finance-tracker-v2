@@ -63,3 +63,13 @@ export async function wipeUserData(userId: string) {
       .execute()
   })
 }
+
+/**
+ * Removes the user's row, and with it everything that references it (every
+ * table cascades on the user): data, plan, payments, AI usage, missions,
+ * notices, push devices. The sign-in itself is removed from Firebase by the
+ * action; after this a new sign-in starts as a new user.
+ */
+export async function deleteUserRow(userId: string) {
+  await getDb().deleteFrom("users").where("id", "=", userId).execute()
+}
