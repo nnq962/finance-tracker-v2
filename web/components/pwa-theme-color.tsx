@@ -4,10 +4,9 @@ import * as React from "react"
 import { useTheme } from "next-themes"
 
 // theme-color is read by the browser, not from CSS, so it repeats the
-// background token as hex. Screen sheets share the page's grey, so the
-// status bar never has to change while one slides in.
+// background token as hex: the white page since 2026-10-20 (was #f2f2f7).
 const APP_BACKGROUND = {
-  light: "#f2f2f7",
+  light: "#ffffff",
   dark: "#000000",
 } as const
 

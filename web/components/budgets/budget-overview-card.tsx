@@ -9,6 +9,7 @@ import { Section } from "@/components/app/section-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { budgetPercent, groupsByUse, hasAnyBudget, hasLimit, limitTone, monthShare, nearLevel } from "@/lib/budgets/calculations"
 import type { BudgetOverview } from "@/lib/budgets/types"
+import { categoryColorOptions } from "@/lib/categories/category-colors"
 import { formatCompactCurrency } from "@/lib/format-currency"
 import { categoryIconRegistry } from "@/lib/icons/category-icon-registry"
 import { cn } from "@/lib/utils"
@@ -103,8 +104,8 @@ export function BudgetOverviewCard({ overview, initialOpen = false }: { overview
         </button>
       }
     >
-      <Card asChild>
-        <button type="button" onClick={show} className="w-full text-left transition-transform duration-150 active:scale-[0.98] motion-reduce:active:scale-100">
+      <Card asChild size="lg">
+        <button type="button" onClick={show} className="pressable w-full text-left">
           <CardContent>
             {hasLimit(overview.total) ? <BudgetTotal overview={overview} compact /> : null}
             {closest.length > 0 ? (
@@ -116,7 +117,7 @@ export function BudgetOverviewCard({ overview, initialOpen = false }: { overview
                     <li key={group.groupId} className="flex items-center gap-2.5">
                       <IconTile icon={categoryIconRegistry[group.iconName]} tone={group.colorName} size="xs" />
                       <span className="w-[84px] shrink-0 truncate text-sm font-medium">{group.name}</span>
-                      <LimitBar value={group.spent} max={group.limit} tone={state} label={`${group.name} đã dùng`} className="flex-1" />
+                      <LimitBar value={group.spent} max={group.limit} tone={state} color={categoryColorOptions.find((option) => option.name === group.colorName)?.chartFill} label={`${group.name} đã dùng`} className="flex-1" />
                       {/* Past the limit, how far over, as "+250k": the column is too narrow for a word. */}
                       <span
                         className={cn(

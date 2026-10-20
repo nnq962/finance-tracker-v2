@@ -39,8 +39,9 @@ export function BudgetTotal({ overview, compact = false }: { overview: BudgetOve
           <Money amount={Math.abs(limit - spent)} size={compact ? "lg" : "xl"} tone={over ? "expense" : "default"} className={compact ? "mt-0.5" : "mt-1"} />
         </span>
         <span className={cn("flex shrink-0 flex-col items-end", compact ? "pb-0.5" : "pb-1")}>
-          <span className="text-sm font-semibold tabular-nums">{formatBudgetPercent(spent, limit)}</span>
-          <span className="text-xs text-muted-foreground tabular-nums">của {formatCompactCurrency(limit, 1)}</span>
+          {/* "đã dùng", so the share is not read as what is left (2026-10-20). */}
+          <span className="text-sm font-semibold tabular-nums">Đã dùng {formatBudgetPercent(spent, limit)}</span>
+          <span className="text-xs text-muted-foreground tabular-nums">hạn mức {formatCompactCurrency(limit, 1)}</span>
         </span>
       </div>
       <LimitBar
@@ -51,7 +52,7 @@ export function BudgetTotal({ overview, compact = false }: { overview: BudgetOve
         label="Hạn mức tháng đã dùng"
         className={compact ? "mt-3" : "mt-4.5"}
       />
-      <p className={cn("text-xs text-muted-foreground", compact ? "mt-2" : "mt-2.5")}>
+      <p className={cn("text-xs text-pretty text-muted-foreground", compact ? "mt-2" : "mt-2.5")}>
         {over ? (
           <span className="tabular-nums">
             Đã chi {formatCompactCurrency(spent, 1)} / {formatCompactCurrency(limit, 1)}

@@ -49,6 +49,10 @@ const tabsListVariants = cva(
         // white card), its text white, as the chosen chip (2026-10-19; a white
         // thumb on a grey track before).
         default: "rounded-full bg-segment p-1 group-data-horizontal/tabs:h-11",
+        // iOS's own segmented control, lighter than the ink pill where it sits
+        // inside a card over data (Tổng quan's categories, 2026-10-20): a white
+        // thumb with a soft shadow on the grey rail, the chosen text in ink.
+        segmented: "rounded-full bg-segment p-1 group-data-horizontal/tabs:h-11",
         // Tabs over content: a short bar slides under the chosen one.
         line: "rounded-none border-b bg-transparent group-data-horizontal/tabs:h-11",
       },
@@ -106,7 +110,7 @@ function TabsList({
         <span
           aria-hidden="true"
           data-slot="tabs-indicator"
-          className="absolute top-1 bottom-1 left-0 rounded-full bg-primary transition-[translate,width] duration-[450ms] ease-[cubic-bezier(.34,1.3,.64,1)] will-change-transform group-data-[variant=line]/tabs-list:top-auto group-data-[variant=line]/tabs-list:-bottom-px group-data-[variant=line]/tabs-list:h-0.5 group-data-[variant=line]/tabs-list:bg-foreground motion-reduce:duration-150 motion-reduce:ease-out"
+          className="absolute top-1 bottom-1 left-0 rounded-full bg-primary transition-[translate,width] duration-250 ease-[cubic-bezier(0.2,0,0,1)] will-change-[translate] group-data-[variant=line]/tabs-list:top-auto group-data-[variant=line]/tabs-list:-bottom-px group-data-[variant=line]/tabs-list:h-0.5 group-data-[variant=line]/tabs-list:bg-foreground group-data-[variant=segmented]/tabs-list:bg-card group-data-[variant=segmented]/tabs-list:shadow-[0_1px_3px_rgb(0_0_0/0.12),0_1px_1px_rgb(0_0_0/0.04)] dark:group-data-[variant=segmented]/tabs-list:bg-foreground/20 motion-reduce:duration-150 motion-reduce:ease-out"
           style={{ width: box.width, translate: `${box.x}px 0` }}
         />
       ) : null}
@@ -123,12 +127,13 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "relative inline-flex h-full flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-medium whitespace-nowrap text-foreground/60 transition-colors duration-200 outline-none group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "relative inline-flex h-full flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-medium whitespace-nowrap text-foreground/60 transition-colors duration-150 ease-out outline-none group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         "data-active:font-semibold data-active:text-foreground group-data-[variant=line]/tabs-list:rounded-none",
         // On the ink pill the chosen segment's text is white.
         "[[data-slot=tabs-list][data-variant=default]>&]:data-active:text-primary-foreground",
         // Before the indicator is measured (first paint), the chosen trigger fills itself.
         "[[data-slot=tabs-list][data-variant=default]:not([data-ready])>&]:data-active:bg-primary",
+        "[[data-slot=tabs-list][data-variant=segmented]:not([data-ready])>&]:data-active:bg-card",
         className
       )}
       {...props}

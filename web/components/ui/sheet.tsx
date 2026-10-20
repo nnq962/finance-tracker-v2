@@ -100,7 +100,7 @@ function SheetContent({
         className={cn(
           sheetContentClassName,
           sheetVariantClassName[variant],
-          resolvedSurface === "grouped" && "surface-grouped bg-background",
+          resolvedSurface === "grouped" && "surface-sheet bg-background",
           className,
         )}
         {...props}

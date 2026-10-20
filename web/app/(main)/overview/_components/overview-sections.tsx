@@ -32,39 +32,43 @@ export function NetWorth({
   // three parts in track tiles.
   return (
     <Card size="lg" aria-labelledby="net-worth-title" role="region">
-      <CardContent>
-        <CardLabel id="net-worth-title">Tài sản ròng</CardLabel>
-        {/* Fits its line, as the accounts page's total: from 10 tỷ it reached the card's edge (2026-10-17). */}
-        <div className="@container mt-1.5">
-          <Money amount={data.total} size="xl" fit tone={data.total < 0 ? "expense" : "default"} />
-        </div>
-        {hasMonth ? (
-          <p className="mt-1.5 flex items-center text-sm">
-            {/* A gain on the ink chip in lime, as the primary button carries the AI mark; a loss red; a flat month plain. */}
-            <span
-              className={cn(
-                "rounded-full px-2 py-0.5 text-xs font-bold tabular-nums",
-                monthNet > 0 ? "bg-primary text-ai-on-primary" : monthNet < 0 ? "bg-expense text-white" : "bg-track",
-              )}
-            >
-              {monthNet > 0 ? "+" : monthNet < 0 ? "−" : ""}
-              {formatCompactCurrency(Math.abs(monthNet), 1)}
-            </span>
-            <CardLabel as="span" className="ml-1.5">
-              tháng này
+      {/* From lg the card runs across the page: the figure on the left, its three parts on the right (2026-10-20). */}
+      <CardContent className="lg:flex lg:items-end lg:justify-between lg:gap-10">
+        <div className="min-w-0 lg:flex-1">
+          <CardLabel id="net-worth-title">Tài sản ròng</CardLabel>
+          {/* Fits its line, as the accounts page's total: from 10 tỷ it reached the card's edge (2026-10-17). */}
+          <div className="@container mt-1.5">
+            <Money amount={data.total} size="display" fit tone={data.total < 0 ? "expense" : "default"} />
+          </div>
+          {hasMonth ? (
+            <p className="mt-1.5 flex items-center text-sm">
+              {/* A gain on the ink chip in lime, as the primary button carries the AI mark; a loss red; a flat month plain. */}
+              <span
+                className={cn(
+                  "rounded-full px-2 py-0.5 text-xs font-bold tabular-nums",
+                  monthNet > 0 ? "bg-primary text-ai-on-primary" : monthNet < 0 ? "bg-expense text-expense-foreground" : "bg-track",
+                )}
+              >
+                {monthNet > 0 ? "+" : monthNet < 0 ? "−" : ""}
+                {formatCompactCurrency(Math.abs(monthNet), 1)}
+              </span>
+              {/* Income less spending, not the net worth's own change (2026-10-20). */}
+              <CardLabel as="span" className="ml-1.5">
+                thu − chi tháng này
+              </CardLabel>
+            </p>
+          ) : null}
+          {data.leftOut.count > 0 ? (
+            <CardLabel as="p" className="mt-1.5 text-pretty">
+              {data.leftOut.count} tài khoản ngoài báo cáo · {formatCompactCurrency(data.leftOut.cash, 1)}
+              {data.leftOut.receivable > 0 ? `, cho vay ${formatCompactCurrency(data.leftOut.receivable, 1)}` : null}
+              {data.leftOut.payable > 0 ? `, đang nợ ${formatCompactCurrency(data.leftOut.payable, 1)}` : null}
             </CardLabel>
-          </p>
-        ) : null}
-        {data.leftOut.count > 0 ? (
-          <CardLabel as="p" className="mt-1.5">
-            {data.leftOut.count} tài khoản ngoài báo cáo · {formatCompactCurrency(data.leftOut.cash, 1)}
-            {data.leftOut.receivable > 0 ? `, cho vay ${formatCompactCurrency(data.leftOut.receivable, 1)}` : null}
-            {data.leftOut.payable > 0 ? `, đang nợ ${formatCompactCurrency(data.leftOut.payable, 1)}` : null}
-          </CardLabel>
-        ) : null}
+          ) : null}
+        </div>
         {/* Three share the card's width, so the amounts are shortened; the
             full ones are in the tooltip and the accessible name. */}
-        <StatGroup tiles className="mt-5">
+        <StatGroup tiles className="mt-5 lg:mt-0 lg:w-[30rem] lg:shrink-0">
           {(
             [
               ["Tài khoản", data.cash, "/budget"],

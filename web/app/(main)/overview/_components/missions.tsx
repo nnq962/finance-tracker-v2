@@ -185,6 +185,8 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
   const rows = [...claimable, ...leaving, ...remaining]
   const isShown = (mission: Mission) => claimable.includes(mission) || (expanded && remaining.includes(mission))
   const shownCount = rows.filter(isShown).length
+  // Nearly done (two or fewer left, no reward waiting): the card folds to one row (2026-10-20).
+  const compact = claimable.length === 0 && remaining.length <= 2
 
   const claim = async (mission: Mission) => {
     setClaiming(mission.key)
@@ -207,35 +209,57 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
         size="lg"
         listClassName={shownCount > 0 || hasPlanInvite ? "border-t" : undefined}
         header={
-          <div className="flex items-center gap-4 p-6">
-            <div className="min-w-0 flex-1">
-              <CardLabel>Nhiệm vụ</CardLabel>
-              {/* Balanced, so a narrow phone (360px) breaks it in two halves, not "AI" alone. */}
-              <p className="mt-1.5 text-lg font-semibold text-balance">Nhận thêm lượt AI</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {claimable.length > 0
-                  ? `${claimable.length} phần thưởng chờ nhận`
-                  : `+${MISSION_REWARD} lượt cho mỗi nhiệm vụ`}
-              </p>
-              {remaining.length > 0 ? (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="mt-4"
-                  aria-expanded={expanded}
-                  onClick={() => setExpanded((open) => !open)}
-                >
-                  {expanded ? "Thu gọn" : "Xem nhiệm vụ"}
-                  <ChevronDownIcon
-                    data-icon="inline-end"
-                    className={cn("transition-transform", expanded && "rotate-180")}
-                    aria-hidden="true"
-                  />
-                </Button>
-              ) : null}
+          compact ? (
+            // Few left and nothing to claim: one row, a small ring, the list folded under it.
+            <button
+              type="button"
+              aria-expanded={expanded}
+              onClick={() => setExpanded((open) => !open)}
+              className="flex min-h-18 w-full items-center gap-3 px-6 py-3 text-left transition-colors duration-150 outline-none hover:bg-muted focus-visible:bg-muted active:bg-muted"
+            >
+              <ProgressRing size="xs" value={claimedCount} max={missions.length} />
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="font-semibold">Nhận thêm lượt AI</span>
+                <span className="text-xs text-muted-foreground">
+                  Còn {remaining.length} nhiệm vụ · +{MISSION_REWARD} lượt mỗi nhiệm vụ
+                </span>
+              </span>
+              <ChevronDownIcon
+                className={cn("size-4 shrink-0 text-muted-foreground transition-transform duration-200", expanded && "rotate-180")}
+                aria-hidden="true"
+              />
+            </button>
+          ) : (
+            <div className="flex items-center gap-4 p-6">
+              <div className="min-w-0 flex-1">
+                <CardLabel>Nhiệm vụ</CardLabel>
+                {/* Balanced, so a narrow phone (360px) breaks it in two halves, not "AI" alone. */}
+                <p className="mt-1.5 text-lg font-semibold text-balance">Nhận thêm lượt AI</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {claimable.length > 0
+                    ? `${claimable.length} phần thưởng chờ nhận`
+                    : `+${MISSION_REWARD} lượt cho mỗi nhiệm vụ`}
+                </p>
+                {remaining.length > 0 ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="mt-4"
+                    aria-expanded={expanded}
+                    onClick={() => setExpanded((open) => !open)}
+                  >
+                    {expanded ? "Thu gọn" : "Xem nhiệm vụ"}
+                    <ChevronDownIcon
+                      data-icon="inline-end"
+                      className={cn("transition-transform", expanded && "rotate-180")}
+                      aria-hidden="true"
+                    />
+                  </Button>
+                ) : null}
+              </div>
+              <ProgressRing value={claimedCount} max={missions.length} label="đã xong" />
             </div>
-            <ProgressRing value={claimedCount} max={missions.length} label="đã xong" />
-          </div>
+          )
         }
       >
         {rows.map((mission) =>

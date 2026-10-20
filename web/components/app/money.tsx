@@ -13,6 +13,8 @@ const moneyVariants = cva("inline-flex min-w-0 font-semibold tabular-nums [overf
       md: "text-base",
       lg: "text-xl tracking-tight",
       xl: "text-[34px] leading-tight tracking-tight",
+      // The page's one lead figure (Tổng quan's net worth): xl on a phone, 44 from md, where it leads a wide page.
+      display: "text-[34px] leading-tight tracking-tight md:text-[44px]",
     },
     tone: {
       default: "",
@@ -44,7 +46,7 @@ type MoneyProps = {
  * The unit on the large sizes (the đ, or tr/tỷ in a short figure): 14px beside
  * 20px digits, 20px beside 34px. In em, so it follows a fitted figure.
  */
-const unitScale = { lg: 14 / 20, xl: 20 / 34 } as const
+const unitScale = { lg: 14 / 20, xl: 20 / 34, display: 20 / 34 } as const
 
 /**
  * How wide each character of a figure is, in em, in Manrope at the figure's
@@ -105,7 +107,7 @@ const fitRoom = 1.01
 export function Money({ amount, sign = "auto", size, tone, fit, className }: MoneyProps) {
   const prefix = sign === "never" ? "" : amount < 0 ? "−" : amount > 0 && sign === "always" ? "+" : ""
   const digits = numberFormatter.format(Math.abs(amount))
-  const scale = size === "lg" || size === "xl" ? unitScale[size] : undefined
+  const scale = size === "lg" || size === "xl" || size === "display" ? unitScale[size] : undefined
   const unit = (text: string) =>
     scale ? (
       <span className="opacity-50" style={{ fontSize: `${scale}em` }}>

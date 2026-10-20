@@ -52,14 +52,15 @@ export function CategoryBreakdown({
       note={isThisMonth ? undefined : `Tháng ${monthLabel}`}
       href={isThisMonth ? "/transactions" : `/transactions?month=${month}`}
     >
-      <Tabs value={type} onValueChange={(value) => setType(value as CategoryType)}>
-        <TabsList className="w-full">
-          <TabsTrigger value="expense">Chi tiêu</TabsTrigger>
-          <TabsTrigger value="income">Thu nhập</TabsTrigger>
-        </TabsList>
-      </Tabs>
       <Card size="lg">
-        <CardContent>
+        <CardContent className="space-y-6">
+          {/* Inside the card, as iOS's light segmented control: the switch belongs to the figures under it. */}
+          <Tabs value={type} onValueChange={(value) => setType(value as CategoryType)}>
+            <TabsList variant="segmented" className="w-full">
+              <TabsTrigger value="expense">Chi tiêu</TabsTrigger>
+              <TabsTrigger value="income">Thu nhập</TabsTrigger>
+            </TabsList>
+          </Tabs>
           {slices.length > 0 ? (
             <div className="flex items-center gap-6">
               {/* The list beside it says the same for screen readers. */}

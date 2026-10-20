@@ -15,7 +15,9 @@ const fillClassName: Record<LimitTone, string> = {
  * red by `tone`, full once past the limit, on the grey rail; no marks.
  * `size`: `sm` 6 high (rows), `md` 10 (a lead figure). On an inverse card the
  * rail and the ok fill take the card's text colour, and the over fill the
- * card's red, expense-on-inverse (2026-10-19).
+ * card's red, expense-on-inverse (2026-10-19). `color`: a category's own
+ * colour for the ok fill, where rows of different categories stand side by
+ * side (Tổng quan's limits, 2026-10-20); amber and red still win.
  */
 export function LimitBar({
   value,
@@ -23,6 +25,7 @@ export function LimitBar({
   tone = "ok",
   size = "sm",
   label,
+  color,
   className,
 }: {
   value: number
@@ -31,6 +34,8 @@ export function LimitBar({
   size?: "sm" | "md"
   /** What the bar measures, for screen readers. */
   label?: string
+  /** The ok fill's colour, a category's (user data, so not a token). */
+  color?: string
   className?: string
 }) {
   const share = max > 0 ? Math.min(Math.max(value / max, 0), 1) : 0
@@ -48,7 +53,7 @@ export function LimitBar({
           "absolute inset-0 rounded-full transition-[translate,background-color] duration-500 ease-out motion-reduce:duration-150",
           fillClassName[tone],
         )}
-        style={{ translate: `${(share - 1) * 100}% 0` }}
+        style={{ translate: `${(share - 1) * 100}% 0`, backgroundColor: tone === "ok" ? color : undefined }}
       />
     </span>
   )

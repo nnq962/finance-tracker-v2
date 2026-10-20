@@ -53,6 +53,10 @@ hạn mức, cảnh báo vượt trong form, gợi ý chỉnh hạn mức, cài 
 ## 5. Giao diện
 
 - ~~Nút Xoá đỏ ở theme tối~~ (6.17.4: token `destructive-fill` `#cf4040`, tương phản 4,69).
+- **Góc liên tục (squircle) cho thẻ, như Apple** (bàn 2026-10-20, để sau vì phức tạp): Safari chưa có
+  `corner-shape`, còn cắt bằng `clip-path` (như `lib/smooth-capsule.ts` của tab bar) thì mất bóng thẻ,
+  nên `Card` cần lớp ngoài mang bóng và lớp trong bị cắt; thử tốc độ cuộn trên iPhone. Trước đó lấy
+  bán kính và Corner smoothing của "List / Inset Grouped" trong kit iOS 26 trên Figma.
 
 ## 6. Kỹ thuật
 

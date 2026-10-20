@@ -32,13 +32,13 @@ function MonthReadout({ month }: { month: CashFlowMonth }) {
         <div className="flex min-w-0 items-baseline gap-1.5">
           <dt className="text-xs text-muted-foreground">Thu</dt>
           <dd className="@container min-w-0 flex-1">
-            <Money amount={month.income} size="sm" fit tone={month.income > 0 ? "income" : "default"} />
+            <Money amount={month.income} size="md" fit tone={month.income > 0 ? "income" : "default"} />
           </dd>
         </div>
         <div className="flex min-w-0 items-baseline gap-1.5">
           <dt className="text-xs text-muted-foreground">Chi</dt>
           <dd className="@container min-w-0 flex-1">
-            <Money amount={month.expense} size="sm" fit />
+            <Money amount={month.expense} size="md" fit />
           </dd>
         </div>
       </dl>

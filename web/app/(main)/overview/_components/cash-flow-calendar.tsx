@@ -31,12 +31,20 @@ const weekdays = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
 const slide = {
   enter: (direction: number) => ({ transform: `translateX(${direction * 48}px)`, opacity: 0 }),
   center: { transform: "translateX(0px)", opacity: 1 },
-  exit: (direction: number) => ({ transform: `translateX(${direction * -48}px)`, opacity: 0 }),
+  // The old month leaves softer and sooner than the new one arrives.
+  exit: (direction: number) => ({
+    transform: `translateX(${direction * -24}px)`,
+    opacity: 0,
+    transition: { duration: 0.15, ease: "easeOut" as const },
+  }),
 }
 
-// Tiny on a phone-sized card, where seven days share the width; larger once
+// Small (11px, the legible floor) on a phone-sized card, where seven days share the width; larger once
 // the card is wide (32rem and up).
-const amountClassName = "text-[10px] font-medium tabular-nums @lg:text-xs"
+// The shade of a day by its spending, lightest to heaviest.
+const heatClassName = ["bg-foreground/[0.03]", "bg-foreground/[0.05]", "bg-foreground/[0.08]", "bg-foreground/[0.11]"]
+
+const amountClassName = "text-[11px] font-medium tabular-nums @lg:text-xs"
 
 /**
  * A day's amount, short: from a million up always with one decimal (17,6tr,
@@ -116,6 +124,9 @@ export function CashFlowCalendar({
     return { key, day: index + 1, totals: days[key] }
   })
 
+  // The month's heaviest day of spending so far, for the days' shade.
+  const maxExpense = Math.max(0, ...monthDays.filter(({ key }) => key <= today).map(({ totals }) => totals?.expense ?? 0))
+
   const openTotals = openDay ? (days[openDay] ?? { income: 0, expense: 0 }) : undefined
   // Keeps the last day's title while the sheet slides closed.
   const [shownDay, setShownDay] = React.useState(openDay)
@@ -183,8 +194,18 @@ export function CashFlowCalendar({
                       ) : null}
                     </>
                   )
-                  const cellClassName =
-                    "flex min-h-14 min-w-0 flex-col items-center gap-0.5 rounded-2xl pt-1 @lg:min-h-20 @lg:pt-2"
+                  // Days spent on are shaded by how much, in four steps of the ink
+                  // (2026-10-20): heavy days stand out at a glance, and a shaded day
+                  // reads as something to tap. Weeks still to come stay shorter.
+                  const heat =
+                    key <= today && totals?.expense && maxExpense > 0
+                      ? heatClassName[Math.min(Math.ceil((totals.expense / maxExpense) * 4), 4) - 1]
+                      : undefined
+                  const cellClassName = cn(
+                    "flex min-w-0 flex-col items-center gap-0.5 rounded-2xl pt-1 @lg:pt-2",
+                    key > today ? "min-h-11 @lg:min-h-14" : "min-h-14 @lg:min-h-20",
+                    heat,
+                  )
 
                   // Every day up to today opens its sheet, also one without transactions.
                   return key <= today ? (

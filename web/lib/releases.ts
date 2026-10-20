@@ -32,6 +32,19 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.31.0",
+    date: "2026-10-21",
+    title: "Nền trắng, thẻ nổi và Tổng quan sắp lại",
+    changes: [
+      { kind: "improved", text: "Theme sáng: nền trang trắng, thẻ trắng nổi bằng bóng mềm như menu của iOS, không viền; sheet giữ nền xám. Theme tối dùng cùng bóng đó, thẻ xám trên nền đen." },
+      { kind: "improved", text: "Tổng quan sắp lại: Tài sản ròng, rồi Sắp đến hạn ngay dưới khi có khoản quá hạn hay sắp tới hạn, Hạn mức, Theo hạng mục, Lịch, Thu chi 6 tháng; Nhiệm vụ xuống cuối và gọn còn một dòng khi gần xong." },
+      { kind: "improved", text: "Tổng quan trên desktop: Tài sản ròng chạy hết chiều ngang với số lớn hơn, trang có tiêu đề, lời chào nhỏ bên dưới." },
+      { kind: "improved", text: "Lịch tô đậm dần những ngày tiêu nhiều; thanh hạn mức theo màu hạng mục; Chi tiêu và Thu nhập chuyển bằng nút nhẹ trong thẻ; số tiền chính của mỗi khối to hơn." },
+      { kind: "improved", text: "Chữ rõ hơn: chip dưới Tài sản ròng ghi \"thu − chi tháng này\", hạn mức ghi \"Đã dùng 29%\"; chữ xám phụ đậm hơn cho dễ đọc." },
+      { kind: "improved", text: "Chạm mượt hơn: mọi nút lún cùng một mức, vòng nhiệm vụ không chạy lại mỗi lần mở trang, nút Nhận thưởng dễ bấm hơn, icon sáng tối chuyển mờ dần." },
+    ],
+  },
+  {
     version: "6.30.2",
     date: "2026-10-20",
     title: "Nhóm Dữ liệu gọn hơn",

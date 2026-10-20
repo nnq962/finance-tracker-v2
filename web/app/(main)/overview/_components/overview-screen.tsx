@@ -120,6 +120,7 @@ export function OverviewScreen({
         />
       }
       dueDebts={dueDebts}
+      dueDebtsUrgent={dueDebtsData.some((debt) => debt.daysUntilDue <= 3)}
       allocation={categories}
       trend={trend}
     />

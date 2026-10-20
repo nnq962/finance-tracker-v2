@@ -24,8 +24,11 @@ export function ThemeToggle({ size = "icon-sm", variant = "ghost" }: { size?: "i
       title="Đổi giao diện sáng, tối"
       onClick={() => setTheme(document.documentElement.classList.contains("dark") ? "light" : "dark")}
     >
-      <SunIcon className="dark:hidden" />
-      <MoonIcon className="hidden dark:block" />
+      {/* Both drawn, one over the other: the one leaving shrinks, blurs and fades as the other comes in. */}
+      <span className="relative grid size-[18px] place-items-center [&>svg]:col-start-1 [&>svg]:row-start-1 [&>svg]:transition-[opacity,filter,scale] [&>svg]:duration-300 [&>svg]:ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:[&>svg]:transition-none">
+        <SunIcon className="scale-100 opacity-100 blur-none dark:scale-25 dark:opacity-0 dark:blur-[4px]" />
+        <MoonIcon className="scale-25 opacity-0 blur-[4px] dark:scale-100 dark:opacity-100 dark:blur-none" />
+      </span>
     </Button>
   )
 }

@@ -33,6 +33,9 @@ export async function GET(request: NextRequest) {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
+    // Kept as long as the key: without an age it ended with the browser
+    // session, and Safari on the phone asked for the link again.
+    maxAge: 60 * 60 * 24 * 90,
   })
   if (tunnelKey) {
     response.cookies.set(DEV_TUNNEL_KEY_COOKIE, tunnelKey, {

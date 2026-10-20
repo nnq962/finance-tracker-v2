@@ -71,7 +71,7 @@ export function CategoryDonut({
               const cy = viewBox.cy ?? 0
               return (
                 <text x={viewBox.cx} y={cy} textAnchor="middle" dominantBaseline="middle">
-                  <tspan x={viewBox.cx} y={cy - 7} className="fill-foreground text-base font-medium">
+                  <tspan x={viewBox.cx} y={cy - 7} className="fill-foreground text-lg font-semibold tabular-nums">
                     {formatCompactCurrency(total, 1)}
                   </tspan>
                   <tspan x={viewBox.cx} y={cy + 13} className="fill-muted-foreground text-xs">

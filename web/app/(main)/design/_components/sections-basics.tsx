@@ -53,6 +53,7 @@ const principles = [
 const colors = [
   ["primary", "Màu nhấn", "bg-primary"],
   ["background", "Nền trang", "bg-background ring-1 ring-border ring-inset"],
+  ["sheet", "Nền sheet", "bg-sheet"],
   ["card", "Thẻ", "bg-card ring-1 ring-border ring-inset"],
   ["muted-foreground", "Chữ phụ", "bg-muted-foreground"],
   ["income", "Tiền vào", "bg-income"],
@@ -433,6 +434,15 @@ function SegmentedSection() {
               <TabsTrigger value="year">Năm</TabsTrigger>
             </TabsList>
           </Tabs>
+          {/* variant="segmented": iOS's light control, inside a card over data (Tổng quan's categories). */}
+          <div className="rounded-[24px] bg-card p-4 shadow-card surface-plain">
+            <Tabs value={kind} onValueChange={setKind}>
+              <TabsList variant="segmented" className="w-full">
+                <TabsTrigger value="expense">Chi tiêu</TabsTrigger>
+                <TabsTrigger value="income">Thu nhập</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
       </Block>
       <Block label="Chọn một · icon">

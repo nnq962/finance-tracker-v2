@@ -35,6 +35,9 @@ export function settingsSeparatorClassName(hasMedia?: boolean) {
     // hides them, its grey running edge to edge.
     "md:has-[button[data-slot=item][data-active=true]]:before:hidden md:[:has(button[data-slot=item][data-active=true])+&]:before:hidden",
     hasMedia && "before:left-16",
+    // In a dashboard card (size lg, 24 inside) the line starts and ends with its 24 inset.
+    "group-data-[size=lg]/card:before:right-6 group-data-[size=lg]/card:before:left-6 group-data-[size=lg]/card:has-[[data-slot=item-media]]:before:left-[4.5rem]",
+    hasMedia && "group-data-[size=lg]/card:before:left-[4.5rem]",
   )
 }
 
@@ -235,7 +238,8 @@ type SettingsRowProps = {
   expanded?: boolean
 }
 
-const rowClassName = "min-h-16 gap-3 py-3"
+// Rows of a dashboard card (size lg) share its 24 inset, so they line up with its header.
+const rowClassName = "min-h-16 gap-3 py-3 group-data-[size=lg]/card:px-6"
 
 // Item only gives links a hover state; button rows get the same one, the
 // grey a native row shows under the finger (hover only exists with a mouse),

@@ -505,6 +505,7 @@ function LimitSample() {
           <LimitBar value={86} max={100} tone="near" label="Từ mốc báo sớm (80% hay 90%), hay đang chi nhanh" />
           <LimitBar value={113} max={100} tone="over" label="Đã vượt" />
           <LimitBar value={62} max={100} tone="near" size="md" label="Cỡ md, cho con số dẫn đầu" />
+          <LimitBar value={45} max={100} color="#f97316" label="color: màu của hạng mục cho mức ok (Tổng quan)" />
         </div>
         <Card size="lg">
           <CardContent>
@@ -571,6 +572,7 @@ function ProgressSection() {
       <Block label="Thanh và vòng tiến độ" wide>
         <div className="flex items-center gap-5">
           <ProgressRing value={Math.round((progress * 30) / 100)} max={30} label="triệu" />
+          <ProgressRing size="xs" value={7} max={8} />
           <div className="min-w-0 flex-1 space-y-3">
             <div>
               <div className="mb-1.5 flex justify-between text-sm">

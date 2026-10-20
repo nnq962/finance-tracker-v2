@@ -9,6 +9,7 @@
   --shadow-toast: var(--toast-shadow);
   --shadow-pastel: var(--pastel-shadow);
   --color-background: var(--background);
+  --color-sheet: var(--sheet);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-heading: var(--font-sans);
@@ -57,6 +58,7 @@
   --color-income: var(--income);
   --color-expense: var(--expense);
   --color-expense-on-inverse: var(--expense-on-inverse);
+  --color-expense-foreground: var(--expense-foreground);
   --color-transfer: var(--transfer);
   --color-ai: var(--ai);
   --color-ai-foreground: var(--ai-foreground);
@@ -108,8 +110,14 @@
  */
 :root,
 .light {
-  /* iOS's grouped grey (#f2f2f7, 2026-10-18), so white cards stand off it; was #f7f7f8 (2026-10-16), before that a warm #f5f4f0 that read yellow. */
-  --background: oklch(0.962 0.006 286);
+  /*
+   * A white page (2026-10-20), its white cards lifted by Apple's shadow
+   * (--card-shadow). Was iOS's grouped grey #f2f2f7 (2026-10-18), #f7f7f8
+   * before, and first a warm #f5f4f0 that read yellow. Sheets keep that grey
+   * (--sheet), so their white form sections stand off it.
+   */
+  --background: oklch(1 0 0);
+  --sheet: oklch(0.962 0.006 286);
   --foreground: oklch(0.205 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.205 0 0);
@@ -142,7 +150,8 @@
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.94 0.004 286);
   /* Secondary text (descriptions, times, captions): iOS's secondary label, not the paler neutral-400. */
-  --muted-foreground: oklch(0.617 0 0);
+  /* 4.6:1 on the white page and cards (2026-10-20; 0.617 was about 3.5:1). */
+  --muted-foreground: oklch(0.56 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   /* The expense's red (#d9534f), 2026-10-10. */
@@ -181,6 +190,8 @@
   /* Sea green (#2e8b57) and a soft red (#d9534f), 2026-10-10. */
   --income: oklch(0.569 0.1187 154.9);
   --expense: oklch(0.619 0.1694 25);
+  /* Text on a solid expense fill (the month's loss chip). */
+  --expense-foreground: oklch(1 0 0);
   /* Red on the inverse card (2026-10-19): the other theme's red, so it reads on the black (brighter) and on the dark theme's white (deeper). */
   --expense-on-inverse: oklch(0.72 0.17 25);
   --transfer: oklch(0.588 0.158 241.966);
@@ -210,10 +221,11 @@
    * below.)
    */
   /*
-   * White cards stand off the page by colour alone, as iOS grouped screens
-   * (2026-10-18; a faint shadow lifted them off the lighter #f7f7f8 before).
+   * White cards on the white page (2026-10-20): Apple's iOS 26 kit menu
+   * shadow (Figma: X 0, Y 8, blur 40, spread 0, #000 12%), as the tab bar's.
+   * No hairline ring, which read as a border.
    */
-  --card-shadow: none;
+  --card-shadow: 0 8px 40px rgb(0 0 0 / 0.12);
   /*
    * A toast lifted clear of the page (2026-10-17): a hairline edge and a
    * shadow that falls below it only, never up to the status bar (Safari 26
@@ -224,9 +236,12 @@
     0 12px 28px -10px rgb(0 0 0 / 0.28),
     0 3px 8px -2px rgb(0 0 0 / 0.08);
   --field-plain: oklch(0.97 0 0);
-  --field-grouped: var(--card);
+  /* On the white page a field, a track and the segmented rail are light greys; on a sheet's grey, as before. */
+  --field-grouped: oklch(0.965 0.002 286);
+  --field-sheet: var(--card);
   --track-plain: oklch(0.97 0 0);
-  --track-grouped: oklch(0.905 0.004 286);
+  --track-grouped: oklch(0.945 0.003 286);
+  --track-sheet: oklch(0.905 0.004 286);
   /*
    * The segmented control's rail (2026-10-19, option B of the segmented
    * mockup): a white card on the grey page, the light grey on a white card;
@@ -234,18 +249,21 @@
    * Its own token, as the grey track still carries skeletons and sliders.
    */
   --segment-plain: oklch(0.97 0 0);
-  --segment-grouped: var(--card);
+  --segment-grouped: oklch(0.955 0.003 286);
+  --segment-sheet: var(--card);
   --field: var(--field-plain);
   --track: var(--track-plain);
   --segment: var(--segment-plain);
 }
 
 .dark {
-  --card-shadow: none;
+  /* Apple's same menu shadow in the dark (Figma kit): lost on the black page, where the card's lighter grey lifts it; no edge highlight. */
+  --card-shadow: 0 8px 40px rgb(0 0 0 / 0.12);
   /* On the black page the raised grey toast takes a lighter edge and a deeper shadow. */
   --toast-shadow: 0 0 0 0.5px oklch(1 0 0 / 0.12), 0 12px 28px -10px rgb(0 0 0 / 0.7);
   /* iOS dark grouped (2026-10-16): a black page (#000), cards #1c1c1e, raised fills #2c2c2e, lines #38383a. */
   --background: oklch(0 0 0);
+  --sheet: oklch(0 0 0);
   --foreground: oklch(1 0 0);
   --card: oklch(0.227 0.0038 286.1);
   --card-foreground: oklch(1 0 0);
@@ -294,6 +312,7 @@
   /* The same hues, lighter, to read on the dark. */
   --income: oklch(0.72 0.13 154.9);
   --expense: oklch(0.7 0.15 25);
+  --expense-foreground: oklch(0.2 0 0);
   --expense-on-inverse: oklch(0.58 0.19 25);
   --transfer: oklch(0.746 0.16 232.661);
   --ai: oklch(0.911 0.1775 119.6);
@@ -310,9 +329,13 @@
   --field-plain: oklch(1 0 0 / 0.06);
   --track-plain: oklch(1 0 0 / 0.06);
   /* On the dark page, a card's grey: lighter than the page, darker than the thumb. */
+  --field-grouped: var(--card);
+  --field-sheet: var(--card);
   --track-grouped: var(--card);
+  --track-sheet: var(--track-grouped);
   --segment-plain: oklch(1 0 0 / 0.06);
   --segment-grouped: var(--card);
+  --segment-sheet: var(--segment-grouped);
 }
 
 /* What a grey or a white surface sets for the fields on it. */
@@ -415,6 +438,14 @@
     var(--pastel-base);
 }
 
+/* A sheet's grey ground and what sits on it; --background follows, for what paints the ground (sticky captions, the sheet's own fill). */
+@utility surface-sheet {
+  --background: var(--sheet);
+  --field: var(--field-sheet);
+  --track: var(--track-sheet);
+  --segment: var(--segment-sheet);
+}
+
 @utility surface-grouped {
   --field: var(--field-grouped);
   --track: var(--track-grouped);
@@ -447,7 +478,7 @@
   transition-duration: 150ms;
   transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
   &:active:not(:disabled) {
-    scale: 0.97;
+    scale: 0.96;
   }
   @media (prefers-reduced-motion: reduce) {
     &:active:not(:disabled) {
