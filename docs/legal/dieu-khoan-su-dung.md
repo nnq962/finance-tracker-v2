@@ -32,7 +32,7 @@ khoản ngân hàng của bạn. Mọi con số trong Timi là do bạn nhập.
   tại thời điểm mua; thanh toán qua PayOS bằng chuyển khoản hoặc QR. Gói Pro **không tự gia
   hạn**: hết hạn thì về Free, dữ liệu vẫn giữ nguyên.
 - **Hoàn tiền**: trong vòng 7 ngày kể từ khi mua, nếu bạn chưa dùng quá 10 lượt AI của gói, bạn
-  được hoàn toàn bộ số tiền bằng cách gửi email tới hotro@timi.nnqlab.dev kèm mã đơn. Ngoài thời hạn đó
+  được hoàn toàn bộ số tiền bằng cách gửi email tới support@timi.nnqlab.dev kèm mã đơn. Ngoài thời hạn đó
   hoặc khi Timi có lỗi khiến bạn không dùng được Pro liên tục trên 3 ngày, Timi hoàn tiền theo tỉ
   lệ số ngày còn lại.
 - Mã giảm giá do Timi phát hành có điều kiện ghi kèm mã, không quy đổi thành tiền.
@@ -81,7 +81,7 @@ tiền theo tỉ lệ.
 ## 11. Luật áp dụng
 
 Điều khoản này theo pháp luật Việt Nam. Tranh chấp được ưu tiên giải quyết bằng thương lượng qua
-hotro@timi.nnqlab.dev; không xong thì đưa ra toà án có thẩm quyền tại Việt Nam.
+support@timi.nnqlab.dev; không xong thì đưa ra toà án có thẩm quyền tại Việt Nam.
 
 ## 12. Thay đổi điều khoản
 
@@ -90,4 +90,4 @@ ngày áp dụng nghĩa là bạn chấp nhận bản mới.
 
 ## 13. Liên hệ
 
-nnqlab, Việt Nam, hotro@timi.nnqlab.dev.
+nnqlab, Việt Nam, support@timi.nnqlab.dev.

@@ -32,6 +32,12 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.30.1",
+    date: "2026-10-20",
+    title: "Email hỗ trợ là support@timi.nnqlab.dev",
+    changes: [{ kind: "improved", text: "Địa chỉ hỗ trợ trong Cài đặt, trang câu hỏi thường gặp, chính sách và cuối trang giới thiệu đổi thành support@timi.nnqlab.dev." }],
+  },
+  {
     version: "6.30.0",
     date: "2026-10-20",
     title: "Chính sách quyền riêng tư và Điều khoản sử dụng",
@@ -45,7 +51,7 @@ export const releases: Release[] = [
     date: "2026-10-20",
     title: "Hỗ trợ: câu hỏi thường gặp, góp ý, email",
     changes: [
-      { kind: "new", text: "Cài đặt › Hỗ trợ: Câu hỏi thường gặp (cũng ở trang công khai timi.nnqlab.dev/faq), Góp ý với Timi gửi thẳng tới người làm app kèm phiên bản và thiết bị nếu bạn muốn, và email hỗ trợ hotro@timi.nnqlab.dev." },
+      { kind: "new", text: "Cài đặt › Hỗ trợ: Câu hỏi thường gặp (cũng ở trang công khai timi.nnqlab.dev/faq), Góp ý với Timi gửi thẳng tới người làm app kèm phiên bản và thiết bị nếu bạn muốn, và email hỗ trợ support@timi.nnqlab.dev." },
       { kind: "improved", text: "Cuối trang giới thiệu có thêm Câu hỏi thường gặp và Liên hệ; các liên kết đầu trang hoạt động từ mọi trang công khai." },
     ],
   },

@@ -9,7 +9,7 @@ Cập nhật lần cuối: 20/10/2026.
 ## 1. Timi là gì và ai chịu trách nhiệm
 
 Timi (timi.nnqlab.dev) là ứng dụng ghi chép thu chi cá nhân. Bên kiểm soát và xử lý dữ liệu là
-nnqlab (một cá nhân phát triển tại Việt Nam), địa chỉ Việt Nam, email hotro@timi.nnqlab.dev. Mọi yêu cầu về dữ liệu
+nnqlab (một cá nhân phát triển tại Việt Nam), địa chỉ Việt Nam, email support@timi.nnqlab.dev. Mọi yêu cầu về dữ liệu
 cá nhân gửi về email này.
 
 ## 2. Dữ liệu Timi thu thập
@@ -97,7 +97,7 @@ lại sự đồng ý và khiếu nại. Trong Timi bạn tự làm được:
   nhận thông báo; có hiệu lực ngay, không khôi phục được.
 - **Tắt thông báo**: Cài đặt › Thông báo.
 
-Yêu cầu khác gửi về hotro@timi.nnqlab.dev; Timi trả lời trong vòng 72 giờ.
+Yêu cầu khác gửi về support@timi.nnqlab.dev; Timi trả lời trong vòng 72 giờ.
 
 ## 8. Trẻ em
 
@@ -111,4 +111,4 @@ cập nhật ghi ở đầu trang.
 
 ## 10. Liên hệ
 
-nnqlab, Việt Nam, hotro@timi.nnqlab.dev.
+nnqlab, Việt Nam, support@timi.nnqlab.dev.
