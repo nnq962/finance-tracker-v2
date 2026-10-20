@@ -8,10 +8,9 @@ Danh sách những việc đã bàn nhưng chưa làm, gom ngày 2026-10-17. Là
 Bàn ngày 2026-10-14; người dùng chọn làm tính năng trước, hoàn thiện phần này sau. Khi mở app cho
 người lạ dùng hoặc bán Pro rộng hơn thì nên làm sớm ít nhất mục 1, 3 và 8.
 
-1. **Chính sách quyền riêng tư và Điều khoản sử dụng.** Dữ liệu tài chính là dữ liệu nhạy cảm theo
-   Nghị định 13/2023; câu hỏi gửi tới AI (Gemini); đăng nhập Google cần đường dẫn chính sách khi
-   xin xác minh; bán Pro qua PayOS cần điều khoản thanh toán và hoàn tiền; có thể cần thông báo
-   với Bộ Công Thương (online.gov.vn). Có thay đổi giao diện nên làm mockup trước.
+1. ~~Chính sách quyền riêng tư và Điều khoản sử dụng~~ (6.30.0: `/privacy`, `/terms` từ `web/lib/legal/*.ts`,
+   bản nháp `docs/legal/*.md`; chưa qua luật sư; người vận hành ghi là nnqlab + email, không tên cá nhân).
+   Còn lại: thông báo website với Bộ Công Thương khi bán Pro rộng.
 2. ~~Xoá tài khoản và xuất dữ liệu~~ (6.8.0 xoá dữ liệu; 6.28.0 xuất Excel/CSV và xoá hẳn tài khoản,
    `lib/user-data/export.ts`, `deleteAccountAction`).
 3. ~~Liên hệ, hỗ trợ~~ (6.29.0: FAQ trong app và `/faq`, Góp ý lưu bảng `feedback` + báo Telegram, email `SUPPORT_EMAIL` trong `lib/site.ts`; người dùng tạo địa chỉ trên Cloudflare Email Routing).

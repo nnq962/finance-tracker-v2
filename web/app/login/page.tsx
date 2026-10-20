@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next"
+import Link from "next/link"
+
 import { GoogleOneTap } from "@/components/google-one-tap"
 import { LoginForm } from "@/components/login-form"
 import { TimiIcon } from "@/components/timi-icon"
@@ -66,6 +68,12 @@ export default async function LoginPage({
             </div>
             <LoginForm redirectTo={redirectTo} />
             <GoogleOneTap redirectTo={redirectTo} />
+            {/* The policies, where the sign-in is (2026-10-20). */}
+            <p className="text-center text-xs leading-5 text-muted-foreground">
+              Khi tiếp tục, bạn đồng ý với{" "}
+              <Link href="/terms" className="underline underline-offset-4">Điều khoản sử dụng</Link> và{" "}
+              <Link href="/privacy" className="underline underline-offset-4">Chính sách quyền riêng tư</Link> của Timi.
+            </p>
           </div>
         </div>
         <div className="hidden h-[min(42rem,85svh)] items-center justify-center rounded-[32px] bg-track lg:order-1 lg:flex dark:bg-foreground/5">

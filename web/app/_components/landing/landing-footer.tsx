@@ -11,6 +11,8 @@ const FOOTER_LINKS = [
   { href: "/#cach-hoat-dong", label: "Cách hoạt động" },
   { href: "/#bao-mat", label: "Bảo mật" },
   { href: "/faq", label: "Câu hỏi thường gặp" },
+  { href: "/terms", label: "Điều khoản" },
+  { href: "/privacy", label: "Quyền riêng tư" },
 ] as const
 
 export function LandingFooter() {

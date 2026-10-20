@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.30.0",
+    date: "2026-10-20",
+    title: "Chính sách quyền riêng tư và Điều khoản sử dụng",
+    changes: [
+      { kind: "new", text: "Hai trang công khai timi.nnqlab.dev/privacy và /terms, viết theo Nghị định 13/2023: dữ liệu nào được giữ, đi qua dịch vụ nào, lưu bao lâu, quyền của bạn; gói Pro, hoàn tiền, trợ lý AI, trách nhiệm. Mở từ Cài đặt, cuối trang giới thiệu và dòng đồng ý dưới nút đăng nhập." },
+      { kind: "fixed", text: "Trang giới thiệu nói đúng về AI: câu hỏi được gửi tới Google Gemini (gói trả phí, không dùng để huấn luyện), số tiền tính trên máy chủ của Timi." },
+    ],
+  },
+  {
     version: "6.29.0",
     date: "2026-10-20",
     title: "Hỗ trợ: câu hỏi thường gặp, góp ý, email",

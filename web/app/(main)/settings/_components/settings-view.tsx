@@ -17,6 +17,7 @@ import {
   TagsIcon,
   MailIcon,
   MessageSquareIcon,
+  ScaleIcon,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -387,6 +388,12 @@ export function SettingsView({
           email={user.email || undefined}
           proEndsAt={planState.proEndsAt ?? null}
         />
+
+        {/* The policies (2026-10-20), as public pages. */}
+        <SettingsGroup>
+          <SettingsRow icon={ScaleIcon} title="Điều khoản sử dụng" onClick={() => router.push("/terms")} />
+          <SettingsRow icon={ShieldCheckIcon} title="Chính sách quyền riêng tư" onClick={() => router.push("/privacy")} />
+        </SettingsGroup>
 
         {/* Signing out last and alone, as in native settings. */}
         <SettingsGroup>

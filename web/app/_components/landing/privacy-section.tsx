@@ -9,7 +9,7 @@ const POINTS = [
   { icon: CookieIcon, title: "Phiên đăng nhập an toàn", description: "Lưu bằng cookie HTTP-only, mã trên trang không đọc được." },
   { icon: ServerIcon, title: "Xử lý phía máy chủ", description: "Dữ liệu chỉ được đọc, ghi sau khi máy chủ xác minh phiên." },
   { icon: EyeOffIcon, title: "Tách biệt từng người", description: "Mỗi thao tác chỉ chạm tới dữ liệu của chính bạn." },
-  { icon: CpuIcon, title: "AI chạy trên máy chủ của app", description: "Câu bạn nhập cho AI không gửi tới dịch vụ AI bên ngoài." },
+  { icon: CpuIcon, title: "AI chỉ thấy câu hỏi, không thấy số", description: "Câu bạn hỏi được gửi tới Google Gemini (gói trả phí, không dùng để huấn luyện); số tiền tính trên máy chủ của Timi." },
 ] as const
 
 /** How the data is kept: the heading on the left, the points as a list of rows, as in the app. */
