@@ -9,6 +9,7 @@ import { Collapse } from "@/components/app/collapse"
 import { DateStrip } from "@/components/app/date-strip"
 import { IconTile } from "@/components/app/icon-tile"
 import { InlineSelect } from "@/components/app/inline-select"
+import { FormSection } from "@/components/app/form-section"
 import { OtpInput } from "@/components/app/otp-input"
 import { LimitBar } from "@/components/app/limit-bar"
 import { LimitRow } from "@/components/app/limit-row"
@@ -37,6 +38,7 @@ import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
 import { Progress } from "@/components/ui/progress"
 import {
@@ -125,6 +127,27 @@ function InputSection() {
 
   return (
     <CatalogSection id="input">
+      {/* How a sheet's form is built (AGENTS.md): the fields in one FormSection, grey on its white card, the card lifted on the white sheet. */}
+      <Wide>
+        <BlockLabel className="px-1">Form trong sheet · FormSection gom các trường, ô xám trên thẻ trắng có bóng</BlockLabel>
+        <FormSection title="Tài khoản" description="Số dư ban đầu tính từ ngày mở.">
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="ds-form-name">Tên</FieldLabel>
+              <Input id="ds-form-name" defaultValue="Ví MoMo" />
+            </Field>
+            <Field data-invalid="true">
+              <FieldLabel htmlFor="ds-form-note">Ghi chú</FieldLabel>
+              <Input id="ds-form-note" aria-invalid="true" defaultValue="Tiền tiêu vặt tháng 10 và tiền đi chợ của cả nhà, ghi dài quá" />
+              <FieldError>Ghi chú tối đa 40 ký tự</FieldError>
+            </Field>
+            <Field data-disabled="true">
+              <FieldLabel htmlFor="ds-form-currency">Tiền tệ</FieldLabel>
+              <Input id="ds-form-currency" defaultValue="VND" disabled />
+            </Field>
+          </FieldGroup>
+        </FormSection>
+      </Wide>
       <Block label="Text field · icon và nút xoá">
         <Field>
           <FieldLabel htmlFor="ds-name">Họ tên</FieldLabel>

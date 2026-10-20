@@ -143,6 +143,10 @@ component ở đó là cả app đổi theo.
   vạch ngăn list nằm trên nền dòng (dòng vuốt để xoá không còn mất vạch); nhóm `lg` (thẻ trang tổng hợp): dòng nhập, skeleton, tiêu đề
   nhóm và chú thích đều lề 24; `ChipRow` trong thẻ chạy tới mép thẻ (`--chip-row-bleed`); bóng nút nổi là token `--float-shadow`;
   viền checkbox, radio `foreground/35`; focus của thanh trượt, thước, bánh xe, ô tiền, stepper, sao là viền mực 2px.
+- **Nốt soát catalog 2026-10-21:** `Button loading` (vòng xoay đè lên nhãn ẩn, giữ bề ngang, không mờ như disabled, `aria-busy`);
+  `Avatar size="md"` (36) và `ContactAvatar` dựng trên `Avatar` (md trong dòng, xl ở đầu màn một người); mọi rãnh tiến độ (Progress,
+  LimitBar, ProgressRing, Slider, Steps) cùng màu `muted`; tiêu đề sheet ngắn (`DrawerHeader`) căn giữa trên điện thoại; lớp mờ dưới
+  thanh của PageSheet dày hơn qua hàng nút; `/design` có mẫu tab bar tĩnh và mẫu form `FormSection` trên sheet trắng.
 - **Status bar:** màu cố định bằng màu nền trang (`components/pwa-theme-color.tsx`). Web không
   đổi được màu status bar mượt theo chuyển động: Safari 26 bỏ qua `theme-color`, tô thanh theo
   `background-color`/`backdrop-filter` của phần tử `fixed` sát mép trên, và chỉ lấy màu mới khi

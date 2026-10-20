@@ -5,9 +5,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
 /**
- * A form's fields on a white card, on the grey of a sheet or page, with an
- * optional caption above, a grey note below and more content after it. On
- * the card the fields are grey. Group a form's fields in one section; a
+ * A form's fields on a white card lifted by the card shadow, on the white
+ * sheet or page (2026-10-21; the grey of a sheet before), with an optional
+ * caption above, a grey note below and more content after it. On the card
+ * the fields are grey. Group a form's fields in one section; a
  * lone field in its own card reads as a box in a box.
  */
 export function FormSection({

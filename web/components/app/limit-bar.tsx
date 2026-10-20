@@ -45,7 +45,9 @@ export function LimitBar({
       aria-label={label}
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-valuenow={max > 0 ? Math.round((value / max) * 100) : 0}
+      // Clamped to the bar's range; past the limit the text says by how much.
+      aria-valuenow={max > 0 ? Math.min(Math.round((value / max) * 100), 100) : 0}
+      aria-valuetext={max > 0 ? `${Math.round((value / max) * 100)}%` : undefined}
       className={cn("relative block w-full overflow-hidden rounded-full bg-muted group-data-[variant=inverse]/card:bg-inverse-foreground/15", size === "md" ? "h-2.5" : "h-1.5", className)}
     >
       <span

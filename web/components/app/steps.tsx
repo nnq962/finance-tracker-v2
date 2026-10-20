@@ -37,7 +37,7 @@ export function SegmentedProgress({
       className={cn("flex gap-1.5", className)}
     >
       {Array.from({ length: count }, (_, index) => (
-        <span key={index} className="h-1.5 flex-1 overflow-hidden rounded-full bg-track">
+        <span key={index} className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
           <span
             className={cn(
               "block h-full rounded-full transition-[width,background-color] duration-500 ease-[cubic-bezier(.32,.72,0,1)] motion-reduce:duration-150 motion-reduce:ease-out",

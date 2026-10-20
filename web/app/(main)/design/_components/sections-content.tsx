@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { RiBardFill } from "@remixicon/react"
 import {
   FilmIcon,
   ArrowDownLeftIcon,
@@ -113,6 +114,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { appNavigationItems } from "@/lib/app-navigation"
+import { cn } from "@/lib/utils"
 
 import { Block, BlockLabel, CatalogSection, Wide } from "./catalog-kit"
 import { PageSheetPlayground } from "./sheet-playground"
@@ -648,27 +651,38 @@ function NavSection() {
           }))}
         />
       </Block>
-      <Block label="Các bước · chạm để đổi bước">
-        <button type="button" className="w-full" onClick={() => setStep((step + 1) % 4)}>
-          <Steps steps={["Thông tin", "Xác minh", "Hoàn tất"]} current={step} />
-        </button>
+      <Block label="Các bước · đổi bước bằng hai nút">
+        <Steps steps={["Thông tin", "Xác minh", "Hoàn tất"]} current={step} />
+        {/* Separate buttons rather than a list inside a button (2026-10-21). */}
+        <div className="mt-4 flex justify-end gap-2">
+          <Button type="button" variant="secondary" size="sm" disabled={step === 0} onClick={() => setStep(step - 1)}>
+            Lùi
+          </Button>
+          <Button type="button" size="sm" disabled={step === 3} onClick={() => setStep(step + 1)}>
+            Tiếp
+          </Button>
+        </div>
       </Block>
       <Block label="Đầu trang (PageHeader) · tên trang, công cụ bên phải" wide>
-        <PageHeader
-          title={<span>Giao dịch</span>}
-          tools={<MonthSelect size="bar" value={month} max="2026-10" onValueChange={setMonth} />}
-          accessory={
-            <Button type="button" variant="secondary" size="icon" className="text-ai-strong" aria-label="Nhập bằng AI" onClick={() => toast("Nhập bằng AI")}>
-              <SparklesIcon />
-            </Button>
-          }
-        />
+        {/* Without the header's own space below it, which only pages need. */}
+        <div className="*:mb-0!">
+          <PageHeader
+            title={<span>Giao dịch</span>}
+            tools={<MonthSelect size="bar" value={month} max="2026-10" onValueChange={setMonth} />}
+            accessory={
+              <Button type="button" variant="secondary" size="icon" className="text-ai-strong" aria-label="Nhập bằng AI" onClick={() => toast("Nhập bằng AI")}>
+                <SparklesIcon />
+              </Button>
+            }
+          />
+        </div>
       </Block>
       <Block label="Đầu màn đẩy vào (ScreenHeader) · nút back tròn có bóng, tên ở giữa, như thanh của sheet (Cài đặt từ Tổng quan)" wide>
         <ScreenHeader title="Cài đặt" />
       </Block>
       <Block label="Thanh tab" wide>
-        <p className="text-sm text-muted-foreground">
+        <TabBarSample />
+        <p className="mt-4 text-sm text-muted-foreground">
           Thanh tab nổi ở đáy màn hình (MobileBottomNav, kiểu iOS 26): một viên kính trong 35% có mờ nền, năm ô (Tổng quan,
           Tài khoản, Giao dịch, Vay nợ, Timi), icon Phosphor đặc, nhãn 10/700; tab đang mở xanh #0088ff trên viên kính nhỏ;
           trượt khuất khi mở Cài đặt. Là khung của app; xem trực tiếp ở các trang chính trên điện thoại. Đầu trang cuộn cùng trang; Tổng quan đặt avatar,
@@ -1154,5 +1168,37 @@ function PageSheetDetailSample() {
         <TransactionFields idPrefix="ds-push" />
       </PageSheet>
     </PageSheet>
+  )
+}
+
+/**
+ * A still copy of the phone tab bar (MobileBottomNav) for the catalog: the
+ * glass capsule, the open tab's glass pill in #0088ff, Phosphor fill glyphs,
+ * 10/700 labels, Timi last. The real bar is fixed to the screen and routes.
+ */
+function TabBarSample() {
+  return (
+    // Bled to the block card's edges, so the bar gets its real width (350) on a phone.
+    <div aria-hidden="true" className="-mx-6 bg-muted px-1 py-4 md:mx-auto md:max-w-[382px] md:rounded-[24px] md:px-4">
+      <div className="relative isolate flex h-[62px] items-center rounded-full p-1 shadow-[0_8px_40px_rgb(0_0_0/0.12),0_8px_15px_rgb(0_0_0/0.02)]">
+        <span className="absolute inset-0 -z-10 rounded-full bg-tab-bar backdrop-blur-[6px] backdrop-saturate-160" />
+        {appNavigationItems.map(({ mobileTitle, tabIcon: Icon }, index) => (
+          <span
+            key={mobileTitle}
+            className={cn(
+              "flex h-[54px] min-w-0 flex-1 flex-col items-center justify-center gap-px rounded-full",
+              index === 0 ? "bg-tab-pill text-tab-active" : "text-foreground",
+            )}
+          >
+            <Icon size={26} weight="fill" />
+            <span className="text-[10px] leading-3 font-bold tracking-[-0.1px] whitespace-nowrap">{mobileTitle}</span>
+          </span>
+        ))}
+        <span className="flex h-[54px] min-w-0 flex-1 flex-col items-center justify-center gap-px text-foreground">
+          <RiBardFill size={26} />
+          <span className="text-[10px] leading-3 font-bold tracking-[-0.1px]">Timi</span>
+        </span>
+      </div>
+    </div>
   )
 }

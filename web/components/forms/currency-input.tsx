@@ -207,7 +207,7 @@ export function CurrencyInput({
                 onBlur={(event) => {
                   event.currentTarget.scrollLeft = 0
                 }}
-                className="col-start-1 row-start-1 w-0 min-w-full bg-transparent p-0 text-center caret-foreground outline-none placeholder:text-muted-foreground/40"
+                className="col-start-1 row-start-1 w-0 min-w-full bg-transparent p-0 text-center caret-foreground outline-none placeholder:text-muted-foreground/60"
               />
             </span>
             <span aria-hidden="true" className="text-[0.6em] opacity-50">

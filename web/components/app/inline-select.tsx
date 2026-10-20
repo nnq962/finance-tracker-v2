@@ -35,7 +35,7 @@ function ChosenValue({ chosen, placeholder, open }: { chosen?: InlineSelectOptio
     <>
       {chosen?.media}
       <span className="min-w-0 flex-1">
-        <span className={cn("block truncate text-sm font-medium", !chosen && "font-normal text-muted-foreground")}>
+        <span className={cn("block truncate text-base font-medium md:text-sm", !chosen && "font-normal text-muted-foreground")}>
           {chosen?.label ?? placeholder}
         </span>
         {chosen?.meta ? <span className="block truncate text-xs text-muted-foreground">{chosen.meta}</span> : null}
@@ -43,7 +43,7 @@ function ChosenValue({ chosen, placeholder, open }: { chosen?: InlineSelectOptio
       <ChevronDownIcon
         aria-hidden="true"
         className={cn(
-          "size-5 shrink-0 text-muted-foreground transition-transform duration-300 motion-reduce:duration-150 motion-reduce:ease-out",
+          "size-4 shrink-0 text-muted-foreground transition-transform duration-300 motion-reduce:duration-150 motion-reduce:ease-out",
           open && "rotate-180",
         )}
       />

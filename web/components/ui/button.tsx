@@ -3,6 +3,8 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 import { Slot } from "radix-ui"
 
+import { Spinner } from "@/components/ui/spinner"
+
 // Buttons are pills, as in native apps. Heights: 44px by default (the
 // smallest comfortable touch target), 36 and 32 for compact places inside
 // rows and headers, 48 for the main action at the end of a form.
@@ -56,26 +58,47 @@ const buttonVariants = cva(
   }
 )
 
+/**
+ * `loading` (2026-10-21): a spinner over the label, which stays (hidden) so
+ * the button keeps its width; full strength rather than the disabled fade,
+ * taps ignored, read out as busy.
+ */
 function Button({
   className,
   variant = "default",
   size = "default",
   asChild = false,
+  loading = false,
+  children,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    loading?: boolean
   }) {
   const Comp = asChild ? Slot.Root : "button"
+  const busy = loading && !asChild
 
   return (
     <Comp
       data-slot="button"
       data-variant={variant}
       data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
+      data-loading={busy || undefined}
+      aria-busy={busy || undefined}
+      aria-disabled={busy || props["aria-disabled"]}
+      className={cn(buttonVariants({ variant, size, className }), busy && "pointer-events-none relative")}
       {...props}
-    />
+    >
+      {busy ? (
+        <>
+          <span className="invisible inline-flex items-center gap-[inherit]">{children}</span>
+          <Spinner className="absolute inset-0 m-auto" />
+        </>
+      ) : (
+        children
+      )}
+    </Comp>
   )
 }
 

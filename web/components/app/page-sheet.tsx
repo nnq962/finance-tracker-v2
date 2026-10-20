@@ -21,7 +21,8 @@ function fadeGradient(surface: string, behindTitle: boolean) {
   const mix = (percent: number) => `color-mix(in oklab, ${surface} ${percent}%, transparent)`
   const stops = behindTitle
     ? [[96, 0], [94, 25], [88, 55], [60, 68], [32, 80], [12, 91], [0, 100]]
-    : [[92, 0], [84, 14], [70, 30], [54, 46], [36, 62], [20, 76], [8, 89], [0, 100]]
+    // Thicker through the buttons' row (2026-10-21): in the dark a white row passing under the ✕ showed almost at full contrast.
+    : [[96, 0], [92, 14], [84, 30], [70, 46], [50, 62], [28, 76], [10, 89], [0, 100]]
   return `linear-gradient(to bottom, ${stops.map(([percent, at]) => `${mix(percent)} ${at}%`).join(", ")})`
 }
 

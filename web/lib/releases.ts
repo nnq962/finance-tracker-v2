@@ -32,6 +32,16 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.32.1",
+    date: "2026-10-21",
+    title: "Hoàn thiện các chi tiết còn lại",
+    changes: [
+      { kind: "improved", text: "Nút đang lưu hiện vòng xoay ngay trên nút, giữ nguyên bề ngang và độ đậm thay vì mờ đi như nút bị khoá." },
+      { kind: "improved", text: "Ảnh đại diện người liên hệ dùng chung kiểu với ảnh người dùng; mọi thanh tiến độ cùng một màu rãnh." },
+      { kind: "improved", text: "Tiêu đề sheet ngắn căn giữa trên điện thoại; nội dung cuộn dưới thanh trên của sheet mờ đi rõ hơn ở theme tối; ô số tiền lớn có chữ gợi ý dễ thấy hơn." },
+    ],
+  },
+  {
     version: "6.32.0",
     date: "2026-10-21",
     title: "Sheet trắng và rà soát toàn bộ thiết kế",

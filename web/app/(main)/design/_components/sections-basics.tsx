@@ -33,7 +33,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
@@ -63,6 +62,12 @@ const colors = [
   ["ai-strong", "Chữ, icon AI", "bg-ai-strong"],
   ["ai-on-primary", "Icon AI trên nút chính", "bg-ai-on-primary"],
   ["warning", "Nhắc nhở", "bg-warning"],
+  ["warning-text", "Chữ cam", "bg-warning-text"],
+  ["destructive-text", "Chữ đỏ, lỗi", "bg-destructive-text"],
+  ["field", "Ô nhập (theo bề mặt)", "bg-field ring-1 ring-border ring-inset"],
+  ["track", "Rãnh, skeleton", "bg-track ring-1 ring-border ring-inset"],
+  ["segment", "Rãnh segmented", "bg-segment ring-1 ring-border ring-inset"],
+  ["inverse", "Avatar chính mình", "bg-inverse"],
   ["destructive", "Xoá, lỗi", "bg-destructive"],
   ["destructive-fill", "Nền nút Xoá", "bg-destructive-fill"],
   ["muted", "Nền phụ", "bg-muted"],
@@ -76,8 +81,7 @@ const colors = [
 const typeScale = [
   ["Số tiền lớn", "text-[34px] font-semibold tracking-tight", "34"],
   ["Tên trang", "text-2xl font-semibold tracking-tight", "24"],
-  ["Title · nhóm", "text-base font-semibold", "16"],
-  ["Headline · thẻ", "text-base font-semibold", "16"],
+  ["Title · nhóm, thẻ", "text-base font-semibold", "16"],
   ["Body · nội dung", "text-sm", "14"],
   ["Caption · mô tả, lỗi", "text-xs text-muted-foreground", "12"],
   ["Nhãn đầu nhóm", "text-xs font-semibold tracking-wider text-muted-foreground uppercase", "12"],
@@ -93,12 +97,13 @@ const spacing = [
   [32, "Giữa các phần, từ md"],
 ] as const
 
+// Exact pixels: the theme's rounded-2xl and rounded-3xl are 18 and 22, off this scale.
 const radii = [
-  ["24", "rounded-3xl"],
-  ["20", "rounded-[20px]"],
-  ["16", "rounded-2xl"],
-  ["12", "rounded-xl"],
-  ["∞", "rounded-full"],
+  ["24", "rounded-[24px]", "Thẻ trang tổng hợp, sheet trên desktop"],
+  ["20", "rounded-[20px]", "Thẻ, banner"],
+  ["16", "rounded-[16px]", "Ô con trong thẻ, thẻ nhỏ"],
+  ["12", "rounded-[12px]", "Ô nhập, ô lưới chọn"],
+  ["∞", "rounded-full", "Nút, chip, segmented"],
 ] as const
 
 const filters = ["Ăn uống", "Cà phê", "Di chuyển", "Mua sắm", "Hoá đơn", "Giải trí"]
@@ -163,11 +168,13 @@ function FoundationSection() {
         </div>
       </Block>
       <Block label="Bo góc">
-        <div className="flex items-end gap-2">
-          {radii.map(([value, className]) => (
-            <div key={value} className="flex-1 text-center">
-              <div className={`aspect-square bg-muted ${className}`} />
-              <p className="mt-1 text-[10px] text-muted-foreground">{value}</p>
+        {/* Wide bars, so the corners can be told apart at a glance. */}
+        <div className="space-y-2">
+          {radii.map(([value, className, usage]) => (
+            <div key={value} className="flex items-center gap-3">
+              <div className={`h-12 w-24 shrink-0 bg-muted ${className}`} />
+              <span className="w-5 shrink-0 text-xs font-medium tabular-nums">{value}</span>
+              <span className="min-w-0 text-xs text-muted-foreground">{usage}</span>
             </div>
           ))}
         </div>
@@ -176,8 +183,9 @@ function FoundationSection() {
         <div className="space-y-2">
           {spacing.map(([space, usage]) => (
             <div key={space} className="flex items-center gap-3">
-              <span className="w-20 shrink-0">
-                <span className="block h-2 rounded-full bg-primary" style={{ width: space * 2.5 }} />
+              {/* At true size. */}
+              <span className="w-8 shrink-0">
+                <span className="block h-2 rounded-full bg-primary" style={{ width: space }} />
               </span>
               <span className="w-5 shrink-0 text-xs font-medium tabular-nums">{space}</span>
               <span className="min-w-0 truncate text-xs text-muted-foreground">{usage}</span>
@@ -226,14 +234,13 @@ function ButtonSection() {
             <ChevronRightIcon data-icon="inline-end" />
           </Button>
           <Button
-            disabled={loading}
+            loading={loading}
             onClick={() => {
               setLoading(true)
               setTimeout(() => setLoading(false), 1600)
             }}
           >
-            {loading ? <Spinner data-icon="inline-start" /> : null}
-            {loading ? "Đang lưu" : "Bấm để tải"}
+            Bấm để tải
           </Button>
           <Button disabled>Disabled</Button>
         </div>
