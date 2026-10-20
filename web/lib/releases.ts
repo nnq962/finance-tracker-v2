@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.31.2",
+    date: "2026-10-21",
+    title: "Bóng thẻ không còn bị cắt",
+    changes: [
+      { kind: "fixed", text: "Giao dịch: bóng của thẻ tổng tháng trên điện thoại và của các thẻ trong danh sách trên desktop bị cắt thành mép thẳng; nay đủ bóng." },
+      { kind: "fixed", text: "Tiêu đề ngày trong danh sách chỉ có nền khi đang dính trên cùng, nên không còn che bóng của thẻ phía trên và phía dưới." },
+    ],
+  },
+  {
     version: "6.31.1",
     date: "2026-10-21",
     title: "Icon sáng tối nằm giữa nút",

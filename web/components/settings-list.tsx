@@ -2,6 +2,7 @@ import type * as React from "react"
 import { CheckIcon, ChevronDownIcon, ChevronRightIcon, type LucideIcon } from "lucide-react"
 
 import { IconTile, type IconTileTone } from "@/components/app/icon-tile"
+import { StickyBand } from "@/components/app/sticky-band"
 import { SwipeRow } from "@/components/app/swipe-row"
 
 import { Card } from "@/components/ui/card"
@@ -100,9 +101,11 @@ function SettingsGroup({
   plain?: boolean
   children: React.ReactNode
 }) {
-  const caption = (end: React.ReactNode) =>
-    title || end ? (
-      <div
+  const caption = (end: React.ReactNode) => {
+    if (!title && !end) return null
+    const Band = stickyCaption ? StickyBand : "div"
+    return (
+      <Band
         className={cn(
           captionRowClassName,
           stickyCaption &&
@@ -111,10 +114,13 @@ function SettingsGroup({
             // From md, under the shell's sticky header (4rem), unless a pane that
             // scrolls on its own sets --sticky-caption-top and, for a band like
             // the phone's, --sticky-caption-pad (the transactions list).
-            "sticky top-[env(safe-area-inset-top,0px)] z-10 bg-background/90 pb-2 backdrop-blur-md max-md:-mx-(--main-content-px) max-md:-mt-3 max-md:min-h-11 max-md:px-[calc(var(--main-content-px)+--spacing(4))] max-md:pt-3 md:top-[var(--sticky-caption-top,4rem)] md:-mt-[var(--sticky-caption-pad,0px)] md:pt-[var(--sticky-caption-pad,0px)]",
+            "sticky top-[env(safe-area-inset-top,0px)] z-10 pb-2 max-md:-mx-(--main-content-px) max-md:-mt-3 max-md:min-h-11 max-md:px-[calc(var(--main-content-px)+--spacing(4))] max-md:pt-3 md:top-[var(--sticky-caption-top,4rem)] md:-mt-[var(--sticky-caption-pad,0px)] md:pt-[var(--sticky-caption-pad,0px)]",
           // The card's hairline sits 1px outside it: stop a pixel short of
           // the card so the band does not paint over its top edge.
           stickyCaption && !plain && "pb-[7px]",
+          // Its background only while pinned: scrolling with the page, a
+          // filled band would cut the cards' shadows above and below it.
+          stickyCaption && "transition-[background-color] duration-150 data-stuck:bg-background/90 data-stuck:backdrop-blur-md",
         )}
       >
         {title ? (
@@ -123,8 +129,9 @@ function SettingsGroup({
           </h2>
         ) : null}
         {end}
-      </div>
-    ) : null
+      </Band>
+    )
+  }
   const body = (
     <>
       {plain ? (

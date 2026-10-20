@@ -34,14 +34,17 @@ export function TransactionsLayout({ summary, filters, children, listOnly = fals
           lg must not leave a margin. */}
       {/* Below lg it folds away while the list is alone, the gap after it
           closing with it, so the search slides up to the top.
-          4px of room each side keep the card's ring clear of the fold's clip.
+          While open, the fold's clip reaches past the card by its shadow's
+          reach (24 above, 48 below, and to the screen's edges at the sides, 2026-10-20), its margins
+          cancelling the room so nothing moves; that room lets taps through to
+          the header and the search it overlaps.
           From lg up the fold steps aside (contents) for the rail. */}
       <Collapse
         open={!listOnly}
-        className="max-lg:-m-1 lg:contents"
+        className="max-lg:pointer-events-none max-lg:data-[state=open]:-mx-4 max-lg:data-[state=open]:-mt-6 max-lg:data-[state=open]:-mb-12 lg:contents"
         contentClassName="lg:contents"
       >
-        <div className="flex min-w-0 flex-col gap-6 *:shrink-0 max-lg:p-1 md:gap-8">
+        <div className="pointer-events-auto flex min-w-0 flex-col gap-6 *:shrink-0 max-lg:mx-4 max-lg:mt-6 max-lg:mb-12 md:gap-8">
           {summary}
           {filters ? <div className="hidden lg:block">{filters}</div> : null}
         </div>
@@ -51,9 +54,10 @@ export function TransactionsLayout({ summary, filters, children, listOnly = fals
           is a pane pinned below the shell's sticky header (4rem, 5rem with
           room) down to 1rem above the window's bottom, scrolling on its own
           and not handing the scroll on to the page at its ends, with no scroll
-          bar; the days' captions pin to its top. 4px of margin
-          and padding keep the cards' rings from being clipped by the pane. */}
-      <div className="@container flex min-w-0 flex-col gap-6 md:gap-8 lg:sticky lg:top-20 lg:-m-1 lg:max-h-[calc(100svh-6rem)] lg:overflow-y-auto lg:overscroll-contain lg:p-1 lg:[scrollbar-width:none] lg:[--sticky-caption-pad:0.75rem] lg:[--sticky-caption-top:-0.25rem] lg:[&::-webkit-scrollbar]:hidden">
+          bar; the days' captions pin to its top. Margin and padding (24 at
+          the sides, 4 on top, 48 of scroll room below) keep the cards'
+          shadows from being clipped by the pane (2026-10-21). */}
+      <div className="@container flex min-w-0 flex-col gap-6 md:gap-8 lg:sticky lg:top-20 lg:-mx-6 lg:-my-1 lg:max-h-[calc(100svh-6rem)] lg:overflow-y-auto lg:overscroll-contain lg:px-6 lg:pt-1 lg:pb-12 lg:[scrollbar-width:none] lg:[--sticky-caption-pad:0.75rem] lg:[--sticky-caption-top:-0.25rem] lg:[&::-webkit-scrollbar]:hidden">
         {children}
       </div>
     </div>
