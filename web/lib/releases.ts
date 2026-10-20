@@ -32,6 +32,12 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.31.1",
+    date: "2026-10-21",
+    title: "Icon sáng tối nằm giữa nút",
+    changes: [{ kind: "fixed", text: "Icon mặt trời và mặt trăng trên nút đổi giao diện lệch xuống góc phải 1px từ 6.31.0; nay nằm đúng giữa." }],
+  },
+  {
     version: "6.31.0",
     date: "2026-10-21",
     title: "Nền trắng, thẻ nổi và Tổng quan sắp lại",
