@@ -186,6 +186,16 @@ export interface Debts {
   userId: string;
 }
 
+export interface Feedback {
+  appVersion: string | null;
+  createdAt: Generated<Timestamp>;
+  device: string | null;
+  id: Generated<string>;
+  kind: string;
+  message: string;
+  userId: string;
+}
+
 export interface MissionRewards {
   claimedAt: Generated<Timestamp>;
   credits: number;
@@ -325,6 +335,7 @@ export interface DB {
   debtOperations: DebtOperations;
   debtPayments: DebtPayments;
   debts: Debts;
+  feedback: Feedback;
   missionRewards: MissionRewards;
   noticeReads: NoticeReads;
   notificationBrowsers: NotificationBrowsers;

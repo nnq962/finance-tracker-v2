@@ -15,6 +15,8 @@ import {
   SmartphoneIcon,
   SwatchBookIcon,
   TagsIcon,
+  MailIcon,
+  MessageSquareIcon,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -49,6 +51,8 @@ import { AiQuotaGroup } from "./ai-quota-group"
 import { InstallAppRow } from "./install-app-row"
 import { NotificationDevices } from "./notification-devices"
 import { NotificationPreferences } from "./notification-preferences"
+import { SUPPORT_EMAIL } from "@/lib/site"
+
 import { ProfileHeader } from "./profile-header"
 import { ReleaseHistory } from "./release-history"
 import { SalaryCalculator } from "./salary-calculator"
@@ -56,6 +60,8 @@ import { SignOutRow } from "./sign-out-row"
 import { ThemeOptions, themeOptions, useThemeChoice } from "./theme-options"
 import { VoiceLab } from "./voice-lab"
 import { DataGroup } from "./data-group"
+import { FaqList } from "./faq-screen"
+import { FeedbackScreen } from "./feedback-screen"
 
 /** Screens opened from the list, in a sheet that slides in from the side. */
 const screens = {
@@ -85,6 +91,12 @@ const screens = {
   },
   releases: {
     title: "Lịch sử phiên bản",
+  },
+  faq: {
+    title: "Câu hỏi thường gặp",
+  },
+  feedback: {
+    title: "Góp ý với Timi",
   },
 } as const
 
@@ -207,6 +219,10 @@ export function SettingsView({
         )
       case "voice":
         return <VoiceLab />
+      case "faq":
+        return <FaqList onFeedback={() => open("feedback")} />
+      case "feedback":
+        return <FeedbackScreen onSent={() => setSheetScreen(null)} />
       case "salary":
         return <SalaryCalculator />
       case "releases":
@@ -311,6 +327,13 @@ export function SettingsView({
             onClick={openWelcome}
           />
           <InstallAppRow />
+        </SettingsGroup>
+
+        {/* Help (2026-10-20): the questions, a line to the person behind Timi, the address. */}
+        <SettingsGroup title="Hỗ trợ">
+          <SettingsRow icon={CircleHelpIcon} title="Câu hỏi thường gặp" onClick={() => open("faq")} />
+          <SettingsRow icon={MessageSquareIcon} title="Góp ý với Timi" onClick={() => open("feedback")} />
+          <SettingsRow icon={MailIcon} title="Email hỗ trợ" value={SUPPORT_EMAIL} onClick={() => window.open(`mailto:${SUPPORT_EMAIL}`, "_self")} />
         </SettingsGroup>
 
         {/* Tools for the people running the app, after the user's own

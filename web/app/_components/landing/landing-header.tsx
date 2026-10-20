@@ -11,11 +11,12 @@ import { TimiWordmark } from "@/components/timi-wordmark"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
+// From the landing's own page or another public page (/faq, the policies): the path keeps them working anywhere.
 const NAV_LINKS = [
-  { href: "#tinh-nang", label: "Tính năng" },
-  { href: "#ai", label: "AI" },
-  { href: "#cach-hoat-dong", label: "Cách hoạt động" },
-  { href: "#bao-mat", label: "Bảo mật" },
+  { href: "/#tinh-nang", label: "Tính năng" },
+  { href: "/#ai", label: "AI" },
+  { href: "/#cach-hoat-dong", label: "Cách hoạt động" },
+  { href: "/#bao-mat", label: "Bảo mật" },
 ] as const
 
 export function LandingHeader() {

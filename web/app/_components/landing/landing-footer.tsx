@@ -3,12 +3,14 @@ import Link from "next/link"
 import { TimiIcon } from "@/components/timi-icon"
 import { TimiWordmark } from "@/components/timi-wordmark"
 import { Button } from "@/components/ui/button"
+import { SUPPORT_EMAIL } from "@/lib/site"
 
 const FOOTER_LINKS = [
-  { href: "#tinh-nang", label: "Tính năng" },
-  { href: "#ai", label: "AI" },
-  { href: "#cach-hoat-dong", label: "Cách hoạt động" },
-  { href: "#bao-mat", label: "Bảo mật" },
+  { href: "/#tinh-nang", label: "Tính năng" },
+  { href: "/#ai", label: "AI" },
+  { href: "/#cach-hoat-dong", label: "Cách hoạt động" },
+  { href: "/#bao-mat", label: "Bảo mật" },
+  { href: "/faq", label: "Câu hỏi thường gặp" },
 ] as const
 
 export function LandingFooter() {
@@ -34,13 +36,16 @@ export function LandingFooter() {
             </Button>
           ))}
           <Button variant="ghost" size="sm" asChild>
+            <a href={`mailto:${SUPPORT_EMAIL}`}>Liên hệ</a>
+          </Button>
+          <Button variant="ghost" size="sm" asChild>
             <Link href="/login">Đăng nhập</Link>
           </Button>
         </nav>
       </div>
       {version ? (
         <p className="mx-auto w-full max-w-7xl px-4 pb-8 text-xs text-muted-foreground sm:px-6">
-          Phiên bản {version}
+          Phiên bản {version} · {SUPPORT_EMAIL}
         </p>
       ) : null}
     </footer>
