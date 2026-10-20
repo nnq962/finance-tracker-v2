@@ -32,6 +32,24 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.29.0",
+    date: "2026-10-20",
+    title: "Hỗ trợ: câu hỏi thường gặp, góp ý, email",
+    changes: [
+      { kind: "new", text: "Cài đặt › Hỗ trợ: Câu hỏi thường gặp (cũng ở trang công khai timi.nnqlab.dev/faq), Góp ý với Timi gửi thẳng tới người làm app kèm phiên bản và thiết bị nếu bạn muốn, và email hỗ trợ hotro@timi.nnqlab.dev." },
+      { kind: "improved", text: "Cuối trang giới thiệu có thêm Câu hỏi thường gặp và Liên hệ; các liên kết đầu trang hoạt động từ mọi trang công khai." },
+    ],
+  },
+  {
+    version: "6.28.0",
+    date: "2026-10-20",
+    title: "Xuất dữ liệu và xoá tài khoản",
+    changes: [
+      { kind: "new", text: "Cài đặt › Dữ liệu › Xuất dữ liệu: tải toàn bộ ghi chép của bạn về máy dưới dạng Excel (mỗi bảng một sheet) hoặc CSV nén zip; chọn gồm giao dịch, tài khoản và hũ, vay nợ, hạn mức, hạng mục. Số tiền theo đồng, ngày giờ theo giờ Việt Nam, tên thay cho mã." },
+      { kind: "new", text: "Cài đặt › Dữ liệu › Xoá tài khoản: xoá vĩnh viễn cả dữ liệu lẫn đăng nhập Google khỏi Timi sau khi gõ chữ xác nhận; Xoá toàn bộ dữ liệu chuyển vào cùng nhóm." },
+    ],
+  },
+  {
     version: "6.27.1",
     date: "2026-10-20",
     title: "Chữ tắt của bạn đen trắng",

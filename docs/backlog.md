@@ -12,9 +12,9 @@ người lạ dùng hoặc bán Pro rộng hơn thì nên làm sớm ít nhất 
    Nghị định 13/2023; câu hỏi gửi tới AI (Gemini); đăng nhập Google cần đường dẫn chính sách khi
    xin xác minh; bán Pro qua PayOS cần điều khoản thanh toán và hoàn tiền; có thể cần thông báo
    với Bộ Công Thương (online.gov.vn). Có thay đổi giao diện nên làm mockup trước.
-2. **Xoá tài khoản và xuất dữ liệu.** Xoá toàn bộ dữ liệu đã có (6.8.0); còn thiếu xoá hẳn tài khoản
-   đăng nhập và xuất dữ liệu ra file (CSV/Excel).
-3. **Liên hệ, hỗ trợ:** email theo tên miền, câu hỏi thường gặp, góp ý ngay trong app.
+2. ~~Xoá tài khoản và xuất dữ liệu~~ (6.8.0 xoá dữ liệu; 6.28.0 xuất Excel/CSV và xoá hẳn tài khoản,
+   `lib/user-data/export.ts`, `deleteAccountAction`).
+3. ~~Liên hệ, hỗ trợ~~ (6.29.0: FAQ trong app và `/faq`, Góp ý lưu bảng `feedback` + báo Telegram, email `SUPPORT_EMAIL` trong `lib/site.ts`; người dùng tạo địa chỉ trên Cloudflare Email Routing).
 4. ~~Trang 404 và trang lỗi~~ (6.16.1, `StatusScreen`, `ErrorCard`).
 5. ~~Header bảo mật~~ (6.16.0: HSTS, chống nhúng, `nosniff`, `Referrer-Policy`, `Permissions-Policy`).
    Còn lại: CSP giới hạn script (cần nonce cho mọi script).
