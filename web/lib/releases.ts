@@ -32,6 +32,12 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.30.2",
+    date: "2026-10-20",
+    title: "Nhóm Dữ liệu gọn hơn",
+    changes: [{ kind: "improved", text: "Xuất dữ liệu đứng riêng một thẻ; hai dòng đỏ Xoá toàn bộ dữ liệu và Xoá tài khoản ở thẻ bên dưới, không còn lẫn với dòng có icon." }],
+  },
+  {
     version: "6.30.1",
     date: "2026-10-20",
     title: "Email hỗ trợ là support@timi.nnqlab.dev",

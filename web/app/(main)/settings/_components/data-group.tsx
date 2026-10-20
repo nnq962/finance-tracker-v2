@@ -22,8 +22,13 @@ export function DataGroup({ summary, email, proEndsAt }: { summary: UserDataSumm
 
   return (
     <>
-      <SettingsGroup title="Dữ liệu" footer="Xuất ra Excel hoặc CSV để giữ bản riêng. Xoá dữ liệu giữ lại đăng nhập và gói Pro; xoá tài khoản xoá cả hai.">
+      {/* The export as a normal row, the two red centred actions in a card of
+          their own under it (2026-10-20): mixing the two kinds in one card
+          read badly. */}
+      <SettingsGroup title="Dữ liệu" footer="Excel hoặc CSV, tải thẳng về máy bạn.">
         <SettingsRow icon={DownloadIcon} title="Xuất dữ liệu" onClick={() => setSheet("export")} />
+      </SettingsGroup>
+      <SettingsGroup footer="Xoá dữ liệu giữ lại đăng nhập và gói Pro; xoá tài khoản xoá cả hai.">
         <SettingsRow destructive title="Xoá toàn bộ dữ liệu" onClick={() => setSheet("wipe")} />
         <SettingsRow destructive title="Xoá tài khoản" onClick={() => setSheet("delete")} />
       </SettingsGroup>
