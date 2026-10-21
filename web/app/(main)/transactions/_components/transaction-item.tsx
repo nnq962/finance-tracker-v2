@@ -104,11 +104,12 @@ export function TransactionItem({
                 }
                 sign={transaction.kind === "transfer" && amount === undefined ? "never" : "always"}
                 size="sm"
-                // Only money coming in is coloured, as in the mockup; none when left out.
-                tone={leftOut ? "muted" : transaction.kind === "income" ? "income" : "default"}
+                // Only money coming in is coloured, as in the mockup; none when left out, and none
+                // for a debt's money (lent, repaid), which the day's and month's figures leave out (2026-10-21).
+                tone={leftOut ? "muted" : transaction.kind === "income" && !transaction.source ? "income" : "default"}
               />
               <time
-                className="text-xs text-muted-foreground"
+                className="text-xs text-muted-foreground tabular-nums"
                 dateTime={transaction.occurredAt}
               >
                 {dateLabel ?? formatTime(transaction.occurredAt)}

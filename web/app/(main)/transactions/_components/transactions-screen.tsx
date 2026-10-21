@@ -96,6 +96,14 @@ const initialSearchFilters: TransactionSearchFilters = {
  * marked, and can be widened to every month. A month chosen loads while the
  * list stays put, dimmed.
  */
+// From lg up the search field always shows, beside the list.
+const wideQuery = "(width >= 64rem)"
+function subscribeWide(onChange: () => void) {
+  const query = window.matchMedia(wideQuery)
+  query.addEventListener("change", onChange)
+  return () => query.removeEventListener("change", onChange)
+}
+
 export function TransactionsScreen({
   accounts,
   initialAccountId,
@@ -138,6 +146,8 @@ export function TransactionsScreen({
   const [requestedMonth, setRequestedMonth] = React.useState(selectedMonth)
   // The phone's search screen, open from a tap on the field until Huỷ.
   const [searching, setSearching] = React.useState(false)
+  const searchRef = React.useRef<{ open: () => void }>(null)
+  const wide = React.useSyncExternalStore(subscribeWide, () => window.matchMedia(wideQuery).matches, () => false)
   // Searching every month: loaded on request, for the transactions the page
   // had then, so a change to them (one added, edited) loads them again.
   const [allMonths, setAllMonths] = React.useState(false)
@@ -311,14 +321,25 @@ export function TransactionsScreen({
       >
         {/* Under the card on phones, above the list beside the filter panel from lg up. */}
         <div className="flex flex-col gap-3">
-          <TransactionSearchBar
-            id="transaction-search"
-            query={searchFilters.query}
-            onQueryChange={changeQuery}
-            onFocus={openSearch}
-            onCancel={closeSearch}
-            cancelable={searching}
-          />
+          {/* On phones the field shows only on the search screen, opened by the chip leading the
+              row below (2026-10-21: the list starts 56 higher); from lg up it always shows. It
+              folds as the header unfolds on Huỷ, so the list does not jump up and back (before the
+              script runs, the lg overrides keep it shown on desktop). */}
+          <Collapse
+            open={searching || wide}
+            className="-mb-3 lg:mb-0 lg:h-auto! lg:opacity-100! lg:[clip-path:none]!"
+            contentClassName="pb-3 lg:pb-0"
+          >
+            <TransactionSearchBar
+              openRef={searchRef}
+              id="transaction-search"
+              query={searchFilters.query}
+              onQueryChange={changeQuery}
+              onFocus={openSearch}
+              onCancel={closeSearch}
+              cancelable={searching}
+            />
+          </Collapse>
           {/* From lg up the filter panel beside the list holds these. */}
           <TransactionKindChips
             className="lg:hidden"
@@ -326,6 +347,7 @@ export function TransactionsScreen({
             onFilterChange={changeKind}
             sheetFilterCount={sheetFilterCount}
             onOpenFilters={() => setFilterOpen(true)}
+            onSearch={searching ? undefined : () => searchRef.current?.open()}
           />
           <TransactionActiveFilters
             className="lg:hidden"
@@ -350,7 +372,7 @@ export function TransactionsScreen({
         </div>
       </TransactionsLayout>
 
-      <FloatingActions concealed={searching}>
+      <FloatingActions concealed={searching} hideOnScroll>
         <Button type="button" size="fab" aria-label="Thêm giao dịch" onClick={() => setAddOpen(true)}>
           <PlusIcon />
         </Button>

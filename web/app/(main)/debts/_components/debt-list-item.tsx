@@ -74,16 +74,18 @@ export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemPr
       description={[interest, debt.note].filter(Boolean).join(" · ") || undefined}
       action={
         <span className="flex flex-col items-end">
+          {/* Signed as everywhere else (2026-10-21): + what is owed to you, in green while open; − what you owe. */}
           <Money
-            amount={status.isSettled ? totalAmount : remainingAmount}
-            sign="never"
+            amount={(debt.direction === "lent" ? 1 : -1) * (status.isSettled ? totalAmount : remainingAmount)}
+            sign="always"
             size="sm"
-            tone={status.isSettled ? "muted" : "default"}
+            tone={status.isSettled ? "muted" : debt.direction === "lent" ? "income" : "default"}
           />
           <span
             className={cn(
               "text-xs text-muted-foreground",
-              status.isOverdue && "text-expense",
+              // Red only once past due; due today is amber.
+              status.isOverdue && ("isPastDue" in status && status.isPastDue ? "text-expense" : "text-warning-text"),
             )}
           >
             {status.label}

@@ -1,12 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { ArchiveIcon, ChevronRightIcon, PlusIcon, WalletCardsIcon } from "lucide-react"
+import { PlusIcon, WalletCardsIcon } from "lucide-react"
 
 import { AccountLogo } from "@/components/account-logo"
 import { IconTile } from "@/components/app/icon-tile"
 import { Money } from "@/components/app/money"
 import { PageSheet } from "@/components/app/page-sheet"
+import { ShelfLink } from "@/components/app/shelf-link"
 import { SettingsGroup, SettingsRow, groupCaptionClassName } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -62,25 +63,6 @@ function AccountRow({ account, onSelect }: { account: Account; onSelect: () => v
       }
       onClick={onSelect}
     />
-  )
-}
-
-/**
- * The way into what is put away (2026-10-21, direction C of four): one quiet
- * line under the groups in use, no card, as Reminders' "Show Completed"; it
- * opens the "Lưu trữ" sheet. 44 tall, centred on phones, at the start from lg.
- */
-function StoredLink({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="pressable mx-auto flex min-h-11 items-center gap-1.5 rounded-full px-4 text-sm font-medium text-muted-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/30 active:bg-muted lg:mx-0 [@media(hover:hover)]:hover:bg-muted"
-    >
-      <ArchiveIcon aria-hidden="true" className="size-4 shrink-0" />
-      {label}
-      <ChevronRightIcon aria-hidden="true" className="size-4 shrink-0" />
-    </button>
   )
 }
 
@@ -172,15 +154,14 @@ export function AccountList({ accounts, recentTransactions, categoryGroups, init
       {/* What is no longer in use is not folded into the page (2026-10-21): one quiet line opens
           "Lưu trữ", the locked accounts and the finished jars, each opening inside it, ‹ back. */}
       {archivedAccounts.length > 0 || doneJars.length > 0 ? (
-        <StoredLink
-          label={[
+        <ShelfLink onClick={() => setStored(true)}>
+          {[
             archivedAccounts.length ? `${archivedAccounts.length} tài khoản đã khoá` : null,
             doneJars.length ? `${doneJars.length} hũ đã xong` : null,
           ]
             .filter(Boolean)
             .join(" · ")}
-          onClick={() => setStored(true)}
-        />
+        </ShelfLink>
       ) : null}
 
       <PageSheet title="Lưu trữ" open={stored} onOpenChange={setStored} className="gap-6">

@@ -164,7 +164,8 @@ export function TransactionFilterFields({
           className="flex-wrap"
           aria-label="Lọc loại giao dịch"
         >
-          {transactionKindOptions.map((item) => (
+          {/* No "Vay nợ" beside the Vay nợ view (2026-10-21), unless a link has chosen it. */}
+          {transactionKindOptions.filter((item) => item.value !== "debt" || filter === "debt").map((item) => (
             <ToggleGroupItem key={item.value} value={item.value}>
               {item.label}
             </ToggleGroupItem>

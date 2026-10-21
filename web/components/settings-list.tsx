@@ -260,7 +260,8 @@ type SettingsRowProps = {
 
 // Rows of a dashboard card (size lg) share its 24 inset, so they line up with its header.
 // The press transition here too, so it wins over Item's own transition-colors (the cover over the next divider snapped while the grey faded, 2026-10-21).
-const rowClassName = "min-h-16 gap-3 py-3 transition-[color,background-color,box-shadow] duration-150 group-data-[size=lg]/card:px-6"
+// No side border (Item's is transparent): it set the content a pixel inside the margin the captions and the page keep (2026-10-21).
+const rowClassName = "min-h-16 gap-3 border-x-0 py-3 transition-[color,background-color,box-shadow] duration-150 group-data-[size=lg]/card:px-6"
 
 // Item only gives links a hover state; button rows get the same one, the
 // grey a native row shows under the finger (hover only exists with a mouse),
@@ -483,15 +484,15 @@ function SettingsRowSkeleton({
 }: SettingsRowSkeletonProps) {
   if (align === "center") {
     return (
-      <div className={cn("flex min-h-16 items-center justify-center border border-transparent px-4 py-3 group-data-[size=lg]/card:px-6", settingsSeparatorClassName(false))}>
+      <div className={cn("flex min-h-16 items-center justify-center border-y border-transparent px-4 py-3 group-data-[size=lg]/card:px-6", settingsSeparatorClassName(false))}>
         <Skeleton className="h-3.5 w-20" />
       </div>
     )
   }
 
   return (
-    // Item's transparent 1px border included, so everything lands where the row's does.
-    <div className={cn("flex min-h-16 items-center gap-3 border border-transparent px-4 py-3 group-data-[size=lg]/card:px-6", settingsSeparatorClassName(media !== "none"))}>
+    // The row's transparent 1px border above and below included, so everything lands where the row's does.
+    <div className={cn("flex min-h-16 items-center gap-3 border-y border-transparent px-4 py-3 group-data-[size=lg]/card:px-6", settingsSeparatorClassName(media !== "none"))}>
       {media === "none" ? null : (
         <Skeleton
           className={cn(

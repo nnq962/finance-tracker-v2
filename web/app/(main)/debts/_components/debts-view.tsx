@@ -2,13 +2,13 @@
 
 import * as React from "react"
 import {
+  CircleCheckIcon,
   HandshakeIcon,
-  TriangleAlertIcon,
 } from "lucide-react"
 
 import type { Account } from "@/lib/accounts/types"
-import { NoticeBanner } from "@/components/app/notice-banner"
 import { PageSheet, PageSheetFooter } from "@/components/app/page-sheet"
+import { ShelfLink } from "@/components/app/shelf-link"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import {
   Empty,
@@ -20,7 +20,6 @@ import {
 
 import {
   compareDebtsByUrgency,
-  getDebtDeadline,
   getDebtMetrics,
 } from "../_lib/debt-presentation"
 import type { Contact, Debt, DebtDirection, NewDebt, NewDebtPayment } from "../_types/debt"
@@ -68,6 +67,8 @@ export function DebtsView({
   onDeletePayment,
 }: DebtsViewProps) {
   const [sheetDebtId, setSheetDebtId] = React.useState<string | null>(null)
+  // The settled debts, listed in a sheet of their own.
+  const [settledOpen, setSettledOpen] = React.useState(false)
   // A link from elsewhere opens its debt when the URL comes to name it. A tap
   // on a row leaves the URL alone: every debt came with its payments, so the
   // sheet opens at once, with no page to load (2026-10-17).
@@ -81,15 +82,6 @@ export function DebtsView({
   const settledDebts = debts
     .filter(isSettled)
     .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt))
-  // Overdue first (the list's order), then those due today; the banner counts each apart.
-  const overdueDebts = openDebts.filter((debt) => getDebtDeadline(debt).isOverdue)
-  const pastDueCount = overdueDebts.filter((debt) => getDebtDeadline(debt).isPastDue).length
-  const dueTodayCount = overdueDebts.length - pastDueCount
-  const overdueTitle = [
-    // Both: one short line on a phone ("2 quá hạn · 1 đến hạn hôm nay").
-    pastDueCount > 0 ? `${pastDueCount}${dueTodayCount > 0 ? "" : " khoản"} quá hạn` : null,
-    dueTodayCount > 0 ? `${dueTodayCount}${pastDueCount > 0 ? "" : " khoản"} đến hạn hôm nay` : null,
-  ].filter(Boolean).join(" · ")
   const summary = getDebtSummary(debts)
   const openCount = (side: DebtDirection) => openDebts.filter((debt) => debt.direction === side).length
   const tiles = (
@@ -154,6 +146,36 @@ export function DebtsView({
     })
   }
 
+  // The open debt's sheet: inside the list's sheet when opened from it.
+  const detailSheet = (
+        <PageSheet
+          title="Chi tiết khoản nợ"
+          action={
+            shownDebt && shownContact ? (
+              <DebtEditButton {...getDetailProps(shownDebt, shownContact)} />
+            ) : undefined
+          }
+          open={sheetDebt !== undefined}
+          onOpenChange={(open) => {
+            if (!open) setSheetDebtId(null)
+          }}
+        >
+          {shownDebt && shownContact ? (
+            <React.Fragment key={shownDebt.id}>
+              <div className="pb-4">
+                <DebtDetailInfo {...getDetailProps(shownDebt, shownContact)} />
+              </div>
+              {/* Nothing left to collect or repay once settled. */}
+              {isSettled(shownDebt) ? null : (
+                <PageSheetFooter>
+                  <DebtRecordPaymentButton {...getDetailProps(shownDebt, shownContact)} />
+                </PageSheetFooter>
+              )}
+            </React.Fragment>
+          ) : null}
+        </PageSheet>
+  )
+
   if (debts.length === 0) {
     return (
       <div className="space-y-6 md:space-y-8">
@@ -175,31 +197,17 @@ export function DebtsView({
     <div className="space-y-6 md:space-y-8">
       {tiles}
 
-        {overdueDebts.length > 0 ? (
-          <NoticeBanner
-            // A white card among the lists, red as the overdue rows' "Quá N ngày".
-            tone="expense"
-            surface="card"
-            icon={TriangleAlertIcon}
-            title={overdueTitle}
-            // Opens the one overdue the longest; the rest sit at the top of their sections.
-            onClick={() => selectDebt(overdueDebts[0].id)}
-          >
-            {[...new Set(overdueDebts.map((debt) => contactById.get(debt.contactId)?.name))].filter(Boolean).join(", ")}
-          </NoticeBanner>
-        ) : null}
-
-      {/* The totals are on the card above. Stacked on phones; from lg up the
-          two sides stand side by side, Cần thu | Cần trả, an empty side kept
-          with a line so the other stays in its column. One column on phones,
-          as wide as the page: a long note is cut, not widening it (2026-10-17). */}
+      {/* The totals are on the card above. Flat on the page as the transactions
+          (2026-10-21); stacked on phones; from lg up the two sides stand side by
+          side, Cần thu | Cần trả, an empty side kept with a line so the other
+          stays in its column. A long note is cut, not widening the page. */}
       <div className="grid grid-cols-1 items-start gap-6 md:gap-8 lg:grid-cols-2">
         {sections.map(({ direction: side, label }) => {
           const items = openDebts.filter((debt) => debt.direction === side)
           if (items.length === 0) {
             return (
               <div key={side} className="hidden lg:block">
-                <SettingsGroup title={`${label} · 0`}>
+                <SettingsGroup flat title={`${label} · 0`}>
                   <SettingsRow title="Không có khoản nào" />
                 </SettingsGroup>
               </div>
@@ -207,48 +215,33 @@ export function DebtsView({
           }
 
           return (
-            <SettingsGroup key={side} title={`${label} · ${items.length}`}>
+            <SettingsGroup key={side} flat title={`${label} · ${items.length}`}>
               {renderRows(items)}
             </SettingsGroup>
           )
         })}
       </div>
 
-        {settledDebts.length > 0 ? (
-          <SettingsGroup
-            title="Đã tất toán"
-            collapsible={{ showLabel: `Hiện ${settledDebts.length} khoản`, defaultOpen: openDebts.length === 0 }}
-          >
-            {renderRows(settledDebts)}
-          </SettingsGroup>
-        ) : null}
+      {/* Settled debts are not folded into the page: one quiet line opens them in a sheet, as the accounts page's Lưu trữ. */}
+      {settledDebts.length > 0 ? (
+        <ShelfLink icon={CircleCheckIcon} onClick={() => setSettledOpen(true)}>
+          {settledDebts.length} khoản đã tất toán
+        </ShelfLink>
+      ) : null}
 
       <PageSheet
-        title="Chi tiết khoản nợ"
-        action={
-          shownDebt && shownContact ? (
-            <DebtEditButton {...getDetailProps(shownDebt, shownContact)} />
-          ) : undefined
-        }
-        open={sheetDebt !== undefined}
-        onOpenChange={(open) => {
-          if (!open) setSheetDebtId(null)
-        }}
+        title="Đã tất toán"
+        open={settledOpen}
+        onOpenChange={setSettledOpen}
       >
-        {shownDebt && shownContact ? (
-          <React.Fragment key={shownDebt.id}>
-            <div className="pb-4">
-              <DebtDetailInfo {...getDetailProps(shownDebt, shownContact)} />
-            </div>
-            {/* Nothing left to collect or repay once settled. */}
-            {isSettled(shownDebt) ? null : (
-              <PageSheetFooter>
-                <DebtRecordPaymentButton {...getDetailProps(shownDebt, shownContact)} />
-              </PageSheetFooter>
-            )}
-          </React.Fragment>
-        ) : null}
+        <SettingsGroup flat title={`${settledDebts.length} khoản`}>
+          {renderRows(settledDebts)}
+        </SettingsGroup>
+        {/* A debt opened from the list is pushed into this sheet, ‹ back to it. */}
+        {settledOpen ? detailSheet : null}
       </PageSheet>
+
+      {settledOpen ? null : detailSheet}
     </div>
   )
 }

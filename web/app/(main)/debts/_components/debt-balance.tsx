@@ -40,8 +40,9 @@ function balanceNote(net: number, total: number) {
  * The debts page's lead card: a half ring weighs what is owed to you (green)
  * against what you owe (the card's text colour), on the plain card
  * (2026-10-19 evening, option E of the lead-card mockup; black / white for
- * the day before). On phones the balance sits inside it, the two
- * figures under its ends and a line says which way it leans. From lg up the
+ * the day before). On phones the balance ("Chênh lệch", was "Ròng") sits
+ * inside it and the two figures under its ends; its sign says which way it
+ * leans (the pill saying so again went 2026-10-21, the ring 224 wide). From lg up the
  * card lies across the page (chosen 2026-10-09): the ring on the left, the
  * balance, owed to you and owed by you as three figures on the right.
  * Each figure fits its column on one line, shrinking or going short rather
@@ -63,19 +64,19 @@ export function DebtBalance({
   return (
     <Card size="lg" role="region" aria-label="Cần thu và cần trả">
       <CardContent className="flex flex-col items-center lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-center lg:gap-10">
-        <div className="relative w-full max-w-64">
+        <div className="relative w-full max-w-56 lg:max-w-64">
           <svg viewBox="0 0 200 110" className="w-full" aria-hidden="true">
             <HalfRing share={total === 0 ? null : lent / total} />
           </svg>
           {/* Inside the ring's ends (its inner edge is 14% in from each side, with room to spare), so a long figure shrinks rather than touching them. */}
           <div className="@container absolute inset-x-[18%] bottom-1 flex flex-col items-center lg:hidden">
-            <CardLabel>Ròng</CardLabel>
+            <CardLabel>Chênh lệch</CardLabel>
             <Money amount={net} size="lg" fit sign={net === 0 ? "never" : "always"} />
           </div>
         </div>
         <div className="hidden grid-cols-3 gap-6 lg:grid">
           <div className="@container flex min-w-0 flex-col gap-1">
-            <CardLabel>Ròng</CardLabel>
+            <CardLabel>Chênh lệch</CardLabel>
             <Money amount={net} size="lg" fit sign={net === 0 ? "never" : "always"} />
             <span className="text-xs text-muted-foreground">{balanceNote(net, total)}</span>
           </div>
@@ -110,9 +111,6 @@ export function DebtBalance({
             <Money amount={borrowed} size="md" fit />
           </div>
         </div>
-        <span className="mt-4 rounded-full bg-track px-3 py-1 text-xs font-medium lg:hidden">
-          {balanceNote(net, total)}
-        </span>
       </CardContent>
     </Card>
   )
@@ -123,7 +121,7 @@ export function DebtBalanceSkeleton() {
   return (
     <Card size="lg" aria-hidden="true">
       <CardContent className="flex flex-col items-center lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-center lg:gap-10">
-        <div className="relative w-full max-w-64">
+        <div className="relative w-full max-w-56 lg:max-w-64">
           <svg viewBox="0 0 200 110" className="w-full">
             <HalfRing share={null} />
           </svg>
@@ -148,7 +146,6 @@ export function DebtBalanceSkeleton() {
             </div>
           ))}
         </div>
-        <Skeleton className="mt-4 h-6 w-48 rounded-full lg:hidden" />
       </CardContent>
     </Card>
   )

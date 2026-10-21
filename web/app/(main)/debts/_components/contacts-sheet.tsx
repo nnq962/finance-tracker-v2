@@ -5,6 +5,7 @@ import {
   ArrowDownLeftIcon,
   ArrowUpRightIcon,
   BookUserIcon,
+  CircleCheckIcon,
   PencilIcon,
   PhoneIcon,
   PlusIcon,
@@ -16,6 +17,7 @@ import {
 import { FlowTiles } from "@/components/app/flow-tiles"
 import { Money } from "@/components/app/money"
 import { PageSheet, PageSheetScreen } from "@/components/app/page-sheet"
+import { ShelfLink } from "@/components/app/shelf-link"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
@@ -102,13 +104,21 @@ function ContactDebtRow({ debt, onSelect }: { debt: Debt; onSelect: () => void }
       description={`${way} · ${formatShortDate(debt.recordedAt)}`}
       action={
         <span className="flex flex-col items-end">
+          {/* Signed as the debts list (2026-10-21). */}
           <Money
-            amount={status.isSettled ? totalAmount : remainingAmount}
-            sign="never"
+            amount={(debt.direction === "lent" ? 1 : -1) * (status.isSettled ? totalAmount : remainingAmount)}
+            sign="always"
             size="sm"
-            tone={status.isSettled ? "muted" : "default"}
+            tone={status.isSettled ? "muted" : debt.direction === "lent" ? "income" : "default"}
           />
-          <span className={cn("text-xs text-muted-foreground", status.isOverdue && "text-expense")}>{status.label}</span>
+          <span
+            className={cn(
+              "text-xs text-muted-foreground",
+              status.isOverdue && ("isPastDue" in status && status.isPastDue ? "text-expense" : "text-warning-text"),
+            )}
+          >
+            {status.label}
+          </span>
         </span>
       }
       onClick={onSelect}
@@ -119,7 +129,7 @@ function ContactDebtRow({ debt, onSelect }: { debt: Debt; onSelect: () => void }
 /**
  * One person, as a deeper screen of the contacts: who they are, what is left
  * with them each way, their open debts (each opening on the page), the
- * settled ones folded away, a new debt with them, a call, and deleting them
+ * settled ones on a screen of their own, a new debt with them, a call, and deleting them
  * once nothing is recorded with them.
  */
 function ContactScreen({
@@ -136,6 +146,7 @@ function ContactScreen({
   onDelete: () => void
 }) {
   const standing = getStanding(debts)
+  const [settledShown, setSettledShown] = React.useState(false)
   const details = [contact.relationship, contact.phone].filter(Boolean).join(" · ")
 
   return (
@@ -175,15 +186,20 @@ function ContactScreen({
         </SettingsGroup>
       ) : null}
 
+      {/* Settled debts open on a screen of their own, as on the page (2026-10-21: no fold). */}
       {standing.settled.length > 0 ? (
-        <SettingsGroup
-          title="Đã tất toán"
-          collapsible={{ showLabel: `Hiện ${standing.settled.length} khoản`, defaultOpen: standing.open.length === 0 }}
-        >
-          {standing.settled.map((debt) => (
-            <ContactDebtRow key={debt.id} debt={debt} onSelect={() => onOpenDebt(debt.id)} />
-          ))}
-        </SettingsGroup>
+        <>
+          <ShelfLink align="center" icon={CircleCheckIcon} onClick={() => setSettledShown(true)}>
+            {standing.settled.length} khoản đã tất toán
+          </ShelfLink>
+          <PageSheetScreen open={settledShown} title="Đã tất toán" onBack={() => setSettledShown(false)}>
+            <SettingsGroup>
+              {standing.settled.map((debt) => (
+                <ContactDebtRow key={debt.id} debt={debt} onSelect={() => onOpenDebt(debt.id)} />
+              ))}
+            </SettingsGroup>
+          </PageSheetScreen>
+        </>
       ) : null}
 
       {contact.note ? (

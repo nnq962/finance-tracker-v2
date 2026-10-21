@@ -92,6 +92,23 @@ function TabsList({
     memoryKey ? (indicatorMemory.get(memoryKey) ?? null) : null,
   )
   const startsRemembered = React.useRef(box !== null)
+  const indicator = React.useRef<HTMLSpanElement>(null)
+
+  // Leaving mid-slide (a view that draws its own switch swapped out by the
+  // tap, 2026-10-21), the list remembers where the thumb is on screen, not
+  // where it was heading: the next one carries the slide on from there at the
+  // designed pace, instead of starting at the end and cutting it short.
+  React.useLayoutEffect(() => {
+    const element = indicator
+    return () => {
+      const thumb = element.current
+      if (!memoryKey || !thumb) return
+      const style = getComputedStyle(thumb)
+      const x = Number.parseFloat(style.translate.split(" ")[0] ?? "")
+      const width = Number.parseFloat(style.width)
+      if (Number.isFinite(x) && Number.isFinite(width)) indicatorMemory.set(memoryKey, { x, width })
+    }
+  }, [memoryKey])
 
   React.useLayoutEffect(() => {
     const element = list.current
@@ -104,10 +121,24 @@ function TabsList({
       const chosen = element.querySelector<HTMLElement>('[data-slot="tabs-trigger"][data-state="active"]')
       const next = chosen ? { x: chosen.offsetLeft, width: chosen.offsetWidth } : null
       if (memoryKey && next) indicatorMemory.set(memoryKey, next)
+      // Written to the thumb as well: drawn from a place React does not know of (below), its
+      // state may already hold this box, and React would then leave the thumb where it is.
+      if (next && indicator.current) {
+        indicator.current.style.translate = `${next.x}px 0`
+        indicator.current.style.width = `${next.width}px`
+      }
       setBox(next)
     }
     let frame = 0
     if (startsRemembered.current) {
+      // Rendered alongside the list it replaces, this one read the memory before that one
+      // left; where that one's thumb was on leaving is in the memory only now, so the thumb
+      // is put there before the first paint.
+      const left = memoryKey ? indicatorMemory.get(memoryKey) : undefined
+      if (left && indicator.current) {
+        indicator.current.style.translate = `${left.x}px 0`
+        indicator.current.style.width = `${left.width}px`
+      }
       // Two frames on, so the remembered place is painted before the slide starts.
       startsRemembered.current = false
       frame = requestAnimationFrame(() => {
@@ -135,9 +166,10 @@ function TabsList({
     >
       {box ? (
         <span
+          ref={indicator}
           aria-hidden="true"
           data-slot="tabs-indicator"
-          className="absolute top-1 bottom-1 left-0 rounded-full bg-primary transition-[translate,width] duration-250 ease-[cubic-bezier(0.2,0,0,1)] will-change-[translate] group-data-[variant=line]/tabs-list:top-auto group-data-[variant=line]/tabs-list:-bottom-px group-data-[variant=line]/tabs-list:h-0.5 group-data-[variant=line]/tabs-list:bg-foreground group-data-[variant=segmented]/tabs-list:bg-control group-data-[variant=segmented]/tabs-list:shadow-control motion-reduce:duration-150 motion-reduce:ease-out"
+          className="absolute top-1 bottom-1 left-0 rounded-full bg-primary transition-[translate,width] duration-250 ease-[cubic-bezier(0.2,0,0,1)] will-change-[translate] group-data-[variant=line]/tabs-list:top-auto group-data-[variant=line]/tabs-list:-bottom-px group-data-[variant=line]/tabs-list:h-0.5 group-data-[variant=line]/tabs-list:bg-foreground group-data-[variant=segmented]/tabs-list:bg-control group-data-[variant=segmented]/tabs-list:shadow-control motion-reduce:transition-none"
           style={{ width: box.width, translate: `${box.x}px 0` }}
         />
       ) : null}
@@ -157,6 +189,8 @@ function TabsTrigger({
         "relative inline-flex h-full flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-semibold whitespace-nowrap text-foreground/60 transition-colors duration-150 ease-out outline-none group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         // One weight chosen or not (2026-10-21): bolding the chosen label moved the words while the pill slid.
         "data-active:text-foreground group-data-[variant=line]/tabs-list:rounded-none",
+        // Segmented: 36 tall in the 44 rail, its touch area stretched over the rail's 4 above and below (2026-10-21).
+        "group-data-[variant=segmented]/tabs-list:after:absolute group-data-[variant=segmented]/tabs-list:after:inset-x-0 group-data-[variant=segmented]/tabs-list:after:-inset-y-1",
         // On the ink pill the chosen segment's text is white.
         "[[data-slot=tabs-list][data-variant=default]>&]:data-active:text-primary-foreground",
         // Before the indicator is measured (first paint), the chosen trigger fills itself.

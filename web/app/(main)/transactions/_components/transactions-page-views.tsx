@@ -17,7 +17,7 @@ export type TransactionsPageView = "transactions" | "debts"
  * address follows (?view=debts) so a reload or a link lands on the same one.
  * Only the one shown is mounted: each has its own tools, floating button and
  * sheets. Each draws its own switch, so the switch remembers its thumb
- * (`memoryKey`) and slides it across when the view changes (2026-10-21).
+ * (`memoryKey`); a tap moves the thumb first and builds the view after it.
  */
 export function TransactionsPageViews({
   view,
@@ -30,14 +30,21 @@ export function TransactionsPageViews({
   debts: Omit<React.ComponentProps<typeof DebtsDashboard>, "viewSwitch">
 }) {
   const [shown, setShown] = React.useState(view)
+  // The switch follows a tap at once; the view after it, in the background
+  // (2026-10-21): the old view's switch slides on the tap's own frame while
+  // the new view is built, rather than the new one sliding ~150ms later.
+  const [chosen, setChosen] = React.useState(view)
+  const [, startTransition] = React.useTransition()
   const [seenView, setSeenView] = React.useState(view)
   if (view !== seenView) {
     setSeenView(view)
     setShown(view)
+    setChosen(view)
   }
 
   const change = (next: TransactionsPageView) => {
-    setShown(next)
+    setChosen(next)
+    startTransition(() => setShown(next))
     const url = new URL(window.location.href)
     if (next === "debts") url.searchParams.set("view", "debts")
     else url.searchParams.delete("view")
@@ -46,8 +53,9 @@ export function TransactionsPageViews({
   }
 
   const viewSwitch = (
-    <Tabs value={shown} onValueChange={(next) => change(next as TransactionsPageView)}>
-      <TabsList variant="segmented" memoryKey="transactions-view" className="w-52" aria-label="Chi tiêu hoặc vay nợ">
+    // Shrinks on a narrow phone (320) beside the month rather than pushing the page wider.
+    <Tabs value={chosen} onValueChange={(next) => change(next as TransactionsPageView)} className="min-w-0">
+      <TabsList variant="segmented" memoryKey="transactions-view" className="w-52 max-w-full" aria-label="Chi tiêu hoặc vay nợ">
         <TabsTrigger value="transactions">Chi tiêu</TabsTrigger>
         <TabsTrigger value="debts">Vay nợ</TabsTrigger>
       </TabsList>

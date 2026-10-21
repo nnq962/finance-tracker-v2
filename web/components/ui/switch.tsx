@@ -25,9 +25,11 @@ function Switch({
     >
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
-        className="pointer-events-none grid place-items-center rounded-full bg-card text-primary shadow-sm ring-0 transition-transform duration-[400ms] ease-[cubic-bezier(.3,1.25,.6,1)] group-data-[size=default]/switch:size-6 group-data-[size=sm]/switch:size-4 group-data-[size=default]/switch:data-checked:translate-x-5 group-data-[size=sm]/switch:data-checked:translate-x-4 motion-reduce:duration-150 motion-reduce:ease-out data-unchecked:translate-x-0"
+        className="pointer-events-none grid place-items-center rounded-full bg-card text-primary shadow-sm dark:data-unchecked:bg-foreground ring-0 transition-transform duration-[400ms] ease-[cubic-bezier(.3,1.25,.6,1)] motion-reduce:transition-none group-data-[size=default]/switch:size-6 group-data-[size=sm]/switch:size-4 group-data-[size=default]/switch:data-checked:translate-x-5 group-data-[size=sm]/switch:data-checked:translate-x-4 data-unchecked:translate-x-0"
       >
-        {/* A tick in the thumb says "on" without relying on colour alone; kept
+        {/* Off in dark, the thumb is light as iOS's (2026-10-21: the card's dark grey
+            all but vanished on the grey track); on, it stays dark on the light track.
+            A tick in the thumb says "on" without relying on colour alone; kept
             on its own layer, as iOS Safari otherwise re-snaps it half a pixel
             as the thumb starts moving. */}
         <CheckIcon

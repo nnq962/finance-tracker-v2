@@ -110,7 +110,7 @@ export function DebtDetailInfo(props: DebtDetailPanelProps) {
             {interestDate === todayDate() ? "hôm nay" : formatDebtDate(interestDate)}
           </p>
         ) : null}
-        <Badge className="mt-2" variant={settled ? "income" : deadline.isOverdue ? "expense" : "secondary"}>
+        <Badge className="mt-2" variant={settled ? "income" : deadline.isPastDue ? "expense" : deadline.isOverdue ? "warning" : "secondary"}>
           {standingLabel(debt, settled)}
         </Badge>
       </div>

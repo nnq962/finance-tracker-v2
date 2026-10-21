@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ListFilterIcon } from "lucide-react"
+import { ListFilterIcon, SearchIcon } from "lucide-react"
 
 import { ChipButton, ChipRow, ChipRowDivider } from "@/components/app/chip-row"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
@@ -21,6 +21,7 @@ export function TransactionKindChips({
   onFilterChange,
   sheetFilterCount,
   onOpenFilters,
+  onSearch,
   className,
 }: {
   filter: TransactionFilter
@@ -28,6 +29,8 @@ export function TransactionKindChips({
   /** How many of the sheet's conditions are on. */
   sheetFilterCount: number
   onOpenFilters: () => void
+  /** The search chip first in the row (phones, 2026-10-21): the field no longer sits above the chips. */
+  onSearch?: () => void
   className?: string
 }) {
   // The chip shown as chosen: set at once on a tap, re-rendering only this
@@ -43,6 +46,11 @@ export function TransactionKindChips({
 
   return (
     <ChipRow className={className}>
+      {onSearch ? (
+        <ChipButton aria-label="Tìm giao dịch" onClick={onSearch} className="shrink-0 px-2.5">
+          <SearchIcon />
+        </ChipButton>
+      ) : null}
       <ChipButton
         active={sheetFilterCount > 0}
         aria-label={sheetFilterCount > 0 ? `Bộ lọc, ${sheetFilterCount} điều kiện` : "Bộ lọc"}
@@ -65,7 +73,8 @@ export function TransactionKindChips({
         aria-label="Loại giao dịch"
         className="shrink-0"
       >
-        {transactionKindOptions.map((item) => (
+        {/* No "Vay nợ" chip beside the Vay nợ view (2026-10-21): two controls of one name did two things. Kept only while a link has chosen it. */}
+        {transactionKindOptions.filter((item) => item.value !== "debt" || shownFilter === "debt").map((item) => (
           <ToggleGroupItem key={item.value} value={item.value}>
             {item.label}
           </ToggleGroupItem>

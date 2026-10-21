@@ -82,29 +82,28 @@ export function MonthSummary({
 
   return (
     <>
-      <Card asChild className={className}>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="w-full text-left transition-transform duration-150 active:scale-[0.98] motion-reduce:active:scale-100"
-        >
-          <CardContent>
-            {figures}
-            <div className="mt-4 border-t border-separator pt-3.5" />
-            <div className="flex items-center gap-3">
-              <span className="flex min-w-0 flex-1 flex-col gap-1.5">
-                <span className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="min-w-0 text-balance">Đã dùng {formatBudgetPercent(spent, limit)} hạn mức tổng</span>
-                  <span className={cn("shrink-0 text-xs text-muted-foreground tabular-nums", over && "font-semibold text-expense")}>
-                    {over ? "vượt" : "còn"} {formatCompactCurrency(Math.abs(limit - spent), 1)}
-                  </span>
+      {/* Only the limit line opens the limits (2026-10-21): a thumb on Thu or Chi read as asking for those. */}
+      <Card className={className}>
+        <CardContent>
+          {figures}
+          <div className="mt-4 border-t border-separator pt-1.5" />
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="pressable -mx-2 -mb-2 flex w-[calc(100%+1rem)] items-center gap-3 rounded-2xl px-2 py-2 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/30 active:bg-muted [@media(hover:hover)]:hover:bg-muted"
+          >
+            <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <span className="flex items-baseline justify-between gap-3 text-sm">
+                <span className="min-w-0 text-balance">Đã dùng {formatBudgetPercent(spent, limit)} hạn mức tổng</span>
+                <span className={cn("shrink-0 text-xs text-muted-foreground tabular-nums", over && "font-semibold text-expense")}>
+                  {over ? "vượt" : "còn"} {formatCompactCurrency(Math.abs(limit - spent), 1)}
                 </span>
-                <LimitBar value={spent} max={limit} tone={limitTone(spent, limit, monthShare(overview), nearLevel(overview.alerts))} label="Hạn mức tháng đã dùng" />
               </span>
-              <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-            </div>
-          </CardContent>
-        </button>
+              <LimitBar value={spent} max={limit} tone={limitTone(spent, limit, monthShare(overview), nearLevel(overview.alerts))} label="Hạn mức tháng đã dùng" />
+            </span>
+            <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </button>
+        </CardContent>
       </Card>
       <BudgetsSheet overview={overview} open={open} onOpenChange={setOpen} />
     </>
@@ -135,8 +134,8 @@ export function MonthSummarySkeleton({ className }: { className?: string }) {
             </div>
           ))}
         </div>
-        <div className="mt-4 border-t border-separator pt-3.5" />
-        <div className="flex items-center gap-3">
+        <div className="mt-4 border-t border-separator pt-1.5" />
+        <div className="-mb-2 flex items-center gap-3 py-2">
           <span className="flex min-w-0 flex-1 flex-col gap-1.5">
             <span className="flex h-5 items-center justify-between gap-3">
               <Skeleton className="h-3.5 w-44" />

@@ -35,6 +35,7 @@ import Link from "next/link"
 import { toast } from "sonner"
 
 import { ContactAvatar } from "@/app/(main)/debts/_components/contact-avatar"
+import { ShelfLink } from "@/components/app/shelf-link"
 import { CardLabel } from "@/components/app/card-label"
 import { Carousel } from "@/components/app/carousel"
 import { ChoiceTiles } from "@/components/app/choice-tiles"
@@ -447,6 +448,10 @@ function ListSection() {
           <SettingsRow key={name} title={name} description={kind} value={<Money amount={amount} size="sm" />} />
         ))}
       </SettingsGroup>
+      {/* What is put away opens in a sheet (2026-10-21): the accounts' Lưu trữ, the settled debts. */}
+      <ShelfLink align="center" icon={CircleCheckIcon} onClick={() => toast("Mở sheet Đã tất toán")}>
+        2 khoản đã tất toán
+      </ShelfLink>
       <SettingsGroup title="Mô tả một dòng, hoặc đầy đủ (fullDescription)" size="lg">
         <SettingsRow
           icon={WalletCardsIcon}

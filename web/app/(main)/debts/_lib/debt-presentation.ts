@@ -28,7 +28,7 @@ export function getDebtDeadline(debt: Debt) {
     }
   }
 
-  // Red as an overdue one, but not past due yet: counted apart from those.
+  // Flagged with the overdue ones, but not past due yet: counted apart, amber rather than red (2026-10-21).
   if (daysUntilDue === 0) {
     return { label: "Đến hạn hôm nay", isOverdue: true, isPastDue: false }
   }

@@ -56,7 +56,10 @@ export function Collapse({
       style={{ clipPath: moving || !open ? edge : "none" }}
     >
       {/* Across, the content keeps its own width while the box narrows to nothing. */}
-      <div data-state={open ? "open" : "closed"} className={cn(axis === "x" && "w-max", contentClassName)}>
+      {/* flow-root keeps the content's own margins inside (2026-10-21): while the height is set
+          they stay in, once it is auto again they collapsed through it, so the fold ended with a
+          jump of that margin (the header's 16 below it as the search screen closed). */}
+      <div data-state={open ? "open" : "closed"} className={cn("flow-root", axis === "x" && "w-max", contentClassName)}>
         {children}
       </div>
     </motion.div>

@@ -9,12 +9,12 @@ import { TransactionsLayout } from "./_components/transactions-layout"
 import { MonthSummarySkeleton } from "./_components/month-summary"
 
 /**
- * The desktop filter panel's fields, in order: the kind's five chips, the
+ * The desktop filter panel's fields, in order: the kind's four chips, the
  * amount range's two fields, then the accounts' and the categories' chips,
  * as wide as their usual names.
  */
 const filterFieldChips = [
-  ["w-16", "w-20", "w-20", "w-28", "w-16"],
+  ["w-16", "w-20", "w-20", "w-28"],
   null,
   ["w-28", "w-20", "w-24"],
   ["w-20", "w-20", "w-16", "w-20"],
@@ -68,14 +68,15 @@ export default function TransactionsLoading() {
           summary={<MonthSummarySkeleton />}
           filters={<FilterPanelSkeleton />}
         >
-          {/* The round search field, and on phones the chip row: the filter
-              chip, its divider, then the kinds, as wide as their names. */}
+          {/* The round search field from lg up; on phones the chip row: the
+              search chip, the filter chip, its divider, then the kinds, as wide as their names. */}
           <div className="flex flex-col gap-3">
-            <Skeleton className="h-11 rounded-full" />
+            <Skeleton className="h-11 rounded-full max-lg:hidden" />
             <div className="-mx-(--main-content-px) flex items-center gap-2 overflow-hidden px-(--main-content-px) lg:hidden">
+              <Skeleton className="size-9 shrink-0 rounded-full" />
               <Skeleton className="h-9 w-[4.5rem] shrink-0 rounded-full" />
               <span className="h-5 w-px shrink-0 bg-foreground/15" />
-              {["w-[4.5rem]", "w-[5.25rem]", "w-[4.5rem]", "w-[7.5rem]", "w-[4.5rem]"].map((width, index) => (
+              {["w-[4.5rem]", "w-[5.25rem]", "w-[4.5rem]", "w-[7.5rem]"].map((width, index) => (
                 <Skeleton key={index} className={cn("h-9 shrink-0 rounded-full", width)} />
               ))}
             </div>

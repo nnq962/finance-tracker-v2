@@ -34,6 +34,7 @@ export function TransactionSearchBar({
   cancelable = false,
   onFocus,
   autoFocus,
+  openRef,
 }: {
   id: string
   query: string
@@ -44,6 +45,8 @@ export function TransactionSearchBar({
   /** The field taking focus, which opens the search screen on phones. */
   onFocus?: () => void
   autoFocus?: boolean
+  /** Opens the search screen from elsewhere (the phone's search chip), taking the keyboard as a tap on the field does. */
+  openRef?: React.Ref<{ open: () => void }>
 }) {
   const inputRef = React.useRef<HTMLInputElement>(null)
   const proxyRef = React.useRef<HTMLInputElement>(null)
@@ -72,8 +75,12 @@ export function TransactionSearchBar({
     if (!event.cancelable || !start || !touch) return
     if (Math.hypot(touch.clientX - start.x, touch.clientY - start.y) > 10) return
     event.preventDefault()
+    openWithKeyboard()
+  }
+  // The keyboard taken into the hidden field at once (inside the tap, as iOS needs), the real one focused once it has slid up.
+  const openWithKeyboard = () => {
     proxyRef.current?.focus({ preventScroll: true })
-    onFocus()
+    onFocus?.()
     window.clearTimeout(pendingFocus.current)
     pendingFocus.current = window.setTimeout(() => {
       // Anything typed in the meantime goes along.
@@ -85,6 +92,7 @@ export function TransactionSearchBar({
       inputRef.current?.focus({ preventScroll: true })
     }, 350)
   }
+  React.useImperativeHandle(openRef, () => ({ open: openWithKeyboard }))
 
   return (
     <form

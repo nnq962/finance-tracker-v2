@@ -32,6 +32,18 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.38.0",
+    date: "2026-10-21",
+    title: "Giao dịch gọn và dễ dùng hơn trên điện thoại",
+    changes: [
+      { kind: "improved", text: "Chi tiêu: ô tìm kiếm thành nút 🔍 đầu hàng chip, danh sách hiện sớm hơn; bỏ chip Vay nợ trùng tên với mục Vay nợ; nút + trượt đi khi cuộn xuống để không che số tiền." },
+      { kind: "improved", text: "Khoản thu nợ không còn tô xanh vì không tính vào tổng; ở thẻ Thu/Chi chỉ dòng hạn mức mới mở Hạn mức." },
+      { kind: "improved", text: "Vay nợ: danh sách phẳng như Chi tiêu, số tiền có dấu (+ cần thu, − cần trả), đến hạn hôm nay màu cam; khoản đã tất toán mở bằng một dòng riêng, cả trong sheet người liên hệ; bỏ banner quá hạn; thẻ đầu gọn hơn, Ròng đổi thành Chênh lệch." },
+      { kind: "improved", text: "Chi tiêu | Vay nợ dễ chạm hơn và trượt đúng nhịp; không tràn ngang trên màn hẹp." },
+      { kind: "fixed", text: "Đóng màn tìm kiếm (Huỷ) và các khối thu gọn không còn khựng ở cuối; nút gạt ở theme tối dễ thấy hơn; chữ trong danh sách thẳng lề." },
+    ],
+  },
+  {
     version: "6.37.1",
     date: "2026-10-21",
     title: "Bớt chữ ở Hũ tiết kiệm",
