@@ -8,6 +8,7 @@ import type { Contact, Debt } from "@/lib/debts/types"
 import { formatCurrency } from "@/lib/format-currency"
 import { formatDayLabel, formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
 import type { CategoryIconName } from "@/lib/icons/category-icon-registry"
+import { debtsUrl } from "@/lib/debts/debts-url"
 import {
   BALANCE_ADJUSTMENT_GROUP,
   BALANCE_ADJUSTMENT_NAME,
@@ -813,7 +814,7 @@ async function answerDebts(plan: QuestionPlan, sources: AnswerSources): Promise<
       line: lent ? "Không ai đang nợ bạn." : "Bạn không nợ ai.",
       blocks: [],
       followUps: [lent ? "Mình đang nợ ai?" : "Ai đang nợ tôi?"],
-      link: { label: "Mở trong Vay nợ", href: "/debts" },
+      link: { label: "Mở trong Vay nợ", href: debtsUrl() },
     }
   }
   const only = rows.length === 1 && plan.contactIds.length === 1 ? rows[0].contact?.name : undefined
@@ -844,7 +845,7 @@ async function answerDebts(plan: QuestionPlan, sources: AnswerSources): Promise<
       },
     ],
     followUps: [lent ? "Mình đang nợ ai?" : "Ai đang nợ tôi?"],
-    link: { label: "Mở trong Vay nợ", href: "/debts" },
+    link: { label: "Mở trong Vay nợ", href: debtsUrl() },
   }
 }
 
@@ -1006,7 +1007,7 @@ async function answerDebtsBoth(sources: AnswerSources): Promise<Answer> {
       },
     ],
     followUps: ["Ai đang nợ tôi?", "Mình đang nợ ai?", "Khoản nào sắp đến hạn?"],
-    link: { label: "Mở trong Vay nợ", href: "/debts" },
+    link: { label: "Mở trong Vay nợ", href: debtsUrl() },
   }
 }
 
@@ -1050,7 +1051,7 @@ async function answerDebtsDue(sources: AnswerSources): Promise<Answer> {
         ]
       : [],
     followUps: ["Tổng cần thu và cần trả"],
-    link: { label: "Mở trong Vay nợ", href: "/debts" },
+    link: { label: "Mở trong Vay nợ", href: debtsUrl() },
   }
 }
 
@@ -1096,7 +1097,7 @@ async function answerSettledDebts(plan: QuestionPlan, sources: AnswerSources): P
         ]
       : [],
     followUps: [both || lent ? "Ai đang nợ tôi?" : "Mình đang nợ ai?"],
-    link: { label: "Mở trong Vay nợ", href: "/debts" },
+    link: { label: "Mở trong Vay nợ", href: debtsUrl() },
   }
 }
 
@@ -1135,7 +1136,7 @@ async function answerRepayments(plan: QuestionPlan, sources: AnswerSources): Pro
         ]
       : [],
     followUps: [collected ? "Ai còn nợ tôi?" : "Mình còn nợ ai?"],
-    link: { label: "Mở trong Vay nợ", href: "/debts" },
+    link: { label: "Mở trong Vay nợ", href: debtsUrl() },
   }
 }
 
@@ -1176,7 +1177,7 @@ async function answerNewDebts(plan: QuestionPlan, sources: AnswerSources): Promi
         ]
       : [],
     followUps: [lent ? "Ai đang nợ tôi?" : "Mình đang nợ ai?"],
-    link: { label: "Mở trong Vay nợ", href: "/debts" },
+    link: { label: "Mở trong Vay nợ", href: debtsUrl() },
   }
 }
 
@@ -1240,6 +1241,6 @@ async function answerDebtDetail(plan: QuestionPlan, sources: AnswerSources): Pro
         : []),
     ],
     followUps: [lent ? "Ai đang nợ tôi?" : "Mình đang nợ ai?"],
-    link: { label: "Mở trong Vay nợ", href: "/debts" },
+    link: { label: "Mở trong Vay nợ", href: debtsUrl() },
   }
 }

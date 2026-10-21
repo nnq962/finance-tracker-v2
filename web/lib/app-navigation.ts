@@ -1,8 +1,7 @@
 import type { Icon as PhosphorIcon } from "@phosphor-icons/react"
-import { ArrowsLeftRight, Handshake, SquaresFour, Wallet } from "@phosphor-icons/react/dist/ssr"
+import { ArrowsLeftRight, SquaresFour, Wallet } from "@phosphor-icons/react/dist/ssr"
 import {
   ArrowLeftRightIcon,
-  HandshakeIcon,
   LayoutDashboardIcon,
   WalletCardsIcon,
   type LucideIcon,
@@ -40,15 +39,8 @@ export const appNavigationItems: AppNavigationItem[] = [
     icon: ArrowLeftRightIcon,
     tabIcon: ArrowsLeftRight,
   },
-  {
-    title: "Vay nợ",
-    mobileTitle: "Vay nợ",
-    url: "/debts",
-    // A deal between two people: read at a glance on the icon-only tab bar.
-    icon: HandshakeIcon,
-    tabIcon: Handshake,
-  },
 ]
+// Vay nợ left the menus on 2026-10-21: it is a view of Giao dịch (Giao dịch | Vay nợ), so the tab bar holds three pages and Timi.
 
 /**
  * Pages opened from Settings rather than from the menus, such as the design

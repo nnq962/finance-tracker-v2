@@ -21,7 +21,7 @@ function Page({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 type PageHeaderProps = {
-  /** The page's name: the bar's title, or for screen readers only when `lead` takes its place. */
+  /** The page's name: the bar's title, or for screen readers only when `lead` takes its place (or the header is `bare`). */
   title: React.ReactNode
   /** Takes the title's place on the left, e.g. the home's avatar and greeting. */
   lead?: React.ReactNode
@@ -52,17 +52,26 @@ type PageHeaderProps = {
  */
 function PageHeader({ title, lead, tools, accessory, actions, bare = false }: PageHeaderProps) {
   if (bare) {
+    const phoneTools = tools || accessory ? (
+      <div className="flex shrink-0 items-center gap-2 md:hidden">
+        {tools}
+        {accessory}
+      </div>
+    ) : null
     return (
       // contents: no box of its own, so the page's gap does not open above the content when nothing shows.
       <header data-slot="page-header" className="contents">
         <h1 className="sr-only">{title}</h1>
         {/* From md the content starts 16 under the top bar, which holds the tools. */}
         <div aria-hidden="true" className="hidden h-4 md:block" />
-        {tools || accessory ? (
-          <div className={cn(pageHeaderClassName, "justify-end gap-2 md:hidden")}>
-            {tools}
-            {accessory}
+        {lead ? (
+          // A lead (Giao dịch | Vay nợ) on the left on every size, the tools beside it on phones only.
+          <div className="mb-4 flex min-h-11 min-w-0 items-center justify-between gap-2">
+            {lead}
+            {phoneTools}
           </div>
+        ) : phoneTools ? (
+          <div className={cn(pageHeaderClassName, "justify-end gap-2 md:hidden")}>{phoneTools}</div>
         ) : null}
         {tools || actions || accessory ? (
           <PageTopBarTools>
@@ -112,7 +121,7 @@ function PageHeaderSkeleton({
   bare = false,
 }: {
   title?: string
-  /** As PageHeader's `bare`: on phones only the tools, on the right; nothing from md up (the top bar holds them). */
+  /** As PageHeader's `bare`: on phones only the tools, on the right; nothing from md up (the top bar holds them). With `lead`, the segmented switch on the left. */
   bare?: boolean
   /** The home's avatar and greeting in the title's place. */
   lead?: boolean
@@ -128,7 +137,16 @@ function PageHeaderSkeleton({
     return (
       <div aria-hidden="true" className="contents">
         <div className="hidden h-4 md:block" />
-        {tools.length + accessory > 0 ? (
+        {lead ? (
+          <div className="mb-4 flex min-h-11 items-center justify-between gap-2">
+            <Skeleton className="h-11 w-52 rounded-full" />
+            <div className="flex gap-2 md:hidden">
+              {tools.map((tool, index) => (
+                <Skeleton key={`tool-${index}`} className={cn("h-11 rounded-full", tool === "pill" ? "w-32" : "w-11")} />
+              ))}
+            </div>
+          </div>
+        ) : tools.length + accessory > 0 ? (
           <div className={cn(pageHeaderClassName, "justify-end gap-2 md:hidden")}>
             {tools.map((tool, index) => (
               <Skeleton key={`tool-${index}`} className={cn("h-11 rounded-full", tool === "pill" ? "w-32" : "w-11")} />

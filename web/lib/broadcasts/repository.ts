@@ -7,6 +7,7 @@ import { getDb } from "@/lib/db/client"
 import { getFirebaseAdminMessaging } from "@/lib/firebase/admin"
 import { PUSH_ICONS } from "@/lib/notifications/types"
 import { isAdmin } from "@/lib/plans/admin"
+import { debtsUrl } from "@/lib/debts/debts-url"
 
 import {
   BROADCAST_BODY_MAX,
@@ -35,7 +36,7 @@ const pushUrls: Record<BroadcastOpens, string> = {
   overview: "/overview",
   transactions: "/transactions",
   budget: "/budget",
-  debts: "/debts",
+  debts: debtsUrl(),
   budgets: "/overview?screen=budgets",
   plans: "/overview?screen=plan",
   release: "/settings?screen=releases",

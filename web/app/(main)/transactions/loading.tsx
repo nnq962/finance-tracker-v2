@@ -63,7 +63,7 @@ export default function TransactionsLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <PageHeaderSkeleton bare tools={["pill"]} />
+        <PageHeaderSkeleton bare lead tools={["pill"]} />
         <TransactionsLayout
           summary={<MonthSummarySkeleton />}
           filters={<FilterPanelSkeleton />}

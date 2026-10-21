@@ -70,7 +70,7 @@ rebuild (`deploy/scripts/deploy.sh`). Keep the Firebase-provided
 
 ## Debt tracking
 
-`/debts` reads the authenticated user's data from PostgreSQL. It does not seed
+The debts live in the Vay nợ view of the Transactions page (`/transactions?view=debts`, since 2026-10-21; `/debts` redirects there). It reads the authenticated user's data from PostgreSQL. It does not seed
 the sample contacts or debts.
 
 - `contacts`: contact details and fixed avatar initials.
@@ -98,7 +98,7 @@ account balances are rejected. Existing archived accounts can be used to correct
 old payments, but cannot be selected for new payments or loans.
 
 Initial loan transactions appear as incoming/outgoing cash movements on the
-Transactions page, with the `Vay & nợ` group and a link back to `/debts`. They cannot
+Transactions page, with the `Vay & nợ` group and a link to the Vay nợ view. They cannot
 be edited/deleted through the generic transaction actions. Current transaction
 summaries include initial loan cash movements, but exclude repayments/collections; they are not profit/loss accounting.
 

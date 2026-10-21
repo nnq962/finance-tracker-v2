@@ -21,9 +21,10 @@ import { appNavigationItems, menuUrlFor } from "@/lib/app-navigation"
 import { smoothCapsule } from "@/lib/smooth-capsule"
 
 /**
- * The four pages on the bar (2026-10-20, option D of the nav mockup): Settings
- * left it for the avatar at the top of Tổng quan, and Timi took the fifth
- * slot. On /settings no tab is lit, as under a pushed screen.
+ * The pages on the bar (2026-10-20, option D of the nav mockup): Settings
+ * left it for the avatar at the top of Tổng quan, and Timi took the last
+ * slot; three pages since 2026-10-21, Vay nợ being a view of Giao dịch. On
+ * /settings no tab is lit, as under a pushed screen.
  */
 const mobileNavigationItems = appNavigationItems
 /** The slots on the bar: the pages, then Timi. */
@@ -32,7 +33,7 @@ const slotCount = mobileNavigationItems.length + 1
 const PILL_HEIGHT = 54
 const PILL_EXTRA = 4
 /** Phosphor's wallet and handshake read smaller than the others at 26 in the 28 box. */
-const GLYPH_SIZE: Record<string, number> = { "/budget": 28, "/debts": 28 }
+const GLYPH_SIZE: Record<string, number> = { "/budget": 28 }
 /** A tab: the 28 icon box over its name (10/700, −0.1 tracking), 1 apart, centred in the bar as the kit's button (padding 6 and 7). */
 const tabClassName =
   "flex h-full min-w-0 touch-manipulation flex-col items-center justify-center gap-px rounded-full outline-none select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] focus-visible:ring-3 focus-visible:ring-ring/50"
@@ -324,7 +325,7 @@ export function MobileBottomNav() {
       {/* iOS 26's tab bar (2026-10-11): a white capsule with continuous ends,
           raised by a wide soft shadow, the current tab on a grey pill nearly
           as tall, icons in ink over their names (named since 2026-10-20, with
-          four pages and Timi as the fifth slot the capsule spans the width).
+          the pages and Timi in the last slot the capsule spans the width).
           The capsule, its edge and the pill are layers of their own behind
           the icons: with the blur on the list itself, Safari redrew the icons
           as the pill slid and they shook. */}

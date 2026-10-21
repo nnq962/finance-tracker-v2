@@ -116,6 +116,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { appNavigationItems } from "@/lib/app-navigation"
 import { cn } from "@/lib/utils"
+import { debtsUrl } from "@/lib/debts/debts-url"
 
 import { Block, BlockLabel, CatalogSection, Wide } from "./catalog-kit"
 import { PageSheetPlayground } from "./sheet-playground"
@@ -395,7 +396,7 @@ function ListSection() {
           action={<Money amount={500_000} sign="never" size="sm" tone="transfer" />}
         />
       </SettingsGroup>
-      <Section title="Sắp đến hạn" href="/debts">
+      <Section title="Sắp đến hạn" href={debtsUrl()}>
         <SettingsGroup size="lg">
           {dueSamples.map(([name, direction, amount, due]) => (
             <SettingsRow

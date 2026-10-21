@@ -13,6 +13,7 @@ import { MISSION_REWARD, missionKeys, missionTitles } from "@/lib/onboarding/mis
 import { getMissionState } from "@/lib/onboarding/repository"
 import { getPlanState } from "@/lib/plans/repository"
 import { releaseLevel, releases } from "@/lib/releases"
+import { debtsUrl } from "@/lib/debts/debts-url"
 
 import type { Notice } from "./types"
 
@@ -102,7 +103,7 @@ export async function getNotices(userId: string): Promise<Notice[]> {
         overdue ? `quá hạn ${-left} ngày` : left === 0 ? "đến hạn hôm nay" : `còn ${left} ngày`
       }`,
       at: overdue ? at(debt.dueAt, "08:00") : at(shiftDay(debt.dueAt, -Math.min(DEBT_DAYS, Math.max(0, daysBetween(debt.recordedAt, debt.dueAt)))), "08:00"),
-      opens: { href: `/debts?debt=${encodeURIComponent(debt.id)}` },
+      opens: { href: debtsUrl(debt.id) },
     })
   }
 

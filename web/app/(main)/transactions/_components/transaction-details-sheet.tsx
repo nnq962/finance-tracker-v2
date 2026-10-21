@@ -16,6 +16,7 @@ import type { Account } from "@/lib/accounts/types"
 import type { CategoryColorName } from "@/lib/categories/category-colors"
 import type { CategoryItem } from "@/lib/categories/types"
 import { formatLongDate, formatShortDate, formatTime, toDateKey } from "@/lib/format-date"
+import { debtsUrl } from "@/lib/debts/debts-url"
 
 import { setTransactionExcludedAction } from "../actions"
 import type { Transaction } from "../_types/transaction"
@@ -252,11 +253,11 @@ export function TransactionDetailsSheet({
       ) : null}
 
       {isDebt ? (
-        // A loan is changed on the debts page.
+        // A loan is changed in Vay nợ.
         <SettingsGroup>
           <SettingsRow
             title="Mở trong Vay nợ"
-            onClick={() => router.push(`/debts?debt=${encodeURIComponent(transaction.debtId ?? "")}`)}
+            onClick={() => router.push(debtsUrl(transaction.debtId ?? undefined))}
           />
         </SettingsGroup>
       ) : (

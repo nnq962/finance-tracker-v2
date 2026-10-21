@@ -37,7 +37,6 @@ function failure(error: unknown): AccountActionResult {
 function revalidateAccountPaths() {
   revalidatePath("/budget")
   revalidatePath("/transactions")
-  revalidatePath("/debts")
   revalidatePath("/overview")
 }
 

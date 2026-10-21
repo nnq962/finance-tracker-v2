@@ -61,6 +61,8 @@ type TransactionsScreenProps = {
   purchaseDraft?: PurchaseDraft
   /** This month's spending limits. */
   budgets: BudgetOverview
+  /** Giao dịch | Vay nợ, in the bar where the page's name was. */
+  viewSwitch?: React.ReactNode
 }
 
 /** "Tháng 9", with the year when it is not this one's: "Tháng 1/2025". */
@@ -105,6 +107,7 @@ export function TransactionsScreen({
   initialAddOpen = false,
   purchaseDraft,
   budgets,
+  viewSwitch,
 }: TransactionsScreenProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -282,6 +285,7 @@ export function TransactionsScreen({
         <PageHeader
           title="Giao dịch"
           bare
+          lead={viewSwitch}
           tools={<MonthSelect size="bar" value={shownMonth} max={thisMonth} onValueChange={changeMonth} />}
           actions={headerActions}
         />

@@ -30,6 +30,8 @@ type DebtsDashboardProps = {
   accounts: Account[]
   initialContacts: Contact[]
   initialDebts: Debt[]
+  /** Giao dịch | Vay nợ, in the bar where the page's name was (the debts are a view of Giao dịch since 2026-10-21). */
+  viewSwitch?: React.ReactNode
 }
 
 export function DebtsDashboard({
@@ -37,6 +39,7 @@ export function DebtsDashboard({
   initialContacts,
   initialDebts,
   requestedDebtId,
+  viewSwitch,
 }: DebtsDashboardProps) {
   const contacts = initialContacts
   const debts = initialDebts
@@ -122,6 +125,7 @@ export function DebtsDashboard({
       <PageHeader
         title="Vay nợ"
         bare
+        lead={viewSwitch}
         actions={
           <>
             <Button type="button" variant="elevated" onClick={() => setContactsOpen(true)}>

@@ -36,7 +36,7 @@ import { DebtListItem } from "./debt-list-item"
 type DebtsViewProps = {
   /** A debt to show, asked from outside the list (the contacts); a new `key` asks again for the same one. */
   openRequest?: { debtId: string; key: number }
-  /** The debt a link to the page names (`/debts?debt=…`, from a transaction, the overview or a notice): its sheet opens. */
+  /** The debt a link to the page names (`/transactions?view=debts&debt=…`, from a transaction, the overview or a notice): its sheet opens. */
   requestedDebtId?: string
   onChangeDebt: (id: string, values: NewDebt | null) => Promise<void>
   accounts: Account[]

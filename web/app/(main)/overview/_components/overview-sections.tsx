@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
 import type { OverviewSummary } from "@/lib/overview/summary"
 import { cn } from "@/lib/utils"
+import { debtsUrl } from "@/lib/debts/debts-url"
 
 import { ContactAvatar } from "../../debts/_components/contact-avatar"
 
@@ -72,8 +73,8 @@ export function NetWorth({
           {(
             [
               ["Tài khoản", data.cash, "/budget"],
-              ["Cho vay", data.receivable, "/debts"],
-              ["Đang nợ", data.payable, "/debts"],
+              ["Cho vay", data.receivable, debtsUrl()],
+              ["Đang nợ", data.payable, debtsUrl()],
             ] as const
           ).map(([label, value, href]) => (
             <Stat
@@ -103,7 +104,7 @@ export function DueDebts({ debts }: { debts: OverviewSummary["dueDebts"] }) {
   if (debts.length === 0) return null
 
   return (
-    <Section title="Sắp đến hạn" href="/debts">
+    <Section title="Sắp đến hạn" href={debtsUrl()}>
       <SettingsGroup size="lg">
         {debts.map((debt) => (
           <SettingsRow
@@ -124,7 +125,7 @@ export function DueDebts({ debts }: { debts: OverviewSummary["dueDebts"] }) {
                 </span>
               </span>
             }
-            onClick={() => router.push(`/debts?debt=${encodeURIComponent(debt.id)}`)}
+            onClick={() => router.push(debtsUrl(debt.id))}
           />
         ))}
       </SettingsGroup>

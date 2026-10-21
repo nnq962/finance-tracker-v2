@@ -32,6 +32,16 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.36.0",
+    date: "2026-10-21",
+    title: "Vay nợ gộp vào Giao dịch",
+    changes: [
+      { kind: "improved", text: "Vay nợ giờ là một mục của Giao dịch: chuyển bằng Giao dịch | Vay nợ ở đầu trang, hiện ngay không phải tải lại." },
+      { kind: "improved", text: "Thanh tab còn Tổng quan, Tài khoản, Giao dịch và Timi, mỗi ô rộng và dễ bấm hơn; thanh bên trên máy tính cũng bỏ mục Vay nợ." },
+      { kind: "improved", text: "Thông báo nhắc hạn, Sắp đến hạn ở Tổng quan và giao dịch vay nợ mở thẳng khoản nợ trong mục Vay nợ; đường dẫn cũ vẫn dùng được." },
+    ],
+  },
+  {
     version: "6.35.1",
     date: "2026-10-21",
     title: "Nút không còn xê dịch khi nhấn",

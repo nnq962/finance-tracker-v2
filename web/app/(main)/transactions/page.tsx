@@ -1,6 +1,4 @@
-import { Page } from "@/components/page"
-
-import { TransactionsScreen } from "./_components/transactions-screen"
+import { TransactionsPageViews } from "./_components/transactions-page-views"
 import { loadTransactions, type TransactionsSearchParams } from "./_lib/load-transactions"
 
 export default async function TransactionsPage({
@@ -8,11 +6,13 @@ export default async function TransactionsPage({
 }: {
   searchParams: Promise<TransactionsSearchParams>
 }) {
-  const data = await loadTransactions(await searchParams)
+  const { view, contacts, debts, requestedDebtId, ...transactions } = await loadTransactions(await searchParams)
 
   return (
-    <Page>
-      <TransactionsScreen {...data} />
-    </Page>
+    <TransactionsPageViews
+      view={view}
+      transactions={transactions}
+      debts={{ accounts: transactions.accounts, initialContacts: contacts, initialDebts: debts, requestedDebtId }}
+    />
   )
 }
