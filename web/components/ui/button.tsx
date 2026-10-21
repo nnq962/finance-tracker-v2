@@ -23,8 +23,11 @@ const buttonVariants = cva(
         // ghost and link, three variants alike.
         outline:
           "bg-card shadow-[inset_0_0_0_1px_var(--separator)] dark:shadow-[inset_0_0_0_1px_oklch(1_0_0/0.14)] hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
+        // Light: as outline, white with a hairline inside its edge (2026-10-21;
+        // the light grey fill all but vanished on the white page, cards and
+        // sheets). Dark: the field grey, which stands off black.
         secondary:
-          "bg-field text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--field),var(--foreground)_5%)] aria-expanded:bg-field aria-expanded:text-secondary-foreground",
+          "bg-card text-secondary-foreground shadow-[inset_0_0_0_1px_var(--separator)] hover:bg-muted aria-expanded:bg-muted aria-expanded:text-secondary-foreground dark:bg-field dark:shadow-none dark:hover:bg-[color-mix(in_oklch,var(--field),var(--foreground)_5%)] dark:aria-expanded:bg-field",
         ghost:
           "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
         // Solid red, white text (2026-10-16): the pale red tint of before read

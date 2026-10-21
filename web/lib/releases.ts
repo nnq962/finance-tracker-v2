@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.32.6",
+    date: "2026-10-21",
+    title: "Nút phụ dễ thấy hơn",
+    changes: [
+      { kind: "improved", text: "Theme sáng: nút phụ (đổi tháng, chuông, nút sáng tối, chọn tháng…) nền trắng có viền mảnh thay cho nền xám nhạt khó thấy." },
+      { kind: "improved", text: "Nút tròn nổi trên sheet và nút quay lại có cùng bóng mềm với thẻ." },
+    ],
+  },
+  {
     version: "6.32.5",
     date: "2026-10-21",
     title: "Thu gọn và mở rộng mượt lại",

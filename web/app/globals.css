@@ -233,8 +233,8 @@
    * No hairline ring, which read as a border.
    */
   --card-shadow: 0 8px 40px rgb(0 0 0 / 0.12);
-  /* Round buttons floating over content (a sheet's ✕ and ✎, the pushed screen's back): one token, was three copies (2026-10-21). */
-  --float-shadow: 0 4px 16px rgb(0 0 0 / 0.1);
+  /* Round buttons floating over content (a sheet's ✕ and ✎, the pushed screen's back): the cards' own shadow (2026-10-21, the user's ask; was 0 4px 16px 10%). */
+  --float-shadow: var(--card-shadow);
   /*
    * A toast lifted clear of the page (2026-10-17): a hairline edge and a
    * shadow that falls below it only, never up to the status bar (Safari 26
@@ -268,7 +268,7 @@
 .dark {
   /* Apple's same menu shadow in the dark (Figma kit): lost on the black page, where the card's lighter grey lifts it; no edge highlight. */
   --card-shadow: 0 8px 40px rgb(0 0 0 / 0.12);
-  --float-shadow: 0 4px 16px rgb(0 0 0 / 0.4);
+  --float-shadow: var(--card-shadow);
   /* On the black page the raised grey toast takes a lighter edge and a deeper shadow. */
   --toast-shadow: 0 0 0 0.5px oklch(1 0 0 / 0.12), 0 12px 28px -10px rgb(0 0 0 / 0.7);
   /* iOS dark grouped (2026-10-16): a black page (#000), cards #1c1c1e, raised fills #2c2c2e, lines #38383a. */
