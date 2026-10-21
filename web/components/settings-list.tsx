@@ -187,13 +187,9 @@ function SettingsGroup({
             </CollapsibleTrigger>,
           )}
           {/* The space under the caption slides with the card, inside the
-              content: closed, the hidden rows leave no margin. The fold's
-              clip reaches past the cards by their shadow's reach (32 above,
-              48 below, to the page's margin at the sides, 16 on phones and 24 from md; 2026-10-21), its
-              margins cancelling the room so nothing moves; that room lets
-              taps through to the caption it overlaps. */}
-          <CollapsibleContent className="pointer-events-none -mx-4 -mt-8 -mb-12 px-4 pt-8 pb-12 md:-mx-6 md:px-6">
-            <div className="pointer-events-auto flex flex-col gap-2 pt-2">{body}</div>
+              content: closed, the hidden rows leave no margin. */}
+          <CollapsibleContent>
+            <div className="flex flex-col gap-2 pt-2">{body}</div>
           </CollapsibleContent>
         </section>
       </Collapsible>
