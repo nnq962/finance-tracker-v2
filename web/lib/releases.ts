@@ -32,6 +32,12 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.35.1",
+    date: "2026-10-21",
+    title: "Nút không còn xê dịch khi nhấn",
+    changes: [{ kind: "fixed", text: "Nhấn nút, chip, sao đánh giá hay nút cộng trừ: chữ và icon thu nhỏ cùng nút, không còn nhảy nhẹ lúc bắt đầu và lúc thả tay." }],
+  },
+  {
     version: "6.35.0",
     date: "2026-10-21",
     title: "Đầu trang gọn hơn",

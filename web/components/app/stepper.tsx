@@ -27,7 +27,7 @@ export function Stepper({
   className?: string
 }) {
   const button =
-    "relative grid size-9 shrink-0 place-items-center rounded-full bg-card shadow-xs transition-[scale,opacity] duration-150 outline-none after:absolute after:-inset-1 focus-visible:ring-2 focus-visible:ring-primary motion-safe:active:scale-[0.96] disabled:opacity-30 disabled:active:scale-100 dark:bg-accent [&_svg]:size-4"
+    "relative grid size-9 shrink-0 place-items-center rounded-full bg-card shadow-xs transition-[scale,opacity] duration-150 outline-none after:absolute after:-inset-1 focus-visible:ring-2 focus-visible:ring-primary motion-safe:will-change-transform motion-safe:active:scale-[0.96] disabled:opacity-30 disabled:active:scale-100 dark:bg-accent [&_svg]:size-4"
 
   return (
     <div

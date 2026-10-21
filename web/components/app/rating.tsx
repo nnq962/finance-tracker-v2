@@ -30,7 +30,7 @@ export function Rating({
             aria-checked={star === value}
             aria-label={`${star} sao`}
             onClick={() => onValueChange(star)}
-            className="grid size-11 place-items-center rounded-full outline-none transition-[scale] duration-150 focus-visible:ring-2 focus-visible:ring-primary motion-safe:active:scale-[0.96]"
+            className="grid size-11 place-items-center rounded-full outline-none transition-[scale] duration-150 focus-visible:ring-2 focus-visible:ring-primary motion-safe:will-change-transform motion-safe:active:scale-[0.96]"
           >
             <StarIcon
               strokeWidth={1.5}

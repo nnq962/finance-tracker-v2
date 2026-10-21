@@ -476,6 +476,10 @@
   transition-property: scale;
   transition-duration: 150ms;
   transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  /* Its own layer all along, so the content is not redrawn (and nudged) as the press starts and ends, as Button. */
+  @media (prefers-reduced-motion: no-preference) {
+    will-change: transform;
+  }
   &:active:not(:disabled) {
     scale: 0.96;
   }
