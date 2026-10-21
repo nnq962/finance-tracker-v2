@@ -107,7 +107,7 @@ export function AccountSheet({
           </SettingsGroup>
         ) : null}
 
-        <SettingsGroup title="Giao dịch gần đây">
+        <SettingsGroup flat title="Giao dịch gần đây">
           {transactions.length > 0 ? (
             // What the transactions' sheets compare with and learn quick picks from.
             <TransactionHistoryProvider transactions={transactions}>

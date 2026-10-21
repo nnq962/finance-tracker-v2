@@ -147,7 +147,7 @@ component ở đó là cả app đổi theo.
   `Avatar size="md"` (36) và `ContactAvatar` dựng trên `Avatar` (md trong dòng, xl ở đầu màn một người); mọi rãnh tiến độ (Progress,
   LimitBar, ProgressRing, Slider, Steps) cùng màu `muted`; tiêu đề sheet ngắn (`DrawerHeader`) căn giữa trên điện thoại; lớp mờ dưới
   thanh của PageSheet dày hơn qua hàng nút; `/design` có mẫu tab bar tĩnh và mẫu form `FormSection` trên sheet trắng.
-- **List phẳng** (`SettingsGroup flat`, 2026-10-21): các dòng nằm thẳng trên trang như list thường của iOS, không thẻ, không bóng; chữ của dòng trên lề trang (nhóm bù 16 bằng `-mx-4`), vạch mảnh giữa các dòng, tiêu đề nhóm thẳng lề với chữ. Dùng cho danh sách giao dịch theo ngày (và skeleton của nó); nhóm cài đặt, nợ, hạn mức vẫn là thẻ.
+- **List phẳng** (`SettingsGroup flat`, 2026-10-21): các dòng nằm thẳng trên trang như list thường của iOS, không thẻ, không bóng; chữ của dòng trên lề trang (nhóm bù 16 bằng `-mx-4`), vạch mảnh giữa các dòng, tiêu đề nhóm thẳng lề với chữ. Dùng cho mọi danh sách giao dịch: theo ngày ở trang Giao dịch (và skeleton), kết quả tìm, sheet một ngày, giao dịch gần đây của tài khoản, chi tiêu theo hạn mức; nhóm cài đặt, nợ, hạn mức vẫn là thẻ.
 - **Status bar:** màu cố định bằng màu nền trang (`components/pwa-theme-color.tsx`). Web không
   đổi được màu status bar mượt theo chuyển động: Safari 26 bỏ qua `theme-color`, tô thanh theo
   `background-color`/`backdrop-filter` của phần tử `fixed` sát mép trên, và chỉ lấy màu mới khi

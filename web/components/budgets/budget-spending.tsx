@@ -67,11 +67,13 @@ export function BudgetSpendingList({
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="px-4 text-sm text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
         {data.transactions.length} giao dịch · <span className="font-medium text-foreground tabular-nums">{formatCurrency(total)}</span>
       </p>
       {[...days].map(([day, transactions]) => (
+        // Flat, as the transactions page's days (2026-10-21).
         <SettingsGroup
+          flat
           key={day}
           title={<time dateTime={day}>{formatDayLabel(day, today)}</time>}
           action={

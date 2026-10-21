@@ -7,7 +7,7 @@ import { toast } from "sonner"
 
 import { FlowTiles } from "@/components/app/flow-tiles"
 import { PageSheet } from "@/components/app/page-sheet"
-import { SettingsGroup } from "@/components/settings-list"
+import { SettingsGroup, SettingsGroupSkeleton } from "@/components/settings-list"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { Account } from "@/lib/accounts/types"
@@ -268,9 +268,9 @@ export function CashFlowCalendar({
                 ]}
               />
               {dayItems && dayItems.length === 0 ? (
-                <p className="px-4 text-sm text-muted-foreground">Chưa có giao dịch</p>
+                <p className="text-sm text-muted-foreground">Chưa có giao dịch</p>
               ) : dayItems ? (
-                <SettingsGroup title={`${dayItems.length} giao dịch`}>
+                <SettingsGroup flat title={`${dayItems.length} giao dịch`}>
                   {dayItems.map((transaction) => (
                     <TransactionItem
                       key={transaction.id}
@@ -282,8 +282,8 @@ export function CashFlowCalendar({
                 </SettingsGroup>
               ) : (
                 <div className="space-y-2" role="status" aria-label="Đang tải giao dịch">
-                  <Skeleton className="mx-3 h-3 w-24" />
-                  <Skeleton className="h-36 w-full" />
+                  <Skeleton className="h-3 w-24" />
+                  <SettingsGroupSkeleton flat caption={false} rows={2} description trailing="amount" />
                 </div>
               )}
             </>

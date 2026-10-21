@@ -114,7 +114,7 @@ function SearchResults({
 
   return (
     <div className="space-y-2">
-      <div className="flex min-h-6 items-center justify-between gap-3 px-4 text-xs">
+      <div className="flex min-h-6 items-center justify-between gap-3 text-xs">
         <p aria-live="polite" className="min-w-0 text-muted-foreground">
           {transactions.length} kết quả trong {search.scopeLabel}
           {/* The sum kept whole: a line too long breaks before "tổng", not inside it. */}
@@ -138,7 +138,8 @@ function SearchResults({
           </button>
         ) : null}
       </div>
-      <SettingsGroup>
+      {/* Flat, as the days' list (2026-10-21). */}
+      <SettingsGroup flat>
         {transactions.map((transaction) => (
           <TransactionItem
             key={transaction.id}
