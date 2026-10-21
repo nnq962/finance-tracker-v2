@@ -28,9 +28,12 @@ function CollapsibleTrigger({
  * reduced motion. Spacing above the content belongs inside it as padding:
  * a gap outside would appear in one frame.
  *
- * Clipped only while it moves (2026-10-21): once open and still, nothing is
- * cut, so the cards' shadows inside show whole. (A clip widened with
- * padding, tried first, held the slide at its start and made it jerk.)
+ * Clipped by a clip-path rather than overflow (2026-10-21): while it slides
+ * only along its bottom edge, where the content is still being revealed, so
+ * the cards' shadows show whole above and at the sides the whole time; once
+ * open and still, the bottom edge eases down past their shadow too. (An
+ * overflow clip cut the shadows during the slide; a clip widened with
+ * padding held the slide at its start and made it jerk.)
  */
 function CollapsibleContent({
   className,
@@ -50,7 +53,8 @@ function CollapsibleContent({
       ref={ref}
       data-slot="collapsible-content"
       className={cn(
-        settled ? "overflow-visible" : "overflow-hidden",
+        "overflow-visible transition-[clip-path] duration-200 ease-out motion-reduce:transition-none",
+        settled ? "[clip-path:inset(-48px_-48px_-64px_-48px)]" : "[clip-path:inset(-48px_-48px_0_-48px)]",
         "[--tw-duration:250ms] [--tw-ease:cubic-bezier(0.2,0,0,1)] motion-safe:data-[state=closed]:animate-collapsible-up motion-safe:data-[state=open]:animate-collapsible-down",
         className
       )}
