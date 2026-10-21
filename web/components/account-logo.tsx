@@ -19,7 +19,7 @@ type AccountLogoProps = {
 }
 
 const tileClassName = {
-  lg: "size-12 rounded-[14px] text-sm",
+  lg: "size-12 rounded-[16px] text-sm",
   sm: "size-9 rounded-[10px] text-xs",
   xs: "size-5 rounded-[6px] text-[9px]",
 } as const

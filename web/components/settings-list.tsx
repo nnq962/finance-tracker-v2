@@ -132,6 +132,8 @@ function SettingsGroup({
           size === "lg" && "px-6",
           size === "lg" && stickyCaption && "max-md:px-[calc(var(--main-content-px)+--spacing(6))]",
           flat && "px-0",
+          // A fold's "Hiện … / Thu gọn" beside its title from md, not at the far end of a wide row (2026-10-21).
+          collapsible && "md:justify-start md:gap-4",
           flat && stickyCaption && "max-md:px-(--main-content-px)",
         )}
       >
@@ -264,7 +266,8 @@ type SettingsRowProps = {
 }
 
 // Rows of a dashboard card (size lg) share its 24 inset, so they line up with its header.
-const rowClassName = "min-h-16 gap-3 py-3 group-data-[size=lg]/card:px-6"
+// The press transition here too, so it wins over Item's own transition-colors (the cover over the next divider snapped while the grey faded, 2026-10-21).
+const rowClassName = "min-h-16 gap-3 py-3 transition-[color,background-color,box-shadow] duration-150 group-data-[size=lg]/card:px-6"
 
 // Item only gives links a hover state; button rows get the same one, the
 // grey a native row shows under the finger (hover only exists with a mouse),

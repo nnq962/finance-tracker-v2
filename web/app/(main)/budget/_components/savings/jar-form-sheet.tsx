@@ -14,7 +14,6 @@ import { InlineInput } from "@/components/forms/inline-input"
 import { groupCaptionClassName, SettingsFieldRow, SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
-import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryColorName } from "@/lib/categories/category-colors"
@@ -263,9 +262,9 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
               Xoá
             </Button>
           ) : null}
-          <Button type="submit" className="flex-1" disabled={pending}>
-            {pending ? <Spinner /> : jar ? <SaveIcon /> : null}
-            {pending ? "Đang lưu…" : jar ? "Lưu thay đổi" : "Tạo hũ"}
+          <Button type="submit" className="flex-1" loading={pending}>
+            {jar ? <SaveIcon data-icon="inline-start" /> : null}
+            {jar ? "Lưu thay đổi" : "Tạo hũ"}
           </Button>
         </div>
       </PageSheetFooter>

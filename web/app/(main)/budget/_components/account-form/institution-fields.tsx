@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { SearchIcon, XIcon } from "lucide-react"
+import { AnimatePresence, motion } from "motion/react"
 
 import { AccountLogo } from "@/components/account-logo"
 import { gridChoices, PickGrid } from "@/components/app/pick-grid"
@@ -123,13 +124,27 @@ export function InstitutionPicker({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
-        {query ? (
-          <InputGroupAddon align="inline-end">
-            <InputGroupButton size="icon-xs" aria-label="Xoá tìm kiếm" onClick={() => setQuery("")}>
-              <XIcon />
-            </InputGroupButton>
-          </InputGroupAddon>
-        ) : null}
+        {/* The clear button comes and goes with a fade, scale and blur rather than blinking (2026-10-21). */}
+        <AnimatePresence initial={false}>
+          {query ? (
+            <motion.span
+              key="clear"
+              // Marked as the group's end slot, so the field keeps the room InputGroup gives one.
+              data-align="inline-end"
+              className="flex"
+              initial={{ opacity: 0, scale: 0.25, filter: "blur(4px)" }}
+              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, scale: 0.25, filter: "blur(4px)" }}
+              transition={{ type: "spring", duration: 0.3, bounce: 0 }}
+            >
+              <InputGroupAddon align="inline-end">
+                <InputGroupButton size="icon-xs" aria-label="Xoá tìm kiếm" onClick={() => setQuery("")}>
+                  <XIcon />
+                </InputGroupButton>
+              </InputGroupAddon>
+            </motion.span>
+          ) : null}
+        </AnimatePresence>
       </InputGroup>
       {/* The first group's logos come at once; the rest of the 60-odd as they near the screen (2026-10-17). */}
       {groups.map((group, groupIndex) => (

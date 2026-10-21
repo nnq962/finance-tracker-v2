@@ -157,7 +157,7 @@ export function TransactionForm({
       const start = base(formKind)
       const lastUsed = histories[formKind].find((transaction) => isActive(transaction.accountId))?.accountId
       return {
-        accountId: startAccount(start?.accountId) ?? lastUsed ?? "",
+        accountId: startAccount(start?.accountId) ?? startAccount(draft?.accountId) ?? lastUsed ?? "",
         categoryId:
           liveCategory(start?.categoryId) ??
           (suggestedCategory && draft?.kind === formKind ? NEW_CATEGORY_ID : ""),
@@ -165,7 +165,7 @@ export function TransactionForm({
     }
     const transfer = base("transfer")
     const lastFrom = histories.transfer.find((transaction) => isActive(transaction.fromAccountId))?.fromAccountId
-    const from = startAccount(transfer?.fromAccountId) ?? lastFrom ?? ""
+    const from = startAccount(transfer?.fromAccountId) ?? startAccount(draft?.accountId) ?? lastFrom ?? ""
     const to = startAccount(transfer?.toAccountId)
     return {
       expense: cashFlow("expense"),

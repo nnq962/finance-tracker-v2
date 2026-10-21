@@ -47,12 +47,12 @@ export default function AccountsLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <PageHeaderSkeleton title="Tài khoản" actions={["w-44"]} />
+        <PageHeaderSkeleton title="Tài khoản" />
         <BudgetLayout summary={<BalanceHeroSkeleton />}>
           {/* "Tài khoản chính": on phones each account's logo, name and kind, balance
               and chevron; from lg up AccountCard's footprint in the grid. */}
           <div className="lg:hidden">
-            <SettingsGroupSkeleton rows={3} description trailing="value" chevron />
+            <SettingsGroupSkeleton rows={3} trailing="value" chevron />
           </div>
           <div className="hidden flex-col gap-2 lg:flex">
             <div className="flex h-4 items-center px-4">
@@ -64,15 +64,9 @@ export default function AccountsLoading() {
                   <CardContent className="flex flex-1 flex-col justify-between gap-5">
                     <div className="flex items-center gap-3">
                       <Skeleton className="size-9 rounded-[10px]" />
-                      <div className="flex flex-col gap-1.5">
-                        <Skeleton className="h-3.5 w-24" />
-                        <Skeleton className="h-3 w-16" />
-                      </div>
+                      <Skeleton className="h-3.5 w-24" />
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <Skeleton className="h-3.5 w-12" />
-                      <Skeleton className="h-5 w-32" />
-                    </div>
+                    <Skeleton className="h-5 w-32" />
                   </CardContent>
                 </Card>
               ))}

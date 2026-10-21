@@ -72,6 +72,8 @@ export function AccountList({ accounts, recentTransactions, categoryGroups, init
     .filter((account) => account.status === "active" && account.type !== "savings")
     .sort((left, right) => right.balance - left.balance)
   const archivedAccounts = accounts.filter((account) => account.status === "archived" && account.type !== "savings")
+  // Open from the start when nothing is in use, or when a locked account still holds money the total counts (2026-10-21).
+  const openLocked = activeAccounts.length === 0 || archivedAccounts.some((account) => account.balance !== 0 && !account.excluded)
   // A deleted account closes its sheet.
   const openAccount = accounts.find((account) => account.id === openAccountId && account.type !== "savings")
 
@@ -88,7 +90,7 @@ export function AccountList({ accounts, recentTransactions, categoryGroups, init
           </EmptyHeader>
           <EmptyContent>
             <Button type="button" onClick={() => setAdding(true)}>
-              <PlusIcon />
+              <PlusIcon data-icon="inline-start" />
               Thêm tài khoản
             </Button>
           </EmptyContent>
@@ -142,9 +144,9 @@ export function AccountList({ accounts, recentTransactions, categoryGroups, init
           <div className="lg:hidden">
             <SettingsGroup
               // Opened again once the last account in use is locked, not only on the next visit.
-              key={activeAccounts.length === 0 ? "open" : "folded"}
+              key={openLocked ? "open" : "folded"}
               title="Đã khoá"
-              collapsible={{ showLabel: `Hiện ${archivedAccounts.length} tài khoản`, defaultOpen: activeAccounts.length === 0 }}
+              collapsible={{ showLabel: `Hiện ${archivedAccounts.length} tài khoản`, defaultOpen: openLocked }}
             >
               {archivedAccounts.map((account) => (
                 <AccountRow key={account.id} account={account} onSelect={() => setOpenAccountId(account.id)} />
@@ -153,10 +155,10 @@ export function AccountList({ accounts, recentTransactions, categoryGroups, init
           </div>
           <div className="hidden lg:block">
             <SettingsGroup
-              key={activeAccounts.length === 0 ? "open" : "folded"}
+              key={openLocked ? "open" : "folded"}
               plain
               title="Đã khoá"
-              collapsible={{ showLabel: `Hiện ${archivedAccounts.length} tài khoản`, defaultOpen: activeAccounts.length === 0 }}
+              collapsible={{ showLabel: `Hiện ${archivedAccounts.length} tài khoản`, defaultOpen: openLocked }}
             >
               <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
                 {archivedAccounts.map((account) => (

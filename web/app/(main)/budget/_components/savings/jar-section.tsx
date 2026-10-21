@@ -33,7 +33,7 @@ function JarRow({ jar, today, onSelect }: { jar: Account; today: string; onSelec
       action={
         <span className="flex flex-col items-end">
           <Money amount={jar.balance} size="sm" />
-          <span className="text-xs text-muted-foreground">/ {formatCompactCurrency(jar.goal?.target ?? 0, 1)}</span>
+          <span className="text-xs text-muted-foreground tabular-nums">/ {formatCompactCurrency(jar.goal?.target ?? 0, 1)}</span>
         </span>
       }
       onClick={onSelect}
@@ -89,9 +89,14 @@ export function JarList({
     <>
       {part === "open" ? (
         <>
-          {/* A list on phones; from lg up cards the size of the accounts', the last a dashed one to add. */}
-          <div className="lg:hidden">
-            <SettingsGroup title={filling.length ? `Hũ tiết kiệm · ${filling.length}` : "Hũ tiết kiệm"}>
+          {/* A list on phones; from lg up cards the size of the accounts', the last a dashed one to add.
+              With no jar yet, the list on every screen with a line on what a jar is (2026-10-21):
+              a lone dashed card left two thirds of a row empty on desktop. */}
+          <div className={filling.length ? "lg:hidden" : undefined}>
+            <SettingsGroup
+              title={filling.length ? `Hũ tiết kiệm · ${filling.length}` : "Hũ tiết kiệm"}
+              footer={filling.length ? undefined : "Để dành cho một món: đặt mục tiêu, nạp dần mỗi tháng."}
+            >
               {filling.map((jar) => (
                 <JarRow key={jar.id} jar={jar} today={today} onSelect={() => setOpenId(jar.id)} />
               ))}
@@ -103,7 +108,7 @@ export function JarList({
               />
             </SettingsGroup>
           </div>
-          <section className="hidden flex-col gap-2 lg:flex">
+          <section className={cn("hidden flex-col gap-2", filling.length && "lg:flex")}>
             <h2 className={cn("px-4", groupCaptionClassName)}>{filling.length ? `Hũ tiết kiệm · ${filling.length}` : "Hũ tiết kiệm"}</h2>
             <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
               {filling.map((jar) => (

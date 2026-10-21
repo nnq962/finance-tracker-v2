@@ -23,4 +23,6 @@ export type TransactionDraft = {
   requestId: string
   /** Written again from this one: its accounts, category and fee are filled in too. */
   copyOf?: Transaction
+  /** Opens on this account (the account's own sheet, 2026-10-21): spending's and income's, or a transfer's from. */
+  accountId?: string
 }

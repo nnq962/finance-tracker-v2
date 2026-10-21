@@ -91,15 +91,15 @@ export function JarSheet({
         done ? null : (
           <div className="flex items-center gap-2">
             <Button variant="secondary" className="flex-1" disabled={jar.balance <= 0} onClick={() => onMove("out")}>
-              <ArrowUpRightIcon /> Rút ra
+              <ArrowUpRightIcon data-icon="inline-start" /> Rút ra
             </Button>
             {full ? (
               <Button className="flex-1" onClick={onBought}>
-                <ShoppingBagIcon /> Đã mua
+                <ShoppingBagIcon data-icon="inline-start" /> Đã mua
               </Button>
             ) : (
               <Button className="flex-1" onClick={() => onMove("in")}>
-                <ArrowDownLeftIcon /> Nạp vào hũ
+                <ArrowDownLeftIcon data-icon="inline-start" /> Nạp vào hũ
               </Button>
             )}
           </div>
@@ -132,7 +132,7 @@ export function JarSheet({
       )}
 
       {transactions.length > 0 ? (
-        <SettingsGroup title="Lịch sử">
+        <SettingsGroup flat title="Lịch sử">
           {transactions.map((transaction) => {
             const move = describe(transaction, jar.id)
             return (

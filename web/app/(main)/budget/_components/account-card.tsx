@@ -14,13 +14,14 @@ export function AccountCard({ account, onSelect }: { account: Account; onSelect:
   const description = accountDescription(account)
 
   return (
-    <Card size="lg" asChild className="pressable text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/30">
+    <Card size="lg" asChild className="pressable text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/30 [@media(hover:hover)]:hover:shadow-[0_12px_48px_rgb(0_0_0/0.16)] [@media(hover:hover)]:transition-[scale,box-shadow]">
       <button type="button" onClick={onSelect}>
         {/* Its name at the top and its balance at the foot, as tall as the cards beside it. */}
         <CardContent className="flex flex-1 flex-col justify-between gap-4">
-          <span className="flex min-w-0 items-center gap-3">
+          {/* Top-aligned, the text block as tall as the logo, so names line up across cards with and without a second line (2026-10-21). */}
+          <span className="flex min-w-0 items-start gap-3">
             <AccountLogo account={account} />
-            <span className="flex min-w-0 flex-col">
+            <span className="flex min-h-9 min-w-0 flex-col justify-center">
               <span className="truncate font-medium">{account.name}</span>
               {description ? <span className="truncate text-xs text-muted-foreground">{description}</span> : null}
             </span>

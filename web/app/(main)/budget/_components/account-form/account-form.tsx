@@ -10,7 +10,6 @@ import { TimeRows } from "@/components/forms/time-rows"
 import { SettingsGroup, SettingsRow, settingsSeparatorClassName } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { FieldError, FieldLabel } from "@/components/ui/field"
-import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { AccountActionResult, AccountFormValues, AccountType } from "@/lib/accounts/types"
@@ -421,9 +420,10 @@ export function AccountForm({
               Xoá
             </Button>
           ) : null}
-          <Button type="submit" className="flex-1" disabled={isPending || (lockOn && lock?.locked)}>
-            {isPending ? <Spinner /> : <SaveIcon />}
-            {isPending ? "Đang lưu…" : submitLabel}
+          {/* The spinner over the label while it saves, the button keeping its width (Button loading, 2026-10-21). */}
+          <Button type="submit" className="flex-1" loading={isPending} disabled={Boolean(lockOn && lock?.locked)}>
+            <SaveIcon data-icon="inline-start" />
+            {submitLabel}
           </Button>
         </div>
       </PageSheetFooter>

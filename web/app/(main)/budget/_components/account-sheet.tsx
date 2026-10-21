@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { PencilIcon } from "lucide-react"
+import { ArrowLeftRightIcon, PencilIcon, PlusIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 import { AccountLogo } from "@/components/account-logo"
@@ -13,8 +13,11 @@ import { accountDescription } from "@/lib/accounts/labels"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import { formatDate, formatShortDate, toDateKey } from "@/lib/format-date"
+import { randomId } from "@/lib/random-id"
 import type { Transaction } from "@/lib/transactions/types"
 
+import { AddTransactionSheet } from "../../transactions/_components/add-transaction/add-transaction-sheet"
+import type { TransactionDraft } from "../../transactions/_components/add-transaction/form-types"
 import { TransactionHistoryProvider } from "../../transactions/_components/add-transaction/transaction-history-context"
 import { TransactionItem } from "../../transactions/_components/transaction-item"
 import { EditAccountSheet } from "./account-actions/edit-account-sheet"
@@ -53,7 +56,9 @@ type AccountSheetProps = {
  * An account as the transaction's sheet shows one: its logo, name, balance
  * and kind (and since when) at the top, edited from the pencil in the bar; its
  * note; its latest transactions, each opening its own sheet. Locking
- * and deleting it are in its editor, behind the pencil.
+ * and deleting it are in its editor, behind the pencil. At its foot, in the
+ * thumb's reach as the jar's sheet has them: a transfer and a transaction on
+ * this account (2026-10-21); a balance below zero offers its correction.
  */
 export function AccountSheet({
   account,
@@ -64,11 +69,19 @@ export function AccountSheet({
 }: AccountSheetProps) {
   const router = useRouter()
   const [editOpen, setEditOpen] = React.useState(false)
+  // A transaction or transfer written from here, on this account (2026-10-21).
+  const [draft, setDraft] = React.useState<TransactionDraft | null>(null)
+  const [draftOpen, setDraftOpen] = React.useState(false)
   // Keeps the last account on screen while the sheet slides closed.
   const [shown, setShown] = React.useState(account)
   if (account && account !== shown) setShown(account)
 
   if (!shown) return null
+
+  const startDraft = (kind: TransactionDraft["kind"]) => {
+    setDraft({ kind, amount: null, note: "", occurredAt: new Date().toISOString(), requestId: randomId(), accountId: shown.id })
+    setDraftOpen(true)
+  }
 
   const isLocked = shown.status === "archived"
   // Its kind, since when, and whether it is locked, in one line under the balance (2026-10-16: "Bắt đầu từ" was a card of its own).
@@ -89,6 +102,18 @@ export function AccountSheet({
             <PencilIcon />
           </Button>
         }
+        footer={
+          isLocked ? null : (
+            <div className="flex items-center gap-2">
+              <Button variant="secondary" className="flex-1" onClick={() => startDraft("transfer")}>
+                <ArrowLeftRightIcon data-icon="inline-start" /> Chuyển tiền
+              </Button>
+              <Button className="flex-1" onClick={() => startDraft("expense")}>
+                <PlusIcon data-icon="inline-start" /> Ghi giao dịch
+              </Button>
+            </div>
+          )
+        }
       >
         <div className="flex flex-col items-center pt-2 text-center">
           <AccountLogo account={shown} size="lg" />
@@ -98,8 +123,14 @@ export function AccountSheet({
             size="xl"
             tone={isLocked ? "muted" : shown.balance < 0 ? "expense" : "default"}
           />
-          {subtitle ? <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p> : null}
+          {subtitle ? <p className="mt-1 text-sm text-balance text-muted-foreground">{subtitle}</p> : null}
         </div>
+
+        {!isLocked && shown.balance < 0 ? (
+          <SettingsGroup>
+            <SettingsRow title="Số dư âm?" description="Điều chỉnh cho khớp với thực tế" onClick={() => setEditOpen(true)} />
+          </SettingsGroup>
+        ) : null}
 
         {shown.note ? (
           <SettingsGroup>
@@ -117,7 +148,9 @@ export function AccountSheet({
                   accounts={accounts}
                   categoryGroups={categoryGroups}
                   transaction={transaction}
-                  description={getAccountDescription(transaction, shown.id)}
+                  // A transfer by its other account, "Chuyển khoản" under it, so transfers in a row read apart (2026-10-21).
+                  title={transaction.kind === "transfer" ? getAccountDescription(transaction, shown.id) : undefined}
+                  description={transaction.kind === "transfer" ? "Chuyển khoản" : getAccountDescription(transaction, shown.id)}
                   amount={getAccountAmount(transaction, shown.id)}
                   // The day alone: the balance after each ("· còn 593k") read as another amount (2026-10-16).
                   dateLabel={formatShortDate(toDateKey(transaction.occurredAt))}
@@ -134,6 +167,17 @@ export function AccountSheet({
         </SettingsGroup>
         {/* Pushed into the account's sheet, ‹ back to it (2026-10-18). */}
         <EditAccountSheet account={shown} open={editOpen} onOpenChange={setEditOpen} onDeleted={() => onOpenChange(false)} />
+        {draft ? (
+          <AddTransactionSheet
+            key={draft.requestId}
+            accounts={accounts}
+            categoryGroups={categoryGroups}
+            // Kept mounted while it slides closed; a new one opens fresh (its key).
+            open={draftOpen}
+            onOpenChange={setDraftOpen}
+            draft={draft}
+          />
+        ) : null}
       </PageSheet>
     </>
   )

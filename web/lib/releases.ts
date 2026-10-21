@@ -32,6 +32,18 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.33.0",
+    date: "2026-10-21",
+    title: "Trang Tài khoản rõ và tiện hơn",
+    changes: [
+      { kind: "new", text: "Chi tiết tài khoản có hai nút Chuyển tiền và Ghi giao dịch, mở sẵn tài khoản đó; số dư âm có dòng gợi ý điều chỉnh." },
+      { kind: "improved", text: "Tổng số dư ghi rõ phần nằm trong tài khoản đã khoá, và nhóm Đã khoá tự mở khi tài khoản đó còn tiền; bỏ chồng icon ở góc thẻ." },
+      { kind: "improved", text: "Desktop: thẻ tổng chạy hết bề ngang, số lớn bên trái và các loại tài khoản bên phải như Tổng quan; nút Hiện, Thu gọn nằm cạnh tên nhóm; thẻ tài khoản thẳng hàng và nổi nhẹ khi rê chuột; thẻ hũ gọn hơn." },
+      { kind: "improved", text: "Chưa có hũ: một dòng Thêm hũ kèm câu giải thích hũ là gì. Lịch sử hũ là list phẳng như các danh sách giao dịch khác." },
+      { kind: "improved", text: "Chuyển khoản trong chi tiết tài khoản lấy tên tài khoản bên kia làm tiêu đề; nút Lưu hiện vòng xoay ngay trên nút; khung chờ tải khớp với trang." },
+    ],
+  },
+  {
     version: "6.32.7",
     date: "2026-10-21",
     title: "Vòng nhiệm vụ thẳng hàng",

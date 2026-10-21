@@ -97,7 +97,7 @@ function DrawerOverlay({
 // will-change-auto: vaul keeps will-change: transform on every drawer, which
 // may keep Safari from taking the sheet's colour for the status bar.
 const pageSheetClassName =
-  "fixed will-change-auto! inset-x-0 bottom-0 top-0 z-50 flex flex-col overflow-hidden supports-[overflow:clip]:overflow-clip bg-popover pt-[env(safe-area-inset-top,0px)] text-sm text-popover-foreground shadow-xl outline-none sm:inset-x-auto sm:left-1/2 sm:top-[6dvh] sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:rounded-t-[28px] sm:pt-0 md:inset-x-auto md:top-3 md:right-3 md:bottom-3 md:left-auto md:w-110 md:max-w-[calc(100vw-1.5rem)] md:translate-x-0 md:rounded-[24px] md:shadow-[0_0_0_0.5px_color-mix(in_oklab,var(--foreground)_8%,transparent),0_24px_64px_-16px_rgb(0_0_0/0.35)] md:[--initial-transform:calc(100%+2.75rem)]"
+  "fixed will-change-auto! inset-x-0 bottom-0 top-0 z-50 flex flex-col overflow-hidden supports-[overflow:clip]:overflow-clip bg-popover pt-[env(safe-area-inset-top,0px)] text-sm text-popover-foreground shadow-xl outline-none sm:inset-x-auto sm:left-1/2 sm:top-[6dvh] sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:rounded-t-[28px] sm:pt-0 md:inset-x-auto md:top-3 md:right-3 md:bottom-3 md:left-auto md:w-110 md:max-w-[calc(100vw-1.5rem)] md:translate-x-0 md:rounded-[38px] md:shadow-[0_0_0_0.5px_color-mix(in_oklab,var(--foreground)_8%,transparent),0_24px_64px_-16px_rgb(0_0_0/0.35)] md:[--initial-transform:calc(100%+2.75rem)]"
 
 /**
  * A tap on a toast (its Undo, or swiping it away) is not a tap outside the

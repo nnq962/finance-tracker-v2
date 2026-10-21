@@ -28,6 +28,8 @@ type TransactionItemProps = {
   highlight?: string
   /** In place of the account (or a transfer's two accounts), e.g. in an account's own sheet, where the account goes without saying. */
   description?: string
+  /** In place of the transaction's own title, e.g. a transfer's other account in an account's sheet. */
+  title?: string
   /** The amount as it moved one account, signed: a transfer out of it is minus, with its fee. */
   amount?: number
 }
@@ -54,6 +56,7 @@ export function TransactionItem({
   dateLabel,
   highlight,
   description,
+  title,
   amount,
 }: TransactionItemProps) {
   const [detailsOpen, setDetailsOpen] = React.useState(false)
@@ -76,7 +79,7 @@ export function TransactionItem({
         muted={leftOut}
         title={
           <>
-            <MarkedTitle title={transaction.title} query={highlight} />
+            <MarkedTitle title={title ?? transaction.title} query={highlight} />
             {leftOut ? <span className="sr-only">, không tính vào báo cáo</span> : null}
           </>
         }
