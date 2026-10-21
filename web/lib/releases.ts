@@ -32,6 +32,12 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.32.4",
+    date: "2026-10-21",
+    title: "Bóng thẻ trong nhóm thu gọn",
+    changes: [{ kind: "fixed", text: "Tài khoản đã khoá, hũ đã hoàn thành, khoản nợ đã tất toán: khi mở rộng, bóng của thẻ bị cắt thành mép thẳng; nay đủ bóng, và nút Thu gọn vẫn bấm được." }],
+  },
+  {
     version: "6.32.3",
     date: "2026-10-21",
     title: "Mọi danh sách giao dịch đều phẳng",
