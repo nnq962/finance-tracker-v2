@@ -1,12 +1,15 @@
 import { BanknoteIcon, LandmarkIcon, PiggyBankIcon, SmartphoneIcon, type LucideIcon } from "lucide-react"
 
 import { CardLabel } from "@/components/app/card-label"
+import { IconTile } from "@/components/app/icon-tile"
 import { Money } from "@/components/app/money"
-import { Stat, StatGroup } from "@/components/app/stat-group"
 import { Card, CardContent } from "@/components/ui/card"
 import { accountTypeLabels } from "@/lib/accounts/labels"
-import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
+import { formatCompactCurrency } from "@/lib/format-currency"
 import type { Account, AccountType, BalanceSummary } from "@/lib/accounts/types"
+import { cn } from "@/lib/utils"
+
+import { accountGridClassName, GridCard, GridCardHead } from "./account-grid"
 
 const accountTypeIcons: Record<AccountType, LucideIcon> = {
   bank: LandmarkIcon,
@@ -17,15 +20,16 @@ const accountTypeIcons: Record<AccountType, LucideIcon> = {
 
 /**
  * The total of the accounts counted in the figures (archived ones too), the
- * one figure this page leads with, on the plain card (2026-10-19, option E of
- * the lead-card mockup). Under it, a line naming what the locked accounts
- * hold, as it is counted but folded away below (2026-10-21), and the one
- * kind in words when the money sits in one kind only. With more than one
- * kind, each kind's full balance: on phones a list on a track (a negative
- * one in red, which a share bar could not show), from lg the overview's
- * shape, the figure on the left and the kinds as tiles on the right. The
- * wallet stack of kind icons is gone (2026-10-21): it repeated the list and
- * its lime, kept for AI and Pro, drew the eye from the figure.
+ * one figure this page leads with. A line names what the locked accounts
+ * hold, as it is counted but folded away below (2026-10-21).
+ *
+ * On phones one plain card: the total, then each kind's full balance on a
+ * track (a negative one in red, which a share bar could not show), only
+ * when some kind holds two accounts or more: one account a kind would
+ * repeat the list just below.
+ * From lg the first row of the accounts grid, each card an account card's
+ * size (2026-10-21): the total, then one card per kind (its icon, its name
+ * and how many, its balance at the foot), every kind there is.
  */
 export function BalanceHero({ summary, accounts }: { summary: BalanceSummary; accounts: Account[] }) {
   const active = accounts.filter((account) => !account.excluded)
@@ -34,34 +38,41 @@ export function BalanceHero({ summary, accounts }: { summary: BalanceSummary; ac
   const locked = active.filter((account) => account.status === "archived" && account.balance !== 0)
   const lockedTotal = locked.reduce((total, account) => total + account.balance, 0)
   const parts = (Object.keys(accountTypeLabels) as AccountType[])
-    // Finished jars hold nothing: no "Hũ tiết kiệm 0đ" line for them alone.
-    .filter((type) => active.some((account) => account.type === type && !account.goal?.completedAt))
-    .map((type) => ({
-      type,
-      total: active.filter((account) => account.type === type).reduce((total, account) => total + account.balance, 0),
-    }))
+    .map((type) => {
+      // Finished jars hold nothing: no "Hũ tiết kiệm 0đ" for them alone.
+      const ofType = active.filter((account) => account.type === type && !account.goal?.completedAt)
+      return { type, count: ofType.length, total: ofType.reduce((total, account) => total + account.balance, 0) }
+    })
+    .filter((part) => part.count > 0)
+  const label = parts.length === 1 ? `Tổng số dư · ${accountTypeLabels[parts[0].type]}` : "Tổng số dư"
+  const notes = (
+    <>
+      {locked.length > 0 ? (
+        <span className="block text-xs text-pretty text-muted-foreground">
+          Gồm {locked.length} tài khoản đã khoá · {formatCompactCurrency(lockedTotal, 1)}
+        </span>
+      ) : null}
+      {left.length > 0 ? (
+        <span className="block text-xs text-pretty text-muted-foreground">
+          {left.length} tài khoản ngoài báo cáo · {formatCompactCurrency(leftTotal, 1)}
+        </span>
+      ) : null}
+    </>
+  )
+  const totalTone = summary.totalBalance < 0 ? "expense" : "default"
 
   return (
-    <Card size="lg">
-      <CardContent className="lg:flex lg:items-end lg:justify-between lg:gap-10">
-        {/* The figure fits its column on one line (from 100 triệu up it wrapped mid-number, 2026-10-16). */}
-        <div className="@container flex min-w-0 flex-col gap-1 lg:flex-1">
-          <CardLabel>{parts.length === 1 ? `Tổng số dư · ${accountTypeLabels[parts[0].type]}` : "Tổng số dư"}</CardLabel>
-          <Money amount={summary.totalBalance} size="display" fit tone={summary.totalBalance < 0 ? "expense" : "default"} />
-          {locked.length > 0 ? (
-            <p className="text-xs text-pretty text-muted-foreground">
-              Gồm {locked.length} tài khoản đã khoá · {formatCompactCurrency(lockedTotal, 1)}
-            </p>
-          ) : null}
-          {left.length > 0 ? (
-            <p className="text-xs text-pretty text-muted-foreground">
-              {left.length} tài khoản ngoài báo cáo · {formatCompactCurrency(leftTotal, 1)}
-            </p>
-          ) : null}
-        </div>
-        {parts.length > 1 ? (
-          <>
-            <ul className="mt-5 flex flex-col rounded-[16px] bg-track px-4 lg:hidden">
+    <>
+      <Card size="lg" className="lg:hidden">
+        <CardContent>
+          {/* The figure fits its column on one line (from 100 triệu up it wrapped mid-number, 2026-10-16). */}
+          <div className="@container flex min-w-0 flex-col gap-1">
+            <CardLabel>{label}</CardLabel>
+            <Money amount={summary.totalBalance} size="xl" fit tone={totalTone} />
+            {notes}
+          </div>
+          {parts.length > 1 && parts.some((part) => part.count > 1) ? (
+            <ul className="mt-5 flex flex-col rounded-[16px] bg-track px-4">
               {parts.map((part) => {
                 const Icon = accountTypeIcons[part.type]
                 return (
@@ -73,20 +84,33 @@ export function BalanceHero({ summary, accounts }: { summary: BalanceSummary; ac
                 )
               })}
             </ul>
-            {/* Short amounts side by side, the full ones in the tooltip and the accessible name. */}
-            <StatGroup tiles className="hidden lg:grid lg:w-[30rem] lg:shrink-0">
-              {parts.slice(0, 3).map((part) => (
-                <Stat
-                  key={part.type}
-                  label={accountTypeLabels[part.type]}
-                  value={formatCompactCurrency(part.total, 1)}
-                  title={formatCurrency(part.total)}
+          ) : null}
+        </CardContent>
+      </Card>
+
+      <div className={cn(accountGridClassName, "hidden lg:grid")}>
+        <GridCard>
+          <span className="flex flex-col">
+            <CardLabel>{label}</CardLabel>
+            {notes}
+          </span>
+          <span className="@container">
+            <Money amount={summary.totalBalance} size="xl" fit tone={totalTone} />
+          </span>
+        </GridCard>
+        {parts.length > 1
+          ? parts.map((part) => (
+              <GridCard key={part.type}>
+                <GridCardHead
+                  media={<IconTile icon={accountTypeIcons[part.type]} tone="neutral" size="sm" />}
+                  title={accountTypeLabels[part.type]}
+                  description={`${part.count} ${part.type === "savings" ? "hũ" : "tài khoản"}`}
                 />
-              ))}
-            </StatGroup>
-          </>
-        ) : null}
-      </CardContent>
-    </Card>
+                <Money amount={part.total} size="lg" tone={part.total < 0 ? "expense" : "default"} />
+              </GridCard>
+            ))
+          : null}
+      </div>
+    </>
   )
 }

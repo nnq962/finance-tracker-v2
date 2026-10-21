@@ -56,8 +56,9 @@ export default async function SettingsPage({
         {/* The tab bar slides away while Settings is open and back when it closes (2026-10-19), as a pushed screen on iOS. */}
         <div data-hide-tab-bar="page" hidden />
       </div>
+      {/* From md no visible name (2026-10-21), as Tài khoản and Giao dịch: the sidebar names the page. */}
       <div className="max-md:hidden">
-        <PageHeader title="Cài đặt" />
+        <PageHeader title="Cài đặt" bare />
       </div>
 
       <SettingsView

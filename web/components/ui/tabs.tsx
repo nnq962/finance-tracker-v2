@@ -63,22 +63,35 @@ const tabsListVariants = cva(
   }
 )
 
+/** Where each remembered list (`memoryKey`) last drew its indicator. */
+const indicatorMemory = new Map<string, { x: number; width: number }>()
+
 /**
  * The indicator is one element moved with a CSS transition (translate and
  * width) to the chosen trigger's measured box: compositor-friendly, so it
  * glides on iOS Safari as on desktop. With reduced motion it moves in a
  * short ease instead of a spring.
+ *
+ * `memoryKey` (2026-10-21): a list that is rendered anew when its choice
+ * changes (Giao dịch | Vay nợ, each view drawing its own) starts its
+ * indicator where the last one with that key left it and slides on, so the
+ * switch moves instead of jumping.
  */
 function TabsList({
   className,
   variant = "default",
+  memoryKey,
   children,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.List> &
-  VariantProps<typeof tabsListVariants>) {
+  VariantProps<typeof tabsListVariants> & { memoryKey?: string }) {
   const { value } = React.useContext(TabsContext)
   const list = React.useRef<HTMLDivElement>(null)
-  const [box, setBox] = React.useState<{ x: number; width: number } | null>(null)
+  // A fresh list with a remembered key is drawn first where the last one was, then slides to its choice.
+  const [box, setBox] = React.useState<{ x: number; width: number } | null>(() =>
+    memoryKey ? (indicatorMemory.get(memoryKey) ?? null) : null,
+  )
+  const startsRemembered = React.useRef(box !== null)
 
   React.useLayoutEffect(() => {
     const element = list.current
@@ -89,13 +102,27 @@ function TabsList({
       // spring from nothing back to its size when the list shows again.
       if (element.offsetWidth === 0) return
       const chosen = element.querySelector<HTMLElement>('[data-slot="tabs-trigger"][data-state="active"]')
-      setBox(chosen ? { x: chosen.offsetLeft, width: chosen.offsetWidth } : null)
+      const next = chosen ? { x: chosen.offsetLeft, width: chosen.offsetWidth } : null
+      if (memoryKey && next) indicatorMemory.set(memoryKey, next)
+      setBox(next)
     }
-    measure()
+    let frame = 0
+    if (startsRemembered.current) {
+      // Two frames on, so the remembered place is painted before the slide starts.
+      startsRemembered.current = false
+      frame = requestAnimationFrame(() => {
+        frame = requestAnimationFrame(measure)
+      })
+    } else {
+      measure()
+    }
     const observer = new ResizeObserver(measure)
     observer.observe(element)
-    return () => observer.disconnect()
-  }, [value])
+    return () => {
+      cancelAnimationFrame(frame)
+      observer.disconnect()
+    }
+  }, [value, memoryKey])
 
   return (
     <TabsPrimitive.List

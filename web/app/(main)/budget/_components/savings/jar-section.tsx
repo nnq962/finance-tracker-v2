@@ -15,6 +15,7 @@ import { amountLeft, jarPlanLabel } from "@/lib/savings/plan"
 import type { Transaction } from "@/lib/transactions/types"
 import { cn } from "@/lib/utils"
 
+import { accountGridClassName } from "../account-grid"
 import { AddCard } from "../add-card"
 import { BoughtSheet } from "./bought-sheet"
 import { JarCard } from "./jar-card"
@@ -60,7 +61,7 @@ export function JarList({
   accounts: Account[]
   recentTransactions: Record<string, Transaction[]>
   categoryGroups: CategoryGroup[]
-  /** `open`: the group being filled, above the accounts; `done`: the finished ones, below them. */
+  /** `open`: the group being filled, above the accounts; `done`: the finished ones, in the "Lưu trữ" sheet. */
   part: "open" | "done"
   /** A jar whose sheet opens straight away (a link to it). */
   initialOpenId?: string
@@ -85,14 +86,56 @@ export function JarList({
     .filter((jar) => jar.goal?.completedAt)
     .sort((left, right) => right.goal!.completedAt!.localeCompare(left.goal!.completedAt!))
 
+  // What a finished jar paid for its purchase: its last spending.
+  const priceOf = (jar: Account) =>
+    recentTransactions[jar.id]?.find((transaction) => transaction.kind === "expense" && transaction.accountId === jar.id)?.amount
+
+  // The open jar's sheet, with what it pushes in: in the finished jars' sheet when opened from it.
+  const jarSheet = shown ? (
+    <JarSheet
+      jar={shown}
+      transactions={recentTransactions[shown.id] ?? []}
+      open={found !== undefined}
+      onOpenChange={(open) => !open && setOpenId(null)}
+      onEdit={() => setForm({ open: true, mode: "edit" })}
+      onMove={(way) => setMove({ open: true, way })}
+      onBought={() => setBuying(true)}
+    >
+      {/* Pushed into the jar's sheet, ‹ back to it (2026-10-18). */}
+      <MoveJarSheet
+        jar={shown}
+        way={move.way}
+        accounts={accounts}
+        open={move.open}
+        onOpenChange={(open) => setMove((current) => ({ ...current, open }))}
+      />
+      <BoughtSheet
+        jar={shown}
+        accounts={accounts}
+        categoryGroups={categoryGroups}
+        // Its moves come newest first.
+        since={recentTransactions[shown.id]?.[0]?.occurredAt}
+        open={buying}
+        onOpenChange={setBuying}
+        onDone={() => setOpenId(null)}
+      />
+      <JarFormSheet
+        jar={shown}
+        open={form.open && form.mode === "edit"}
+        onOpenChange={(open) => setForm((current) => ({ ...current, open }))}
+        onDeleted={() => setOpenId(null)}
+      />
+    </JarSheet>
+  ) : null
+
   return (
     <>
       {part === "open" ? (
         <>
-          {/* A list on phones; from lg up cards the size of the accounts', the last a dashed one to add.
-              With no jar yet, the list on every screen with a line on what a jar is (2026-10-21):
-              a lone dashed card left two thirds of a row empty on desktop. */}
-          <div className={filling.length ? "lg:hidden" : undefined}>
+          {/* A list on phones, with a line on what a jar is while there is none; from lg up the
+              accounts grid's cards, the last a dashed one to add, alone the same one cell when
+              there is no jar yet (2026-10-21: a full-width row was rejected). */}
+          <div className="lg:hidden">
             <SettingsGroup
               title={filling.length ? `Hũ tiết kiệm · ${filling.length}` : "Hũ tiết kiệm"}
               footer={filling.length ? undefined : "Để dành cho một món: đặt mục tiêu, nạp dần mỗi tháng."}
@@ -108,21 +151,23 @@ export function JarList({
               />
             </SettingsGroup>
           </div>
-          <section className={cn("hidden flex-col gap-2", filling.length && "lg:flex")}>
+          <section className="hidden flex-col gap-2 lg:flex">
             <h2 className={cn("px-4", groupCaptionClassName)}>{filling.length ? `Hũ tiết kiệm · ${filling.length}` : "Hũ tiết kiệm"}</h2>
-            <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
+            <div className={accountGridClassName}>
               {filling.map((jar) => (
                 <JarCard key={jar.id} jar={jar} today={today} onSelect={() => setOpenId(jar.id)} />
               ))}
               <AddCard label="Thêm hũ" onClick={() => setForm({ open: true, mode: "new" })} />
             </div>
+            {filling.length ? null : <p className="px-4 text-sm text-muted-foreground">Để dành cho một món: đặt mục tiêu, nạp dần mỗi tháng.</p>}
           </section>
         </>
-      ) : done.length > 0 ? (
-        <SettingsGroup title="Hũ đã hoàn thành" collapsible={{ showLabel: `Hiện ${done.length} hũ` }}>
+      ) : (
+        // The finished jars, in the accounts page's "Lưu trữ" sheet; one opened is pushed into it.
+        <SettingsGroup title={`Hũ đã hoàn thành · ${done.length}`}>
           {done.map((jar) => {
             const icon = getJarIcon(jar.goal)
-            const price = recentTransactions[jar.id]?.find((transaction) => transaction.kind === "expense" && transaction.accountId === jar.id)?.amount
+            const price = priceOf(jar)
             return (
               <SettingsRow
                 key={jar.id}
@@ -135,44 +180,9 @@ export function JarList({
             )
           })}
         </SettingsGroup>
-      ) : null}
+      )}
 
-      {shown ? (
-        <JarSheet
-          jar={shown}
-          transactions={recentTransactions[shown.id] ?? []}
-          open={found !== undefined}
-          onOpenChange={(open) => !open && setOpenId(null)}
-          onEdit={() => setForm({ open: true, mode: "edit" })}
-          onMove={(way) => setMove({ open: true, way })}
-          onBought={() => setBuying(true)}
-        >
-          {/* Pushed into the jar's sheet, ‹ back to it (2026-10-18). */}
-          <MoveJarSheet
-            jar={shown}
-            way={move.way}
-            accounts={accounts}
-            open={move.open}
-            onOpenChange={(open) => setMove((current) => ({ ...current, open }))}
-          />
-          <BoughtSheet
-            jar={shown}
-            accounts={accounts}
-            categoryGroups={categoryGroups}
-            // Its moves come newest first.
-            since={recentTransactions[shown.id]?.[0]?.occurredAt}
-            open={buying}
-            onOpenChange={setBuying}
-            onDone={() => setOpenId(null)}
-          />
-          <JarFormSheet
-            jar={shown}
-            open={form.open && form.mode === "edit"}
-            onOpenChange={(open) => setForm((current) => ({ ...current, open }))}
-            onDeleted={() => setOpenId(null)}
-          />
-        </JarSheet>
-      ) : null}
+      {jarSheet}
       {/* A new jar: a sheet of its own. */}
       <JarFormSheet
         open={form.open && form.mode === "new"}

@@ -1,12 +1,12 @@
 import type * as React from "react"
-import { CheckIcon, ChevronDownIcon, ChevronRightIcon, type LucideIcon } from "lucide-react"
+import { CheckIcon, ChevronRightIcon, type LucideIcon } from "lucide-react"
 
+import { FoldSection } from "@/components/app/fold-section"
 import { IconTile, type IconTileTone } from "@/components/app/icon-tile"
 import { StickyBand } from "@/components/app/sticky-band"
 import { SwipeRow } from "@/components/app/swipe-row"
 
 import { Card } from "@/components/ui/card"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
   Item,
   ItemActions,
@@ -132,8 +132,6 @@ function SettingsGroup({
           size === "lg" && "px-6",
           size === "lg" && stickyCaption && "max-md:px-[calc(var(--main-content-px)+--spacing(6))]",
           flat && "px-0",
-          // A fold's "Hiện … / Thu gọn" beside its title from md, not at the far end of a wide row (2026-10-21).
-          collapsible && "md:justify-start md:gap-4",
           flat && stickyCaption && "max-md:px-(--main-content-px)",
         )}
       >
@@ -175,26 +173,21 @@ function SettingsGroup({
 
   if (collapsible) {
     return (
-      <Collapsible asChild defaultOpen={collapsible.defaultOpen}>
-        <section className="flex flex-col">
-          {caption(
-            // As the "Xem tất cả ›" of a section's title (SectionHeader), the chevron turning to say it folds.
-            <CollapsibleTrigger className="group/trigger relative flex shrink-0 items-center gap-0.5 text-sm font-medium text-foreground/70 transition-colors outline-none after:absolute after:-inset-x-2 after:-inset-y-3 hover:text-foreground focus-visible:underline active:opacity-60">
-              <span className="group-data-[state=open]/trigger:hidden">{collapsible.showLabel}</span>
-              <span className="hidden group-data-[state=open]/trigger:inline">Thu gọn</span>
-              <ChevronDownIcon
-                aria-hidden="true"
-                className="size-4 transition-transform duration-200 group-data-[state=open]/trigger:rotate-180 motion-reduce:transition-none"
-              />
-            </CollapsibleTrigger>,
-          )}
-          {/* The space under the caption slides with the card, inside the
-              content: closed, the hidden rows leave no margin. */}
-          <CollapsibleContent>
-            <div className="flex flex-col gap-2 pt-2">{body}</div>
-          </CollapsibleContent>
-        </section>
-      </Collapsible>
+      <FoldSection
+        title={title}
+        titleClassName={cn("flex min-w-0 items-center gap-1.5", groupCaptionClassName)}
+        captionClassName={cn(
+          captionRowClassName,
+          size === "lg" && "px-6",
+          flat && "px-0",
+          // A fold's "Hiện … / Thu gọn" beside its title from md, not at the far end of a wide row (2026-10-21).
+          "md:justify-start md:gap-4",
+        )}
+        showLabel={collapsible.showLabel}
+        defaultOpen={collapsible.defaultOpen}
+      >
+        {body}
+      </FoldSection>
     )
   }
 

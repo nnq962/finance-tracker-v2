@@ -32,6 +32,18 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.37.0",
+    date: "2026-10-21",
+    title: "Trang Tài khoản gọn hơn, có mục Lưu trữ",
+    changes: [
+      { kind: "new", text: "Tài khoản đã khoá và hũ đã hoàn thành chuyển vào Lưu trữ: một dòng nhỏ cuối trang Tài khoản mở danh sách, chạm một mục để xem chi tiết rồi ‹ quay lại. Không còn nút Hiện/Thu gọn bé tí." },
+      { kind: "improved", text: "Trên máy tính, mọi thẻ ở trang Tài khoản cùng một cỡ: tổng số dư, từng loại tài khoản, tài khoản, hũ và ô Thêm; rê chuột lên thẻ thì thẻ nổi nhẹ." },
+      { kind: "improved", text: "Giao dịch | Vay nợ đổi thành Chi tiêu | Vay nợ, viên chọn trượt mượt giữa hai mục." },
+      { kind: "improved", text: "Tổng quan và Cài đặt trên máy tính bỏ tiêu đề lớn, nội dung bắt đầu ngay dưới thanh trên." },
+      { kind: "improved", text: "Các nhóm thu gọn còn lại mở và đóng mượt hơn, đổi chiều được khi bấm giữa chừng." },
+    ],
+  },
+  {
     version: "6.36.0",
     date: "2026-10-21",
     title: "Vay nợ gộp vào Giao dịch",

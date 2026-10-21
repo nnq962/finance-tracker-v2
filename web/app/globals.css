@@ -6,6 +6,7 @@
 
 @theme inline {
   --shadow-card: var(--card-shadow);
+  --shadow-card-hover: var(--card-shadow-hover);
   --shadow-control: var(--control-shadow);
   --shadow-toast: var(--toast-shadow);
   --shadow-pastel: var(--pastel-shadow);
@@ -244,6 +245,8 @@
    * No hairline ring, which read as a border.
    */
   --card-shadow: 0 8px 40px rgb(0 0 0 / 0.12);
+  /* A card that opens something, under a mouse (desktop): a step further off the page (2026-10-21). */
+  --card-shadow-hover: 0 12px 48px rgb(0 0 0 / 0.16);
   /*
    * The elevated button and the segmented thumb (2026-10-21): a hairline and
    * a short, soft fall, small enough to stay inside the 16 of room a header
@@ -269,6 +272,8 @@
 .dark {
   /* Apple's same menu shadow in the dark (Figma kit): lost on the black page, where the card's lighter grey lifts it; no edge highlight. */
   --card-shadow: 0 8px 40px rgb(0 0 0 / 0.12);
+  /* In the dark the shadow barely shows: the lift stays a touch deeper. */
+  --card-shadow-hover: 0 12px 48px rgb(0 0 0 / 0.5);
   /* No fall on the black: the elevated button is a raised grey with a light hairline. */
   --control-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.1);
   --control: oklch(0.29 0.004 286);

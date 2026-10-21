@@ -16,7 +16,8 @@ export type TransactionsPageView = "transactions" | "debts"
  * used to be switches between them at once, both loaded with the page; the
  * address follows (?view=debts) so a reload or a link lands on the same one.
  * Only the one shown is mounted: each has its own tools, floating button and
- * sheets.
+ * sheets. Each draws its own switch, so the switch remembers its thumb
+ * (`memoryKey`) and slides it across when the view changes (2026-10-21).
  */
 export function TransactionsPageViews({
   view,
@@ -46,8 +47,8 @@ export function TransactionsPageViews({
 
   const viewSwitch = (
     <Tabs value={shown} onValueChange={(next) => change(next as TransactionsPageView)}>
-      <TabsList variant="segmented" className="w-52" aria-label="Giao dịch hoặc vay nợ">
-        <TabsTrigger value="transactions">Giao dịch</TabsTrigger>
+      <TabsList variant="segmented" memoryKey="transactions-view" className="w-52" aria-label="Chi tiêu hoặc vay nợ">
+        <TabsTrigger value="transactions">Chi tiêu</TabsTrigger>
         <TabsTrigger value="debts">Vay nợ</TabsTrigger>
       </TabsList>
     </Tabs>
