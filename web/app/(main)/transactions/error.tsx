@@ -8,7 +8,7 @@ export default function TransactionsError({ error, retry }: { error: Error & { d
   useReportError(error)
   return (
     <Page>
-      <PageHeader title="Giao dịch" />
+      <PageHeader title="Giao dịch" bare />
       <ErrorCard title="Không tải được giao dịch" onRetry={retry} />
     </Page>
   )

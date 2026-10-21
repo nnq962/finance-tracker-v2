@@ -26,7 +26,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
   return (
     <Page>
       {/* Accounts and jars are added from the lists themselves (2026-10-14). */}
-      <PageHeader title="Tài khoản" />
+      <PageHeader title="Tài khoản" bare />
 
       {accounts.length > 0 ? (
         <BudgetLayout

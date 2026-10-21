@@ -12,7 +12,7 @@ export default function DebtsLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <PageHeaderSkeleton title="Vay nợ" accessory={1} actions={["w-40", "w-44"]} />
+        <PageHeaderSkeleton bare accessory={1} />
 
         {/* As DebtsView: the balance, then "Cần thu" and "Cần trả" (side by
             side from lg up), each person's avatar, name and note, what is left

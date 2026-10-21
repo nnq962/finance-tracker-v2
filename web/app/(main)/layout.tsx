@@ -65,6 +65,8 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
                     <MainBreadcrumb />
                   </div>
                   <div className="flex items-center gap-1">
+                    {/* The page's own tools (the month, its actions), moved here by PageTopBarTools (its pageTopBarToolsId). */}
+                    <div id="page-top-bar-tools" className="mr-2 flex items-center gap-2 empty:hidden" />
                     <AssistantHeaderButton />
                     <NotificationsButton variant="ghost" />
                     <ThemeToggle size="icon" />

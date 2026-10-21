@@ -8,7 +8,7 @@ export default function DebtsError({ error, retry }: { error: Error & { digest?:
   useReportError(error)
   return (
     <Page>
-      <PageHeader title="Vay nợ" />
+      <PageHeader title="Vay nợ" bare />
       <ErrorCard title="Không tải được các khoản vay nợ" onRetry={retry} />
     </Page>
   )

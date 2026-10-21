@@ -8,7 +8,7 @@ export default function AccountsError({ error, retry }: { error: Error & { diges
   useReportError(error)
   return (
     <Page>
-      <PageHeader title="Tài khoản" />
+      <PageHeader title="Tài khoản" bare />
       <ErrorCard title="Không tải được tài khoản" onRetry={retry} />
     </Page>
   )

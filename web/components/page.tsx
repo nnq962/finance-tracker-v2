@@ -1,5 +1,6 @@
 import type * as React from "react"
 
+import { PageTopBarTools } from "@/components/page-top-bar-tools"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
@@ -33,6 +34,14 @@ type PageHeaderProps = {
   accessory?: React.ReactNode
   /** Labelled buttons from md up; below md pages offer their main action as a floating button. */
   actions?: React.ReactNode
+  /**
+   * No visible name (2026-10-21): the tab bar and the sidebar already name
+   * the page (Tài khoản, Giao dịch, Vay nợ). On phones only the tools stay,
+   * on the right as in an iOS bar with no title, and no row at all without
+   * them; from md up the tools and actions move into the top bar, beside the
+   * bell, and the content starts under it. The name stays for screen readers.
+   */
+  bare?: boolean
 }
 
 /**
@@ -41,7 +50,29 @@ type PageHeaderProps = {
  * away with the page. The home puts the user's avatar and greeting in the
  * name's place.
  */
-function PageHeader({ title, lead, tools, accessory, actions }: PageHeaderProps) {
+function PageHeader({ title, lead, tools, accessory, actions, bare = false }: PageHeaderProps) {
+  if (bare) {
+    return (
+      // contents: no box of its own, so the page's gap does not open above the content when nothing shows.
+      <header data-slot="page-header" className="contents">
+        <h1 className="sr-only">{title}</h1>
+        {/* From md the content starts 16 under the top bar, which holds the tools. */}
+        <div aria-hidden="true" className="hidden h-4 md:block" />
+        {tools || accessory ? (
+          <div className={cn(pageHeaderClassName, "justify-end gap-2 md:hidden")}>
+            {tools}
+            {accessory}
+          </div>
+        ) : null}
+        {tools || actions || accessory ? (
+          <PageTopBarTools>
+            {tools}
+            {actions ?? accessory}
+          </PageTopBarTools>
+        ) : null}
+      </header>
+    )
+  }
   return (
     <header data-slot="page-header" className={pageHeaderClassName}>
       {lead ? (
@@ -78,8 +109,11 @@ function PageHeaderSkeleton({
   tools = [],
   accessory = 0,
   actions = [],
+  bare = false,
 }: {
   title?: string
+  /** As PageHeader's `bare`: on phones only the tools, on the right; nothing from md up (the top bar holds them). */
+  bare?: boolean
   /** The home's avatar and greeting in the title's place. */
   lead?: boolean
   /** The tools shown on every size, in order: a round button or a pill (the month). */
@@ -89,6 +123,24 @@ function PageHeaderSkeleton({
   /** The labelled actions from md up, as each one's width class in order, e.g. ["w-52", "w-44"]. */
   actions?: string[]
 }) {
+  if (bare) {
+    // As PageHeader's bare form: no box of its own (contents), 16 above the content from md, the tools on phones.
+    return (
+      <div aria-hidden="true" className="contents">
+        <div className="hidden h-4 md:block" />
+        {tools.length + accessory > 0 ? (
+          <div className={cn(pageHeaderClassName, "justify-end gap-2 md:hidden")}>
+            {tools.map((tool, index) => (
+              <Skeleton key={`tool-${index}`} className={cn("h-11 rounded-full", tool === "pill" ? "w-32" : "w-11")} />
+            ))}
+            {Array.from({ length: accessory }, (_, index) => (
+              <Skeleton key={`accessory-${index}`} className="size-11 rounded-full" />
+            ))}
+          </div>
+        ) : null}
+      </div>
+    )
+  }
   return (
     <div aria-hidden="true" className={pageHeaderClassName}>
       {lead ? (

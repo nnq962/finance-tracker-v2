@@ -277,10 +277,11 @@ export function TransactionsScreen({
       {/* Searching on a phone the field takes the top, and the tab bar makes way. */}
       {searching ? <div data-hide-tab-bar hidden /> : null}
       {/* Folds away while searching, so the field slides up to the top. */}
-      {/* Its own space below goes with it, from md up too (the page's gap). */}
-      <Collapse open={!searching} className={searching ? "mb-0" : "max-md:mb-0"}>
+      {/* Its space below is its own (the row's 16 on phones, 16 above the content from md). */}
+      <Collapse open={!searching} className="mb-0">
         <PageHeader
           title="Giao dịch"
+          bare
           tools={<MonthSelect size="bar" value={shownMonth} max={thisMonth} onValueChange={changeMonth} />}
           actions={headerActions}
         />

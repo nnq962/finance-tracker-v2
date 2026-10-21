@@ -121,6 +121,7 @@ export function DebtsDashboard({
     <Page>
       <PageHeader
         title="Vay nợ"
+        bare
         actions={
           <>
             <Button type="button" variant="elevated" onClick={() => setContactsOpen(true)}>
