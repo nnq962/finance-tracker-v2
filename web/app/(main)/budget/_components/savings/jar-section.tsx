@@ -132,14 +132,11 @@ export function JarList({
     <>
       {part === "open" ? (
         <>
-          {/* A list on phones, with a line on what a jar is while there is none; from lg up the
+          {/* A list on phones, with no line under it (2026-10-21); from lg up the
               accounts grid's cards, the last a dashed one to add, alone the same one cell when
               there is no jar yet (2026-10-21: a full-width row was rejected). */}
           <div className="lg:hidden">
-            <SettingsGroup
-              title={filling.length ? `Hũ tiết kiệm · ${filling.length}` : "Hũ tiết kiệm"}
-              footer={filling.length ? undefined : "Để dành cho một món: đặt mục tiêu, nạp dần mỗi tháng."}
-            >
+            <SettingsGroup title={filling.length ? `Hũ tiết kiệm · ${filling.length}` : "Hũ tiết kiệm"}>
               {filling.map((jar) => (
                 <JarRow key={jar.id} jar={jar} today={today} onSelect={() => setOpenId(jar.id)} />
               ))}
@@ -159,7 +156,6 @@ export function JarList({
               ))}
               <AddCard label="Thêm hũ" onClick={() => setForm({ open: true, mode: "new" })} />
             </div>
-            {filling.length ? null : <p className="px-4 text-sm text-muted-foreground">Để dành cho một món: đặt mục tiêu, nạp dần mỗi tháng.</p>}
           </section>
         </>
       ) : (
