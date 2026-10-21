@@ -35,7 +35,9 @@ export function TransactionDateGroup({
   const { income, expense } = totals ?? getTransactionSummary(group.transactions)
 
   return (
+    // Flat (2026-10-21): the days' rows straight on the page, hairlines between them.
     <SettingsGroup
+      flat
       stickyCaption
       title={
         <time dateTime={group.dateKey}>{formatDayLabel(group.dateKey, todayDateKey)}</time>

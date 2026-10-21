@@ -71,6 +71,7 @@ function SettingsGroup({
   collapsible,
   stickyCaption = false,
   plain = false,
+  flat = false,
   children,
 }: {
   title?: React.ReactNode
@@ -99,6 +100,12 @@ function SettingsGroup({
    * and the folding.
    */
   plain?: boolean
+  /**
+   * The rows straight on the page, as an iOS plain list (2026-10-21, the
+   * transactions): no card or shadow, the rows' text on the page's margin,
+   * hairlines between them; the caption lines up with the rows.
+   */
+  flat?: boolean
   children: React.ReactNode
 }) {
   const caption = (end: React.ReactNode) => {
@@ -124,6 +131,8 @@ function SettingsGroup({
           // A dashboard card's rows sit 24 in: its caption lines up with them (2026-10-21).
           size === "lg" && "px-6",
           size === "lg" && stickyCaption && "max-md:px-[calc(var(--main-content-px)+--spacing(6))]",
+          flat && "px-0",
+          flat && stickyCaption && "max-md:px-(--main-content-px)",
         )}
       >
         {title ? (
@@ -139,6 +148,12 @@ function SettingsGroup({
     <>
       {plain ? (
         children
+      ) : flat ? (
+        // Bled by the rows' own 16 inset, so their text sits on the page's margin.
+        <div data-slot="flat-group" className="-mx-4">
+          {header}
+          <ul className={listClassName}>{children}</ul>
+        </div>
       ) : (
         // Rows carry their own padding, so the card only frames them.
         <Card size={size} className={cn("gap-0 py-0", stickyCaption && "mt-px")}>
@@ -524,6 +539,7 @@ function SettingsGroupSkeleton({
   caption = true,
   captionAction = false,
   size,
+  flat = false,
   children,
   ...row
 }: Omit<SettingsRowSkeletonProps, "index"> & {
@@ -537,20 +553,23 @@ function SettingsGroupSkeleton({
   size?: "default" | "lg"
   /** SettingsRowSkeletons, for a group whose rows differ. */
   children?: React.ReactNode
+  /** As SettingsGroup's: the rows on the page, no card. */
+  flat?: boolean
 }) {
+  const Frame = flat ? "div" : Card
   return (
     <div aria-hidden="true" className="space-y-2">
       {caption || captionAction ? (
-        <div className={captionRowClassName}>
+        <div className={cn(captionRowClassName, flat && "px-0")}>
           {caption ? <Skeleton className="h-3 w-20" /> : null}
           {captionAction ? <Skeleton className="ml-auto h-3 w-16" /> : null}
         </div>
       ) : null}
-      <Card size={size} className="gap-0 py-0">
+      <Frame {...(flat ? { className: "-mx-4" } : { size, className: "gap-0 py-0" })}>
         {children ?? Array.from({ length: rows }, (_, index) => (
           <SettingsRowSkeleton key={index} index={index} {...row} />
         ))}
-      </Card>
+      </Frame>
     </div>
   )
 }

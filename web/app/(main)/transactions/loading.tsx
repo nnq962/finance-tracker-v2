@@ -84,7 +84,7 @@ export default function TransactionsLoading() {
               with the category's icon, name and account, amount and time. */}
           <div className="space-y-6 md:space-y-8">
             {[3, 2, 2].map((rows, index) => (
-              <SettingsGroupSkeleton key={index} rows={rows} captionAction description trailing="amount" />
+              <SettingsGroupSkeleton key={index} flat rows={rows} captionAction description trailing="amount" />
             ))}
           </div>
         </TransactionsLayout>
