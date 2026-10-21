@@ -17,6 +17,18 @@ import { Button } from "@/components/ui/button"
  * its own 16 (so the button sits 16 from the top, 2026-10-19). Back goes
  * where the user came from, else to `fallbackHref`.
  */
+/**
+ * Whether back stays in the app (2026-10-21). The Navigation API lists only
+ * this site's entries, so one before the current is ours; history.length
+ * also counts pages of other sites, where back would leave the app. Without
+ * the API (older Safari), history.length as before.
+ */
+function canGoBackInApp() {
+  const navigation = (window as Window & { navigation?: { currentEntry?: { index: number } | null } }).navigation
+  if (navigation?.currentEntry) return navigation.currentEntry.index > 0
+  return window.history.length > 1
+}
+
 export function ScreenHeader({
   title,
   backLabel = "Quay lại",
@@ -37,7 +49,7 @@ export function ScreenHeader({
         variant="elevated"
         size="icon"
         aria-label={backLabel}
-        onClick={() => (window.history.length > 1 ? router.back() : router.push(fallbackHref))}
+        onClick={() => (canGoBackInApp() ? router.back() : router.push(fallbackHref))}
       >
         <ChevronLeftIcon />
       </Button>

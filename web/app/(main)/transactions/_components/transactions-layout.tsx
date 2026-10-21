@@ -37,7 +37,14 @@ export function TransactionsLayout({ summary, filters, children, listOnly = fals
           fold lets the card's shadow out (Collapse clips only while it
           slides, 2026-10-21; it was room made with margins before).
           From lg up the fold steps aside (contents) for the rail. */}
-      <Collapse open={!listOnly} className="lg:contents" contentClassName="lg:contents">
+      {/* Its 48 of room below hold the card's shadow inside the fold, so the shadow slides in
+          with the card rather than appearing at the end, once the fold stops clipping (2026-10-21);
+          the margin gives the room back while open. */}
+      <Collapse
+        open={!listOnly}
+        className={cn("lg:contents", listOnly ? "mb-0" : "max-lg:-mb-12")}
+        contentClassName="max-lg:pb-12 lg:contents"
+      >
         <div className="flex min-w-0 flex-col gap-6 *:shrink-0 md:gap-8">
           {summary}
           {filters ? <div className="hidden lg:block">{filters}</div> : null}

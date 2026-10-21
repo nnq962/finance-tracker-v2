@@ -98,7 +98,8 @@ export function BudgetsSheet({
 
   return (
     <>
-      <PageSheet title="Hạn mức" open={open} onOpenChange={onOpenChange} className="gap-6">
+      {/* Named as the Settings row that opens it (2026-10-21). */}
+      <PageSheet title="Hạn mức chi tiêu" open={open} onOpenChange={onOpenChange} className="gap-6">
         {!hasAnyBudget(overview) ? (
           <div className="flex flex-col items-center gap-2 px-6 pt-6 text-center">
             <IconTile icon={GaugeIcon} tone="card" size="lg" />

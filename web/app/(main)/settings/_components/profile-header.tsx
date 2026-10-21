@@ -1,3 +1,5 @@
+import * as React from "react"
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 
@@ -10,6 +12,19 @@ import { Badge } from "@/components/ui/badge"
  * wrapping wherever it must, the plan's label under it. No Pro tick by the
  * name (the user found it Facebook-like); the plan opens from Lượt AI below.
  */
+/**
+ * A long email breaks before the @ and after its dots (2026-10-21) rather
+ * than anywhere mid-word; breaking anywhere stays only as the last resort.
+ */
+function breakableEmail(email: string) {
+  return email.split(/(?=@)|(?<=\.)/).map((part, index) => (
+    <React.Fragment key={index}>
+      {index > 0 ? <wbr /> : null}
+      {part}
+    </React.Fragment>
+  ))
+}
+
 export function ProfileHeader({
   name,
   email,
@@ -34,8 +49,8 @@ export function ProfileHeader({
         <AvatarImage src={avatar} alt={name} />
         <AvatarFallback inverse>{initials}</AvatarFallback>
       </Avatar>
-      <p className="mt-3.5 max-w-full text-[28px] leading-9 font-bold tracking-tight">{name}</p>
-      {email ? <p className="mt-0.5 max-w-full text-[15px] leading-5 text-muted-foreground [overflow-wrap:anywhere]">{email}</p> : null}
+      <p className="mt-3.5 max-w-full text-[28px] leading-9 font-bold tracking-tight text-balance">{name}</p>
+      {email ? <p className="mt-0.5 max-w-full text-[15px] leading-5 text-muted-foreground [overflow-wrap:anywhere]">{breakableEmail(email)}</p> : null}
       <Badge variant={isPro ? "ai" : "soft"} className="mt-3">
         {planLabel}
       </Badge>

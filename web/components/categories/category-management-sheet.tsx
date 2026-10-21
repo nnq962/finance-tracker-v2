@@ -144,7 +144,8 @@ export function CategoryManagementSheet({
 
   return (
     <PageSheet
-      title="Quản lý hạng mục"
+      // Named as the Settings row that opens it (2026-10-21).
+      title="Hạng mục"
       open={open}
       onOpenChange={(nextOpen) => {
         if (isPending) return

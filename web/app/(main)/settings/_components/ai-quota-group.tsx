@@ -7,7 +7,24 @@ import { cn } from "@/lib/utils"
 import { plans, type PlanState } from "@/lib/plans/plans"
 
 /** One allowance counting down: what is left of it, a bar that empties, and a note. */
-function UsageMeter({ label, left, total, note }: { label: string; left: number; total: number; note: string }) {
+function UsageMeter({
+  label,
+  left,
+  total,
+  note,
+  secondary = false,
+}: {
+  label: string
+  left: number
+  total: number
+  note: string
+  /** The lesser of two meters (the bonus credits): its bar softer, so the month's leads. */
+  secondary?: boolean
+}) {
+  // A fifth or less left turns the bar amber; none left says so in red under it (2026-10-21:
+  // an empty bar read the same as an untouched one).
+  const share = total > 0 ? left / total : 0
+  const low = total > 0 && left > 0 && share <= 0.2
   return (
     // Divided like list rows, inset 16 from both sides.
     <div className={cn("space-y-3 px-4 py-3", settingsSeparatorClassName())}>
@@ -21,10 +38,14 @@ function UsageMeter({ label, left, total, note }: { label: string; left: number;
         </p>
       </div>
       <Progress
-        value={total > 0 ? (left / total) * 100 : 0}
+        value={share * 100}
+        tone={low ? "warning" : secondary ? "soft" : "default"}
         aria-label={`${label}: còn ${left} trên ${total}`}
       />
-      <p className="text-xs text-muted-foreground">{note}</p>
+      <p className="text-xs text-muted-foreground">
+        {total > 0 && left === 0 ? <span className="font-medium text-destructive-text">Đã hết · </span> : null}
+        {note}
+      </p>
     </div>
   )
 }
@@ -53,7 +74,7 @@ export function AiQuotaGroup({ planState, onOpenPlan }: { planState: PlanState; 
             label="Lượt tháng này"
             left={monthLeft}
             total={planState.aiLimit}
-            note={`Làm mới ${renewsOn}${planState.proEndsAt ? ` · Pro đến ${formatDate(toDateKey(planState.proEndsAt))}` : ""}`}
+            note={`${monthLeft === 0 && planState.aiCredits > 0 ? "Đang dùng lượt thưởng · " : ""}Làm mới ${renewsOn}${planState.proEndsAt ? ` · Pro đến ${formatDate(toDateKey(planState.proEndsAt))}` : ""}`}
           />
           {planState.aiCreditsEarned > 0 ? (
             <UsageMeter
@@ -61,6 +82,7 @@ export function AiQuotaGroup({ planState, onOpenPlan }: { planState: PlanState; 
               left={planState.aiCredits}
               total={planState.aiCreditsEarned}
               note="Từ nhiệm vụ, dùng khi hết lượt tháng"
+              secondary
             />
           ) : null}
         </div>

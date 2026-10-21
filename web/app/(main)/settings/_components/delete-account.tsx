@@ -92,7 +92,8 @@ export function DeleteAccountSheet({ email, proEndsAt, open, onOpenChange }: { e
             <Input
               id="delete-account-confirm"
               value={word}
-              placeholder={DELETE_ACCOUNT_WORD}
+              // Not the word itself, which read as already typed (2026-10-21).
+              placeholder={`Gõ ${DELETE_ACCOUNT_WORD}`}
               autoCapitalize="characters"
               autoComplete="off"
               autoCorrect="off"

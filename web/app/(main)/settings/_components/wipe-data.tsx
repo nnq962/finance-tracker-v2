@@ -62,7 +62,8 @@ export function WipeDataSheet({ summary, open, onOpenChange }: { summary: UserDa
   return (
     <>
       <PageSheet
-        title="Xoá dữ liệu"
+        // The row's own name (2026-10-21), as an iOS screen keeps it.
+        title="Xoá toàn bộ dữ liệu"
         open={open}
         onOpenChange={(next) => {
           if (pending) return
@@ -78,7 +79,8 @@ export function WipeDataSheet({ summary, open, onOpenChange }: { summary: UserDa
           <Button
             variant="destructive-solid"
             className="w-full"
-            disabled={pending}
+            // Held until the word is typed, as Xoá tài khoản (2026-10-21): no red button live over an empty field.
+            disabled={pending || !isWipeConfirmWord(word)}
             onClick={() => void wipe()}
           >
             {pending ? <Spinner /> : <Trash2Icon />}
@@ -114,7 +116,8 @@ export function WipeDataSheet({ summary, open, onOpenChange }: { summary: UserDa
               <Input
                 id="wipe-confirm"
                 value={word}
-                placeholder={WIPE_CONFIRM_WORD}
+                // Not the word itself, which read as already typed.
+                placeholder={`Gõ ${WIPE_CONFIRM_WORD}`}
                 autoCapitalize="characters"
                 autoComplete="off"
                 autoCorrect="off"

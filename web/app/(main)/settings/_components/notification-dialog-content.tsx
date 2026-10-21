@@ -1,12 +1,11 @@
 "use client"
 
 import { useState, type ReactNode } from "react"
-import { BellRingIcon, ChevronDownIcon, ClockIcon, SaveIcon } from "lucide-react"
+import { BellRingIcon, ChevronDownIcon, ClockIcon } from "lucide-react"
 
 import { Collapse } from "@/components/app/collapse"
 import { WheelPicker, WheelPickerGroup } from "@/components/app/wheel-picker"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
-import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { type NotificationSettings } from "@/lib/notifications/types"
 import { cn } from "@/lib/utils"
@@ -15,9 +14,8 @@ export { defaultNotificationSettings, type NotificationSettings } from "@/lib/no
 
 type NotificationDialogContentProps = {
   children?: ReactNode
-  /** Saves hour and minute together; without it no save button is shown. */
+  /** Saves hour and minute together, as the wheels fold (2026-10-21: no Save button, as every other setting saves itself). */
   onReminderTimeSave?: () => void
-  reminderTimeChanged?: boolean
   settings: NotificationSettings
   onSettingsChange: (settings: NotificationSettings) => void
   disabled?: boolean
@@ -29,7 +27,6 @@ export function NotificationDialogContent({
   settings,
   children,
   onReminderTimeSave,
-  reminderTimeChanged = false,
   onSettingsChange,
   disabled = false,
   notificationsEnabled = settings.notificationsEnabled,
@@ -90,7 +87,10 @@ export function NotificationDialogContent({
           chevron={false}
           expanded={wheelsOpen}
           disabled={timeDisabled}
-          onClick={() => setTimeOpen((open) => !open)}
+          onClick={() => {
+            if (wheelsOpen) onReminderTimeSave?.()
+            setTimeOpen(!wheelsOpen)
+          }}
         />
         <li>
           <Collapse open={wheelsOpen}>
@@ -117,17 +117,6 @@ export function NotificationDialogContent({
           </Collapse>
         </li>
       </SettingsGroup>
-      {onReminderTimeSave ? (
-        <Button
-          type="button"
-          className="w-full"
-          onClick={onReminderTimeSave}
-          disabled={timeDisabled || !reminderTimeChanged}
-        >
-          <SaveIcon />
-          Lưu giờ nhắc
-        </Button>
-      ) : null}
       {children}
     </div>
   )

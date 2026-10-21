@@ -154,10 +154,11 @@ export function TransactionFilterSheet({
       footer={footer}
     >
       <div className="space-y-6">
+        {/* Grey tiles, as the switch row below (2026-10-21): a filter is not a category, colour would say it is. */}
         <SettingsGroup>
           <SettingsRow
             icon={WalletCardsIcon}
-            tone="blue"
+            tone="neutral"
             title="Tài khoản"
             value={pickSummary(accountNames, "tài khoản")}
             onClick={() => setScreen("accounts")}
@@ -165,7 +166,7 @@ export function TransactionFilterSheet({
           {showCategories ? (
             <SettingsRow
               icon={TagIcon}
-              tone="orange"
+              tone="neutral"
               title="Hạng mục"
               value={pickSummary(categoryNames, "hạng mục")}
               onClick={() => setScreen("categories")}
@@ -173,7 +174,7 @@ export function TransactionFilterSheet({
           ) : null}
           <SettingsRow
             icon={CoinsIcon}
-            tone="emerald"
+            tone="neutral"
             title="Số tiền"
             value={amountSummary(searchFilters)}
             onClick={() => setScreen("amount")}

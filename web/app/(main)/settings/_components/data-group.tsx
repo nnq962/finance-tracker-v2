@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { DownloadIcon } from "lucide-react"
+import { FileDownIcon } from "lucide-react"
 
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import type { UserDataSummary } from "@/lib/user-data/repository"
@@ -26,7 +26,7 @@ export function DataGroup({ summary, email, proEndsAt }: { summary: UserDataSumm
           their own under it (2026-10-20): mixing the two kinds in one card
           read badly. */}
       <SettingsGroup title="Dữ liệu" footer="Excel hoặc CSV, tải thẳng về máy bạn.">
-        <SettingsRow icon={DownloadIcon} title="Xuất dữ liệu" onClick={() => setSheet("export")} />
+        <SettingsRow icon={FileDownIcon} title="Xuất dữ liệu" onClick={() => setSheet("export")} />
       </SettingsGroup>
       <SettingsGroup footer="Xoá dữ liệu giữ lại đăng nhập và gói Pro; xoá tài khoản xoá cả hai.">
         <SettingsRow destructive title="Xoá toàn bộ dữ liệu" onClick={() => setSheet("wipe")} />

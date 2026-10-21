@@ -2,7 +2,10 @@
 
 import * as React from "react"
 import {
+  BellPlusIcon,
   BellRingIcon,
+  BookOpenIcon,
+  ChevronRightIcon,
   CalculatorIcon,
   CircleHelpIcon,
   GaugeIcon,
@@ -18,6 +21,8 @@ import {
   MailIcon,
   MessageSquareIcon,
   ScaleIcon,
+  SendIcon,
+  UsersIcon,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -63,6 +68,9 @@ import { VoiceLab } from "./voice-lab"
 import { DataGroup } from "./data-group"
 import { FaqList } from "./faq-screen"
 import { FeedbackScreen } from "./feedback-screen"
+import { LegalScreen } from "./legal-screen"
+import { privacyPolicy } from "@/lib/legal/privacy"
+import { termsOfUse } from "@/lib/legal/terms"
 
 /** Screens opened from the list, in a sheet that slides in from the side. */
 const screens = {
@@ -98,6 +106,14 @@ const screens = {
   },
   feedback: {
     title: "Góp ý với Timi",
+  },
+  // The policies open here, so ✕ comes back to Cài đặt (2026-10-21: as their public pages, in an
+  // installed app with no back button, there was no way back).
+  terms: {
+    title: "Điều khoản sử dụng",
+  },
+  privacy: {
+    title: "Chính sách quyền riêng tư",
   },
 } as const
 
@@ -216,6 +232,7 @@ export function SettingsView({
             uid={user.uid}
             initialState={devices}
             onChange={setDevices}
+            onOpenReminders={() => open("notifications")}
           />
         )
       case "voice":
@@ -228,6 +245,9 @@ export function SettingsView({
         return <SalaryCalculator />
       case "releases":
         return <ReleaseHistory />
+      case "terms":
+      case "privacy":
+        return <LegalScreen document={screen === "terms" ? termsOfUse : privacyPolicy} />
     }
   }
 
@@ -299,7 +319,7 @@ export function SettingsView({
             onClick={() => open("notifications")}
           />
           {/* Not "Hạn mức chi tiêu" again: Chung has that row, for the limits themselves. */}
-          <SettingsRow icon={GaugeIcon} title="Cảnh báo hạn mức" value={budgetAlertsSummary(budgets.alerts)} onClick={() => open("budgetAlerts")} />
+          <SettingsRow icon={BellPlusIcon} title="Cảnh báo hạn mức" value={budgetAlertsSummary(budgets.alerts)} onClick={() => open("budgetAlerts")} />
           <SettingsRow
             icon={SmartphoneIcon}
             // The group's caption already says THÔNG BÁO; the screen keeps the full name.
@@ -323,18 +343,22 @@ export function SettingsView({
             onClick={() => open("salary")}
           />
           <SettingsRow
-            icon={CircleHelpIcon}
+            icon={BookOpenIcon}
             title="Hướng dẫn sử dụng"
             onClick={openWelcome}
           />
           <InstallAppRow />
         </SettingsGroup>
 
-        {/* Help (2026-10-20): the questions, a line to the person behind Timi, the address. */}
+        {/* Help (2026-10-20): the questions, a line to the person behind Timi, the address; the
+            policies with them (2026-10-21), rather than a card of their own among the red ones. */}
         <SettingsGroup title="Hỗ trợ">
           <SettingsRow icon={CircleHelpIcon} title="Câu hỏi thường gặp" onClick={() => open("faq")} />
           <SettingsRow icon={MessageSquareIcon} title="Góp ý với Timi" onClick={() => open("feedback")} />
-          <SettingsRow icon={MailIcon} title="Email hỗ trợ" value={SUPPORT_EMAIL} onClick={() => window.open(`mailto:${SUPPORT_EMAIL}`, "_self")} />
+          {/* The address under the name (2026-10-21): as a value it pushed the name to "Email hỗ t…". */}
+          <SettingsRow icon={MailIcon} title="Email hỗ trợ" description={SUPPORT_EMAIL} onClick={() => window.open(`mailto:${SUPPORT_EMAIL}`, "_self")} />
+          <SettingsRow icon={ScaleIcon} title="Điều khoản sử dụng" onClick={() => open("terms")} />
+          <SettingsRow icon={ShieldCheckIcon} title="Chính sách quyền riêng tư" onClick={() => open("privacy")} />
         </SettingsGroup>
 
         {/* Tools for the people running the app, after the user's own
@@ -345,13 +369,13 @@ export function SettingsView({
             {admin ? (
               <>
                 <SettingsRow
-                  icon={ShieldCheckIcon}
+                  icon={UsersIcon}
                   title="Người dùng & gói"
                   value={String(admin.users)}
                   onClick={() => open("admin")}
                 />
                 <SettingsRow
-                  icon={MegaphoneIcon}
+                  icon={SendIcon}
                   title="Gửi thông báo"
                   value={scheduledCount > 0 ? `${scheduledCount} đã hẹn` : undefined}
                   onClick={() => open("broadcasts")}
@@ -389,12 +413,6 @@ export function SettingsView({
           proEndsAt={planState.proEndsAt ?? null}
         />
 
-        {/* The policies (2026-10-20), as public pages. */}
-        <SettingsGroup>
-          <SettingsRow icon={ScaleIcon} title="Điều khoản sử dụng" onClick={() => router.push("/terms")} />
-          <SettingsRow icon={ShieldCheckIcon} title="Chính sách quyền riêng tư" onClick={() => router.push("/privacy")} />
-        </SettingsGroup>
-
         {/* Signing out last and alone, as in native settings. */}
         <SettingsGroup>
           <SignOutRow />
@@ -404,9 +422,15 @@ export function SettingsView({
         <div className="flex flex-col items-center gap-2 pt-2 pb-4 text-muted-foreground">
           <TimiIcon size={48} className="size-12" />
           <TimiWordmark className="text-xl text-foreground" />
-          <p className="text-xs">
+          {/* Opens what is new in it, for everyone (2026-10-21; the history was the admin's only). */}
+          <button
+            type="button"
+            onClick={() => open("releases")}
+            className="pressable flex min-h-11 items-center gap-1 rounded-full px-4 text-xs outline-none focus-visible:ring-3 focus-visible:ring-ring/30 active:bg-muted [@media(hover:hover)]:hover:bg-muted"
+          >
             Phiên bản {process.env.NEXT_PUBLIC_APP_VERSION} · Beta
-          </p>
+            <ChevronRightIcon aria-hidden="true" className="size-3.5" />
+          </button>
         </div>
       </div>
 

@@ -60,7 +60,9 @@ export function FeedbackScreen({ onSent }: { onSent: () => void }) {
   const version = process.env.NEXT_PUBLIC_APP_VERSION
 
   return (
-    <div className="space-y-6">
+    // Gaps, not space-y: the chip row's own -my-1 (room for its chips' press) undid space-y's
+    // margin under it, and the chips sat on the card's edge (2026-10-21).
+    <div className="flex flex-col gap-6">
       <ChipRow>
         {feedbackKinds.map((item) => (
           <ChipButton key={item} type="button" active={kind === item} onClick={() => setKind(item)}>

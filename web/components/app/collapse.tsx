@@ -53,7 +53,10 @@ export function Collapse({
       onAnimationComplete={() => setMoving(false)}
       // Margins set by the open state (e.g. a gap that closes with it) ease with the size.
       className={cn("transition-[margin] duration-250 ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:duration-150", className)}
-      style={{ clipPath: moving || !open ? edge : "none" }}
+      // Closed and still, its content (e.g. Huỷ beside the search field) is also kept out of the
+      // page's scroll area: clip-path hides it but it still widened the page, which then scrolled
+      // sideways on phones (2026-10-21).
+      style={{ clipPath: moving || !open ? edge : "none", overflow: !open && !moving ? "clip" : undefined }}
     >
       {/* Across, the content keeps its own width while the box narrows to nothing. */}
       {/* flow-root keeps the content's own margins inside (2026-10-21): while the height is set

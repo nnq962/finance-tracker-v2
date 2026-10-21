@@ -600,3 +600,18 @@
 [data-sonner-toaster] {
   pointer-events: auto;
 }
+
+/*
+ * Reduced motion: sheets (vaul) appear and leave in place instead of sliding
+ * the height of the screen (2026-10-21). vaul writes its slide inline and in
+ * its own keyframes, so only !important reaches them; 0.01ms rather than 0,
+ * so the animationend that unmounts a closed sheet still fires. The screens
+ * pushed inside a sheet already skip their slide (PageSheet).
+ */
+@media (prefers-reduced-motion: reduce) {
+  [data-vaul-drawer],
+  [data-vaul-overlay] {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -605,6 +605,9 @@ function ProgressSection() {
               </div>
               <Progress value={progress} aria-label="Quỹ du lịch" />
             </div>
+            {/* tone (2026-10-21): soft for a lesser second meter, warning when little is left. */}
+            <Progress value={70} tone="soft" aria-label="Lượt thưởng" />
+            <Progress value={15} tone="warning" aria-label="Còn ít lượt" />
             <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="secondary" onClick={() => setProgress(Math.max(0, progress - 12))}>
                 −12%

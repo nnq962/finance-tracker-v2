@@ -5,7 +5,7 @@ import { CheckIcon, MonitorIcon, MoonIcon, SunIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
-import { Switch } from "@/components/ui/switch"
+import { Switch, SWITCH_SLIDE_MS } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
 
 export const themeOptions = [
@@ -69,8 +69,6 @@ function ThemePreview({ theme }: { theme: "light" | "dark" }) {
  * side by side, the one showing ticked; a tap picks it. Under them Tự động
  * follows the device's setting, the screens then ticking whichever it is.
  */
-// How long the switch's knob takes to slide (Switch: 500ms).
-const SWITCH_SLIDE_MS = 500
 
 export function ThemeOptions() {
   const { choice, shown, choose } = useThemeChoice()

@@ -90,7 +90,7 @@ export function MonthSummary({
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="pressable -mx-2 -mb-2 flex w-[calc(100%+1rem)] items-center gap-3 rounded-2xl px-2 py-2 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/30 active:bg-muted [@media(hover:hover)]:hover:bg-muted"
+            className="pressable -mx-2 -mb-2 flex w-[calc(100%+1rem)] items-center gap-3 rounded-md px-2 py-2 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/30 active:bg-muted [@media(hover:hover)]:hover:bg-muted"
           >
             <span className="flex min-w-0 flex-1 flex-col gap-1.5">
               <span className="flex items-baseline justify-between gap-3 text-sm">

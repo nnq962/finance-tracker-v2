@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useSyncExternalStore, type ReactNode } from "react"
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react"
 import { toast } from "sonner"
 import { NotificationDialogContent } from "./notification-dialog-content"
 import { Separator } from "@/components/ui/separator"
@@ -27,7 +27,6 @@ function subscribePermission(onChange: () => void) {
 export function NotificationPreferences({ uid, initialSettings, onSaved, children }: { uid: string; initialSettings: NotificationSettings; onSaved?: (settings: NotificationSettings) => void; children?: ReactNode }) {
   const [draft, setDraft] = useState({ ...initialSettings, timeZone: "Asia/Ho_Chi_Minh" })
   const saved = useRef(initialSettings)
-  const [savedTime, setSavedTime] = useState(initialSettings.dailyReminderTime)
   const pending = useRef(false)
   const [saving, setSaving] = useState(false)
   const permission = useSyncExternalStore(subscribePermission, notificationPermission, () => null)
@@ -37,7 +36,6 @@ export function NotificationPreferences({ uid, initialSettings, onSaved, childre
     const result = await saveNotificationSettingsAction({ ...settings, timeZone: "Asia/Ho_Chi_Minh" }, uid)
     if (!result.success) throw new Error(result.error)
     saved.current = result.data
-    setSavedTime(result.data.dailyReminderTime)
     setDraft(result.data)
     onSaved?.(result.data)
     notifyPushDeviceChanged()
@@ -85,6 +83,15 @@ export function NotificationPreferences({ uid, initialSettings, onSaved, childre
     }
   }
 
+  // A time turned on the wheels and left without folding them (the screen closed) is kept too.
+  const latest = useRef({ draft, save: saveReminderTime })
+  useEffect(() => {
+    latest.current = { draft, save: saveReminderTime }
+  })
+  useEffect(() => () => {
+    if (latest.current.draft.dailyReminderTime !== saved.current.dailyReminderTime) void latest.current.save()
+  }, [])
+
   return (
     <div>
       <NotificationDialogContent
@@ -93,7 +100,6 @@ export function NotificationPreferences({ uid, initialSettings, onSaved, childre
         notificationsEnabled={checked}
         onNotificationsEnabledChange={(enabled) => void toggleNotifications(enabled)}
         onReminderTimeSave={() => void saveReminderTime()}
-        reminderTimeChanged={draft.dailyReminderTime !== savedTime}
         disabled={saving || permission === null}
       >
         {children && <>

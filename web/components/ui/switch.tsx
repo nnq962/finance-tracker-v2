@@ -5,6 +5,9 @@ import { CheckIcon } from "lucide-react"
 import { cn } from "cn"
 import { Switch as SwitchPrimitive } from "radix-ui"
 
+/** How long the thumb takes to slide, in ms (its class below says the same: duration-[400ms]). */
+export const SWITCH_SLIDE_MS = 400
+
 function Switch({
   className,
   size = "default",

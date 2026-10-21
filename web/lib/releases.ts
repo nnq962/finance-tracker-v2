@@ -32,6 +32,21 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.39.0",
+    date: "2026-10-21",
+    title: "Cài đặt rõ ràng và an toàn hơn",
+    changes: [
+      { kind: "improved", text: "Điều khoản và Quyền riêng tư mở ngay trong Cài đặt, đóng là quay lại; nằm chung nhóm Hỗ trợ. Mục lục bấm là cuộn tới mục đó." },
+      { kind: "improved", text: "Xoá toàn bộ dữ liệu khoá nút cho tới khi gõ đúng XOÁ, như Xoá tài khoản." },
+      { kind: "improved", text: "Lượt AI: còn ít thì thanh màu cam, hết thì báo rõ và cho biết đang dùng lượt thưởng; thanh lượt thưởng nhạt hơn." },
+      { kind: "improved", text: "Giờ nhắc tự lưu khi gập bánh xe chọn giờ, không cần nút Lưu. Thiết bị nhận thông báo có lối bật trên máy này, lỗi tải không còn hiện thành thông báo nổi." },
+      { kind: "improved", text: "Mỗi dòng Cài đặt một icon riêng; tiêu đề sheet trùng tên dòng; dòng Phiên bản ở cuối mở Lịch sử phiên bản." },
+      { kind: "improved", text: "Khi bật giảm chuyển động trên máy, các sheet hiện ra ngay thay vì trượt." },
+      { kind: "fixed", text: "Email hỗ trợ không còn bị cắt tên; sheet Góp ý không còn dính chip vào khung nhập; theme đổi đúng lúc núm gạt dừng." },
+      { kind: "fixed", text: "Giao dịch: không còn vuốt ngang được trên điện thoại; bóng thẻ Thu/Chi không nháy khi đóng tìm kiếm; icon trong Bộ lọc về màu xám; nền khi chạm dòng hạn mức bo góc khớp thẻ." },
+    ],
+  },
+  {
     version: "6.38.0",
     date: "2026-10-21",
     title: "Giao dịch gọn và dễ dùng hơn trên điện thoại",
