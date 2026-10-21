@@ -34,7 +34,7 @@ export function SheetNavHeader({
   const back = (
     <Button
       type="button"
-      variant="secondary"
+      variant="elevated"
       size="icon"
       aria-label={backLabel}
       disabled={disabled}

@@ -54,7 +54,7 @@ export function AiSection() {
               <SparklesIcon className="size-3.5 text-ai-on-primary" />
               AI đã điền, kiểm tra rồi lưu
             </div>
-            <div className="surface-plain flex flex-col gap-5 rounded-[24px] bg-card p-5 text-card-foreground sm:p-6">
+            <div className="flex flex-col gap-5 rounded-[24px] bg-card p-5 text-card-foreground sm:p-6">
               <p className="text-base leading-loose text-muted-foreground sm:text-lg">
                 <Blank>Hôm qua</Blank> lúc <Blank>16:00</Blank>, bạn đã <Blank>chi</Blank> <Blank>80.000đ</Blank> cho{" "}
                 <Blank>Trà sữa</Blank> từ <Blank>Tiền mặt</Blank>.

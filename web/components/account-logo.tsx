@@ -54,7 +54,7 @@ export function AccountLogo({ account, size = "sm", lazy = false, className }: A
         tileClassName[size],
         // Logos are drawn for a white ground, so they keep one in dark mode;
         // a hairline sets the tile off a white card.
-        account.logoUrl ? "bg-white ring-1 ring-black/5 ring-inset" : "bg-muted text-foreground",
+        account.logoUrl ? "bg-white ring-1 ring-black/5 ring-inset" : "bg-fill-1 text-foreground",
         className,
       )}
     >

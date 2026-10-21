@@ -524,7 +524,7 @@ function LimitSample() {
   return (
     <div className="grid gap-4 md:grid-cols-2 md:items-start">
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 rounded-[20px] bg-card p-4 shadow-card surface-plain">
+        <div className="flex flex-col gap-3 rounded-[20px] bg-card p-4 shadow-card">
           <LimitBar value={38} max={100} label="Dưới mốc báo sớm (80%)" />
           <LimitBar value={86} max={100} tone="near" label="Từ mốc báo sớm (80% hay 90%), hay đang chi nhanh" />
           <LimitBar value={113} max={100} tone="over" label="Đã vượt" />

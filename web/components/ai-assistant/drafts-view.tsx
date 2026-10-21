@@ -315,7 +315,7 @@ export function DraftsView({
               {offer && draft.suggestedCategory ? (
                 <div className="-mt-1 flex gap-2 overflow-x-auto px-4 pb-3 [scrollbar-width:none]">
                   <ChipButton
-                    variant="outline"
+                    variant="elevated"
                     active={!draft.categoryId}
                     aria-pressed={!draft.categoryId}
                     onClick={() => change(draft.id, { categoryId: undefined })}
@@ -326,7 +326,7 @@ export function DraftsView({
                     const Icon = categoryIconRegistry[item.iconName] ?? WalletIcon
                     return (
                       <ChipButton
-                        variant="outline"
+                        variant="elevated"
                         key={item.id}
                         active={draft.categoryId === item.id}
                         aria-pressed={draft.categoryId === item.id}
@@ -337,7 +337,7 @@ export function DraftsView({
                     )
                   })}
                   <ChipButton
-                    variant="outline"
+                    variant="elevated"
                     onClick={() => {
                       setEditKind(draft.kind)
                       setEditing(draft.id)

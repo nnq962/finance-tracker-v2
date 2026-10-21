@@ -47,7 +47,7 @@ export function DebtEditButton({
 
   return (
     <>
-      <Button type="button" variant="secondary" size="icon" aria-label="Sửa khoản nợ" onClick={() => setEditing(true)}>
+      <Button type="button" variant="elevated" size="icon" aria-label="Sửa khoản nợ" onClick={() => setEditing(true)}>
         <PencilIcon />
       </Button>
       <AddDebtSheet

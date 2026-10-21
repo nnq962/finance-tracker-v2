@@ -39,7 +39,7 @@ export function HeroSection() {
                 <ArrowRightIcon data-icon="inline-end" />
               </Link>
             </Button>
-            <Button size="lg" variant="outline" asChild>
+            <Button size="lg" variant="secondary" asChild>
               <a href="#tinh-nang">Xem tính năng</a>
             </Button>
             {/* Shown only where the app can be installed: the browser's prompt, or on iPhone the steps to add it. */}

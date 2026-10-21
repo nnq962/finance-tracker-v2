@@ -193,7 +193,7 @@ function BudgetsSheetBody({
     past || (screen.type !== "total" && screen.type !== "group") ? null : (
       <Button
         type="button"
-        variant="secondary"
+        variant="elevated"
         size="icon"
         aria-label="Sửa hạn mức"
         onClick={() => onEdit(screen.type === "total" ? { kind: "total" } : { kind: "group", groupId: screen.groupId })}

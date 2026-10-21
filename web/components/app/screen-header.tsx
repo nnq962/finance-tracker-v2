@@ -34,10 +34,9 @@ export function ScreenHeader({
     <header data-slot="screen-header" className="grid h-13 grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2 pb-2">
       <Button
         type="button"
-        variant="secondary"
+        variant="elevated"
         size="icon"
         aria-label={backLabel}
-        className="shadow-float"
         onClick={() => (window.history.length > 1 ? router.back() : router.push(fallbackHref))}
       >
         <ChevronLeftIcon />

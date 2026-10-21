@@ -33,18 +33,12 @@ export function TransactionsLayout({ summary, filters, children, listOnly = fals
           squeezed to the window. Gaps, not space-y: the filters hidden below
           lg must not leave a margin. */}
       {/* Below lg it folds away while the list is alone, the gap after it
-          closing with it, so the search slides up to the top.
-          While open, the fold's clip reaches past the card by its shadow's
-          reach (24 above, 48 below, and to the screen's edges at the sides, 2026-10-20), its margins
-          cancelling the room so nothing moves; that room lets taps through to
-          the header and the search it overlaps.
+          closing with it, so the search slides up to the top. Open, the
+          fold lets the card's shadow out (Collapse clips only while it
+          slides, 2026-10-21; it was room made with margins before).
           From lg up the fold steps aside (contents) for the rail. */}
-      <Collapse
-        open={!listOnly}
-        className="max-lg:pointer-events-none max-lg:data-[state=open]:-mx-4 max-lg:data-[state=open]:-mt-6 max-lg:data-[state=open]:-mb-12 lg:contents"
-        contentClassName="lg:contents"
-      >
-        <div className="pointer-events-auto flex min-w-0 flex-col gap-6 *:shrink-0 max-lg:mx-4 max-lg:mt-6 max-lg:mb-12 md:gap-8">
+      <Collapse open={!listOnly} className="lg:contents" contentClassName="lg:contents">
+        <div className="flex min-w-0 flex-col gap-6 *:shrink-0 md:gap-8">
           {summary}
           {filters ? <div className="hidden lg:block">{filters}</div> : null}
         </div>

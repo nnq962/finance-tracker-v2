@@ -47,7 +47,7 @@ export default async function LoginPage({
   // middle, the title and Google's button at the bottom, in the thumb's reach.
   // From lg up: the picture in a panel on the left, the sign in on the right.
   return (
-    <main className="surface-grouped min-h-svh bg-background text-foreground">
+    <main className="min-h-svh bg-background text-foreground">
       <div className="mx-auto grid min-h-svh max-w-6xl lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-10">
         <div className="flex min-h-svh flex-col px-6 pt-[max(env(safe-area-inset-top),1.25rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)] lg:order-2 lg:min-h-0 lg:py-0">
           <p className="flex items-center gap-2 text-sm font-semibold">

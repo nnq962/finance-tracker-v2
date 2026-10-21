@@ -154,7 +154,7 @@ function MoveForm({ jar, way, accounts, onDone }: { jar: Account; way: "in" | "o
                 <Button
                   key={item.label}
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => {
                     setAmount(item.value)

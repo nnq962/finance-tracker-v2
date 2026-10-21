@@ -21,7 +21,7 @@ const accounts = [
 /** One cell of the bento: its name and a line on a grey panel, then the app's own block, inert. */
 function Cell({ title, line, className, children }: { title: string; line: string; className?: string; children: React.ReactNode }) {
   return (
-    <div className={cn("surface-grouped flex min-w-0 flex-col gap-5 rounded-[28px] bg-track p-5 sm:p-6 dark:bg-foreground/5", className)}>
+    <div className={cn("flex min-w-0 flex-col gap-5 rounded-[28px] bg-track p-5 sm:p-6 dark:bg-foreground/5", className)}>
       <div className="flex flex-col gap-1">
         <h3 className="text-lg font-semibold">{title}</h3>
         <p className="text-sm text-muted-foreground">{line}</p>

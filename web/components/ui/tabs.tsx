@@ -110,7 +110,7 @@ function TabsList({
         <span
           aria-hidden="true"
           data-slot="tabs-indicator"
-          className="absolute top-1 bottom-1 left-0 rounded-full bg-primary transition-[translate,width] duration-250 ease-[cubic-bezier(0.2,0,0,1)] will-change-[translate] group-data-[variant=line]/tabs-list:top-auto group-data-[variant=line]/tabs-list:-bottom-px group-data-[variant=line]/tabs-list:h-0.5 group-data-[variant=line]/tabs-list:bg-foreground group-data-[variant=segmented]/tabs-list:bg-card group-data-[variant=segmented]/tabs-list:shadow-[0_1px_3px_rgb(0_0_0/0.12),0_1px_1px_rgb(0_0_0/0.04)] dark:group-data-[variant=segmented]/tabs-list:bg-foreground/20 motion-reduce:duration-150 motion-reduce:ease-out"
+          className="absolute top-1 bottom-1 left-0 rounded-full bg-primary transition-[translate,width] duration-250 ease-[cubic-bezier(0.2,0,0,1)] will-change-[translate] group-data-[variant=line]/tabs-list:top-auto group-data-[variant=line]/tabs-list:-bottom-px group-data-[variant=line]/tabs-list:h-0.5 group-data-[variant=line]/tabs-list:bg-foreground group-data-[variant=segmented]/tabs-list:bg-control group-data-[variant=segmented]/tabs-list:shadow-control motion-reduce:duration-150 motion-reduce:ease-out"
           style={{ width: box.width, translate: `${box.x}px 0` }}
         />
       ) : null}

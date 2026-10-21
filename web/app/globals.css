@@ -6,7 +6,7 @@
 
 @theme inline {
   --shadow-card: var(--card-shadow);
-  --shadow-float: var(--float-shadow);
+  --shadow-control: var(--control-shadow);
   --shadow-toast: var(--toast-shadow);
   --shadow-pastel: var(--pastel-shadow);
   --color-background: var(--background);
@@ -68,6 +68,11 @@
   --color-warning: var(--warning);
   --color-warning-text: var(--warning-text);
   --color-destructive-text: var(--destructive-text);
+  --color-fill-1: var(--fill-1);
+  --color-fill-2: var(--fill-2);
+  --color-fill-3: var(--fill-3);
+  --color-control: var(--control);
+  --color-row-press: var(--row-press);
   --color-field: var(--field);
   --color-track: var(--track);
   --color-segment: var(--segment);
@@ -150,13 +155,28 @@
   --popover-foreground: oklch(0.205 0 0);
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.97 0 0);
+  /*
+   * Fills (2026-10-21, the design system redone for the white page): ink
+   * laid thin over whatever is below, as iOS's systemFill, so one grey suits
+   * the page, a card and a sheet alike; the opaque greys of the grey-page
+   * days read dirty on white. 1: fields, the segmented rail, chips, a row
+   * under the finger, neutral icon tiles. 2: the grey button, tracks, muted.
+   * 3: a switch turned off, the grey button pressed.
+   */
+  --fill-1: color-mix(in oklab, oklch(0.205 0 0) 4%, transparent);
+  --fill-2: color-mix(in oklab, oklch(0.205 0 0) 6%, transparent);
+  --fill-3: color-mix(in oklab, oklch(0.205 0 0) 10%, transparent);
+  /* The elevated button (a header's round tools, the month pill): white, lifted by --control-shadow. */
+  --control: oklch(1 0 0);
+  /* A list row under the finger: fill-1 made solid on the card, so the dividers it covers do not show through. */
+  --row-press: color-mix(in oklab, oklch(0.205 0 0) 4%, var(--card));
+  --secondary: var(--fill-2);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.94 0.004 286);
+  --muted: var(--fill-2);
   /* Secondary text (descriptions, times, captions): iOS's secondary label, not the paler neutral-400. */
   /* 4.6:1 on the white page and cards (2026-10-20; 0.617 was about 3.5:1). */
   --muted-foreground: oklch(0.56 0 0);
-  --accent: oklch(0.97 0 0);
+  --accent: var(--fill-2);
   --accent-foreground: oklch(0.205 0 0);
   /* The expense's red (#d9534f), 2026-10-10. */
   --destructive: oklch(0.619 0.1694 25);
@@ -169,7 +189,7 @@
   --border: oklch(0.97 0 0);
   /* Hairline between rows of a list, the page's grey a step darker, clearer than --border on a white card. */
   --separator: oklch(0.905 0.004 286);
-  --input: oklch(0.922 0 0);
+  --input: var(--fill-3);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.588 0.212 288);
   --chart-2: oklch(0.704 0.123 182.5);
@@ -219,22 +239,18 @@
   --tab-pill: rgb(0 0 0 / 0.07);
   --tab-active: #0088ff;
   /*
-   * Fills that depend on the surface below (see the surface-* utilities):
-   * field for inputs, chips and secondary buttons, track for skeletons,
-   * slider rails and the icon toggle group. On a white card both are the
-   * mockup's neutral-100 (#f5f5f5), barely grey. On the grey page or a grey
-   * sheet a field turns white, as in iOS grouped screens, and a track a shade
-   * darker than the page. (The segmented control has its own rail, segment,
-   * below.)
-   */
-  /*
    * White cards on the white page (2026-10-20): Apple's iOS 26 kit menu
    * shadow (Figma: X 0, Y 8, blur 40, spread 0, #000 12%), as the tab bar's.
    * No hairline ring, which read as a border.
    */
   --card-shadow: 0 8px 40px rgb(0 0 0 / 0.12);
-  /* Round buttons floating over content (a sheet's ✕ and ✎, the pushed screen's back): the cards' own shadow (2026-10-21, the user's ask; was 0 4px 16px 10%). */
-  --float-shadow: var(--card-shadow);
+  /*
+   * The elevated button and the segmented thumb (2026-10-21): a hairline and
+   * a short, soft fall, small enough to stay inside the 16 of room a header
+   * leaves (the card's 40px blur made a halo around a 44 button, cut at a
+   * sheet's top).
+   */
+  --control-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.04), 0 1px 2px rgb(0 0 0 / 0.06), 0 4px 14px rgb(0 0 0 / 0.08);
   /*
    * A toast lifted clear of the page (2026-10-17): a hairline edge and a
    * shadow that falls below it only, never up to the status bar (Safari 26
@@ -244,31 +260,23 @@
     0 0 0 0.5px color-mix(in oklab, var(--foreground) 10%, transparent),
     0 12px 28px -10px rgb(0 0 0 / 0.28),
     0 3px 8px -2px rgb(0 0 0 / 0.08);
-  --field-plain: oklch(0.97 0 0);
-  /* On the white page and the white sheets a field, a track and the segmented rail are light greys. */
-  --field-grouped: oklch(0.965 0.002 286);
-  --field-sheet: var(--field-grouped);
-  --track-plain: oklch(0.97 0 0);
-  --track-grouped: oklch(0.945 0.003 286);
-  --track-sheet: var(--track-grouped);
-  /*
-   * The segmented control's rail (2026-10-19, option B of the segmented
-   * mockup): a white card on the grey page, the light grey on a white card;
-   * the chosen segment is the ink pill with white text, as the chosen chip.
-   * Its own token, as the grey track still carries skeletons and sliders.
-   */
-  --segment-plain: oklch(0.97 0 0);
-  --segment-grouped: oklch(0.955 0.003 286);
-  --segment-sheet: var(--segment-grouped);
-  --field: var(--field-plain);
-  --track: var(--track-plain);
-  --segment: var(--segment-plain);
+  /* Inputs and chips, tracks (skeletons, sliders, progress), the segmented rail. */
+  --field: var(--fill-1);
+  --track: var(--fill-2);
+  --segment: var(--fill-1);
 }
 
 .dark {
   /* Apple's same menu shadow in the dark (Figma kit): lost on the black page, where the card's lighter grey lifts it; no edge highlight. */
   --card-shadow: 0 8px 40px rgb(0 0 0 / 0.12);
-  --float-shadow: var(--card-shadow);
+  /* No fall on the black: the elevated button is a raised grey with a light hairline. */
+  --control-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.1);
+  --control: oklch(0.29 0.004 286);
+  --row-press: color-mix(in oklab, white 8%, var(--card));
+  /* White laid thin: on a #1c1c1e card fill-2 is about iOS's raised #2c2c2e. */
+  --fill-1: color-mix(in oklab, white 8%, transparent);
+  --fill-2: color-mix(in oklab, white 12%, transparent);
+  --fill-3: color-mix(in oklab, white 18%, transparent);
   /* On the black page the raised grey toast takes a lighter edge and a deeper shadow. */
   --toast-shadow: 0 0 0 0.5px oklch(1 0 0 / 0.12), 0 12px 28px -10px rgb(0 0 0 / 0.7);
   /* iOS dark grouped (2026-10-16): a black page (#000), cards #1c1c1e, raised fills #2c2c2e, lines #38383a. */
@@ -291,11 +299,11 @@
   --popover-foreground: oklch(1 0 0);
   --primary: oklch(1 0 0);
   --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.294 0.0036 286.2);
+  --secondary: var(--fill-2);
   --secondary-foreground: oklch(1 0 0);
-  --muted: oklch(0.294 0.0036 286.2);
+  --muted: var(--fill-2);
   --muted-foreground: oklch(0.66 0 0);
-  --accent: oklch(0.294 0.0036 286.2);
+  --accent: var(--fill-2);
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.7 0.15 25);
   --destructive-foreground: oklch(1 0 0);
@@ -303,7 +311,7 @@
   --destructive-fill: oklch(0.58 0.18 25);
   --border: oklch(0.294 0.0036 286.2);
   --separator: oklch(0.341 0.0034 286.2);
-  --input: oklch(1 0 0 / 0.15);
+  --input: var(--fill-3);
   --ring: oklch(0.556 0 0);
   --chart-1: oklch(0.707 0.166 290.2);
   --chart-2: oklch(0.785 0.133 181.9);
@@ -337,17 +345,6 @@
   --warning: oklch(0.828 0.189 84.429);
   --warning-text: var(--warning);
   --destructive-text: var(--destructive);
-  /* On a dark card, white at 6%, as in the mockup. */
-  --field-plain: oklch(1 0 0 / 0.06);
-  --track-plain: oklch(1 0 0 / 0.06);
-  /* On the dark page, a card's grey: lighter than the page, darker than the thumb. */
-  --field-grouped: var(--card);
-  --field-sheet: var(--card);
-  --track-grouped: var(--card);
-  --track-sheet: var(--track-grouped);
-  --segment-plain: oklch(1 0 0 / 0.06);
-  --segment-grouped: var(--card);
-  --segment-sheet: var(--segment-grouped);
 }
 
 /* What a grey or a white surface sets for the fields on it. */
@@ -450,35 +447,25 @@
     var(--pastel-base);
 }
 
-/* A sheet's ground and what sits on it (white in light since 2026-10-21, as the page); --background follows, for what paints the ground (sticky captions, the sheet's own fill). */
+/* A sheet's ground (white in light since 2026-10-21, as the page); --background follows, for what paints the ground (sticky captions, the sheet's own fill). Fields need nothing: the fills suit every surface. */
 @utility surface-sheet {
   --background: var(--sheet);
-  --field: var(--field-sheet);
-  --track: var(--track-sheet);
-  --segment: var(--segment-sheet);
-}
-
-@utility surface-grouped {
-  --field: var(--field-grouped);
-  --track: var(--track-grouped);
-  --segment: var(--segment-grouped);
-}
-
-@utility surface-plain {
-  --field: var(--field-plain);
-  --track: var(--track-plain);
-  --segment: var(--segment-plain);
 }
 
 /*
  * An icon's tile in the colour --tile names (a category's or a meaning
- * colour), toned down towards grey so a list of them reads calm: a pastel
- * tile, and the icon in ink with a hint of the hue. One rule for both themes,
- * as muted and foreground follow the theme.
+ * colour): the hue laid thin over transparent, never over grey, so the tile
+ * stays clean on white (2026-10-21; it was mixed into muted and read muddy),
+ * and the icon in a deep shade of the same hue. Light hues (the AI's lime,
+ * amber) set --tile-mix higher to show at all.
  */
 @utility tile-tinted {
-  background-color: color-mix(in oklab, var(--tile) 15%, var(--muted));
-  color: color-mix(in oklab, var(--tile) 45%, var(--foreground));
+  background-color: color-mix(in oklab, var(--tile) var(--tile-mix, 12%), transparent);
+  color: color-mix(in oklab, var(--tile) 78%, black);
+  &:where(.dark, .dark *) {
+    background-color: color-mix(in oklab, var(--tile) 22%, transparent);
+    color: color-mix(in oklab, var(--tile) 70%, white);
+  }
 }
 
 /*

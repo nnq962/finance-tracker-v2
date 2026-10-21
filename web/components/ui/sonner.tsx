@@ -52,7 +52,7 @@ const Toaster = ({ style, ...props }: ToasterProps) => {
           </span>
         ),
         loading: (
-          <span className={`${tile} bg-muted text-muted-foreground`}>
+          <span className={`${tile} bg-fill-1 text-muted-foreground`}>
             <Loader2Icon className="animate-spin" strokeWidth={2.5} />
           </span>
         ),

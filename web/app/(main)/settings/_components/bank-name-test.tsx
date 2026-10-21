@@ -638,7 +638,7 @@ export function BankNameTest({ language }: { language: string }) {
       <div className="grid grid-cols-[1fr_auto_auto] gap-2">
         <Button
           type="button"
-          variant={phase === "listening" ? "destructive" : "default"}
+          variant={phase === "listening" ? "destructive-solid" : "default"}
           disabled={!current || phase === "sending"}
           onClick={() => (phase === "listening" ? stopRef.current?.() : void listen())}
         >
@@ -647,7 +647,7 @@ export function BankNameTest({ language }: { language: string }) {
         </Button>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="icon"
           aria-label="Bỏ qua mục này"
           disabled={busy || !current}
@@ -664,7 +664,7 @@ export function BankNameTest({ language }: { language: string }) {
         </Button>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="icon"
           aria-label="Xoá lần đọc vừa rồi"
           disabled={busy || results.history.length === 0}
@@ -697,13 +697,13 @@ export function BankNameTest({ language }: { language: string }) {
             })}
           </SettingsGroup>
           <div className="grid grid-cols-2 gap-2">
-            <Button type="button" variant="outline" onClick={() => void copy()}>
+            <Button type="button" variant="secondary" onClick={() => void copy()}>
               <CopyIcon />
               Sao chép
             </Button>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               disabled={busy}
               onClick={() => {
                 if (window.confirm("Xoá kết quả của bài thử này với prompt này?")) update(() => empty)

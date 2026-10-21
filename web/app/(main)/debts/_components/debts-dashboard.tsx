@@ -123,7 +123,7 @@ export function DebtsDashboard({
         title="Vay nợ"
         actions={
           <>
-            <Button type="button" variant="outline" onClick={() => setContactsOpen(true)}>
+            <Button type="button" variant="elevated" onClick={() => setContactsOpen(true)}>
               <BookUserIcon />
               Người liên hệ
             </Button>
@@ -131,7 +131,7 @@ export function DebtsDashboard({
           </>
         }
         accessory={
-          <Button type="button" variant="secondary" size="icon" aria-label={contactsLabel} onClick={() => setContactsOpen(true)}>
+          <Button type="button" variant="elevated" size="icon" aria-label={contactsLabel} onClick={() => setContactsOpen(true)}>
             <BookUserIcon />
           </Button>
         }

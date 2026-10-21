@@ -45,7 +45,7 @@ export function MonthSelect({
     <>
       <Button
         type="button"
-        variant="secondary"
+        variant={size === "bar" ? "elevated" : "secondary"}
         size={size === "bar" ? "default" : "sm"}
         aria-label={`Đổi tháng, đang xem ${monthLabel(value)}`}
         className={className}

@@ -98,7 +98,7 @@ export function AccountSheet({
         className="gap-6"
         action={
           // Also for a locked account: unlocking and deleting it are in the editor.
-          <Button type="button" variant="secondary" size="icon" aria-label="Sửa tài khoản" onClick={() => setEditOpen(true)}>
+          <Button type="button" variant="elevated" size="icon" aria-label="Sửa tài khoản" onClick={() => setEditOpen(true)}>
             <PencilIcon />
           </Button>
         }

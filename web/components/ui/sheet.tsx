@@ -110,7 +110,7 @@ function SheetContent({
         {showCloseButton && (
           <SheetPrimitive.Close data-slot="sheet-close" asChild>
             <Button
-              variant="secondary"
+              variant="elevated"
               className="absolute top-4 right-4"
               size="icon-sm"
             >

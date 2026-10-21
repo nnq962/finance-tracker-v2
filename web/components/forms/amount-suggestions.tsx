@@ -13,7 +13,12 @@ type AmountSuggestionsProps = {
   className?: string
 }
 
-/** Quick-pick chips, as CurrencyInput shows them under itself; renders nothing without suggestions. */
+/**
+ * Quick-pick chips, as CurrencyInput shows them under itself; renders nothing
+ * without suggestions. The row scrolls out to the edges of the card or sheet
+ * it sits in (--chip-row-bleed, as ChipRow; 2026-10-21, it stopped 16 short
+ * of the sheet's edge), 4 elsewhere for the focus ring.
+ */
 export function AmountSuggestions({
   suggestions,
   value,
@@ -24,7 +29,7 @@ export function AmountSuggestions({
   if (suggestions.length === 0) return null
 
   return (
-    <div className={cn("-mx-1 min-w-0 overflow-x-auto px-1 pt-1 pb-1", className)}>
+    <div className={cn("-mx-(--chip-row-bleed,0.25rem) min-w-0 scroll-px-(--chip-row-bleed,0.25rem) overflow-x-auto px-(--chip-row-bleed,0.25rem) pt-1 pb-1", className)}>
       <ToggleGroup
         type="single"
         size="sm"

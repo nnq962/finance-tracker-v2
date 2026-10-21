@@ -76,7 +76,7 @@ export function WipeDataSheet({ summary, open, onOpenChange }: { summary: UserDa
         className="space-y-6"
         footer={
           <Button
-            variant="destructive"
+            variant="destructive-solid"
             className="w-full"
             disabled={pending}
             onClick={() => void wipe()}

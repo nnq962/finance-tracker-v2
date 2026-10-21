@@ -15,12 +15,14 @@ const toggleVariants = cva(
       variant: {
         // A filled grey chip; the chosen one turns dark.
         default: "bg-field text-foreground",
-        outline: "border border-border bg-card hover:bg-muted",
+        // On a grey panel (the assistant's drafts): white, lifted as the
+        // elevated button (2026-10-21; was white with a border).
+        elevated: "bg-control shadow-control hover:bg-[color-mix(in_oklab,var(--control),var(--foreground)_4%)]",
         // Inside a ToggleGroup of the same variant: the chosen option white on
         // the grey rail, as Tabs variant="segmented" (pill, 44 tall, the same
         // thumb shadow; 2026-10-21).
         segmented:
-          "h-9! flex-1 rounded-full bg-transparent text-muted-foreground hover:bg-transparent data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-[0_1px_3px_rgb(0_0_0/0.12),0_1px_1px_rgb(0_0_0/0.04)] data-[state=on]:hover:bg-card data-[state=on]:hover:text-foreground dark:data-[state=on]:bg-foreground/20",
+          "h-9! flex-1 rounded-full bg-transparent text-muted-foreground hover:bg-transparent data-[state=on]:bg-control data-[state=on]:text-foreground data-[state=on]:shadow-control data-[state=on]:hover:bg-control data-[state=on]:hover:text-foreground",
       },
       size: {
         // 40 and 36 tall, their touch area stretched to 44 with an invisible margin (2026-10-21).

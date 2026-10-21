@@ -83,7 +83,7 @@ export function JarSheet({
       onOpenChange={onOpenChange}
       className="gap-6"
       action={
-        <Button type="button" variant="secondary" size="icon" aria-label="Sửa hũ" onClick={onEdit}>
+        <Button type="button" variant="elevated" size="icon" aria-label="Sửa hũ" onClick={onEdit}>
           <PencilIcon />
         </Button>
       }

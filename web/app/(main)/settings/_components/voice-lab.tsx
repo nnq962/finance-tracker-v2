@@ -287,7 +287,7 @@ export function VoiceLab() {
           <Button
             type="button"
             className="w-full"
-            variant={listening ? "destructive" : "default"}
+            variant={listening ? "destructive-solid" : "default"}
             onClick={() => (listening ? recognition.current?.stop() : startRecognition())}
           >
             {listening ? <SquareIcon /> : <MicIcon />}
@@ -345,7 +345,7 @@ export function VoiceLab() {
           Micro (mức âm thanh)
         </h3>
         <FieldGroup>
-          <Button type="button" variant="outline" className="w-full" onClick={() => (level === null ? void startMeter() : stopMeter())}>
+          <Button type="button" variant="secondary" className="w-full" onClick={() => (level === null ? void startMeter() : stopMeter())}>
             {level === null ? <MicIcon /> : <MicOffIcon />}
             {level === null ? "Thử micro" : "Tắt micro"}
           </Button>
@@ -374,7 +374,7 @@ export function VoiceLab() {
         </Field>
       </section>
 
-      <Button type="button" variant="outline" className="w-full" onClick={() => void copyReport()}>
+      <Button type="button" variant="secondary" className="w-full" onClick={() => void copyReport()}>
         <CopyIcon />
         Sao chép kết quả
       </Button>

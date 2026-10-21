@@ -51,7 +51,7 @@ export function DesignCatalog() {
       <header className="pt-1">
         {/* Opened from Settings, so back leads there. */}
         <div className="flex items-center justify-between gap-4">
-          <Button asChild variant="secondary" size="icon">
+          <Button asChild variant="elevated" size="icon">
             <Link href="/settings" aria-label="Cài đặt">
               <ChevronLeftIcon />
             </Link>

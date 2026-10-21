@@ -9,7 +9,7 @@ Bảng màu cho thiết kế lại (10/2026), theo mockup đã duyệt (xem [`RE
 - **Một màu nhấn: gần đen** (trắng ở theme tối) cho nút chính, chip đang chọn, công tắc bật,
   thanh tiến độ. Mỗi màn chỉ một khối đen lớn: thẻ dẫn đầu (`inverse`).
 - **Màu ý nghĩa dùng ít:** chỉ tô số tiền vào, icon, badge; đỏ chỉ để cảnh báo. Ô icon dùng
-  `tile-tinted`: màu (ý nghĩa hay hạng mục) 15% trộn vào `muted`, icon 45% màu trộn vào màu chữ,
+  `tile-tinted` (2026-10-21): màu (ý nghĩa hay hạng mục) 12% trên nền trong suốt (`ai`, `warning` 24%), icon 78% màu trộn đen (theme tối: nền 22%, icon 70% màu trộn trắng); trước đó 15% trộn vào `muted`, icon 45% màu trộn vào màu chữ,
   nên dịu và ngả xám, không thành cầu vồng.
 - **Theme tối như mockup:** nền `#0a0a0a`, thẻ `#171717`, nền phụ trắng 6–15%.
 - Xám là thang `neutral` của Tailwind, trung tính (không ngả xanh); nền trang hơi ấm (`#f2f2f1`).
@@ -23,11 +23,14 @@ Bảng màu cho thiết kế lại (10/2026), theo mockup đã duyệt (xem [`RE
 | `inverse` | `#171717` | `#ffffff` | Thẻ dẫn đầu của mọi trang (`Card variant="inverse"`, 2026-10-19): đen ở theme sáng, trắng ở theme tối (trước là xám nổi `#262626`), xám nổi ở theme tối, không phải khối trắng; chữ `inverse-foreground` trắng |
 | `popover` | `#ffffff` | `#171717` | Sheet, menu, hộp thoại |
 | `foreground`, `primary` | `#171717` | `#ffffff` | Chữ chính, màu nhấn duy nhất (`neutral-900`) |
-| `secondary` / `muted` / `accent` | `#f5f5f5` | `#262626` | Skeleton, nền khi nhấn, ô tab đang chọn |
+| `fill-1` / `fill-2` / `fill-3` | mực 4 / 6 / 10% | trắng 8 / 12 / 18% | Lớp xám trong suốt (2026-10-21), hợp mọi bề mặt: ô nhập, chip, ô icon trung tính (`fill-1`); nút xám, rãnh (`fill-2`); công tắc tắt, nút xám khi nhấn (`fill-3`) |
+| `secondary` / `muted` / `accent` | `fill-2` | `fill-2` | Skeleton, nền khi nhấn, nút xám |
+| `control` + `control-shadow` | trắng, viền 0,5px 4% + `0 1px 2px` 6% + `0 4px 14px` 8% | `oklch(0.29 0.004 286)`, viền sáng 0,5px trắng 10% | Nút `elevated` trên header, viên segmented |
+| `row-press` | `fill-1` tô đặc trên thẻ | trắng 8% trên thẻ | Dòng list khi chạm |
 | `muted-foreground` | `#858585` | `#929292` | Chữ phụ, như secondary label của iOS (đổi 2026-10-07 từ `#a3a3a3` / `#737373`) |
 | `border` | `#f5f5f5` | `#262626` | Đường kẻ mảnh giữa các dòng |
 | `input` | `#e5e5e5` | trắng 15% | Công tắc tắt |
-| `field`, `track`, `segment` | `#f5f5f5` trên thẻ trắng; trên nền xám `field` và `segment` trắng, `track` một bậc xám đậm hơn nền (`oklch(0.905 …)`) | trắng 6% trên thẻ, `card` trên nền đen | Nền ô nhập, chip, nút phụ (`field`); skeleton, thanh trượt, toggle group icon (`track`); rãnh segmented (`segment`, 2026-10-19, viên đen chữ trắng trên đó); đổi theo bề mặt (`surface-plain` / `surface-grouped`) |
+| `field`, `track`, `segment` | `fill-1`, `fill-2`, `fill-1` | như sáng | Nền ô nhập, chip (`field`); skeleton, thanh trượt (`track`); rãnh segmented (`segment`). Từ 2026-10-21 không còn đổi theo bề mặt |
 | `ring` | `#a3a3a3` | `#737373` | Viền focus |
 | `income` | emerald-600 `#059669` | emerald-400 | Tiền vào ("Success") |
 | `expense`, `destructive` | `#d9534f` | `oklch(0.7 0.15 25)` | Tiền ra, xoá, lỗi ("Danger") |

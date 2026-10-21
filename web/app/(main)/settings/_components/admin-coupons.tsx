@@ -247,7 +247,7 @@ function CouponForm({ coupon, onDone }: { coupon?: AdminCoupon; onDone: () => vo
               </Field>
             ) : null}
             {coupon ? (
-              <Button type="button" variant="outline" className="w-full" onClick={() => setDeleteOpen(true)}>
+              <Button type="button" variant="secondary" className="w-full" onClick={() => setDeleteOpen(true)}>
                 <Trash2Icon />
                 Xoá mã
               </Button>

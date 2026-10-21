@@ -670,7 +670,7 @@ function NavSection() {
             title={<span>Giao dịch</span>}
             tools={<MonthSelect size="bar" value={month} max="2026-10" onValueChange={setMonth} />}
             accessory={
-              <Button type="button" variant="secondary" size="icon" className="text-ai-strong" aria-label="Nhập bằng AI" onClick={() => toast("Nhập bằng AI")}>
+              <Button type="button" variant="elevated" size="icon" className="text-ai-strong" aria-label="Nhập bằng AI" onClick={() => toast("Nhập bằng AI")}>
                 <SparklesIcon />
               </Button>
             }
@@ -855,7 +855,7 @@ function FeedbackSection() {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Huỷ</AlertDialogCancel>
-                <AlertDialogAction variant="destructive" onClick={() => toast.success("Đã xoá")}>
+                <AlertDialogAction variant="destructive-solid" onClick={() => toast.success("Đã xoá")}>
                   Xoá
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -1121,7 +1121,7 @@ function PageSheetDetailSample() {
       className="space-y-6"
       trigger={<Button variant="secondary">PageSheet · chi tiết</Button>}
       action={
-        <Button type="button" variant="secondary" size="icon" aria-label="Sửa" onClick={() => setEditing(true)}>
+        <Button type="button" variant="elevated" size="icon" aria-label="Sửa" onClick={() => setEditing(true)}>
           <PencilIcon />
         </Button>
       }

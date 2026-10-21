@@ -225,7 +225,7 @@ function OpenInSafariPicture({ origin }: { origin: string }) {
       </span>
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         size="sm"
         onClick={() => {
           void navigator.clipboard?.writeText(window.location.origin).then(() => setCopied(true))

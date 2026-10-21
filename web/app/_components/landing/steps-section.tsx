@@ -15,7 +15,7 @@ export function StepsSection() {
       </SectionHeading>
       <ol className="mt-12 grid gap-4 md:grid-cols-3">
         {STEPS.map((step, index) => (
-          <li key={step.title} className="surface-plain flex flex-col gap-4 rounded-[28px] bg-card p-6">
+          <li key={step.title} className="flex flex-col gap-4 rounded-[28px] bg-card p-6">
             <span className="flex size-10 items-center justify-center rounded-full bg-ai text-base font-bold text-ai-foreground tabular-nums">
               {index + 1}
             </span>

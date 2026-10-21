@@ -120,7 +120,7 @@ export function TransactionDetailsSheet({
       className="gap-6"
       action={
         isDebt || isAdjustment ? null : (
-          <Button type="button" variant="secondary" size="icon" aria-label="Sửa giao dịch" onClick={onEdit}>
+          <Button type="button" variant="elevated" size="icon" aria-label="Sửa giao dịch" onClick={onEdit}>
             <PencilIcon />
           </Button>
         )

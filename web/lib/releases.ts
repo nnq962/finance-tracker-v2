@@ -32,6 +32,19 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.34.0",
+    date: "2026-10-21",
+    title: "Giao diện chỉn chu hơn trên nền trắng",
+    changes: [
+      { kind: "improved", text: "Nút trên đầu trang và đầu sheet (đóng, quay lại, sửa, giao diện, thông báo, chọn tháng) cùng một kiểu nút trắng nổi, bóng gọn." },
+      { kind: "improved", text: "Nút phụ là nút xám không viền, khác hẳn nút chính; nút Xoá cạnh Lưu đổi sang đỏ nhạt, đỏ đậm chỉ còn ở bước xác nhận xoá tài khoản, xoá dữ liệu." },
+      { kind: "improved", text: "Nền xám (ô nhập, chip, ô icon, thanh tiến độ) nhẹ và sạch hơn trên nền trắng; ô icon hạng mục trong trẻo hơn, không còn ngả đục." },
+      { kind: "improved", text: "Dòng trong danh sách sáng nhẹ hơn khi chạm." },
+      { kind: "fixed", text: "Bóng không còn bị cắt: nút chọn tháng ở Giao dịch, thẻ tháng, ô khoảng tiền tuỳ chỉnh trong bộ lọc, nút ở chân và đầu sheet trên máy tính." },
+      { kind: "fixed", text: "Hàng chip số tiền gợi ý trong sheet chạy tới mép sheet." },
+    ],
+  },
+  {
     version: "6.33.1",
     date: "2026-10-21",
     title: "Bóng thẻ khi đang mở, thu nhóm",

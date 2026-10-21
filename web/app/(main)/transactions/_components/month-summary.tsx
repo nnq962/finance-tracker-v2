@@ -55,7 +55,7 @@ export function MonthSummary({
         <span key={side.label} className="@container flex min-w-0 flex-col">
           <span className="flex items-center gap-2">
             {/* The arrow in a small track tile; money in reads in the income green on the plain card. */}
-            <span aria-hidden="true" className={cn("flex size-5 items-center justify-center rounded-[6px] bg-track [&_svg]:size-3", side.tone === "income" && "text-income")}>
+            <span aria-hidden="true" className={cn("flex size-5 items-center justify-center rounded-[6px] bg-fill-1 [&_svg]:size-3", side.tone === "income" && "text-income")}>
               <side.icon />
             </span>
             <CardLabel as="span">{side.label}</CardLabel>

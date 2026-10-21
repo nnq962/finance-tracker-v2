@@ -9,18 +9,21 @@ import {
   BellRingIcon,
   BoldIcon,
   CheckIcon,
+  ChevronDownIcon,
   ChevronRightIcon,
   FingerprintIcon,
   HeartIcon,
   ItalicIcon,
   ListFilterIcon,
   MailIcon,
+  PencilIcon,
   PlusIcon,
   RefreshCwIcon,
   Share2Icon,
   SparklesIcon,
   Trash2Icon,
   UnderlineIcon,
+  XIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -42,9 +45,10 @@ import { Block, CatalogSection, Wide } from "./catalog-kit"
 const principles = [
   ["Thẻ trắng nổi trên nền trắng", "Thẻ trắng bo tròn, không viền, nổi nhờ bóng mềm như menu iOS (0 8 40, đen 12%); trang và sheet đều trắng."],
   ["Một khuôn trang", "Tên trang gọn bên trái, công cụ bên phải; rồi một thẻ dẫn đầu và các nhóm."],
+  ["Xám là lớp mực mỏng", "Nền phụ, ô nhập, nút xám là mực 4–10% trong suốt, hợp trang, thẻ lẫn sheet; nút trên header là nút trắng nổi (elevated)."],
   ["Một mảng đen", "Màu mực cho nút chính, chip và segment đang chọn, công tắc bật; thẻ dẫn đầu là thẻ trắng như mọi thẻ, dẫn bằng cỡ số."],
   ["Chữ rõ thứ bậc", "Số tiền dẫn đầu lớn nhất, tên trang 24; chữ thường 14px, phụ 12px."],
-  ["Màu dịu, có ý nghĩa", "Ô icon pastel ngả xám; xanh lá là tiền vào; đỏ chỉ để cảnh báo (quá hạn, số âm)."],
+  ["Màu dịu, có ý nghĩa", "Ô icon là màu của nó phủ mỏng trên nền trong suốt; xanh lá là tiền vào; đỏ chỉ để cảnh báo (quá hạn, số âm)."],
   ["Vừa ngón tay", "Mọi thứ bấm được cao từ 44px; mọi nút là viên thuốc; chạm thì hơi lún."],
   ["Ít chữ", "Nhãn và mô tả ngắn, dễ hiểu; một thứ gọi một tên trong cả app."],
 ] as const
@@ -64,13 +68,14 @@ const colors = [
   ["warning", "Nhắc nhở", "bg-warning"],
   ["warning-text", "Chữ cam", "bg-warning-text"],
   ["destructive-text", "Chữ đỏ, lỗi", "bg-destructive-text"],
-  ["field", "Ô nhập (theo bề mặt)", "bg-field ring-1 ring-border ring-inset"],
-  ["track", "Rãnh, skeleton", "bg-track ring-1 ring-border ring-inset"],
-  ["segment", "Rãnh segmented", "bg-segment ring-1 ring-border ring-inset"],
+  ["fill-1", "Ô nhập, chip, ô icon (field, segment)", "bg-fill-1"],
+  ["fill-2", "Nút xám, rãnh, nền phụ (muted, track)", "bg-fill-2"],
+  ["fill-3", "Công tắc tắt, nút xám khi nhấn", "bg-fill-3"],
+  ["control", "Nút elevated (kèm shadow-control)", "bg-control shadow-control"],
+  ["row-press", "Dòng list khi chạm", "bg-row-press ring-1 ring-border ring-inset"],
   ["inverse", "Avatar chính mình", "bg-inverse"],
   ["destructive", "Xoá, lỗi", "bg-destructive"],
   ["destructive-fill", "Nền nút Xoá", "bg-destructive-fill"],
-  ["muted", "Nền phụ", "bg-muted"],
   ["border", "Viền", "bg-border"],
   ["separator", "Kẻ giữa dòng list", "bg-separator"],
 ] as const
@@ -206,13 +211,44 @@ function ButtonSection() {
         <div className="flex flex-wrap gap-2">
           <Button>Primary</Button>
           <Button variant="secondary">Secondary</Button>
-          <Button variant="outline">Outline</Button>
+          <Button variant="elevated">Elevated</Button>
           <Button variant="ghost">Ghost</Button>
+          <Button variant="ai">
+            <SparklesIcon data-icon="inline-start" />
+            Nâng cấp Pro
+          </Button>
+          <Button variant="link">Xem thêm</Button>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
           <Button variant="destructive">
             <Trash2Icon data-icon="inline-start" />
             Xoá
           </Button>
-          <Button variant="link">Xem thêm</Button>
+          <Button variant="destructive-solid">Xoá tài khoản</Button>
+        </div>
+      </Block>
+      <Block label="Trên header · elevated">
+        <div className="flex items-center justify-between gap-3">
+          <Button variant="elevated" size="icon" aria-label="Đóng">
+            <XIcon />
+          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="elevated">
+              Tháng 10
+              <ChevronDownIcon data-icon="inline-end" />
+            </Button>
+            <Button variant="elevated" size="icon" aria-label="Sửa">
+              <PencilIcon />
+            </Button>
+          </div>
+        </div>
+      </Block>
+      <Block label="Chân sheet · Xoá cạnh Lưu">
+        <div className="flex items-center gap-2">
+          <Button variant="destructive" className="w-30 px-0" aria-label="Xoá">
+            <Trash2Icon />
+          </Button>
+          <Button className="flex-1">Lưu</Button>
         </div>
       </Block>
       <Block label="Kích thước · 32 / 36 / 44 / 56">
@@ -254,7 +290,7 @@ function ButtonSection() {
           <Button size="icon-lg" variant="secondary" aria-label="Chia sẻ">
             <Share2Icon />
           </Button>
-          <Button size="icon" variant="secondary" aria-label="Thông báo">
+          <Button size="icon" variant="elevated" aria-label="Thông báo">
             <BellIcon />
           </Button>
           <Button size="icon-sm" variant="secondary" aria-label="Làm mới">
@@ -315,13 +351,13 @@ function ChipSection() {
           </ToggleGroup>
         </ChipRow>
       </Block>
-      <Block label="ChipButton outline · chip trên nền xám (thẻ ghi nhiều khoản của trợ lý)" wide>
+      <Block label="ChipButton elevated · chip trên nền xám (thẻ ghi nhiều khoản của trợ lý)" wide>
         <div className="flex gap-2 overflow-x-auto rounded-2xl bg-field p-3">
-          <ChipButton variant="outline" active>
+          <ChipButton variant="elevated" active>
             <PlusIcon /> Kem
           </ChipButton>
-          <ChipButton variant="outline">Ăn sáng</ChipButton>
-          <ChipButton variant="outline">Khác…</ChipButton>
+          <ChipButton variant="elevated">Ăn sáng</ChipButton>
+          <ChipButton variant="elevated">Khác…</ChipButton>
         </div>
       </Block>
       <Block label="Filter chip · chọn nhiều (ToggleGroup)" wide>
@@ -334,7 +370,7 @@ function ChipSection() {
           ))}
         </ToggleGroup>
         <p className="mt-4 mb-2 text-xs text-muted-foreground">Chip viền, cho gợi ý số tiền</p>
-        <ToggleGroup type="single" size="sm" variant="outline" className="flex-wrap">
+        <ToggleGroup type="single" size="sm" variant="elevated" className="flex-wrap">
           <ToggleGroupItem value="25">25.000đ</ToggleGroupItem>
           <ToggleGroupItem value="50">50.000đ</ToggleGroupItem>
           <ToggleGroupItem value="100">100.000đ</ToggleGroupItem>
@@ -370,7 +406,7 @@ function ChipSection() {
         <div className="flex flex-wrap items-center gap-5">
           {/* As on the notifications bell: on the icon's shoulder, cut out of it and of its button. */}
           {["3", "9+"].map((count) => (
-            <Button key={count} size="icon" variant="secondary" aria-label={`Thông báo, ${count} chưa đọc`} className="relative">
+            <Button key={count} size="icon" variant="elevated" aria-label={`Thông báo, ${count} chưa đọc`} className="relative">
               <BellIcon />
               <Badge variant="count" aria-hidden="true" className="absolute top-1 left-[calc(50%+4px)]">
                 {count}

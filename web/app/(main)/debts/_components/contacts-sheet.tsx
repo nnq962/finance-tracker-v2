@@ -228,7 +228,7 @@ export function ContactsSheet({ open, onOpenChange, ...props }: ContactsSheetPro
       open={open}
       onOpenChange={onOpenChange}
       action={
-        <Button type="button" variant="secondary" size="icon" aria-label="Thêm người" onClick={() => setAdding(true)}>
+        <Button type="button" variant="elevated" size="icon" aria-label="Thêm người" onClick={() => setAdding(true)}>
           <UserPlusIcon />
         </Button>
       }

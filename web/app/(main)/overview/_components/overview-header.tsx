@@ -52,7 +52,7 @@ export function OverviewHeader({
       }
       tools={
         <div className="flex items-center gap-2 md:hidden">
-          <ThemeToggle size="icon" variant="secondary" />
+          <ThemeToggle size="icon" variant="elevated" />
           <NotificationsButton />
           <Link
             href="/settings"

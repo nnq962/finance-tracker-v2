@@ -9,6 +9,13 @@ import { cn } from "@/lib/utils"
  * making way for its search, the search's Huỷ sliding in. Closed, the content
  * stays mounted, so it opens without reloading, but is inert: out of the tab
  * order and of what screen readers read. Instant when motion is reduced.
+ *
+ * Shadows (2026-10-21): open, the content is not clipped by its box but by a
+ * clip-path reaching 48 past it, so the shadows of the cards and buttons
+ * inside show whole (they were cut, the month pill's into a line). While it
+ * opens, the edge it grows from stays cut at the box (the content is still
+ * being revealed there), and reaches out once the slide is done; closed, or
+ * closing, it clips at its box as before.
  */
 export function Collapse({
   open,
@@ -37,7 +44,18 @@ export function Collapse({
         className,
       )}
     >
-      <div className={cn("overflow-hidden", axis === "y" ? "min-h-0" : "min-w-0", contentClassName)}>{children}</div>
+      <div
+        data-state={open ? "open" : "closed"}
+        className={cn(
+          "overflow-hidden data-[state=open]:overflow-visible motion-safe:data-[state=open]:[transition:clip-path_0s_300ms]",
+          axis === "y"
+            ? "min-h-0 [clip-path:inset(-48px_-48px_0_-48px)] data-[state=open]:[clip-path:inset(-48px_-48px_-64px_-48px)]"
+            : "min-w-0 [clip-path:inset(-48px_0_-48px_-48px)] data-[state=open]:[clip-path:inset(-48px_-48px_-64px_-48px)]",
+          contentClassName,
+        )}
+      >
+        {children}
+      </div>
     </div>
   )
 }

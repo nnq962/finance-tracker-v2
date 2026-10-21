@@ -71,7 +71,7 @@ function SearchResults({
   search,
 }: Omit<TransactionListProps, "search" | "isFiltering" | "onClearFilters"> & { search: TransactionSearchResults }) {
   const searchAllMonths = search.onSearchAllMonths ? (
-    <Button type="button" variant="outline" onClick={search.onSearchAllMonths}>
+    <Button type="button" variant="secondary" onClick={search.onSearchAllMonths}>
       Tìm mọi tháng
     </Button>
   ) : null
@@ -99,7 +99,7 @@ function SearchResults({
         {search.filterLabels.length > 0 || searchAllMonths ? (
           <EmptyContent className="flex-row justify-center gap-2">
             {search.filterLabels.length > 0 ? (
-              <Button type="button" variant="outline" onClick={search.onClearFilters}>
+              <Button type="button" variant="secondary" onClick={search.onClearFilters}>
                 Bỏ lọc
               </Button>
             ) : null}
@@ -191,7 +191,7 @@ export function TransactionList({
           <EmptyDescription>Thử từ khoá khác hoặc bỏ bớt điều kiện lọc.</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Button type="button" variant="outline" onClick={onClearFilters}>
+          <Button type="button" variant="secondary" onClick={onClearFilters}>
             Xoá bộ lọc
           </Button>
         </EmptyContent>

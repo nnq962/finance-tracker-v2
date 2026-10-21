@@ -61,7 +61,7 @@ export function PageSheetPlayground() {
       trigger={<Button>Mở sheet mẫu</Button>}
       action={
         withAction ? (
-          <Button type="button" variant="secondary" size="icon" aria-label="Sửa" onClick={() => toast("Sửa")}>
+          <Button type="button" variant="elevated" size="icon" aria-label="Sửa" onClick={() => toast("Sửa")}>
             <PencilIcon />
           </Button>
         ) : null

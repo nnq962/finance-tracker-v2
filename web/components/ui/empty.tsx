@@ -30,9 +30,8 @@ const emptyMediaVariants = cva(
     variants: {
       variant: {
         default: "bg-transparent",
-        // The surface-aware field fill: white on the grey page and sheets, grey on a
-        // white card, so the tile shows on both (bg-muted all but vanished on the page).
-        icon: "flex size-20 shrink-0 items-center justify-center rounded-[20px] bg-field text-foreground [&_svg]:stroke-[1.4] [&_svg:not([class*='size-'])]:size-9",
+        // The neutral tile's fill (fill-1 via field), which shows on the white page and on a card alike.
+        icon: "flex size-20 shrink-0 items-center justify-center rounded-[20px] bg-fill-1 text-foreground [&_svg]:stroke-[1.4] [&_svg:not([class*='size-'])]:size-9",
       },
     },
     defaultVariants: {

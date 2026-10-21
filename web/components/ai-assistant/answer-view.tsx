@@ -353,7 +353,7 @@ export function ReplyView({
           line={reply.isPro ? "Lượt mới có từ đầu tháng sau." : `Lượt mới có từ đầu tháng sau. Gói Pro có ${reply.proLimit} lượt mỗi tháng.`}
           action={
             reply.isPro ? undefined : (
-              <Button className="bg-ai text-ai-foreground hover:bg-ai/85" asChild>
+              <Button variant="ai" asChild>
                 <Link href="/settings?screen=plan" onClick={onNavigate}>
                   <SparklesIcon /> Nâng cấp Pro
                 </Link>

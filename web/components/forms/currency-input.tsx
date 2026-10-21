@@ -132,7 +132,8 @@ export function CurrencyInput({
       suggestions={getAmountSuggestions(typed, history ?? [])}
       value={value ? Number(value) : null}
       onSelect={(amount) => emit(amount, false)}
-      className={variant === "hero" ? "mx-auto w-fit max-w-full" : undefined}
+      // Hero: the row spans the sheet (it scrolls to its edges), its chips centred while they fit.
+      className={variant === "hero" ? "self-stretch [&>*]:mx-auto" : undefined}
     />
   ) : null
 

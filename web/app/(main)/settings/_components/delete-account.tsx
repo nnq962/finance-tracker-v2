@@ -64,7 +64,7 @@ export function DeleteAccountSheet({ email, proEndsAt, open, onOpenChange }: { e
       disabled={pending}
       className="space-y-6"
       footer={
-        <Button variant="destructive" className="w-full" disabled={pending || !isDeleteAccountWord(word)} onClick={() => void remove()}>
+        <Button variant="destructive-solid" className="w-full" disabled={pending || !isDeleteAccountWord(word)} onClick={() => void remove()}>
           {pending ? <Spinner /> : <TriangleAlertIcon />}
           {pending ? "Đang xoá..." : "Xoá tài khoản vĩnh viễn"}
         </Button>

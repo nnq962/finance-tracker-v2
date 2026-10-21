@@ -195,7 +195,7 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
       <div className="grid grid-cols-[1fr_auto] gap-2">
         <Button
           type="button"
-          variant={state === "recording" ? "destructive" : "default"}
+          variant={state === "recording" ? "destructive-solid" : "default"}
           disabled={state === "sending"}
           onClick={() => (state === "recording" ? recorder.current?.stop() : void start())}
         >
@@ -204,7 +204,7 @@ export function WhisperLab({ onRun }: { onRun: (run: WhisperRun) => void }) {
         </Button>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="icon"
           aria-label="Gửi lại đoạn vừa ghi"
           disabled={state !== "idle" || !last}

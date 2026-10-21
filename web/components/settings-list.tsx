@@ -275,9 +275,12 @@ const rowClassName = "min-h-16 gap-3 py-3 transition-[color,background-color,box
 // The row is flush, so the grey fills it and the card rounds the corners.
 // The grey covers both dividers that bound the row (2026-10-14): raised over
 // its own (drawn at its top) and reaching a pixel down over the next row's,
-// which before showed under the grey while the one above did not.
+// which before showed under the grey while the one above did not. The grey is
+// --row-press, the lightest fill made solid (2026-10-21: lighter than before,
+// the user found a pressed row heavy on the white card; solid, so the
+// dividers it covers do not show through).
 const pressableRow =
-  "relative text-left transition-[color,background-color,box-shadow] duration-150 hover:z-3 hover:bg-muted active:z-3 active:bg-muted disabled:pointer-events-none disabled:opacity-50 md:data-[active=true]:z-3 md:data-[active=true]:bg-muted [li:not(:last-child)>&]:hover:shadow-[0_1px_0_var(--muted)] [li:not(:last-child)>&]:active:shadow-[0_1px_0_var(--muted)] md:[li:not(:last-child)>&]:data-[active=true]:shadow-[0_1px_0_var(--muted)]"
+  "relative text-left transition-[color,background-color,box-shadow] duration-150 hover:z-3 hover:bg-row-press active:z-3 active:bg-row-press disabled:pointer-events-none disabled:opacity-50 md:data-[active=true]:z-3 md:data-[active=true]:bg-row-press [li:not(:last-child)>&]:hover:shadow-[0_1px_0_var(--row-press)] [li:not(:last-child)>&]:active:shadow-[0_1px_0_var(--row-press)] md:[li:not(:last-child)>&]:data-[active=true]:shadow-[0_1px_0_var(--row-press)]"
 
 function SettingsRow({
   id,

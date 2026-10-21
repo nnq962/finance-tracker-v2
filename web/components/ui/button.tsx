@@ -19,22 +19,31 @@ const buttonVariants = cva(
         // the compositor's.
         default:
           "relative isolate bg-primary text-primary-foreground after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:bg-primary-foreground/15 after:opacity-0 after:transition-opacity after:duration-150 hover:after:opacity-100 motion-reduce:after:transition-none",
-        // A hairline inside the edge (2026-10-21): without it outline read as
-        // ghost and link, three variants alike.
-        outline:
-          "bg-card shadow-[inset_0_0_0_1px_var(--separator)] dark:shadow-[inset_0_0_0_1px_oklch(1_0_0/0.14)] hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
-        // Light: as outline, white with a hairline inside its edge (2026-10-21;
-        // the light grey fill all but vanished on the white page, cards and
-        // sheets). Dark: the field grey, which stands off black.
+        // The grey button (2026-10-21, the design system redone for the white
+        // page): a thin ink fill, no edge, as iOS's grey buttons; for actions
+        // inside content (half a sheet's footer, a card's or a banner's
+        // action, an empty state). Outline, white with a hairline, is gone:
+        // on the white page it read as this one, only weaker.
         secondary:
-          "bg-card text-secondary-foreground shadow-[inset_0_0_0_1px_var(--separator)] hover:bg-muted aria-expanded:bg-muted aria-expanded:text-secondary-foreground dark:bg-field dark:shadow-none dark:hover:bg-[color-mix(in_oklch,var(--field),var(--foreground)_5%)] dark:aria-expanded:bg-field",
+          "bg-secondary text-secondary-foreground hover:bg-fill-3 active:bg-fill-3 aria-expanded:bg-fill-3",
+        // A header's tools (2026-10-21): white, lifted by a short shadow, as
+        // iOS 26's buttons over content: the round ✕ ‹ ✎, the theme switch
+        // and the bell, the month pill. Every header the same.
+        elevated:
+          "bg-control text-foreground shadow-control hover:bg-[color-mix(in_oklab,var(--control),var(--foreground)_4%)] active:bg-[color-mix(in_oklab,var(--control),var(--foreground)_6%)] aria-expanded:bg-[color-mix(in_oklab,var(--control),var(--foreground)_6%)]",
         ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
-        // Solid red, white text (2026-10-16): the pale red tint of before read
-        // faded in both themes beside Save; the veil darkens it on hover. The
-        // fill is its own token, deeper in the dark theme (2026-10-18).
+          "hover:bg-muted hover:text-foreground active:bg-muted aria-expanded:bg-muted aria-expanded:text-foreground",
+        // Soft red (2026-10-21): Xoá beside Lưu, where saving is the main
+        // action and deleting should not weigh as much.
         destructive:
+          "bg-destructive/10 text-destructive-text hover:bg-destructive/15 active:bg-destructive/16 focus-visible:border-destructive/40 focus-visible:ring-destructive/30 dark:bg-destructive/18 dark:hover:bg-destructive/24 dark:active:bg-destructive/24",
+        // Solid red, white text: the last step of something that cannot be
+        // undone (delete the account, wipe the data). The veil darkens it on
+        // hover; the fill is its own token, deeper in the dark theme.
+        "destructive-solid":
           "relative isolate bg-destructive-fill text-destructive-foreground after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:bg-black/10 after:opacity-0 after:transition-opacity after:duration-150 hover:after:opacity-100 focus-visible:border-destructive/40 focus-visible:ring-destructive/30 motion-reduce:after:transition-none",
+        // The AI's lime with ink (Hỏi AI in an answer).
+        ai: "bg-ai text-ai-foreground hover:bg-ai/85 active:bg-ai/85",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

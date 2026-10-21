@@ -88,11 +88,11 @@ function forgetNotices() {
  * about, closing the sheet (a debt, the add-transaction sheet, the plans, an
  * account), or, for a new version, what it brought on a screen of the sheet.
  * What the admin sent ("Tin từ Timi") carries Timi's icon.
- * On phones it sits at the top of the overview, a grey round button; on
+ * On phones it sits at the top of the overview, a white elevated round button; on
  * wider screens in the top bar beside the theme switch, bare like it
  * (`variant="ghost"`).
  */
-export function NotificationsButton({ variant = "secondary" }: { variant?: "secondary" | "ghost" }) {
+export function NotificationsButton({ variant = "elevated" }: { variant?: "elevated" | "ghost" }) {
   const router = useRouter()
   const pathname = usePathname()
   const [open, setOpen] = React.useState(false)
@@ -190,7 +190,7 @@ export function NotificationsButton({ variant = "secondary" }: { variant?: "seco
           // A round button like ✕, its double tick saying "all read".
           <Button
             type="button"
-            variant="secondary"
+            variant="elevated"
             size="icon"
             aria-label="Đánh dấu tất cả đã đọc"
             onClick={() => markRead(notices.filter((notice) => !notice.read).map((notice) => notice.key))}

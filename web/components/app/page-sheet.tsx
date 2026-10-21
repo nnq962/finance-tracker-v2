@@ -43,8 +43,9 @@ const footerFade = (() => {
  * an error above it. It stays at the sheet's bottom edge over the content,
  * which scrolls under it and fades down to the very edge, the home
  * indicator's strip too; the button sits just above that strip (16px where
- * there is none) and floats, with the same soft shadow as the bar's round
- * buttons. The content's end stops above it.
+ * there is none), flat on the fade (no shadow since 2026-10-21: the fade
+ * already lifts it, and a shadow was cut at the sheet's foot). The content's
+ * end stops above it.
  * An error above the button sits on the sheet's own surface, so the content
  * scrolling under the footer never shows through its text (2026-10-17).
  * Put it last in the sheet's content, inside a form when it submits one: the
@@ -55,7 +56,7 @@ export function PageSheetFooter({ className, style, ...props }: React.ComponentP
   return (
     <div
       data-slot="page-sheet-footer"
-      className={cn("sticky bottom-0 z-10 -mx-4 mt-auto -mb-[calc(1rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-2 px-4 pt-8 pb-[max(1rem,env(safe-area-inset-bottom,0px))] [&_[data-slot=button]]:shadow-float [&>[data-slot=field-error]]:rounded-xl [&>[data-slot=field-error]]:bg-(--page-sheet-surface) [&>[data-slot=field-error]]:px-3 [&>[data-slot=field-error]]:py-2", className)}
+      className={cn("sticky bottom-0 z-10 -mx-4 mt-auto -mb-[calc(1rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-2 px-4 pt-8 pb-[max(1rem,env(safe-area-inset-bottom,0px))] [&>[data-slot=field-error]]:rounded-xl [&>[data-slot=field-error]]:bg-(--page-sheet-surface) [&>[data-slot=field-error]]:px-3 [&>[data-slot=field-error]]:py-2", className)}
       style={{ backgroundImage: footerFade, ...style }}
       {...props}
     />
@@ -291,19 +292,20 @@ function PaneFrame({
   )
 }
 
-const contentClassName = "flex flex-1 flex-col px-4 pt-20 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]"
+// --chip-row-bleed: a ChipRow outside a card runs to the sheet's edges (its 16 of padding).
+const contentClassName = "flex flex-1 flex-col px-4 [--chip-row-bleed:--spacing(4)] pt-20 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]"
 
 /**
  * The bar: the round ✕ or ‹ on the left, the small title in the middle, an
  * action on the right. 16 above (the grabber floats in it) and 8 below a 44
- * button: ✕ sits 16 from the sheet's top and side. Its round buttons always
- * float: a soft shadow, so they look the same at rest and scrolled. No
- * hairline in the dark since 2026-10-16: the button's grey already stands
- * off the black sheet. Each screen has its own; the shown one's fades in.
+ * button: ✕ sits 16 from the sheet's top and side. Its buttons are
+ * `elevated` (white, a short shadow that fits the 16 of room), so they look
+ * the same at rest and scrolled; an action passed in takes the same variant.
+ * Each screen has its own; the shown one's fades in.
  */
 function SheetBar({ left, title, action }: { left: React.ReactNode; title: React.ReactNode; action: React.ReactNode }) {
   return (
-    <div className="grid h-17 grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2 px-4 pt-4 pb-2 [&_[data-variant=secondary]]:shadow-float">
+    <div className="grid h-17 grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2 px-4 pt-4 pb-2">
       {left}
       {/* Its own cell even when hidden (sr-only takes it out of the grid), so the action stays on the right. */}
       <div className="min-w-0">{title}</div>
@@ -587,12 +589,12 @@ function RootSheet({
                 <SheetBar
                   left={
                     onBack ? (
-                      <Button type="button" variant="secondary" size="icon" aria-label={backLabel} disabled={disabled} onClick={onBack}>
+                      <Button type="button" variant="elevated" size="icon" aria-label={backLabel} disabled={disabled} onClick={onBack}>
                         <ChevronLeftIcon />
                       </Button>
                     ) : (
                       <DrawerClose asChild>
-                        <Button type="button" variant="secondary" size="icon" aria-label={closeLabel} disabled={disabled}>
+                        <Button type="button" variant="elevated" size="icon" aria-label={closeLabel} disabled={disabled}>
                           <XIcon />
                         </Button>
                       </DrawerClose>
@@ -700,7 +702,7 @@ function PaneSheet({
         ? createPortal(
             <SheetBar
               left={
-                <Button type="button" variant="secondary" size="icon" aria-label={backLabel} disabled={disabled} onClick={back}>
+                <Button type="button" variant="elevated" size="icon" aria-label={backLabel} disabled={disabled} onClick={back}>
                   <ChevronLeftIcon />
                 </Button>
               }
