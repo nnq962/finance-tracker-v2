@@ -4,7 +4,8 @@
 import { cn } from "@/lib/utils"
 
 const sizeClassName = {
-  xs: "size-11",
+  // 36, a list row's media size, so it lines up with the icon tiles of the rows under it.
+  xs: "size-9",
   sm: "size-16",
   md: "size-28",
 } as const

@@ -215,7 +215,8 @@ export function Missions({ state, accounts, contacts, categoryGroups }: Missions
               type="button"
               aria-expanded={expanded}
               onClick={() => setExpanded((open) => !open)}
-              className="flex min-h-18 w-full items-center gap-3 px-6 py-3 text-left transition-colors duration-150 outline-none hover:bg-muted focus-visible:bg-muted active:bg-muted"
+              // The rows' transparent 1px border too, so ring and text sit exactly over the Pro row's tile and title.
+              className="flex min-h-18 w-full items-center gap-3 border border-transparent px-6 py-3 text-left transition-colors duration-150 outline-none hover:bg-muted focus-visible:bg-muted active:bg-muted"
             >
               <ProgressRing size="xs" value={claimedCount} max={missions.length} />
               <span className="flex min-w-0 flex-1 flex-col">
