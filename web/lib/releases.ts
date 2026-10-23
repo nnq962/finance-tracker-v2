@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.40.1",
+    date: "2026-10-24",
+    title: "Nút trên header phẳng, tổng số dư đồng bộ",
+    changes: [
+      { kind: "improved", text: "Nút trên header (☀, chuông, Tháng 10, ✕ ‹ ✎ ở sheet) giờ phẳng cùng màu thẻ, không viền, không bóng, hợp với nền xám mới." },
+      { kind: "improved", text: "Tổng số dư ở Tài khoản dùng cùng cỡ chữ với Tài sản ròng ở Tổng quan." },
+    ],
+  },
+  {
     version: "6.40.0",
     date: "2026-10-24",
     title: "Nền mới và trang Tài khoản làm lại",

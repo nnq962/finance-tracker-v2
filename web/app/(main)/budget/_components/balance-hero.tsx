@@ -81,9 +81,10 @@ export function BalanceHero({ summary, accounts }: { summary: BalanceSummary; ac
           chips under it, then each kind as a small card, two to a row, largest first. */}
       <div className="lg:hidden">
         <div className="px-1">
-          <p className="text-[13px] font-semibold text-muted-foreground">{label}</p>
-          <div className="@container mt-2">
-            <Money amount={summary.totalBalance} size="hero" fit tone={totalTone} />
+          {/* The system's lead figure, as Tài sản ròng on Tổng quan (2026-10-24, was the handoff's 54 heavy). */}
+          <CardLabel>{label}</CardLabel>
+          <div className="@container mt-1.5">
+            <Money amount={summary.totalBalance} size="display" fit tone={totalTone} />
           </div>
           {locked.length > 0 || left.length > 0 ? (
             <div className="mt-3.5 flex flex-wrap gap-1.5">

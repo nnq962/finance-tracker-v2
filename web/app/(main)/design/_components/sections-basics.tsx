@@ -76,7 +76,7 @@ const colors = [
   ["fill-1", "Ô nhập, chip, ô icon (field, segment)", "bg-fill-1"],
   ["fill-2", "Nút xám, rãnh, nền phụ (muted, track)", "bg-fill-2"],
   ["fill-3", "Công tắc tắt, nút xám khi nhấn", "bg-fill-3"],
-  ["control", "Nút elevated (kèm shadow-control)", "bg-control shadow-control"],
+  ["control", "Viên segmented, chip elevated (kèm shadow-control)", "bg-control shadow-control"],
   ["row-press", "Dòng list khi chạm", "bg-row-press ring-1 ring-border ring-inset"],
   ["inverse", "Avatar chính mình", "bg-inverse"],
   ["destructive", "Xoá, lỗi", "bg-destructive"],
@@ -407,12 +407,9 @@ function ChipSection() {
           ) : null}
         </div>
       </Block>
-      {/* The accounts page's lead on phones (2026-10-23): the bare figure, what it holds aside as small chips. */}
-      <Block label="Số dẫn đầu trần (Money hero) · chip ghi chú (Chip size sm) · số dòng list (Money row)">
+      {/* The accounts page's lead on phones (2026-10-23): what the total holds aside as small chips. */}
+      <Block label="Chip ghi chú (Chip size sm) · số dòng list (Money row)">
         <div className="flex flex-col gap-3">
-          <div className="@container">
-            <Money amount={56_473_000} size="hero" fit />
-          </div>
           <div className="flex flex-wrap gap-1.5">
             <Chip size="sm" media={<LockIcon aria-hidden="true" />}>56,5tr đang khoá</Chip>
             <Chip size="sm" media={<EyeOffIcon aria-hidden="true" />}>850k ngoài báo cáo</Chip>

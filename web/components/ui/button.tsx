@@ -30,11 +30,12 @@ const buttonVariants = cva(
         // on the white page it read as this one, only weaker.
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-fill-3 active:bg-fill-3 aria-expanded:bg-fill-3",
-        // A header's tools (2026-10-21): white, lifted by a short shadow, as
-        // iOS 26's buttons over content: the round ✕ ‹ ✎, the theme switch
-        // and the bell, the month pill. Every header the same.
+        // A header's tools: the round ✕ ‹ ✎, the theme switch and the bell,
+        // the month pill. Every header the same. Flat in the card's colour
+        // (2026-10-24, on the grey page): a small piece of card, no edge and
+        // no shadow; was white lifted by a short shadow (2026-10-21).
         elevated:
-          "bg-control text-foreground shadow-control hover:bg-[color-mix(in_oklab,var(--control),var(--foreground)_4%)] active:bg-[color-mix(in_oklab,var(--control),var(--foreground)_6%)] aria-expanded:bg-[color-mix(in_oklab,var(--control),var(--foreground)_6%)]",
+          "bg-card text-foreground hover:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)] active:bg-[color-mix(in_oklab,var(--card),var(--foreground)_7%)] aria-expanded:bg-[color-mix(in_oklab,var(--card),var(--foreground)_7%)]",
         ghost:
           "hover:bg-muted hover:text-foreground active:bg-muted aria-expanded:bg-muted aria-expanded:text-foreground",
         // Soft red (2026-10-21): Xoá beside Lưu, where saving is the main
