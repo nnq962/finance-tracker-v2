@@ -26,8 +26,8 @@ const tileClassName = {
 
 /**
  * An account's mark as a tile, the same soft square as the icons in every
- * list (IconTile): the bank's or wallet's logo on white, cash as a green
- * banknote, a savings jar as what it is for (its icon and colour), or the
+ * list (IconTile): the bank's or wallet's logo on white, cash as a
+ * banknote on the neutral tile (2026-10-24, was green), a savings jar as what it is for (its icon and colour), or the
  * initials when there is no logo. Its name is always
  * written beside it, so it is not read out a second time.
  */
@@ -38,7 +38,7 @@ export function AccountLogo({ account, size = "sm", lazy = false, className }: A
       <span aria-hidden="true" className={className}>
         <IconTile
           icon={jar?.icon ?? BanknoteIcon}
-          tone={jar?.tone ?? "emerald"}
+          tone={jar?.tone ?? "neutral"}
           size={size === "lg" ? "lg" : "sm"}
           className={cn(size === "xs" && "size-5 rounded-[6px] [&_svg]:size-3")}
         />

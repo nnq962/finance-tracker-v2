@@ -1,9 +1,10 @@
-import { BanknoteIcon, LandmarkIcon, PiggyBankIcon, SmartphoneIcon, type LucideIcon } from "lucide-react"
+import { BanknoteIcon, EyeOffIcon, LandmarkIcon, LockIcon, PiggyBankIcon, SmartphoneIcon, WalletIcon, type LucideIcon } from "lucide-react"
 
 import { CardLabel } from "@/components/app/card-label"
-import { IconTile } from "@/components/app/icon-tile"
+import { Chip } from "@/components/app/chip"
+import { IconTile, type IconTileTone } from "@/components/app/icon-tile"
 import { Money } from "@/components/app/money"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { accountTypeLabels } from "@/lib/accounts/labels"
 import { formatCompactCurrency } from "@/lib/format-currency"
 import type { Account, AccountType, BalanceSummary } from "@/lib/accounts/types"
@@ -16,6 +17,19 @@ const accountTypeIcons: Record<AccountType, LucideIcon> = {
   "e-wallet": SmartphoneIcon,
   cash: BanknoteIcon,
   savings: PiggyBankIcon,
+}
+
+/**
+ * Each kind's tile on phones (2026-10-24): the design system's neutral tile,
+ * as the list below draws banks, wallets and cash (AccountLogo), and the jars
+ * in the solid lime, as their rings. The wallet glyph for e-wallets, as the
+ * handoff draws them.
+ */
+const accountTypeTiles: Record<AccountType, { icon: LucideIcon; tone: IconTileTone }> = {
+  savings: { icon: PiggyBankIcon, tone: "accent" },
+  bank: { icon: LandmarkIcon, tone: "neutral" },
+  "e-wallet": { icon: WalletIcon, tone: "neutral" },
+  cash: { icon: BanknoteIcon, tone: "neutral" },
 }
 
 /**
@@ -63,30 +77,58 @@ export function BalanceHero({ summary, accounts }: { summary: BalanceSummary; ac
 
   return (
     <>
-      <Card size="lg" className="lg:hidden">
-        <CardContent>
-          {/* The figure fits its column on one line (from 100 triệu up it wrapped mid-number, 2026-10-16). */}
-          <div className="@container flex min-w-0 flex-col gap-1">
-            <CardLabel>{label}</CardLabel>
-            <Money amount={summary.totalBalance} size="xl" fit tone={totalTone} />
-            {notes}
+      {/* Phones (2026-10-23, the handoff): the total bare on the page, what it holds aside as small
+          chips under it, then each kind as a small card, two to a row, largest first. */}
+      <div className="lg:hidden">
+        <div className="px-1">
+          <p className="text-[13px] font-semibold text-muted-foreground">{label}</p>
+          <div className="@container mt-2">
+            <Money amount={summary.totalBalance} size="hero" fit tone={totalTone} />
           </div>
-          {parts.length > 1 && parts.some((part) => part.count > 1) ? (
-            <ul className="mt-5 flex flex-col rounded-[16px] bg-track px-4">
-              {parts.map((part) => {
-                const Icon = accountTypeIcons[part.type]
+          {locked.length > 0 || left.length > 0 ? (
+            <div className="mt-3.5 flex flex-wrap gap-1.5">
+              {locked.length > 0 ? (
+                <Chip size="sm" media={<LockIcon aria-hidden="true" />}>
+                  {formatCompactCurrency(lockedTotal, 1)} đang khoá
+                </Chip>
+              ) : null}
+              {left.length > 0 ? (
+                <Chip size="sm" media={<EyeOffIcon aria-hidden="true" />}>
+                  {formatCompactCurrency(leftTotal, 1)} ngoài báo cáo
+                </Chip>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+        {parts.length > 1 && parts.some((part) => part.count > 1) ? (
+          <ul className="mt-[22px] grid grid-cols-2 gap-2.5">
+            {[...parts]
+              .sort((first, second) => second.total - first.total)
+              .map((part) => {
+                const tile = accountTypeTiles[part.type]
                 return (
-                  <li key={part.type} className="flex min-h-12 items-center gap-3 not-first:border-t not-first:border-separator">
-                    <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                    <span className="min-w-0 flex-1 truncate text-sm">{accountTypeLabels[part.type]}</span>
-                    <Money amount={part.total} size="sm" tone={part.total < 0 ? "expense" : "default"} />
+                  <li key={part.type}>
+                    <Card className="gap-3.5 rounded-[22px] px-3.5 [--card-spacing:--spacing(3.5)]">
+                      <IconTile icon={tile.icon} tone={tile.tone} size="sm" className="size-8 [&_svg]:size-[17px]" />
+                      <span className="flex min-w-0 flex-col gap-0.5">
+                        <span className="text-xs font-semibold text-muted-foreground">{accountTypeLabels[part.type]}</span>
+                        <span
+                          className={cn(
+                            "text-[17px] leading-tight font-extrabold tracking-[-0.02em] whitespace-nowrap tabular-nums",
+                            part.total < 0 && "text-expense",
+                          )}
+                        >
+                          {part.total < 0 ? "−" : ""}
+                          {formatCompactCurrency(Math.abs(part.total), 1)}
+                        </span>
+                      </span>
+                    </Card>
                   </li>
                 )
               })}
-            </ul>
-          ) : null}
-        </CardContent>
-      </Card>
+          </ul>
+        ) : null}
+      </div>
 
       <div className={cn(accountGridClassName, "hidden lg:grid")}>
         <GridCard>

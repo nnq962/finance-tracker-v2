@@ -19,8 +19,8 @@ export function ShelfLink({
   ...props
 }: Omit<React.ComponentProps<"button">, "type"> & {
   icon?: LucideIcon
-  /** `responsive`: centred below lg, at the start from lg; `center`: always centred. */
-  align?: "responsive" | "center"
+  /** `responsive`: centred below lg, at the start from lg; `center`: always centred; `fill`: a full-width row, the chevron at its end (2026-10-23). */
+  align?: "responsive" | "center" | "fill"
 }) {
   return (
     <button
@@ -29,13 +29,14 @@ export function ShelfLink({
       className={cn(
         "pressable mx-auto flex min-h-11 items-center gap-1.5 rounded-full px-4 text-sm font-medium text-muted-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/30 active:bg-muted [@media(hover:hover)]:hover:bg-muted",
         align === "responsive" && "lg:mx-0",
+        align === "fill" && "mx-0 min-h-12 w-full gap-2.5 rounded-[16px] px-[18px] text-left text-[13px] font-semibold",
         className,
       )}
       {...props}
     >
-      <Icon aria-hidden="true" className="size-4 shrink-0" />
-      {children}
-      <ChevronRightIcon aria-hidden="true" className="size-4 shrink-0" />
+      <Icon aria-hidden="true" className={cn("size-4 shrink-0", align === "fill" && "size-[17px]")} />
+      {align === "fill" ? <span className="min-w-0 flex-1 truncate">{children}</span> : children}
+      <ChevronRightIcon aria-hidden="true" className={cn("size-4 shrink-0", align === "fill" && "opacity-60")} />
     </button>
   )
 }

@@ -452,6 +452,10 @@ function ListSection() {
       <ShelfLink align="center" icon={CircleCheckIcon} onClick={() => toast("Mở sheet Đã tất toán")}>
         2 khoản đã tất toán
       </ShelfLink>
+      {/* The accounts page's Lưu trữ on phones (2026-10-23): a full-width row. */}
+      <ShelfLink align="fill" onClick={() => toast("Mở sheet Lưu trữ")}>
+        Lưu trữ · 2 tài khoản, 1 hũ
+      </ShelfLink>
       <SettingsGroup title="Mô tả một dòng, hoặc đầy đủ (fullDescription)" size="lg">
         <SettingsRow
           icon={WalletCardsIcon}

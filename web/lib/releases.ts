@@ -32,6 +32,17 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.40.0",
+    date: "2026-10-24",
+    title: "Nền mới và trang Tài khoản làm lại",
+    changes: [
+      { kind: "improved", text: "Nền app đổi sang xám trung tính: sáng #f0f0f0 với thẻ gần trắng và bóng nhẹ hơn; tối #0b0b0b với thẻ #171717. Sheet cùng màu nền trang, thanh trạng thái đổi theo; thanh tab giữ nguyên." },
+      { kind: "improved", text: "Tài khoản trên điện thoại: tổng số dư lớn ngay trên nền trang, chip nhỏ cho tiền đang khoá và ngoài báo cáo, các loại tài khoản thành thẻ nhỏ hai cột." },
+      { kind: "improved", text: "Hũ tiết kiệm thành lưới thẻ hai cột: vòng tiến độ, phần trăm, số cần nạp mỗi tháng, hạn và đã có / mục tiêu; ô \"Thêm hũ\" xám ở cuối." },
+      { kind: "improved", text: "Lưu trữ thành một dòng rộng \"Lưu trữ · N tài khoản, N hũ\"; trạng thái chưa có tài khoản gọn trong một thẻ. Tiền mặt dùng ô icon xám như các tài khoản khác." },
+    ],
+  },
+  {
     version: "6.39.0",
     date: "2026-10-21",
     title: "Cài đặt rõ ràng và an toàn hơn",

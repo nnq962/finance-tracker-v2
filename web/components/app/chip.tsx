@@ -17,6 +17,7 @@ export function Chip({
   onRemove,
   removeLabel = "Xoá",
   tone = "default",
+  size = "md",
   className,
 }: {
   children: React.ReactNode
@@ -24,6 +25,8 @@ export function Chip({
   onRemove?: () => void
   removeLabel?: string
   tone?: "default" | "income"
+  /** sm: a note under a figure (26 tall, bold caption in grey, 2026-10-23), with a small icon as `media`. */
+  size?: "md" | "sm"
   className?: string
 }) {
   return (
@@ -33,6 +36,8 @@ export function Chip({
         "inline-flex h-9 max-w-full items-center gap-2 rounded-full px-3.5 text-sm",
         tone === "income" ? "bg-income/10 font-medium text-income dark:bg-income/15" : "bg-field",
         media && "pl-1",
+        size === "sm" && "h-[26px] gap-[5px] pr-2.5 pl-2 text-xs font-bold text-muted-foreground tabular-nums [&_svg]:size-[13px] [&_svg]:shrink-0",
+        size === "sm" && tone === "default" && "bg-fill-2",
         onRemove && "gap-1 pr-1.5",
         className,
       )}

@@ -10,11 +10,13 @@ import {
   BoldIcon,
   CheckIcon,
   ChevronDownIcon,
+  EyeOffIcon,
   ChevronRightIcon,
   FingerprintIcon,
   HeartIcon,
   ItalicIcon,
   ListFilterIcon,
+  LockIcon,
   MailIcon,
   PencilIcon,
   PlusIcon,
@@ -23,6 +25,7 @@ import {
   SparklesIcon,
   Trash2Icon,
   UnderlineIcon,
+  WalletIcon,
   XIcon,
 } from "lucide-react"
 import { toast } from "sonner"
@@ -30,6 +33,8 @@ import { toast } from "sonner"
 import { Chip } from "@/components/app/chip"
 import { ChipButton, ChipRow, ChipRowDivider } from "@/components/app/chip-row"
 import { DeltaBadge } from "@/components/app/delta-badge"
+import { IconTile } from "@/components/app/icon-tile"
+import { Money } from "@/components/app/money"
 import { SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -43,7 +48,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Block, CatalogSection, Wide } from "./catalog-kit"
 
 const principles = [
-  ["Thẻ trắng nổi trên nền trắng", "Thẻ trắng bo tròn, không viền, nổi nhờ bóng mềm như menu iOS (0 8 40, đen 12%); trang và sheet đều trắng."],
+  ["Thẻ trắng trên nền xám", "Trang và sheet xám trung tính #f0f0f0, thẻ gần trắng bo tròn, không viền, nổi nhờ bóng ngắn và nhẹ; theme tối nền #0b0b0b, thẻ #171717."],
   ["Một khuôn trang", "Tên trang gọn bên trái, công cụ bên phải; rồi một thẻ dẫn đầu và các nhóm."],
   ["Xám là lớp mực mỏng", "Nền phụ, ô nhập, nút xám là mực 4–10% trong suốt, hợp trang, thẻ lẫn sheet; nút trên header là nút trắng nổi (elevated)."],
   ["Một mảng đen", "Màu mực cho nút chính, chip và segment đang chọn, công tắc bật; thẻ dẫn đầu là thẻ trắng như mọi thẻ, dẫn bằng cỡ số."],
@@ -400,6 +405,25 @@ function ChipSection() {
               Khôi phục
             </Button>
           ) : null}
+        </div>
+      </Block>
+      {/* The accounts page's lead on phones (2026-10-23): the bare figure, what it holds aside as small chips. */}
+      <Block label="Số dẫn đầu trần (Money hero) · chip ghi chú (Chip size sm) · số dòng list (Money row)">
+        <div className="flex flex-col gap-3">
+          <div className="@container">
+            <Money amount={56_473_000} size="hero" fit />
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            <Chip size="sm" media={<LockIcon aria-hidden="true" />}>56,5tr đang khoá</Chip>
+            <Chip size="sm" media={<EyeOffIcon aria-hidden="true" />}>850k ngoài báo cáo</Chip>
+          </div>
+          <Money amount={18_450_000} size="row" />
+        </div>
+      </Block>
+      <Block label="Ô chanh đặc (IconTile accent, cỡ sm và xl)">
+        <div className="flex items-center gap-4">
+          <IconTile icon={PlusIcon} tone="accent" size="sm" />
+          <IconTile icon={WalletIcon} tone="accent" size="xl" />
         </div>
       </Block>
       <Block label="Badge">

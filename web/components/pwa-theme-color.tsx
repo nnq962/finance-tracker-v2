@@ -4,10 +4,10 @@ import * as React from "react"
 import { useTheme } from "next-themes"
 
 // theme-color is read by the browser, not from CSS, so it repeats the
-// background token as hex: the white page since 2026-10-20 (was #f2f2f7).
+// background token as hex: the neutral grey page since 2026-10-23 (was white, #000 dark).
 const APP_BACKGROUND = {
-  light: "#ffffff",
-  dark: "#000000",
+  light: "#f0f0f0",
+  dark: "#0b0b0b",
 } as const
 
 export function PwaThemeColor() {

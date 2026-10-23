@@ -16,10 +16,12 @@ const iconTileVariants = cva(
         sm: "size-9 [&_svg]:size-[18px]",
         md: "size-10 [&_svg]:size-5",
         lg: "size-12 [&_svg]:size-6",
+        // An empty state's lead (2026-10-23).
+        xl: "size-16 [&_svg]:size-[30px]",
       },
       // rounded: the mockup's tile, a soft square; circle is kept for faces and initials.
       shape: {
-        rounded: "rounded-[10px] data-[size=lg]:rounded-[16px] data-[size=xs]:rounded-[6px]",
+        rounded: "rounded-[10px] data-[size=lg]:rounded-[16px] data-[size=xl]:rounded-[20px] data-[size=xs]:rounded-[6px]",
         circle: "rounded-full",
       },
     },
@@ -39,6 +41,8 @@ const semanticTones = {
   // The lime and the amber are light: twice the hue, or the tile vanishes on white.
   ai: "tile-tinted [--tile:var(--ai)] [--tile-mix:24%]",
   warning: "tile-tinted [--tile:var(--warning)] [--tile-mix:24%]",
+  // A solid lime tile (2026-10-23): an empty state's lead, the one thing to do.
+  accent: "bg-ai text-ai-foreground",
 } as const
 
 export type IconTileTone = keyof typeof semanticTones | CategoryColorName

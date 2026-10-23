@@ -1,46 +1,24 @@
 "use client"
 
 import * as React from "react"
-import { PlusIcon } from "lucide-react"
 
 import { IconTile } from "@/components/app/icon-tile"
-import { Money } from "@/components/app/money"
 import { groupCaptionClassName, SettingsGroup, SettingsRow } from "@/components/settings-list"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
-import { formatCompactCurrency, formatCurrency } from "@/lib/format-currency"
+import { formatCurrency } from "@/lib/format-currency"
 import { formatShortDate, toDateKey } from "@/lib/format-date"
 import { getJarIcon } from "@/lib/savings/jar-icons"
-import { amountLeft, jarPlanLabel } from "@/lib/savings/plan"
 import type { Transaction } from "@/lib/transactions/types"
 import { cn } from "@/lib/utils"
 
 import { accountGridClassName } from "../account-grid"
 import { AddCard } from "../add-card"
 import { BoughtSheet } from "./bought-sheet"
-import { JarCard } from "./jar-card"
+import { AddJarTile, JarCard, JarTile } from "./jar-card"
 import { JarFormSheet } from "./jar-form-sheet"
-import { JarRing } from "./jar-ring"
 import { JarSheet } from "./jar-sheet"
 import { MoveJarSheet } from "./move-jar-sheet"
-
-function JarRow({ jar, today, onSelect }: { jar: Account; today: string; onSelect: () => void }) {
-  const full = amountLeft(jar) === 0
-  return (
-    <SettingsRow
-      media={<JarRing jar={jar} />}
-      title={jar.name}
-      description={full ? <span className="text-income">Đủ tiền rồi 🎉</span> : jarPlanLabel(jar, today)}
-      action={
-        <span className="flex flex-col items-end">
-          <Money amount={jar.balance} size="sm" />
-          <span className="text-xs text-muted-foreground tabular-nums">/ {formatCompactCurrency(jar.goal?.target ?? 0, 1)}</span>
-        </span>
-      }
-      onClick={onSelect}
-    />
-  )
-}
 
 /**
  * The savings jars on the accounts page (2026-10-14): "Hũ tiết kiệm · N",
@@ -135,19 +113,16 @@ export function JarList({
           {/* A list on phones, with no line under it (2026-10-21); from lg up the
               accounts grid's cards, the last a dashed one to add, alone the same one cell when
               there is no jar yet (2026-10-21: a full-width row was rejected). */}
-          <div className="lg:hidden">
-            <SettingsGroup title={filling.length ? `Hũ tiết kiệm · ${filling.length}` : "Hũ tiết kiệm"}>
+          {/* Phones (2026-10-23, the handoff): a two-up grid of jar cards, the last a grey one to add. */}
+          <section className="flex flex-col gap-2 lg:hidden">
+            <h2 className={cn("px-4", groupCaptionClassName)}>{filling.length ? `Hũ tiết kiệm · ${filling.length}` : "Hũ tiết kiệm"}</h2>
+            <div className="grid grid-cols-2 gap-3">
               {filling.map((jar) => (
-                <JarRow key={jar.id} jar={jar} today={today} onSelect={() => setOpenId(jar.id)} />
+                <JarTile key={jar.id} jar={jar} today={today} onSelect={() => setOpenId(jar.id)} />
               ))}
-              <SettingsRow
-                media={<IconTile icon={PlusIcon} tone="neutral" size="sm" />}
-                title="Thêm hũ"
-                chevron={false}
-                onClick={() => setForm({ open: true, mode: "new" })}
-              />
-            </SettingsGroup>
-          </div>
+              <AddJarTile onClick={() => setForm({ open: true, mode: "new" })} />
+            </div>
+          </section>
           <section className="hidden flex-col gap-2 lg:flex">
             <h2 className={cn("px-4", groupCaptionClassName)}>{filling.length ? `Hũ tiết kiệm · ${filling.length}` : "Hũ tiết kiệm"}</h2>
             <div className={accountGridClassName}>

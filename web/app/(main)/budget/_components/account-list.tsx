@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { PlusIcon, WalletCardsIcon } from "lucide-react"
+import { PlusIcon, WalletIcon } from "lucide-react"
 
 import { AccountLogo } from "@/components/account-logo"
 import { IconTile } from "@/components/app/icon-tile"
@@ -11,14 +11,6 @@ import { ShelfLink } from "@/components/app/shelf-link"
 import { SettingsGroup, SettingsRow, groupCaptionClassName } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
 import type { Transaction } from "@/lib/transactions/types"
@@ -56,7 +48,7 @@ function AccountRow({ account, onSelect }: { account: Account; onSelect: () => v
       action={
         <Money
           amount={account.balance}
-          size="sm"
+          size="row"
           // Below zero is a warning; a balance outside the total greys.
           tone={isExcluded || locked ? "muted" : account.balance < 0 ? "expense" : "default"}
         />
@@ -92,23 +84,18 @@ export function AccountList({ accounts, recentTransactions, categoryGroups, init
   const inStored = stored && openAccount?.status === "archived"
 
   if (accounts.length === 0) {
+    // One card under the title (2026-10-23, the handoff): the lime wallet, what to do, the button.
     return (
-      <Card>
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <WalletCardsIcon />
-            </EmptyMedia>
-            <EmptyTitle>Chưa có tài khoản</EmptyTitle>
-            <EmptyDescription>Thêm tài khoản đầu tiên để bắt đầu.</EmptyDescription>
-          </EmptyHeader>
-          <EmptyContent>
-            <Button type="button" onClick={() => setAdding(true)}>
-              <PlusIcon data-icon="inline-start" />
-              Thêm tài khoản
-            </Button>
-          </EmptyContent>
-        </Empty>
+      <Card className="mt-[18px] items-center gap-0 rounded-[28px] px-6 pt-9 pb-[26px] text-center lg:mt-0">
+        <IconTile icon={WalletIcon} tone="accent" size="xl" />
+        <div className="mt-[18px] flex flex-col gap-1.5">
+          <h2 className="text-[21px] leading-tight font-extrabold tracking-[-0.02em]">Chưa có tài khoản</h2>
+          <p className="text-[15px] font-semibold text-balance text-muted-foreground">Thêm tài khoản đầu tiên để bắt đầu.</p>
+        </div>
+        <Button type="button" className="mt-[22px]" onClick={() => setAdding(true)}>
+          <PlusIcon data-icon="inline-start" />
+          Thêm tài khoản
+        </Button>
         <AddAccountSheet open={adding} onOpenChange={setAdding} />
       </Card>
     )
@@ -154,14 +141,25 @@ export function AccountList({ accounts, recentTransactions, categoryGroups, init
       {/* What is no longer in use is not folded into the page (2026-10-21): one quiet line opens
           "Lưu trữ", the locked accounts and the finished jars, each opening inside it, ‹ back. */}
       {archivedAccounts.length > 0 || doneJars.length > 0 ? (
-        <ShelfLink onClick={() => setStored(true)}>
-          {[
-            archivedAccounts.length ? `${archivedAccounts.length} tài khoản đã khoá` : null,
-            doneJars.length ? `${doneJars.length} hũ đã xong` : null,
-          ]
-            .filter(Boolean)
-            .join(" · ")}
-        </ShelfLink>
+        <>
+          {/* Phones: a full-width row (2026-10-23, the handoff); from lg the quiet centred line. */}
+          <ShelfLink align="fill" className="-mt-2.5 lg:hidden" onClick={() => setStored(true)}>
+            {`Lưu trữ · ${[
+              archivedAccounts.length ? `${archivedAccounts.length} tài khoản` : null,
+              doneJars.length ? `${doneJars.length} hũ` : null,
+            ]
+              .filter(Boolean)
+              .join(", ")}`}
+          </ShelfLink>
+          <ShelfLink className="hidden lg:flex" onClick={() => setStored(true)}>
+            {[
+              archivedAccounts.length ? `${archivedAccounts.length} tài khoản đã khoá` : null,
+              doneJars.length ? `${doneJars.length} hũ đã xong` : null,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </ShelfLink>
+        </>
       ) : null}
 
       <PageSheet title="Lưu trữ" open={stored} onOpenChange={setStored} className="gap-6">

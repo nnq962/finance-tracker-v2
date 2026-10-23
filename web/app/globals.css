@@ -113,24 +113,24 @@
  * Colours after the approved Figma Make mockup (see docs/design/colors.md):
  * Tailwind's neutral greys on a warm off-white page (#f2f2f1), white,
  * borderless cards, neutral-900 as the one strong colour, and meaning
- * colours used sparingly. Dark: a black page (#000) and #1c1c1e cards, as iOS (2026-10-16; was #0a0a0a / #171717).
+ * colours used sparingly. Since 2026-10-23 a neutral grey page (#f0f0f0) and, dark, #0b0b0b with #171717 cards (was #000 / #1c1c1e).
  * `.light` brings the light colours back inside a dark page, as `.dark` does
  * the other way, e.g. the theme picker's light preview.
  */
 :root,
 .light {
   /*
-   * A white page (2026-10-20), its white cards lifted by Apple's shadow
-   * (--card-shadow); sheets white too (2026-10-21), so the status bar stays
-   * white under a full-screen sheet and its groups lift the same way. Was
-   * iOS's grouped grey #f2f2f7 (2026-10-18), #f7f7f8 before, and first a warm
-   * #f5f4f0 that read yellow.
+   * A neutral grey page (2026-10-23, after the Claude Design handoff in
+   * examples/new): #f0f0f0, its near-white cards lifted by a short, light
+   * shadow; sheets take the page's grey, their groups white on it. Was a
+   * white page with Apple's menu shadow (2026-10-20), iOS's grouped grey
+   * #f2f2f7 (2026-10-18), #f7f7f8 before, and first a warm #f5f4f0.
    */
-  --background: oklch(1 0 0);
-  --sheet: oklch(1 0 0);
-  --foreground: oklch(0.205 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.205 0 0);
+  --background: oklch(0.955 0 0);
+  --sheet: oklch(0.955 0 0);
+  --foreground: oklch(0.22 0 0);
+  --card: oklch(0.995 0 0);
+  --card-foreground: oklch(0.22 0 0);
   /*
    * The card every page leads with (Card variant="inverse"): black on the
    * light page, white on the black one (2026-10-19, the user's choice after a
@@ -152,8 +152,8 @@
   --pastel-tile: oklch(1 0 0 / 0.55);
   --pastel-tile-edge: oklch(0 0 0 / 0.05);
   --pastel-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.06), 0 10px 30px -18px rgb(0 0 0 / 0.25);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.205 0 0);
+  --popover: oklch(0.995 0 0);
+  --popover-foreground: oklch(0.22 0 0);
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(1 0 0);
   /*
@@ -175,8 +175,8 @@
   --secondary-foreground: oklch(0.205 0 0);
   --muted: var(--fill-2);
   /* Secondary text (descriptions, times, captions): iOS's secondary label, not the paler neutral-400. */
-  /* 4.6:1 on the white page and cards (2026-10-20; 0.617 was about 3.5:1). */
-  --muted-foreground: oklch(0.56 0 0);
+  /* 0.52 (2026-10-23, the handoff's ink-2): about 5.4:1 on the cards, 4.9:1 on the grey page. */
+  --muted-foreground: oklch(0.52 0 0);
   --accent: var(--fill-2);
   --accent-foreground: oklch(0.205 0 0);
   /* The expense's red (#d9534f), 2026-10-10. */
@@ -188,8 +188,8 @@
      text colour too light under white (2026-10-18). */
   --destructive-fill: oklch(0.619 0.1694 25);
   --border: oklch(0.97 0 0);
-  /* Hairline between rows of a list, the page's grey a step darker, clearer than --border on a white card. */
-  --separator: oklch(0.905 0.004 286);
+  /* Hairline between rows of a list on a card (2026-10-23: the handoff's neutral grey, was 0.905 a touch blue). */
+  --separator: oklch(0.935 0 0);
   --input: var(--fill-3);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.588 0.212 288);
@@ -240,13 +240,13 @@
   --tab-pill: rgb(0 0 0 / 0.07);
   --tab-active: #0088ff;
   /*
-   * White cards on the white page (2026-10-20): Apple's iOS 26 kit menu
-   * shadow (Figma: X 0, Y 8, blur 40, spread 0, #000 12%), as the tab bar's.
-   * No hairline ring, which read as a border.
+   * Cards on the grey page (2026-10-23, the handoff's shadow-card): a contact
+   * shadow and a short soft fall, the grey doing most of the lifting. Was
+   * Apple's menu shadow 0 8 40 at 12% on the white page. No hairline ring.
    */
-  --card-shadow: 0 8px 40px rgb(0 0 0 / 0.12);
-  /* A card that opens something, under a mouse (desktop): a step further off the page (2026-10-21). */
-  --card-shadow-hover: 0 12px 48px rgb(0 0 0 / 0.16);
+  --card-shadow: 0 1px 2px oklch(0.3 0 0 / 0.05), 0 8px 24px oklch(0.3 0 0 / 0.07);
+  /* A card that opens something, under a mouse (desktop): a step further off the page. */
+  --card-shadow-hover: 0 2px 4px oklch(0.3 0 0 / 0.06), 0 12px 32px oklch(0.3 0 0 / 0.1);
   /*
    * The elevated button and the segmented thumb (2026-10-21): a hairline and
    * a short, soft fall, small enough to stay inside the 16 of room a header
@@ -270,10 +270,9 @@
 }
 
 .dark {
-  /* Apple's same menu shadow in the dark (Figma kit): lost on the black page, where the card's lighter grey lifts it; no edge highlight. */
-  --card-shadow: 0 8px 40px rgb(0 0 0 / 0.12);
-  /* In the dark the shadow barely shows: the lift stays a touch deeper. */
-  --card-shadow-hover: 0 12px 48px rgb(0 0 0 / 0.5);
+  /* A shadow is lost on the dark page (2026-10-23, the handoff): a faint light edge instead, the card's lighter grey lifting it. */
+  --card-shadow: 0 0 0 1px rgb(255 255 255 / 0.04);
+  --card-shadow-hover: 0 0 0 1px rgb(255 255 255 / 0.08), 0 12px 48px rgb(0 0 0 / 0.5);
   /* No fall on the black: the elevated button is a raised grey with a light hairline. */
   --control-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.1);
   --control: oklch(0.29 0.004 286);
@@ -284,12 +283,16 @@
   --fill-3: color-mix(in oklab, white 18%, transparent);
   /* On the black page the raised grey toast takes a lighter edge and a deeper shadow. */
   --toast-shadow: 0 0 0 0.5px oklch(1 0 0 / 0.12), 0 12px 28px -10px rgb(0 0 0 / 0.7);
-  /* iOS dark grouped (2026-10-16): a black page (#000), cards #1c1c1e, raised fills #2c2c2e, lines #38383a. */
-  --background: oklch(0 0 0);
-  --sheet: oklch(0 0 0);
-  --foreground: oklch(1 0 0);
-  --card: oklch(0.227 0.0038 286.1);
-  --card-foreground: oklch(1 0 0);
+  /*
+   * Neutral dark (2026-10-23, the handoff): a near-black page #0b0b0b, sheets
+   * the same, cards #171717, soft white ink. Was iOS's dark grouped: a black
+   * page, cards #1c1c1e (2026-10-16).
+   */
+  --background: oklch(0.15 0 0);
+  --sheet: oklch(0.15 0 0);
+  --foreground: oklch(0.95 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.95 0 0);
   --inverse: oklch(1 0 0);
   --inverse-foreground: oklch(0.205 0 0);
   /* The pastel card in the dark: the same blend, deep, on the card grey; no shadow. */
@@ -300,14 +303,14 @@
   --pastel-tile: oklch(1 0 0 / 0.07);
   --pastel-tile-edge: transparent;
   --pastel-shadow: none;
-  --popover: oklch(0.227 0.0038 286.1);
-  --popover-foreground: oklch(1 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.95 0 0);
   --primary: oklch(1 0 0);
   --primary-foreground: oklch(0.205 0 0);
   --secondary: var(--fill-2);
   --secondary-foreground: oklch(1 0 0);
   --muted: var(--fill-2);
-  --muted-foreground: oklch(0.66 0 0);
+  --muted-foreground: oklch(0.7 0 0);
   --accent: var(--fill-2);
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.7 0.15 25);
@@ -315,7 +318,7 @@
   /* #cf4040: white on it 4.69:1, where the text red above gave 2.85 (2026-10-18). */
   --destructive-fill: oklch(0.58 0.18 25);
   --border: oklch(0.294 0.0036 286.2);
-  --separator: oklch(0.341 0.0034 286.2);
+  --separator: oklch(0.27 0 0);
   --input: var(--fill-3);
   --ring: oklch(0.556 0 0);
   --chart-1: oklch(0.707 0.166 290.2);
@@ -344,8 +347,9 @@
   --ai-strong: oklch(0.911 0.1775 119.6);
   /* The primary turns white here: the logo's deep lime (#7FA300), as the lime fades on white. */
   --ai-on-primary: oklch(0.664 0.1647 123.9);
-  --tab-bar: color-mix(in oklab, var(--card) 36%, transparent);
-  --tab-pill: color-mix(in oklab, var(--foreground) 13%, transparent);
+  /* The tab bar keeps its 2026-10-19 glass: the old card grey and white, not the 2026-10-23 tokens. */
+  --tab-bar: color-mix(in oklab, oklch(0.227 0.0038 286.1) 36%, transparent);
+  --tab-pill: color-mix(in oklab, oklch(1 0 0) 13%, transparent);
   --tab-active: #2b8ff5;
   --warning: oklch(0.828 0.189 84.429);
   --warning-text: var(--warning);
@@ -452,7 +456,7 @@
     var(--pastel-base);
 }
 
-/* A sheet's ground (white in light since 2026-10-21, as the page); --background follows, for what paints the ground (sticky captions, the sheet's own fill). Fields need nothing: the fills suit every surface. */
+/* A sheet's ground (the page's grey since 2026-10-23, its groups white on it); --background follows, for what paints the ground (sticky captions, the sheet's own fill). Fields need nothing: the fills suit every surface. */
 @utility surface-sheet {
   --background: var(--sheet);
 }

@@ -18,16 +18,16 @@ Bảng màu cho thiết kế lại (10/2026), theo mockup đã duyệt (xem [`RE
 
 | Token | Sáng | Tối | Dùng cho |
 |---|---|---|---|
-| `background` | `#f2f2f7` (xám nhóm của iOS, 2026-10-18) | `#000000` | Nền trang |
-| `card` | `#ffffff` | `#171717` | Thẻ |
+| `background` | `#f0f0f0` (xám trung tính, 2026-10-23) | `#0b0b0b` | Nền trang, cũng là nền sheet (`sheet`) |
+| `card` | `#fdfdfd` | `#171717` | Thẻ |
 | `inverse` | `#171717` | `#ffffff` | Thẻ dẫn đầu của mọi trang (`Card variant="inverse"`, 2026-10-19): đen ở theme sáng, trắng ở theme tối (trước là xám nổi `#262626`), xám nổi ở theme tối, không phải khối trắng; chữ `inverse-foreground` trắng |
-| `popover` | `#ffffff` | `#171717` | Sheet, menu, hộp thoại |
+| `popover` | `#fdfdfd` | `#171717` | Menu, popover |
 | `foreground`, `primary` | `#171717` | `#ffffff` | Chữ chính, màu nhấn duy nhất (`neutral-900`) |
 | `fill-1` / `fill-2` / `fill-3` | mực 4 / 6 / 10% | trắng 8 / 12 / 18% | Lớp xám trong suốt (2026-10-21), hợp mọi bề mặt: ô nhập, chip, ô icon trung tính (`fill-1`); nút xám, rãnh (`fill-2`); công tắc tắt, nút xám khi nhấn (`fill-3`) |
 | `secondary` / `muted` / `accent` | `fill-2` | `fill-2` | Skeleton, nền khi nhấn, nút xám |
 | `control` + `control-shadow` | trắng, viền 0,5px 4% + `0 1px 2px` 6% + `0 4px 14px` 8% | `oklch(0.29 0.004 286)`, viền sáng 0,5px trắng 10% | Nút `elevated` trên header, viên segmented |
 | `row-press` | `fill-1` tô đặc trên thẻ | trắng 8% trên thẻ | Dòng list khi chạm |
-| `muted-foreground` | `#858585` | `#929292` | Chữ phụ, như secondary label của iOS (đổi 2026-10-07 từ `#a3a3a3` / `#737373`) |
+| `muted-foreground` | `#696969` (2026-10-23) | `#9e9e9e` (2026-10-23) | Chữ phụ, như secondary label của iOS (đổi 2026-10-07 từ `#a3a3a3` / `#737373`) |
 | `border` | `#f5f5f5` | `#262626` | Đường kẻ mảnh giữa các dòng |
 | `input` | `#e5e5e5` | trắng 15% | Công tắc tắt |
 | `field`, `track`, `segment` | `fill-1`, `fill-2`, `fill-1` | như sáng | Nền ô nhập, chip (`field`); skeleton, thanh trượt (`track`); rãnh segmented (`segment`). Từ 2026-10-21 không còn đổi theo bề mặt |
@@ -45,9 +45,9 @@ Bảng màu cho thiết kế lại (10/2026), theo mockup đã duyệt (xem [`RE
 
 ## Chỉnh trong `components/ui` (chỉ màu)
 
-- `Card`: bỏ bóng và viền ring.
+- `Card`: không viền/ring; bóng `0 1px 2px` 5% + `0 8px 24px` 7% ở theme sáng, viền sáng 1px trắng 4% ở theme tối (2026-10-23).
 - `Tabs` (segmented): viên đang chọn là `bg-card` có bóng nhẹ trên rãnh `track`; tối là trắng 15%.
 - `ToggleGroup` / `Toggle`: mục đang chọn màu `primary` (chip đen).
 - `Button outline`, `Item outline`: nền `bg-card` để nổi trên nền trang.
 - `Switch`: núm `bg-card`.
-- Màu thanh trạng thái PWA: `#f2f2f1` / `#0a0a0a`, cố định; sheet toàn màn hình cùng màu nền nên không cần đổi.
+- Màu thanh trạng thái PWA theo nền trang: `#f0f0f0` / `#0b0b0b`; sheet toàn màn hình cùng màu nền nên không cần đổi.
