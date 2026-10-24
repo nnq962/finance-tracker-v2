@@ -111,6 +111,35 @@
         0 0 0 14px color-mix(in oklab, var(--transfer) 0%, transparent);
     }
   }
+
+  /* SoftSwap (2026-10-24): a figure blurring out over the one blurring in, in
+     place; under reduced motion a plain fade (soft-fade-*), 150ms. */
+  --animate-soft-in: soft-in 200ms ease-in-out both;
+  --animate-soft-out: soft-out 200ms ease-in-out both;
+  --animate-soft-fade-in: soft-fade-in 150ms ease-out both;
+  --animate-soft-fade-out: soft-fade-out 150ms ease-out both;
+  @keyframes soft-in {
+    from {
+      opacity: 0;
+      filter: blur(2px);
+    }
+  }
+  @keyframes soft-out {
+    to {
+      opacity: 0;
+      filter: blur(2px);
+    }
+  }
+  @keyframes soft-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes soft-fade-out {
+    to {
+      opacity: 0;
+    }
+  }
 }
 
 /*

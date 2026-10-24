@@ -4,6 +4,7 @@ import * as React from "react"
 import dynamic from "next/dynamic"
 
 import { Section } from "@/components/app/section-header"
+import { SoftSwap } from "@/components/app/soft-swap"
 import { Card, CardContent } from "@/components/ui/card"
 import { Empty, EmptyDescription, EmptyHeader } from "@/components/ui/empty"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -71,7 +72,10 @@ export function CategoryBreakdown({
                     <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: slice.fill }} />
                     <span className="min-w-0 flex-1 truncate">{slice.name}</span>
                     <span className="sr-only">{formatCurrency(slice.amount)},</span>
-                    <span className="shrink-0 text-muted-foreground tabular-nums">{slice.shareLabel}</span>
+                    {/* Another month: the shares cross-blur in place (SoftSwap, 2026-10-24). */}
+                    <span className="shrink-0 text-muted-foreground tabular-nums">
+                      <SoftSwap value={slice.shareLabel} inline />
+                    </span>
                   </li>
                 ))}
               </ul>

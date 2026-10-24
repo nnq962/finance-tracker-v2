@@ -45,6 +45,7 @@ import { IconTile } from "@/components/app/icon-tile"
 import { Money } from "@/components/app/money"
 import { MonthPickerSheet } from "@/components/app/month-picker-sheet"
 import { MonthSelect } from "@/components/app/month-select"
+import { SoftSwap } from "@/components/app/soft-swap"
 import { PickGrid } from "@/components/app/pick-grid"
 import { FlowTiles } from "@/components/app/flow-tiles"
 import { NoticeBanner } from "@/components/app/notice-banner"
@@ -640,6 +641,34 @@ function AvatarSection() {
   )
 }
 
+/** Made-up figures that differ from month to month, for the SoftSwap sample. */
+function MonthFiguresSample({ month }: { month: string }) {
+  const [, monthNumber] = month.split("-").map(Number)
+  const spent = 3_200_000 + ((monthNumber * 7_340_000) % 4_100_000)
+  const count = 30 + ((monthNumber * 17) % 25)
+  const earned = 14_000_000 + ((monthNumber * 3_910_000) % 5_000_000)
+
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_1px_minmax(0,1fr)] gap-3">
+      <span className="@container flex min-w-0 flex-col">
+        <CardLabel as="span">
+          Đã chi · <SoftSwap value={count} inline />
+        </CardLabel>
+        <span className="mt-1 flex min-w-0">
+          <SoftSwap value={spent}>{(amount) => <Money amount={amount} sign="never" size="lg" fit />}</SoftSwap>
+        </span>
+      </span>
+      <span aria-hidden="true" className="bg-separator" />
+      <span className="@container flex min-w-0 flex-col">
+        <CardLabel as="span">Đã thu</CardLabel>
+        <span className="mt-1 flex min-w-0 text-income">
+          <SoftSwap value={earned}>{(amount) => <Money amount={amount} sign="never" size="lg" fit />}</SoftSwap>
+        </span>
+      </span>
+    </div>
+  )
+}
+
 function NavSection() {
   const [page, setPage] = React.useState(1)
   const [step, setStep] = React.useState(1)
@@ -653,6 +682,9 @@ function NavSection() {
           <MonthSelect value={month} max="2026-10" onValueChange={setMonth} />
           <MonthSelect size="card" value={month} max="2026-10" onValueChange={setMonth} />
         </div>
+      </Block>
+      <Block label="Số đổi tại chỗ (SoftSwap) · đổi tháng ở trên: số cũ mờ đi, số mới hiện ra ngay chỗ đó, 200ms, không trượt">
+        <MonthFiguresSample month={month} />
       </Block>
       <Block label="Chỉ báo trang · chạm để chuyển">
         <div className="flex items-center justify-between">

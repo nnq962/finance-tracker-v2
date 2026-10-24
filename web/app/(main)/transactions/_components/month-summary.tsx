@@ -8,6 +8,7 @@ import { CardLabel } from "@/components/app/card-label"
 import { LimitBar } from "@/components/app/limit-bar"
 import { Money } from "@/components/app/money"
 import { MonthSelect } from "@/components/app/month-select"
+import { SoftSwap } from "@/components/app/soft-swap"
 import { BudgetsSheet } from "@/components/budgets/budgets-sheet"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -94,6 +95,7 @@ function DayBars({
  * every limit (BudgetsSheet). What jars paid is said there, not here.
  * `transactions` are the month's after every filter but the kind, so both
  * figures stay while a kind is chosen. `budgets` null on months gone by.
+ * The figures cross-blur to the next month's (SoftSwap, 2026-10-24).
  */
 export function MonthSummary({
   transactions,
@@ -152,19 +154,19 @@ export function MonthSummary({
       {/* Containers, so each amount fits its column and never breaks across lines. */}
       <span className="@container flex min-w-0 flex-col">
         <CardLabel as="span">
-          Đã chi · {totals.expenseCount}
+          Đã chi · <SoftSwap value={totals.expenseCount} inline />
         </CardLabel>
         <span className="mt-1 flex min-w-0">
-          <Money amount={totals.expense} sign="never" size="lg" fit />
+          <SoftSwap value={totals.expense}>{(amount) => <Money amount={amount} sign="never" size="lg" fit />}</SoftSwap>
         </span>
       </span>
       <span aria-hidden="true" className="bg-separator" />
       <span className="@container flex min-w-0 flex-col">
         <CardLabel as="span">
-          Đã thu · {totals.incomeCount}
+          Đã thu · <SoftSwap value={totals.incomeCount} inline />
         </CardLabel>
         <span className="mt-1 flex min-w-0 text-income">
-          <Money amount={totals.income} sign="never" size="lg" fit />
+          <SoftSwap value={totals.income}>{(amount) => <Money amount={amount} sign="never" size="lg" fit />}</SoftSwap>
         </span>
       </span>
     </div>

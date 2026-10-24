@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.43.0",
+    date: "2026-10-24",
+    title: "Số đổi tháng mờ chéo, dấu chọn tự vẽ",
+    changes: [
+      { kind: "new", text: "Đổi tháng ở Giao dịch: Đã chi, Đã thu và số giao dịch mờ đi rồi hiện số mới ngay tại chỗ thay vì nhảy; tỷ lệ từng nhóm ở Theo hạng mục (Tổng quan) cũng vậy." },
+      { kind: "new", text: "Ô chọn (như ở Xuất dữ liệu): ô tô màu rồi dấu ✓ tự vẽ; bỏ chọn thì dấu xoá ngược lại." },
+    ],
+  },
+  {
     version: "6.42.1",
     date: "2026-10-24",
     title: "Chuyển động mượt và đồng đều hơn",

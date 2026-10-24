@@ -610,7 +610,7 @@ function SwitchSection() {
           />
         </SettingsGroup>
       </Wide>
-      <Block label="Checkbox · vuông và tròn">
+      <Block label="Checkbox · vuông và tròn; ô tô màu rồi dấu ✓ tự vẽ, bỏ chọn thì xoá ngược lại">
         <div className="space-y-3">
           {(
             [
