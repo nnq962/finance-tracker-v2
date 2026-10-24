@@ -15,9 +15,11 @@ const toggleVariants = cva(
       variant: {
         // A filled grey chip; the chosen one turns dark.
         default: "bg-field text-foreground",
-        // On a grey panel (the assistant's drafts): white, lifted as the
-        // elevated button (2026-10-21; was white with a border).
-        elevated: "bg-control shadow-control hover:bg-[color-mix(in_oklab,var(--control),var(--foreground)_4%)]",
+        // On the grey page or a grey panel (Giao dịch's kinds, the
+        // assistant's drafts): flat in the card's colour as the elevated
+        // button (2026-10-24; lifted by a shadow before, white with a border
+        // first).
+        elevated: "bg-card hover:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)]",
         // Inside a ToggleGroup of the same variant: the chosen option white on
         // the grey rail, as Tabs variant="segmented" (pill, 44 tall, the same
         // thumb shadow; 2026-10-21).

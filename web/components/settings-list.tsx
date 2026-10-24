@@ -72,6 +72,7 @@ function SettingsGroup({
   stickyCaption = false,
   plain = false,
   flat = false,
+  plainCaption = false,
   children,
 }: {
   title?: React.ReactNode
@@ -106,6 +107,12 @@ function SettingsGroup({
    * hairlines between them; the caption lines up with the rows.
    */
   flat?: boolean
+  /**
+   * The caption as the title draws it, not in small capitals, on the page's
+   * margin like a flat group's (2026-10-24): the days of Giao dịch, a date
+   * badge and two lines.
+   */
+  plainCaption?: boolean
   children: React.ReactNode
 }) {
   const caption = (end: React.ReactNode) => {
@@ -131,12 +138,12 @@ function SettingsGroup({
           // A dashboard card's rows sit 24 in: its caption lines up with them (2026-10-21).
           size === "lg" && "px-6",
           size === "lg" && stickyCaption && "max-md:px-[calc(var(--main-content-px)+--spacing(6))]",
-          flat && "px-0",
-          flat && stickyCaption && "max-md:px-(--main-content-px)",
+          (flat || plainCaption) && "px-0",
+          (flat || plainCaption) && stickyCaption && "max-md:px-(--main-content-px)",
         )}
       >
         {title ? (
-          <h2 className={cn("flex min-w-0 items-center gap-1.5", groupCaptionClassName)}>
+          <h2 className={cn("flex min-w-0 items-center gap-1.5", !plainCaption && groupCaptionClassName)}>
             {title}
           </h2>
         ) : null}

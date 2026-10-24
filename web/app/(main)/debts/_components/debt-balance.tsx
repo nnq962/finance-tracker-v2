@@ -37,7 +37,10 @@ function balanceNote(net: number, total: number) {
 }
 
 /**
- * The debts page's lead card: a half ring weighs what is owed to you (green)
+ * The debts page's lead card. On phones (2026-10-24, the Claude Design
+ * handoff): "Chênh lệch" as the system's lead figure, signed, what it means
+ * under it, then a bar split between what is owed to you (green) and what you
+ * owe (ink), the two figures under its ends. Before, and still from lg up: a half ring weighs what is owed to you (green)
  * against what you owe (the card's text colour), on the plain card
  * (2026-10-19 evening, option E of the lead-card mockup; black / white for
  * the day before). On phones the balance ("Chênh lệch", was "Ròng") sits
@@ -63,16 +66,18 @@ export function DebtBalance({
   const net = lent - borrowed
   return (
     <Card size="lg" role="region" aria-label="Cần thu và cần trả">
-      <CardContent className="flex flex-col items-center lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-center lg:gap-10">
-        <div className="relative w-full max-w-56 lg:max-w-64">
+      <CardContent className="flex flex-col lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-center lg:gap-10">
+        <div className="relative hidden w-full max-w-64 lg:block">
           <svg viewBox="0 0 200 110" className="w-full" aria-hidden="true">
             <HalfRing share={total === 0 ? null : lent / total} />
           </svg>
-          {/* Inside the ring's ends (its inner edge is 14% in from each side, with room to spare), so a long figure shrinks rather than touching them. */}
-          <div className="@container absolute inset-x-[18%] bottom-1 flex flex-col items-center lg:hidden">
-            <CardLabel>Chênh lệch</CardLabel>
-            <Money amount={net} size="lg" fit sign={net === 0 ? "never" : "always"} />
+        </div>
+        <div className="@container flex min-w-0 flex-col lg:hidden">
+          <CardLabel>Chênh lệch</CardLabel>
+          <div className="mt-1.5">
+            <Money amount={net} size="display" fit sign={net === 0 ? "never" : "always"} tone={net > 0 ? "income" : "default"} />
           </div>
+          <span className="mt-1 text-sm text-muted-foreground">{balanceNote(net, total)}</span>
         </div>
         <div className="hidden grid-cols-3 gap-6 lg:grid">
           <div className="@container flex min-w-0 flex-col gap-1">
@@ -95,7 +100,14 @@ export function DebtBalance({
             <Money amount={borrowed} size="lg" fit />
           </div>
         </div>
-        <div className="mt-4 grid w-full grid-cols-2 gap-4 lg:hidden">
+        {total > 0 ? (
+          // The split: each side's share of all that is open, a 4 gap between.
+          <div aria-hidden="true" className="mt-4 flex h-2.5 gap-1 lg:hidden">
+            {lent > 0 ? <span className="rounded-full bg-income" style={{ flex: lent }} /> : null}
+            {borrowed > 0 ? <span className="rounded-full bg-foreground" style={{ flex: borrowed }} /> : null}
+          </div>
+        ) : null}
+        <div className="mt-3 grid w-full grid-cols-2 gap-4 lg:hidden">
           <div className="@container flex min-w-0 flex-col gap-0.5">
             <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
               <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-income" />

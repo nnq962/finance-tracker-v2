@@ -121,7 +121,7 @@ function PageHeaderSkeleton({
   bare = false,
 }: {
   title?: string
-  /** As PageHeader's `bare`: on phones only the tools, on the right; nothing from md up (the top bar holds them). With `lead`, the segmented switch on the left. */
+  /** As PageHeader's `bare`: on phones only the tools, on the right; nothing from md up (the top bar holds them). With `lead`, the two view titles on the left (Giao dịch's Chi tiêu, Vay nợ). */
   bare?: boolean
   /** The home's avatar and greeting in the title's place. */
   lead?: boolean
@@ -139,7 +139,10 @@ function PageHeaderSkeleton({
         <div className="hidden h-4 md:block" />
         {lead ? (
           <div className="mb-4 flex min-h-11 items-center justify-between gap-2">
-            <Skeleton className="h-11 w-52 rounded-full" />
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-7 w-28 rounded-md" />
+              <Skeleton className="h-7 w-24 rounded-md" />
+            </div>
             <div className="flex gap-2 md:hidden">
               {tools.map((tool, index) => (
                 <Skeleton key={`tool-${index}`} className={cn("h-11 rounded-full", tool === "pill" ? "w-32" : "w-11")} />

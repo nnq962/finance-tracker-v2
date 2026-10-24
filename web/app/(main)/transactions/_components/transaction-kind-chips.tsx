@@ -1,36 +1,29 @@
 "use client"
 
 import * as React from "react"
-import { ListFilterIcon, SearchIcon } from "lucide-react"
-
-import { ChipButton, ChipRow, ChipRowDivider } from "@/components/app/chip-row"
+import { ChipRow } from "@/components/app/chip-row"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 import type { TransactionFilter } from "../_types/transaction"
 import { transactionKindOptions } from "./transaction-filter-fields"
 
 /**
- * The phone's filters above the list, as in banking apps: the filter chip,
- * which opens the sheet of the other conditions (filled, with their count,
- * while any is on), then the kinds, one chosen. A tapped kind shows as chosen
+ * The phone's kinds above the list, as in banking apps, one chosen, each with
+ * how many rows it would show ("Chi 12", 2026-10-24); search and the filter
+ * sheet moved to round buttons beside the page's titles. A tapped kind shows as chosen
  * at once while the page filters in a transition behind it, so the chip never
  * waits on the page re-rendering.
  */
 export function TransactionKindChips({
   filter,
   onFilterChange,
-  sheetFilterCount,
-  onOpenFilters,
-  onSearch,
+  counts,
   className,
 }: {
   filter: TransactionFilter
   onFilterChange: (filter: TransactionFilter) => void
-  /** How many of the sheet's conditions are on. */
-  sheetFilterCount: number
-  onOpenFilters: () => void
-  /** The search chip first in the row (phones, 2026-10-21): the field no longer sits above the chips. */
-  onSearch?: () => void
+  /** Each kind's rows under every other filter. */
+  counts: Record<TransactionFilter, number>
   className?: string
 }) {
   // The chip shown as chosen: set at once on a tap, re-rendering only this
@@ -46,24 +39,11 @@ export function TransactionKindChips({
 
   return (
     <ChipRow className={className}>
-      {onSearch ? (
-        <ChipButton aria-label="Tìm giao dịch" onClick={onSearch} className="shrink-0 px-2.5">
-          <SearchIcon />
-        </ChipButton>
-      ) : null}
-      <ChipButton
-        active={sheetFilterCount > 0}
-        aria-label={sheetFilterCount > 0 ? `Bộ lọc, ${sheetFilterCount} điều kiện` : "Bộ lọc"}
-        onClick={onOpenFilters}
-        className="shrink-0"
-      >
-        <ListFilterIcon data-icon="inline-start" />
-        {sheetFilterCount > 0 ? `Lọc · ${sheetFilterCount}` : "Lọc"}
-      </ChipButton>
-      <ChipRowDivider />
       <ToggleGroup
         type="single"
         size="sm"
+        // White on the grey page, as the buttons beside the titles (2026-10-24).
+        variant="elevated"
         value={shownFilter}
         onValueChange={(value) => {
           if (!value) return
@@ -75,8 +55,9 @@ export function TransactionKindChips({
       >
         {/* No "Vay nợ" chip beside the Vay nợ view (2026-10-21): two controls of one name did two things. Kept only while a link has chosen it. */}
         {transactionKindOptions.filter((item) => item.value !== "debt" || shownFilter === "debt").map((item) => (
-          <ToggleGroupItem key={item.value} value={item.value}>
+          <ToggleGroupItem key={item.value} value={item.value} className="gap-1.5">
             {item.label}
+            {counts[item.value] > 0 ? <span className="tabular-nums opacity-55">{counts[item.value]}</span> : null}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>

@@ -17,6 +17,8 @@ type TransactionsViewProps = {
   onClearFilters: () => void
   search?: TransactionSearchResults
   pastMonthLabel?: string
+  focusDay?: string | null
+  onAdd?: () => void
 }
 
 /**
@@ -33,6 +35,8 @@ export const TransactionsView = React.memo(function TransactionsView({
   onClearFilters,
   search,
   pastMonthLabel,
+  focusDay,
+  onAdd,
 }: TransactionsViewProps) {
   return (
     <section>
@@ -46,6 +50,8 @@ export const TransactionsView = React.memo(function TransactionsView({
         onClearFilters={onClearFilters}
         search={search}
         pastMonthLabel={pastMonthLabel}
+        focusDay={focusDay}
+        onAdd={onAdd}
       />
     </section>
   )

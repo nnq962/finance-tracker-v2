@@ -76,7 +76,7 @@ const colors = [
   ["fill-1", "Ô nhập, chip, ô icon (field, segment)", "bg-fill-1"],
   ["fill-2", "Nút xám, rãnh, nền phụ (muted, track)", "bg-fill-2"],
   ["fill-3", "Công tắc tắt, nút xám khi nhấn", "bg-fill-3"],
-  ["control", "Viên segmented, chip elevated (kèm shadow-control)", "bg-control shadow-control"],
+  ["control", "Viên segmented (kèm shadow-control)", "bg-control shadow-control"],
   ["row-press", "Dòng list khi chạm", "bg-row-press ring-1 ring-border ring-inset"],
   ["inverse", "Avatar chính mình", "bg-inverse"],
   ["destructive", "Xoá, lỗi", "bg-destructive"],
@@ -216,7 +216,10 @@ function ButtonSection() {
         <div className="flex flex-wrap gap-2">
           <Button>Primary</Button>
           <Button variant="secondary">Secondary</Button>
-          <Button variant="elevated">Elevated</Button>
+          {/* Elevated is the card's own colour, so it shows on the grey page only: set on a patch of it (2026-10-24). */}
+          <span className="inline-flex rounded-full bg-background p-1">
+            <Button variant="elevated">Elevated</Button>
+          </span>
           <Button variant="ghost">Ghost</Button>
           <Button variant="ai">
             <SparklesIcon data-icon="inline-start" />
@@ -233,7 +236,8 @@ function ButtonSection() {
         </div>
       </Block>
       <Block label="Trên header · elevated">
-        <div className="flex items-center justify-between gap-3">
+        {/* On a patch of the page's grey, where header buttons stand. */}
+        <div className="flex items-center justify-between gap-3 rounded-[20px] bg-background p-3">
           <Button variant="elevated" size="icon" aria-label="Đóng">
             <XIcon />
           </Button>

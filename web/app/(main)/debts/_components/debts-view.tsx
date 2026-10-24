@@ -9,9 +9,11 @@ import {
 import type { Account } from "@/lib/accounts/types"
 import { PageSheet, PageSheetFooter } from "@/components/app/page-sheet"
 import { ShelfLink } from "@/components/app/shelf-link"
-import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { SettingsGroup } from "@/components/settings-list"
+import { Card } from "@/components/ui/card"
 import {
   Empty,
+  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -20,6 +22,7 @@ import {
 
 import {
   compareDebtsByUrgency,
+  getDebtDeadline,
   getDebtMetrics,
 } from "../_lib/debt-presentation"
 import type { Contact, Debt, DebtDirection, NewDebt, NewDebtPayment } from "../_types/debt"
@@ -44,16 +47,18 @@ type DebtsViewProps = {
   contacts: Contact[]
   debts: Debt[]
   onRecordPayment: (debtId: string, payment: NewDebtPayment) => Promise<void>
+  /** The empty page's button: a new debt. */
+  emptyAction?: React.ReactNode
 }
 
 function isSettled(debt: Debt) {
   return debt.status === "settled" || getDebtMetrics(debt).remainingAmount <= 0
 }
 
-const sections: Array<{ direction: DebtDirection; label: string }> = [
-  { direction: "lent", label: "Cần thu" },
-  { direction: "borrowed", label: "Cần trả" },
-]
+/** Past due or due today: the debts to see to first, in their own group. */
+function needsAttention(debt: Debt) {
+  return getDebtDeadline(debt).isOverdue
+}
 
 export function DebtsView({
   openRequest,
@@ -65,6 +70,7 @@ export function DebtsView({
   accounts,
   onEditPayment,
   onDeletePayment,
+  emptyAction,
 }: DebtsViewProps) {
   const [sheetDebtId, setSheetDebtId] = React.useState<string | null>(null)
   // The settled debts, listed in a sheet of their own.
@@ -180,46 +186,41 @@ export function DebtsView({
     return (
       <div className="space-y-6 md:space-y-8">
         {tiles}
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <HandshakeIcon />
-            </EmptyMedia>
-            <EmptyTitle>Chưa có khoản nợ</EmptyTitle>
-            <EmptyDescription>Khoản cho vay và đi vay hiện ở đây, kèm hạn trả.</EmptyDescription>
-          </EmptyHeader>
-        </Empty>
+        <Card>
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <HandshakeIcon />
+              </EmptyMedia>
+              <EmptyTitle>Chưa có khoản nợ</EmptyTitle>
+              <EmptyDescription>Khoản cho vay và đi vay hiện ở đây, kèm hạn trả.</EmptyDescription>
+            </EmptyHeader>
+            {emptyAction ? <EmptyContent>{emptyAction}</EmptyContent> : null}
+          </Empty>
+        </Card>
       </div>
     )
   }
+
+  // Two groups (2026-10-24, the Claude Design handoff; Cần thu | Cần trả before):
+  // what is past due or due today first, then the rest, each by the nearest due date.
+  const groups = [
+    { label: "Cần chú ý", items: openDebts.filter(needsAttention) },
+    { label: "Đang mở", items: openDebts.filter((debt) => !needsAttention(debt)) },
+  ].filter((group) => group.items.length > 0)
 
   return (
     <div className="space-y-6 md:space-y-8">
       {tiles}
 
-      {/* The totals are on the card above. Flat on the page as the transactions
-          (2026-10-21); stacked on phones; from lg up the two sides stand side by
-          side, Cần thu | Cần trả, an empty side kept with a line so the other
-          stays in its column. A long note is cut, not widening the page. */}
+      {/* The totals are on the card above. Each group a card of rows; from lg up the
+          two stand side by side. A long note is cut, not widening the page. */}
       <div className="grid grid-cols-1 items-start gap-6 md:gap-8 lg:grid-cols-2">
-        {sections.map(({ direction: side, label }) => {
-          const items = openDebts.filter((debt) => debt.direction === side)
-          if (items.length === 0) {
-            return (
-              <div key={side} className="hidden lg:block">
-                <SettingsGroup flat title={`${label} · 0`}>
-                  <SettingsRow title="Không có khoản nào" />
-                </SettingsGroup>
-              </div>
-            )
-          }
-
-          return (
-            <SettingsGroup key={side} flat title={`${label} · ${items.length}`}>
-              {renderRows(items)}
-            </SettingsGroup>
-          )
-        })}
+        {groups.map(({ label, items }) => (
+          <SettingsGroup key={label} title={`${label} · ${items.length}`}>
+            {renderRows(items)}
+          </SettingsGroup>
+        ))}
       </div>
 
       {/* Settled debts are not folded into the page: one quiet line opens them in a sheet, as the accounts page's Lưu trữ. */}

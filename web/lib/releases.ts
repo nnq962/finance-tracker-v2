@@ -32,6 +32,18 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.41.0",
+    date: "2026-10-24",
+    title: "Giao dịch và Vay nợ làm lại",
+    changes: [
+      { kind: "improved", text: "Đầu trang Giao dịch là hai tiêu đề lớn Chi tiêu và Vay nợ, chạm để chuyển; tìm kiếm và bộ lọc thành hai nút tròn ở góc phải." },
+      { kind: "new", text: "Thẻ tháng có ‹ › để lật tháng và biểu đồ cột chi tiêu theo ngày; chạm một cột để đến ngày đó trong danh sách." },
+      { kind: "improved", text: "Chip loại giao dịch có số lượng (\"Chi 12\") và nền trắng; mỗi ngày là một thẻ riêng với ô số ngày, hôm nay tô xanh chanh." },
+      { kind: "improved", text: "Vay nợ: Chênh lệch là số lớn kèm thanh chia Cần thu / Cần trả; khoản quá hạn và đến hạn hôm nay gom vào nhóm Cần chú ý, có viên màu; vòng quanh avatar cho thấy đã thu/trả bao nhiêu." },
+      { kind: "improved", text: "Danh sách trống nằm trong thẻ, có nút Thêm giao dịch hoặc Ghi khoản nợ." },
+    ],
+  },
+  {
     version: "6.40.1",
     date: "2026-10-24",
     title: "Nút trên header phẳng, tổng số dư đồng bộ",

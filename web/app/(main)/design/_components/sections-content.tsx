@@ -443,6 +443,24 @@ function ListSection() {
           <SettingsRow key={name} title={name} description={kind} value={<Money amount={amount} size="sm" />} />
         ))}
       </SettingsGroup>
+      {/* A day of Giao dịch (2026-10-24): the caption drawn by its title, not in small capitals. */}
+      <SettingsGroup
+        plainCaption
+        title={
+          <span className="flex items-center gap-2.5">
+            <span className="flex size-[34px] items-center justify-center rounded-[11px] bg-ai text-[15px] font-bold text-ai-foreground tabular-nums">24</span>
+            <span className="flex flex-col">
+              <span className="text-sm leading-tight font-semibold">Hôm nay (plainCaption)</span>
+              <span className="text-xs leading-tight text-muted-foreground">Thứ Bảy, 24/10</span>
+            </span>
+          </span>
+        }
+        action={<span className="text-sm font-semibold text-muted-foreground tabular-nums">−450.000đ</span>}
+      >
+        {dueSamples.slice(0, 2).map(([name, kind, amount]) => (
+          <SettingsRow key={name} title={name} description={kind} value={<Money amount={amount} size="sm" />} />
+        ))}
+      </SettingsGroup>
       <SettingsGroup title="Đã tất toán (collapsible)" size="lg" collapsible={{ showLabel: "Hiện 2 khoản" }}>
         {dueSamples.map(([name, kind, amount]) => (
           <SettingsRow key={name} title={name} description={kind} value={<Money amount={amount} size="sm" />} />
@@ -630,8 +648,11 @@ function NavSection() {
 
   return (
     <CatalogSection id="nav">
-      <Block label="Chọn tháng · nút mở sheet chọn tháng (MonthSelect)">
-        <MonthSelect value={month} max="2026-10" onValueChange={setMonth} />
+      <Block label="Chọn tháng · nút mở sheet chọn tháng (MonthSelect, size card trong thẻ)">
+        <div className="flex flex-wrap items-center gap-3">
+          <MonthSelect value={month} max="2026-10" onValueChange={setMonth} />
+          <MonthSelect size="card" value={month} max="2026-10" onValueChange={setMonth} />
+        </div>
       </Block>
       <Block label="Chỉ báo trang · chạm để chuyển">
         <div className="flex items-center justify-between">

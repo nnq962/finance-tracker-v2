@@ -63,29 +63,37 @@ export default function TransactionsLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <PageHeaderSkeleton bare lead tools={["pill"]} />
+        <PageHeaderSkeleton bare lead tools={["round", "round"]} />
         <TransactionsLayout
           summary={<MonthSummarySkeleton />}
           filters={<FilterPanelSkeleton />}
         >
-          {/* The round search field from lg up; on phones the chip row: the
-              search chip, the filter chip, its divider, then the kinds, as wide as their names. */}
+          {/* The round search field from lg up; on phones the kind chips with their counts, as wide as their names. */}
           <div className="flex flex-col gap-3">
             <Skeleton className="h-11 rounded-full max-lg:hidden" />
             <div className="-mx-(--main-content-px) flex items-center gap-2 overflow-hidden px-(--main-content-px) lg:hidden">
-              <Skeleton className="size-9 shrink-0 rounded-full" />
-              <Skeleton className="h-9 w-[4.5rem] shrink-0 rounded-full" />
-              <span className="h-5 w-px shrink-0 bg-foreground/15" />
-              {["w-[4.5rem]", "w-[5.25rem]", "w-[4.5rem]", "w-[7.5rem]"].map((width, index) => (
+              {["w-[5.5rem]", "w-[4.25rem]", "w-[4.75rem]", "w-[8.5rem]"].map((width, index) => (
                 <Skeleton key={index} className={cn("h-9 shrink-0 rounded-full", width)} />
               ))}
             </div>
           </div>
-          {/* Days: the date and the day's totals as the caption, then rows
-              with the category's icon, name and account, amount and time. */}
-          <div className="space-y-6 md:space-y-8">
+          {/* Days: the date's badge, its name and date, and the day's total as the caption, then
+              a card of rows with the category's icon, name and account, amount and time. */}
+          <div className="space-y-4 md:space-y-6">
             {[3, 2, 2].map((rows, index) => (
-              <SettingsGroupSkeleton key={index} flat rows={rows} captionAction description trailing="amount" />
+              <div key={index}>
+                <div className="flex items-center justify-between gap-3 pb-2">
+                  <div className="flex items-center gap-2.5">
+                    <Skeleton className="size-[34px] rounded-[11px]" />
+                    <div className="flex flex-col gap-1.5">
+                      <Skeleton className="h-3.5 w-16" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-3.5 w-20" />
+                </div>
+                <SettingsGroupSkeleton caption={false} rows={rows} description trailing="amount" />
+              </div>
             ))}
           </div>
         </TransactionsLayout>

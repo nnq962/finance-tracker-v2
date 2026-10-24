@@ -1,3 +1,5 @@
+import type * as React from "react"
+
 import { Money } from "@/components/app/money"
 import { SettingsRow } from "@/components/settings-list"
 import { formatCompactCurrency } from "@/lib/format-currency"
@@ -52,8 +54,37 @@ export function getDebtStatus(debt: Debt) {
   return { label: "Không hạn trả", isOverdue: false, isSettled: false }
 }
 
+/**
+ * The person's avatar with a ring of how much is paid (2026-10-24, the Claude
+ * Design handoff): a 1px line 2 off the 36 avatar (42 across), green for a
+ * loan given, ink for one taken, on the grey track, from the top clockwise;
+ * drawn outside the avatar's box so the row keeps the list's metrics.
+ */
+function PaidRing({ share, lent, children }: { share: number; lent: boolean; children: React.ReactNode }) {
+  const length = 2 * Math.PI * 20.5
+  return (
+    <span className="relative inline-flex">
+      <svg aria-hidden="true" viewBox="0 0 42 42" className="pointer-events-none absolute -inset-[3px] size-[42px] -rotate-90">
+        <circle cx="21" cy="21" r="20.5" fill="none" strokeWidth="1" className="stroke-fill-3" />
+        {share > 0 ? (
+          <circle
+            cx="21"
+            cy="21"
+            r="20.5"
+            fill="none"
+            strokeWidth="1"
+            className={lent ? "stroke-income" : "stroke-foreground"}
+            strokeDasharray={`${Math.min(share, 1) * length} ${length}`}
+          />
+        ) : null}
+      </svg>
+      {children}
+    </span>
+  )
+}
+
 export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemProps) {
-  const { remainingAmount, totalAmount, paidAmount } = getDebtMetrics(debt)
+  const { remainingAmount, totalAmount, paidAmount, paymentProgress } = getDebtMetrics(debt)
   // With interest and a due date ahead: what it will come to then.
   const projection = getDueProjection(debt, paidAmount)
   const status = getDebtStatus(debt)
@@ -69,7 +100,15 @@ export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemPr
 
   return (
     <SettingsRow
-      media={<ContactAvatar contactId={contact.id} initials={contact.initials} />}
+      media={
+        status.isSettled ? (
+          <ContactAvatar contactId={contact.id} initials={contact.initials} />
+        ) : (
+          <PaidRing share={paymentProgress / 100} lent={debt.direction === "lent"}>
+            <ContactAvatar contactId={contact.id} initials={contact.initials} />
+          </PaidRing>
+        )
+      }
       title={contact.name}
       description={[interest, debt.note].filter(Boolean).join(" · ") || undefined}
       action={
@@ -81,11 +120,12 @@ export function DebtListItem({ contact, debt, active, onSelect }: DebtListItemPr
             size="sm"
             tone={status.isSettled ? "muted" : debt.direction === "lent" ? "income" : "default"}
           />
+          {/* Past due and due today as a soft pill (red, amber), so the eye stops there; the rest grey text (2026-10-24). */}
           <span
             className={cn(
               "text-xs text-muted-foreground",
-              // Red only once past due; due today is amber.
-              status.isOverdue && ("isPastDue" in status && status.isPastDue ? "text-expense" : "text-warning-text"),
+              status.isOverdue && "mt-0.5 rounded-full px-2 py-px font-semibold",
+              status.isOverdue && ("isPastDue" in status && status.isPastDue ? "bg-expense/12 text-destructive-text" : "bg-warning/18 text-warning-text"),
             )}
           >
             {status.label}

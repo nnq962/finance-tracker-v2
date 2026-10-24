@@ -1,7 +1,8 @@
-import { ReceiptTextIcon, SearchXIcon } from "lucide-react"
+import { PlusIcon, ReceiptTextIcon, SearchXIcon } from "lucide-react"
 
 import { SettingsGroup } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import {
   Empty,
   EmptyContent,
@@ -49,6 +50,10 @@ type TransactionListProps = {
   search?: TransactionSearchResults
   /** A past month shown ("Tháng 9", "Tháng 1/2025"), which an empty list names; unset for this month. */
   pastMonthLabel?: string
+  /** The day a bar of the month's chart was tapped for. */
+  focusDay?: string | null
+  /** Opens a new transaction, from an empty month. */
+  onAdd?: () => void
 }
 
 /** The day of a result, with its year when that is not this one. */
@@ -165,6 +170,8 @@ export function TransactionList({
   onClearFilters,
   search,
   pastMonthLabel,
+  focusDay,
+  onAdd,
 }: TransactionListProps) {
   if (search) {
     return (
@@ -180,47 +187,60 @@ export function TransactionList({
 
   const groups = groupTransactionsByDate(transactions)
 
+  // Empty, in a card as the days are (2026-10-24): what to do next as a button.
   if (groups.length === 0) {
     return isFiltering ? (
-      <Empty>
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <SearchXIcon />
-          </EmptyMedia>
-          <EmptyTitle>Không có giao dịch phù hợp</EmptyTitle>
-          <EmptyDescription>Thử từ khoá khác hoặc bỏ bớt điều kiện lọc.</EmptyDescription>
-        </EmptyHeader>
-        <EmptyContent>
-          <Button type="button" variant="secondary" onClick={onClearFilters}>
-            Xoá bộ lọc
-          </Button>
-        </EmptyContent>
-      </Empty>
+      <Card>
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <SearchXIcon />
+            </EmptyMedia>
+            <EmptyTitle>Không có giao dịch phù hợp</EmptyTitle>
+            <EmptyDescription>Thử từ khoá khác hoặc bỏ bớt điều kiện lọc.</EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button type="button" onClick={onClearFilters}>
+              Xoá bộ lọc
+            </Button>
+          </EmptyContent>
+        </Empty>
+      </Card>
     ) : (
-      <Empty>
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <ReceiptTextIcon />
-          </EmptyMedia>
-          {/* A past month asks for what was forgotten, not for a first entry. */}
-          {pastMonthLabel ? (
-            <>
-              <EmptyTitle>Không có giao dịch trong {pastMonthLabel}</EmptyTitle>
-              <EmptyDescription>Khoản nào quên ghi, thêm giao dịch và chọn ngày trong tháng đó.</EmptyDescription>
-            </>
-          ) : (
-            <>
-              <EmptyTitle>Chưa có giao dịch trong tháng này</EmptyTitle>
-              <EmptyDescription>Ghi khoản thu chi đầu tiên để theo dõi tiền của bạn.</EmptyDescription>
-            </>
-          )}
-        </EmptyHeader>
-      </Empty>
+      <Card>
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <ReceiptTextIcon />
+            </EmptyMedia>
+            {/* A past month asks for what was forgotten, not for a first entry. */}
+            {pastMonthLabel ? (
+              <>
+                <EmptyTitle>Không có giao dịch trong {pastMonthLabel}</EmptyTitle>
+                <EmptyDescription>Khoản nào quên ghi, thêm giao dịch và chọn ngày trong tháng đó.</EmptyDescription>
+              </>
+            ) : (
+              <>
+                <EmptyTitle>Chưa có giao dịch trong tháng này</EmptyTitle>
+                <EmptyDescription>Ghi khoản thu chi đầu tiên để theo dõi tiền của bạn.</EmptyDescription>
+              </>
+            )}
+          </EmptyHeader>
+          {onAdd ? (
+            <EmptyContent>
+              <Button type="button" onClick={onAdd}>
+                <PlusIcon data-icon="inline-start" />
+                Thêm giao dịch
+              </Button>
+            </EmptyContent>
+          ) : null}
+        </Empty>
+      </Card>
     )
   }
 
   return (
-    <div className="space-y-6 md:space-y-8">
+    <div className="space-y-4 md:space-y-6">
       {groups.map((group) => (
         <TransactionDateGroup
           accounts={accounts}
@@ -229,6 +249,7 @@ export function TransactionList({
           group={group}
           totals={dayTotals?.[group.dateKey]}
           todayDateKey={todayDateKey}
+          focused={group.dateKey === focusDay}
         />
       ))}
     </div>

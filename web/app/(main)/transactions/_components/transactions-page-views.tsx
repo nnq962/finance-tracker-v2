@@ -3,7 +3,7 @@
 import * as React from "react"
 
 import { Page } from "@/components/page"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { cn } from "@/lib/utils"
 
 import { DebtsDashboard } from "../../debts/_components/debts-dashboard"
 import { TransactionsScreen } from "./transactions-screen"
@@ -16,8 +16,10 @@ export type TransactionsPageView = "transactions" | "debts"
  * used to be switches between them at once, both loaded with the page; the
  * address follows (?view=debts) so a reload or a link lands on the same one.
  * Only the one shown is mounted: each has its own tools, floating button and
- * sheets. Each draws its own switch, so the switch remembers its thumb
- * (`memoryKey`); a tap moves the thumb first and builds the view after it.
+ * sheets. The switch is the two names as large titles side by side, the one
+ * shown in ink, the other grey (2026-10-24, the Claude Design handoff; was a
+ * segmented control); a tap greys the old one at once and builds the view
+ * after it.
  */
 export function TransactionsPageViews({
   view,
@@ -53,13 +55,29 @@ export function TransactionsPageViews({
   }
 
   const viewSwitch = (
-    // Shrinks on a narrow phone (320) beside the month rather than pushing the page wider.
-    <Tabs value={chosen} onValueChange={(next) => change(next as TransactionsPageView)} className="min-w-0">
-      <TabsList variant="segmented" memoryKey="transactions-view" className="w-52 max-w-full" aria-label="Chi tiêu hoặc vay nợ">
-        <TabsTrigger value="transactions">Chi tiêu</TabsTrigger>
-        <TabsTrigger value="debts">Vay nợ</TabsTrigger>
-      </TabsList>
-    </Tabs>
+    <div role="tablist" aria-label="Chi tiêu hoặc vay nợ" className="flex min-w-0 items-baseline gap-4">
+      {(
+        [
+          ["transactions", "Chi tiêu"],
+          ["debts", "Vay nợ"],
+        ] as const
+      ).map(([value, label]) => (
+        <button
+          key={value}
+          type="button"
+          role="tab"
+          aria-selected={chosen === value}
+          onClick={() => chosen !== value && change(value)}
+          className={cn(
+            // The page title's type; 44 tall to the touch, as the round buttons beside it.
+            "pressable relative min-w-0 truncate text-2xl leading-8 font-semibold tracking-tight outline-none transition-colors duration-150 after:absolute after:inset-x-0 after:-inset-y-1.5 focus-visible:rounded-md focus-visible:ring-3 focus-visible:ring-ring/30",
+            chosen === value ? "text-foreground" : "text-muted-foreground/70",
+          )}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
   )
 
   return shown === "debts" ? (

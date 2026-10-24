@@ -2,14 +2,14 @@
 
 import * as React from "react"
 import { usePathname, useRouter } from "next/navigation"
-import { PlusIcon } from "lucide-react"
+import { ListFilterIcon, PlusIcon, SearchIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { Collapse } from "@/components/app/collapse"
 import { FloatingActions } from "@/components/app/floating-actions"
-import { MonthSelect } from "@/components/app/month-select"
 import { BudgetProvider } from "@/components/budgets/budget-hint"
 import { PageHeader } from "@/components/page"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { appEvents, listenToAppEvent } from "@/lib/app-events"
 import { useDeletedKeys } from "@/lib/undoable-delete"
@@ -147,6 +147,8 @@ export function TransactionsScreen({
   // The phone's search screen, open from a tap on the field until Huỷ.
   const [searching, setSearching] = React.useState(false)
   const searchRef = React.useRef<{ open: () => void }>(null)
+  // The day a bar of the card's chart was tapped for: the list scrolls to it and its badge is inked.
+  const [focusDay, setFocusDay] = React.useState<string | null>(null)
   const wide = React.useSyncExternalStore(subscribeWide, () => window.matchMedia(wideQuery).matches, () => false)
   // Searching every month: loaded on request, for the transactions the page
   // had then, so a change to them (one added, edited) loads them again.
@@ -213,6 +215,17 @@ export function TransactionsScreen({
     return Object.fromEntries([...byDay].map(([key, rows]) => [key, getTransactionSummary(rows)]))
   }, [summaryTransactions])
 
+  // How many rows each kind chip would show, under every other filter (2026-10-24, "Chi 12").
+  const kindCounts = React.useMemo(() => {
+    const source = allMonths ? withoutDeleted(everyTransaction ?? [], deletedKeys) : monthTransactions
+    return Object.fromEntries(
+      (["all", "income", "expense", "transfer", "debt"] as const).map((kind) => [
+        kind,
+        filterTransactions(source, kind, listSearchFilters).length,
+      ]),
+    ) as Record<TransactionFilter, number>
+  }, [allMonths, deletedKeys, everyTransaction, listSearchFilters, monthTransactions])
+
   const changeKind = (kind: TransactionFilter) => {
     setFilter(kind)
     const narrowed = filtersForKind(kind, searchFilters, categoryGroups)
@@ -275,11 +288,42 @@ export function TransactionsScreen({
 
   const changeMonth = (month: string) => {
     setRequestedMonth(month)
+    setFocusDay(null)
     startNavigation(() => router.push(month === thisMonth ? pathname : `${pathname}?month=${month}`, { scroll: false }))
   }
   const shownMonth = isNavigating ? requestedMonth : selectedMonth
   // Writing down by AI is Timi's, opened from the tab bar or the header (2026-10-12).
   const headerActions = <AddTransactionButton accounts={accounts} categoryGroups={categoryGroups} />
+  // A bar of the card's chart: the list goes to that day, under its pinned caption.
+  const goToDay = (dateKey: string) => {
+    setFocusDay(dateKey)
+    document.querySelector(`[data-day="${dateKey}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+  const openAdd = React.useCallback(() => setAddOpen(true), [])
+  // Phones' tools beside the titles (2026-10-24): search and the filter sheet as round buttons;
+  // from lg up the field and the filter panel sit beside the list instead.
+  const headerTools = (
+    <>
+      <Button type="button" variant="elevated" size="icon" aria-label="Tìm giao dịch" className="lg:hidden" onClick={() => searchRef.current?.open()}>
+        <SearchIcon />
+      </Button>
+      <Button
+        type="button"
+        variant={sheetFilterCount > 0 ? "default" : "elevated"}
+        size="icon"
+        aria-label={sheetFilterCount > 0 ? `Bộ lọc, ${sheetFilterCount} điều kiện` : "Bộ lọc"}
+        className="relative lg:hidden"
+        onClick={() => setFilterOpen(true)}
+      >
+        <ListFilterIcon />
+        {sheetFilterCount > 0 ? (
+          <Badge variant="count" aria-hidden="true" className="absolute top-0 left-[calc(50%+6px)]">
+            {sheetFilterCount}
+          </Badge>
+        ) : null}
+      </Button>
+    </>
+  )
 
   // While a month loads, what is shown stays and dims.
   const loadingClassName = cn("transition-opacity duration-200", isNavigating && "opacity-50")
@@ -296,7 +340,7 @@ export function TransactionsScreen({
           title="Giao dịch"
           bare
           lead={viewSwitch}
-          tools={<MonthSelect size="bar" value={shownMonth} max={thisMonth} onValueChange={changeMonth} />}
+          tools={headerTools}
           actions={headerActions}
         />
       </Collapse>
@@ -305,7 +349,18 @@ export function TransactionsScreen({
         listOnly={searching}
         summary={
           // The limit is this month's: the card says it only there.
-          <MonthSummary transactions={summaryTransactions} budgets={shownMonth === thisMonth ? budgets : null} className={loadingClassName} />
+          <MonthSummary
+            transactions={summaryTransactions}
+            budgets={shownMonth === thisMonth ? budgets : null}
+            month={shownMonth}
+            maxMonth={thisMonth}
+            onMonthChange={changeMonth}
+            todayDateKey={todayDateKey}
+            dayTotals={dayTotals}
+            focusDay={focusDay}
+            onDayTap={goToDay}
+            className={loadingClassName}
+          />
         }
         filters={
           <TransactionFilterPanel
@@ -345,9 +400,7 @@ export function TransactionsScreen({
             className="lg:hidden"
             filter={filter}
             onFilterChange={changeKind}
-            sheetFilterCount={sheetFilterCount}
-            onOpenFilters={() => setFilterOpen(true)}
-            onSearch={searching ? undefined : () => searchRef.current?.open()}
+            counts={kindCounts}
           />
           <TransactionActiveFilters
             className="lg:hidden"
@@ -368,6 +421,8 @@ export function TransactionsScreen({
             onClearFilters={clearFilters}
             search={search}
             pastMonthLabel={selectedMonth === thisMonth ? undefined : monthLabelOf(selectedMonth, thisMonth)}
+            focusDay={focusDay}
+            onAdd={openAdd}
           />
         </div>
       </TransactionsLayout>

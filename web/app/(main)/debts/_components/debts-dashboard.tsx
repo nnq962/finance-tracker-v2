@@ -172,6 +172,12 @@ export function DebtsDashboard({
         onRecordPayment={(id, values) => changePayment(id, undefined, values)}
         onEditPayment={(id, paymentId, values) => changePayment(id, paymentId, values)}
         onDeletePayment={(id, paymentId) => changePayment(id, paymentId, null)}
+        emptyAction={addDebtSheet(
+          <Button type="button">
+            <PlusIcon data-icon="inline-start" />
+            Ghi khoản nợ
+          </Button>,
+        )}
       />
       <ContactsSheet
         open={contactsOpen}

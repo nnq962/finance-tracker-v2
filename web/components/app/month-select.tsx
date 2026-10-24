@@ -17,7 +17,8 @@ function monthLabel(month: string) {
  * to change month, any month two taps away. The caller passes the month just
  * chosen while it loads, so the pill names it at once. `size="bar"`: 44px tall
  * like the round buttons beside it in the page's bar, and short: "Tháng 10"
- * in the year of `max`, "Tháng 10/2025" in another.
+ * in the year of `max`, "Tháng 10/2025" in another. `size="card"`: the same
+ * short name on the grey pill inside a card (Giao dịch's lead card, 2026-10-24).
  */
 export function MonthSelect({
   value,
@@ -31,13 +32,13 @@ export function MonthSelect({
   /** "YYYY-MM", the latest month that can be chosen, usually this one. */
   max: string
   onValueChange: (month: string) => void
-  size?: "sm" | "bar"
+  size?: "sm" | "bar" | "card"
   className?: string
 }) {
   const [open, setOpen] = React.useState(false)
   const [year, monthNumber] = value.split("-").map(Number)
   const label =
-    size === "bar"
+    size !== "sm"
       ? `Tháng ${monthNumber}${String(year) === max.slice(0, 4) ? "" : `/${year}`}`
       : monthLabel(value)
 
