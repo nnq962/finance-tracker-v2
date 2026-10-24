@@ -13,17 +13,18 @@ import type { Transaction } from "@/lib/transactions/types"
 import { cn } from "@/lib/utils"
 
 import { accountGridClassName } from "../account-grid"
-import { AddCard } from "../add-card"
 import { BoughtSheet } from "./bought-sheet"
-import { AddJarTile, JarCard, JarTile } from "./jar-card"
+import { JarCard, JarTile } from "./jar-card"
 import { JarFormSheet } from "./jar-form-sheet"
 import { JarSheet } from "./jar-sheet"
 import { MoveJarSheet } from "./move-jar-sheet"
 
 /**
  * The savings jars on the accounts page (2026-10-14): "Hũ tiết kiệm · N",
- * each jar with its ring, its plan and what it holds of its target, then
- * "Thêm hũ"; under the accounts, the finished ones folded away. A jar opens
+ * each jar with its ring, its plan and what it holds of its target; under
+ * the accounts, the finished ones folded away. A new jar comes from the
+ * page's + (2026-10-24; a "Thêm hũ" tile ended the list before), so with no
+ * jar filling there is no group. A jar opens
  * its sheet, from which money goes in or out, it is edited, or bought.
  */
 export function JarList({
@@ -50,7 +51,7 @@ export function JarList({
     () => jars.find((jar) => jar.id === initialOpenId && (part === "done") === Boolean(jar.goal?.completedAt))?.id ?? null,
   )
   // Each sheet keeps what it showed while it slides closed.
-  const [form, setForm] = React.useState<{ open: boolean; mode: "new" | "edit" }>({ open: false, mode: "new" })
+  const [editing, setEditing] = React.useState(false)
   const [move, setMove] = React.useState<{ open: boolean; way: "in" | "out" }>({ open: false, way: "in" })
   const [buying, setBuying] = React.useState(false)
   // Keeps the last jar on screen while its sheets slide closed (or it is deleted).
@@ -75,7 +76,7 @@ export function JarList({
       transactions={recentTransactions[shown.id] ?? []}
       open={found !== undefined}
       onOpenChange={(open) => !open && setOpenId(null)}
-      onEdit={() => setForm({ open: true, mode: "edit" })}
+      onEdit={() => setEditing(true)}
       onMove={(way) => setMove({ open: true, way })}
       onBought={() => setBuying(true)}
     >
@@ -99,8 +100,8 @@ export function JarList({
       />
       <JarFormSheet
         jar={shown}
-        open={form.open && form.mode === "edit"}
-        onOpenChange={(open) => setForm((current) => ({ ...current, open }))}
+        open={editing}
+        onOpenChange={setEditing}
         onDeleted={() => setOpenId(null)}
       />
     </JarSheet>
@@ -109,30 +110,27 @@ export function JarList({
   return (
     <>
       {part === "open" ? (
-        <>
-          {/* A list on phones, with no line under it (2026-10-21); from lg up the
-              accounts grid's cards, the last a dashed one to add, alone the same one cell when
-              there is no jar yet (2026-10-21: a full-width row was rejected). */}
-          {/* Phones (2026-10-23, the handoff): a two-up grid of jar cards, the last a grey one to add. */}
-          <section className="flex flex-col gap-2 lg:hidden">
-            <h2 className={cn("px-4", groupCaptionClassName)}>{filling.length ? `Hũ tiết kiệm · ${filling.length}` : "Hũ tiết kiệm"}</h2>
-            <div className="grid grid-cols-2 gap-3">
-              {filling.map((jar) => (
-                <JarTile key={jar.id} jar={jar} today={today} onSelect={() => setOpenId(jar.id)} />
-              ))}
-              <AddJarTile onClick={() => setForm({ open: true, mode: "new" })} />
-            </div>
-          </section>
-          <section className="hidden flex-col gap-2 lg:flex">
-            <h2 className={cn("px-4", groupCaptionClassName)}>{filling.length ? `Hũ tiết kiệm · ${filling.length}` : "Hũ tiết kiệm"}</h2>
-            <div className={accountGridClassName}>
-              {filling.map((jar) => (
-                <JarCard key={jar.id} jar={jar} today={today} onSelect={() => setOpenId(jar.id)} />
-              ))}
-              <AddCard label="Thêm hũ" onClick={() => setForm({ open: true, mode: "new" })} />
-            </div>
-          </section>
-        </>
+        filling.length === 0 ? null : (
+          <>
+            {/* Phones (2026-10-23, the handoff): a two-up grid of jar cards; from lg up the accounts grid's cards. */}
+            <section className="flex flex-col gap-2 lg:hidden">
+              <h2 className={cn("px-4", groupCaptionClassName)}>{`Hũ tiết kiệm · ${filling.length}`}</h2>
+              <div className="grid grid-cols-2 gap-3">
+                {filling.map((jar) => (
+                  <JarTile key={jar.id} jar={jar} today={today} onSelect={() => setOpenId(jar.id)} />
+                ))}
+              </div>
+            </section>
+            <section className="hidden flex-col gap-2 lg:flex">
+              <h2 className={cn("px-4", groupCaptionClassName)}>{`Hũ tiết kiệm · ${filling.length}`}</h2>
+              <div className={accountGridClassName}>
+                {filling.map((jar) => (
+                  <JarCard key={jar.id} jar={jar} today={today} onSelect={() => setOpenId(jar.id)} />
+                ))}
+              </div>
+            </section>
+          </>
+        )
       ) : (
         // The finished jars, in the accounts page's "Lưu trữ" sheet; one opened is pushed into it.
         <SettingsGroup title={`Hũ đã hoàn thành · ${done.length}`}>
@@ -154,11 +152,6 @@ export function JarList({
       )}
 
       {jarSheet}
-      {/* A new jar: a sheet of its own. */}
-      <JarFormSheet
-        open={form.open && form.mode === "new"}
-        onOpenChange={(open) => setForm((current) => ({ ...current, open }))}
-      />
     </>
   )
 }

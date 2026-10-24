@@ -47,6 +47,8 @@ const fieldElementId: Record<FieldName, string> = {
 type AccountFormProps = {
   action: (formData: FormData) => Promise<AccountActionResult>
   defaultValues?: Partial<AccountFormValues>
+  /** A new account's type to start on, as chosen before the form opened (the + on Tài khoản). */
+  initialType?: AccountType
   /** Set when editing: the balance the form opened with, sent so the server
    * only overwrites the balance when the user changed it. */
   expectedBalance?: number
@@ -75,6 +77,7 @@ type AccountFormProps = {
 export function AccountForm({
   action,
   defaultValues,
+  initialType,
   expectedBalance,
   onSuccess,
   submitLabel = "Lưu tài khoản",
@@ -86,9 +89,9 @@ export function AccountForm({
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   // A new account keeps one request id across retries, so it is added once.
   const [requestId, setRequestId] = React.useState(() => randomId())
-  const [accountType, setAccountType] = React.useState<AccountType>(defaultValues?.type ?? "cash")
+  const [accountType, setAccountType] = React.useState<AccountType>(defaultValues?.type ?? initialType ?? "cash")
   const [institutionId, setInstitutionId] = React.useState(defaultValues?.institutionId ?? "")
-  const [name, setName] = React.useState(defaultValues?.name ?? CASH_NAME)
+  const [name, setName] = React.useState(defaultValues?.name ?? (accountType === "cash" ? CASH_NAME : ""))
   // Named by the user, so picking a bank or switching type leaves it alone.
   const [nameEdited, setNameEdited] = React.useState(Boolean(defaultValues?.name))
   // The amount is typed without a sign; the switch puts it below zero.

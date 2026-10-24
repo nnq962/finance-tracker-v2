@@ -63,16 +63,18 @@ export default function TransactionsLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <PageHeaderSkeleton bare lead tools={["round", "round"]} />
+        <PageHeaderSkeleton bare lead title="Giao dịch" switchBelow tools={["round"]} />
         <TransactionsLayout
           summary={<MonthSummarySkeleton />}
           filters={<FilterPanelSkeleton />}
         >
-          {/* The round search field from lg up; on phones the kind chips with their counts, as wide as their names. */}
+          {/* The round search field from lg up; on phones the filter chip, a divider and the kind chips, as wide as their names. */}
           <div className="flex flex-col gap-3">
             <Skeleton className="h-11 rounded-full max-lg:hidden" />
             <div className="-mx-(--main-content-px) flex items-center gap-2 overflow-hidden px-(--main-content-px) lg:hidden">
-              {["w-[5.5rem]", "w-[4.25rem]", "w-[4.75rem]", "w-[8.5rem]"].map((width, index) => (
+              <Skeleton className="h-9 w-[4.5rem] shrink-0 rounded-full" />
+              <span className="h-5 w-px shrink-0 bg-foreground/15" />
+              {["w-[4.25rem]", "w-[3.25rem]", "w-[3.25rem]", "w-[7.25rem]"].map((width, index) => (
                 <Skeleton key={index} className={cn("h-9 shrink-0 rounded-full", width)} />
               ))}
             </div>

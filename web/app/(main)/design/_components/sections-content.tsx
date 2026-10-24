@@ -7,6 +7,7 @@ import {
   ArrowDownLeftIcon,
   ArrowLeftRightIcon,
   ArrowUpRightIcon,
+  BellIcon,
   BellRingIcon,
   BriefcaseIcon,
   CalendarDaysIcon,
@@ -22,6 +23,7 @@ import {
   PencilIcon,
   PiggyBankIcon,
   PlusIcon,
+  SearchIcon,
   ShieldCheckIcon,
   SparklesIcon,
   TagIcon,
@@ -36,6 +38,7 @@ import { toast } from "sonner"
 
 import { ContactAvatar } from "@/app/(main)/debts/_components/contact-avatar"
 import { ShelfLink } from "@/components/app/shelf-link"
+import { AppHeader, AppHeaderTitle } from "@/components/app/app-header"
 import { CardLabel } from "@/components/app/card-label"
 import { Carousel } from "@/components/app/carousel"
 import { ChoiceTiles } from "@/components/app/choice-tiles"
@@ -726,7 +729,50 @@ function NavSection() {
           </Button>
         </div>
       </Block>
-      <Block label="Đầu trang (PageHeader) · tên trang, công cụ bên phải" wide>
+      <Block label="Thanh đầu trang trên điện thoại (AppHeader) · avatar mở Cài đặt (nhãn PRO trên gói Pro), giữa là tên hay viên ngày, nút tròn bên phải; Giao dịch: segmented lớn (size lg) dưới thanh" wide>
+        {/* Shown on every size here; on pages only below md. Without the bar's own space below it. */}
+        <div className="mx-auto flex max-w-[390px] flex-col gap-4 *:mb-0! *:md:grid!">
+          <AppHeader
+            center={<AppHeaderTitle as="p">Tài khoản</AppHeaderTitle>}
+            actions={
+              <Button type="button" variant="elevated" size="icon" aria-label="Thêm tài khoản" onClick={() => toast("Thêm tài khoản")}>
+                <PlusIcon />
+              </Button>
+            }
+          />
+          <AppHeader
+            center={
+              <Button type="button" variant="elevated" className="max-w-full min-w-0 gap-2 px-4 text-[15px]">
+                <CalendarDaysIcon className="text-muted-foreground" />
+                <span className="truncate">Thứ Bảy, 24 tháng 10</span>
+              </Button>
+            }
+            actions={
+              <Button type="button" variant="elevated" size="icon" aria-label="Thông báo">
+                <BellIcon />
+              </Button>
+            }
+          />
+          {/* Giao dịch (PageHeader leadBelow): the name in the bar, the large switch under it. */}
+          <div className="space-y-4 *:mb-0! *:md:grid!">
+            <AppHeader
+              center={<AppHeaderTitle as="p">Giao dịch</AppHeaderTitle>}
+              actions={
+                <Button type="button" variant="elevated" size="icon" aria-label="Tìm giao dịch">
+                  <SearchIcon />
+                </Button>
+              }
+            />
+            <Tabs defaultValue="spend" className="block!">
+              <TabsList variant="segmented" size="lg" className="w-full">
+                <TabsTrigger value="spend">Chi tiêu</TabsTrigger>
+                <TabsTrigger value="debts">Vay nợ</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
+      </Block>
+      <Block label="Đầu trang (PageHeader) · trên điện thoại là thanh ở trên, từ md tên trang bên trái, công cụ bên phải" wide>
         {/* Without the header's own space below it, which only pages need. */}
         <div className="*:mb-0!">
           <PageHeader

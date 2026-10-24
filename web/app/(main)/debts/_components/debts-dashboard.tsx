@@ -123,9 +123,11 @@ export function DebtsDashboard({
   return (
     <Page>
       <PageHeader
-        title="Vay nợ"
+        // Inside Giao dịch the bar names the page, the switch under it the view.
+        title={viewSwitch ? "Giao dịch" : "Vay nợ"}
         bare
         lead={viewSwitch}
+        leadBelow
         actions={
           <>
             <Button type="button" variant="elevated" onClick={() => setContactsOpen(true)}>

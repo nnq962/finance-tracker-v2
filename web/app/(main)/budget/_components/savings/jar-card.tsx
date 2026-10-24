@@ -1,5 +1,3 @@
-import { PlusIcon } from "lucide-react"
-
 import { Money } from "@/components/app/money"
 import { Card, CardContent } from "@/components/ui/card"
 import type { Account } from "@/lib/accounts/types"
@@ -77,21 +75,5 @@ export function JarTile({ jar, today, onSelect }: { jar: Account; today: string;
         </span>
       </button>
     </Card>
-  )
-}
-
-/** The phone grid's last cell (2026-10-23, the handoff): a grey card the jars' size, a raised white + and "Thêm hũ". */
-export function AddJarTile({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="pressable flex min-h-42 flex-col items-center justify-center gap-2.5 rounded-[24px] bg-fill-2 p-4 text-[15.5px] font-bold outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
-    >
-      <span className="flex size-11 items-center justify-center rounded-full bg-card shadow-card [&_svg]:size-5">
-        <PlusIcon aria-hidden="true" />
-      </span>
-      Thêm hũ
-    </button>
   )
 }

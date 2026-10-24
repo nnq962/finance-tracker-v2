@@ -32,6 +32,18 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.44.0",
+    date: "2026-10-24",
+    title: "Đầu trang mới, thêm tài khoản bằng nút +, nền tối đen",
+    changes: [
+      { kind: "new", text: "Đầu trang mới trên điện thoại: ảnh của bạn bên trái (mở Cài đặt, có nhãn PRO với gói Pro), tên trang ở giữa, nút bên phải." },
+      { kind: "new", text: "Tổng quan: ngày hôm nay ở giữa (chạm để xuống lịch tháng), chuông bên phải, lời chào và tên bạn chữ lớn; bỏ logo Timi và nút đổi giao diện (vẫn có trong Cài đặt)." },
+      { kind: "improved", text: "Giao dịch: tên trang ở giữa, nút Chi tiêu | Vay nợ lớn ngay dưới và trượt mượt; loại giao dịch thành chip với chip Lọc ở đầu hàng." },
+      { kind: "new", text: "Tài khoản: nút + mở danh sách Tiền mặt, Ngân hàng, Ví điện tử, Hũ tiết kiệm, rồi mở đúng màn thêm của loại đó; bỏ dòng Thêm tài khoản và ô Thêm hũ." },
+      { kind: "improved", text: "Giao diện tối: nền trang và các sheet đen hoàn toàn." },
+    ],
+  },
+  {
     version: "6.43.1",
     date: "2026-10-24",
     title: "Đổi tháng ở Giao dịch không còn nháy",

@@ -19,7 +19,6 @@ import { cn } from "@/lib/utils"
 import { AccountCard } from "./account-card"
 import { accountGridClassName } from "./account-grid"
 import { AccountSheet } from "./account-sheet"
-import { AddCard } from "./add-card"
 import { AddAccountSheet } from "./add-account/add-account-sheet"
 import { JarList } from "./savings/jar-section"
 
@@ -60,7 +59,7 @@ function AccountRow({ account, onSelect }: { account: Account; onSelect: () => v
 
 export function AccountList({ accounts, recentTransactions, categoryGroups, initialOpenId }: AccountListProps) {
   const [openAccountId, setOpenAccountId] = React.useState<string | null>(initialOpenId ?? null)
-  // Adding an account: the last row of "Tài khoản chính" on phones, as "Thêm hũ" is under the jars.
+  // Adding the first account, from the empty state; otherwise the page's + adds (2026-10-24).
   const [adding, setAdding] = React.useState(false)
   // Every account in use in one list, largest balance first, those left out
   // of the figures among them (still used, only not counted), marked so.
@@ -104,36 +103,31 @@ export function AccountList({ accounts, recentTransactions, categoryGroups, init
   return (
     <div className="space-y-6 md:space-y-8">
       {/* "Tài khoản chính" (2026-10-14, was "Đang dùng"), "Hũ tiết kiệm" and "Đã khoá" below it. A list on
-          phones, ending with "Thêm tài khoản" (also when every account is locked); from lg up a grid of
-          cards with logo, name and balance, so the page uses its width, the last a dashed card to add one. */}
-      <div className="lg:hidden">
-        <SettingsGroup title={activeAccounts.length ? `Tài khoản chính · ${activeAccounts.length}` : "Tài khoản chính"}>
-          {activeAccounts.map((account) => (
-            <AccountRow key={account.id} account={account} onSelect={() => setOpenAccountId(account.id)} />
-          ))}
-          <SettingsRow
-            media={<IconTile icon={PlusIcon} tone="neutral" size="sm" />}
-            title="Thêm tài khoản"
-            chevron={false}
-            onClick={() => setAdding(true)}
-          />
-        </SettingsGroup>
-      </div>
-      <section className="hidden flex-col gap-2 lg:flex">
-        <h2 className={cn("px-4", groupCaptionClassName)}>
-          {activeAccounts.length ? `Tài khoản chính · ${activeAccounts.length}` : "Tài khoản chính"}
-        </h2>
-        <div className={accountGridClassName}>
-          {activeAccounts.map((account) => (
-            <AccountCard
-              key={account.id}
-              account={account}
-              onSelect={() => setOpenAccountId(account.id)}
-            />
-          ))}
-          <AddCard label="Thêm tài khoản" onClick={() => setAdding(true)} />
-        </div>
-      </section>
+          phones; from lg up a grid of cards with logo, name and balance, so the page uses its width.
+          Nothing to add in them (2026-10-24): the page's + adds. None in use (every one locked): no group. */}
+      {activeAccounts.length > 0 ? (
+        <>
+          <div className="lg:hidden">
+            <SettingsGroup title={`Tài khoản chính · ${activeAccounts.length}`}>
+              {activeAccounts.map((account) => (
+                <AccountRow key={account.id} account={account} onSelect={() => setOpenAccountId(account.id)} />
+              ))}
+            </SettingsGroup>
+          </div>
+          <section className="hidden flex-col gap-2 lg:flex">
+            <h2 className={cn("px-4", groupCaptionClassName)}>{`Tài khoản chính · ${activeAccounts.length}`}</h2>
+            <div className={accountGridClassName}>
+              {activeAccounts.map((account) => (
+                <AccountCard
+                  key={account.id}
+                  account={account}
+                  onSelect={() => setOpenAccountId(account.id)}
+                />
+              ))}
+            </div>
+          </section>
+        </>
+      ) : null}
 
       {/* The savings jars under the accounts in use, the locked accounts and finished jars after them. */}
       <JarList jars={jars} accounts={accounts} recentTransactions={recentTransactions} categoryGroups={categoryGroups} part="open" initialOpenId={initialOpenId} />
@@ -193,8 +187,6 @@ export function AccountList({ accounts, recentTransactions, categoryGroups, init
           }}
         />
       </PageSheet>
-
-      <AddAccountSheet open={adding} onOpenChange={setAdding} />
 
       <AccountSheet
         account={inStored ? undefined : openAccount}

@@ -48,7 +48,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Block, CatalogSection, Wide } from "./catalog-kit"
 
 const principles = [
-  ["Thẻ trắng trên nền xám, phẳng", "Trang và sheet xám #f0f0f0, thẻ gần trắng không viền, chỉ một bóng rộng rất nhạt; thứ bấm được (nút, chip, ô tìm kiếm) trắng tinh. Tối: nền #0b0b0b, thẻ #171717, nút #202020, không bóng."],
+  ["Thẻ trắng trên nền xám, phẳng", "Trang và sheet xám #f0f0f0, thẻ gần trắng không viền, chỉ một bóng rộng rất nhạt; thứ bấm được (nút, chip, ô tìm kiếm) trắng tinh. Tối: nền đen #000, thẻ #171717, nút #202020, không bóng."],
   ["Một khuôn trang", "Tên trang gọn bên trái, công cụ bên phải; rồi một thẻ dẫn đầu và các nhóm."],
   ["Xám là lớp mực mỏng", "Nền phụ, ô nhập, nút xám là mực 4–10% trong suốt, hợp trang, thẻ lẫn sheet; nút trên header là nút trắng nổi (elevated)."],
   ["Một mảng đen", "Màu mực cho nút chính, chip và segment đang chọn, công tắc bật; thẻ dẫn đầu là thẻ trắng như mọi thẻ, dẫn bằng cỡ số."],

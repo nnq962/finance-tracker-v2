@@ -146,7 +146,7 @@
  * Colours after the approved Figma Make mockup (see docs/design/colors.md):
  * Tailwind's neutral greys on a warm off-white page (#f2f2f1), white,
  * borderless cards, neutral-900 as the one strong colour, and meaning
- * colours used sparingly. Since 2026-10-23 a neutral grey page (#f0f0f0) and, dark, #0b0b0b with #171717 cards (was #000 / #1c1c1e).
+ * colours used sparingly. Since 2026-10-23 a neutral grey page (#f0f0f0) and, dark, #171717 cards on a black page (#000 again from 2026-10-24; #0b0b0b for a day; #1c1c1e cards before).
  * `.light` brings the light colours back inside a dark page, as `.dark` does
  * the other way, e.g. the theme picker's light preview.
  */
@@ -326,7 +326,7 @@
   /* A shadow is lost on the dark page: the card's lighter grey lifts it alone, no edge (2026-10-24; a 1px light edge 2026-10-23). */
   --card-shadow: none;
   --card-shadow-hover: 0 12px 48px rgb(0 0 0 / 0.5);
-  /* What is tapped: a step lighter than the cards (#202020 on #171717 cards, #0b0b0b page), no shadow or edge. */
+  /* What is tapped: a step lighter than the cards (#202020 on #171717 cards, black page), no shadow or edge. */
   --raised: oklch(0.24 0 0);
   --raised-shadow: none;
   /* No fall on the black: the elevated button is a raised grey with a light hairline. */
@@ -340,12 +340,12 @@
   /* On the black page the raised grey toast takes a lighter edge and a deeper shadow. */
   --toast-shadow: 0 0 0 0.5px oklch(1 0 0 / 0.12), 0 12px 28px -10px rgb(0 0 0 / 0.7);
   /*
-   * Neutral dark (2026-10-23, the handoff): a near-black page #0b0b0b, sheets
-   * the same, cards #171717, soft white ink. Was iOS's dark grouped: a black
-   * page, cards #1c1c1e (2026-10-16).
+   * Neutral dark: a black page (2026-10-24, the user's ask; #0b0b0b from the
+   * handoff 2026-10-23), sheets the same, cards #171717, soft white ink. Was
+   * iOS's dark grouped before: a black page, cards #1c1c1e (2026-10-16).
    */
-  --background: oklch(0.15 0 0);
-  --sheet: oklch(0.15 0 0);
+  --background: oklch(0 0 0);
+  --sheet: oklch(0 0 0);
   --foreground: oklch(0.95 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.95 0 0);

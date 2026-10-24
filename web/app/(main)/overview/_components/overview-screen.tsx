@@ -109,15 +109,18 @@ export function OverviewScreen({
       missions={missions}
       budgets={budgets}
       calendar={
-        <MonthSection
-          accounts={accounts}
-          categoryGroups={categoryGroups}
-          days={days}
-          today={today}
-          minMonth={minMonth}
-          month={month}
-          onMonthChange={setMonth}
-        />
+        // The header's date pill scrolls here.
+        <div id="overview-month" className="scroll-mt-4">
+          <MonthSection
+            accounts={accounts}
+            categoryGroups={categoryGroups}
+            days={days}
+            today={today}
+            minMonth={minMonth}
+            month={month}
+            onMonthChange={setMonth}
+          />
+        </div>
       }
       dueDebts={dueDebts}
       dueDebtsUrgent={dueDebtsData.some((debt) => debt.daysUntilDue <= 3)}

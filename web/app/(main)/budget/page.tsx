@@ -6,6 +6,7 @@ import { getCategoryGroups } from "@/lib/categories/repository"
 import { getRecentTransactionsByAccount } from "@/lib/transactions/repository"
 
 import { AccountList } from "./_components/account-list"
+import { AddAccountButton } from "./_components/add-account-button"
 import { BalanceHero } from "./_components/balance-hero"
 import { BudgetLayout } from "./_components/budget-layout"
 
@@ -25,8 +26,9 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
 
   return (
     <Page>
-      {/* Accounts and jars are added from the lists themselves (2026-10-14). */}
-      <PageHeader title="Tài khoản" bare />
+      {/* Accounts and jars are added from the + alone (2026-10-24, the lists' add rows and cards
+          went): in the bar on phones, in the top bar from md. */}
+      <PageHeader title="Tài khoản" bare accessory={<AddAccountButton />} />
 
       {accounts.length > 0 ? (
         <BudgetLayout

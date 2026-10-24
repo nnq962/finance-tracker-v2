@@ -2,14 +2,13 @@
 
 import * as React from "react"
 import { usePathname, useRouter } from "next/navigation"
-import { ListFilterIcon, PlusIcon, SearchIcon } from "lucide-react"
+import { PlusIcon, SearchIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { Collapse } from "@/components/app/collapse"
 import { FloatingActions } from "@/components/app/floating-actions"
 import { BudgetProvider } from "@/components/budgets/budget-hint"
 import { PageHeader } from "@/components/page"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { appEvents, listenToAppEvent } from "@/lib/app-events"
 import { useDeletedKeys } from "@/lib/undoable-delete"
@@ -295,34 +294,19 @@ export function TransactionsScreen({
     document.querySelector(`[data-day="${dateKey}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" })
   }
   const openAdd = React.useCallback(() => setAddOpen(true), [])
-  // Phones' tools beside the titles (2026-10-24): search and the filter sheet as round buttons;
-  // from lg up the field and the filter panel sit beside the list instead.
+  // Phones' tool in the bar (2026-10-24): search as a round button; the filter sheet's chip leads
+  // the kinds, the list it filters (the bar's middle holds Chi tiêu | Vay nợ). From lg up the
+  // field and the filter panel sit beside the list instead.
   const headerTools = (
-    <>
-      <Button type="button" variant="elevated" size="icon" aria-label="Tìm giao dịch" className="lg:hidden" onClick={() => searchRef.current?.open()}>
-        <SearchIcon />
-      </Button>
-      <Button
-        type="button"
-        variant={sheetFilterCount > 0 ? "default" : "elevated"}
-        size="icon"
-        aria-label={sheetFilterCount > 0 ? `Bộ lọc, ${sheetFilterCount} điều kiện` : "Bộ lọc"}
-        className="relative lg:hidden"
-        onClick={() => setFilterOpen(true)}
-      >
-        <ListFilterIcon />
-        {sheetFilterCount > 0 ? (
-          <Badge variant="count" aria-hidden="true" className="absolute top-0 left-[calc(50%+6px)]">
-            {sheetFilterCount}
-          </Badge>
-        ) : null}
-      </Button>
-    </>
+    <Button type="button" variant="elevated" size="icon" aria-label="Tìm giao dịch" className="lg:hidden" onClick={() => searchRef.current?.open()}>
+      <SearchIcon />
+    </Button>
   )
 
-  // While a month loads, what is shown stays, and dims only when the load is slow (300ms
-  // on, 2026-10-24): a quick one dimmed for a blink and read as flicker; the figures'
-  // SoftSwap already shows the change.
+  // While a month loads, the list shown stays, and dims only when the load is slow (300ms
+  // on, 2026-10-24): a quick one dimmed for a blink and read as flicker. The month's card
+  // never dims (the user, 2026-10-24: tapping ‹ › fast still greyed it): its pill names the
+  // month at once and its figures cross-blur when they arrive (SoftSwap).
   const loadingClassName = cn("transition-opacity duration-200", isNavigating && "opacity-50 delay-300")
 
   return (
@@ -337,6 +321,7 @@ export function TransactionsScreen({
           title="Giao dịch"
           bare
           lead={viewSwitch}
+          leadBelow
           tools={headerTools}
           actions={headerActions}
         />
@@ -356,7 +341,6 @@ export function TransactionsScreen({
             dayTotals={dayTotals}
             focusDay={focusDay}
             onDayTap={goToDay}
-            className={loadingClassName}
           />
         }
         filters={
@@ -399,6 +383,8 @@ export function TransactionsScreen({
             className={cn("lg:hidden", searching && "hidden")}
             filter={filter}
             onFilterChange={changeKind}
+            filterCount={sheetFilterCount}
+            onOpenFilters={() => setFilterOpen(true)}
           />
           <TransactionActiveFilters
             className="lg:hidden"

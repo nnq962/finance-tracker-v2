@@ -3,6 +3,7 @@ import type { ReactNode } from "react"
 
 import { AssistantHeaderButton, AssistantProvider } from "@/components/ai-assistant/assistant"
 import { AppSidebar } from "@/components/app-sidebar"
+import { HeaderAccountProvider } from "@/components/app/app-header"
 import { AuthSessionGuard } from "@/components/auth-session-guard"
 import { MainBreadcrumb } from "@/components/main-breadcrumb"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
@@ -19,6 +20,7 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { isDevSessionUser, requireSignedSession } from "@/lib/auth/session"
 import { needsOnboarding } from "@/lib/onboarding/repository"
+import { getPlanState } from "@/lib/plans/repository"
 
 export const metadata: Metadata = {
   robots: {
@@ -34,12 +36,16 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
   // The cookie's signature only: the shell and the loading screens go out at
   // once; every page's data still waits for the revocation check (loadWithSession).
   const { user, expiresAt } = await requireSignedSession()
-  // A failed read only skips the welcome; it never blocks the app.
-  const firstRun = await needsOnboarding(user.uid).catch(() => false)
+  // A failed read only skips the welcome (or the PRO label on the avatar); it never blocks the app.
+  const [firstRun, plan] = await Promise.all([
+    needsOnboarding(user.uid).catch(() => false),
+    getPlanState(user.uid).then((state) => state.plan, () => null),
+  ])
 
   return (
     <AuthSessionGuard initialUid={user.uid} sessionExpiresAt={expiresAt} devSession={isDevSessionUser(user)}>
       <PushMessageListener />
+      <HeaderAccountProvider account={{ name: user.name, avatar: user.avatar, pro: plan === "pro" }}>
       <TooltipProvider>
         <WelcomeProvider firstRun={firstRun}>
           <AssistantProvider>
@@ -87,6 +93,7 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
           </AssistantProvider>
         </WelcomeProvider>
       </TooltipProvider>
+      </HeaderAccountProvider>
     </AuthSessionGuard>
   )
 }

@@ -54,9 +54,16 @@ const tabsListVariants = cva(
         // Tabs over content: a short bar slides under the chosen one.
         line: "rounded-none border-b border-separator bg-transparent group-data-horizontal/tabs:h-11",
       },
+      size: {
+        default: "",
+        // A page's main switch under its bar (2026-10-24, Giao dịch's Chi tiêu | Vay nợ): 44
+        // tall, a segment's touch area as it is, the label 15.
+        lg: "group-data-horizontal/tabs:h-11",
+      },
     },
     defaultVariants: {
       variant: "default",
+      size: "default",
     },
   }
 )
@@ -78,6 +85,7 @@ const indicatorMemory = new Map<string, { x: number; width: number }>()
 function TabsList({
   className,
   variant = "default",
+  size = "default",
   memoryKey,
   children,
   ...props
@@ -158,8 +166,9 @@ function TabsList({
       ref={list}
       data-slot="tabs-list"
       data-variant={variant}
+      data-size={size}
       data-ready={box ? "" : undefined}
-      className={cn(tabsListVariants({ variant }), className)}
+      className={cn(tabsListVariants({ variant, size }), className)}
       {...props}
     >
       {box ? (
@@ -187,6 +196,8 @@ function TabsTrigger({
         "relative inline-flex h-full flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-semibold whitespace-nowrap text-foreground/60 transition-colors duration-150 ease-out outline-none group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         // One weight chosen or not (2026-10-21): bolding the chosen label moved the words while the pill slid.
         "data-active:text-foreground group-data-[variant=line]/tabs-list:rounded-none",
+        // lg: the label 15; the 40 segment needs no taller touch area.
+        "group-data-[size=lg]/tabs-list:text-[15px] group-data-[size=lg]/tabs-list:after:hidden",
         // Segmented (both looks): 32 tall in the 36 rail, its touch area stretched to 44 (2026-10-24).
         "group-data-[variant=default]/tabs-list:after:absolute group-data-[variant=default]/tabs-list:after:inset-x-0 group-data-[variant=default]/tabs-list:after:-inset-y-1.5",
         "group-data-[variant=segmented]/tabs-list:after:absolute group-data-[variant=segmented]/tabs-list:after:inset-x-0 group-data-[variant=segmented]/tabs-list:after:-inset-y-1.5",

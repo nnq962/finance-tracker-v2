@@ -224,7 +224,13 @@ export default function OverviewLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <PageHeaderSkeleton lead tools={["round", "round", "round"]} />
+        {/* OverviewHeader on phones: the bar (date pill, bell), then the greeting and the name. */}
+        <div className="md:hidden">
+          <PageHeaderSkeleton bare center="pill" tools={["round"]} />
+          <Skeleton className="mx-1 h-4 w-28" />
+          <Skeleton className="mx-1 mt-2.5 h-7 w-48" />
+        </div>
+        <div className="hidden h-4 md:block" />
         <OverviewLayout
           netWorth={<NetWorthSkeleton />}
           missions={<MissionsSkeleton />}
