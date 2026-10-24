@@ -40,10 +40,11 @@ export function SegmentedProgress({
         <span key={index} className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
           <span
             className={cn(
-              "block h-full rounded-full transition-[width,background-color] duration-500 ease-[cubic-bezier(.32,.72,0,1)] motion-reduce:duration-150 motion-reduce:ease-out",
+              // Slides in from the left (translate, as LimitBar) rather than growing its width: no layout each frame.
+              "block h-full rounded-full transition-[translate,background-color] duration-500 ease-[cubic-bezier(.32,.72,0,1)] motion-reduce:duration-150 motion-reduce:ease-out",
+              index < value ? "translate-x-0" : "-translate-x-full",
               tones[tone],
             )}
-            style={{ width: index < value ? "100%" : "0%" }}
           />
         </span>
       ))}

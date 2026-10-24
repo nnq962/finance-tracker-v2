@@ -33,7 +33,7 @@ function RadioGroupItem({
     >
       <span
         aria-hidden="true"
-        className="size-2 scale-0 rounded-full bg-primary-foreground transition-transform duration-300 ease-[cubic-bezier(.34,1.4,.64,1)] group-data-checked/radio:scale-100 motion-reduce:duration-150 motion-reduce:ease-out"
+        className="size-2 scale-0 rounded-full bg-primary-foreground transition-transform duration-150 ease-out group-data-checked/radio:scale-100"
       />
     </RadioGroupPrimitive.Item>
   )

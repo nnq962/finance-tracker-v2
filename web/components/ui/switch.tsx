@@ -28,7 +28,7 @@ function Switch({
     >
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
-        className="pointer-events-none grid place-items-center rounded-full bg-card text-primary shadow-sm dark:data-unchecked:bg-foreground ring-0 transition-transform duration-[400ms] ease-[cubic-bezier(.3,1.25,.6,1)] motion-reduce:transition-none group-data-[size=default]/switch:size-6 group-data-[size=sm]/switch:size-4 group-data-[size=default]/switch:data-checked:translate-x-5 group-data-[size=sm]/switch:data-checked:translate-x-4 data-unchecked:translate-x-0"
+        className="pointer-events-none grid place-items-center rounded-full bg-card text-primary shadow-sm dark:data-unchecked:bg-foreground ring-0 transition-transform duration-[400ms] ease-[cubic-bezier(.3,1.25,.6,1)] motion-reduce:duration-150 motion-reduce:ease-out group-data-[size=default]/switch:size-6 group-data-[size=sm]/switch:size-4 group-data-[size=default]/switch:data-checked:translate-x-5 group-data-[size=sm]/switch:data-checked:translate-x-4 data-unchecked:translate-x-0"
       >
         {/* Off in dark, the thumb is light as iOS's (2026-10-21: the card's dark grey
             all but vanished on the grey track); on, it stays dark on the light track.

@@ -167,7 +167,7 @@ function TabsList({
           ref={indicator}
           aria-hidden="true"
           data-slot="tabs-indicator"
-          className="absolute top-0.5 bottom-0.5 left-0 rounded-full bg-segment-thumb shadow-segment-thumb transition-[translate,width] duration-250 ease-[cubic-bezier(0.2,0,0,1)] will-change-[translate] group-data-[variant=line]/tabs-list:top-auto group-data-[variant=line]/tabs-list:-bottom-px group-data-[variant=line]/tabs-list:h-0.5 group-data-[variant=line]/tabs-list:bg-foreground group-data-[variant=line]/tabs-list:shadow-none motion-reduce:transition-none"
+          className="absolute top-0.5 bottom-0.5 left-0 rounded-full bg-segment-thumb shadow-segment-thumb transition-[translate,width] duration-250 ease-[cubic-bezier(0.2,0,0,1)] will-change-[translate] group-data-[variant=line]/tabs-list:top-auto group-data-[variant=line]/tabs-list:-bottom-px group-data-[variant=line]/tabs-list:h-0.5 group-data-[variant=line]/tabs-list:bg-foreground group-data-[variant=line]/tabs-list:shadow-none motion-reduce:duration-150 motion-reduce:ease-out"
           style={{ width: box.width, translate: `${box.x}px 0` }}
         />
       ) : null}

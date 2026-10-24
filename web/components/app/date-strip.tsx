@@ -36,7 +36,7 @@ export function DateStrip({
             aria-label={day.toLocaleDateString("vi-VN", { weekday: "long", day: "numeric", month: "numeric" })}
             onClick={() => onValueChange(day)}
             className={cn(
-              "pressable flex flex-col items-center gap-1 rounded-2xl py-2.5 transition-colors duration-150",
+              "pressable flex flex-col items-center gap-1 rounded-2xl py-2.5 transition-[scale,color,background-color] duration-150",
               chosen && "bg-primary text-primary-foreground",
             )}
           >

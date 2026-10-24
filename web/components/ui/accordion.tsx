@@ -5,8 +5,40 @@ import { PlusIcon } from "lucide-react"
 import { cn } from "cn"
 import { Accordion as AccordionPrimitive } from "radix-ui"
 
-function Accordion({ ...props }: React.ComponentProps<typeof AccordionPrimitive.Root>) {
-  return <AccordionPrimitive.Root data-slot="accordion" {...props} />
+import { Collapse } from "@/components/app/collapse"
+
+type AccordionValue = string | string[]
+
+/** Whether an item (by its value) is open, for its content's fold. */
+const AccordionOpen = React.createContext<(item: string) => boolean>(() => false)
+const AccordionItemValue = React.createContext("")
+
+/** Keeps the open items itself (controlled or not), so each content knows when to fold. */
+function Accordion(props: React.ComponentProps<typeof AccordionPrimitive.Root>) {
+  const { value: valueProp, defaultValue, onValueChange, ...rest } = props as typeof props & {
+    value?: AccordionValue
+    defaultValue?: AccordionValue
+    onValueChange?: (value: AccordionValue) => void
+  }
+  const [valueState, setValueState] = React.useState<AccordionValue>(
+    defaultValue ?? (props.type === "multiple" ? [] : "")
+  )
+  const value = valueProp ?? valueState
+  const isOpen = (item: string) => (Array.isArray(value) ? value.includes(item) : value === item)
+  const root = {
+    ...rest,
+    value,
+    onValueChange: (next: AccordionValue) => {
+      setValueState(next)
+      onValueChange?.(next)
+    },
+  } as React.ComponentProps<typeof AccordionPrimitive.Root>
+
+  return (
+    <AccordionOpen.Provider value={isOpen}>
+      <AccordionPrimitive.Root data-slot="accordion" {...root} />
+    </AccordionOpen.Provider>
+  )
 }
 
 function AccordionItem({
@@ -14,11 +46,13 @@ function AccordionItem({
   ...props
 }: React.ComponentProps<typeof AccordionPrimitive.Item>) {
   return (
-    <AccordionPrimitive.Item
-      data-slot="accordion-item"
-      className={cn("border-b last:border-b-0", className)}
-      {...props}
-    />
+    <AccordionItemValue.Provider value={props.value}>
+      <AccordionPrimitive.Item
+        data-slot="accordion-item"
+        className={cn("border-b last:border-b-0", className)}
+        {...props}
+      />
+    </AccordionItemValue.Provider>
   )
 }
 
@@ -41,7 +75,7 @@ function AccordionTrigger({
         {children}
         <span
           aria-hidden="true"
-          className="grid size-7 shrink-0 place-items-center rounded-full bg-field transition-transform duration-300 group-data-[state=open]/accordion-trigger:rotate-45 motion-reduce:duration-150 motion-reduce:ease-out"
+          className="grid size-7 shrink-0 place-items-center rounded-full bg-field transition-transform duration-250 ease-[cubic-bezier(0.2,0,0,1)] group-data-[state=open]/accordion-trigger:rotate-45 motion-reduce:duration-150 motion-reduce:ease-out"
         >
           <PlusIcon className="size-4" />
         </span>
@@ -50,18 +84,27 @@ function AccordionTrigger({
   )
 }
 
+/**
+ * The answer, folded with `Collapse` (2026-10-24; was Radix's height keyframes
+ * under overflow-hidden, which cut shadows and could not turn back mid-way):
+ * 250ms, 150ms when motion is reduced. Kept mounted, inert while shut.
+ */
 function AccordionContent({
   className,
   children,
   ...props
 }: React.ComponentProps<typeof AccordionPrimitive.Content>) {
+  const open = React.useContext(AccordionOpen)(React.useContext(AccordionItemValue))
   return (
     <AccordionPrimitive.Content
       data-slot="accordion-content"
-      className="overflow-hidden text-sm text-muted-foreground data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+      forceMount
+      className="text-sm text-muted-foreground"
       {...props}
     >
-      <div className={cn("pb-4 leading-relaxed", className)}>{children}</div>
+      <Collapse open={open} contentClassName={cn("pb-4 leading-relaxed", className)}>
+        {children}
+      </Collapse>
     </AccordionPrimitive.Content>
   )
 }

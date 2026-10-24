@@ -32,6 +32,18 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.42.1",
+    date: "2026-10-24",
+    title: "Chuyển động mượt và đồng đều hơn",
+    changes: [
+      { kind: "fixed", text: "Ô ngày và hai tiêu đề Chi tiêu / Vay nợ lại lún nhẹ khi chạm thay vì giật." },
+      { kind: "improved", text: "Câu hỏi thường gặp (màn gói) mở và đóng mượt, bấm lại giữa chừng thì quay ngược; không còn cắt bóng." },
+      { kind: "improved", text: "Hộp thoại, menu, danh sách chọn mở 200ms và đóng nhanh hơn 150ms, không còn chớp." },
+      { kind: "improved", text: "Khi bật Giảm chuyển động: công tắc, segmented, nút + và các nút thu gọn trượt ngắn 150ms thay vì nhảy ngay." },
+      { kind: "improved", text: "Chấm radio hiện ra như ô chọn trong bảng giá, không nảy; thanh bước trượt vào thay vì giãn ra." },
+    ],
+  },
+  {
     version: "6.42.0",
     date: "2026-10-24",
     title: "Giao diện phẳng hơn, segmented kiểu iOS, lịch sử tìm kiếm",

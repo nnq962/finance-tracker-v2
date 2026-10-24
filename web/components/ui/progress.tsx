@@ -34,7 +34,7 @@ function Progress({
     >
       <ProgressPrimitive.Indicator
         data-slot="progress-indicator"
-        className={cn("size-full flex-1 rounded-full transition-transform duration-500 ease-out", indicatorTones[tone])}
+        className={cn("size-full flex-1 rounded-full transition-transform duration-500 ease-out motion-reduce:duration-150", indicatorTones[tone])}
         style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
       />
     </ProgressPrimitive.Root>

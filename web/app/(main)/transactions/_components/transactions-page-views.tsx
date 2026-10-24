@@ -70,7 +70,7 @@ export function TransactionsPageViews({
           onClick={() => chosen !== value && change(value)}
           className={cn(
             // The page title's type; 44 tall to the touch, as the round buttons beside it.
-            "pressable relative min-w-0 truncate text-2xl leading-8 font-semibold tracking-tight outline-none transition-colors duration-150 after:absolute after:inset-x-0 after:-inset-y-1.5 focus-visible:rounded-md focus-visible:ring-3 focus-visible:ring-ring/30",
+            "pressable relative min-w-0 truncate text-2xl leading-8 font-semibold tracking-tight outline-none transition-[scale,color] duration-150 after:absolute after:inset-x-0 after:-inset-y-1.5 focus-visible:rounded-md focus-visible:ring-3 focus-visible:ring-ring/30",
             chosen === value ? "text-foreground" : "text-muted-foreground/70",
           )}
         >

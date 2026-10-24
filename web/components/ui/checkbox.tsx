@@ -28,7 +28,7 @@ function Checkbox({
     >
       <CheckboxPrimitive.Indicator
         data-slot="checkbox-indicator"
-        className="grid place-items-center data-checked:animate-in data-checked:zoom-in-50 data-checked:duration-200"
+        className="grid place-items-center data-checked:animate-in data-checked:zoom-in-50 data-checked:duration-200 motion-reduce:animate-none"
       >
         <CheckIcon strokeWidth={3} className="size-3.5" />
       </CheckboxPrimitive.Indicator>

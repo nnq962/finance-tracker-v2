@@ -65,7 +65,7 @@ export function FlowTiles<T extends string>({
             className={cn(
               "@container flex min-w-0 flex-col gap-3 p-4 text-left",
               onValueChange &&
-                "transition-[background-color,opacity] duration-200 outline-none focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:ring-inset active:bg-muted motion-reduce:transition-none",
+                "transition-[background-color,opacity] duration-200 outline-none focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:ring-inset active:bg-muted motion-reduce:duration-150 motion-reduce:ease-out",
               selected && "bg-muted",
               value != null && !selected && "opacity-45",
             )}

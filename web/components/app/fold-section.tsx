@@ -45,7 +45,7 @@ export function FoldSection({
           {open ? "Thu gọn" : showLabel}
           <ChevronDownIcon
             aria-hidden="true"
-            className={`size-4 transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
+            className={`size-4 transition-transform duration-200 motion-reduce:duration-150 motion-reduce:ease-out ${open ? "rotate-180" : ""}`}
           />
         </button>
       </div>

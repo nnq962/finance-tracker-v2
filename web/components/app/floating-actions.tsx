@@ -56,7 +56,7 @@ export function FloatingActions({
         inert={concealed}
         className={cn(
           // A soft shadow lifts the buttons off the content scrolling below.
-          "pointer-events-none fixed right-4 bottom-[calc(var(--tab-bar-space)+0.75rem)] z-30 flex flex-col items-end gap-3 drop-shadow-lg transition-[translate,opacity] duration-300 ease-out motion-reduce:transition-none md:hidden *:pointer-events-auto",
+          "pointer-events-none fixed right-4 bottom-[calc(var(--tab-bar-space)+0.75rem)] z-30 flex flex-col items-end gap-3 drop-shadow-lg transition-[translate,opacity] duration-300 ease-out motion-reduce:duration-150 motion-reduce:ease-out md:hidden *:pointer-events-auto",
           concealed && "translate-y-[calc(var(--tab-bar-space)+5rem)] opacity-0",
           className,
         )}

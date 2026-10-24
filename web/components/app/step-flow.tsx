@@ -111,7 +111,7 @@ export function StepFlow({
         <div
           inert={step === 0}
           className={cn(
-            "min-w-0 shrink-0 overflow-hidden transition-[flex-basis,margin,opacity] duration-300 ease-out motion-reduce:transition-none",
+            "min-w-0 shrink-0 overflow-hidden transition-[flex-basis,margin,opacity] duration-300 ease-out motion-reduce:duration-150 motion-reduce:ease-out",
             step > 0 ? "mr-2 basis-11" : "mr-0 basis-0 opacity-0",
           )}
         >
@@ -131,7 +131,7 @@ export function StepFlow({
                 key={text}
                 aria-hidden={!shown}
                 className={cn(
-                  "col-start-1 row-start-1 transition-opacity ease-out motion-reduce:transition-none",
+                  "col-start-1 row-start-1 transition-opacity ease-out motion-reduce:duration-150 motion-reduce:ease-out",
                   shown ? "delay-100 duration-150" : "opacity-0 duration-100",
                 )}
               >
