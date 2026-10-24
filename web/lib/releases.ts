@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.44.1",
+    date: "2026-10-24",
+    title: "Nút chọn ở giao diện tối màu đen",
+    changes: [
+      { kind: "improved", text: "Giao diện tối: ô đang chọn của các nút chuyển (Chi tiêu | Vay nợ, Chi tiêu | Thu nhập…) màu đen, chữ trắng." },
+    ],
+  },
+  {
     version: "6.44.0",
     date: "2026-10-24",
     title: "Đầu trang mới, thêm tài khoản bằng nút +, nền tối đen",

@@ -321,7 +321,8 @@
 
 .dark {
   --segment: rgb(118 118 128 / 0.24);
-  --segment-thumb: oklch(0.47 0.006 286);
+  /* The chosen segment black in the dark (2026-10-24, the user's ask; iOS's #636366 before), white ink on it. */
+  --segment-thumb: oklch(0 0 0);
   --segment-thumb-shadow: none;
   /* A shadow is lost on the dark page: the card's lighter grey lifts it alone, no edge (2026-10-24; a 1px light edge 2026-10-23). */
   --card-shadow: none;
