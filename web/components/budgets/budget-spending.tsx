@@ -71,10 +71,10 @@ export function BudgetSpendingList({
         {data.transactions.length} giao dịch · <span className="font-medium text-foreground tabular-nums">{formatCurrency(total)}</span>
       </p>
       {[...days].map(([day, transactions]) => (
-        // Flat, as the transactions page's days (2026-10-21).
+        // Each day a card of rows, as every list in a sheet (2026-10-25; flat as the page's days before).
         <SettingsGroup
-          flat
           key={day}
+          plainCaption
           title={<time dateTime={day}>{formatDayLabel(day, today)}</time>}
           action={
             <span className="text-xs font-medium text-muted-foreground tabular-nums">

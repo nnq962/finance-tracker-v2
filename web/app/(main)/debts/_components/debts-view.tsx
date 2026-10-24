@@ -235,7 +235,8 @@ export function DebtsView({
         open={settledOpen}
         onOpenChange={setSettledOpen}
       >
-        <SettingsGroup flat title={`${settledDebts.length} khoản`}>
+        {/* A card of rows, as every list in a sheet (2026-10-25; flat on the sheet before). */}
+        <SettingsGroup title={`${settledDebts.length} khoản`}>
           {renderRows(settledDebts)}
         </SettingsGroup>
         {/* A debt opened from the list is pushed into this sheet, ‹ back to it. */}

@@ -274,7 +274,8 @@ export function CashFlowCalendar({
               {dayItems && dayItems.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Chưa có giao dịch</p>
               ) : dayItems ? (
-                <SettingsGroup flat title={`${dayItems.length} giao dịch`}>
+                // A card of rows, as every list in a sheet (2026-10-25; flat on the sheet before).
+                <SettingsGroup title={`${dayItems.length} giao dịch`}>
                   {dayItems.map((transaction) => (
                     <TransactionItem
                       key={transaction.id}
@@ -287,7 +288,7 @@ export function CashFlowCalendar({
               ) : (
                 <div className="space-y-2" role="status" aria-label="Đang tải giao dịch">
                   <Skeleton className="h-3 w-24" />
-                  <SettingsGroupSkeleton flat caption={false} rows={2} description trailing="amount" />
+                  <SettingsGroupSkeleton caption={false} rows={2} description trailing="amount" />
                 </div>
               )}
             </>
