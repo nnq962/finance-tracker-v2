@@ -43,7 +43,6 @@ function DayBars({
   const days = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate()
   const keys = Array.from({ length: days }, (_, index) => `${month}-${String(index + 1).padStart(2, "0")}`)
   const most = Math.max(1, ...keys.map((key) => dayTotals[key]?.expense ?? 0))
-  const anyRows = keys.some((key) => dayTotals[key])
 
   return (
     <div>
@@ -77,7 +76,6 @@ function DayBars({
       </div>
       <div className="mt-1.5 flex justify-between text-[11px] font-medium whitespace-nowrap text-muted-foreground tabular-nums">
         <span>1/{monthNumber}</span>
-        {anyRows ? <span>Chạm cột để đến ngày đó</span> : null}
         <span>
           {days}/{monthNumber}
         </span>
@@ -162,12 +160,9 @@ export function MonthSummary({
       </span>
       <span aria-hidden="true" className="bg-separator" />
       <span className="@container flex min-w-0 flex-col">
-        <span className="flex items-center gap-1.5">
-          <span aria-hidden="true" className="size-[7px] rounded-full bg-income" />
-          <CardLabel as="span">
-            Đã thu · {totals.incomeCount}
-          </CardLabel>
-        </span>
+        <CardLabel as="span">
+          Đã thu · {totals.incomeCount}
+        </CardLabel>
         <span className="mt-1 flex min-w-0 text-income">
           <Money amount={totals.income} sign="never" size="lg" fit />
         </span>

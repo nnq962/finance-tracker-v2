@@ -133,10 +133,14 @@ function DrawerContent({
   if (variant === "page") {
     return (
       <DrawerPortal data-slot="drawer-portal">
-        {/* The whole screen, status bar band too (2026-10-21): page and sheet
-            are both white now, so the band once left undimmed to keep the
-            bar's colour (Safari 26) is gone. */}
-        <DrawerOverlay className="md:before:bg-black/20" />
+        {/* Kept off the screen's top edge on phones (back 2026-10-24; dropped
+            2026-10-21). Safari 26 takes the status bar's colour once, at some
+            moment while the sheet slides in, from a fixed element at the top:
+            when that was this see-through layer it showed the dimmed page
+            through it, and the bar stayed darker than the sheet most times.
+            Off the edge, it meets only the sheet or the page, both the same
+            grey. The thin band left undimmed is covered once the sheet is up. */}
+        <DrawerOverlay className="max-sm:top-[max(env(safe-area-inset-top,0px),0.5rem)] md:before:bg-black/20" />
         <DrawerPrimitive.Content
           data-slot="drawer-content"
           data-variant="page"

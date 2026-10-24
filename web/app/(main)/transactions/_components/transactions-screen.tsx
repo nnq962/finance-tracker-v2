@@ -31,6 +31,8 @@ import { AddTransactionButton } from "./add-transaction-button"
 import { AddTransactionSheet } from "./add-transaction/add-transaction-sheet"
 import { transactionDeleteKey } from "./delete-transaction"
 import { TransactionHistoryProvider } from "./add-transaction/transaction-history-context"
+import { SearchHistory } from "./search-history"
+import { useSearchHistory } from "../_lib/search-history"
 import { MonthSummary } from "./month-summary"
 import { getSheetFilterChips, TransactionActiveFilters } from "./transaction-active-filters"
 import {
@@ -147,6 +149,8 @@ export function TransactionsScreen({
   // The phone's search screen, open from a tap on the field until Huỷ.
   const [searching, setSearching] = React.useState(false)
   const searchRef = React.useRef<{ open: () => void }>(null)
+  // The searches done here, offered on the search screen before anything is typed.
+  const searchHistory = useSearchHistory()
   // The day a bar of the card's chart was tapped for: the list scrolls to it and its badge is inked.
   const [focusDay, setFocusDay] = React.useState<string | null>(null)
   const wide = React.useSyncExternalStore(subscribeWide, () => window.matchMedia(wideQuery).matches, () => false)
@@ -215,17 +219,6 @@ export function TransactionsScreen({
     return Object.fromEntries([...byDay].map(([key, rows]) => [key, getTransactionSummary(rows)]))
   }, [summaryTransactions])
 
-  // How many rows each kind chip would show, under every other filter (2026-10-24, "Chi 12").
-  const kindCounts = React.useMemo(() => {
-    const source = allMonths ? withoutDeleted(everyTransaction ?? [], deletedKeys) : monthTransactions
-    return Object.fromEntries(
-      (["all", "income", "expense", "transfer", "debt"] as const).map((kind) => [
-        kind,
-        filterTransactions(source, kind, listSearchFilters).length,
-      ]),
-    ) as Record<TransactionFilter, number>
-  }, [allMonths, deletedKeys, everyTransaction, listSearchFilters, monthTransactions])
-
   const changeKind = (kind: TransactionFilter) => {
     setFilter(kind)
     const narrowed = filtersForKind(kind, searchFilters, categoryGroups)
@@ -263,6 +256,8 @@ export function TransactionsScreen({
     document.querySelector("[data-main-scroll-viewport]")?.scrollTo({ top: 0 })
   }
   const closeSearch = () => {
+    // Huỷ ends a search: what was looked for is kept to look for again.
+    searchHistory.add(searchFilters.query)
     setSearching(false)
     setAllMonths(false)
     changeQuery("")
@@ -393,14 +388,15 @@ export function TransactionsScreen({
               onFocus={openSearch}
               onCancel={closeSearch}
               cancelable={searching}
+              onSubmitQuery={searchHistory.add}
             />
           </Collapse>
           {/* From lg up the filter panel beside the list holds these. */}
+          {/* The search screen keeps to the search: no kinds, only what was looked for before (2026-10-24). */}
           <TransactionKindChips
-            className="lg:hidden"
+            className={cn("lg:hidden", searching && "hidden")}
             filter={filter}
             onFilterChange={changeKind}
-            counts={kindCounts}
           />
           <TransactionActiveFilters
             className="lg:hidden"
@@ -410,21 +406,31 @@ export function TransactionsScreen({
             onSearchFiltersChange={setSearchFilters}
           />
         </div>
-        <div className={loadingClassName}>
-          <TransactionsView
-            accounts={accounts}
-            categoryGroups={categoryGroups}
-            todayDateKey={todayDateKey}
-            transactions={visibleTransactions}
-            dayTotals={allMonths ? undefined : dayTotals}
-            isFiltering={isFiltering}
-            onClearFilters={clearFilters}
-            search={search}
-            pastMonthLabel={selectedMonth === thisMonth ? undefined : monthLabelOf(selectedMonth, thisMonth)}
-            focusDay={focusDay}
-            onAdd={openAdd}
+        {/* Keyed to the list's own (deferred) query, so the whole month never flashes between the history and the results. */}
+        {searching && !listSearchFilters.query.trim() ? (
+          <SearchHistory
+            items={searchHistory.items}
+            onPick={changeQuery}
+            onRemove={searchHistory.remove}
+            onClear={searchHistory.clear}
           />
-        </div>
+        ) : (
+          <div className={loadingClassName}>
+            <TransactionsView
+              accounts={accounts}
+              categoryGroups={categoryGroups}
+              todayDateKey={todayDateKey}
+              transactions={visibleTransactions}
+              dayTotals={allMonths ? undefined : dayTotals}
+              isFiltering={isFiltering}
+              onClearFilters={clearFilters}
+              search={search}
+              pastMonthLabel={selectedMonth === thisMonth ? undefined : monthLabelOf(selectedMonth, thisMonth)}
+              focusDay={focusDay}
+              onAdd={openAdd}
+            />
+          </div>
+        )}
       </TransactionsLayout>
 
       <FloatingActions concealed={searching} hideOnScroll>
@@ -443,7 +449,11 @@ export function TransactionsScreen({
         searchFilters={searchFilters}
         transactionCount={visibleTransactions.length}
         onSearchFiltersChange={setSearchFilters}
-        onReset={resetSheetFilters}
+        onFilterChange={changeKind}
+        onReset={() => {
+          setFilter("all")
+          resetSheetFilters()
+        }}
       />
       {draft && !draft.recorded ? (
         <AddTransactionSheet

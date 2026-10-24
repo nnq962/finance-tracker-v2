@@ -90,7 +90,8 @@ export function JarSheet({
       footer={
         done ? null : (
           <div className="flex items-center gap-2">
-            <Button variant="secondary" className="flex-1" disabled={jar.balance <= 0} onClick={() => onMove("out")}>
+            {/* Raised, not the grey: rows scrolling under the footer showed through the grey (2026-10-24). */}
+            <Button variant="elevated" className="flex-1" disabled={jar.balance <= 0} onClick={() => onMove("out")}>
               <ArrowUpRightIcon data-icon="inline-start" /> Rút ra
             </Button>
             {full ? (
@@ -131,8 +132,9 @@ export function JarSheet({
         </SettingsGroup>
       )}
 
+      {/* The moves as a card of rows, as the account sheet's recent transactions (2026-10-24). */}
       {transactions.length > 0 ? (
-        <SettingsGroup flat title="Lịch sử">
+        <SettingsGroup title="Lịch sử">
           {transactions.map((transaction) => {
             const move = describe(transaction, jar.id)
             return (

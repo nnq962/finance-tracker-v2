@@ -45,14 +45,12 @@ const tabsListVariants = cva(
   {
     variants: {
       variant: {
-        // A segmented control: the ink pill slides on a white rail (grey on a
-        // white card), its text white, as the chosen chip (2026-10-19; a white
-        // thumb on a grey track before).
-        default: "rounded-full bg-segment p-1 group-data-horizontal/tabs:h-11",
-        // iOS's own segmented control, lighter than the ink pill where it sits
-        // inside a card over data (Tổng quan's categories, 2026-10-20): a white
-        // thumb with a soft shadow on the grey rail, the chosen text in ink.
-        segmented: "rounded-full bg-segment p-1 group-data-horizontal/tabs:h-11",
+        // A segmented control after Apple's iOS 26 kit (2026-10-24): 36 tall,
+        // 2 in, 4 between segments, the rail Fills/Tertiary, the chosen
+        // segment's Selected Fill sliding under ink text. Default and
+        // segmented are one look now; the ink pill (2026-10-19) is gone.
+        default: "gap-1 rounded-full bg-segment p-0.5 group-data-horizontal/tabs:h-9",
+        segmented: "gap-1 rounded-full bg-segment p-0.5 group-data-horizontal/tabs:h-9",
         // Tabs over content: a short bar slides under the chosen one.
         line: "rounded-none border-b border-separator bg-transparent group-data-horizontal/tabs:h-11",
       },
@@ -169,7 +167,7 @@ function TabsList({
           ref={indicator}
           aria-hidden="true"
           data-slot="tabs-indicator"
-          className="absolute top-1 bottom-1 left-0 rounded-full bg-primary transition-[translate,width] duration-250 ease-[cubic-bezier(0.2,0,0,1)] will-change-[translate] group-data-[variant=line]/tabs-list:top-auto group-data-[variant=line]/tabs-list:-bottom-px group-data-[variant=line]/tabs-list:h-0.5 group-data-[variant=line]/tabs-list:bg-foreground group-data-[variant=segmented]/tabs-list:bg-control group-data-[variant=segmented]/tabs-list:shadow-control motion-reduce:transition-none"
+          className="absolute top-0.5 bottom-0.5 left-0 rounded-full bg-segment-thumb shadow-segment-thumb transition-[translate,width] duration-250 ease-[cubic-bezier(0.2,0,0,1)] will-change-[translate] group-data-[variant=line]/tabs-list:top-auto group-data-[variant=line]/tabs-list:-bottom-px group-data-[variant=line]/tabs-list:h-0.5 group-data-[variant=line]/tabs-list:bg-foreground group-data-[variant=line]/tabs-list:shadow-none motion-reduce:transition-none"
           style={{ width: box.width, translate: `${box.x}px 0` }}
         />
       ) : null}
@@ -189,13 +187,11 @@ function TabsTrigger({
         "relative inline-flex h-full flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-semibold whitespace-nowrap text-foreground/60 transition-colors duration-150 ease-out outline-none group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         // One weight chosen or not (2026-10-21): bolding the chosen label moved the words while the pill slid.
         "data-active:text-foreground group-data-[variant=line]/tabs-list:rounded-none",
-        // Segmented: 36 tall in the 44 rail, its touch area stretched over the rail's 4 above and below (2026-10-21).
-        "group-data-[variant=segmented]/tabs-list:after:absolute group-data-[variant=segmented]/tabs-list:after:inset-x-0 group-data-[variant=segmented]/tabs-list:after:-inset-y-1",
-        // On the ink pill the chosen segment's text is white.
-        "[[data-slot=tabs-list][data-variant=default]>&]:data-active:text-primary-foreground",
+        // Segmented (both looks): 32 tall in the 36 rail, its touch area stretched to 44 (2026-10-24).
+        "group-data-[variant=default]/tabs-list:after:absolute group-data-[variant=default]/tabs-list:after:inset-x-0 group-data-[variant=default]/tabs-list:after:-inset-y-1.5",
+        "group-data-[variant=segmented]/tabs-list:after:absolute group-data-[variant=segmented]/tabs-list:after:inset-x-0 group-data-[variant=segmented]/tabs-list:after:-inset-y-1.5",
         // Before the indicator is measured (first paint), the chosen trigger fills itself.
-        "[[data-slot=tabs-list][data-variant=default]:not([data-ready])>&]:data-active:bg-primary",
-        "[[data-slot=tabs-list][data-variant=segmented]:not([data-ready])>&]:data-active:bg-card",
+        "[[data-slot=tabs-list]:not([data-variant=line]):not([data-ready])>&]:data-active:bg-segment-thumb",
         className
       )}
       {...props}

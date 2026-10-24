@@ -16,15 +16,14 @@ const toggleVariants = cva(
         // A filled grey chip; the chosen one turns dark.
         default: "bg-field text-foreground",
         // On the grey page or a grey panel (Giao dịch's kinds, the
-        // assistant's drafts): flat in the card's colour as the elevated
-        // button (2026-10-24; lifted by a shadow before, white with a border
-        // first).
-        elevated: "bg-card hover:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)]",
-        // Inside a ToggleGroup of the same variant: the chosen option white on
-        // the grey rail, as Tabs variant="segmented" (pill, 44 tall, the same
-        // thumb shadow; 2026-10-21).
+        // assistant's drafts): raised as the elevated button (2026-10-24;
+        // lifted by the control shadow before, white with a border first).
+        elevated: "bg-raised shadow-raised hover:bg-[color-mix(in_oklab,var(--raised),var(--foreground)_4%)]",
+        // Inside a ToggleGroup of the same variant: the chosen option as Tabs'
+        // segmented, after Apple's iOS 26 kit (2026-10-24): 32 tall in the 36
+        // rail, the Selected Fill and its shadow.
         segmented:
-          "h-9! flex-1 rounded-full bg-transparent text-muted-foreground hover:bg-transparent data-[state=on]:bg-control data-[state=on]:text-foreground data-[state=on]:shadow-control data-[state=on]:hover:bg-control data-[state=on]:hover:text-foreground",
+          "h-8! flex-1 rounded-full bg-transparent text-muted-foreground hover:bg-transparent data-[state=on]:bg-segment-thumb data-[state=on]:text-foreground data-[state=on]:shadow-segment-thumb data-[state=on]:hover:bg-segment-thumb data-[state=on]:hover:text-foreground",
       },
       size: {
         // 40 and 36 tall, their touch area stretched to 44 with an invisible margin (2026-10-21).

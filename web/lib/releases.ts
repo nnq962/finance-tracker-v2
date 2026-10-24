@@ -32,6 +32,19 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.42.0",
+    date: "2026-10-24",
+    title: "Giao diện phẳng hơn, segmented kiểu iOS, lịch sử tìm kiếm",
+    changes: [
+      { kind: "improved", text: "Thẻ phẳng hơn, bóng rất nhạt; nút trên đầu trang, chip và ô tìm kiếm trắng hẳn để dễ thấy chỗ bấm. Theme tối không còn viền sáng quanh thẻ." },
+      { kind: "improved", text: "Segmented (Chi tiền | Thu tiền | Chuyển khoản…) theo kiểu iOS: rãnh xám nhạt, ô đang chọn trắng; không còn ô đen đảo màu ở theme tối." },
+      { kind: "improved", text: "Giao dịch: loại giao dịch thành segmented, có cả trong Bộ lọc; bỏ chấm xanh và dòng gợi ý ở thẻ tháng." },
+      { kind: "new", text: "Màn tìm kiếm giao dịch hiện các lần tìm gần đây; chạm để tìm lại, vuốt để xoá." },
+      { kind: "improved", text: "Sheet tài khoản và hũ: giao dịch gần đây và lịch sử nằm trong thẻ; nút Chuyển tiền, Rút ra và các nút phụ ở chân sheet không còn để lộ nội dung phía sau; nút Xoá đỏ rõ hơn." },
+      { kind: "fixed", text: "Thanh trạng thái lại cùng màu sheet khi mở sheet trên iPhone; form hũ báo thiếu tên ngay tại ô Tên; số Cần trả ở Vay nợ sát lề phải trên iPhone." },
+    ],
+  },
+  {
     version: "6.41.0",
     date: "2026-10-24",
     title: "Giao dịch và Vay nợ làm lại",

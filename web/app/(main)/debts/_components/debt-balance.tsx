@@ -113,14 +113,16 @@ export function DebtBalance({
               <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-income" />
               <span className="truncate">Cần thu · {lentCount} khoản</span>
             </span>
-            <Money amount={lent} size="md" fit tone={lent > 0 ? "income" : "default"} />
+            {/* Not fitted (2026-10-24): at 16 the usual sums fit half the card, and Safari left a fitted
+                figure short of the right edge; a very large one wraps instead. */}
+            <Money amount={lent} size="md" tone={lent > 0 ? "income" : "default"} />
           </div>
           <div className="@container flex min-w-0 flex-col items-end gap-0.5 text-right">
             <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
               <span className="truncate">Cần trả · {borrowedCount} khoản</span>
               <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-foreground" />
             </span>
-            <Money amount={borrowed} size="md" fit />
+            <Money amount={borrowed} size="md" />
           </div>
         </div>
       </CardContent>

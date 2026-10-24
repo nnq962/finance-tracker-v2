@@ -8,9 +8,10 @@ import { FormSection } from "@/components/app/form-section"
 import { PageSheet, PageSheetScreen } from "@/components/app/page-sheet"
 import { AccountLogo } from "@/components/account-logo"
 import { CurrencyInput } from "@/components/forms/currency-input"
-import { SettingsGroup, SettingsRow } from "@/components/settings-list"
+import { groupCaptionClassName, SettingsGroup, SettingsRow } from "@/components/settings-list"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import type { Account } from "@/lib/accounts/types"
 import type { CategoryGroup } from "@/lib/categories/types"
@@ -19,6 +20,7 @@ import { cn } from "@/lib/utils"
 
 import { amountPreset, amountPresets, amountSummary } from "../_lib/amount-presets"
 import type { TransactionFilter, TransactionSearchFilters } from "../_types/transaction"
+import { transactionKindOptions } from "./transaction-filter-fields"
 import { countSheetFilters } from "./transaction-search"
 
 type Screen = "filters" | "accounts" | "categories" | "amount"
@@ -40,9 +42,9 @@ function toggle(ids: string[], id: string) {
  * it is set to, and a row opens its own screen (‹ back) to pick from: the
  * accounts with their logos, the categories with their icons and colours, the
  * amount from a few ranges or typed. Every pick applies at once; the footer
- * clears them (Xoá lọc) or shows the list (Xem N giao dịch). The kind chips
- * above the list choose the kind, which hides the categories for transfers
- * and loans.
+ * clears them (Xoá lọc) or shows the list (Xem N giao dịch). The kind leads
+ * the first screen as a segmented control (2026-10-24), as the one above the
+ * list; transfers and loans hide the categories.
  */
 export function TransactionFilterSheet({
   open,
@@ -53,6 +55,7 @@ export function TransactionFilterSheet({
   searchFilters,
   transactionCount,
   onSearchFiltersChange,
+  onFilterChange,
   onReset,
 }: {
   open: boolean
@@ -64,6 +67,8 @@ export function TransactionFilterSheet({
   /** How many transactions the search and filters leave. */
   transactionCount: number
   onSearchFiltersChange: (filters: TransactionSearchFilters) => void
+  /** The kind, the same one the segmented control above the list chooses. */
+  onFilterChange: (filter: TransactionFilter) => void
   onReset: () => void
 }) {
   const [screen, setScreen] = React.useState<Screen>("filters")
@@ -90,7 +95,8 @@ export function TransactionFilterSheet({
   const [customOpen, setCustomOpen] = React.useState(false)
   const custom = customOpen || !preset
   const amountRangeReversed = minAmount !== null && maxAmount !== null && minAmount > maxAmount
-  const hasFilters = countSheetFilters(filter, searchFilters) > 0
+  // The kind counts here: Xoá lọc puts it back to Tất cả too.
+  const hasFilters = countSheetFilters(filter, searchFilters) > 0 || filter !== "all"
   const change = (next: Partial<TransactionSearchFilters>) => onSearchFiltersChange({ ...searchFilters, ...next })
 
   const titles: Record<Screen, string> = {
@@ -99,10 +105,10 @@ export function TransactionFilterSheet({
     categories: "Hạng mục",
     amount: "Số tiền",
   }
-  // "Bỏ chọn" on a pick list that has something picked.
+  // "Bỏ chọn" on a pick list that has something picked: in the screen's bar, as every header button, raised.
   const clearPicks = (clear: (() => void) | undefined) =>
     clear ? (
-      <Button type="button" variant="secondary" onClick={clear}>
+      <Button type="button" variant="elevated" onClick={clear}>
         Bỏ chọn
       </Button>
     ) : null
@@ -129,7 +135,7 @@ export function TransactionFilterSheet({
           hasFilters ? "mr-2 basis-1/3" : "mr-0 basis-0 opacity-0",
         )}
       >
-        <Button type="button" variant="secondary" className="w-full whitespace-nowrap"
+        <Button type="button" variant="elevated" className="w-full whitespace-nowrap"
           onClick={() => {
             onReset()
             // Cleared, the amount is "Bất kỳ" again, not a range being typed.
@@ -154,6 +160,18 @@ export function TransactionFilterSheet({
       footer={footer}
     >
       <div className="space-y-6">
+        <section className="flex flex-col gap-2">
+          <h2 className={cn("px-4", groupCaptionClassName)}>Loại giao dịch</h2>
+          <Tabs value={filter} onValueChange={(value) => onFilterChange(value as TransactionFilter)}>
+            <TabsList variant="segmented" className="w-full" aria-label="Loại giao dịch">
+              {transactionKindOptions.filter((item) => item.value !== "debt" || filter === "debt").map((item) => (
+                <TabsTrigger key={item.value} value={item.value} className="flex-auto px-2">
+                  {item.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </section>
         {/* Grey tiles, as the switch row below (2026-10-21): a filter is not a category, colour would say it is. */}
         <SettingsGroup>
           <SettingsRow

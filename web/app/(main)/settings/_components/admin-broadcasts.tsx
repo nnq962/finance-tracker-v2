@@ -551,7 +551,7 @@ function ComposeForm({
 
       <PageSheetFooter>
         <div className="flex items-center gap-2">
-          <Button type="button" variant="secondary" disabled={!ready || testing} onClick={() => void sendTest()}>
+          <Button type="button" variant="elevated" disabled={!ready || testing} onClick={() => void sendTest()}>
             {testing ? <Spinner /> : <SmartphoneIcon />}
             Gửi thử
           </Button>

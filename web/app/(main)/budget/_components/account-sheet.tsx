@@ -105,7 +105,8 @@ export function AccountSheet({
         footer={
           isLocked ? null : (
             <div className="flex items-center gap-2">
-              <Button variant="secondary" className="flex-1" onClick={() => startDraft("transfer")}>
+              {/* Raised, not the grey: the grey fill let the rows scrolling under the footer show through (2026-10-24). */}
+              <Button variant="elevated" className="flex-1" onClick={() => startDraft("transfer")}>
                 <ArrowLeftRightIcon data-icon="inline-start" /> Chuyển tiền
               </Button>
               <Button className="flex-1" onClick={() => startDraft("expense")}>
@@ -138,7 +139,8 @@ export function AccountSheet({
           </SettingsGroup>
         ) : null}
 
-        <SettingsGroup flat title="Giao dịch gần đây">
+        {/* A card of rows again (2026-10-24; flat on the sheet since 6.32.3). */}
+        <SettingsGroup title="Giao dịch gần đây">
           {transactions.length > 0 ? (
             // What the transactions' sheets compare with and learn quick picks from.
             <TransactionHistoryProvider transactions={transactions}>

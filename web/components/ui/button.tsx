@@ -31,17 +31,19 @@ const buttonVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-fill-3 active:bg-fill-3 aria-expanded:bg-fill-3",
         // A header's tools: the round ✕ ‹ ✎, the theme switch and the bell,
-        // the month pill. Every header the same. Flat in the card's colour
-        // (2026-10-24, on the grey page): a small piece of card, no edge and
-        // no shadow; was white lifted by a short shadow (2026-10-21).
+        // the month pill. Every header the same. Raised (2026-10-24): pure
+        // white with a faint fall, no edge; flat in the card's colour that
+        // morning, white lifted by a short shadow before (2026-10-21).
         elevated:
-          "bg-card text-foreground hover:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)] active:bg-[color-mix(in_oklab,var(--card),var(--foreground)_7%)] aria-expanded:bg-[color-mix(in_oklab,var(--card),var(--foreground)_7%)]",
+          "bg-raised text-foreground shadow-raised hover:bg-[color-mix(in_oklab,var(--raised),var(--foreground)_4%)] active:bg-[color-mix(in_oklab,var(--raised),var(--foreground)_7%)] aria-expanded:bg-[color-mix(in_oklab,var(--raised),var(--foreground)_7%)]",
         ghost:
           "hover:bg-muted hover:text-foreground active:bg-muted aria-expanded:bg-muted aria-expanded:text-foreground",
         // Soft red (2026-10-21): Xoá beside Lưu, where saving is the main
-        // action and deleting should not weigh as much.
+        // action and deleting should not weigh as much. Opaque (2026-10-24):
+        // the red mixed into the raised white, not laid thin over what is
+        // below, so rows scrolling under a sheet's footer do not show through.
         destructive:
-          "bg-destructive/10 text-destructive-text hover:bg-destructive/15 active:bg-destructive/16 focus-visible:border-destructive/40 focus-visible:ring-destructive/30 dark:bg-destructive/18 dark:hover:bg-destructive/24 dark:active:bg-destructive/24",
+          "bg-[color-mix(in_oklab,var(--destructive)_16%,var(--raised))] text-destructive-text hover:bg-[color-mix(in_oklab,var(--destructive)_21%,var(--raised))] active:bg-[color-mix(in_oklab,var(--destructive)_22%,var(--raised))] focus-visible:border-destructive/40 focus-visible:ring-destructive/30 dark:bg-[color-mix(in_oklab,var(--destructive)_26%,var(--raised))] dark:hover:bg-[color-mix(in_oklab,var(--destructive)_32%,var(--raised))] dark:active:bg-[color-mix(in_oklab,var(--destructive)_32%,var(--raised))]",
         // Solid red, white text: the last step of something that cannot be
         // undone (delete the account, wipe the data). The veil darkens it on
         // hover; the fill is its own token, deeper in the dark theme.

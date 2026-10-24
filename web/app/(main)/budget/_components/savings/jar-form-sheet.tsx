@@ -69,6 +69,8 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
   const [requestId] = React.useState(() => randomId())
   const [error, setError] = React.useState<string | null>(null)
   const [targetError, setTargetError] = React.useState<string | null>(null)
+  // At the name's row, as every form says what is missing where it is (2026-10-24; was the footer's line).
+  const [nameError, setNameError] = React.useState<string | null>(null)
   const [target, setTarget] = React.useState<number | null>(jar?.goal?.target ?? null)
   const [icon, setIcon] = React.useState<CategoryIconName>(() =>
     jar?.goal && isJarIconName(jar.goal.icon) ? jar.goal.icon : DEFAULT_JAR_ICON,
@@ -104,7 +106,7 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
       return
     }
     if (!name.trim()) {
-      setError("Nhập tên hũ.")
+      setNameError("Nhập tên hũ.")
       document.getElementById("jar-name")?.focus()
       return
     }
@@ -168,10 +170,21 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
             </p>
           </div>
           <SettingsGroup>
-            <SettingsFieldRow htmlFor="jar-name" title="Tên">
-              <InlineInput id="jar-name" name="name" value={name} onChange={(event) => setName(event.target.value)} maxLength={80} />
+            <SettingsFieldRow htmlFor="jar-name" title="Tên" invalid={Boolean(nameError)}>
+              <InlineInput
+                id="jar-name"
+                name="name"
+                value={name}
+                onChange={(event) => {
+                  setName(event.target.value)
+                  setNameError(null)
+                }}
+                maxLength={80}
+                aria-invalid={Boolean(nameError) || undefined}
+              />
             </SettingsFieldRow>
           </SettingsGroup>
+          {nameError ? <FieldError className="-mt-4 px-4">{nameError}</FieldError> : null}
         </div>
       ) : (
         <div className="flex flex-col gap-6 pb-4">
@@ -200,17 +213,22 @@ function JarForm({ jar, onDone, onDeleted }: { jar?: Account; onDone: () => void
           </div>
 
           <SettingsGroup>
-            <SettingsFieldRow htmlFor="jar-name" title="Tên">
+            <SettingsFieldRow htmlFor="jar-name" title="Tên" invalid={Boolean(nameError)}>
               <InlineInput
                 id="jar-name"
                 name="name"
                 value={name}
-                onChange={(event) => setName(event.target.value)}
+                onChange={(event) => {
+                  setName(event.target.value)
+                  setNameError(null)
+                }}
                 placeholder="Mua xe máy"
                 maxLength={80}
+                aria-invalid={Boolean(nameError) || undefined}
               />
             </SettingsFieldRow>
           </SettingsGroup>
+          {nameError ? <FieldError className="-mt-4 px-4">{nameError}</FieldError> : null}
 
           <section className="flex flex-col gap-2">
             <Caption>Biểu tượng</Caption>

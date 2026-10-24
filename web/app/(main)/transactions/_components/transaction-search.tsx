@@ -35,6 +35,7 @@ export function TransactionSearchBar({
   onFocus,
   autoFocus,
   openRef,
+  onSubmitQuery,
 }: {
   id: string
   query: string
@@ -47,6 +48,8 @@ export function TransactionSearchBar({
   autoFocus?: boolean
   /** Opens the search screen from elsewhere (the phone's search chip), taking the keyboard as a tap on the field does. */
   openRef?: React.Ref<{ open: () => void }>
+  /** The keyboard's Search key: the search is done, worth remembering. */
+  onSubmitQuery?: (query: string) => void
 }) {
   const inputRef = React.useRef<HTMLInputElement>(null)
   const proxyRef = React.useRef<HTMLInputElement>(null)
@@ -100,6 +103,7 @@ export function TransactionSearchBar({
       className="flex min-w-0 items-center"
       onSubmit={(event) => {
         event.preventDefault()
+        onSubmitQuery?.(query)
         if (window.matchMedia("(pointer: coarse)").matches) inputRef.current?.blur()
       }}
     >
