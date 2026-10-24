@@ -4,7 +4,6 @@ import * as React from "react"
 import { BookUserIcon, PlusIcon } from "lucide-react"
 
 import { Page, PageHeader } from "@/components/page"
-import { FloatingActions } from "@/components/app/floating-actions"
 import { Button } from "@/components/ui/button"
 import type { Account } from "@/lib/accounts/types"
 
@@ -137,10 +136,18 @@ export function DebtsDashboard({
             {addDebtSheet()}
           </>
         }
+        // Phones: the people, then adding on the right (2026-10-24: no floating + any more).
         accessory={
-          <Button type="button" variant="elevated" size="icon" aria-label={contactsLabel} onClick={() => setContactsOpen(true)}>
-            <BookUserIcon />
-          </Button>
+          <>
+            <Button type="button" variant="elevated" size="icon" aria-label={contactsLabel} onClick={() => setContactsOpen(true)}>
+              <BookUserIcon />
+            </Button>
+            {addDebtSheet(
+              <Button type="button" variant="elevated" size="icon" aria-label="Thêm khoản nợ">
+                <PlusIcon />
+              </Button>,
+            )}
+          </>
         }
       />
       <DebtsView
@@ -207,13 +214,6 @@ export function DebtsDashboard({
         onAddDebt={addDebt}
         onAddContact={addContact}
       />
-      <FloatingActions>
-        {addDebtSheet(
-          <Button type="button" size="fab" aria-label="Thêm khoản nợ">
-            <PlusIcon />
-          </Button>,
-        )}
-      </FloatingActions>
     </Page>
   )
 }

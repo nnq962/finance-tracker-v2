@@ -321,9 +321,10 @@
 
 .dark {
   --segment: rgb(118 118 128 / 0.24);
-  /* The chosen segment black in the dark (2026-10-24, the user's ask; iOS's #636366 before), white ink on it. */
-  --segment-thumb: oklch(0 0 0);
-  --segment-thumb-shadow: none;
+  /* The chosen segment a raised grey with a light hairline in the dark (2026-10-24, option B of
+     /zz-preview/segment, after a black one read as a hole in cards; iOS's #636366 before). */
+  --segment-thumb: oklch(0.345 0.004 286); /* #3a3a3c */
+  --segment-thumb-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.12);
   /* A shadow is lost on the dark page: the card's lighter grey lifts it alone, no edge (2026-10-24; a 1px light edge 2026-10-23). */
   --card-shadow: none;
   --card-shadow-hover: 0 12px 48px rgb(0 0 0 / 0.5);

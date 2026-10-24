@@ -44,7 +44,9 @@ const slide = {
 // The shade of a day by its spending, lightest to heaviest.
 const heatClassName = ["bg-foreground/[0.03]", "bg-foreground/[0.05]", "bg-foreground/[0.08]", "bg-foreground/[0.11]"]
 
-const amountClassName = "text-[11px] font-medium tabular-nums @lg:text-xs"
+// A day's amounts: a touch tight, so "−11,6tr" keeps inside a 39px day; 10 where the calendar is
+// under 280 wide (a 320 screen), whose days are 31 (2026-10-24).
+const amountClassName = "text-[11px] font-medium tracking-[-0.02em] tabular-nums @max-[17.5rem]:text-[10px] @lg:text-xs"
 
 /**
  * A day's amount, short: from a million up always with one decimal (17,6tr,
@@ -202,7 +204,9 @@ export function CashFlowCalendar({
                       ? heatClassName[Math.min(Math.ceil((totals.expense / maxExpense) * 4), 4) - 1]
                       : undefined
                   const cellClassName = cn(
-                    "flex min-w-0 flex-col items-center gap-0.5 rounded-2xl pt-1 @lg:pt-2",
+                    // 12, the design system's small tile (PickGrid): 18 on a 40-wide day made a pill
+                    // whose lower corners cut into the amounts (2026-10-24). 6 below them, off the edge.
+                    "flex min-w-0 flex-col items-center gap-0.5 rounded-[12px] pt-1 pb-1.5 @lg:pt-2",
                     key > today ? "min-h-11 @lg:min-h-14" : "min-h-14 @lg:min-h-20",
                     heat,
                   )

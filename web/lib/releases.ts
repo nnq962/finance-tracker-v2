@@ -32,6 +32,16 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.45.0",
+    date: "2026-10-24",
+    title: "Nút thêm lên đầu trang, lịch gọn hơn",
+    changes: [
+      { kind: "improved", text: "Chi tiêu và Vay nợ: nút + lên đầu trang, cạnh nút tìm và nút người liên hệ; bỏ nút tròn nổi ở góc dưới." },
+      { kind: "improved", text: "Lịch ở Tổng quan: ô ngày bo góc vừa phải, số tiền dài không còn tràn ra ngoài." },
+      { kind: "improved", text: "Giao diện tối: ô đang chọn của các nút chuyển là xám có viền mảnh, rõ cả trong thẻ." },
+    ],
+  },
+  {
     version: "6.44.1",
     date: "2026-10-24",
     title: "Nút chọn ở giao diện tối màu đen",

@@ -1,4 +1,3 @@
-import { FloatingActionsSkeleton } from "@/components/app/floating-actions"
 import { Page, PageHeaderSkeleton } from "@/components/page"
 import { SettingsGroupSkeleton } from "@/components/settings-list"
 import { Card, CardContent } from "@/components/ui/card"
@@ -63,7 +62,7 @@ export default function TransactionsLoading() {
       aria-busy="true"
     >
       <div aria-hidden="true" className="space-y-6 md:space-y-8">
-        <PageHeaderSkeleton bare lead title="Giao dịch" switchBelow tools={["round"]} />
+        <PageHeaderSkeleton bare lead title="Giao dịch" switchBelow tools={["round", "round"]} />
         <TransactionsLayout
           summary={<MonthSummarySkeleton />}
           filters={<FilterPanelSkeleton />}
@@ -99,7 +98,6 @@ export default function TransactionsLoading() {
             ))}
           </div>
         </TransactionsLayout>
-        <FloatingActionsSkeleton />
       </div>
 
       <span className="sr-only">Đang tải dữ liệu giao dịch...</span>

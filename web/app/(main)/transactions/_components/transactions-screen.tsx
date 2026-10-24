@@ -6,7 +6,6 @@ import { PlusIcon, SearchIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { Collapse } from "@/components/app/collapse"
-import { FloatingActions } from "@/components/app/floating-actions"
 import { BudgetProvider } from "@/components/budgets/budget-hint"
 import { PageHeader } from "@/components/page"
 import { Button } from "@/components/ui/button"
@@ -294,13 +293,19 @@ export function TransactionsScreen({
     document.querySelector(`[data-day="${dateKey}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" })
   }
   const openAdd = React.useCallback(() => setAddOpen(true), [])
-  // Phones' tool in the bar (2026-10-24): search as a round button; the filter sheet's chip leads
+  // Phones' tools in the bar (2026-10-24): search and add as round buttons; the filter sheet's chip leads
   // the kinds, the list it filters (the bar's middle holds Chi tiêu | Vay nợ). From lg up the
   // field and the filter panel sit beside the list instead.
   const headerTools = (
-    <Button type="button" variant="elevated" size="icon" aria-label="Tìm giao dịch" className="lg:hidden" onClick={() => searchRef.current?.open()}>
-      <SearchIcon />
-    </Button>
+    <>
+      <Button type="button" variant="elevated" size="icon" aria-label="Tìm giao dịch" className="lg:hidden" onClick={() => searchRef.current?.open()}>
+        <SearchIcon />
+      </Button>
+      {/* Adding beside search, on its right (2026-10-24, the user's ask; the floating + went); from md the labelled button. */}
+      <Button type="button" variant="elevated" size="icon" aria-label="Thêm giao dịch" className="md:hidden" onClick={() => setAddOpen(true)}>
+        <PlusIcon />
+      </Button>
+    </>
   )
 
   // While a month loads, the list shown stays, and dims only when the load is slow (300ms
@@ -421,11 +426,6 @@ export function TransactionsScreen({
         )}
       </TransactionsLayout>
 
-      <FloatingActions concealed={searching} hideOnScroll>
-        <Button type="button" size="fab" aria-label="Thêm giao dịch" onClick={() => setAddOpen(true)}>
-          <PlusIcon />
-        </Button>
-      </FloatingActions>
 
       <AddTransactionSheet accounts={accounts} categoryGroups={categoryGroups} open={addOpen} onOpenChange={setAddOpen} />
       <TransactionFilterSheet
