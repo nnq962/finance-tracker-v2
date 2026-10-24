@@ -285,6 +285,9 @@ export function MobileBottomNav() {
   const tabRefs = useRef<(HTMLAnchorElement | null)[]>([])
   const [bar, setBar] = useState({ width: 0, height: 0 })
   const [pill, setPill] = useState({ x: 0, width: 0, height: 0 })
+  // Slides only once measured and drawn there: the first measure takes over from the pill the
+  // page arrived with (below) in place, without a slide from the left edge.
+  const [pillSlides, setPillSlides] = useState(false)
   useLayoutEffect(() => {
     const element = barRef.current
     if (!element) return
@@ -306,6 +309,11 @@ export function MobileBottomNav() {
       })
     }
   }, [activeIndex, bar.width])
+  useEffect(() => {
+    if (!pill.width || pillSlides) return
+    const frame = requestAnimationFrame(() => setPillSlides(true))
+    return () => cancelAnimationFrame(frame)
+  }, [pill.width, pillSlides])
   const barOutline = bar.width ? smoothCapsule(bar.width, bar.height) : ""
   // The 1px white rim just outside the bar, as the glass edge catches the light.
   const barRim = bar.width ? smoothCapsule(bar.width + 1, bar.height + 1) : ""
@@ -353,21 +361,34 @@ export function MobileBottomNav() {
           </svg>
         ) : null}
         {/* The pill is glass on glass, as iOS 26 layers them: a tint with a blur of its own over the bar's, so the page shows through both. */}
-        {pill.width ? (
-          <div
-            aria-hidden="true"
-            className={cn(
-              "absolute top-1 left-0 bg-tab-pill backdrop-blur-[6px] transition-[transform,opacity] duration-350 ease-[cubic-bezier(0.22,0.61,0.36,1)] will-change-transform motion-reduce:duration-150",
-              activeIndex < 0 && "opacity-0",
-            )}
-            style={{
-              width: pill.width,
-              height: pill.height,
-              transform: `translate3d(${pill.x}px, 0, 0)`,
-              clipPath: `path("${smoothCapsule(pill.width, pill.height)}")`,
-            }}
-          />
-        ) : null}
+        {/* In the page's first HTML too (2026-10-24: drawn only once the script had measured the
+            tabs, it came up late on opening the app): until then it is placed by the slots'
+            arithmetic (the bar less its 6 each side, cut in equal slots, the pill 2 wider each
+            side) with plain round ends; the measure then takes over in place, in whole pixels
+            and with the continuous ends. */}
+        <div
+          aria-hidden="true"
+          className={cn(
+            "absolute top-1 left-0 bg-tab-pill backdrop-blur-[6px] will-change-transform",
+            pillSlides && "transition-[transform,opacity] duration-350 ease-[cubic-bezier(0.22,0.61,0.36,1)] motion-reduce:duration-150",
+            !pill.width && "rounded-full",
+            activeIndex < 0 && "opacity-0",
+          )}
+          style={
+            pill.width
+              ? {
+                  width: pill.width,
+                  height: pill.height,
+                  transform: `translate3d(${pill.x}px, 0, 0)`,
+                  clipPath: `path("${smoothCapsule(pill.width, pill.height)}")`,
+                }
+              : {
+                  width: `calc((100% - 12px) / ${slotCount} + ${PILL_EXTRA}px)`,
+                  height: PILL_HEIGHT,
+                  left: `calc(6px + ${Math.max(activeIndex, 0)} * (100% - 12px) / ${slotCount} - ${PILL_EXTRA / 2}px)`,
+                }
+          }
+        />
       {/* The slots inset from the bar by 6, so the first and last pill (the slot + 2 each side) land 4 from the ends. */}
       <ul
         style={{ gridTemplateColumns: `repeat(${slotCount}, minmax(0, 1fr))` } as CSSProperties}

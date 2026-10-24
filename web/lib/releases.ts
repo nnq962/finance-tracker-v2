@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.45.1",
+    date: "2026-10-24",
+    title: "Thanh tab hiện đúng ngay khi mở app",
+    changes: [
+      { kind: "fixed", text: "Mở app: ô đang chọn của thanh tab đã nằm sẵn ở trang đang mở, không còn hiện muộn sau khi trang tải xong." },
+    ],
+  },
+  {
     version: "6.45.0",
     date: "2026-10-24",
     title: "Nút thêm lên đầu trang, lịch gọn hơn",
