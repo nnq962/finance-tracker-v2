@@ -320,8 +320,10 @@ export function TransactionsScreen({
     </>
   )
 
-  // While a month loads, what is shown stays and dims.
-  const loadingClassName = cn("transition-opacity duration-200", isNavigating && "opacity-50")
+  // While a month loads, what is shown stays, and dims only when the load is slow (300ms
+  // on, 2026-10-24): a quick one dimmed for a blink and read as flicker; the figures'
+  // SoftSwap already shows the change.
+  const loadingClassName = cn("transition-opacity duration-200", isNavigating && "opacity-50 delay-300")
 
   return (
     <BudgetProvider overview={budgets}>

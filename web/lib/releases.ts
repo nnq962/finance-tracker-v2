@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.43.1",
+    date: "2026-10-24",
+    title: "Đổi tháng ở Giao dịch không còn nháy",
+    changes: [
+      { kind: "fixed", text: "Đổi tháng ở Giao dịch: thẻ và danh sách không còn xám đi chớp nhoáng; chỉ mờ khi tháng tải lâu." },
+      { kind: "improved", text: "Dòng hạn mức thu gọn mượt khi sang tháng trước và mở lại khi về tháng này, thẻ không còn đổi chiều cao đột ngột." },
+    ],
+  },
+  {
     version: "6.43.0",
     date: "2026-10-24",
     title: "Số đổi tháng mờ chéo, dấu chọn tự vẽ",
