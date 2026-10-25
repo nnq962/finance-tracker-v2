@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.46.1",
+    date: "2026-10-25",
+    title: "AI dự phòng chạy lại, nhãn gói viết hoa",
+    changes: [
+      { kind: "fixed", text: "Khi dịch vụ AI chính lỗi, ghi giao dịch bằng lời và hỏi đáp chuyển sang AI trên máy chủ chạy được (trước đó câu lệnh bị cắt ngắn)." },
+      { kind: "improved", text: "Nhãn gói FREE / PRO viết hoa trong Cài đặt." },
+    ],
+  },
+  {
     version: "6.46.0",
     date: "2026-10-25",
     title: "Tổng quan mới: ẩn số dư, so với tháng trước, giao dịch gần đây",

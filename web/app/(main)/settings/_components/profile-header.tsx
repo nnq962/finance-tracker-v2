@@ -51,8 +51,9 @@ export function ProfileHeader({
       </Avatar>
       <p className="mt-3.5 max-w-full text-[28px] leading-9 font-bold tracking-tight text-balance">{name}</p>
       {email ? <p className="mt-0.5 max-w-full text-[15px] leading-5 text-muted-foreground [overflow-wrap:anywhere]">{breakableEmail(email)}</p> : null}
+      {/* The plan in capitals, as the PRO on the header's avatar (2026-10-25). */}
       <Badge variant={isPro ? "ai" : "soft"} className="mt-3">
-        {planLabel}
+        {planLabel.toUpperCase()}
       </Badge>
     </section>
   )

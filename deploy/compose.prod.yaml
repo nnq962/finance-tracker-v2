@@ -105,14 +105,17 @@ services:
 
   # Local LLM for AI transaction entry. No published port: only services on
   # the compose network reach it, at http://ollama:11434. One model stays
-  # loaded on the GPU (about 5GB of VRAM with a 4k context).
+  # loaded on the GPU (about 5GB of VRAM with an 8k context). 8192 since
+  # 2026-10-25: the prompts for writing a transaction down and for a question
+  # run to about 4,400 tokens, so at 4096 they were cut and the fallback from
+  # Gemini to this model failed.
   ollama:
     image: ollama/ollama:0.35.0
     environment:
       OLLAMA_KEEP_ALIVE: "-1"
       OLLAMA_MAX_LOADED_MODELS: "1"
       OLLAMA_NUM_PARALLEL: "1"
-      OLLAMA_CONTEXT_LENGTH: "4096"
+      OLLAMA_CONTEXT_LENGTH: "8192"
       WARM_MODEL: ${OLLAMA_MODEL:-gemma4:e4b}
       # The CUDA driver compiles a kernel the first time each batch shape
       # comes up on this GPU, a stall of seconds on that request. Kept in the
