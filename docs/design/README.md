@@ -190,14 +190,7 @@ component ở đó là cả app đổi theo.
   lần lúc sheet đang trượt, nếu trúng lớp phủ thì thấy trang đã tối; cách mép, nó chỉ gặp sheet hoặc trang, cùng màu xám. Sheet bỏ `will-change` của vaul. Sheet ngắn và hộp thoại không tới mép trên nên thanh có thể đổi sang
   màu trang đã phủ tối sau khi lớp phủ hiện xong. Phần tử `fixed` mới chạm mép trên cũng đặt nền ở
   `::before`, trừ khi nó cố ý mang màu cho thanh.
-- **Toast (Sonner, `components/ui/sonner.tsx`):** thẻ trắng ở giữa phía trên (2026-10-17, thay đảo đen
-  của 2026-10-09): nền `card` ở theme sáng, xám nổi `secondary` (#2c2c2e) ở theme tối, nổi khỏi trang bằng
-  viền mảnh và bóng `shadow-toast` (chỉ đổ xuống, không chạm thanh trạng thái). Mọi loại cùng một cỡ, cỡ của đảo cũ (giữ lại
-  2026-10-17 sau một ngày thử cao 52): cao 64, rộng hết màn trừ 16 mỗi bên trên điện thoại, 400 trên màn rộng, bo 20. Trạng thái nằm trong ô 32 (bo 10) tô
-  nhạt màu ý nghĩa: thành công `income`, lỗi `expense`, cảnh báo `warning`, thông tin `transfer`, đang tải xám;
-  tiêu đề đậm tối đa hai dòng, hoặc một dòng trên một dòng mô tả xám, cắt bằng "…", nên toast không bao giờ
-  cao lên; nút Hoàn tác là nút `primary` cao 36 bo 12, cách mép phải 14 bằng khoảng cách tới mép trên và dưới. Khi xếp chồng, toast
-  phía sau chỉ lộ mép, không lộ chữ. Sonner vẫn lo hiệu ứng trượt, xếp chồng, vuốt để đóng, hẹn giờ. Toast
+- **Toast (Sonner, `components/ui/sonner.tsx`):** viên kiểu iOS ở giữa phía trên (2026-10-25, người dùng chọn từ mockup `/zz-preview/toast`; trước là thẻ trắng cao 64 chiếm hết bề ngang): rộng vừa đủ chữ, cao 48 (có dòng mô tả thì 56, bo 28), không rộng quá màn hình trừ 16 mỗi bên. Nền đặc ở cả hai theme: trắng có bóng mềm đổ xuống ở theme sáng, xám `lead` `#262626` có viền sáng 0,5px ở theme tối (trước bị trong suốt vì `bg-secondary` là `fill-2`). Bên trái là dấu tròn đặc 22 theo ý nghĩa (xanh lá ✓, đỏ ✕, cam "!" chữ mực, xanh dương "i"; đang tải là vòng xoay), tiêu đề 15 đậm 600, mô tả 13 xám; nút như Hoàn tác là viên xám `fill-2` cao 36. Chuyển động trong `globals.css` theo toast của transitions.dev, đổi hướng rơi từ trên xuống: xuống 16px, mờ dần, nhoè 2px, thu nhỏ từ .97; vào 350ms, ra 250ms, `cubic-bezier(0.22, 1, 0.36, 1)`; chỉ toast phía trước, toast xếp chồng và lúc vuốt giữ kiểu của Sonner; giảm chuyển động thì Sonner tắt hết. Sonner vẫn lo xếp chồng, vuốt để đóng, hẹn giờ. Bóng chỉ đổ xuống, không chạm thanh trạng thái. Toast
   luôn ở đầu màn hình, kể cả khi một `PageSheet` đang mở (che nút ✕ trong vài giây; bỏ luật hạ toast xuống dưới
   thanh sheet của 6.15.6); chạm vào toast không đóng sheet.
 - **Dialog, AlertDialog:** bo 20. Chỉ để xác nhận hoặc nhập rất ngắn; nút huỷ màu xám.
