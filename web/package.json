@@ -1,6 +1,6 @@
 {
   "name": "finance-tracker-v2",
-  "version": "6.47.0",
+  "version": "6.47.1",
   "private": true,
   "scripts": {
     "dev": "next dev",

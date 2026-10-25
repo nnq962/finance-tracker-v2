@@ -8,10 +8,10 @@ import { CheckIcon, Loader2Icon, XIcon } from "lucide-react"
 /**
  * Toasts as an iOS capsule at the top (2026-10-25, the user's pick of the
  * /zz-preview/toast mockup; a 64-high card across the screen before): as wide
- * as its words, centred, 48 high and rounded 24, so a capsule (56 with a line
- * under the title; a long title takes two lines, the corners then less
- * round), never wider than the screen less 16 a side; its words 20 in from
- * the left without a mark, 12 with one. Solid in both themes:
+ * as its words, centred, 48 high, a capsule at every height: a long title's
+ * two lines or a description's keep the round ends (rounded 24 left them less
+ * round, 2026-10-25), never wider than the screen less 16 a side; its words 20
+ * in from the left without a mark, 12 with one. Solid in both themes:
  * white with a soft fall in the light one, the lead card's grey #262626 with a
  * light hairline in the dark one (it was see-through there, on the fill-2 of
  * bg-secondary). A mark of its meaning on the left, a solid round one with a
@@ -55,7 +55,7 @@ const Toaster = ({ style, ...props }: ToasterProps) => {
           // As wide as its words and centred in Sonner's column (left and right 0, margins auto).
           // Stacked behind the front one, only its edge shows, not its words.
           toast:
-            "inset-x-0 mx-auto flex min-h-12 w-fit! max-w-full items-center gap-2.5 rounded-[24px] bg-raised py-1.5 pr-4 pl-5 font-sans text-card-foreground shadow-[0_0_0_0.5px_rgb(0_0_0/0.06),0_10px_28px_-10px_rgb(0_0_0/0.25)] has-[[data-icon]]:pl-3 has-[[data-description]]:min-h-14 has-[[data-description]]:py-2 has-[[data-action]]:pr-1.5 dark:bg-lead dark:shadow-[inset_0_0_0_0.5px_rgb(255_255_255/0.1),0_12px_28px_-10px_rgb(0_0_0/0.8)] [&>*]:transition-opacity [&>*]:duration-400 data-[expanded=false]:data-[front=false]:[&>*]:opacity-0",
+            "inset-x-0 mx-auto flex min-h-12 w-fit! max-w-full items-center gap-2.5 rounded-full bg-raised py-1.5 pr-4 pl-5 font-sans text-card-foreground shadow-[0_0_0_0.5px_rgb(0_0_0/0.06),0_10px_28px_-10px_rgb(0_0_0/0.25)] has-[[data-icon]]:pl-3 has-[[data-description]]:min-h-14 has-[[data-description]]:py-2 has-[[data-action]]:pr-1.5 dark:bg-lead dark:shadow-[inset_0_0_0_0.5px_rgb(255_255_255/0.1),0_12px_28px_-10px_rgb(0_0_0/0.8)] data-[expanded=false]:data-[front=false]:[&>*]:opacity-0",
           // Sonner's own box around the icon is 16 square, with margins; it
           // also wraps the loading spinner in a layer centred on the nearest
           // positioned box, which was the whole toast.
