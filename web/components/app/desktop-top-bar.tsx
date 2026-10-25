@@ -1,21 +1,18 @@
 "use client"
 
 /**
- * The desktop top bar (2026-10-25, replacing the sidebar; the user's pick A
- * of three, refined twice): the logo and the name on the left, the pages in
- * the middle on the app's segmented control (the chosen one on the raised
- * thumb, its glyph filled as on the phone's tab bar), Hỏi Timi, the bell and
- * the avatar on the right. 60 tall, its controls 36. Hỏi Timi is a small lime
- * circle that opens to its name on hover or focus; ⌘K (Ctrl K) opens it too.
- * The avatar opens the person's menu: who and the plan, Settings, the theme
- * (the theme switch left the bar). A page's own tools (the month, its
- * actions) are not here but in the page's first row (PageHeader `bare`).
+ * The desktop top bar (2026-10-25, replacing the sidebar), full width after
+ * Stripe and Vercel (the user's second pick, over the segmented control in
+ * a centred column): the logo and the name, then the pages as words; on the
+ * right Hỏi Timi (⌘K), the bell and the avatar.
+ * The avatar opens the person's menu: who and the plan, Settings, the theme.
+ * A page's own tools (the month, its actions) are not here but in the
+ * page's first row (PageHeader `bare`).
  */
 
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutGroup, motion, useReducedMotion } from "motion/react"
 import { CheckIcon, SettingsIcon, SparklesIcon } from "lucide-react"
 
 import { useOpenAssistant } from "@/components/ai-assistant/assistant"
@@ -33,15 +30,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { appNavigationItems, menuUrlFor } from "@/lib/app-navigation"
 import { getInitials } from "@/lib/debts/initials"
-import { desktopColumnClassName } from "@/lib/desktop-column"
 import { cn } from "@/lib/utils"
 import { themeOptions, useThemeChoice } from "@/app/(main)/settings/_components/theme-options"
 
-// The thumb's slide (2026-10-25: kept over a quicker spring with a highlight following the pointer, which read as busy).
-const thumbSpring = { type: "spring", duration: 0.35, bounce: 0.12 } as const
 
 function useActiveUrl() {
   const pathname = usePathname()
@@ -66,53 +59,79 @@ function Brand() {
   )
 }
 
-/** The pages on the segmented control: the chosen one on the raised thumb. */
+/**
+ * The pages as words beside the logo (2026-10-25, the full-width bar): the
+ * one shown in ink on a soft grey pill that slides from page to page, the
+ * others grey, darkening under a pointer. The pill is one element measured
+ * against the row and moved with a transition: a layout animation measured
+ * it against the page, so after a scroll it flew in from below the bar.
+ */
 function PageTabs() {
-  const active = useActiveUrl()
-  const reduced = useReducedMotion()
+  const current = useActiveUrl()
+  // The page tapped, until it is the one shown: the pill leaves at the tap, not once the page has loaded.
+  const [tapped, setTapped] = React.useState<{ url: string; from: string | null } | null>(null)
+  const active = tapped && tapped.from === current ? tapped.url : current
+  const navRef = React.useRef<HTMLElement>(null)
+  const [pill, setPill] = React.useState<{ left: number; width: number; ready: boolean } | null>(null)
+
+  React.useLayoutEffect(() => {
+    const nav = navRef.current
+    const link = nav?.querySelector<HTMLElement>("[aria-current=page]")
+    if (!nav || !link) {
+      setPill(null)
+      return
+    }
+    const place = () => setPill((current) => ({ left: link.offsetLeft, width: link.offsetWidth, ready: current !== null }))
+    place()
+    // The words can change width as the font loads.
+    const observer = new ResizeObserver(place)
+    observer.observe(link)
+    return () => observer.disconnect()
+  }, [active])
 
   return (
-    <LayoutGroup id="top-bar-tabs">
-      <nav
-        aria-label="Trang"
-        className="flex h-10 items-center rounded-full bg-fill-3 p-[3px] dark:bg-fill-2"
-      >
-        {appNavigationItems.map((item) => {
-          const on = item.url === active
-          const Glyph = item.tabIcon
-          return (
-            <Link
-              key={item.url}
-              href={item.url}
-              aria-current={on ? "page" : undefined}
-              className={cn(
-                "group/tab relative flex h-[34px] items-center justify-center gap-1.5 rounded-full pr-4 pl-3.5 text-sm font-semibold outline-none transition-colors duration-200 focus-visible:ring-3 focus-visible:ring-ring/30",
-                on ? "text-foreground" : "text-foreground/55 hover:text-foreground/85",
-              )}
-            >
-              {on ? (
-                <motion.span
-                  layoutId="thumb"
-                  transition={reduced ? { duration: 0 } : thumbSpring}
-                  className="absolute inset-0 rounded-full bg-segment-thumb shadow-segment-thumb"
-                />
-              ) : null}
-              {/* Pressed, the label and glyph give a little, as a key does. */}
-              <span className="relative flex items-center gap-1.5 transition-transform duration-150 ease-out group-active/tab:scale-[0.96] motion-reduce:transition-none">
-                <Glyph aria-hidden="true" weight={on ? "fill" : "regular"} className="size-[17px]" />
-                {item.title}
-              </span>
-            </Link>
-          )
-        })}
-      </nav>
-    </LayoutGroup>
+    <nav ref={navRef} aria-label="Trang" className="relative flex items-center gap-1">
+      {pill ? (
+        <span
+          aria-hidden="true"
+          className={cn(
+            "absolute top-0 left-0 h-9 rounded-[10px] bg-fill-2",
+            pill.ready && "transition-[translate,width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+          )}
+          style={{ translate: `${pill.left}px 0`, width: pill.width }}
+        />
+      ) : null}
+      {appNavigationItems.map((item) => {
+        const on = item.url === active
+        return (
+          <Link
+            key={item.url}
+            href={item.url}
+            aria-current={on ? "page" : undefined}
+            onClick={(event) => {
+              // Opened in another tab or window, this page stays: so does the pill.
+              if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
+              setTapped({ url: item.url, from: current })
+            }}
+            className={cn(
+              "group/tab relative flex h-9 items-center rounded-[10px] px-3.5 text-[15px] font-medium outline-none transition-colors duration-150 focus-visible:ring-3 focus-visible:ring-ring/30",
+              on ? "text-foreground" : "text-muted-foreground hover:bg-fill-1 hover:text-foreground",
+            )}
+          >
+            <span className="relative transition-transform duration-150 ease-out group-active/tab:scale-[0.96] motion-reduce:transition-none">
+              {item.title}
+            </span>
+          </Link>
+        )
+      })}
+    </nav>
   )
 }
 
 /**
- * Hỏi Timi: a 36 lime circle with the sparkle; on hover or focus its name
- * slides out of it and the sparkle turns. ⌘K (Ctrl K) opens it too.
+ * Hỏi Timi: a pill button, the sparkle on its lime dot, the name and ⌘K
+ * (Ctrl K), which opens the assistant from anywhere. A button, not a field
+ * (2026-10-25: drawn as a search field it read as somewhere to type).
  */
 function AskTimi() {
   const open = useOpenAssistant()
@@ -128,36 +147,18 @@ function AskTimi() {
   }, [open])
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          onClick={open}
-          aria-label="Hỏi Timi"
-          aria-keyshortcuts="Meta+K Control+K"
-          className="group/ai flex h-9 items-center rounded-full bg-ai px-2.5 text-ai-foreground shadow-[0_2px_8px_-2px_color-mix(in_oklab,var(--ai)_70%,transparent)] outline-none transition-[padding,box-shadow,scale] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:pr-3.5 hover:shadow-[0_4px_14px_-3px_color-mix(in_oklab,var(--ai)_85%,transparent)] focus-visible:pr-3.5 focus-visible:ring-3 focus-visible:ring-ring/30 active:scale-[0.96] motion-reduce:transition-none"
-        >
-          <SparklesIcon
-            aria-hidden="true"
-            className="size-4 shrink-0 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover/ai:rotate-[18deg] group-hover/ai:scale-110 motion-reduce:transition-none"
-          />
-          {/* The name in a column that grows from nothing, so the circle widens into a pill. */}
-          <span className="grid grid-cols-[0fr] transition-[grid-template-columns] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/ai:grid-cols-[1fr] group-focus-visible/ai:grid-cols-[1fr] motion-reduce:transition-none">
-            <span className="overflow-hidden">
-              <span className="block pl-1.5 text-[13px] font-semibold whitespace-nowrap opacity-0 blur-[2px] transition-[opacity,filter] duration-200 group-hover/ai:opacity-100 group-hover/ai:blur-none group-hover/ai:delay-75 group-focus-visible/ai:opacity-100 group-focus-visible/ai:blur-none">
-                Hỏi Timi
-              </span>
-            </span>
-          </span>
-        </button>
-      </TooltipTrigger>
-      <TooltipContent side="bottom" sideOffset={8}>
-        <span className="flex items-center gap-2">
-          Mở trợ lý
-          <kbd className="rounded-[5px] bg-background/15 px-1.5 font-sans text-[11px] font-semibold">⌘K</kbd>
-        </span>
-      </TooltipContent>
-    </Tooltip>
+    <button
+      type="button"
+      onClick={open}
+      aria-keyshortcuts="Meta+K Control+K"
+      className="group/ask pressable flex h-9 items-center gap-2 rounded-full bg-secondary pr-2 pl-1.5 text-sm font-semibold outline-none transition-colors duration-150 hover:bg-fill-3 focus-visible:ring-3 focus-visible:ring-ring/30"
+    >
+      <span aria-hidden="true" className="grid size-6 place-items-center rounded-full bg-ai text-ai-foreground">
+        <SparklesIcon className="size-3.5 transition-transform duration-300 ease-out group-hover/ask:rotate-12" />
+      </span>
+      Hỏi Timi
+      <kbd className="rounded-[6px] bg-raised px-1.5 py-0.5 font-sans text-[11px] font-semibold text-muted-foreground shadow-[0_0_0_1px_var(--border)]">⌘K</kbd>
+    </button>
   )
 }
 
@@ -242,12 +243,13 @@ function useScrolled() {
 }
 
 /**
- * The bar, from md up (phones keep their own headers and the tab bar): 60
- * tall on the page's colour at rest; once the page scrolls under it, frosted
- * (the page's colour at 80%, blurred) with a hairline and a soft fall. Its
- * column is the content's (desktopColumnClassName), so the logo and the
- * avatar line up with the cards' edges. `inline`: in place, never frosted
- * (the design catalogue's sample).
+ * The bar, from md up (phones keep their own headers and the tab bar), in
+ * the full-width style the user picked (2026-10-25, after Stripe and Vercel):
+ * across the whole window on the card's white with a hairline under it; the
+ * logo and the pages on the left, Hỏi Timi, the bell and the avatar on the
+ * right (Ghi giao dịch left the bar, the user's call).
+ * 64 tall, its controls 36. Once the page scrolls under it, a soft fall.
+ * `inline`: in place (the design catalogue's sample).
  */
 export function DesktopTopBar({ inline = false }: { inline?: boolean }) {
   const scrolled = useScrolled() && !inline
@@ -256,19 +258,18 @@ export function DesktopTopBar({ inline = false }: { inline?: boolean }) {
     <header
       data-scrolled={scrolled || undefined}
       className={cn(
-        "top-0 z-30 hidden bg-background transition-[background-color,box-shadow,backdrop-filter] duration-300 ease-out data-scrolled:bg-background/80 data-scrolled:shadow-[0_1px_0_var(--border),0_8px_24px_-12px_rgb(0_0_0/0.12)] data-scrolled:backdrop-blur-xl data-scrolled:backdrop-saturate-150 md:block dark:data-scrolled:shadow-[0_1px_0_var(--border),0_8px_24px_-12px_rgb(0_0_0/0.7)]",
-        inline ? "relative" : "sticky",
+        "top-0 z-30 hidden bg-card shadow-[0_1px_0_var(--border)] transition-shadow duration-300 ease-out data-scrolled:shadow-[0_1px_0_var(--border),0_8px_24px_-14px_rgb(0_0_0/0.14)] md:block dark:data-scrolled:shadow-[0_1px_0_var(--border),0_8px_24px_-12px_rgb(0_0_0/0.7)]",
+        inline ? "relative rounded-2xl" : "sticky",
       )}
     >
-      <div className={cn("grid h-[60px] grid-cols-[1fr_auto_1fr] items-center", desktopColumnClassName)}>
+      <div className="flex h-16 items-center gap-8 px-6 xl:px-8">
         <Brand />
         <PageTabs />
-        <div className="flex items-center justify-end gap-2">
+        <div className="ml-auto flex items-center gap-2.5">
           <AskTimi />
-          <NotificationsButton variant="elevated" size="icon-sm" />
-          <span className="ml-1.5 flex">
-            <AccountMenu />
-          </span>
+          {/* A grey disc as the avatar's beside it and Hỏi Timi's, so the three read one size (2026-10-25: bare, the bell looked smaller). */}
+          <NotificationsButton variant="secondary" size="icon-sm" />
+          <AccountMenu />
         </div>
       </div>
     </header>

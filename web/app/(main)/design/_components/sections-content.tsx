@@ -785,7 +785,7 @@ function NavSection() {
           </div>
         </div>
       </Block>
-      <Block label="Thanh trên cùng của desktop (DesktopTopBar) · chỉ từ md: logo, các trang trên segmented, Hỏi Timi (rê chuột để mở chữ, ⌘K), chuông, avatar mở menu Cài đặt và giao diện" wide>
+      <Block label="Thanh trên cùng của desktop (DesktopTopBar) · chỉ từ md, toàn chiều ngang: logo, các trang bằng chữ, Hỏi Timi (⌘K), chuông, avatar mở menu Cài đặt và giao diện" wide>
         <div className="rounded-2xl bg-background py-1">
           <DesktopTopBar inline />
         </div>

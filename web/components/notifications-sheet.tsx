@@ -96,7 +96,8 @@ export function NotificationsButton({
   variant = "elevated",
   size = "icon",
 }: {
-  variant?: "elevated" | "ghost"
+  /** `secondary`: the grey round button, on the desktop top bar's white (2026-10-25). */
+  variant?: "elevated" | "ghost" | "secondary"
   /** 44, a phone header's; `icon-sm` 36, the desktop top bar's. */
   size?: "icon" | "icon-sm"
 }) {
@@ -186,7 +187,14 @@ export function NotificationsButton({
           <BellIcon />
           {unread > 0 ? (
             // On the bell's shoulder, from just right of its centre, so a wider "9+" grows outwards.
-            <Badge variant="count" aria-hidden="true" className="absolute top-0.5 left-[calc(50%+4px)]">
+            // On the grey disc (the desktop bar) at the disc's corner instead, ringed in the bar's
+            // white: inside it, ringed in the page's grey, it bit into the disc, which then looked
+            // smaller than the avatar beside it (2026-10-25).
+            <Badge
+              variant="count"
+              aria-hidden="true"
+              className={variant === "secondary" ? "absolute -top-1 left-[calc(100%-12px)] ring-card" : "absolute top-0.5 left-[calc(50%+4px)]"}
+            >
               {unread > 9 ? "9+" : unread}
             </Badge>
           ) : null}

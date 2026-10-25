@@ -32,6 +32,15 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.51.0",
+    date: "2026-10-25",
+    title: "Thanh trên cùng toàn chiều ngang trên máy tính",
+    changes: [
+      { kind: "improved", text: "Thanh trên cùng trải hết cửa sổ: logo và các trang bên trái, Hỏi Timi (⌘K), thông báo và avatar bên phải." },
+      { kind: "fixed", text: "Viên chọn trang không còn bay từ dưới lên khi đã cuộn trang; số thông báo không còn làm nút chuông trông nhỏ đi." },
+    ],
+  },
+  {
     version: "6.50.0",
     date: "2026-10-25",
     title: "Tổng quan cân đối hơn trên máy tính",
