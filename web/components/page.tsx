@@ -1,7 +1,6 @@
 import type * as React from "react"
 
 import { AppHeader, AppHeaderTitle } from "@/components/app/app-header"
-import { PageTopBarTools } from "@/components/page-top-bar-tools"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
@@ -39,10 +38,10 @@ type PageHeaderProps = {
   /** Labelled buttons from md up; below md pages offer their main action as a floating button. */
   actions?: React.ReactNode
   /**
-   * No visible row from md up (2026-10-21): the sidebar already names the
-   * page (Tài khoản, Giao dịch, Vay nợ), the tools and actions move into the
-   * top bar, beside the bell, and the content starts under it. Phones keep
-   * their bar. The name stays for screen readers.
+   * No visible row from md up (2026-10-21): the top bar's pages already
+   * name it (Tài khoản, Giao dịch), the tools and actions sit on the right
+   * of a row of their own above the content, which starts under it.
+   * Phones keep their bar. The name stays for screen readers.
    */
   bare?: boolean
   /** No bar on phones either: a pushed screen with its own (Settings' back bar). */
@@ -61,7 +60,7 @@ type PageHeaderProps = {
  * PRO label on Pro), the page's name or `lead` in the middle, its round
  * buttons on the right. From md up the row of before: the name in 24px on the
  * left and the tools on the right, or (`bare`) nothing but the tools in the
- * top bar. It scrolls away with the page.
+ * row above the content. It scrolls away with the page.
  */
 function PageHeader({ title, lead, tools, accessory, actions, bare = false, phoneBar = true, leadBelow = false }: PageHeaderProps) {
   const phoneTools = tools || accessory ? (
@@ -90,14 +89,15 @@ function PageHeader({ title, lead, tools, accessory, actions, bare = false, phon
       // contents: no box of its own, so the page's gap does not open above the content when nothing shows.
       <header data-slot="page-header" className="contents">
         <h1 className="sr-only">{title}</h1>
-        {/* From md the content starts 16 under the top bar, which holds the tools. */}
+        {/* From md the content starts 16 under the top bar (or the row of tools). */}
         <div aria-hidden="true" className="hidden h-4 md:block" />
         {bar}
+        {/* From md its tools on the right of a row of their own, drawn with the page so nothing shifts once it loads. */}
         {tools || actions || accessory ? (
-          <PageTopBarTools>
+          <div className="hidden items-center justify-end gap-2 md:flex">
             {tools}
             {actions ?? accessory}
-          </PageTopBarTools>
+          </div>
         ) : null}
       </header>
     )

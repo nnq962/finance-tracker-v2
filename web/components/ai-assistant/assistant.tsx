@@ -3,8 +3,6 @@
 import * as React from "react"
 import dynamic from "next/dynamic"
 
-import { BotIcon } from "@/components/app/bot-icon"
-import { Button } from "@/components/ui/button"
 import { preloadWhenIdle } from "@/lib/preload-when-idle"
 
 /*
@@ -41,15 +39,5 @@ export function AssistantProvider({ children }: { children: React.ReactNode }) {
       {children}
       <AssistantFrame open={open} onClose={() => setOpen(false)} />
     </AssistantContext.Provider>
-  )
-}
-
-/** The way in on a computer, in the header. */
-export function AssistantHeaderButton() {
-  const open = useOpenAssistant()
-  return (
-    <Button size="sm" onClick={open}>
-      <BotIcon className="text-ai-on-primary" /> Hỏi AI
-    </Button>
   )
 }

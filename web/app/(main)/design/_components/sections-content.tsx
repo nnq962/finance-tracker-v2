@@ -39,6 +39,7 @@ import { toast } from "sonner"
 import { ContactAvatar } from "@/app/(main)/debts/_components/contact-avatar"
 import { ShelfLink } from "@/components/app/shelf-link"
 import { AppHeader, AppHeaderTitle } from "@/components/app/app-header"
+import { DesktopTopBar } from "@/components/app/desktop-top-bar"
 import { CardLabel } from "@/components/app/card-label"
 import { Carousel } from "@/components/app/carousel"
 import { ChoiceTiles } from "@/components/app/choice-tiles"
@@ -782,6 +783,11 @@ function NavSection() {
               </TabsList>
             </Tabs>
           </div>
+        </div>
+      </Block>
+      <Block label="Thanh trên cùng của desktop (DesktopTopBar) · chỉ từ md: logo, các trang trên segmented, Hỏi Timi (rê chuột để mở chữ, ⌘K), chuông, avatar mở menu Cài đặt và giao diện" wide>
+        <div className="rounded-2xl bg-background py-1">
+          <DesktopTopBar inline />
         </div>
       </Block>
       <Block label="Đầu trang (PageHeader) · trên điện thoại là thanh ở trên, từ md tên trang bên trái, công cụ bên phải" wide>

@@ -92,7 +92,14 @@ function forgetNotices() {
  * wider screens in the top bar beside the theme switch, bare like it
  * (`variant="ghost"`).
  */
-export function NotificationsButton({ variant = "elevated" }: { variant?: "elevated" | "ghost" }) {
+export function NotificationsButton({
+  variant = "elevated",
+  size = "icon",
+}: {
+  variant?: "elevated" | "ghost"
+  /** 44, a phone header's; `icon-sm` 36, the desktop top bar's. */
+  size?: "icon" | "icon-sm"
+}) {
   const router = useRouter()
   const pathname = usePathname()
   const [open, setOpen] = React.useState(false)
@@ -171,7 +178,7 @@ export function NotificationsButton({ variant = "elevated" }: { variant?: "eleva
       trigger={
         <Button
           type="button"
-          size="icon"
+          size={size}
           variant={variant}
           aria-label={unread > 0 ? `Thông báo, ${unread} chưa đọc` : "Thông báo"}
           className="relative shrink-0"

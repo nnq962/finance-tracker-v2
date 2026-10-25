@@ -32,6 +32,16 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.49.0",
+    date: "2026-10-25",
+    title: "Thanh trên cùng mới cho máy tính",
+    changes: [
+      { kind: "new", text: "Trên máy tính, thanh bên được thay bằng một thanh trên cùng: logo bên trái, các trang ở giữa, Hỏi Timi, chuông và avatar bên phải." },
+      { kind: "new", text: "Bấm ⌘K (Ctrl K) ở bất kỳ đâu để hỏi Timi; avatar mở menu Cài đặt và giao diện." },
+      { kind: "improved", text: "Nội dung gọn trong một cột ở giữa, lề hai bên rộng hơn." },
+    ],
+  },
+  {
     version: "6.48.0",
     date: "2026-10-25",
     title: "Cài đặt mở trong một sheet trên điện thoại",
