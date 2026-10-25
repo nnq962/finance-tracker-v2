@@ -814,7 +814,17 @@ function NavSection() {
   )
 }
 
+/** The states the "Toast đổi trạng thái" sample steps through, words of different lengths. */
+const toastStates = [
+  ["loading", "Đang lưu…"],
+  ["success", "Đã lưu giao dịch Ăn trưa"],
+  ["error", "Không lưu được"],
+  ["loading", "Đang thử lại với máy chủ dự phòng…"],
+  ["success", "Xong"],
+] as const
+
 function FeedbackSection() {
+  const toastStep = React.useRef(0)
   const [banner, setBanner] = React.useState(true)
   const [monthOpen, setMonthOpen] = React.useState(false)
   const [month, setMonth] = React.useState("2026-10")
@@ -947,6 +957,17 @@ function FeedbackSection() {
             }}
           >
             Toast đang tải
+          </Button>
+          {/* One toast through its states, a tap each, to see a state change (and fast taps) in place. */}
+          <Button
+            variant="secondary"
+            onClick={() => {
+              const step = toastStep.current++ % toastStates.length
+              const [kind, title] = toastStates[step]
+              toast[kind](title, { id: "design-state" })
+            }}
+          >
+            Toast đổi trạng thái
           </Button>
           <Button variant="secondary" onClick={() => setMonthOpen(true)}>
             Chọn tháng

@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.47.3",
+    date: "2026-10-25",
+    title: "Thông báo đổi trạng thái liên tục không còn giật",
+    changes: [
+      { kind: "fixed", text: "Thông báo đổi trạng thái nhanh liên tục không còn bị giật, chữ không còn xuống hai dòng hay kẹt ở cỡ cũ." },
+    ],
+  },
+  {
     version: "6.47.2",
     date: "2026-10-25",
     title: "Thông báo nhanh hiện mượt, đổi trạng thái có hiệu ứng",

@@ -28,14 +28,18 @@ const mark = "grid size-[22px] place-items-center rounded-full"
  * A toast's state changing in place (toast.loading, then toast.success with
  * its id): Sonner swaps the words and the mark at once. On a new kind this
  * sets off the words' cross-blur (data-state-swap, globals.css) and eases the
- * width from the old words' to the new ones' (transitions.dev's card resize):
- * the width each toast last had is kept, set back inline for a frame, then
- * let go to the new one, and cleared once there.
+ * width from what the toast shows now to what the new words need
+ * (transitions.dev's card resize). Tapped fast (2026-10-25: the words broke
+ * onto two lines and the toast stayed pinned), each change starts from the
+ * width on screen, even mid-way, measures the new words free of any width
+ * set before, keeps one-line words on one line while it moves, and lets go
+ * of the width once there (at the transition's end, or after its time).
  */
 function useToastStateMotion() {
   React.useEffect(() => {
     const widths = new WeakMap<Element, number>()
     const kinds = new WeakMap<Element, string | null>()
+    const releases = new WeakMap<Element, () => void>()
     const still = window.matchMedia("(prefers-reduced-motion: reduce)")
     const remember = () => {
       document.querySelectorAll("[data-sonner-toast]").forEach((toast) => {
@@ -44,24 +48,39 @@ function useToastStateMotion() {
       })
     }
     const swap = (toast: HTMLElement) => {
-      const before = widths.get(toast)
+      // What shows now: mid-way through an earlier change, the width it has reached.
+      const resizing = toast.hasAttribute("data-resizing")
+      const before = resizing ? toast.getBoundingClientRect().width : widths.get(toast)
+      releases.get(toast)?.()
+      // The new words' own width and lines, with nothing pinned.
+      toast.style.removeProperty("width")
+      toast.removeAttribute("data-resizing")
       const after = toast.getBoundingClientRect().width
+      const title = toast.querySelector<HTMLElement>("[data-title]")
+      const oneLine = title ? title.getBoundingClientRect().height <= parseFloat(getComputedStyle(title).lineHeight) * 1.5 : true
       toast.removeAttribute("data-state-swap")
       void toast.offsetWidth
       toast.setAttribute("data-state-swap", "")
+      widths.set(toast, after)
       if (still.matches || before === undefined || Math.abs(before - after) < 1) return
-      toast.setAttribute("data-resizing", "")
+      toast.setAttribute("data-resizing", oneLine ? "one-line" : "")
       toast.style.setProperty("width", `${before}px`, "important")
       void toast.offsetWidth
       toast.style.setProperty("width", `${after}px`, "important")
-      const done = (event: TransitionEvent) => {
-        if (event.target !== toast || event.propertyName !== "width") return
+      const release = () => {
+        window.clearTimeout(timer)
+        toast.removeEventListener("transitionend", done)
         toast.style.removeProperty("width")
         toast.removeAttribute("data-resizing")
-        widths.set(toast, toast.getBoundingClientRect().width)
-        toast.removeEventListener("transitionend", done)
+        releases.delete(toast)
       }
+      const done = (event: TransitionEvent) => {
+        if (event.target === toast && event.propertyName === "width") release()
+      }
+      // The width's 300ms and a little: let go even if no transitionend comes.
+      const timer = window.setTimeout(release, 400)
       toast.addEventListener("transitionend", done)
+      releases.set(toast, release)
     }
     const observer = new MutationObserver((records) => {
       let touched = false

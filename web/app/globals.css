@@ -720,6 +720,10 @@ body [data-sonner-toast][data-state-swap] [data-content],
 body [data-sonner-toast][data-state-swap] [data-button] {
   animation: var(--animate-soft-in);
 }
+/* One-line words stay on one line while the width eases to them (Toaster). */
+body [data-sonner-toast][data-resizing="one-line"] [data-title] {
+  white-space: nowrap;
+}
 @media (prefers-reduced-motion: reduce) {
   body [data-sonner-toast][data-state-swap] [data-icon] > *,
   body [data-sonner-toast][data-state-swap] [data-content],
