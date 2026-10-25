@@ -70,9 +70,20 @@ export function VersusLastMonth({ days, today, hidden }: { days: Record<string, 
   const mark = { left: `${x(Math.min(day, then.length) - 1)}%`, top: `${(y(sameDay) / 40) * 100}%` }
 
   return (
-    <Section title="So với tháng trước">
+    // Beside the missions card, which has no title above it, the title moves into the card
+    // from lg (2026-10-25), so both columns start on a card edge; without it, outside as before.
+    <Section
+      title="So với tháng trước"
+      className="lg:group-has-[[data-overview-missions]:not(:empty)]/overview:[&>:first-child]:hidden lg:group-has-[[data-overview-missions]:not(:empty)]/overview:[&>:last-child]:mt-0"
+    >
       <Card>
         <CardContent>
+          <p
+            aria-hidden="true"
+            className="mb-3 hidden text-base font-semibold lg:group-has-[[data-overview-missions]:not(:empty)]/overview:block"
+          >
+            So với tháng trước
+          </p>
           <div className="flex items-center justify-between gap-3">
             <CardLabel>Đã chi tháng {monthNumber}</CardLabel>
             <span className={cn("transition-opacity duration-200 ease-out", hidden && "opacity-0")}>

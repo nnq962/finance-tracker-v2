@@ -72,7 +72,7 @@ function PageTabs() {
   const reduced = useReducedMotion()
 
   return (
-    <LayoutGroup id="zz-tabs">
+    <LayoutGroup id="top-bar-tabs">
       <nav
         aria-label="Trang"
         className="flex h-10 items-center rounded-full bg-fill-3 p-[3px] dark:bg-fill-2"

@@ -30,7 +30,10 @@ type OverviewLayoutProps = {
  * months, and debts not yet pressing last.
  * Below lg they stack in one column. From lg net worth runs across the top
  * and two columns follow: the lists on the left (24rem wide from xl), the
- * calendar and the trend chart, which read better wide, on the right. A slot
+ * charts, which read better wide, on the right: this month, the calendar, the
+ * six months and the categories (2026-10-25, the user's pick A of a mockup:
+ * the categories moved over from the left, so the two columns end near each
+ * other; the jars stay left, moving them too left the right far longer). A slot
  * whose content renders nothing (missions all claimed, Pro already) leaves no gap.
  */
 export function OverviewLayout({
@@ -51,22 +54,24 @@ export function OverviewLayout({
   const columnClassName = "contents min-w-0 lg:flex lg:flex-col lg:gap-8"
 
   return (
-    <div className="flex min-w-0 flex-col gap-6 md:gap-8 lg:grid lg:grid-cols-2 lg:items-start xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
+    // The group lets the versus card take its title inside while the missions card, which
+    // has none above it, heads the left column (see VersusLastMonth).
+    <div className="group/overview flex min-w-0 flex-col gap-6 md:gap-8 lg:grid lg:grid-cols-2 lg:items-start xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
       <div className="order-1 lg:order-first lg:col-span-2">{netWorth}</div>
       <div className={columnClassName}>
         {/* The AI missions right under net worth (2026-10-25, the user's ask; last before). */}
-        {missions ? <div className="order-2 empty:hidden">{missions}</div> : null}
+        {missions ? <div data-overview-missions className="order-2 empty:hidden">{missions}</div> : null}
         {dueDebts ? <div className={dueDebtsUrgent ? "order-4" : "order-11"}>{dueDebts}</div> : null}
         {recent ? <div className="order-5 empty:hidden">{recent}</div> : null}
         {budgets ? <div className="order-6 empty:hidden">{budgets}</div> : null}
         {jars ? <div className="order-7 empty:hidden">{jars}</div> : null}
-        <div className="order-8">{allocation}</div>
       </div>
       <div className={columnClassName}>
-        {/* A chart, so on the right from lg, above the calendar. */}
-        {versus ? <div className="order-3">{versus}</div> : null}
-        <div className="order-9">{calendar}</div>
-        <div className="order-10">{trend}</div>
+        {/* lg:order sorts this column: this month, the calendar, the six months, the categories. */}
+        {versus ? <div className="order-3 lg:order-1">{versus}</div> : null}
+        <div className="order-9 lg:order-2">{calendar}</div>
+        <div className="order-10 lg:order-3">{trend}</div>
+        <div className="order-8 lg:order-4">{allocation}</div>
       </div>
     </div>
   )

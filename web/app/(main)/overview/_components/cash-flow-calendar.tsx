@@ -206,8 +206,10 @@ export function CashFlowCalendar({
                   const cellClassName = cn(
                     // 12, the design system's small tile (PickGrid): 18 on a 40-wide day made a pill
                     // whose lower corners cut into the amounts (2026-10-24). 6 below them, off the edge.
-                    "flex min-w-0 flex-col items-center gap-0.5 rounded-[12px] pt-1 pb-1.5 @lg:pt-2",
-                    key > today ? "min-h-11 @lg:min-h-14" : "min-h-14 @lg:min-h-20",
+                    "flex min-w-0 flex-col items-center gap-0.5 rounded-[12px] pt-1 pb-1.5 @lg:pt-1.5",
+                    // Wide (desktop) a past day 64 and one to come 40 (2026-10-25: 80 and 56 made the month
+                    // the page's tallest block for a few figures).
+                    key > today ? "min-h-11 @lg:min-h-10" : "min-h-14 @lg:min-h-16",
                     heat,
                   )
 
