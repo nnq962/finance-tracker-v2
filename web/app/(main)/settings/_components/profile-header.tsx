@@ -42,9 +42,10 @@ export function ProfileHeader({
 }) {
   // On phones it sits 8 under the back button (the bar's own padding; the
   // page's 24 step is taken back), not a full step away: 24 read as too far
-  // from the top, 2026-10-19.
+  // from the top, 2026-10-19. In the sheet (no page around it) the sheet's
+  // own bar spaces it.
   return (
-    <section aria-label="Tài khoản" className="flex flex-col items-center px-4 text-center max-md:-mt-6">
+    <section aria-label="Tài khoản" className="flex flex-col items-center px-4 text-center max-md:in-data-[slot=page]:-mt-6">
       <Avatar size="2xl">
         <AvatarImage src={avatar} alt={name} />
         <AvatarFallback inverse>{initials}</AvatarFallback>

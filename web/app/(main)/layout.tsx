@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function MainLayout({ children }: { children: ReactNode }) {
+export default async function MainLayout({ children, sheet }: { children: ReactNode; sheet: ReactNode }) {
   // The cookie's signature only: the shell and the loading screens go out at
   // once; every page's data still waits for the revocation check (loadWithSession).
   const { user, expiresAt } = await requireSignedSession()
@@ -89,6 +89,8 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
               </div>
             </SidebarInset>
             <MobileBottomNav />
+            {/* Settings opened from inside the app on a phone rises here, over the page (@sheet). */}
+            {sheet}
           </SidebarProvider>
           </AssistantProvider>
         </WelcomeProvider>

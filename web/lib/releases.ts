@@ -32,6 +32,14 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.48.0",
+    date: "2026-10-25",
+    title: "Cài đặt mở trong một sheet trên điện thoại",
+    changes: [
+      { kind: "improved", text: "Trên điện thoại, chạm avatar mở Cài đặt trong một sheet trên trang đang xem, đóng là về đúng chỗ cũ; các màn con mở ngay trong sheet." },
+    ],
+  },
+  {
     version: "6.47.3",
     date: "2026-10-25",
     title: "Thông báo đổi trạng thái liên tục không còn giật",

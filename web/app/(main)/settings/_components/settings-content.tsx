@@ -1,0 +1,61 @@
+import "server-only"
+
+import { loadWithSession } from "@/lib/auth/session"
+import { getBudgetOverview } from "@/lib/budgets/repository"
+import { getCategoryGroups } from "@/lib/categories/repository"
+import { getNotificationState } from "@/lib/notifications/repository"
+import { getPushContext } from "@/lib/notifications/context"
+import { isAdmin } from "@/lib/plans/admin"
+import { getAdminSummary } from "@/lib/plans/admin-data"
+import { checkReturningPayment, getPayOS } from "@/lib/plans/payos"
+import { getPlanState } from "@/lib/plans/repository"
+import { getUserDataSummary } from "@/lib/user-data/repository"
+
+import { SettingsView } from "./settings-view"
+
+export type SettingsSearchParams = { screen?: string; order?: string }
+
+/** Settings' data and its list, shared by the page and the phone's sheet. */
+export async function SettingsContent({ searchParams }: { searchParams: SettingsSearchParams }) {
+  const { screen, order } = searchParams
+  const {
+    user,
+    data: [notifications, categoryGroups, planState, admin, paymentOutcome, dataSummary, budgets],
+  } = await loadWithSession("settings", async (user) => {
+    // Settled first, so the plan read next already shows it.
+    const paymentOutcome = await checkReturningPayment(user.uid, order)
+    return Promise.all([
+      getPushContext()
+        .catch(() => undefined)
+        .then((context) => getNotificationState(user.uid, context)),
+      getCategoryGroups(user.uid),
+      getPlanState(user.uid),
+      // Two counts for the admin's rows; the admin screens load the rest when opened.
+      isAdmin(user) ? getAdminSummary() : undefined,
+      paymentOutcome,
+      getUserDataSummary(user.uid),
+      getBudgetOverview(user.uid),
+    ])
+  })
+
+  return (
+    <SettingsView
+      key={user.uid}
+      user={user}
+      notifications={notifications}
+      categoryGroups={categoryGroups}
+      budgets={budgets}
+      planState={planState}
+      dataSummary={dataSummary}
+      checkoutEnabled={getPayOS() !== null}
+      paymentOutcome={paymentOutcome}
+      admin={admin}
+      // Deep links: the missions on the overview, and the way back from payOS.
+      initialScreen={
+        screen === "notifications" || screen === "plan" || screen === "releases" || (screen === "broadcasts" && admin)
+          ? screen
+          : undefined
+      }
+    />
+  )
+}
