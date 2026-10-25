@@ -1,6 +1,6 @@
 "use client"
 
-import type * as React from "react"
+import * as React from "react"
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 import { CheckIcon, Loader2Icon, XIcon } from "lucide-react"
@@ -24,8 +24,68 @@ import { CheckIcon, Loader2Icon, XIcon } from "lucide-react"
  */
 const mark = "grid size-[22px] place-items-center rounded-full"
 
+/**
+ * A toast's state changing in place (toast.loading, then toast.success with
+ * its id): Sonner swaps the words and the mark at once. On a new kind this
+ * sets off the words' cross-blur (data-state-swap, globals.css) and eases the
+ * width from the old words' to the new ones' (transitions.dev's card resize):
+ * the width each toast last had is kept, set back inline for a frame, then
+ * let go to the new one, and cleared once there.
+ */
+function useToastStateMotion() {
+  React.useEffect(() => {
+    const widths = new WeakMap<Element, number>()
+    const kinds = new WeakMap<Element, string | null>()
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)")
+    const remember = () => {
+      document.querySelectorAll("[data-sonner-toast]").forEach((toast) => {
+        if (!toast.hasAttribute("data-resizing")) widths.set(toast, toast.getBoundingClientRect().width)
+        if (!kinds.has(toast)) kinds.set(toast, toast.getAttribute("data-type"))
+      })
+    }
+    const swap = (toast: HTMLElement) => {
+      const before = widths.get(toast)
+      const after = toast.getBoundingClientRect().width
+      toast.removeAttribute("data-state-swap")
+      void toast.offsetWidth
+      toast.setAttribute("data-state-swap", "")
+      if (still.matches || before === undefined || Math.abs(before - after) < 1) return
+      toast.setAttribute("data-resizing", "")
+      toast.style.setProperty("width", `${before}px`, "important")
+      void toast.offsetWidth
+      toast.style.setProperty("width", `${after}px`, "important")
+      const done = (event: TransitionEvent) => {
+        if (event.target !== toast || event.propertyName !== "width") return
+        toast.style.removeProperty("width")
+        toast.removeAttribute("data-resizing")
+        widths.set(toast, toast.getBoundingClientRect().width)
+        toast.removeEventListener("transitionend", done)
+      }
+      toast.addEventListener("transitionend", done)
+    }
+    const observer = new MutationObserver((records) => {
+      let touched = false
+      for (const record of records) {
+        const target = record.target instanceof Element ? record.target : null
+        // Anything else changing on the page is none of this.
+        if (!target?.closest("[data-sonner-toaster]") && !(target?.matches("section") && target.querySelector("[data-sonner-toaster]"))) continue
+        touched = true
+        if (record.type === "attributes" && record.attributeName === "data-type" && target instanceof HTMLElement && target.matches("[data-sonner-toast]")) {
+          if (kinds.get(target) !== target.getAttribute("data-type")) swap(target)
+          kinds.set(target, target.getAttribute("data-type"))
+        }
+      }
+      // After the change, so the next one starts from these words' width.
+      if (touched) requestAnimationFrame(remember)
+    })
+    observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["data-type"] })
+    return () => observer.disconnect()
+  }, [])
+}
+
 const Toaster = ({ style, ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
+  useToastStateMotion()
 
   return (
     <Sonner
@@ -33,21 +93,36 @@ const Toaster = ({ style, ...props }: ToasterProps) => {
       className="toaster group"
       // Sonner's column, 356 by default; on phones it spans the screen less its 16 offsets.
       style={{ "--width": "400px", ...style } as React.CSSProperties}
+      // Each mark keyed by its kind: a state changing in place (loading, then done) draws a new
+      // element, which comes in with its own motion (globals.css), rather than the old one recoloured.
       icons={{
         success: (
-          <span className={`${mark} bg-income text-white`}>
+          <span key="success" className={`${mark} bg-income text-white`}>
             <CheckIcon className="size-3.5" strokeWidth={3} />
           </span>
         ),
         // A bold letter: Lucide's info and alert draw a ring of their own.
-        info: <span className={`${mark} bg-transfer text-[13px] leading-none font-extrabold text-white`}>i</span>,
-        warning: <span className={`${mark} bg-warning text-[13px] leading-none font-extrabold text-black/80`}>!</span>,
+        info: (
+          <span key="info" className={`${mark} bg-transfer text-[13px] leading-none font-extrabold text-white`}>
+            i
+          </span>
+        ),
+        warning: (
+          <span key="warning" className={`${mark} bg-warning text-[13px] leading-none font-extrabold text-black/80`}>
+            !
+          </span>
+        ),
         error: (
-          <span className={`${mark} bg-expense text-white`}>
+          <span key="error" className={`${mark} bg-expense text-white`}>
             <XIcon className="size-3.5" strokeWidth={3} />
           </span>
         ),
-        loading: <Loader2Icon className="size-[22px] animate-spin text-muted-foreground" strokeWidth={2.5} />,
+        // In a box of its own, which takes the mark's coming in, so the spinner keeps its turning.
+        loading: (
+          <span key="loading" className={mark}>
+            <Loader2Icon className="size-[22px] animate-spin text-muted-foreground" strokeWidth={2.5} />
+          </span>
+        ),
       }}
       toastOptions={{
         unstyled: true,
