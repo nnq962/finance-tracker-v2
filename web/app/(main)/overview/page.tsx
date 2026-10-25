@@ -1,3 +1,5 @@
+import { cookies } from "next/headers"
+
 import { BudgetOverviewCard } from "@/components/budgets/budget-overview-card"
 import { Page } from "@/components/page"
 
@@ -6,6 +8,7 @@ import { OverviewHeader } from "./_components/overview-header"
 import { OverviewScreen } from "./_components/overview-screen"
 import { PlanInviteProvider } from "./_components/plan-invite"
 import { greetingFor } from "./_lib/greeting"
+import { HIDE_BALANCE_COOKIE } from "./_lib/hide-balance-cookie"
 import { loadOverview } from "./_lib/load-overview"
 
 export default async function OverviewPage({
@@ -15,6 +18,8 @@ export default async function OverviewPage({
 }) {
   const { screen, order } = await searchParams
   const data = await loadOverview(order)
+  // Hidden last time: the figures come already hidden.
+  const hidden = (await cookies()).get(HIDE_BALANCE_COOKIE)?.value === "1"
 
   return (
     <Page>
@@ -34,6 +39,8 @@ export default async function OverviewPage({
           today={data.today}
           minMonth={data.minMonth}
           summary={data.summary}
+          recent={data.recent}
+          initialHidden={hidden}
           // A push about a limit opens them all.
           budgets={<BudgetOverviewCard key={screen} overview={data.budgets} initialOpen={screen === "budgets"} />}
           missions={

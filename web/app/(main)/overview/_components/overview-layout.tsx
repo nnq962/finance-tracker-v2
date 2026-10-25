@@ -2,6 +2,12 @@ import type * as React from "react"
 
 type OverviewLayoutProps = {
   netWorth: React.ReactNode
+  /** This month's spending against the same days of last month. */
+  versus?: React.ReactNode
+  /** The last few transactions; empty with none yet. */
+  recent?: React.ReactNode
+  /** The jars being filled; empty with none. */
+  jars?: React.ReactNode
   /** The new user's missions, with Pro at their end; Pro's banner once every reward is in. */
   missions?: React.ReactNode
   /** This month's spending limits; empty while none is set. */
@@ -17,9 +23,11 @@ type OverviewLayoutProps = {
 
 /**
  * The overview's sections, shared with its loading state, in the order of
- * "how am I doing" then "what needs me" (2026-10-20): net worth, debts due
- * soon when one is late or close, spending limits, categories, the calendar,
- * the six months, the new user's missions, and debts not yet pressing last.
+ * "how am I doing" then "what needs me" (2026-10-20; 2026-10-25 the mockup's
+ * additions): net worth, the new user's AI missions (second since 2026-10-25),
+ * this month against last, debts due soon when one is late or close, the last
+ * transactions, spending limits, the jars, categories, the calendar, the six
+ * months, and debts not yet pressing last.
  * Below lg they stack in one column. From lg net worth runs across the top
  * and two columns follow: the lists on the left (24rem wide from xl), the
  * calendar and the trend chart, which read better wide, on the right. A slot
@@ -27,6 +35,9 @@ type OverviewLayoutProps = {
  */
 export function OverviewLayout({
   netWorth,
+  versus,
+  recent,
+  jars,
   missions,
   budgets,
   calendar,
@@ -43,14 +54,19 @@ export function OverviewLayout({
     <div className="flex min-w-0 flex-col gap-6 md:gap-8 lg:grid lg:grid-cols-2 lg:items-start xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
       <div className="order-1 lg:order-first lg:col-span-2">{netWorth}</div>
       <div className={columnClassName}>
-        {dueDebts ? <div className={dueDebtsUrgent ? "order-2" : "order-8"}>{dueDebts}</div> : null}
-        {budgets ? <div className="order-3 empty:hidden">{budgets}</div> : null}
-        <div className="order-4">{allocation}</div>
-        {missions ? <div className="order-7 empty:hidden">{missions}</div> : null}
+        {/* The AI missions right under net worth (2026-10-25, the user's ask; last before). */}
+        {missions ? <div className="order-2 empty:hidden">{missions}</div> : null}
+        {dueDebts ? <div className={dueDebtsUrgent ? "order-4" : "order-11"}>{dueDebts}</div> : null}
+        {recent ? <div className="order-5 empty:hidden">{recent}</div> : null}
+        {budgets ? <div className="order-6 empty:hidden">{budgets}</div> : null}
+        {jars ? <div className="order-7 empty:hidden">{jars}</div> : null}
+        <div className="order-8">{allocation}</div>
       </div>
       <div className={columnClassName}>
-        <div className="order-5">{calendar}</div>
-        <div className="order-6">{trend}</div>
+        {/* A chart, so on the right from lg, above the calendar. */}
+        {versus ? <div className="order-3">{versus}</div> : null}
+        <div className="order-9">{calendar}</div>
+        <div className="order-10">{trend}</div>
       </div>
     </div>
   )

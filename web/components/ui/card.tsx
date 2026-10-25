@@ -19,8 +19,13 @@ function Card({
    * cards; two soft discs off its top right corner give it depth.
    * pastel: lime, mint and sky blending on white (deep on the card grey in the
    * dark), dark text: the lead cards for a day on 2026-10-19, now the catalog only.
+   * lead (2026-10-25, the user's ask, Tổng quan's net worth): the dark theme's
+   * card wherever it is. It takes the dark tokens (class "dark"), so in the
+   * light theme it is the dark card on the grey page, and all in it (text,
+   * chips, tiles) as the dark theme draws them; in the dark theme it stands a
+   * step lighter than the other cards (`lead`). No shadow.
    */
-  variant?: "default" | "inverse" | "pastel"
+  variant?: "default" | "inverse" | "pastel" | "lead"
   /**
    * Which way a pastel card's hues lie (2026-10-19): the same three on every
    * page, each lead card lit from its own corner. net: Tài sản ròng; balance:
@@ -44,6 +49,8 @@ function Card({
       className={cn(
         "group/card flex flex-col shadow-card data-[variant=inverse]:shadow-none gap-(--card-spacing) overflow-hidden rounded-[20px] bg-card py-(--card-spacing) [--chip-row-bleed:var(--card-spacing)] text-sm text-card-foreground [--card-spacing:--spacing(5)] has-[>img:first-child]:pt-0 data-[size=sm]:rounded-[16px] data-[size=sm]:[--card-spacing:--spacing(4)] data-[size=lg]:rounded-[24px] data-[size=lg]:[--card-spacing:--spacing(6)] *:[img:first-child]:rounded-t-[20px] *:[img:last-child]:rounded-b-[20px] data-[variant=inverse]:bg-inverse data-[variant=inverse]:text-inverse-foreground data-[variant=pastel]:relative data-[variant=pastel]:isolate data-[variant=pastel]:bg-pastel data-[blend=net]:bg-pastel-net data-[blend=balance]:bg-pastel-balance data-[blend=flow]:bg-pastel-flow data-[blend=debts]:bg-pastel-debts data-[variant=pastel]:shadow-pastel",
         "data-[variant=inverse]:relative data-[variant=inverse]:isolate data-[discs=true]:before:pointer-events-none data-[discs=true]:before:absolute data-[discs=true]:before:-top-16 data-[discs=true]:before:-right-14 data-[discs=true]:before:-z-10 data-[discs=true]:before:size-48 data-[discs=true]:before:rounded-full data-[discs=true]:before:bg-inverse-foreground/10 data-[discs=true]:after:pointer-events-none data-[discs=true]:after:absolute data-[discs=true]:after:-right-4 data-[discs=true]:after:-bottom-20 data-[discs=true]:after:-z-10 data-[discs=true]:after:size-40 data-[discs=true]:after:rounded-full data-[discs=true]:after:bg-inverse-foreground/5 data-[discs=true]:data-[variant=pastel]:before:bg-pastel-tile data-[discs=true]:data-[variant=pastel]:after:bg-pastel-tile/60",
+        // --track is worked out once at the root from the theme's fills: set again so the dark ones apply.
+        variant === "lead" && "dark shadow-none [--track:var(--fill-2)] [html.dark_&]:bg-lead",
         className
       )}
       {...props}

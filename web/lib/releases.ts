@@ -32,6 +32,18 @@ export const changeKindLabels: Record<ChangeKind, string> = {
 
 export const releases: Release[] = [
   {
+    version: "6.46.0",
+    date: "2026-10-25",
+    title: "Tổng quan mới: ẩn số dư, so với tháng trước, giao dịch gần đây",
+    changes: [
+      { kind: "new", text: "Thẻ Tài sản ròng màu đen (giao diện tối: xám sáng hơn), có đường xu hướng 6 tháng; bỏ dòng thu − chi tháng này." },
+      { kind: "new", text: "Ẩn số dư: nút con mắt ở góc thẻ, số chuyển mượt sang dấu chấm và được nhớ cho lần mở sau." },
+      { kind: "new", text: "So với tháng trước: đã chi tới hôm nay, tăng hay giảm so với cùng kỳ, và biểu đồ chi tiêu cộng dồn hai tháng." },
+      { kind: "new", text: "Giao dịch gần đây và Hũ tiết kiệm ngay trên Tổng quan." },
+      { kind: "improved", text: "Nhiệm vụ nhận thêm lượt AI lên ngay dưới Tài sản ròng." },
+    ],
+  },
+  {
     version: "6.45.2",
     date: "2026-10-25",
     title: "Danh sách trong sheet gọn trong thẻ",

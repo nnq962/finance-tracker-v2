@@ -14,6 +14,7 @@
   --shadow-pastel: var(--pastel-shadow);
   --color-background: var(--background);
   --color-sheet: var(--sheet);
+  --color-lead: var(--lead);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-heading: var(--font-sans);
@@ -321,6 +322,8 @@
 
 .dark {
   --segment: rgb(118 118 128 / 0.24);
+  /* Card variant="lead" in the dark theme: a step lighter than the cards (#262626 on #171717). */
+  --lead: oklch(0.27 0 0);
   /* The chosen segment a raised grey with a light hairline in the dark (2026-10-24, option B of
      /zz-preview/segment, after a black one read as a hole in cards; iOS's #636366 before). */
   --segment-thumb: oklch(0.345 0.004 286); /* #3a3a3c */

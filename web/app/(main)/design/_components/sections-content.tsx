@@ -255,6 +255,18 @@ function CardSection() {
           onShowAll={() => toast("Mở danh sách đủ")}
         />
       </Block>
+      {/* Card variant="lead" (2026-10-25): Tổng quan's net worth; the dark card on the light page, a step lighter in the dark. */}
+      <Card size="lg" variant="lead">
+        <CardContent>
+          <CardLabel as="p">Tài sản ròng · Card lead</CardLabel>
+          <Money amount={50_919_667} size="display" className="mt-1.5" />
+          <StatGroup tiles className="mt-5">
+            <Stat label="Tài khoản" value="56,5tr" />
+            <Stat label="Cho vay" value="5,5tr" />
+            <Stat label="Đang nợ" value="11,1tr" />
+          </StatGroup>
+        </CardContent>
+      </Card>
       <Card size="lg" variant="inverse" discs={false}>
         <CardContent>
           <div className="flex items-center justify-between gap-3">

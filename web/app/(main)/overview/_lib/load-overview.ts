@@ -69,6 +69,11 @@ export async function loadOverview(order?: string) {
     paymentOutcome,
     budgets,
     checkoutEnabled: getPayOS() !== null,
+    // The last four up to now, newest first (Giao dịch gần đây), from the months already loaded.
+    recent: transactions
+      .filter((transaction) => new Date(transaction.occurredAt).getTime() <= Date.now())
+      .sort((left, right) => new Date(right.occurredAt).getTime() - new Date(left.occurredAt).getTime())
+      .slice(0, 4),
     summary: getOverviewSummary(accounts, debts, contacts, transactions, today),
     // Totals only: the page does not send six months of transactions.
     days: summarizeDays(transactions),

@@ -46,10 +46,9 @@ export function FeaturesSection() {
       </SectionHeading>
 
       <div className="mt-12 grid gap-4 lg:grid-cols-3">
-        <Cell title="Tổng quan" line="Tài sản ròng, thu chi tháng này và phần đang cho vay, đang nợ." className="lg:col-span-2">
+        <Cell title="Tổng quan" line="Tài sản ròng, tiền trong tài khoản và phần đang cho vay, đang nợ." className="lg:col-span-2">
           <NetWorth
             data={{ total: 51_403_000, cash: 56_903_000, receivable: 5_500_000, payable: 11_000_000, leftOut: { count: 0, cash: 0 } } as OverviewSummary["netWorth"]}
-            month={{ income: 18_000_000, expense: 395_000 }}
           />
         </Cell>
         <Cell title="Giao dịch" line="Thu chi của tháng, lọc theo tài khoản và hạng mục.">

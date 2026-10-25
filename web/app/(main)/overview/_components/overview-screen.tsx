@@ -14,7 +14,12 @@ import { CategoryBreakdown } from "./category-breakdown"
 import { MonthSection } from "./month-section"
 import { CashFlowChart } from "./overview-charts"
 import { OverviewLayout } from "./overview-layout"
+import { useHiddenBalance } from "./hide-balance"
 import { DueDebts, NetWorth } from "./overview-sections"
+import { RecentTransactions } from "./recent-transactions"
+import { SavingsJars } from "./savings-jars"
+import { VersusLastMonth } from "./versus-last-month"
+import type { Transaction } from "../../transactions/_types/transaction"
 
 /** Income against expenses for each of the last six months, titled outside its card. */
 function TrendSection({ cashFlow }: { cashFlow: OverviewSummary["cashFlow"] }) {
@@ -67,6 +72,8 @@ export function OverviewScreen({
   today,
   minMonth,
   summary,
+  recent,
+  initialHidden,
   missions,
   budgets,
 }: {
@@ -77,6 +84,10 @@ export function OverviewScreen({
   today: string
   minMonth: string
   summary: OverviewSummary
+  /** The last few transactions, newest first. */
+  recent: Transaction[]
+  /** Whether the figures were hidden last time (the cookie), so the page comes already hidden. */
+  initialHidden: boolean
   missions?: React.ReactNode
   /** This month's spending limits, under net worth; renders nothing while none is set. */
   budgets?: React.ReactNode
@@ -88,11 +99,17 @@ export function OverviewScreen({
   // Each block is made again only when its own data changes, so a new month
   // redraws the calendar first and the categories after, never the rest.
   const { netWorth: netWorthData, cashFlow, dueDebts: dueDebtsData } = summary
-  const { current: thisMonth } = cashFlow
+  const [hidden, toggleHidden] = useHiddenBalance(initialHidden)
   const netWorth = React.useMemo(
-    () => <NetWorth data={netWorthData} month={thisMonth} />,
-    [netWorthData, thisMonth],
+    () => <NetWorth data={netWorthData} months={cashFlow.months} hidden={hidden} onToggleHidden={toggleHidden} />,
+    [netWorthData, cashFlow.months, hidden, toggleHidden],
   )
+  const versus = React.useMemo(() => <VersusLastMonth days={days} today={today} hidden={hidden} />, [days, today, hidden])
+  const recentSection = React.useMemo(
+    () => <RecentTransactions transactions={recent} accounts={accounts} categoryGroups={categoryGroups} today={today} />,
+    [recent, accounts, categoryGroups, today],
+  )
+  const jars = React.useMemo(() => <SavingsJars accounts={accounts} today={today} />, [accounts, today])
   const dueDebts = React.useMemo(
     () => (dueDebtsData.length > 0 ? <DueDebts debts={dueDebtsData} /> : undefined),
     [dueDebtsData],
@@ -106,6 +123,9 @@ export function OverviewScreen({
   return (
     <OverviewLayout
       netWorth={netWorth}
+      versus={versus}
+      recent={recentSection}
+      jars={jars}
       missions={missions}
       budgets={budgets}
       calendar={

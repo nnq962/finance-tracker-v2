@@ -2,6 +2,7 @@ import type * as React from "react"
 
 import { Stat, StatGroup } from "@/components/app/stat-group"
 import { Page, PageHeaderSkeleton } from "@/components/page"
+import { SettingsGroupSkeleton } from "@/components/settings-list"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toDateKey } from "@/lib/format-date"
@@ -9,23 +10,23 @@ import { toDateKey } from "@/lib/format-date"
 import { OverviewLayout } from "./_components/overview-layout"
 
 /**
- * Same footprint as NetWorth on the dark lead card: the label's 20px line,
- * the total's 42.5px one (34px at leading-tight), the month's change, then
- * the three parts under a line.
+ * Same footprint as NetWorth on its lead card (black in the light theme): the
+ * label's 24px line, the total's 42.5px one (34px at leading-tight), the six
+ * months' 48px line, then the three parts as tiles (2026-10-25: no line for
+ * the month's change).
  */
 function NetWorthSkeleton() {
   return (
-    <Card size="lg">
+    <Card size="lg" variant="lead">
       <CardContent>
-        <div className="flex h-5 items-center">
+        <div className="flex h-6 items-center">
           <Skeleton className="h-3.5 w-24" />
         </div>
         <div className="mt-1.5 flex h-[42.5px] items-center">
           <Skeleton className="h-8 w-56 max-w-full" />
         </div>
-        <div className="mt-1.5 flex h-5 items-center">
-          <Skeleton className="h-3.5 w-32" />
-        </div>
+        {/* The six months' line. */}
+        <Skeleton className="mt-4 h-12 rounded-[12px]" />
         <StatGroup tiles className="mt-5">
           {[0, 1, 2].map((index) => (
             <Stat
@@ -45,6 +46,45 @@ function NetWorthSkeleton() {
         </StatGroup>
       </CardContent>
     </Card>
+  )
+}
+
+/** VersusLastMonth's footprint: the label and change, the figure, the sentence, the 96px chart, its two dates and the legend. */
+function VersusSkeleton() {
+  return (
+    <SectionSkeleton>
+      <Card>
+        <CardContent>
+          <div className="flex h-5 items-center justify-between">
+            <Skeleton className="h-3.5 w-28" />
+            <Skeleton className="h-3 w-10" />
+          </div>
+          <div className="mt-1 flex h-7 items-center">
+            <Skeleton className="h-5 w-32" />
+          </div>
+          <div className="mt-0.5 flex h-5 items-center">
+            <Skeleton className="h-3 w-56 max-w-full" />
+          </div>
+          <Skeleton className="mt-5 h-24 rounded-[12px]" />
+          <div className="mt-2 flex h-4 justify-between">
+            <Skeleton className="h-3 w-8" />
+            <Skeleton className="h-3 w-8" />
+          </div>
+          <div className="mt-3 flex h-4 items-center">
+            <Skeleton className="h-3 w-48 max-w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    </SectionSkeleton>
+  )
+}
+
+/** RecentTransactions' footprint: its title and "Xem tất cả", four rows. */
+function RecentSkeleton() {
+  return (
+    <SectionSkeleton action={<Skeleton className="h-4 w-20" />}>
+      <SettingsGroupSkeleton caption={false} rows={4} description trailing="amount" />
+    </SectionSkeleton>
   )
 }
 
@@ -233,6 +273,8 @@ export default function OverviewLoading() {
         <div className="hidden h-4 md:block" />
         <OverviewLayout
           netWorth={<NetWorthSkeleton />}
+          versus={<VersusSkeleton />}
+          recent={<RecentSkeleton />}
           missions={<MissionsSkeleton />}
           budgets={<BudgetsSkeleton />}
           calendar={<CalendarSkeleton />}
